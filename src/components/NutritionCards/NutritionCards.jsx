@@ -2,7 +2,30 @@ import FlipCard from './FlipCard'
 import { NUTRITION_CARDS } from '../../data/appData'
 import styles from './NutritionCards.module.css'
 
+function getProfile() {
+  try {
+    const raw = localStorage.getItem('blag_profile_v1')
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function applyProfile(cards) {
+  const profile = getProfile()
+  if (!profile) return cards
+  return cards.map(card => {
+    if (card.id === 'protein' && profile.protein) {
+      return { ...card, front: { ...card.front, value: `${profile.protein}g` } }
+    }
+    if (card.id === 'calories' && profile.calories) {
+      return { ...card, front: { ...card.front, value: String(profile.calories) } }
+    }
+    return card
+  })
+}
+
 export default function NutritionCards() {
+  const cards = applyProfile(NUTRITION_CARDS)
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -11,7 +34,7 @@ export default function NutritionCards() {
       </header>
 
       <div className={styles.grid}>
-        {NUTRITION_CARDS.map(card => (
+        {cards.map(card => (
           <FlipCard key={card.id} card={card} />
         ))}
       </div>

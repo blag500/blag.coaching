@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { searchFoods } from '../../utils/openFoodFacts'
+import BarcodeScanner from './BarcodeScanner'
 import styles from './FoodSearch.module.css'
 
 export default function FoodSearch({ onAdd }) {
@@ -9,6 +10,7 @@ export default function FoodSearch({ onAdd }) {
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(null)
   const [grams, setGrams] = useState('100')
+  const [scanning, setScanning] = useState(false)
   const debounceRef = useRef(null)
 
   useEffect(() => {
@@ -46,8 +48,22 @@ export default function FoodSearch({ onAdd }) {
     setResults([])
   }
 
+  function handleBarcodeFound(food) {
+    setScanning(false)
+    setSelected(food)
+    setGrams('100')
+    setQuery('')
+    setResults([])
+  }
+
   return (
     <div className={styles.wrap}>
+      {scanning && (
+        <BarcodeScanner
+          onFound={handleBarcodeFound}
+          onClose={() => setScanning(false)}
+        />
+      )}
       <div className={styles.inputWrap}>
         <span className={styles.searchIcon} aria-hidden="true">🔍</span>
         <input
@@ -58,13 +74,22 @@ export default function FoodSearch({ onAdd }) {
           placeholder="Търси храна..."
           aria-label="Търси храна"
         />
-        {query && (
+        {query ? (
           <button
             className={styles.clear}
             onClick={() => { setQuery(''); setResults([]) }}
             aria-label="Изчисти търсенето"
           >
             ×
+          </button>
+        ) : (
+          <button
+            className={styles.scanBtn}
+            onClick={() => setScanning(true)}
+            aria-label="Скенирай баркод"
+            title="Скенирай баркод"
+          >
+            📷
           </button>
         )}
       </div>

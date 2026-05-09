@@ -3,6 +3,7 @@ import { HABITS } from '../../data/appData'
 import HabitCheckbox from './HabitCheckbox'
 import ProgressBar from './ProgressBar'
 import SOSButton from './SOSButton'
+import HabitCalendar from './HabitCalendar'
 import styles from './Compliance.module.css'
 
 function getTodayKey() {
@@ -42,6 +43,7 @@ export default function Compliance() {
       </div>
 
       <SOSButton />
+      <HabitCalendar />
     </div>
   )
 }

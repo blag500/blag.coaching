@@ -5,6 +5,7 @@ const TABS = [
   { id: 'food',       label: 'FOOD LOG',   icon: '🥗' },
   { id: 'compliance', label: 'HABITS',     icon: '✓'  },
   { id: 'training',   label: 'TRAINING',   icon: '💪' },
+  { id: 'profile',    label: 'ПРОФИЛ',     icon: '👤' },
 ]
 
 export default function BottomNav({ activeTab, onTabChange }) {
