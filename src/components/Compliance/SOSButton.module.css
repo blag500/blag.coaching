@@ -1,0 +1,48 @@
+.wrap {
+  margin-top: 28px;
+}
+
+.btn {
+  width: 100%;
+  padding: 18px 16px;
+  background: transparent;
+  border: 2px solid var(--red);
+  border-radius: var(--radius);
+  color: var(--red);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn:active,
+.btn.triggered {
+  background: var(--red);
+  color: var(--bg);
+}
+
+.sosText {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  letter-spacing: 0.25em;
+  line-height: 1;
+}
+
+.sosSubtext {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+.feedback {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 68, 85, 0.1);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--red);
+  text-align: center;
+  line-height: 1.4;
+}

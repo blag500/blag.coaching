@@ -1,0 +1,113 @@
+.scene {
+  perspective: 1000px;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  cursor: pointer;
+  outline: none;
+}
+
+.scene:focus-visible .card {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius);
+}
+
+.card.flipped {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.front {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+
+.back {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transform: rotateY(180deg);
+}
+
+/* Front face content */
+.frontLabel {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.frontValue {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+
+.frontUnit {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.flipHint {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  font-size: 10px;
+  color: var(--border);
+  letter-spacing: 0.1em;
+  font-family: var(--font-heading);
+}
+
+/* Back face content */
+.backHeadline {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.backBody {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.backSources {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+.backTip {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  margin-top: auto;
+}

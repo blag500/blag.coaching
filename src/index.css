@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:        #0A0A0F;
+  --surface-1: #12121A;
+  --surface-2: #1A1A26;
+  --accent:    #C8F135;
+  --accent-dim: rgba(200, 241, 53, 0.12);
+  --text:      #FFFFFF;
+  --muted:     #8888AA;
+  --border:    #2A2A3A;
+  --red:       #FF4455;
+
+  --font-heading: 'Bebas Neue', sans-serif;
+  --font-body:    'JetBrains Mono', monospace;
+
+  --nav-height: 64px;
+  --radius: 12px;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+input {
+  font-family: var(--font-body);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
