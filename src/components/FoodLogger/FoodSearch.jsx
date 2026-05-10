@@ -12,6 +12,13 @@ export default function FoodSearch({ onAdd }) {
   const [grams, setGrams] = useState('100')
   const [scanning, setScanning] = useState(false)
   const debounceRef = useRef(null)
+  const addPanelRef = useRef(null)
+
+  useEffect(() => {
+    if (selected && addPanelRef.current) {
+      setTimeout(() => addPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60)
+    }
+  }, [selected])
 
   useEffect(() => {
     if (!query.trim()) {
@@ -128,7 +135,7 @@ export default function FoodSearch({ onAdd }) {
       )}
 
       {selected && (
-        <div className={styles.addPanel}>
+        <div ref={addPanelRef} className={styles.addPanel}>
           <div className={styles.selectedName}>{selected.name}</div>
           <div className={styles.gramRow}>
             <label className={styles.gramLabel} htmlFor="grams-input">Грамаж</label>

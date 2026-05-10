@@ -1,0 +1,96 @@
+.splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.6s var(--ease-in-out);
+  /* Subtle radial warm glow behind the logo */
+  background-image: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    rgba(201, 162, 39, 0.07) 0%,
+    transparent 70%
+  );
+}
+
+.splash.leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  padding: 0 32px;
+}
+
+.logo {
+  width: 140px;
+  height: 140px;
+  border-radius: 32px;
+  animation: logoIn 0.8s var(--ease-out) both;
+  filter: drop-shadow(0 8px 32px rgba(201, 162, 39, 0.3));
+}
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  line-height: 1;
+  animation: slideUp 0.65s var(--ease-out) 0.45s both;
+}
+
+.tagline {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.16em;
+  animation: slideUp 0.55s var(--ease-out) 0.85s both;
+}
+
+@keyframes logoIn {
+  from {
+    opacity: 0;
+    transform: scale(0.65);
+    filter: drop-shadow(0 0 0 rgba(201, 162, 39, 0));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 8px 32px rgba(201, 162, 39, 0.3));
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo,
+  .title,
+  .tagline {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

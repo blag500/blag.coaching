@@ -1,10 +1,10 @@
 import styles from './FoodLog.module.css'
 
 const MACRO_COLORS = {
-  kcal:    '#F06292',
-  protein: '#C8F135',
-  carbs:   '#4FC3F7',
-  fat:     '#FFB74D',
+  kcal:    '#E87565',
+  protein: '#C9A227',
+  carbs:   '#7EB8D4',
+  fat:     '#E0A040',
 }
 
 export default function FoodLog({ log, totals, onRemove, onClear }) {

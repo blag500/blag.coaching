@@ -1,9 +1,9 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.88);
   backdrop-filter: blur(6px);
-  z-index: 200;
+  z-index: 9999;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -16,7 +16,8 @@
   width: 100%;
   max-width: 480px;
   padding: 20px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  /* Extra bottom clearance so content isn't hidden behind floating nav */
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
 .top {

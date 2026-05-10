@@ -6,6 +6,7 @@ import Compliance from './components/Compliance/Compliance'
 import Training from './components/Training/Training'
 import Profile from './components/Profile/Profile'
 import Welcome from './components/Welcome/Welcome'
+import Splash from './components/Splash/Splash'
 import styles from './App.module.css'
 
 function getWelcomed() {
@@ -13,8 +14,11 @@ function getWelcomed() {
 }
 
 export default function App() {
+  const [splash, setSplash] = useState(true)
   const [welcomed, setWelcomed] = useState(getWelcomed)
   const [activeTab, setActiveTab] = useState('nutrition')
+
+  if (splash) return <Splash onDone={() => setSplash(false)} />
 
   if (!welcomed) {
     return (

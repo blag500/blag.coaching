@@ -7,14 +7,14 @@
 }
 
 :root {
-  --bg:        #0A0A0F;
-  --surface-1: #12121A;
-  --surface-2: #1A1A26;
-  --accent:    #C8F135;
-  --accent-dim: rgba(200, 241, 53, 0.12);
-  --text:      #FFFFFF;
-  --muted:     #8888AA;
-  --border:    #2A2A3A;
+  --bg:        #0C0A06;
+  --surface-1: #131009;
+  --surface-2: #1A1710;
+  --accent:    #C9A227;
+  --accent-dim: rgba(201, 162, 39, 0.12);
+  --text:      #F2E8CF;
+  --muted:     #907860;
+  --border:    #2B2215;
   --red:       #FF4455;
 
   --font-heading: 'Bebas Neue', sans-serif;
@@ -25,13 +25,13 @@
   --radius-lg:   24px;
   --radius-xl:   32px;
 
-  --shadow-card: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
-  --shadow-glow: 0 0 24px rgba(200,241,53,0.12);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 28px rgba(201, 162, 39, 0.22);
 
   --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
-  --surface-glass: rgba(10, 10, 15, 0.82);
+  --surface-glass: rgba(12, 10, 6, 0.82);
 }
 
 html, body, #root {
