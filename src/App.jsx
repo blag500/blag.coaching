@@ -36,7 +36,9 @@ export default function App() {
   return (
     <div className={styles.shell}>
       <main className={styles.content}>
-        {pages[activeTab]}
+        <div key={activeTab} className={styles.page}>
+          {pages[activeTab]}
+        </div>
       </main>
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>

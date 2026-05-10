@@ -19,6 +19,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
           aria-current={activeTab === tab.id ? 'page' : undefined}
           aria-label={tab.label}
         >
+          <span className={styles.dot} aria-hidden="true" />
           <span className={styles.icon} aria-hidden="true">{tab.icon}</span>
           <span className={styles.label}>{tab.label}</span>
         </button>

@@ -42,8 +42,8 @@ export default function FoodLog({ log, totals, onRemove, onClear }) {
       </div>
 
       <ul className={styles.list}>
-        {log.map(entry => (
-          <li key={entry.id} className={styles.entry}>
+        {log.map((entry, i) => (
+          <li key={entry.id} className={styles.entry} style={{ '--i': i }}>
             <div className={styles.entryLeft}>
               <span className={styles.entryName}>{entry.name}</span>
               <span className={styles.entryMacros}>

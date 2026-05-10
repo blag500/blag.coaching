@@ -3,18 +3,29 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 14px 16px;
+  height: 64px;
+  padding: 0 16px;
   background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
   color: var(--muted);
   text-align: left;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  transition: border-color 220ms var(--ease-out),
+              background  220ms var(--ease-out),
+              color        220ms var(--ease-out),
+              transform    120ms var(--ease-out);
+  animation: itemIn 300ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+.item:active {
+  transform: scale(0.97);
+  transition: transform 120ms var(--ease-out);
 }
 
 .item.checked {
   border-color: var(--accent);
-  background: var(--accent-dim);
+  background: rgba(200, 241, 53, 0.08);
   color: var(--text);
 }
 
@@ -30,16 +41,53 @@
   letter-spacing: 0.03em;
 }
 
-.check {
-  font-size: 18px;
-  font-family: var(--font-heading);
-  color: var(--border);
-  transition: color 0.2s;
+.indicator {
   flex-shrink: 0;
-  width: 20px;
-  text-align: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 220ms var(--ease-out),
+              border-color 220ms var(--ease-out),
+              transform    220ms var(--ease-out);
+  position: relative;
 }
 
-.item.checked .check {
-  color: var(--accent);
+.indicator::after {
+  content: '✓';
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bg);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+  position: absolute;
+  line-height: 1;
+}
+
+.indicatorChecked {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.indicatorChecked::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

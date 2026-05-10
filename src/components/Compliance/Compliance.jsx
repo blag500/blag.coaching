@@ -1,7 +1,7 @@
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { HABITS } from '../../data/appData'
 import HabitCheckbox from './HabitCheckbox'
-import ProgressBar from './ProgressBar'
+import RingProgress from './RingProgress'
 import SOSButton from './SOSButton'
 import HabitCalendar from './HabitCalendar'
 import styles from './Compliance.module.css'
@@ -29,15 +29,16 @@ export default function Compliance() {
         <p className={styles.date}>{today}</p>
       </header>
 
-      <ProgressBar completed={completedCount} total={HABITS.length} />
+      <RingProgress completed={completedCount} total={HABITS.length} />
 
       <div className={styles.list}>
-        {HABITS.map(habit => (
+        {HABITS.map((habit, i) => (
           <HabitCheckbox
             key={habit.id}
             habit={habit}
             checked={!!checked[habit.id]}
             onToggle={toggle}
+            index={i}
           />
         ))}
       </div>

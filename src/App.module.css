@@ -2,9 +2,25 @@
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
 }
 
 .content {
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+.page {
+  animation: pageIn 220ms var(--ease-out) both;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
