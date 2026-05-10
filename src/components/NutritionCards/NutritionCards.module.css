@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28px 16px calc(var(--nav-height) + 24px);
+  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(92px + env(safe-area-inset-bottom));
   max-width: 480px;
   margin: 0 auto;
 }

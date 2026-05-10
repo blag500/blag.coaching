@@ -1,17 +1,20 @@
 .nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--nav-height);
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -1px 0 rgba(255,255,255,0.05), 0 -12px 40px rgba(0,0,0,0.5);
+  bottom: calc(env(safe-area-inset-bottom) + 16px);
+  left: 16px;
+  right: 16px;
+  height: 60px;
+  background: rgba(12, 12, 20, 0.65);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.65),
+    0 6px 20px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   display: flex;
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .tab {
@@ -20,18 +23,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   background: none;
   border: none;
   color: var(--muted);
   transition: color 200ms var(--ease-out), transform 120ms var(--ease-out);
-  padding: 0 4px;
+  padding: 0 2px;
   position: relative;
 }
 
 .tab:active {
-  transform: scale(0.88);
-  transition: transform 120ms var(--ease-out);
+  transform: scale(0.82);
+  transition: transform 100ms var(--ease-out);
 }
 
 .tab.active {
@@ -39,19 +42,19 @@
 }
 
 .icon {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
   transition: transform 200ms var(--ease-out);
 }
 
 .tab.active .icon {
-  transform: scale(1.15);
+  transform: scale(1.18);
 }
 
 .label {
   font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.06em;
+  font-size: 8px;
+  letter-spacing: 0.05em;
 }
 
 .dot {
