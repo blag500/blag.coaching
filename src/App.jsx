@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import BottomNav from './components/BottomNav/BottomNav'
 import NutritionCards from './components/NutritionCards/NutritionCards'
-import FoodLogger from './components/FoodLogger/FoodLogger'
 import Compliance from './components/Compliance/Compliance'
 import Training from './components/Training/Training'
 import Profile from './components/Profile/Profile'
@@ -31,7 +30,6 @@ export default function App() {
 
   const pages = {
     nutrition:  <NutritionCards />,
-    food:       <FoodLogger />,
     compliance: <Compliance />,
     training:   <Training />,
     profile:    <Profile />,

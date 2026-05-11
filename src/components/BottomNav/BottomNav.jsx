@@ -6,14 +6,6 @@ const NutritionIcon = () => (
   </svg>
 )
 
-const FoodIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-    <path d="M7 2v20" />
-    <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7" />
-  </svg>
-)
-
 const HabitsIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -42,7 +34,6 @@ const ProfileIcon = () => (
 
 const TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
-  { id: 'food',       label: 'FOOD LOG',  Icon: FoodIcon      },
   { id: 'compliance', label: 'HABITS',    Icon: HabitsIcon    },
   { id: 'training',   label: 'TRAINING',  Icon: TrainingIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },

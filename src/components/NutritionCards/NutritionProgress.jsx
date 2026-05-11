@@ -1,31 +1,13 @@
-import { useFoodLog } from '../../hooks/useFoodLog'
 import styles from './NutritionProgress.module.css'
 
-function getTargets() {
-  try {
-    const p = JSON.parse(localStorage.getItem('blag_profile_v1') || '{}')
-    return {
-      calories: p.calories || 2450,
-      protein:  p.protein  || 180,
-      carbs:    250,
-      fat:      70,
-    }
-  } catch {
-    return { calories: 2450, protein: 180, carbs: 250, fat: 70 }
-  }
-}
-
 const BARS = [
-  { key: 'calories', label: 'КАЛОРИИ',     unit: 'ккал', color: '#F06292' },
-  { key: 'protein',  label: 'ПРОТЕИН',     unit: 'g',    color: '#C8F135' },
-  { key: 'carbs',    label: 'ВЪГЛЕХИДРАТИ', unit: 'g',   color: '#4FC3F7' },
-  { key: 'fat',      label: 'МАЗНИНИ',     unit: 'g',    color: '#FFB74D' },
+  { key: 'calories', label: 'КАЛОРИИ',      unit: 'ккал', color: '#F06292' },
+  { key: 'protein',  label: 'ПРОТЕИН',      unit: 'g',    color: '#C8F135' },
+  { key: 'carbs',    label: 'ВЪГЛЕХИДРАТИ', unit: 'g',    color: '#4FC3F7' },
+  { key: 'fat',      label: 'МАЗНИНИ',      unit: 'g',    color: '#FFB74D' },
 ]
 
-export default function NutritionProgress() {
-  const { totals } = useFoodLog()
-  const targets = getTargets()
-
+export default function NutritionProgress({ totals, targets }) {
   return (
     <div className={styles.wrap}>
       <h2 className={styles.heading}>ПРИЕМ ДНЕС</h2>

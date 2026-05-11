@@ -1,51 +1,44 @@
-import FlipCard from './FlipCard'
+import { useFoodLog } from '../../hooks/useFoodLog'
 import NutritionProgress from './NutritionProgress'
-import { NUTRITION_CARDS } from '../../data/appData'
+import FoodSearch from '../FoodLogger/FoodSearch'
+import FoodLog from '../FoodLogger/FoodLog'
 import styles from './NutritionCards.module.css'
 
-function getProfile() {
+function getTargets() {
   try {
-    const raw = localStorage.getItem('blag_profile_v1')
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
-
-function applyProfile(cards) {
-  const profile = getProfile()
-  if (!profile) return cards
-  return cards.map(card => {
-    if (card.id === 'protein' && profile.protein) {
-      return { ...card, front: { ...card.front, value: `${profile.protein}g` } }
+    const p = JSON.parse(localStorage.getItem('blag_profile_v1') || '{}')
+    return {
+      calories: p.calories || 2450,
+      protein:  p.protein  || 180,
+      carbs:    250,
+      fat:      70,
     }
-    if (card.id === 'calories' && profile.calories) {
-      return { ...card, front: { ...card.front, value: String(profile.calories) } }
-    }
-    return card
-  })
+  } catch {
+    return { calories: 2450, protein: 180, carbs: 250, fat: 70 }
+  }
 }
 
 export default function NutritionCards() {
-  const cards = applyProfile(NUTRITION_CARDS)
+  const { log, totals, addEntry, removeEntry, clearLog } = useFoodLog()
+  const targets = getTargets()
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>NUTRITION</h1>
-        <p className={styles.subtitle}>Натисни карта за детайли</p>
+        <p className={styles.subtitle}>Дневен прием и хранителен лог</p>
       </header>
 
-      <NutritionProgress />
+      <NutritionProgress totals={totals} targets={targets} />
 
-      <div className={styles.grid}>
-        {cards.map(card => (
-          <FlipCard key={card.id} card={card} />
-        ))}
-      </div>
+      <FoodSearch onAdd={addEntry} />
 
-      <div className={styles.note}>
-        <span className={styles.noteIcon}>ℹ</span>
-        Стойностите са персонализирани от треньора
-      </div>
+      <FoodLog
+        log={log}
+        totals={totals}
+        onRemove={removeEntry}
+        onClear={clearLog}
+      />
     </div>
   )
 }
