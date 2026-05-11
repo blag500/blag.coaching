@@ -1,7 +1,7 @@
 import styles from './DayCard.module.css'
 
 const LABEL_COLORS = {
-  UPPER:  '#C8F135',
+  UPPER:  '#ffb74d',
   LOWER:  '#4FC3F7',
   CARDIO: '#FFB74D',
   REST:   '#2A2A3A',

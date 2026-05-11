@@ -26,14 +26,14 @@ export default function WeightSparkline({ weights }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }} aria-hidden="true">
       <defs>
         <linearGradient id="wgrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#C8F135" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#C8F135" stopOpacity="0" />
+          <stop offset="0%" stopColor="#ffb74d" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#ffb74d" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={areaPath} fill="url(#wgrad)" />
-      <polyline points={polyline} fill="none" stroke="#C8F135" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={polyline} fill="none" stroke="#ffb74d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#C8F135" />
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill="#ffb74d" />
       ))}
       <text x={points[0].x} y={H - 1} fontSize="8" fill="#8888AA" textAnchor="middle">{points[0].date.slice(5)}</text>
       <text x={points[points.length-1].x} y={H - 1} fontSize="8" fill="#8888AA" textAnchor="middle">{points[points.length-1].date.slice(5)}</text>

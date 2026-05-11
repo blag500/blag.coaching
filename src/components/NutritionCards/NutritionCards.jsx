@@ -8,13 +8,13 @@ function getTargets() {
   try {
     const p = JSON.parse(localStorage.getItem('blag_profile_v1') || '{}')
     return {
-      calories: p.calories || 2450,
-      protein:  p.protein  || 180,
-      carbs:    250,
-      fat:      70,
+      kcal:    p.calories || 2450,
+      protein: p.protein  || 180,
+      carbs:   250,
+      fat:     70,
     }
   } catch {
-    return { calories: 2450, protein: 180, carbs: 250, fat: 70 }
+    return { kcal: 2450, protein: 180, carbs: 250, fat: 70 }
   }
 }
 

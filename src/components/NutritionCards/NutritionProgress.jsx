@@ -1,10 +1,10 @@
 import styles from './NutritionProgress.module.css'
 
 const BARS = [
-  { key: 'calories', label: 'КАЛОРИИ',      unit: 'ккал', color: '#F06292' },
-  { key: 'protein',  label: 'ПРОТЕИН',      unit: 'g',    color: '#C8F135' },
-  { key: 'carbs',    label: 'ВЪГЛЕХИДРАТИ', unit: 'g',    color: '#4FC3F7' },
-  { key: 'fat',      label: 'МАЗНИНИ',      unit: 'g',    color: '#FFB74D' },
+  { key: 'kcal',    label: 'КАЛОРИИ',      unit: 'ккал', color: '#F06292' },
+  { key: 'protein', label: 'ПРОТЕИН',      unit: 'g',    color: '#66BB6A' },
+  { key: 'carbs',   label: 'ВЪГЛЕХИДРАТИ', unit: 'g',    color: '#4FC3F7' },
+  { key: 'fat',     label: 'МАЗНИНИ',      unit: 'g',    color: '#FFB74D' },
 ]
 
 export default function NutritionProgress({ totals, targets }) {

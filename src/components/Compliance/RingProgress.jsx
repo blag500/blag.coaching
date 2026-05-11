@@ -10,7 +10,7 @@ export default function RingProgress({ completed, total }) {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.ringWrap} style={perfect ? { filter: 'drop-shadow(0 0 16px rgba(200,241,53,0.35))' } : undefined}>
+      <div className={styles.ringWrap} style={perfect ? { filter: 'drop-shadow(0 0 16px rgba(255,183,77,0.35))' } : undefined}>
         <svg
           viewBox="0 0 120 120"
           className={styles.svg}

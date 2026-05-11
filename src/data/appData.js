@@ -1,7 +1,7 @@
 export const NUTRITION_CARDS = [
   {
     id: 'protein',
-    front: { label: 'PROTEIN', value: '180g', unit: 'на ден', color: '#C8F135' },
+    front: { label: 'PROTEIN', value: '180g', unit: 'на ден', color: '#66BB6A' },
     back: {
       headline: 'Защо протеин?',
       body: 'Гради и възстановява мускулна тъкан. Цел: 2g на кг телесно тегло.',

@@ -15,8 +15,8 @@ function dateStr(year, month, day) { return `${year}-${pad(month + 1)}-${pad(day
 function cellColor(ratio) {
   if (ratio === null) return 'var(--surface-2)'
   if (ratio === 0)    return 'var(--surface-2)'
-  if (ratio < 0.5)   return 'rgba(200,241,53,0.2)'
-  if (ratio < 1)     return 'rgba(200,241,53,0.55)'
+  if (ratio < 0.5)   return 'rgba(255,183,77,0.2)'
+  if (ratio < 1)     return 'rgba(255,183,77,0.55)'
   return 'var(--accent)'
 }
 
