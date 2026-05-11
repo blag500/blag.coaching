@@ -8,11 +8,22 @@ function getTodayBg() {
   return DAYS_BG_TO_EN[en] || 'Понеделник'
 }
 
+function getNextWorkout(dayName) {
+  const idx = TRAINING_SPLIT.findIndex(d => d.day === dayName)
+  for (let i = 1; i <= TRAINING_SPLIT.length; i++) {
+    const candidate = TRAINING_SPLIT[(idx + i) % TRAINING_SPLIT.length]
+    if (candidate.label !== 'REST') return candidate
+  }
+  return null
+}
+
 export default function Training() {
-  const todayBg = getTodayBg()
+  const todayBg      = getTodayBg()
   const [selectedDay, setSelectedDay] = useState(todayBg)
 
-  const dayData = TRAINING_SPLIT.find(d => d.day === selectedDay)
+  const dayData      = TRAINING_SPLIT.find(d => d.day === selectedDay)
+  const isRest       = dayData?.label === 'REST'
+  const nextWorkout  = isRest ? getNextWorkout(selectedDay) : null
 
   return (
     <div className={styles.page}>
@@ -47,6 +58,16 @@ export default function Training() {
             )}
           </div>
           <DayCard dayData={dayData} />
+        </div>
+      )}
+
+      {nextWorkout && (
+        <div className={styles.nextSection}>
+          <p className={styles.nextLabel}>
+            СЛЕДВАЩ ТРЕНИНГ
+            <span className={styles.nextDay}>{nextWorkout.day.toUpperCase()}</span>
+          </p>
+          <DayCard dayData={nextWorkout} />
         </div>
       )}
     </div>

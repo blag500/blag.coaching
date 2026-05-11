@@ -61,7 +61,7 @@
   background: var(--accent);
   color: var(--bg);
   border-color: var(--accent);
-  box-shadow: 0 0 16px rgba(201, 162, 39, 0.38), 0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 16px rgba(200, 241, 53,0.38), 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 .todayDot {
@@ -95,4 +95,26 @@
   background: var(--accent);
   padding: 2px 8px;
   border-radius: 4px;
+}
+
+/* Next workout preview (shown on rest days) */
+.nextSection {
+  margin-top: 24px;
+}
+
+.nextLabel {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nextDay {
+  color: var(--accent);
+  font-size: 13px;
+  letter-spacing: 0.1em;
 }

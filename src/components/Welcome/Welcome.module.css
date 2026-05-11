@@ -11,7 +11,7 @@
   transition: opacity 0.4s var(--ease-in-out);
   background-image: radial-gradient(
     ellipse 70% 50% at 50% 30%,
-    rgba(201, 162, 39, 0.07) 0%,
+    rgba(200, 241, 53,0.07) 0%,
     transparent 70%
   );
 }
@@ -117,12 +117,12 @@
   letter-spacing: 0.12em;
   cursor: pointer;
   transition: opacity 0.15s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(201, 162, 39, 0.3);
+  box-shadow: 0 4px 24px rgba(200, 241, 53,0.3);
   animation: fadeUp 0.55s var(--ease-out) 1.0s both;
 }
 
 .cta:hover {
-  box-shadow: 0 6px 32px rgba(201, 162, 39, 0.42);
+  box-shadow: 0 6px 32px rgba(200, 241, 53,0.42);
 }
 
 .cta:active {

@@ -2,7 +2,7 @@ import styles from './FoodLog.module.css'
 
 const MACRO_COLORS = {
   kcal:    '#E87565',
-  protein: '#C9A227',
+  protein: '#C8F135',
   carbs:   '#7EB8D4',
   fat:     '#E0A040',
 }

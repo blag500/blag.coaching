@@ -1,4 +1,5 @@
 import FlipCard from './FlipCard'
+import NutritionProgress from './NutritionProgress'
 import { NUTRITION_CARDS } from '../../data/appData'
 import styles from './NutritionCards.module.css'
 
@@ -32,6 +33,8 @@ export default function NutritionCards() {
         <h1 className={styles.title}>NUTRITION</h1>
         <p className={styles.subtitle}>Натисни карта за детайли</p>
       </header>
+
+      <NutritionProgress />
 
       <div className={styles.grid}>
         {cards.map(card => (

@@ -2,6 +2,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { HABITS } from '../../data/appData'
 import HabitCheckbox from './HabitCheckbox'
 import RingProgress from './RingProgress'
+import StreakBar from './StreakBar'
 import SOSButton from './SOSButton'
 import HabitCalendar from './HabitCalendar'
 import styles from './Compliance.module.css'
@@ -42,6 +43,8 @@ export default function Compliance() {
           />
         ))}
       </div>
+
+      <StreakBar />
 
       <SOSButton />
       <HabitCalendar />
