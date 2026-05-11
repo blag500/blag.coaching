@@ -49,7 +49,7 @@ export default function RingProgress({ completed, total }) {
       <p className={styles.label}>НАВИЦИ ДНЕС</p>
 
       {perfect && (
-        <p className={styles.perfect}>🏆 ПЕРФЕКТЕН ДЕН!</p>
+        <p className={styles.perfect}>ПЕРФЕКТЕН ДЕН</p>
       )}
     </div>
   )

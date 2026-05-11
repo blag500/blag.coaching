@@ -18,16 +18,9 @@ export default function Splash({ onDone }) {
   return (
     <div className={`${styles.splash} ${leaving ? styles.leaving : ''}`}>
       <div className={styles.inner}>
-        <img
-          src="/apple-touch-icon.png"
-          className={styles.logo}
-          alt="Blag Coaching"
-          draggable={false}
-        />
-        <div className={styles.textBlock}>
-          <h1 className={styles.title}>BLAG COACHING</h1>
-          <p className={styles.tagline}>Be blag, Be better</p>
-        </div>
+        <h1 className={styles.title}>BLAG COACHING</h1>
+        <div className={styles.divider} aria-hidden="true" />
+        <p className={styles.tagline}>Be blag, Be better</p>
       </div>
     </div>
   )

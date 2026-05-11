@@ -7,9 +7,9 @@
 }
 
 .ringWrap {
-  width: 140px;
-  height: 140px;
-  transition: filter 0.4s var(--ease-out);
+  width: 152px;
+  height: 152px;
+  transition: filter 0.45s var(--ease-out);
 }
 
 .svg {
@@ -19,12 +19,12 @@
 }
 
 .fill {
-  transition: stroke-dashoffset 0.55s var(--ease-in-out);
+  transition: stroke-dashoffset 0.6s var(--ease-in-out);
 }
 
 .scoreNum {
   font-family: var(--font-heading);
-  font-size: 36px;
+  font-size: 40px;
   fill: var(--text);
   letter-spacing: 0.02em;
 }
@@ -37,20 +37,20 @@
 
 .label {
   font-family: var(--font-heading);
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.18em;
   color: var(--muted);
 }
 
 .perfect {
   font-family: var(--font-heading);
-  font-size: 14px;
-  letter-spacing: 0.1em;
+  font-size: 13px;
+  letter-spacing: 0.12em;
   color: var(--accent);
   animation: popIn 0.35s var(--ease-out) both;
 }
 
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.8); }
+  from { opacity: 0; transform: scale(0.75); }
   to   { opacity: 1; transform: scale(1); }
 }

@@ -52,6 +52,7 @@
 .front {
   background: var(--surface-1);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--card-color, var(--accent));
   box-shadow: var(--shadow-card);
 }
 

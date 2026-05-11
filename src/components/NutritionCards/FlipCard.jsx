@@ -7,6 +7,7 @@ export default function FlipCard({ card }) {
   return (
     <div
       className={styles.scene}
+      style={{ '--card-color': card.front.color }}
       onClick={() => setFlipped(f => !f)}
       role="button"
       tabIndex={0}

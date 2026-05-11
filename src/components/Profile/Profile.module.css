@@ -34,10 +34,25 @@
 
 .sectionTitle {
   font-family: var(--font-heading);
-  font-size: 14px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.14em;
   color: var(--muted);
   margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sectionTitle::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .label {
@@ -74,6 +89,8 @@
 
 .weightInput:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+  outline: none;
 }
 
 .unit {
@@ -144,6 +161,8 @@
 
 .textInput:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+  outline: none;
 }
 
 .row2 {
@@ -173,6 +192,8 @@
 
 .numInput:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+  outline: none;
 }
 
 .saveSettingsBtn {
