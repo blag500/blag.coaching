@@ -37,7 +37,7 @@
   font-size: 13px;
   letter-spacing: 0.14em;
   color: var(--muted);
-  margin-bottom: 16px;
+  margin: 0 0 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -55,6 +55,82 @@
   flex-shrink: 0;
 }
 
+/* Weekly summary */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.summaryBox {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.summaryValue {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.streakValue {
+  color: var(--accent);
+}
+
+.summaryLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Macro targets */
+.macroGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.macroBox {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.macroValue {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+
+.macroUnit {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.macroLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Weight */
 .label {
   display: block;
   font-size: 12px;
@@ -63,9 +139,12 @@
   letter-spacing: 0.04em;
 }
 
-/* Weight form */
 .weightForm {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.targetRow {
+  margin-bottom: 16px;
 }
 
 .weightRow {
@@ -89,8 +168,7 @@
 
 .weightInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77,0.1);
-  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.1);
 }
 
 .unit {
@@ -116,6 +194,35 @@
   opacity: 0.8;
 }
 
+/* Progress bar */
+.progressWrap {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.progressLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
 .trend {
   font-size: 12px;
   color: var(--muted);
@@ -136,16 +243,11 @@
   padding: 16px 0;
 }
 
-/* Settings form */
-.settingsForm {
+/* Name form */
+.nameForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
+  gap: 12px;
 }
 
 .textInput {
@@ -161,57 +263,27 @@
 
 .textInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77,0.1);
-  outline: none;
-}
-
-.row2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.numWrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.numInput {
-  flex: 1;
-  padding: 10px 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  text-align: center;
-  outline: none;
-}
-
-.numInput:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77,0.1);
-  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.1);
 }
 
 .saveSettingsBtn {
   width: 100%;
-  padding: 14px;
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
+  padding: 13px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(255, 183, 77, 0.25);
   border-radius: 12px;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: opacity 0.15s, background 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 
 .saveSettingsBtn.saved {
-  background: #4CAF50;
+  background: rgba(102, 187, 106, 0.15);
+  color: #66BB6A;
+  border-color: rgba(102, 187, 106, 0.3);
 }
 
 .saveSettingsBtn:active {
