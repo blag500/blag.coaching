@@ -1,13 +1,6 @@
 import styles from './FoodLog.module.css'
 
-const MACRO_COLORS = {
-  kcal:    '#E87565',
-  protein: '#66BB6A',
-  carbs:   '#7EB8D4',
-  fat:     '#E0A040',
-}
-
-export default function FoodLog({ log, totals, onRemove, onClear }) {
+export default function FoodLog({ log, onRemove, onClear }) {
   if (log.length === 0) {
     return (
       <div className={styles.empty}>
@@ -20,22 +13,6 @@ export default function FoodLog({ log, totals, onRemove, onClear }) {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.totalsBar}>
-        {[
-          { key: 'kcal',    label: 'ККАЛ',     value: totals.kcal,    unit: '' },
-          { key: 'protein', label: 'ПРОТЕИН',  value: totals.protein, unit: 'g' },
-          { key: 'carbs',   label: 'ВЪГЛ',     value: totals.carbs,   unit: 'g' },
-          { key: 'fat',     label: 'МАЗН',     value: totals.fat,     unit: 'g' },
-        ].map(m => (
-          <div key={m.key} className={styles.totalItem}>
-            <span className={styles.totalValue} style={{ color: MACRO_COLORS[m.key] }}>
-              {m.value}{m.unit}
-            </span>
-            <span className={styles.totalLabel}>{m.label}</span>
-          </div>
-        ))}
-      </div>
-
       <div className={styles.listHeader}>
         <span className={styles.listTitle}>Дневен лог ({log.length})</span>
         <button className={styles.clearBtn} onClick={onClear}>Изчисти</button>

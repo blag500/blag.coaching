@@ -1,26 +1,29 @@
 import { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import WeightSparkline from './WeightSparkline'
 import NotificationSettings from './NotificationSettings'
 import styles from './Profile.module.css'
 
-const DEFAULT_PROFILE = { name: '', targetWeight: '', calories: 2450, protein: 180 }
-
 export default function Profile() {
+  const { profile, updateProfile, signOut } = useAuth()
   const { weights, todayEntry, trend, addWeight } = useWeightLog()
-  const [profile, setProfile] = useLocalStorage('blag_profile_v1', DEFAULT_PROFILE)
+  const [targetWeight, setTargetWeight] = useLocalStorage('blag_target_weight_v1', '')
 
   const [weightInput, setWeightInput] = useState(todayEntry ? String(todayEntry.kg) : '')
   const [weightSaved, setWeightSaved] = useState(false)
 
   const [form, setForm] = useState({
-    name:         profile.name ?? '',
-    targetWeight: profile.targetWeight ?? '',
-    calories:     profile.calories ?? 2450,
-    protein:      profile.protein ?? 180,
+    name:         profile?.name         ?? '',
+    targetWeight: targetWeight          ?? '',
+    calories:     profile?.calories     ?? 2450,
+    protein:      profile?.protein      ?? 180,
+    carbs:        profile?.carbs        ?? 250,
+    fat:          profile?.fat          ?? 70,
   })
   const [settingsSaved, setSettingsSaved] = useState(false)
+  const [settingsError, setSettingsError] = useState(null)
 
   function handleWeightSave(e) {
     e.preventDefault()
@@ -31,16 +34,27 @@ export default function Profile() {
     setTimeout(() => setWeightSaved(false), 2000)
   }
 
-  function handleSettingsSave(e) {
+  async function handleSettingsSave(e) {
     e.preventDefault()
-    setProfile({
-      name:         form.name,
-      targetWeight: form.targetWeight ? parseFloat(form.targetWeight) : '',
-      calories:     parseInt(form.calories) || 2450,
-      protein:      parseInt(form.protein) || 180,
+    setSettingsError(null)
+
+    const tw = form.targetWeight ? parseFloat(form.targetWeight) : ''
+    setTargetWeight(tw)
+
+    const { error } = await updateProfile({
+      name:     form.name,
+      calories: parseInt(form.calories) || 2450,
+      protein:  parseInt(form.protein)  || 180,
+      carbs:    parseInt(form.carbs)    || 250,
+      fat:      parseInt(form.fat)      || 70,
     })
-    setSettingsSaved(true)
-    setTimeout(() => setSettingsSaved(false), 2000)
+
+    if (error) {
+      setSettingsError(error.message)
+    } else {
+      setSettingsSaved(true)
+      setTimeout(() => setSettingsSaved(false), 2000)
+    }
   }
 
   const trendLabel = trend === null ? null
@@ -52,7 +66,7 @@ export default function Profile() {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>ПРОФИЛ</h1>
-        {profile.name && <p className={styles.subtitle}>{profile.name}</p>}
+        {profile?.name && <p className={styles.subtitle}>{profile.name}</p>}
       </header>
 
       {/* Weight tracker */}
@@ -127,7 +141,7 @@ export default function Profile() {
 
           <div className={styles.row2}>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="s-cal">Калории/ден</label>
+              <label className={styles.label} htmlFor="s-cal">Калории</label>
               <div className={styles.numWrap}>
                 <input
                   id="s-cal"
@@ -143,7 +157,7 @@ export default function Profile() {
               </div>
             </div>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="s-prot">Протеин/ден</label>
+              <label className={styles.label} htmlFor="s-prot">Протеин</label>
               <div className={styles.numWrap}>
                 <input
                   id="s-prot"
@@ -160,6 +174,43 @@ export default function Profile() {
             </div>
           </div>
 
+          <div className={styles.row2}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="s-carbs">Въглехидрати</label>
+              <div className={styles.numWrap}>
+                <input
+                  id="s-carbs"
+                  className={styles.numInput}
+                  type="number"
+                  step="10"
+                  min="0"
+                  max="1000"
+                  value={form.carbs}
+                  onChange={e => setForm(f => ({ ...f, carbs: e.target.value }))}
+                />
+                <span className={styles.unit}>g</span>
+              </div>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="s-fat">Мазнини</label>
+              <div className={styles.numWrap}>
+                <input
+                  id="s-fat"
+                  className={styles.numInput}
+                  type="number"
+                  step="5"
+                  min="0"
+                  max="500"
+                  value={form.fat}
+                  onChange={e => setForm(f => ({ ...f, fat: e.target.value }))}
+                />
+                <span className={styles.unit}>g</span>
+              </div>
+            </div>
+          </div>
+
+          {settingsError && <p className={styles.errorMsg}>{settingsError}</p>}
+
           <button type="submit" className={`${styles.saveSettingsBtn} ${settingsSaved ? styles.saved : ''}`}>
             {settingsSaved ? '✓ Запазено' : 'Запази настройките'}
           </button>
@@ -168,6 +219,13 @@ export default function Profile() {
 
       {/* Push notifications */}
       <NotificationSettings />
+
+      {/* Sign out */}
+      <section className={styles.card}>
+        <button className={styles.signOutBtn} onClick={signOut} type="button">
+          Изход от акаунта
+        </button>
+      </section>
     </div>
   )
 }

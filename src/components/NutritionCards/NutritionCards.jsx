@@ -1,26 +1,20 @@
+import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import NutritionProgress from './NutritionProgress'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
 import styles from './NutritionCards.module.css'
 
-function getTargets() {
-  try {
-    const p = JSON.parse(localStorage.getItem('blag_profile_v1') || '{}')
-    return {
-      kcal:    p.calories || 2450,
-      protein: p.protein  || 180,
-      carbs:   250,
-      fat:     70,
-    }
-  } catch {
-    return { kcal: 2450, protein: 180, carbs: 250, fat: 70 }
-  }
-}
-
 export default function NutritionCards() {
+  const { profile } = useAuth()
   const { log, totals, addEntry, removeEntry, clearLog } = useFoodLog()
-  const targets = getTargets()
+
+  const targets = {
+    kcal:    profile?.calories ?? 2450,
+    protein: profile?.protein  ?? 180,
+    carbs:   profile?.carbs    ?? 250,
+    fat:     profile?.fat      ?? 70,
+  }
 
   return (
     <div className={styles.page}>
@@ -35,7 +29,6 @@ export default function NutritionCards() {
 
       <FoodLog
         log={log}
-        totals={totals}
         onRemove={removeEntry}
         onClear={clearLog}
       />

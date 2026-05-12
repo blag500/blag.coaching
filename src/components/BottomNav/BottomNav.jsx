@@ -32,17 +32,30 @@ const ProfileIcon = () => (
   </svg>
 )
 
-const TABS = [
+const ClientsIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="9" cy="7" r="3" />
+    <path d="M3 20c0-3 2.7-5 6-5s6 2 6 5" />
+    <circle cx="17" cy="8" r="2.5" />
+    <path d="M15 20c0-2.5 1.8-4 4-4" />
+  </svg>
+)
+
+const BASE_TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'compliance', label: 'HABITS',    Icon: HabitsIcon    },
   { id: 'training',   label: 'TRAINING',  Icon: TrainingIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
 ]
 
-export default function BottomNav({ activeTab, onTabChange }) {
+const COACH_TAB = { id: 'clients', label: 'КЛИЕНТИ', Icon: ClientsIcon }
+
+export default function BottomNav({ activeTab, onTabChange, isCoach }) {
+  const tabs = isCoach ? [...BASE_TABS, COACH_TAB] : BASE_TABS
+
   return (
     <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
-      {TABS.map(tab => (
+      {tabs.map(tab => (
         <button
           key={tab.id}
           className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
