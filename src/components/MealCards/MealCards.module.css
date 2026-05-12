@@ -1,0 +1,319 @@
+.wrap {
+  padding: 0 0 16px;
+}
+
+/* Filter bar */
+.filterBar {
+  padding: 0 16px 10px;
+}
+
+.filterInput {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filterInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+}
+
+.filterInput::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* Chips */
+.chips {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chipActive {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: rgba(255, 183, 77, 0.35);
+}
+
+/* Suggestion */
+.suggestion {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--accent);
+  padding: 0 16px 10px;
+  margin: 0;
+}
+
+/* Card list */
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 32px 0;
+}
+
+/* Flip card */
+.cardScene {
+  height: 320px;
+  perspective: 900px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flipped .cardInner {
+  transform: rotateY(180deg);
+}
+
+.cardFront,
+.cardBack {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* Front */
+.cardFront {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.cardFrontTop {
+  margin-bottom: 12px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.badgePre {
+  background: rgba(79, 195, 247, 0.12);
+  color: #4FC3F7;
+  border: 1px solid rgba(79, 195, 247, 0.25);
+}
+
+.badgePost {
+  background: rgba(102, 187, 106, 0.12);
+  color: #66BB6A;
+  border: 1px solid rgba(102, 187, 106, 0.25);
+}
+
+.mealName {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* Macro rings grid */
+.ringsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  flex: 1;
+  align-items: center;
+}
+
+.ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ringSvgWrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.ringCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringValue {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.ringUnit {
+  font-family: var(--font-body);
+  font-size: 8px;
+  color: var(--muted);
+}
+
+.ringLabel {
+  font-family: var(--font-heading);
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Footer */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.footerItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footerIcon {
+  font-size: 11px;
+}
+
+.footerText {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.footerDivider {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.flipHint {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.5;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Back */
+.cardBack {
+  transform: rotateY(180deg);
+  background: #000;
+}
+
+.mealPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+.backOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.82));
+}
+
+.backTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+.toolsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.toolChip {
+  padding: 4px 10px;
+  background: rgba(255, 183, 77, 0.18);
+  border: 1px solid rgba(255, 183, 77, 0.35);
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #ffb74d;
+}
+
+.sourceTag {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+}
+
+.flipHintBack {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+}
