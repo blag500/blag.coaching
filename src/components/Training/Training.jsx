@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { TRAINING_SPLIT, DAYS_BG_TO_EN } from '../../data/appData'
 import DayCard from './DayCard'
 import styles from './Training.module.css'
@@ -8,32 +9,41 @@ function getTodayBg() {
   return DAYS_BG_TO_EN[en] || 'Понеделник'
 }
 
-function getNextWorkout(dayName) {
-  const idx = TRAINING_SPLIT.findIndex(d => d.day === dayName)
-  for (let i = 1; i <= TRAINING_SPLIT.length; i++) {
-    const candidate = TRAINING_SPLIT[(idx + i) % TRAINING_SPLIT.length]
-    if (candidate.label !== 'REST') return candidate
+function getNextWorkout(split, dayName) {
+  const idx = split.findIndex(d => d.day === dayName)
+  for (let i = 1; i <= split.length; i++) {
+    const candidate = split[(idx + i) % split.length]
+    if (candidate.label !== 'REST' && !candidate.isRest) return candidate
   }
   return null
 }
 
 export default function Training() {
-  const todayBg      = getTodayBg()
+  const { profile } = useAuth()
+  const split = (profile?.training_plan?.length === 7)
+    ? profile.training_plan
+    : TRAINING_SPLIT
+
+  const todayBg = getTodayBg()
   const [selectedDay, setSelectedDay] = useState(todayBg)
 
-  const dayData      = TRAINING_SPLIT.find(d => d.day === selectedDay)
-  const isRest       = dayData?.label === 'REST'
-  const nextWorkout  = isRest ? getNextWorkout(selectedDay) : null
+  const dayData     = split.find(d => d.day === selectedDay)
+  const isRest      = dayData?.label === 'REST' || dayData?.isRest
+  const nextWorkout = isRest ? getNextWorkout(split, selectedDay) : null
+
+  const splitLabel = profile?.training_plan?.length === 7
+    ? 'Персонален план'
+    : 'Upper / Lower Split'
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>TRAINING</h1>
-        <p className={styles.subtitle}>Upper / Lower Split</p>
+        <p className={styles.subtitle}>{splitLabel}</p>
       </header>
 
       <div className={styles.pillBar} role="tablist" aria-label="Ден от седмицата">
-        {TRAINING_SPLIT.map(d => (
+        {split.map(d => (
           <button
             key={d.day}
             className={`${styles.pill} ${selectedDay === d.day ? styles.activePill : ''}`}

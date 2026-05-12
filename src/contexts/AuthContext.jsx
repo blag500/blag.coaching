@@ -80,6 +80,24 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  // Coach: fetch last 7 days of food, habits, weight for a client
+  async function fetchClientFullStats(clientId) {
+    const sevenDaysAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)
+    const [foodRes, habitRes, weightRes] = await Promise.all([
+      supabase.from('food_logs').select('date, kcal').eq('user_id', clientId).gte('date', sevenDaysAgo).order('date'),
+      supabase.from('habit_completions').select('date, completed').eq('user_id', clientId).gte('date', sevenDaysAgo),
+      supabase.from('weight_logs').select('date, kg').eq('user_id', clientId).order('date').limit(30),
+    ])
+    const foodByDay = {}
+    ;(foodRes.data || []).forEach(e => { foodByDay[e.date] = (foodByDay[e.date] || 0) + e.kcal })
+    const habitsByDay = {}
+    ;(habitRes.data || []).forEach(h => {
+      if (!habitsByDay[h.date]) habitsByDay[h.date] = { completed: 0 }
+      if (h.completed) habitsByDay[h.date].completed++
+    })
+    return { foodByDay, habitsByDay, weights: weightRes.data || [] }
+  }
+
   // Coach: fetch today's stats for a specific client
   async function fetchClientStats(clientId) {
     const today = new Date().toISOString().slice(0, 10)
@@ -121,6 +139,7 @@ export function AuthProvider({ children }) {
       updateClientProfile,
       fetchClients,
       fetchClientStats,
+      fetchClientFullStats,
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,0 +1,256 @@
+.wrap {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Day card */
+.dayCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.dayRest {
+  opacity: 0.65;
+}
+
+.dayCard:not(.dayRest):has(.dayToggle:focus-visible) {
+  border-color: rgba(255, 183, 77, 0.35);
+}
+
+/* Day header */
+.dayHeader {
+  display: flex;
+  align-items: center;
+}
+
+.dayToggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+}
+
+.dayName {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  white-space: nowrap;
+  min-width: 96px;
+}
+
+.dayLabel {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.restLabel {
+  opacity: 0.5;
+}
+
+.chevron {
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* REST toggle */
+.restToggle {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  margin-right: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.restActive {
+  background: rgba(255, 183, 77, 0.12);
+  color: var(--accent);
+  border-color: rgba(255, 183, 77, 0.35);
+}
+
+/* Day body */
+.dayBody {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Field row */
+.fieldRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.fieldLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.fieldInput {
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fieldInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+}
+
+/* Exercise list */
+.exList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exNum {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.exInput {
+  padding: 9px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.exInput:focus {
+  border-color: var(--accent);
+}
+
+.exName {
+  flex: 1;
+  min-width: 0;
+}
+
+.exSets {
+  width: 48px;
+  text-align: center;
+}
+
+.exReps {
+  width: 56px;
+  text-align: center;
+}
+
+/* Remove button */
+.exRemove {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  background: rgba(220, 60, 60, 0.08);
+  border: 1px solid rgba(220, 60, 60, 0.18);
+  border-radius: 8px;
+  color: rgba(220, 100, 100, 0.75);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.exRemove:active {
+  background: rgba(220, 60, 60, 0.18);
+}
+
+/* Add exercise button */
+.addExBtn {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px dashed rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addExBtn:active {
+  background: var(--accent-dim);
+}
+
+/* Save button */
+.saveBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

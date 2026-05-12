@@ -1,0 +1,392 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 16px) 16px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.backBtn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.backBtn:active {
+  background: var(--surface-2);
+}
+
+.clientName {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tab bar */
+.tabBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 13px 4px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabActive {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Body */
+.body {
+  overflow: hidden;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 48px 20px;
+}
+
+/* ─── Progress Tab ─────────────────────────────────────────────────────── */
+
+.progressTab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chartSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chartTitle {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Kcal bar chart */
+.barChart {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 100px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.barWrap {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bar {
+  width: 100%;
+  background: rgba(255, 183, 77, 0.55);
+  border-radius: 4px 4px 0 0;
+  min-height: 2px;
+  transition: height 0.3s ease;
+}
+
+.bar[data-empty="true"] {
+  background: var(--surface-2);
+}
+
+.targetLine {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  height: 1px;
+  background: rgba(255, 183, 77, 0.4);
+  border-top: 1px dashed rgba(255, 183, 77, 0.5);
+  pointer-events: none;
+}
+
+.barDay {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.barVal {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--text);
+}
+
+.chartNote {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Habit bars */
+.habitRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.habitRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.habitDay {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 32px;
+  text-transform: uppercase;
+}
+
+.habitBarWrap {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.habitBar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.habitCount {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Weight list */
+.weightList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.weightRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.weightRow:last-child {
+  border-bottom: none;
+}
+
+.weightDate {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.weightKg {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+/* ─── Goals Tab ────────────────────────────────────────────────────────── */
+
+.goalsTab {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.goalGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 11px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.fieldInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+}
+
+.fieldInput[type='number']::-webkit-inner-spin-button,
+.fieldInput[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.unit {
+  position: absolute;
+  right: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* ─── Notes Tab ────────────────────────────────────────────────────────── */
+
+.notesTab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notesArea {
+  width: 100%;
+  padding: 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 200px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.notesArea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+}
+
+.notesArea::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* ─── Shared save button ───────────────────────────────────────────────── */
+
+.saveBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.saveBtn:not(:disabled):active {
+  opacity: 0.8;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.saveBtnDone {
+  background: rgba(255, 183, 77, 0.18);
+  border-color: rgba(255, 183, 77, 0.45);
+}

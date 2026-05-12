@@ -42,29 +42,24 @@
 
 /* Card */
 .card {
-  background: var(--surface-1);
-  margin: 0 16px 8px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-
-.cardOpen {
-  border-color: rgba(255, 183, 77, 0.35);
-}
-
-.cardHeader {
-  width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: none;
-  border: none;
+  background: var(--surface-1);
+  margin: 0 16px 8px;
+  width: calc(100% - 32px);
+  border-radius: 14px;
+  border: 1px solid var(--border);
   cursor: pointer;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.card:active {
+  background: var(--surface-2);
+  border-color: rgba(255, 183, 77, 0.35);
 }
 
 .clientInfo {
@@ -103,144 +98,8 @@
 }
 
 .chevron {
-  font-size: 10px;
+  font-size: 20px;
   color: var(--muted);
   flex-shrink: 0;
-}
-
-/* Stats row */
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding-top: 4px;
-}
-
-.statBox {
-  background: var(--surface-2);
-  border-radius: 10px;
-  padding: 10px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  text-align: center;
-}
-
-.statLabel {
-  font-family: var(--font-heading);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-}
-
-.statValue {
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--text);
-}
-
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
-}
-
-/* Editor */
-.editor {
-  padding: 0 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border-top: 1px solid var(--border);
-}
-
-.editorGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.editorField {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.editorLabel {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-}
-
-.inputWrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.editorInput {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-sizing: border-box;
-}
-
-.editorInput:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
-}
-
-/* Remove arrows from number inputs */
-.editorInput[type='number']::-webkit-inner-spin-button,
-.editorInput[type='number']::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-}
-
-.unit {
-  position: absolute;
-  right: 10px;
-  font-family: var(--font-body);
-  font-size: 11px;
-  color: var(--muted);
-  pointer-events: none;
-}
-
-/* Save button */
-.saveBtn {
-  width: 100%;
-  padding: 13px;
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid rgba(255, 183, 77, 0.25);
-  border-radius: 10px;
-  font-family: var(--font-heading);
-  font-size: 14px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-  margin-top: 4px;
-}
-
-.saveBtn:not(:disabled):active {
-  opacity: 0.8;
-}
-
-.saveBtn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.saveBtnDone {
-  background: rgba(255, 183, 77, 0.18);
-  color: var(--accent);
-  border-color: rgba(255, 183, 77, 0.45);
+  line-height: 1;
 }

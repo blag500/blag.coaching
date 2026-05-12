@@ -15,8 +15,8 @@ const LABEL_TEXT_COLORS = {
 }
 
 export default function DayCard({ dayData }) {
-  const { label, muscles, exercises } = dayData
-  const isRest = label === 'REST'
+  const { label, muscles, exercises, isRest: isRestFlag } = dayData
+  const isRest = isRestFlag || label === 'REST'
 
   return (
     <div className={styles.card}>
