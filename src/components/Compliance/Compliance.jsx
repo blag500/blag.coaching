@@ -1,4 +1,4 @@
-import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { HABITS } from '../../data/appData'
 import HabitCheckbox from './HabitCheckbox'
 import RingProgress from './RingProgress'
@@ -7,16 +7,8 @@ import SOSButton from './SOSButton'
 import HabitCalendar from './HabitCalendar'
 import styles from './Compliance.module.css'
 
-function getTodayKey() {
-  return `blag_habits_${new Date().toISOString().slice(0, 10)}`
-}
-
 export default function Compliance() {
-  const [checked, setChecked] = useLocalStorage(getTodayKey(), {})
-
-  function toggle(id) {
-    setChecked(prev => ({ ...prev, [id]: !prev[id] }))
-  }
+  const { checked, toggle } = useHabitsToday()
 
   const completedCount = HABITS.filter(h => checked[h.id]).length
   const today = new Date().toLocaleDateString('bg-BG', {

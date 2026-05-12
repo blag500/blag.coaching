@@ -1,25 +1,44 @@
-import { useLocalStorage } from './useLocalStorage'
-
-const KEY = 'blag_weight_v1'
-const MAX = 90
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
 export function useWeightLog() {
-  const [weights, setWeights] = useLocalStorage(KEY, [])
+  const { user } = useAuth()
+  const [weights, setWeights] = useState([])
 
-  function addWeight(kg) {
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('weight_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date')
+      .then(({ data }) => { if (data) setWeights(data) })
+  }, [user?.id])
+
+  async function addWeight(kg) {
+    if (!user) return
     const today = todayStr()
-    setWeights(prev => {
-      const filtered = prev.filter(e => e.date !== today)
-      const next = [...filtered, { date: today, kg }].sort((a, b) => a.date.localeCompare(b.date))
-      return next.slice(-MAX)
-    })
+    const { data } = await supabase
+      .from('weight_logs')
+      .upsert({ user_id: user.id, date: today, kg }, { onConflict: 'user_id,date' })
+      .select()
+      .single()
+    if (data) {
+      setWeights(prev => {
+        const filtered = prev.filter(e => e.date !== today)
+        return [...filtered, data].sort((a, b) => a.date.localeCompare(b.date))
+      })
+    }
   }
 
-  function removeWeight(date) {
+  async function removeWeight(date) {
+    if (!user) return
+    await supabase.from('weight_logs').delete().eq('user_id', user.id).eq('date', date)
     setWeights(prev => prev.filter(e => e.date !== date))
   }
 

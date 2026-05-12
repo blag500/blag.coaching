@@ -1,21 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { HABITS } from '../../data/appData'
 import styles from './CoachPanel.module.css'
 
 export default function CoachPanel() {
-  const { fetchClients, updateClientProfile } = useAuth()
-  const [clients, setClients]     = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [expanded, setExpanded]   = useState(null)
-  const [edits, setEdits]         = useState({})
-  const [saving, setSaving]       = useState(null)
-  const [saved, setSaved]         = useState(null)
+  const { fetchClients, updateClientProfile, fetchClientStats } = useAuth()
+  const [clients, setClients]   = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [expanded, setExpanded] = useState(null)
+  const [edits, setEdits]       = useState({})
+  const [saving, setSaving]     = useState(null)
+  const [saved, setSaved]       = useState(null)
+  const [stats, setStats]       = useState({})
 
   useEffect(() => {
     fetchClients().then(({ data }) => {
       if (data) {
         setClients(data)
-        // init edits map with current values
         const map = {}
         data.forEach(c => {
           map[c.id] = { name: c.name, calories: c.calories, protein: c.protein, carbs: c.carbs, fat: c.fat }
@@ -25,6 +26,15 @@ export default function CoachPanel() {
       setLoading(false)
     })
   }, [])
+
+  async function handleExpand(clientId) {
+    const next = expanded === clientId ? null : clientId
+    setExpanded(next)
+    if (next && !stats[next]) {
+      const result = await fetchClientStats(next)
+      setStats(prev => ({ ...prev, [next]: result }))
+    }
+  }
 
   function setField(clientId, field, value) {
     setEdits(prev => ({ ...prev, [clientId]: { ...prev[clientId], [field]: value } }))
@@ -73,11 +83,12 @@ export default function CoachPanel() {
           {clients.map(client => {
             const isOpen = expanded === client.id
             const e = edits[client.id] || {}
+            const s = stats[client.id]
             return (
               <div key={client.id} className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}>
                 <button
                   className={styles.cardHeader}
-                  onClick={() => setExpanded(isOpen ? null : client.id)}
+                  onClick={() => handleExpand(client.id)}
                   aria-expanded={isOpen}
                 >
                   <div className={styles.clientInfo}>
@@ -93,6 +104,32 @@ export default function CoachPanel() {
 
                 {isOpen && (
                   <div className={styles.editor}>
+
+                    {/* Today's stats */}
+                    <div className={styles.statsRow}>
+                      <div className={styles.statBox}>
+                        <span className={styles.statLabel}>ДНЕС ККАЛ</span>
+                        <span className={styles.statValue}>
+                          {s ? `${s.kcalToday} / ${client.calories}` : '—'}
+                        </span>
+                      </div>
+                      <div className={styles.statBox}>
+                        <span className={styles.statLabel}>НАВИЦИ</span>
+                        <span className={styles.statValue}>
+                          {s ? `${s.habitsCompleted} / ${HABITS.length}` : '—'}
+                        </span>
+                      </div>
+                      <div className={styles.statBox}>
+                        <span className={styles.statLabel}>ТЕГЛО</span>
+                        <span className={styles.statValue}>
+                          {s?.latestWeight ? `${s.latestWeight.kg} kg` : '—'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.divider} />
+
+                    {/* Name field */}
                     <div className={styles.editorField}>
                       <label className={styles.editorLabel}>Име</label>
                       <input
@@ -103,12 +140,13 @@ export default function CoachPanel() {
                       />
                     </div>
 
+                    {/* Macro fields */}
                     <div className={styles.editorGrid}>
                       {[
-                        { key: 'calories', label: 'Калории', unit: 'ккал' },
-                        { key: 'protein',  label: 'Протеин',  unit: 'g'    },
-                        { key: 'carbs',    label: 'Въглехидрати', unit: 'g' },
-                        { key: 'fat',      label: 'Мазнини',  unit: 'g'    },
+                        { key: 'calories', label: 'Калории',      unit: 'ккал' },
+                        { key: 'protein',  label: 'Протеин',       unit: 'g'    },
+                        { key: 'carbs',    label: 'Въглехидрати',  unit: 'g'    },
+                        { key: 'fat',      label: 'Мазнини',       unit: 'g'    },
                       ].map(({ key, label, unit }) => (
                         <div key={key} className={styles.editorField}>
                           <label className={styles.editorLabel}>{label}</label>

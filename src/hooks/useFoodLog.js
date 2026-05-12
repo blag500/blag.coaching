@@ -1,43 +1,51 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 
-const KEY = 'blag_food_log_v1'
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
 
 export function useFoodLog() {
-  const [log, setLog] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(KEY)) || []
-    } catch {
-      return []
-    }
-  })
+  const { user } = useAuth()
+  const [log, setLog] = useState([])
 
   useEffect(() => {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(log))
-    } catch {
-      // ignore
-    }
-  }, [log])
+    if (!user) return
+    supabase
+      .from('food_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', todayStr())
+      .order('added_at')
+      .then(({ data }) => { if (data) setLog(data) })
+  }, [user?.id])
 
-  function addEntry(food, grams) {
+  async function addEntry(food, grams) {
+    if (!user) return
     const ratio = grams / 100
-    setLog(prev => [...prev, {
-      id: crypto.randomUUID(),
-      name: food.name,
+    const entry = {
+      user_id: user.id,
+      date:    todayStr(),
+      name:    food.name,
       grams,
       kcal:    Math.round(food.per100g.kcal    * ratio),
       protein: Math.round(food.per100g.protein * ratio * 10) / 10,
       carbs:   Math.round(food.per100g.carbs   * ratio * 10) / 10,
       fat:     Math.round(food.per100g.fat     * ratio * 10) / 10,
-      addedAt: Date.now(),
-    }])
+    }
+    const { data } = await supabase.from('food_logs').insert(entry).select().single()
+    if (data) setLog(prev => [...prev, data])
   }
 
-  function removeEntry(id) {
+  async function removeEntry(id) {
+    await supabase.from('food_logs').delete().eq('id', id)
     setLog(prev => prev.filter(e => e.id !== id))
   }
 
-  function clearLog() {
+  async function clearLog() {
+    if (!user) return
+    await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', todayStr())
     setLog([])
   }
 

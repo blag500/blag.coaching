@@ -80,6 +80,21 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  // Coach: fetch today's stats for a specific client
+  async function fetchClientStats(clientId) {
+    const today = new Date().toISOString().slice(0, 10)
+    const [foodRes, habitRes, weightRes] = await Promise.all([
+      supabase.from('food_logs').select('kcal').eq('user_id', clientId).eq('date', today),
+      supabase.from('habit_completions').select('completed').eq('user_id', clientId).eq('date', today),
+      supabase.from('weight_logs').select('date, kg').eq('user_id', clientId).order('date', { ascending: false }).limit(1),
+    ])
+    return {
+      kcalToday:       (foodRes.data  || []).reduce((s, e) => s + e.kcal, 0),
+      habitsCompleted: (habitRes.data || []).filter(h => h.completed).length,
+      latestWeight:    weightRes.data?.[0] ?? null,
+    }
+  }
+
   // Coach: fetch all clients
   async function fetchClients() {
     const { data, error } = await supabase
@@ -105,6 +120,7 @@ export function AuthProvider({ children }) {
       updateProfile,
       updateClientProfile,
       fetchClients,
+      fetchClientStats,
     }}>
       {children}
     </AuthContext.Provider>
