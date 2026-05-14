@@ -207,7 +207,7 @@
   border-radius: 10px;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.15s;
   min-width: 0;
@@ -230,7 +230,7 @@
   border-radius: 10px;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 16px;
   outline: none;
   text-align: center;
   transition: border-color 0.15s;
