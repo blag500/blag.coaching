@@ -124,6 +124,15 @@
   border-bottom: none;
 }
 
+.recentItemExpanded {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--accent);
+}
+
 .recentInfo {
   flex: 1;
   min-width: 0;

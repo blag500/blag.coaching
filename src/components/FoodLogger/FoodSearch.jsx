@@ -294,6 +294,8 @@ function RecentMode({ onAddRaw }) {
   const { user } = useAuth()
   const [recents, setRecents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedName, setSelectedName] = useState(null)
+  const [newGrams, setNewGrams] = useState('100')
 
   useEffect(() => {
     if (!user) return
@@ -320,30 +322,91 @@ function RecentMode({ onAddRaw }) {
       })
   }, [user?.id])
 
+  function handleSelect(item) {
+    setSelectedName(item.name)
+    setNewGrams(String(item.grams > 0 ? item.grams : 100))
+  }
+
+  function handleConfirm(item) {
+    const g = parseFloat(newGrams)
+    if (!g || g <= 0) return
+    const base = item.grams > 0 ? item.grams : 100
+    const ratio = g / base
+    onAddRaw({
+      name:    item.name,
+      grams:   g,
+      kcal:    Math.round(item.kcal    * ratio),
+      protein: Math.round(item.protein * ratio * 10) / 10,
+      carbs:   Math.round(item.carbs   * ratio * 10) / 10,
+      fat:     Math.round(item.fat     * ratio * 10) / 10,
+    })
+    setSelectedName(null)
+  }
+
   if (loading) return <p className={styles.recentEmpty}>Зарежда...</p>
   if (recents.length === 0) return <p className={styles.recentEmpty}>Няма скорошни храни</p>
 
   return (
     <ul className={styles.recentList}>
-      {recents.map((item, i) => (
-        <li key={i} className={styles.recentItem}>
-          <div className={styles.recentInfo}>
-            <span className={styles.recentName}>{item.name}</span>
-            <span className={styles.recentMacros}>
-              {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g
-              {item.grams > 0 && <> · {item.grams}g</>}
-            </span>
-          </div>
-          <button
-            className={styles.recentAddBtn}
-            onClick={() => onAddRaw({ name: item.name, grams: item.grams, kcal: item.kcal, protein: item.protein, carbs: item.carbs, fat: item.fat })}
-            type="button"
-            aria-label={`Добави ${item.name}`}
-          >
-            +
-          </button>
-        </li>
-      ))}
+      {recents.map((item, i) => {
+        const isExpanded = selectedName === item.name
+        const g = parseFloat(newGrams)
+        const base = item.grams > 0 ? item.grams : 100
+        const ratio = g > 0 ? g / base : 0
+
+        return (
+          <li key={i} className={`${styles.recentItem} ${isExpanded ? styles.recentItemExpanded : ''}`}>
+            {isExpanded ? (
+              <>
+                <span className={styles.recentName}>{item.name}</span>
+                <div className={styles.gramRow}>
+                  <label className={styles.gramLabel}>Грамаж</label>
+                  <input
+                    className={styles.gramInput}
+                    type="number"
+                    min="1"
+                    max="2000"
+                    value={newGrams}
+                    onChange={e => setNewGrams(e.target.value)}
+                    autoFocus
+                  />
+                  <span className={styles.gramUnit}>g</span>
+                </div>
+                {ratio > 0 && (
+                  <div className={styles.preview}>
+                    {Math.round(item.kcal * ratio)} ккал ·
+                    П {Math.round(item.protein * ratio * 10) / 10}g ·
+                    В {Math.round(item.carbs   * ratio * 10) / 10}g ·
+                    М {Math.round(item.fat     * ratio * 10) / 10}g
+                  </div>
+                )}
+                <div className={styles.panelActions}>
+                  <button className={styles.cancelBtn} onClick={() => setSelectedName(null)} type="button">Назад</button>
+                  <button className={styles.addBtn} onClick={() => handleConfirm(item)} type="button">+ Добави</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.recentInfo}>
+                  <span className={styles.recentName}>{item.name}</span>
+                  <span className={styles.recentMacros}>
+                    {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g
+                    {item.grams > 0 && <> · {item.grams}g</>}
+                  </span>
+                </div>
+                <button
+                  className={styles.recentAddBtn}
+                  onClick={() => handleSelect(item)}
+                  type="button"
+                  aria-label={`Добави ${item.name}`}
+                >
+                  +
+                </button>
+              </>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }

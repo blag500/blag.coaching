@@ -204,7 +204,7 @@ export function AuthProvider({ children }) {
       supabase.functions.invoke('send-push', {
         body: {
           toUserId,
-          title: 'Blag Coaching',
+          title: profile?.name || 'Blag Coaching',
           body: content.length > 80 ? content.slice(0, 77) + '…' : content,
         },
       }).catch(() => {})
