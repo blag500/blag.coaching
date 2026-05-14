@@ -12,10 +12,12 @@ export default function CoachPanel() {
   const [selectedClient, setSelectedClient] = useState(null)
 
   useEffect(() => {
-    fetchClients().then(({ data }) => {
-      if (data) setClients(data)
-      setLoading(false)
-    })
+    fetchClients()
+      .then(({ data }) => {
+        if (data) setClients(data)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
 
   if (selectedClient) {

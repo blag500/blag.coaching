@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+
+let instanceCounter = 0
 
 export function useUnread() {
   const { user } = useAuth()
   const [unreadByUser, setUnreadByUser] = useState({})
+  const instanceId = useRef(++instanceCounter).current
 
   const fetchUnread = useCallback(async () => {
     if (!user) return
@@ -25,7 +28,7 @@ export function useUnread() {
     if (!user) return
     fetchUnread()
     const channel = supabase
-      .channel(`unread_${user.id}`)
+      .channel(`unread_${user.id}_${instanceId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
