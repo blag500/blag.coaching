@@ -12,7 +12,7 @@ import styles from './NutritionCards.module.css'
 
 export default function NutritionCards() {
   const { profile } = useAuth()
-  const { log, totals, addEntry, addRawEntry, removeEntry, clearLog, refresh } = useFoodLog()
+  const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, refresh } = useFoodLog()
   const { distance, refreshing } = usePullToRefresh(refresh)
   const { foods: customFoods, loading: foodsLoading, saveFood, deleteFood } = useCustomFoods()
   const [view, setView] = useState('log')
@@ -89,7 +89,7 @@ export default function NutritionCards() {
         <>
           <NutritionProgress totals={totals} targets={targets} />
           <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} />
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} />
+          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} />
         </>
       ) : (
         <LibraryTab

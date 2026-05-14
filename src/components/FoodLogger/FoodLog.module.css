@@ -140,6 +140,26 @@
   letter-spacing: 0.04em;
 }
 
+.editBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.editBtn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .removeBtn {
   background: none;
   border: 1px solid var(--border);
@@ -158,4 +178,114 @@
 .removeBtn:hover {
   border-color: var(--red);
   color: var(--red);
+}
+
+/* Inline edit form */
+.entryEditing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-color: var(--accent);
+  animation: none;
+}
+
+.editName {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editGramsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.editInput {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.editInput:focus {
+  border-color: var(--accent);
+}
+
+.editInput::-webkit-inner-spin-button,
+.editInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.editGramsRow .editInput {
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.editUnit {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.editMacroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.editMacroField {
+  display: flex;
+  flex-direction: column;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.cancelEditBtn {
+  flex: 1;
+  padding: 9px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.saveEditBtn {
+  flex: 2;
+  padding: 9px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.06em;
 }

@@ -70,6 +70,15 @@ export function useFoodLog() {
     }
   }
 
+  async function updateEntry(id, updates) {
+    setLog(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+    const { error } = await supabase.from('food_logs').update(updates).eq('id', id)
+    if (error) {
+      console.error('food_logs update failed:', error)
+      fetchLog()
+    }
+  }
+
   async function removeEntry(id) {
     setLog(prev => prev.filter(e => e.id !== id))
     await supabase.from('food_logs').delete().eq('id', id)
@@ -88,5 +97,5 @@ export function useFoodLog() {
     fat:     Math.round((acc.fat     + (Number(e.fat)     || 0)) * 10) / 10,
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
-  return { log, totals, addEntry, addRawEntry, removeEntry, clearLog, refresh: fetchLog }
+  return { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, refresh: fetchLog }
 }

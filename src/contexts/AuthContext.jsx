@@ -142,15 +142,12 @@ export function AuthProvider({ children }) {
   }
 
   // Coach: fetch other coaches (for coach-to-coach messaging)
+  // Uses security-definer RPC to bypass RLS and guarantee visibility
   async function fetchCoaches() {
     if (!session?.user) return { data: [], error: null }
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, name, email')
-      .eq('role', 'coach')
-      .neq('id', session.user.id)
-      .order('name')
-    return { data: data || [], error }
+    const { data, error } = await supabase.rpc('get_all_coaches')
+    const filtered = (data || []).filter(c => c.id !== session.user.id)
+    return { data: filtered, error }
   }
 
   // Exercise logs
