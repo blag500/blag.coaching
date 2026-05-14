@@ -141,6 +141,18 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  // Coach: fetch other coaches (for coach-to-coach messaging)
+  async function fetchCoaches() {
+    if (!session?.user) return { data: [], error: null }
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, name, email')
+      .eq('role', 'coach')
+      .neq('id', session.user.id)
+      .order('name')
+    return { data: data || [], error }
+  }
+
   // Exercise logs
   async function fetchExerciseLogs(clientId, dateStr) {
     const { data, error } = await supabase
@@ -236,6 +248,7 @@ export function AuthProvider({ children }) {
       updateProfile,
       updateClientProfile,
       fetchClients,
+      fetchCoaches,
       fetchClientStats,
       fetchClientFullStats,
       fetchExerciseLogs,
