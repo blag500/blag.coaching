@@ -41,17 +41,28 @@ const ClientsIcon = () => (
   </svg>
 )
 
+const ExploreIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+  </svg>
+)
+
 const BASE_TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'compliance', label: 'HABITS',    Icon: HabitsIcon    },
   { id: 'training',   label: 'TRAINING',  Icon: TrainingIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
+  { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]
 
-const COACH_TAB = { id: 'clients', label: 'КЛИЕНТИ', Icon: ClientsIcon }
+const COACH_LAST = { id: 'clients', label: 'КЛИЕНТИ', Icon: ClientsIcon }
 
 export default function BottomNav({ activeTab, onTabChange, isCoach }) {
-  const tabs = isCoach ? [...BASE_TABS, COACH_TAB] : BASE_TABS
+  // Coach gets КЛИЕНТИ instead of ОТКРИЙ
+  const tabs = isCoach
+    ? [...BASE_TABS.filter(t => t.id !== 'explore'), COACH_LAST]
+    : BASE_TABS
 
   return (
     <nav className={styles.nav} role="navigation" aria-label="Основна навигация">

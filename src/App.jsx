@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import BottomNav from './components/BottomNav/BottomNav'
 import NutritionCards from './components/NutritionCards/NutritionCards'
@@ -9,12 +9,29 @@ import CoachPanel from './components/Coach/CoachPanel'
 import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatButton from './components/Compliance/SOSButton'
+import Explore from './components/Explore/Explore'
 import styles from './App.module.css'
 
 function AppShell() {
   const { session, profile, loading } = useAuth()
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('nutrition')
+  const hiddenAtRef = useRef(null)
+
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAtRef.current = Date.now()
+      } else if (document.visibilityState === 'visible' && hiddenAtRef.current) {
+        if (Date.now() - hiddenAtRef.current > 30000) {
+          setSplash(true)
+        }
+        hiddenAtRef.current = null
+      }
+    }
+    document.addEventListener('visibilitychange', handler)
+    return () => document.removeEventListener('visibilitychange', handler)
+  }, [])
 
   if (splash) return <Splash onDone={() => setSplash(false)} />
 
@@ -36,6 +53,7 @@ function AppShell() {
     training:   <Training />,
     profile:    <Profile />,
     clients:    <CoachPanel />,
+    explore:    <Explore />,
   }
 
   return (
