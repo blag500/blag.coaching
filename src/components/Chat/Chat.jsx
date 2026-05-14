@@ -12,6 +12,11 @@ export default function Chat({ clientId, clientName, onClose }) {
   const isCoach = profile?.role === 'coach'
   const otherUserId = isCoach ? clientId : profile?.coach_id
 
+  function markRead(userId) {
+    markMessagesAsRead(userId)
+    window.dispatchEvent(new CustomEvent('blag:messages-read', { detail: { userId } }))
+  }
+
   useEffect(() => {
     if (!otherUserId) {
       setLoading(false)
@@ -20,7 +25,7 @@ export default function Chat({ clientId, clientName, onClose }) {
     fetchMessages(otherUserId).then(({ data }) => {
       setMessages(data || [])
       setLoading(false)
-      markMessagesAsRead(otherUserId)
+      markRead(otherUserId)
     })
   }, [otherUserId, clientId])
 
@@ -36,7 +41,7 @@ export default function Chat({ clientId, clientName, onClose }) {
           const msg = payload.new
           if (msg.from_user_id === otherUserId) {
             setMessages(prev => [...prev, msg])
-            markMessagesAsRead(otherUserId)
+            markRead(otherUserId)
           }
         }
       )

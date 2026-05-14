@@ -4,7 +4,7 @@ const PRODUCT_BASE = 'https://world.openfoodfacts.org/api/v0/product'
 function normalizeProduct(p) {
   return {
     id: crypto.randomUUID(),
-    name: p.product_name || p.product_name_en || 'Непознат продукт',
+    name: p.product_name_bg || p.product_name || p.product_name_en || 'Непознат продукт',
     brand: p.brands || '',
     servingSize: p.serving_size || '100g',
     per100g: {
@@ -29,14 +29,15 @@ export async function searchFoods(query) {
     search_terms: query,
     json: '1',
     page_size: '20',
-    fields: 'product_name,nutriments,brands,serving_size',
+    fields: 'product_name,product_name_bg,product_name_en,nutriments,brands,serving_size',
     search_simple: '1',
     action: 'process',
+    sort_by: 'unique_scans_n',
   })
   const res = await fetch(`${BASE}?${params}`)
   if (!res.ok) throw new Error(`OpenFoodFacts: ${res.status}`)
   const data = await res.json()
   return (data.products || [])
-    .filter(p => p.product_name)
+    .filter(p => p.product_name && (p.nutriments?.['energy-kcal_100g'] ?? 0) > 0)
     .map(normalizeProduct)
 }

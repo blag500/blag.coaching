@@ -39,6 +39,21 @@ export function useUnread() {
     return () => supabase.removeChannel(channel)
   }, [user?.id, fetchUnread])
 
+  // Immediately clear badge when chat is opened and messages are marked read
+  useEffect(() => {
+    const handler = (e) => {
+      const { userId } = e.detail
+      setUnreadByUser(prev => {
+        if (!prev[userId]) return prev
+        const next = { ...prev }
+        delete next[userId]
+        return next
+      })
+    }
+    window.addEventListener('blag:messages-read', handler)
+    return () => window.removeEventListener('blag:messages-read', handler)
+  }, [])
+
   const totalUnread = Object.values(unreadByUser).reduce((a, b) => a + b, 0)
   return { unreadByUser, totalUnread }
 }

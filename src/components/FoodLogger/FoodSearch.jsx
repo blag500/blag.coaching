@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { searchFoods } from '../../utils/openFoodFacts'
+import { suggestMacros } from '../../utils/usda'
 import BarcodeScanner from './BarcodeScanner'
 import styles from './FoodSearch.module.css'
 
@@ -175,9 +176,35 @@ function ManualMode({ onAddRaw }) {
   const empty = { name: '', kcal: '', protein: '', carbs: '', fat: '', grams: '' }
   const [form, setForm] = useState(empty)
   const [added, setAdded] = useState(false)
+  const [suggestions, setSuggestions] = useState([])
+  const [suggLoading, setSuggLoading] = useState(false)
+  const debounceRef = useRef(null)
 
   function set(field, val) {
     setForm(prev => ({ ...prev, [field]: val }))
+  }
+
+  function handleNameChange(val) {
+    set('name', val)
+    clearTimeout(debounceRef.current)
+    if (!val.trim() || val.trim().length < 2) { setSuggestions([]); setSuggLoading(false); return }
+    setSuggLoading(true)
+    debounceRef.current = setTimeout(async () => {
+      const results = await suggestMacros(val)
+      setSuggestions(results)
+      setSuggLoading(false)
+    }, 600)
+  }
+
+  function applySuggestion(s) {
+    setForm(prev => ({
+      ...prev,
+      kcal:    String(s.kcal),
+      protein: String(s.protein),
+      carbs:   String(s.carbs),
+      fat:     String(s.fat),
+    }))
+    setSuggestions([])
   }
 
   function handleAdd() {
@@ -191,6 +218,7 @@ function ManualMode({ onAddRaw }) {
       fat:     parseFloat(form.fat)     || 0,
     })
     setForm(empty)
+    setSuggestions([])
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }
@@ -204,8 +232,28 @@ function ManualMode({ onAddRaw }) {
         type="text"
         placeholder="Наименование на храната..."
         value={form.name}
-        onChange={e => set('name', e.target.value)}
+        onChange={e => handleNameChange(e.target.value)}
       />
+      {suggLoading && (
+        <p className={styles.suggLoading}>Търси в базата...</p>
+      )}
+      {suggestions.length > 0 && (
+        <div className={styles.suggestions}>
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              className={styles.suggItem}
+              onClick={() => applySuggestion(s)}
+              type="button"
+            >
+              <span className={styles.suggName}>{s.name}</span>
+              <span className={styles.suggMacros}>
+                {s.kcal} ккал · П {s.protein}g · В {s.carbs}g · М {s.fat}g <span className={styles.per}>/ 100g</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       <div className={styles.macroGrid}>
         {[
           { key: 'kcal',    label: 'Ккал',  required: true },
