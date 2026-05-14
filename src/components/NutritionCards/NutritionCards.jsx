@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
+import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import NutritionProgress from './NutritionProgress'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
@@ -11,7 +12,8 @@ import styles from './NutritionCards.module.css'
 
 export default function NutritionCards() {
   const { profile } = useAuth()
-  const { log, totals, addEntry, addRawEntry, removeEntry, clearLog } = useFoodLog()
+  const { log, totals, addEntry, addRawEntry, removeEntry, clearLog, refresh } = useFoodLog()
+  const { distance, refreshing } = usePullToRefresh(refresh)
   const { foods: customFoods, loading: foodsLoading, saveFood, deleteFood } = useCustomFoods()
   const [view, setView] = useState('log')
   const [showBuilder, setShowBuilder] = useState(false)
@@ -44,8 +46,23 @@ export default function NutritionCards() {
   const recipes  = customFoods.filter(f =>  f.is_recipe)
   const products = customFoods.filter(f => !f.is_recipe)
 
+  const pullPct   = Math.min(distance / 68, 1)
+  const showPull  = distance > 4
+
   return (
     <div className={styles.page}>
+      {showPull && (
+        <div className={styles.pullIndicator} style={{ height: distance, opacity: pullPct }}>
+          <svg
+            className={refreshing ? styles.pullSpin : ''}
+            style={{ transform: `rotate(${pullPct * 200}deg)` }}
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" width="20" height="20" aria-hidden="true"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+        </div>
+      )}
       <header className={styles.header}>
         <h1 className={styles.title}>NUTRITION</h1>
         <p className={styles.subtitle}>Дневен прием и рецепти</p>

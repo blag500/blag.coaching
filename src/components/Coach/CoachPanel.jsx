@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useUnread } from '../../hooks/useUnread'
 import ClientDetail from './ClientDetail'
 import styles from './CoachPanel.module.css'
 
 export default function CoachPanel() {
   const { fetchClients } = useAuth()
+  const { unreadByUser } = useUnread()
   const [clients, setClients]           = useState([])
   const [loading, setLoading]           = useState(true)
   const [selectedClient, setSelectedClient] = useState(null)
@@ -62,6 +64,9 @@ export default function CoachPanel() {
                 <span>{client.calories ?? '—'} ккал</span>
                 <span>{client.protein ?? '—'}g П</span>
               </div>
+              {unreadByUser[client.id] > 0 && (
+                <span className={styles.badge}>{unreadByUser[client.id] > 9 ? '9+' : unreadByUser[client.id]}</span>
+              )}
               <span className={styles.chevron}>›</span>
             </button>
           ))}

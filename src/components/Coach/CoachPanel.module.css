@@ -103,3 +103,19 @@
   flex-shrink: 0;
   line-height: 1;
 }
+
+.badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 10px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}

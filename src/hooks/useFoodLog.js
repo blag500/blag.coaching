@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -10,16 +10,18 @@ export function useFoodLog() {
   const { user } = useAuth()
   const [log, setLog] = useState([])
 
-  useEffect(() => {
+  const fetchLog = useCallback(async () => {
     if (!user) return
-    supabase
+    const { data } = await supabase
       .from('food_logs')
       .select('*')
       .eq('user_id', user.id)
       .eq('date', todayStr())
       .order('added_at')
-      .then(({ data }) => { if (data) setLog(data) })
+    if (data) setLog(data)
   }, [user?.id])
+
+  useEffect(() => { fetchLog() }, [fetchLog])
 
   async function addEntry(food, grams) {
     if (!user) return
@@ -34,8 +36,15 @@ export function useFoodLog() {
       carbs:   Math.round(food.per100g.carbs   * ratio * 10) / 10,
       fat:     Math.round(food.per100g.fat     * ratio * 10) / 10,
     }
-    const { data } = await supabase.from('food_logs').insert(entry).select().single()
-    if (data) setLog(prev => [...prev, data])
+    const tempId = `temp-${Date.now()}`
+    setLog(prev => [...prev, { ...entry, id: tempId }])
+    const { data, error } = await supabase.from('food_logs').insert(entry).select().single()
+    if (data) {
+      setLog(prev => prev.map(e => e.id === tempId ? data : e))
+    } else {
+      console.error('food_logs insert failed:', error)
+      setLog(prev => prev.filter(e => e.id !== tempId))
+    }
   }
 
   async function addRawEntry({ name, grams, kcal, protein, carbs, fat }) {
@@ -44,33 +53,40 @@ export function useFoodLog() {
       user_id: user.id,
       date:    todayStr(),
       name,
-      grams:   grams || 0,
+      grams:   grams   || 0,
       kcal:    Math.round(kcal),
       protein: Math.round(protein * 10) / 10,
       carbs:   Math.round(carbs   * 10) / 10,
       fat:     Math.round(fat     * 10) / 10,
     }
-    const { data } = await supabase.from('food_logs').insert(entry).select().single()
-    if (data) setLog(prev => [...prev, data])
+    const tempId = `temp-${Date.now()}`
+    setLog(prev => [...prev, { ...entry, id: tempId }])
+    const { data, error } = await supabase.from('food_logs').insert(entry).select().single()
+    if (data) {
+      setLog(prev => prev.map(e => e.id === tempId ? data : e))
+    } else {
+      console.error('food_logs raw insert failed:', error)
+      setLog(prev => prev.filter(e => e.id !== tempId))
+    }
   }
 
   async function removeEntry(id) {
-    await supabase.from('food_logs').delete().eq('id', id)
     setLog(prev => prev.filter(e => e.id !== id))
+    await supabase.from('food_logs').delete().eq('id', id)
   }
 
   async function clearLog() {
     if (!user) return
-    await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', todayStr())
     setLog([])
+    await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', todayStr())
   }
 
   const totals = log.reduce((acc, e) => ({
-    kcal:    Math.round(acc.kcal    + e.kcal),
-    protein: Math.round((acc.protein + e.protein) * 10) / 10,
-    carbs:   Math.round((acc.carbs   + e.carbs)   * 10) / 10,
-    fat:     Math.round((acc.fat     + e.fat)      * 10) / 10,
+    kcal:    Math.round(acc.kcal    + (Number(e.kcal)    || 0)),
+    protein: Math.round((acc.protein + (Number(e.protein) || 0)) * 10) / 10,
+    carbs:   Math.round((acc.carbs   + (Number(e.carbs)   || 0)) * 10) / 10,
+    fat:     Math.round((acc.fat     + (Number(e.fat)     || 0)) * 10) / 10,
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
-  return { log, totals, addEntry, addRawEntry, removeEntry, clearLog }
+  return { log, totals, addEntry, addRawEntry, removeEntry, clearLog, refresh: fetchLog }
 }

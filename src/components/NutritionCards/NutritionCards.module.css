@@ -5,6 +5,27 @@
   margin: 0 auto;
 }
 
+.pullIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin: -8px 0 4px;
+  transition: height 0.05s;
+}
+
+.pullIndicator svg {
+  transition: transform 0.05s;
+}
+
+@keyframes pullSpin {
+  to { transform: rotate(360deg) !important; }
+}
+
+.pullSpin {
+  animation: pullSpin 0.7s linear infinite;
+}
+
 .header {
   margin-bottom: 20px;
 }
