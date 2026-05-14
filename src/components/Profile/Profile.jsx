@@ -7,9 +7,10 @@ import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
 import WeightSparkline from './WeightSparkline'
 import NotificationSettings from './NotificationSettings'
+import TrainingEditor from '../Coach/TrainingEditor'
 import styles from './Profile.module.css'
 
-function calcStreak(history) {
+  function calcStreak(history) {
   let streak = 0
   for (let i = 0; i < 365; i++) {
     const d = new Date()
@@ -44,6 +45,8 @@ export default function Profile() {
   const [targetInput, setTargetInput] = useState(String(targetWeight ?? ''))
 
   const [weeklyKcal, setWeeklyKcal] = useState(null)
+  const [savingCoachPlan, setSavingCoachPlan] = useState(false)
+  const isCoach = profile?.role === 'coach'
 
   useEffect(() => {
     if (profile?.name) setName(profile.name)
@@ -118,6 +121,12 @@ export default function Profile() {
   function handleTargetSave() {
     const v = parseFloat(targetInput)
     setTargetWeight(v || '')
+  }
+
+  async function handleSaveCoachPlan(days) {
+    setSavingCoachPlan(true)
+    await updateProfile({ training_plan: days })
+    setSavingCoachPlan(false)
   }
 
   return (
@@ -238,6 +247,18 @@ export default function Profile() {
           <p className={styles.emptyHint}>Запиши тегло поне 2 дни, за да видиш графика</p>
         )}
       </section>
+
+      {/* Coach: Edit own training plan */}
+      {isCoach && (
+        <section className={styles.card}>
+          <h2 className={styles.sectionTitle}>МОЙ ПЛАН</h2>
+          <TrainingEditor
+            initialPlan={profile.training_plan}
+            onSave={handleSaveCoachPlan}
+            saving={savingCoachPlan}
+          />
+        </section>
+      )}
 
       {/* Name */}
       <section className={styles.card}>
