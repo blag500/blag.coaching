@@ -9,6 +9,24 @@
   margin-bottom: 20px;
 }
 
+.editBtn {
+  padding: 8px 12px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.editBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
 .title {
   font-family: var(--font-heading);
   font-size: 36px;

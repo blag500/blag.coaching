@@ -20,7 +20,7 @@ export default function AuthScreen() {
       await signIn(email, password)
     } else {
       const ok = await signUp(email, password, name)
-      if (ok) setInfo('Провери имейла си за потвърждение.')
+      if (ok) setInfo('Провери имейла си за потвърждение. Ако не го виждаш — провери папката Спам.')
     }
 
     setLoading(false)

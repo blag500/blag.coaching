@@ -15,7 +15,20 @@ export function AuthProvider({ children }) {
       .select('*')
       .eq('id', userId)
       .single()
-    if (!error && data) setProfile(data)
+    if (!error && data) {
+      if (data.role === 'client' && !data.coach_id) {
+        // Resolve the coach's ID so Chat.jsx can address messages correctly
+        const { data: coach } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'coach')
+          .limit(1)
+          .single()
+        setProfile(coach ? { ...data, coach_id: coach.id } : data)
+      } else {
+        setProfile(data)
+      }
+    }
   }
 
   useEffect(() => {

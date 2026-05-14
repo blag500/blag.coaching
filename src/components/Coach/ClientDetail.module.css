@@ -48,16 +48,44 @@
   text-overflow: ellipsis;
 }
 
-/* Tab bar */
+.chatBtn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.chatBtn:active {
+  background: var(--accent-dim);
+  border-color: rgba(255, 183, 77, 0.35);
+}
+
+/* Tab bar — horizontally scrollable for 6 tabs */
 .tabBar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   background: var(--surface-1);
   border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabBar::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
-  padding: 13px 4px;
+  flex: 0 0 auto;
+  padding: 13px 14px;
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
@@ -68,6 +96,7 @@
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .tabActive {

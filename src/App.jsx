@@ -8,6 +8,7 @@ import Profile from './components/Profile/Profile'
 import CoachPanel from './components/Coach/CoachPanel'
 import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
+import ChatButton from './components/Compliance/SOSButton'
 import styles from './App.module.css'
 
 function AppShell() {
@@ -44,6 +45,7 @@ function AppShell() {
           {pages[activeTab] ?? null}
         </div>
       </main>
+      <ChatButton />
       <BottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}

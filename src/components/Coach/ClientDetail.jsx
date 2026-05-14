@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
+import Chat from '../Chat/Chat'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
@@ -33,6 +34,7 @@ export default function ClientDetail({ client: initialClient, onBack }) {
   const [saving, setSaving] = useState(false)
   const [saved,  setSaved]  = useState(false)
   const [savingPlan, setSavingPlan] = useState(false)
+  const [showChat, setShowChat] = useState(false)
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10)
@@ -80,7 +82,23 @@ export default function ClientDetail({ client: initialClient, onBack }) {
           ← КЛИЕНТИ
         </button>
         <span className={styles.clientName}>{client.name || client.email}</span>
+        <button
+          className={styles.chatBtn}
+          onClick={() => setShowChat(v => !v)}
+          type="button"
+          aria-label="Чат с клиента"
+        >
+          💬
+        </button>
       </header>
+
+      {showChat && (
+        <Chat
+          clientId={client.id}
+          clientName={client.name || client.email}
+          onClose={() => setShowChat(false)}
+        />
+      )}
 
       <div className={styles.tabBar}>
         {TABS.map(t => (

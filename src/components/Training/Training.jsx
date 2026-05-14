@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { TRAINING_SPLIT, DAYS_BG_TO_EN } from '../../data/appData'
 import DayCard from './DayCard'
 import LiftLogger from './LiftLogger'
+import TrainingEditor from '../Coach/TrainingEditor'
 import styles from './Training.module.css'
 
 function getTodayBg() {
@@ -20,7 +21,8 @@ function getNextWorkout(split, dayName) {
 }
 
 export default function Training() {
-  const { profile } = useAuth()
+  const { profile, updateProfile } = useAuth()
+  const isCoach = profile?.role === 'coach'
   const split = (profile?.training_plan?.length === 7)
     ? profile.training_plan
     : TRAINING_SPLIT
@@ -28,6 +30,40 @@ export default function Training() {
   const todayBg = getTodayBg()
   const [selectedDay, setSelectedDay] = useState(todayBg)
   const [selectedExercise, setSelectedExercise] = useState(null)
+  const [editing, setEditing] = useState(false)
+  const [savingPlan, setSavingPlan] = useState(false)
+
+  async function handleSavePlan(days) {
+    setSavingPlan(true)
+    await updateProfile({ training_plan: days })
+    setSavingPlan(false)
+    setEditing(false)
+  }
+
+  if (editing && isCoach) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h1 className={styles.title}>TRAINING</h1>
+            <button
+              className={styles.editBtn}
+              onClick={() => setEditing(false)}
+              type="button"
+            >
+              ✕ ОТКАЗ
+            </button>
+          </div>
+          <p className={styles.subtitle}>Редактирай своя план</p>
+        </header>
+        <TrainingEditor
+          initialPlan={profile?.training_plan}
+          onSave={handleSavePlan}
+          saving={savingPlan}
+        />
+      </div>
+    )
+  }
 
   const dayData     = split.find(d => d.day === selectedDay)
   const isRest      = dayData?.label === 'REST' || dayData?.isRest
@@ -40,7 +76,18 @@ export default function Training() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>TRAINING</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 className={styles.title}>TRAINING</h1>
+          {isCoach && (
+            <button
+              className={styles.editBtn}
+              onClick={() => setEditing(true)}
+              type="button"
+            >
+              РЕДАКТИРАЙ
+            </button>
+          )}
+        </div>
         <p className={styles.subtitle}>{splitLabel}</p>
       </header>
 
