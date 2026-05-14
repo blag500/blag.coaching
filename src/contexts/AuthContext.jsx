@@ -104,7 +104,7 @@ export function AuthProvider({ children }) {
     const [foodRes, habitRes, weightRes] = await Promise.all([
       supabase.from('food_logs').select('date, kcal').eq('user_id', clientId).gte('date', sevenDaysAgo).order('date'),
       supabase.from('habit_completions').select('date, completed').eq('user_id', clientId).gte('date', sevenDaysAgo),
-      supabase.from('weight_logs').select('date, kg').eq('user_id', clientId).order('date').limit(30),
+      supabase.from('weight_logs').select('date, kg').eq('user_id', clientId).order('date').limit(365),
     ])
     const foodByDay = {}
     ;(foodRes.data || []).forEach(e => { foodByDay[e.date] = (foodByDay[e.date] || 0) + e.kcal })

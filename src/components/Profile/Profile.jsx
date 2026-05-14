@@ -5,7 +5,7 @@ import { useHabitHistory } from '../../hooks/useHabitHistory'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
-import WeightSparkline from './WeightSparkline'
+import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import TrainingEditor from '../Coach/TrainingEditor'
 import styles from './Profile.module.css'
@@ -241,7 +241,7 @@ export default function Profile() {
 
         {weights.length >= 2 ? (
           <div className={styles.sparklineWrap}>
-            <WeightSparkline weights={weights} />
+            <WeightChart weights={weights} targetWeight={targetW} gradId="wcProfile" />
           </div>
         ) : (
           <p className={styles.emptyHint}>Запиши тегло поне 2 дни, за да видиш графика</p>

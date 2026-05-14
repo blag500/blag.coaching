@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
 import Chat from '../Chat/Chat'
+import WeightChart from '../Profile/WeightChart'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
@@ -218,18 +219,14 @@ function ProgressTab({ stats, client }) {
         </div>
       </section>
 
-      {/* Weight trend */}
       {weights.length > 0 && (
         <section className={styles.chartSection}>
-          <h3 className={styles.chartTitle}>ТЕГЛО — ПОСЛЕДНИ ЗАПИСИ</h3>
-          <div className={styles.weightList}>
-            {weights.slice(-10).reverse().map(w => (
-              <div key={w.date} className={styles.weightRow}>
-                <span className={styles.weightDate}>{w.date}</span>
-                <span className={styles.weightKg}>{w.kg} kg</span>
-              </div>
-            ))}
-          </div>
+          <h3 className={styles.chartTitle}>ТЕГЛО</h3>
+          <WeightChart
+            weights={weights}
+            targetWeight={client.target_weight ? parseFloat(client.target_weight) : null}
+            gradId="wcClient"
+          />
         </section>
       )}
     </div>
