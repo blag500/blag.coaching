@@ -67,7 +67,8 @@
 
 .thName,
 .thSets,
-.thReps {
+.thReps,
+.thAction {
   padding: 10px 16px;
   font-size: 10px;
   letter-spacing: 0.1em;
@@ -78,7 +79,8 @@
 }
 
 .thSets,
-.thReps {
+.thReps,
+.thAction {
   text-align: center;
   width: 60px;
 }
@@ -112,4 +114,30 @@
   letter-spacing: 0.04em;
   text-align: center;
   white-space: nowrap;
+}
+
+.exAction {
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.logBtn {
+  width: 32px;
+  height: 32px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.logBtn:active {
+  background: rgba(255, 183, 77, 0.18);
 }

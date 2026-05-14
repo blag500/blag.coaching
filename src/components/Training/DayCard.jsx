@@ -1,3 +1,4 @@
+import { useAuth } from '../../contexts/AuthContext'
 import styles from './DayCard.module.css'
 
 const LABEL_COLORS = {
@@ -14,9 +15,11 @@ const LABEL_TEXT_COLORS = {
   REST:   '#8888AA',
 }
 
-export default function DayCard({ dayData }) {
+export default function DayCard({ dayData, onLogLift }) {
+  const { profile } = useAuth()
   const { label, muscles, exercises, isRest: isRestFlag } = dayData
   const isRest = isRestFlag || label === 'REST'
+  const isCoach = profile?.role === 'coach'
 
   return (
     <div className={styles.card}>
@@ -52,6 +55,7 @@ export default function DayCard({ dayData }) {
               <th className={styles.thName}>Упражнение</th>
               <th className={styles.thSets}>Серии</th>
               <th className={styles.thReps}>Повторения</th>
+              {!isCoach && <th className={styles.thAction}>—</th>}
             </tr>
           </thead>
           <tbody>
@@ -60,6 +64,18 @@ export default function DayCard({ dayData }) {
                 <td className={styles.exName}>{ex.name}</td>
                 <td className={styles.exSets}>{ex.sets}</td>
                 <td className={styles.exReps}>{ex.reps}</td>
+                {!isCoach && (
+                  <td className={styles.exAction}>
+                    <button
+                      className={styles.logBtn}
+                      onClick={() => onLogLift?.(ex)}
+                      type="button"
+                      title="Логирай тежест"
+                    >
+                      ⊕
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

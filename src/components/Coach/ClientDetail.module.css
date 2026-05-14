@@ -361,6 +361,131 @@
   opacity: 0.6;
 }
 
+/* ─── Nutrition Tab ────────────────────────────────────────────────────── */
+
+.nutritionTab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dateHeader {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.logEntry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logEntry:last-child {
+  border-bottom: none;
+}
+
+.logName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+}
+
+.logMacros {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dayTotal {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+  padding: 8px 10px;
+  background: var(--accent-dim);
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* ─── Lifts Tab ────────────────────────────────────────────────────────── */
+
+.liftsTab {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.liftList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.liftEntry {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.liftEntry:last-child {
+  border-bottom: none;
+}
+
+.liftName {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.liftStats {
+  display: flex;
+  gap: 12px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.liftNotes {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
 /* ─── Shared save button ───────────────────────────────────────────────── */
 
 .saveBtn {

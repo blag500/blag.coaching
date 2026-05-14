@@ -123,6 +123,75 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  // Exercise logs
+  async function fetchExerciseLogs(clientId, dateStr) {
+    const { data, error } = await supabase
+      .from('exercise_logs')
+      .select('*')
+      .eq('user_id', clientId)
+      .eq('date', dateStr)
+      .order('created_at')
+    return { data, error }
+  }
+
+  async function addExerciseLog(exerciseName, weight, reps, sets, notes) {
+    const today = new Date().toISOString().slice(0, 10)
+    const { data, error } = await supabase
+      .from('exercise_logs')
+      .insert({
+        user_id: session?.user.id,
+        date: today,
+        exercise_name: exerciseName,
+        weight: weight ? parseFloat(weight) : null,
+        reps: reps ? parseInt(reps) : null,
+        sets: sets ? parseInt(sets) : null,
+        notes: notes || null,
+      })
+      .select()
+      .single()
+    return { data, error }
+  }
+
+  async function removeExerciseLog(logId) {
+    const { error } = await supabase
+      .from('exercise_logs')
+      .delete()
+      .eq('id', logId)
+    return { error }
+  }
+
+  // Messaging
+  async function fetchMessages(otherUserId) {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(from_user_id.eq.${session?.user.id},to_user_id.eq.${otherUserId}),and(from_user_id.eq.${otherUserId},to_user_id.eq.${session?.user.id})`)
+      .order('created_at')
+    return { data, error }
+  }
+
+  async function sendMessage(toUserId, content) {
+    if (!session?.user) return { error: 'Not authenticated' }
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        from_user_id: session.user.id,
+        to_user_id: toUserId,
+        content,
+      })
+      .select()
+      .single()
+    return { data, error }
+  }
+
+  async function markMessagesAsRead(otherUserId) {
+    await supabase
+      .from('messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('to_user_id', session?.user.id)
+      .eq('from_user_id', otherUserId)
+  }
+
   const loading = session === undefined
 
   return (
@@ -140,6 +209,12 @@ export function AuthProvider({ children }) {
       fetchClients,
       fetchClientStats,
       fetchClientFullStats,
+      fetchExerciseLogs,
+      addExerciseLog,
+      removeExerciseLog,
+      fetchMessages,
+      sendMessage,
+      markMessagesAsRead,
     }}>
       {children}
     </AuthContext.Provider>

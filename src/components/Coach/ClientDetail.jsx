@@ -1,21 +1,26 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
   { id: 'progress', label: 'ПРОГРЕС' },
+  { id: 'nutrition', label: 'ХРАНЕНЕ' },
+  { id: 'lifts',    label: 'УПРАЖНЕНИЯ' },
   { id: 'plan',     label: 'ПЛАН' },
   { id: 'goals',    label: 'ЦЕЛИ' },
   { id: 'notes',    label: 'БЕЛЕЖКИ' },
 ]
 
 export default function ClientDetail({ client: initialClient, onBack }) {
-  const { updateClientProfile, fetchClientFullStats } = useAuth()
+  const { updateClientProfile, fetchClientFullStats, fetchExerciseLogs } = useAuth()
   const [client, setClient] = useState(initialClient)
   const [tab, setTab] = useState('progress')
   const [stats, setStats] = useState(null)
+  const [foodLogs, setFoodLogs] = useState([])
+  const [exerciseLogs, setExerciseLogs] = useState([])
   const [edits, setEdits] = useState({
     name:          initialClient.name          ?? '',
     calories:      initialClient.calories      ?? 2450,
@@ -30,7 +35,10 @@ export default function ClientDetail({ client: initialClient, onBack }) {
   const [savingPlan, setSavingPlan] = useState(false)
 
   useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10)
     fetchClientFullStats(client.id).then(setStats)
+    supabase.from('food_logs').select('*').eq('user_id', client.id).order('added_at', { ascending: false }).limit(50).then(({ data }) => setFoodLogs(data || []))
+    fetchExerciseLogs(client.id, today).then(({ data }) => setExerciseLogs(data || []))
   }, [client.id])
 
   async function saveGoals() {
@@ -89,6 +97,8 @@ export default function ClientDetail({ client: initialClient, onBack }) {
 
       <div className={styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
+        {tab === 'nutrition' && <NutritionTab logs={foodLogs} client={client} />}
+        {tab === 'lifts' && <LiftsTab logs={exerciseLogs} />}
         {tab === 'plan' && (
           <TrainingEditor
             initialPlan={client.training_plan}
@@ -264,7 +274,70 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
   )
 }
 
-// ─── Notes Tab ───────────────────────────────────────────────────────────────
+// ─── Nutrition Tab ───────────────────────────────────────────────────────
+
+function NutritionTab({ logs, client }) {
+  const grouped = {}
+  logs.forEach(log => {
+    if (!grouped[log.date]) grouped[log.date] = []
+    grouped[log.date].push(log)
+  })
+
+  const dates = Object.keys(grouped).sort().reverse()
+
+  return (
+    <div className={styles.nutritionTab}>
+      {dates.length === 0 ? (
+        <p className={styles.empty}>Няма логирани храни</p>
+      ) : (
+        dates.map(date => (
+          <div key={date} className={styles.dateGroup}>
+            <h4 className={styles.dateHeader}>{date}</h4>
+            <div className={styles.logList}>
+              {grouped[date].map(log => (
+                <div key={log.id} className={styles.logEntry}>
+                  <div className={styles.logName}>{log.name}</div>
+                  <div className={styles.logMacros}>
+                    <span>{log.kcal} ккал</span>
+                    <span>П:{Math.round(log.protein)} В:{Math.round(log.carbs)} М:{Math.round(log.fat)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className={styles.dayTotal}>
+              {`Дневно: ${grouped[date].reduce((s, l) => s + l.kcal, 0)} ккал / ${client.calories} (цел)`}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
+// ─── Lifts Tab ───────────────────────────────────────────────────────────
+
+function LiftsTab({ logs }) {
+  return (
+    <div className={styles.liftsTab}>
+      {logs.length === 0 ? (
+        <p className={styles.empty}>Няма логирани упражнения</p>
+      ) : (
+        <div className={styles.liftList}>
+          {logs.map(log => (
+            <div key={log.id} className={styles.liftEntry}>
+              <div className={styles.liftName}>{log.exercise_name}</div>
+              <div className={styles.liftStats}>
+                <span>{log.weight ? `${log.weight} kg` : '—'}</span>
+                <span>{log.reps ? `${log.reps} × ${log.sets || 1}` : '—'}</span>
+              </div>
+              {log.notes && <p className={styles.liftNotes}>{log.notes}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function NotesTab({ notes, setNotes, onSave, saving, saved }) {
   return (

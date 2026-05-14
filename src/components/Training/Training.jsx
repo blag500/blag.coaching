@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { TRAINING_SPLIT, DAYS_BG_TO_EN } from '../../data/appData'
 import DayCard from './DayCard'
+import LiftLogger from './LiftLogger'
 import styles from './Training.module.css'
 
 function getTodayBg() {
@@ -26,6 +27,7 @@ export default function Training() {
 
   const todayBg = getTodayBg()
   const [selectedDay, setSelectedDay] = useState(todayBg)
+  const [selectedExercise, setSelectedExercise] = useState(null)
 
   const dayData     = split.find(d => d.day === selectedDay)
   const isRest      = dayData?.label === 'REST' || dayData?.isRest
@@ -67,7 +69,7 @@ export default function Training() {
               <span className={styles.todayBadge}>ДНЕС</span>
             )}
           </div>
-          <DayCard dayData={dayData} />
+          <DayCard dayData={dayData} onLogLift={setSelectedExercise} />
         </div>
       )}
 
@@ -79,6 +81,13 @@ export default function Training() {
           </p>
           <DayCard dayData={nextWorkout} />
         </div>
+      )}
+
+      {selectedExercise && (
+        <LiftLogger
+          exercise={selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+        />
       )}
     </div>
   )
