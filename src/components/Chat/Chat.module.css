@@ -1,6 +1,6 @@
 .chat {
   position: fixed;
-  bottom: 92px;
+  bottom: calc(160px + env(safe-area-inset-bottom));
   right: 12px;
   width: 320px;
   max-width: calc(100vw - 24px);

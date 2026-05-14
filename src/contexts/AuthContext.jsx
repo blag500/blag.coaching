@@ -16,15 +16,11 @@ export function AuthProvider({ children }) {
       .eq('id', userId)
       .single()
     if (!error && data) {
-      if (data.role === 'client' && !data.coach_id) {
-        // Resolve the coach's ID so Chat.jsx can address messages correctly
-        const { data: coach } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('role', 'coach')
-          .limit(1)
-          .single()
-        setProfile(coach ? { ...data, coach_id: coach.id } : data)
+      if (data.role === 'client') {
+        // Use security-definer RPC so clients can look up the coach ID
+        // without needing SELECT access to other profile rows.
+        const { data: coachId } = await supabase.rpc('get_coach_id')
+        setProfile(coachId ? { ...data, coach_id: coachId } : data)
       } else {
         setProfile(data)
       }
