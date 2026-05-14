@@ -1,229 +1,123 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 import styles from './EfficientProducts.module.css'
 
-// protein per 100 kcal = protein / (kcal / 100)
-const PRODUCTS = [
-  {
-    id: 'pilesni-gurdi',
-    name: 'Пилешки гърди',
-    category: 'protein',
-    store: 'Kaufland / Billa / Lidl',
-    pricePer100g: '1.20 – 1.80 лв.',
-    per100g: { kcal: 105, protein: 23, carbs: 0, fat: 1.5 },
-    tip: 'Купувай в семейна опаковка — значително по-евтино. Грилуй на тефлон, осоли след готвене.',
-    efficiency: 5,
-  },
-  {
-    id: 'tson-konserva',
-    name: 'Риба тон (в собствен сок)',
-    category: 'fish',
-    store: 'Kaufland / Lidl / Billa',
-    pricePer100g: '0.70 – 1.10 лв.',
-    per100g: { kcal: 116, protein: 25, carbs: 0, fat: 1 },
-    tip: 'Избирай "в собствен сок" вместо в олио. Идеален за бърза закуска или салата.',
-    efficiency: 5,
-  },
-  {
-    id: 'izvara',
-    name: 'Извара 0%',
-    category: 'dairy',
-    store: 'Kaufland / Billa',
-    pricePer100g: '0.45 – 0.65 лв.',
-    per100g: { kcal: 60, protein: 11, carbs: 4, fat: 0.3 },
-    tip: 'Една от най-евтините протеинови храни. Смесвай с мед и плодове за десерт с добри макроси.',
-    efficiency: 5,
-  },
-  {
-    id: 'grutsko-kismlyako',
-    name: 'Гръцко кисело мляко 0%',
-    category: 'dairy',
-    store: 'Lidl / Kaufland',
-    pricePer100g: '0.30 – 0.50 лв.',
-    per100g: { kcal: 57, protein: 10, carbs: 3.6, fat: 0.2 },
-    tip: 'Lidl Milbona е отлично съотношение цена/качество. Добавяй при закуска или като снак.',
-    efficiency: 5,
-  },
-  {
-    id: 'yaytsa',
-    name: 'Яйца',
-    category: 'eggs',
-    store: 'Навсякъде',
-    pricePer100g: '0.20 – 0.35 лв.',
-    per100g: { kcal: 155, protein: 13, carbs: 1, fat: 11 },
-    tip: '1 яйце ≈ 7g протеин. Белтъкът е почти чист протеин (3.5g), жълтъкът добавя здравословни мазнини.',
-    efficiency: 3,
-  },
-  {
-    id: 'skumriya',
-    name: 'Скумрия (замразена)',
-    category: 'fish',
-    store: 'Kaufland / Billa',
-    pricePer100g: '0.50 – 0.80 лв.',
-    per100g: { kcal: 158, protein: 19, carbs: 0, fat: 9 },
-    tip: 'Богата на Омега-3 мастни киселини. Идеална за фурна — 20 мин на 200°C.',
-    efficiency: 4,
-  },
-  {
-    id: 'pureshko-file',
-    name: 'Пуешко филе',
-    category: 'protein',
-    store: 'Kaufland / Billa',
-    pricePer100g: '1.40 – 2.00 лв.',
-    per100g: { kcal: 99, protein: 22, carbs: 0, fat: 0.7 },
-    tip: 'Почти идентичен с пилешкото, малко по-нежен вкус. Подходящ за meal prep.',
-    efficiency: 5,
-  },
-  {
-    id: 'protein-prash',
-    name: 'Суроватъчен протеин',
-    category: 'supplement',
-    store: 'myprotein.com / bodybuilding.bg',
-    pricePer100g: '1.50 – 2.50 лв.',
-    per100g: { kcal: 400, protein: 78, carbs: 8, fat: 5 },
-    tip: 'Myprotein Impact Whey е най-изгодният на пазара. Купувай при промоции (-50%).',
-    efficiency: 5,
-  },
-  {
-    id: 'lentensi',
-    name: 'Леща (сварена)',
-    category: 'legumes',
-    store: 'Навсякъде',
-    pricePer100g: '0.10 – 0.20 лв.',
-    per100g: { kcal: 116, protein: 9, carbs: 20, fat: 0.4 },
-    tip: 'Най-евтиният протеинов източник. Богата на фибри и желязо. Не е пълноценен протеин — комбинирай с месо или яйца.',
-    efficiency: 3,
-  },
-  {
-    id: 'nakut',
-    name: 'Нахут (сварен)',
-    category: 'legumes',
-    store: 'Навсякъде',
-    pricePer100g: '0.15 – 0.25 лв.',
-    per100g: { kcal: 160, protein: 9, carbs: 27, fat: 2.6 },
-    tip: 'Добра алтернатива за разнообразие. Запичай в ер фрайър за хрупкав снак с 9g протеин.',
-    efficiency: 2,
-  },
+const FORM_EMPTY = { name: '', source: '', price: '', indicator: '' }
+
+const FORM_FIELDS = [
+  { key: 'name',      label: 'Наименование',       placeholder: 'напр. Пилешки гърди' },
+  { key: 'source',    label: 'Откъде се набавя',   placeholder: 'напр. Kaufland, Lidl, онлайн...' },
+  { key: 'price',     label: 'Цена',               placeholder: 'напр. 4.99 лв / кг' },
+  { key: 'indicator', label: 'С какво се отличава', placeholder: 'напр. Висок протеин, Богат на омега-3...' },
 ]
 
-const CATEGORY_LABELS = {
-  protein:    'Птиче месо',
-  fish:       'Риба',
-  dairy:      'Млечни',
-  eggs:       'Яйца',
-  supplement: 'Добавки',
-  legumes:    'Бобови',
-}
-
-const CATEGORY_COLORS = {
-  protein:    '#ffb74d',
-  fish:       '#4FC3F7',
-  dairy:      '#81C784',
-  eggs:       '#FFD54F',
-  supplement: '#CE93D8',
-  legumes:    '#A5D6A7',
-}
-
-const FILTERS = [
-  { id: 'all',        label: 'Всички' },
-  { id: 'protein',    label: 'Птиче' },
-  { id: 'fish',       label: 'Риба' },
-  { id: 'dairy',      label: 'Млечни' },
-  { id: 'eggs',       label: 'Яйца' },
-  { id: 'supplement', label: 'Добавки' },
-  { id: 'legumes',    label: 'Бобови' },
-]
-
-function efficiencyStars(n) {
-  return '★'.repeat(n) + '☆'.repeat(5 - n)
-}
-
-function proteinPer100kcal(p) {
-  return Math.round((p.protein / p.kcal) * 100 * 10) / 10
-}
-
-function ProductCard({ product }) {
-  const [flipped, setFlipped] = useState(false)
-  const p100kcal = proteinPer100kcal(product.per100g)
-  const catColor = CATEGORY_COLORS[product.category] || '#ffb74d'
-
+function PinIcon() {
   return (
-    <div
-      className={`${styles.cardWrap} ${flipped ? styles.flipped : ''}`}
-      onClick={() => setFlipped(v => !v)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && setFlipped(v => !v)}
-      aria-label={`${product.name} — натисни за детайли`}
-    >
-      <div className={styles.cardInner}>
-        {/* Front */}
-        <div className={styles.cardFace}>
-          <div className={styles.catBadge} style={{ background: catColor + '22', color: catColor, borderColor: catColor + '44' }}>
-            {CATEGORY_LABELS[product.category]}
-          </div>
-          <h3 className={styles.cardName}>{product.name}</h3>
-          <div className={styles.heroStat}>
-            <span className={styles.heroNum}>{product.per100g.protein}g</span>
-            <span className={styles.heroLabel}>протеин / 100g</span>
-          </div>
-          <div className={styles.frontRow}>
-            <div className={styles.frontStat}>
-              <span className={styles.frontNum}>{product.per100g.kcal}</span>
-              <span className={styles.frontUnit}>ккал</span>
-            </div>
-            <div className={styles.frontStat}>
-              <span className={styles.frontNum} style={{ color: catColor }}>{p100kcal}g</span>
-              <span className={styles.frontUnit}>П/100ккал</span>
-            </div>
-          </div>
-          <div className={styles.frontStore}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="12" height="12" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            {product.store}
-          </div>
-          <div className={styles.frontPrice}>{product.pricePer100g}</div>
-          <div className={styles.stars} aria-label={`${product.efficiency} от 5 звезди ефективност`}>
-            {efficiencyStars(product.efficiency)}
-          </div>
-          <span className={styles.flipHint}>Натисни за детайли ↩</span>
-        </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="12" height="12" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  )
+}
 
-        {/* Back */}
-        <div className={`${styles.cardFace} ${styles.cardBack}`}>
-          <h3 className={styles.backName}>{product.name}</h3>
-          <div className={styles.macroGrid}>
-            {[
-              { label: 'Ккал',          val: product.per100g.kcal,    color: '#F06292', unit: '' },
-              { label: 'Протеин',       val: product.per100g.protein, color: '#66BB6A', unit: 'g' },
-              { label: 'Въглехидрати', val: product.per100g.carbs,   color: '#4FC3F7', unit: 'g' },
-              { label: 'Мазнини',       val: product.per100g.fat,     color: '#FFB74D', unit: 'g' },
-            ].map(m => (
-              <div key={m.label} className={styles.macroBox}>
-                <span className={styles.macroVal} style={{ color: m.color }}>{m.val}{m.unit}</span>
-                <span className={styles.macroLbl}>{m.label}</span>
-              </div>
-            ))}
-          </div>
-          <div className={styles.effRow}>
-            <span className={styles.effLabel}>П / 100 ККАЛ</span>
-            <span className={styles.effVal}>{p100kcal}g</span>
-          </div>
-          <div className={styles.tipBox}>
-            <span className={styles.tipIcon}>💡</span>
-            <p className={styles.tipText}>{product.tip}</p>
-          </div>
-          <span className={styles.flipHint}>Натисни за затваряне ↩</span>
-        </div>
+function TagIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="12" height="12" aria-hidden="true">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+  )
+}
+
+function ProductCard({ product, currentUserId, onDelete }) {
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardTop}>
+        <span className={styles.cardName}>{product.name}</span>
+        <span className={styles.indicator}>{product.indicator}</span>
       </div>
+      <div className={styles.cardMeta}>
+        <span className={styles.metaItem}>
+          <PinIcon />
+          {product.source}
+        </span>
+        <span className={styles.metaItem}>
+          <TagIcon />
+          {product.price}
+        </span>
+      </div>
+      {product.added_by === currentUserId && (
+        <button
+          className={styles.deleteBtn}
+          onClick={() => onDelete(product.id)}
+          type="button"
+          aria-label="Изтрий"
+        >
+          ×
+        </button>
+      )}
     </div>
   )
 }
 
 export default function EfficientProducts({ onBack }) {
-  const [filter, setFilter] = useState('all')
+  const { user } = useAuth()
+  const [products, setProducts]   = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [showForm, setShowForm]   = useState(false)
+  const [form, setForm]           = useState(FORM_EMPTY)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError]         = useState(null)
 
-  const visible = filter === 'all'
-    ? PRODUCTS
-    : PRODUCTS.filter(p => p.category === filter)
+  useEffect(() => {
+    supabase
+      .from('efficient_products')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) setProducts(data)
+        setLoading(false)
+      })
+  }, [])
+
+  function setField(key, val) {
+    setForm(prev => ({ ...prev, [key]: val }))
+  }
+
+  async function handleSubmit() {
+    if (!user) return
+    const filled = FORM_FIELDS.every(f => form[f.key].trim())
+    if (!filled) return
+    setSubmitting(true)
+    setError(null)
+    const { data, error: err } = await supabase
+      .from('efficient_products')
+      .insert({
+        name:      form.name.trim(),
+        source:    form.source.trim(),
+        price:     form.price.trim(),
+        indicator: form.indicator.trim(),
+        added_by:  user.id,
+      })
+      .select()
+      .single()
+    if (err) {
+      setError('Грешка при добавяне. Опитай пак.')
+    } else if (data) {
+      setProducts(prev => [data, ...prev])
+      setForm(FORM_EMPTY)
+      setShowForm(false)
+    }
+    setSubmitting(false)
+  }
+
+  async function handleDelete(id) {
+    await supabase.from('efficient_products').delete().eq('id', id)
+    setProducts(prev => prev.filter(p => p.id !== id))
+  }
+
+  const canSubmit = FORM_FIELDS.every(f => form[f.key].trim()) && !submitting
 
   return (
     <div className={styles.page}>
@@ -232,27 +126,70 @@ export default function EfficientProducts({ onBack }) {
           ← ОТКРИЙ
         </button>
         <h1 className={styles.title}>ЕФЕКТИВНИ ПРОДУКТИ</h1>
-        <p className={styles.subtitle}>Протеин · Цена · Магазин — 100g база</p>
+        <p className={styles.subtitle}>Добавено от общността · всеки може да допринесе</p>
       </header>
 
-      <div className={styles.filterBar}>
-        {FILTERS.map(f => (
-          <button
-            key={f.id}
-            className={`${styles.chip} ${filter === f.id ? styles.chipActive : ''}`}
-            onClick={() => setFilter(f.id)}
-            type="button"
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      {showForm ? (
+        <div className={styles.formWrap}>
+          <h2 className={styles.formTitle}>НОВА НАХОДКА</h2>
+          {FORM_FIELDS.map(f => (
+            <div key={f.key} className={styles.formField}>
+              <label className={styles.formLabel} htmlFor={`ep-${f.key}`}>{f.label}</label>
+              <input
+                id={`ep-${f.key}`}
+                className={styles.formInput}
+                type="text"
+                placeholder={f.placeholder}
+                value={form[f.key]}
+                onChange={e => setField(f.key, e.target.value)}
+              />
+            </div>
+          ))}
+          {error && <p className={styles.formError}>{error}</p>}
+          <div className={styles.formActions}>
+            <button
+              className={styles.cancelBtn}
+              onClick={() => { setShowForm(false); setError(null) }}
+              type="button"
+            >
+              Отказ
+            </button>
+            <button
+              className={styles.submitBtn}
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              type="button"
+            >
+              {submitting ? 'Изпраща...' : '+ Добави'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          className={styles.contributeBtn}
+          onClick={() => setShowForm(true)}
+          type="button"
+        >
+          + Добави продукт
+        </button>
+      )}
 
-      <div className={styles.cards}>
-        {visible.map(p => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </div>
+      {loading ? (
+        <p className={styles.empty}>Зарежда...</p>
+      ) : products.length === 0 ? (
+        <p className={styles.empty}>Все още няма продукти. Бъди първият!</p>
+      ) : (
+        <div className={styles.list}>
+          {products.map(p => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              currentUserId={user?.id}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
