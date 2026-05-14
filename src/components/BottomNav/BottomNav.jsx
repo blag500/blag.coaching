@@ -59,9 +59,8 @@ const BASE_TABS = [
 const COACH_LAST = { id: 'clients', label: 'КЛИЕНТИ', Icon: ClientsIcon }
 
 export default function BottomNav({ activeTab, onTabChange, isCoach }) {
-  // Coach gets КЛИЕНТИ instead of ОТКРИЙ
   const tabs = isCoach
-    ? [...BASE_TABS.filter(t => t.id !== 'explore'), COACH_LAST]
+    ? [...BASE_TABS, COACH_LAST]
     : BASE_TABS
 
   return (
