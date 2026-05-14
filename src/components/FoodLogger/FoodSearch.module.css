@@ -2,6 +2,173 @@
   margin-bottom: 20px;
 }
 
+/* Mode toggle */
+.modeBar {
+  display: flex;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.modeBtn {
+  flex: 1;
+  padding: 9px 4px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modeBtnActive {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Manual entry */
+.manualWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manualName {
+  padding-left: 12px !important;
+}
+
+.macroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.macroField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.macroLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.macroInput {
+  padding: 10px 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+
+.macroInput:focus {
+  border-color: var(--accent);
+}
+
+.macroInput::-webkit-inner-spin-button,
+.macroInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.addBtnDone {
+  background: rgba(255, 183, 77, 0.18) !important;
+  color: var(--accent) !important;
+}
+
+/* Recent foods */
+.recentEmpty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.recentList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recentItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.recentItem:last-child {
+  border-bottom: none;
+}
+
+.recentInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recentName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recentMacros {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.recentAddBtn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.recentAddBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
 .inputWrap {
   position: relative;
   display: flex;

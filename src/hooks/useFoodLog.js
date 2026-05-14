@@ -38,6 +38,22 @@ export function useFoodLog() {
     if (data) setLog(prev => [...prev, data])
   }
 
+  async function addRawEntry({ name, grams, kcal, protein, carbs, fat }) {
+    if (!user) return
+    const entry = {
+      user_id: user.id,
+      date:    todayStr(),
+      name,
+      grams:   grams || 0,
+      kcal:    Math.round(kcal),
+      protein: Math.round(protein * 10) / 10,
+      carbs:   Math.round(carbs   * 10) / 10,
+      fat:     Math.round(fat     * 10) / 10,
+    }
+    const { data } = await supabase.from('food_logs').insert(entry).select().single()
+    if (data) setLog(prev => [...prev, data])
+  }
+
   async function removeEntry(id) {
     await supabase.from('food_logs').delete().eq('id', id)
     setLog(prev => prev.filter(e => e.id !== id))
@@ -56,5 +72,5 @@ export function useFoodLog() {
     fat:     Math.round((acc.fat     + e.fat)      * 10) / 10,
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
-  return { log, totals, addEntry, removeEntry, clearLog }
+  return { log, totals, addEntry, addRawEntry, removeEntry, clearLog }
 }

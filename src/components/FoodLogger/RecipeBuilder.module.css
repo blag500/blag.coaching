@@ -1,0 +1,340 @@
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  background: var(--surface-1);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: slideUp 0.28s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0) }
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+/* Type toggle */
+.typeToggle {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.typeBtn {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.typeBtnActive {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Name */
+.nameRow {
+  display: flex;
+}
+
+.nameInput {
+  flex: 1;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.nameInput:focus {
+  border-color: var(--accent);
+}
+
+.nameInput::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* Section label */
+.sectionLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-top: -4px;
+}
+
+/* Ingredients */
+.ingredientList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ingredientRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ingNum {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 16px;
+  padding-top: 11px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ingFields {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ingInput {
+  padding: 9px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.ingInput:focus {
+  border-color: var(--accent);
+}
+
+.ingName {
+  width: 100%;
+}
+
+.ingMacros {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.ingNum2 {
+  padding: 8px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+
+.ingNum2:focus {
+  border-color: var(--accent);
+}
+
+.ingNum2::-webkit-inner-spin-button,
+.ingNum2::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.removeBtn {
+  width: 30px;
+  height: 30px;
+  margin-top: 6px;
+  flex-shrink: 0;
+  background: rgba(220, 60, 60, 0.08);
+  border: 1px solid rgba(220, 60, 60, 0.18);
+  border-radius: 8px;
+  color: rgba(220, 100, 100, 0.75);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Add ingredient */
+.addIngBtn {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px dashed rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Totals */
+.totalsBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.totalsLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.totalsVal {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.totalsMacro {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.totalsGrams {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* Product form */
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.productField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.productLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.productInput {
+  padding: 10px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+
+.productInput:focus {
+  border-color: var(--accent);
+}
+
+.productInput::-webkit-inner-spin-button,
+.productInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.saveBtn {
+  flex: 2;
+  padding: 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.saveBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

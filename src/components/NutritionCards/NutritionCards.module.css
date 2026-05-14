@@ -53,3 +53,227 @@
   background: var(--accent);
   color: var(--bg);
 }
+
+/* Library tab */
+.library {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.libraryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.libraryTitle {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.newBtn {
+  padding: 8px 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.newBtn:active {
+  opacity: 0.8;
+}
+
+.libEmpty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  padding: 24px 0 8px;
+}
+
+.libHint {
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.groupLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Custom food card */
+.foodCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.foodCardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.foodCardInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.foodCardName {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.foodCardMacros {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.foodCardChevron {
+  font-size: 10px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.foodCardBody {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ingredientPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.ingChip {
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.logRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.servingsWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.servingsLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.servingsInput {
+  width: 52px;
+  padding: 8px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+
+.servingsInput:focus {
+  border-color: var(--accent);
+}
+
+.logBtn {
+  flex: 1;
+  padding: 9px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
+.delBtn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.delBtn:active {
+  background: rgba(220, 60, 60, 0.1);
+}
+
+.templatesSection {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
