@@ -34,7 +34,23 @@ export function useUnread() {
         schema: 'public',
         table: 'messages',
         filter: `to_user_id=eq.${user.id}`,
-      }, fetchUnread)
+      }, payload => {
+        fetchUnread()
+        // Notify when a new message arrives and the app is not in focus
+        if (
+          payload.eventType === 'INSERT' &&
+          document.visibilityState !== 'visible' &&
+          'Notification' in window &&
+          Notification.permission === 'granted'
+        ) {
+          new Notification('Blag Coaching', {
+            body: 'Получихте ново съобщение',
+            icon: '/icon-192.png',
+            tag: 'blag-message',
+            renotify: false,
+          })
+        }
+      })
       .subscribe()
     return () => supabase.removeChannel(channel)
   }, [user?.id, fetchUnread])

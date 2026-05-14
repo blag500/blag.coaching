@@ -18,6 +18,13 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('nutrition')
   const hiddenAtRef = useRef(null)
 
+  // Request notification permission once after login
+  useEffect(() => {
+    if (session && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [session?.user?.id])
+
   useEffect(() => {
     const handler = () => {
       if (document.visibilityState === 'hidden') {
