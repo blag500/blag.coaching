@@ -1,32 +1,24 @@
 .btn {
-  margin-top: 28px;
-  width: 100%;
-  padding: 16px;
-  background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
-  border-radius: 14px;
-  color: var(--accent);
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  color: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgba(201, 162, 39, 0.35);
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .btn:active {
-  background: rgba(255, 183, 77, 0.18);
-  border-color: rgba(255, 183, 77, 0.35);
-}
-
-.icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.label {
-  font-family: var(--font-heading);
-  font-size: 14px;
-  letter-spacing: 0.1em;
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px rgba(201, 162, 39, 0.25);
 }

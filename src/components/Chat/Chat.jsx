@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 import styles from './Chat.module.css'
 
 export default function Chat({ clientId, clientName, onClose }) {
@@ -22,6 +23,26 @@ export default function Chat({ clientId, clientName, onClose }) {
       markMessagesAsRead(otherUserId)
     })
   }, [otherUserId, clientId])
+
+  // Real-time: append incoming messages without a full refetch
+  useEffect(() => {
+    if (!user?.id || !otherUserId) return
+    const channel = supabase
+      .channel(`chat_${user.id}_${otherUserId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${user.id}` },
+        payload => {
+          const msg = payload.new
+          if (msg.from_user_id === otherUserId) {
+            setMessages(prev => [...prev, msg])
+            markMessagesAsRead(otherUserId)
+          }
+        }
+      )
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [user?.id, otherUserId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
