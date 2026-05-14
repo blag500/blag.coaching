@@ -1,0 +1,483 @@
+.page {
+  padding: 16px 16px calc(100px + env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header {
+  margin-bottom: 18px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 10px;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.headerRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.progress {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 18px;
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 4px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabActive {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Empty state */
+.empty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+/* ── Active list ─────────────────────────────────────────────────────────── */
+
+.itemList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: opacity 0.2s;
+}
+
+.itemDone {
+  opacity: 0.5;
+}
+
+.checkbox {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--bg);
+}
+
+.checkboxDone {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.itemName {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.itemDone .itemName {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.itemQty {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.deleteItemBtn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.deleteItemBtn:active {
+  opacity: 1;
+  color: #ef4444;
+}
+
+/* Add item row */
+.addWrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.addInput {
+  flex: 1;
+  padding: 12px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+
+.addInput:focus {
+  border-color: var(--accent);
+}
+
+.addInput::placeholder {
+  color: var(--muted);
+}
+
+.qtyInput {
+  width: 60px;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+
+.qtyInput:focus {
+  border-color: var(--accent);
+}
+
+.qtyInput::placeholder {
+  color: var(--muted);
+}
+
+.addBtn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.addBtn:not(:disabled):active {
+  opacity: 0.8;
+}
+
+/* Archive button */
+.archiveBtn {
+  width: 100%;
+  padding: 14px;
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 4px;
+}
+
+.archiveBtn:not(:disabled):active {
+  background: var(--accent-dim);
+}
+
+.archiveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── History tab ─────────────────────────────────────────────────────────── */
+
+/* 14-day activity strip */
+.strip {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 14px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.stripDay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stripLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.stripNum {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.stripToday .stripLabel,
+.stripToday .stripNum {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.stripDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.stripDotActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 5px rgba(201, 162, 39, 0.4);
+}
+
+/* History list */
+.histList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.histCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.histHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.histLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.histDate {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.histSummary {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.histRight {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Progress ring */
+.progressRing {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringBg {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 3;
+}
+
+.ringFill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+
+.ringPct {
+  position: absolute;
+  font-family: var(--font-body);
+  font-size: 8px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.chevron {
+  font-size: 22px;
+  color: var(--muted);
+  line-height: 1;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+/* Expanded item list */
+.histItems {
+  list-style: none;
+  border-top: 1px solid var(--border);
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.histItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.histCheck {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  width: 14px;
+}
+
+.histItemDone .histCheck {
+  color: var(--accent);
+}
+
+.histItemName {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.histItemDone .histItemName {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.histQty {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
