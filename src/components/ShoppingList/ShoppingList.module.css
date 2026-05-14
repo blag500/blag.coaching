@@ -178,10 +178,14 @@
   color: #ef4444;
 }
 
-/* Add item row */
+/* Add item row — sticky at bottom */
 .addWrap {
   display: flex;
   gap: 8px;
+  position: sticky;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  padding: 10px 0 4px;
   margin-bottom: 14px;
 }
 

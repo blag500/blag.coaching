@@ -202,6 +202,13 @@
   margin-bottom: 10px;
 }
 
+.cardTopRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .cardName {
   font-family: var(--font-body);
   font-size: 15px;
@@ -244,15 +251,13 @@
 
 /* Delete button — only visible on own entries */
 .deleteBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 22px;
-  height: 22px;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -264,7 +269,6 @@
   transition: opacity 0.15s, color 0.15s;
 }
 
-.deleteBtn:hover,
 .deleteBtn:active {
   opacity: 1;
   color: #ef4444;
