@@ -50,8 +50,10 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
-input {
+input, textarea, select {
   font-family: var(--font-body);
+  /* Prevent iOS Safari from zooming on focus — zoom triggers below 16px */
+  font-size: max(16px, 1em);
 }
 
 button:active, [role="button"]:active {

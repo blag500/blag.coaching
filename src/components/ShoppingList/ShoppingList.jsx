@@ -238,7 +238,7 @@ export default function ShoppingList({ onBack }) {
 
       {/* ── LIST TAB ── */}
       {tab === 'list' && (
-        <>
+        <div className={styles.listBody}>
           {loading ? (
             <p className={styles.empty}>Зарежда...</p>
           ) : (
@@ -279,6 +279,20 @@ export default function ShoppingList({ onBack }) {
                 ))}
               </ul>
 
+              <div className={styles.listSpacer} />
+
+              {/* Archive button */}
+              {items.length > 0 && (
+                <button
+                  className={styles.archiveBtn}
+                  onClick={archiveList}
+                  disabled={archiving}
+                  type="button"
+                >
+                  {archiving ? 'Запазва...' : 'Завърши пазаруването →'}
+                </button>
+              )}
+
               {/* Add item input */}
               <div className={styles.addWrap}>
                 <input
@@ -307,21 +321,9 @@ export default function ShoppingList({ onBack }) {
                   +
                 </button>
               </div>
-
-              {/* Archive button */}
-              {items.length > 0 && (
-                <button
-                  className={styles.archiveBtn}
-                  onClick={archiveList}
-                  disabled={archiving}
-                  type="button"
-                >
-                  {archiving ? 'Запазва...' : 'Завърши пазаруването →'}
-                </button>
-              )}
             </>
           )}
-        </>
+        </div>
       )}
 
       {/* ── HISTORY TAB ── */}

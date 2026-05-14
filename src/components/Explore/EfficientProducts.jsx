@@ -35,20 +35,18 @@ function ProductCard({ product, currentUserId, onDelete }) {
     <div className={styles.card}>
       <div className={styles.cardTop}>
         <span className={styles.cardName}>{product.name}</span>
-        <div className={styles.cardTopRight}>
-          <span className={styles.indicator}>{product.indicator}</span>
-          {product.added_by === currentUserId && (
-            <button
-              className={styles.deleteBtn}
-              onClick={() => onDelete(product.id)}
-              type="button"
-              aria-label="Изтрий"
-            >
-              ×
-            </button>
-          )}
-        </div>
+        {product.added_by === currentUserId && (
+          <button
+            className={styles.deleteBtn}
+            onClick={() => onDelete(product.id)}
+            type="button"
+            aria-label="Изтрий"
+          >
+            ×
+          </button>
+        )}
       </div>
+      <span className={styles.indicator}>{product.indicator}</span>
       <div className={styles.cardMeta}>
         <span className={styles.metaItem}>
           <PinIcon />

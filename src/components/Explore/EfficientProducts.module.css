@@ -196,17 +196,10 @@
 
 .cardTop {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
-}
-
-.cardTopRight {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 
 .cardName {
@@ -220,7 +213,7 @@
 }
 
 .indicator {
-  flex-shrink: 0;
+  display: inline-block;
   padding: 4px 9px;
   background: var(--accent-dim);
   border: 1px solid rgba(201, 162, 39, 0.25);
@@ -228,10 +221,11 @@
   font-family: var(--font-body);
   font-size: 11px;
   color: var(--accent);
+  max-width: 100%;
   white-space: nowrap;
-  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 10px;
 }
 
 .cardMeta {
