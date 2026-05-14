@@ -199,6 +199,16 @@ export function AuthProvider({ children }) {
       })
       .select()
       .single()
+    if (!error) {
+      // Fire-and-forget push to recipient
+      supabase.functions.invoke('send-push', {
+        body: {
+          toUserId,
+          title: 'Blag Coaching',
+          body: content.length > 80 ? content.slice(0, 77) + '…' : content,
+        },
+      }).catch(() => {})
+    }
     return { data, error }
   }
 

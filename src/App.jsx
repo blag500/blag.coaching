@@ -10,6 +10,7 @@ import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatButton from './components/Compliance/SOSButton'
 import Explore from './components/Explore/Explore'
+import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
 
 function AppShell() {
@@ -18,12 +19,7 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('nutrition')
   const hiddenAtRef = useRef(null)
 
-  // Request notification permission once after login
-  useEffect(() => {
-    if (session && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
-    }
-  }, [session?.user?.id])
+  usePushNotifications()
 
   useEffect(() => {
     const handler = () => {
