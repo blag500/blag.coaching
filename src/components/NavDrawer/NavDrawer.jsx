@@ -1,18 +1,16 @@
-import styles from './BottomNav.module.css'
+import styles from './NavDrawer.module.css'
 
 const NutritionIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
 )
-
 const HabitsIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 )
-
 const TrainingIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="8" y1="12" x2="16" y2="12" />
@@ -24,14 +22,12 @@ const TrainingIcon = () => (
     <line x1="19" y1="12" x2="21" y2="12" />
   </svg>
 )
-
 const ProfileIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
   </svg>
 )
-
 const ClientsIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="9" cy="7" r="3" />
@@ -40,7 +36,6 @@ const ClientsIcon = () => (
     <path d="M15 20c0-2.5 1.8-4 4-4" />
   </svg>
 )
-
 const ExploreIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
@@ -50,37 +45,69 @@ const ExploreIcon = () => (
 
 const CLIENT_TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
-  { id: 'compliance', label: 'HABITS',    Icon: HabitsIcon    },
-  { id: 'training',   label: 'TRAINING',  Icon: TrainingIcon  },
+  { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
+  { id: 'training',   label: 'ТРЕНИНГ',   Icon: TrainingIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
+  { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]
 
 const COACH_TABS = [
   { id: 'clients',    label: 'КЛИЕНТИ',   Icon: ClientsIcon   },
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
-  { id: 'training',   label: 'TRAINING',  Icon: TrainingIcon  },
-  { id: 'compliance', label: 'HABITS',    Icon: HabitsIcon    },
+  { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
+  { id: 'training',   label: 'ТРЕНИНГ',   Icon: TrainingIcon  },
+  { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
+  { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]
 
-export default function BottomNav({ activeTab, onTabChange, isCoach }) {
+export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
   const tabs = isCoach ? COACH_TABS : CLIENT_TABS
 
+  function handleNav(id) {
+    onTabChange(id)
+    onClose()
+  }
+
   return (
-    <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-          onClick={() => onTabChange(tab.id)}
-          aria-current={activeTab === tab.id ? 'page' : undefined}
-          aria-label={tab.label}
-        >
-          <span className={styles.iconWrap}>
-            <tab.Icon />
-          </span>
-          <span className={styles.label}>{tab.label}</span>
-        </button>
-      ))}
-    </nav>
+    <>
+      <div
+        className={`${styles.backdrop} ${open ? styles.backdropVisible : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        className={`${styles.drawer} ${open ? styles.drawerOpen : ''}`}
+        role="navigation"
+        aria-label="Меню"
+      >
+        <div className={styles.header}>
+          <span className={styles.brand}>BLAG COACHING</span>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Затвори меню" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" width="18" height="18" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className={styles.nav}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`${styles.item} ${activeTab === tab.id ? styles.itemActive : ''}`}
+              onClick={() => handleNav(tab.id)}
+              type="button"
+              aria-current={activeTab === tab.id ? 'page' : undefined}
+            >
+              <span className={styles.iconWrap}>
+                <tab.Icon />
+              </span>
+              <span className={styles.label}>{tab.label}</span>
+              {activeTab === tab.id && <span className={styles.activeDot} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   )
 }

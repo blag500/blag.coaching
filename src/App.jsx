@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import BottomNav from './components/BottomNav/BottomNav'
+import NavDrawer from './components/NavDrawer/NavDrawer'
 import NutritionCards from './components/NutritionCards/NutritionCards'
 import Compliance from './components/Compliance/Compliance'
 import Training from './components/Training/Training'
@@ -17,6 +18,7 @@ function AppShell() {
   const { session, profile, loading } = useAuth()
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('nutrition')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const hiddenAtRef = useRef(null)
 
   usePushNotifications()
@@ -61,6 +63,27 @@ function AppShell() {
 
   return (
     <div className={styles.shell}>
+      <button
+        className={styles.hamburger}
+        onClick={() => setDrawerOpen(true)}
+        aria-label="Отвори меню"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" width="18" height="18" aria-hidden="true">
+          <line x1="3" y1="6"  x2="21" y2="6"  />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <NavDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        isCoach={isCoach}
+      />
+
       <main className={styles.content}>
         <div key={activeTab} className={styles.page}>
           {pages[activeTab] ?? null}
