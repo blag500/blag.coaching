@@ -46,7 +46,7 @@ const ExploreIcon = () => (
 const CLIENT_TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
-  { id: 'training',   label: 'ТРЕНИНГ',   Icon: TrainingIcon  },
+  { id: 'training',   label: 'ТРЕНИРОВКА', Icon: TrainingIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
   { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]
@@ -55,7 +55,7 @@ const COACH_TABS = [
   { id: 'clients',    label: 'КЛИЕНТИ',   Icon: ClientsIcon   },
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
-  { id: 'training',   label: 'ТРЕНИНГ',   Icon: TrainingIcon  },
+  { id: 'training',   label: 'ТРЕНИРОВКА', Icon: TrainingIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
   { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]
