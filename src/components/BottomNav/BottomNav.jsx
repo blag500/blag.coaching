@@ -25,6 +25,13 @@ const HabitsIcon = () => (
   </svg>
 )
 
+const ProfileIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+  </svg>
+)
+
 const MenuIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
     <line x1="3" y1="6"  x2="21" y2="6"  />
@@ -37,6 +44,7 @@ const TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'training',   label: 'ТРЕНИНГ',   Icon: TrainingIcon  },
   { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
+  { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
   { id: 'menu',       label: 'МЕНЮ',      Icon: MenuIcon      },
 ]
 
