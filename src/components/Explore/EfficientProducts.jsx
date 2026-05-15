@@ -30,32 +30,75 @@ function TagIcon() {
   )
 }
 
-function ProductCard({ product, currentUserId, onDelete }) {
+function ProductCard({ product, currentUserId, onDelete, onEdit }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(FORM_EMPTY)
+  const [saving, setSaving] = useState(false)
+  const isOwner = product.added_by === currentUserId
+
+  function startEdit() {
+    setDraft({ name: product.name, source: product.source, price: product.price, indicator: product.indicator })
+    setEditing(true)
+  }
+
+  async function handleSave() {
+    const updates = { name: draft.name.trim(), source: draft.source.trim(), price: draft.price.trim(), indicator: draft.indicator.trim() }
+    if (FORM_FIELDS.some(f => !updates[f.key])) return
+    setSaving(true)
+    await onEdit(product.id, updates)
+    setSaving(false)
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className={`${styles.card} ${styles.cardEditing}`}>
+        {FORM_FIELDS.map(f => (
+          <div key={f.key} className={styles.formField}>
+            <label className={styles.formLabel}>{f.label}</label>
+            <input
+              className={styles.formInput}
+              type="text"
+              value={draft[f.key]}
+              onChange={e => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+            />
+          </div>
+        ))}
+        <div className={styles.formActions}>
+          <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button">Отказ</button>
+          <button
+            className={styles.submitBtn}
+            onClick={handleSave}
+            disabled={saving || FORM_FIELDS.some(f => !draft[f.key].trim())}
+            type="button"
+          >
+            {saving ? 'Запазва...' : 'Запази'}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.card}>
       <div className={styles.cardTop}>
         <span className={styles.cardName}>{product.name}</span>
-        {product.added_by === currentUserId && (
-          <button
-            className={styles.deleteBtn}
-            onClick={() => onDelete(product.id)}
-            type="button"
-            aria-label="Изтрий"
-          >
-            ×
-          </button>
+        {isOwner && (
+          <div className={styles.cardActions}>
+            <button className={styles.editBtn} onClick={startEdit} type="button" aria-label="Редактирай">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13" aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+            <button className={styles.deleteBtn} onClick={() => onDelete(product.id)} type="button" aria-label="Изтрий">×</button>
+          </div>
         )}
       </div>
       <span className={styles.indicator}>{product.indicator}</span>
       <div className={styles.cardMeta}>
-        <span className={styles.metaItem}>
-          <PinIcon />
-          {product.source}
-        </span>
-        <span className={styles.metaItem}>
-          <TagIcon />
-          {product.price}
-        </span>
+        <span className={styles.metaItem}><PinIcon />{product.source}</span>
+        <span className={styles.metaItem}><TagIcon />{product.price}</span>
       </div>
     </div>
   )
@@ -115,6 +158,11 @@ export default function EfficientProducts({ onBack }) {
   async function handleDelete(id) {
     await supabase.from('efficient_products').delete().eq('id', id)
     setProducts(prev => prev.filter(p => p.id !== id))
+  }
+
+  async function handleEdit(id, updates) {
+    const { error } = await supabase.from('efficient_products').update(updates).eq('id', id)
+    if (!error) setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p))
   }
 
   const canSubmit = FORM_FIELDS.every(f => form[f.key].trim()) && !submitting
@@ -186,6 +234,7 @@ export default function EfficientProducts({ onBack }) {
               product={p}
               currentUserId={user?.id}
               onDelete={handleDelete}
+              onEdit={handleEdit}
             />
           ))}
         </div>
