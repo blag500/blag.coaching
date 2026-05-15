@@ -42,11 +42,20 @@ const ExploreIcon = () => (
     <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
   </svg>
 )
+const CalendarIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8"  y1="2" x2="8"  y2="6" />
+    <line x1="3"  y1="10" x2="21" y2="10" />
+  </svg>
+)
 
 const CLIENT_TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
   { id: 'training',   label: 'ТРЕНИРОВКА', Icon: TrainingIcon  },
+  { id: 'calendar',   label: 'ГРАФИК',    Icon: CalendarIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
   { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]
@@ -56,6 +65,7 @@ const COACH_TABS = [
   { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
   { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
   { id: 'training',   label: 'ТРЕНИРОВКА', Icon: TrainingIcon  },
+  { id: 'calendar',   label: 'ГРАФИК',    Icon: CalendarIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
   { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
 ]

@@ -230,6 +230,40 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
+  // Training sessions
+  async function fetchTrainingSessions() {
+    const { data, error } = await supabase
+      .from('training_sessions')
+      .select('*, coach:profiles!fk_ts_coach(name, email), client:profiles!fk_ts_client(name, email)')
+      .order('scheduled_at')
+    return { data, error }
+  }
+
+  async function createTrainingSession({ coachId, clientId, scheduledAt, title, notes, durationMinutes }) {
+    const { data, error } = await supabase
+      .from('training_sessions')
+      .insert({
+        coach_id:         coachId,
+        client_id:        clientId,
+        requested_by:     session?.user.id,
+        scheduled_at:     scheduledAt,
+        duration_minutes: durationMinutes || 60,
+        title,
+        notes: notes || null,
+      })
+      .select('*, coach:profiles!fk_ts_coach(name, email), client:profiles!fk_ts_client(name, email)')
+      .single()
+    return { data, error }
+  }
+
+  async function updateSessionStatus(sessionId, newStatus) {
+    const { error } = await supabase
+      .from('training_sessions')
+      .update({ status: newStatus })
+      .eq('id', sessionId)
+    return { error }
+  }
+
   async function markMessagesAsRead(otherUserId) {
     await supabase
       .from('messages')
@@ -263,6 +297,9 @@ export function AuthProvider({ children }) {
       fetchExerciseLogs,
       addExerciseLog,
       removeExerciseLog,
+      fetchTrainingSessions,
+      createTrainingSession,
+      updateSessionStatus,
       fetchMessages,
       sendMessage,
       markMessagesAsRead,

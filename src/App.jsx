@@ -12,6 +12,7 @@ import Splash from './components/Splash/Splash'
 import ChatButton from './components/Compliance/SOSButton'
 import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
+import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
 
@@ -64,6 +65,7 @@ function AppShell() {
     profile:    <Profile />,
     clients:    <CoachPanel />,
     explore:    <Explore />,
+    calendar:   <TrainingCalendar />,
   }
 
   return (
