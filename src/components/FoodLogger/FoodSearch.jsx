@@ -1,19 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { searchFoods } from '../../utils/openFoodFacts'
 import { suggestMacros } from '../../utils/usda'
 import BarcodeScanner from './BarcodeScanner'
 import styles from './FoodSearch.module.css'
 
 export default function FoodSearch({ onAdd, onAddRaw }) {
-  const [mode, setMode] = useState('search') // 'search' | 'manual' | 'recent'
+  const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent'
 
   return (
     <div className={styles.wrap}>
       <div className={styles.modeBar}>
         {[
-          { id: 'search', label: 'ТЪРСИ' },
+          { id: 'ai',     label: 'AI ТЪРСИ' },
           { id: 'manual', label: 'РЪЧНО' },
           { id: 'recent', label: 'СКОРОШНИ' },
         ].map(m => (
@@ -28,141 +27,144 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
         ))}
       </div>
 
-      {mode === 'search' && <SearchMode onAdd={onAdd} />}
+      {mode === 'ai'     && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} />}
       {mode === 'manual' && <ManualMode onAddRaw={onAddRaw} />}
       {mode === 'recent' && <RecentMode onAddRaw={onAddRaw} />}
     </div>
   )
 }
 
-// ─── Search mode (unchanged logic) ──────────────────────────────────────────
+// ─── AI macro lookup mode ────────────────────────────────────────────────────
 
-function SearchMode({ onAdd }) {
-  const [query, setQuery]       = useState('')
-  const [results, setResults]   = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError]       = useState(null)
-  const [selected, setSelected] = useState(null)
-  const [grams, setGrams]       = useState('100')
+function AiMode({ onAdd, onAddRaw }) {
+  const [query, setQuery]     = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState(null)
+  const [result, setResult]   = useState(null)
+  const [grams, setGrams]     = useState('100')
   const [scanning, setScanning] = useState(false)
-  const debounceRef = useRef(null)
   const addPanelRef = useRef(null)
 
   useEffect(() => {
-    if (selected && addPanelRef.current) {
+    if (result && addPanelRef.current) {
       setTimeout(() => addPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60)
     }
-  }, [selected])
+  }, [result])
 
-  useEffect(() => {
-    if (!query.trim()) { setResults([]); return }
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const foods = await searchFoods(query)
-        setResults(foods)
-      } catch {
-        setError('Грешка при търсене. Провери връзката.')
-      } finally {
-        setIsLoading(false)
-      }
-    }, 400)
-    return () => clearTimeout(debounceRef.current)
-  }, [query])
+  async function handleSearch() {
+    if (!query.trim() || loading) return
+    setLoading(true)
+    setError(null)
+    setResult(null)
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('macro-lookup', {
+        body: { query: query.trim() },
+      })
+      if (fnError) throw fnError
+      if (!data?.per100g) throw new Error('invalid response')
+      setResult(data)
+      setGrams(String(data.typical_grams || 100))
+    } catch {
+      setError('Неуспешно търсене. Провери връзката и опитай отново.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   function handleBarcodeFound(food) {
     setScanning(false)
-    setSelected(food)
+    setResult({ name: food.name, per100g: food.per100g, typical_grams: 100 })
     setGrams('100')
     setQuery('')
-    setResults([])
   }
 
-  function handleConfirm() {
+  function handleAdd() {
     const g = parseFloat(grams)
-    if (!g || g <= 0) return
-    onAdd(selected, g)
-    setSelected(null)
+    if (!g || g <= 0 || !result) return
+    const ratio = g / 100
+    onAddRaw({
+      name:    result.name,
+      grams:   g,
+      kcal:    Math.round(result.per100g.kcal    * ratio),
+      protein: Math.round(result.per100g.protein * ratio * 10) / 10,
+      carbs:   Math.round(result.per100g.carbs   * ratio * 10) / 10,
+      fat:     Math.round(result.per100g.fat     * ratio * 10) / 10,
+    })
+    setResult(null)
     setQuery('')
-    setResults([])
+    setGrams('100')
   }
+
+  const g = parseFloat(grams)
 
   return (
     <>
       {scanning && (
         <BarcodeScanner onFound={handleBarcodeFound} onClose={() => setScanning(false)} />
       )}
+
       <div className={styles.inputWrap}>
-        <span className={styles.searchIcon} aria-hidden="true">🔍</span>
+        <span className={styles.searchIcon} aria-hidden="true">✨</span>
         <input
           className={styles.input}
           type="text"
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Търси храна..."
-          aria-label="Търси храна"
+          onChange={e => { setQuery(e.target.value); setResult(null); setError(null) }}
+          onKeyDown={e => e.key === 'Enter' && handleSearch()}
+          placeholder="Опиши ястие или съставка..."
+          aria-label="AI търсене на макроси"
         />
         {query ? (
-          <button className={styles.clear} onClick={() => { setQuery(''); setResults([]) }} aria-label="Изчисти">×</button>
+          <button className={styles.clear} onClick={() => { setQuery(''); setResult(null); setError(null) }} aria-label="Изчисти">×</button>
         ) : (
           <button className={styles.scanBtn} onClick={() => setScanning(true)} aria-label="Баркод" title="Скенирай баркод">📷</button>
         )}
       </div>
 
-      {isLoading && (
-        <div className={styles.status}>
-          <span className={styles.spinner} aria-label="Зарежда..." />Търси...
-        </div>
-      )}
+      <button
+        className={styles.aiSearchBtn}
+        onClick={handleSearch}
+        disabled={!query.trim() || loading}
+        type="button"
+      >
+        {loading
+          ? <><span className={styles.spinner} style={{ marginRight: 8 }} />Анализира...</>
+          : 'Намери макроси'}
+      </button>
+
       {error && <div className={styles.error}>{error}</div>}
 
-      {results.length > 0 && !selected && (
-        <ul className={styles.results} role="listbox">
-          {results.map(food => (
-            <li key={food.id} className={styles.resultItem} onClick={() => { setSelected(food); setGrams('100') }} role="option" aria-selected="false">
-              <div className={styles.foodName}>{food.name}</div>
-              {food.brand && <div className={styles.foodBrand}>{food.brand}</div>}
-              <div className={styles.foodMacros}>
-                <span>{Math.round(food.per100g.kcal)} ккал</span>
-                <span>П {food.per100g.protein}g</span>
-                <span>В {food.per100g.carbs}g</span>
-                <span>М {food.per100g.fat}g</span>
-                <span className={styles.per}>/ 100g</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {selected && (
+      {result && (
         <div ref={addPanelRef} className={styles.addPanel}>
-          <div className={styles.selectedName}>{selected.name}</div>
+          <div className={styles.selectedName}>{result.name}</div>
+          <div className={styles.aiPer100g}>
+            на 100g: {result.per100g.kcal} ккал · П{result.per100g.protein}g · В{result.per100g.carbs}g · М{result.per100g.fat}g
+          </div>
           <div className={styles.gramRow}>
-            <label className={styles.gramLabel} htmlFor="grams-input">Грамаж</label>
+            <label className={styles.gramLabel} htmlFor="ai-grams-input">Грамаж</label>
             <input
-              id="grams-input"
+              id="ai-grams-input"
               className={styles.gramInput}
               type="number"
               min="1"
               max="2000"
               value={grams}
               onChange={e => setGrams(e.target.value)}
+              autoFocus
             />
             <span className={styles.gramUnit}>g</span>
           </div>
-          {grams > 0 && (
+          {g > 0 && (
             <div className={styles.preview}>
-              {Math.round(selected.per100g.kcal * grams / 100)} ккал ·
-              П {Math.round(selected.per100g.protein * grams / 100 * 10) / 10}g ·
-              В {Math.round(selected.per100g.carbs   * grams / 100 * 10) / 10}g ·
-              М {Math.round(selected.per100g.fat     * grams / 100 * 10) / 10}g
+              {Math.round(result.per100g.kcal    * g / 100)} ккал ·
+              П {Math.round(result.per100g.protein * g / 100 * 10) / 10}g ·
+              В {Math.round(result.per100g.carbs   * g / 100 * 10) / 10}g ·
+              М {Math.round(result.per100g.fat     * g / 100 * 10) / 10}g
             </div>
           )}
           <div className={styles.panelActions}>
-            <button className={styles.cancelBtn} onClick={() => setSelected(null)}>Назад</button>
-            <button className={styles.addBtn} onClick={handleConfirm}>+ Добави</button>
+            <button className={styles.cancelBtn} onClick={() => setResult(null)} type="button">Назад</button>
+            <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
           </div>
         </div>
       )}

@@ -319,6 +319,43 @@
   color: var(--muted);
 }
 
+/* AI search button */
+.aiSearchBtn {
+  width: 100%;
+  padding: 11px;
+  margin-top: 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aiSearchBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
+.aiSearchBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.aiPer100g {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
 /* Add panel */
 .addPanel {
   margin-top: 8px;
