@@ -112,6 +112,32 @@
   margin: 8px 16px 0;
   padding-top: 8px;
   border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.approveBtn {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.approveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.approveBtn:not(:disabled):active {
+  opacity: 0.75;
 }
 
 .badge {

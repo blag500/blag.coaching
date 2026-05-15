@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [profile, setProfile]   = useState(null)
   const [authError, setAuthError] = useState(null)
 
-  // Load profile from Supabase
   async function fetchProfile(userId) {
     const { data, error } = await supabase
       .from('profiles')
@@ -17,14 +16,16 @@ export function AuthProvider({ children }) {
       .single()
     if (!error && data) {
       if (data.role === 'client') {
-        // Use security-definer RPC so clients can look up the coach ID
-        // without needing SELECT access to other profile rows.
         const { data: coachId } = await supabase.rpc('get_coach_id')
         setProfile(coachId ? { ...data, coach_id: coachId } : data)
       } else {
         setProfile(data)
       }
     }
+  }
+
+  async function refreshProfile() {
+    if (session?.user) await fetchProfile(session.user.id)
   }
 
   useEffect(() => {
@@ -129,6 +130,14 @@ export function AuthProvider({ children }) {
       habitsCompleted: (habitRes.data || []).filter(h => h.completed).length,
       latestWeight:    weightRes.data?.[0] ?? null,
     }
+  }
+
+  async function approveClient(clientId) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ approved: true })
+      .eq('id', clientId)
+    return { error }
   }
 
   // Coach: fetch all clients
@@ -243,8 +252,10 @@ export function AuthProvider({ children }) {
       signUp,
       signInWithGoogle,
       signOut,
+      refreshProfile,
       updateProfile,
       updateClientProfile,
+      approveClient,
       fetchClients,
       fetchCoaches,
       fetchClientStats,

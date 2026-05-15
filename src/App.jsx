@@ -11,6 +11,7 @@ import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatButton from './components/Compliance/SOSButton'
 import Explore from './components/Explore/Explore'
+import PendingApproval from './components/Auth/PendingApproval'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
 
@@ -51,6 +52,10 @@ function AppShell() {
   if (!session) return <AuthScreen />
 
   const isCoach = profile?.role === 'coach'
+
+  if (profile && !isCoach && profile.approved === false) {
+    return <PendingApproval />
+  }
 
   const pages = {
     nutrition:  <NutritionCards />,

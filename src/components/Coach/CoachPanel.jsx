@@ -6,11 +6,12 @@ import Chat from '../Chat/Chat'
 import styles from './CoachPanel.module.css'
 
 export default function CoachPanel() {
-  const { fetchClients, fetchCoaches } = useAuth()
+  const { fetchClients, fetchCoaches, approveClient } = useAuth()
   const { unreadByUser } = useUnread()
   const [clients, setClients]           = useState([])
   const [coaches, setCoaches]           = useState([])
   const [loading, setLoading]           = useState(true)
+  const [approvingId, setApprovingId]   = useState(null)
   const [selectedClient, setSelectedClient] = useState(null)
   const [chatCoach, setChatCoach]       = useState(null)
 
@@ -23,6 +24,15 @@ export default function CoachPanel() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
+
+  async function handleApprove(clientId) {
+    setApprovingId(clientId)
+    const { error } = await approveClient(clientId)
+    if (!error) {
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, approved: true } : c))
+    }
+    setApprovingId(null)
+  }
 
   if (selectedClient) {
     return (
@@ -48,36 +58,77 @@ export default function CoachPanel() {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.title}>КЛИЕНТИ</h1>
-        <p className={styles.subtitle}>{clients.length} регистрирани</p>
+        <p className={styles.subtitle}>
+          {clients.filter(c => c.approved !== false).length} одобрени
+          {clients.filter(c => c.approved === false).length > 0 && ` · ${clients.filter(c => c.approved === false).length} чакащи`}
+        </p>
       </header>
 
-      {clients.length === 0 ? (
-        <p className={styles.empty}>Все още няма клиенти.</p>
-      ) : (
-        <div className={styles.list}>
-          {clients.map(client => (
-            <button
-              key={client.id}
-              className={styles.card}
-              onClick={() => setSelectedClient(client)}
-              type="button"
-            >
-              <div className={styles.clientInfo}>
-                <span className={styles.clientName}>{client.name || '—'}</span>
-                <span className={styles.clientEmail}>{client.email}</span>
-              </div>
-              <div className={styles.macroSnippet}>
-                <span>{client.calories ?? '—'} ккал</span>
-                <span>{client.protein ?? '—'}g П</span>
-              </div>
-              {unreadByUser[client.id] > 0 && (
-                <span className={styles.badge}>{unreadByUser[client.id] > 9 ? '9+' : unreadByUser[client.id]}</span>
-              )}
-              <span className={styles.chevron}>›</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {(() => {
+        const pending  = clients.filter(c => c.approved === false)
+        const approved = clients.filter(c => c.approved !== false)
+        return (
+          <>
+            {pending.length > 0 && (
+              <>
+                <p className={styles.sectionTitle}>
+                  ЧАКАЩИ ОДОБРЕНИЕ
+                  <span className={styles.badge}>{pending.length}</span>
+                </p>
+                <div className={styles.list}>
+                  {pending.map(client => (
+                    <div key={client.id} className={styles.card}>
+                      <div className={styles.clientInfo}>
+                        <span className={styles.clientName}>{client.name || '—'}</span>
+                        <span className={styles.clientEmail}>{client.email}</span>
+                      </div>
+                      <button
+                        className={styles.approveBtn}
+                        onClick={() => handleApprove(client.id)}
+                        disabled={approvingId === client.id}
+                        type="button"
+                      >
+                        {approvingId === client.id ? '...' : 'ОДОБРИ'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {approved.length === 0 ? (
+              <p className={styles.empty}>Все още няма одобрени клиенти.</p>
+            ) : (
+              <>
+                {pending.length > 0 && <p className={styles.sectionTitle}>КЛИЕНТИ</p>}
+                <div className={styles.list}>
+                  {approved.map(client => (
+                    <button
+                      key={client.id}
+                      className={styles.card}
+                      onClick={() => setSelectedClient(client)}
+                      type="button"
+                    >
+                      <div className={styles.clientInfo}>
+                        <span className={styles.clientName}>{client.name || '—'}</span>
+                        <span className={styles.clientEmail}>{client.email}</span>
+                      </div>
+                      <div className={styles.macroSnippet}>
+                        <span>{client.calories ?? '—'} ккал</span>
+                        <span>{client.protein ?? '—'}g П</span>
+                      </div>
+                      {unreadByUser[client.id] > 0 && (
+                        <span className={styles.badge}>{unreadByUser[client.id] > 9 ? '9+' : unreadByUser[client.id]}</span>
+                      )}
+                      <span className={styles.chevron}>›</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )
+      })()}
 
       {coaches.length > 0 && (
         <>
