@@ -1,5 +1,5 @@
 .page {
-  padding: 16px 16px calc(100px + env(safe-area-inset-bottom));
+  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(100px + env(safe-area-inset-bottom));
   min-height: 100dvh;
   box-sizing: border-box;
   display: flex;
