@@ -56,9 +56,12 @@ export function AuthProvider({ children }) {
     setAuthError(null)
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) { setAuthError(error.message); return false }
-    // Set display name immediately after signup
     if (data.user) {
       await supabase.from('profiles').update({ name }).eq('id', data.user.id)
+      // Fire-and-forget: notify coach of new registration
+      supabase.functions.invoke('notify-new-registration', {
+        body: { userId: data.user.id, email, name },
+      }).catch(() => {})
     }
     return true
   }
