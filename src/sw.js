@@ -2,6 +2,9 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst } from 'workbox-strategies'
 
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
+
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
 
