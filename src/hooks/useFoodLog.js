@@ -72,8 +72,12 @@ export function useFoodLog() {
 
   async function updateEntry(id, updates) {
     setLog(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
-    const { error } = await supabase.from('food_logs').update(updates).eq('id', id)
-    if (error) {
+    const { data, error } = await supabase
+      .from('food_logs')
+      .update(updates)
+      .eq('id', id)
+      .select()
+    if (error || !data?.length) {
       console.error('food_logs update failed:', error)
       fetchLog()
     }
