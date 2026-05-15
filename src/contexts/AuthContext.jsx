@@ -264,6 +264,14 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
+  async function updateSession(sessionId, updates) {
+    const { error } = await supabase
+      .from('training_sessions')
+      .update(updates)
+      .eq('id', sessionId)
+    return { error }
+  }
+
   async function markMessagesAsRead(otherUserId) {
     await supabase
       .from('messages')
@@ -300,6 +308,7 @@ export function AuthProvider({ children }) {
       fetchTrainingSessions,
       createTrainingSession,
       updateSessionStatus,
+      updateSession,
       fetchMessages,
       sendMessage,
       markMessagesAsRead,

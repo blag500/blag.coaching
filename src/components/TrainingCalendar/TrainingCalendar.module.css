@@ -214,13 +214,18 @@
 /* Session card */
 .sessionCard {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
   padding: 14px;
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-left-width: 3px;
   border-radius: 12px;
+}
+
+.cardMain {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .card_pending   { border-left-color: var(--accent); }
@@ -376,7 +381,7 @@
 .sheetHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0;
   margin-bottom: 20px;
 }
 
@@ -385,9 +390,11 @@
   font-size: 18px;
   letter-spacing: 0.12em;
   color: var(--accent);
+  flex-shrink: 0;
 }
 
 .closeBtn {
+  margin-left: auto;
   background: none;
   border: none;
   color: var(--muted);
@@ -480,4 +487,97 @@ select.input {
 
 .submitBtn:not(:disabled):active {
   opacity: 0.85;
+}
+
+/* Sheet subtitle (propose-edit mode) */
+.sheetSub {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+  margin-left: 8px;
+}
+
+/* Edit icon button (coach pencil) */
+.editIconBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid rgba(255, 183, 77, 0.2);
+  border-radius: 7px;
+  color: var(--accent);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.editIconBtn:active { opacity: 0.7; }
+
+/* Client "Промени" button */
+.proposeBtn {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  background: rgba(255, 183, 77, 0.08);
+  color: var(--accent);
+}
+
+.proposeBtn:active { opacity: 0.7; }
+
+/* Edit proposal section inside card */
+.editProposal {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editProposalLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+
+.editProposalValue {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.editProposalNotes {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.editProposalActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Client pending edit notice */
+.editPending {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.editPendingLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
 }
