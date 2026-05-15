@@ -227,6 +227,7 @@ export function AuthProvider({ children }) {
       .update({ read_at: new Date().toISOString() })
       .eq('to_user_id', session?.user.id)
       .eq('from_user_id', otherUserId)
+      .is('read_at', null)
   }
 
   const loading = session === undefined

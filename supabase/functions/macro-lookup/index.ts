@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     })
   }
 
-  const apiKey = Deno.env.get('GOOGLE_AI_API_KEY')
+  const apiKey = Deno.env.get('GROQ_API_KEY')
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'API key not configured' }), {
       status: 500,
@@ -36,18 +36,20 @@ Deno.serve(async (req) => {
     })
   }
 
-  const aiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ parts: [{ text: query.trim() }] }],
-        generationConfig: { response_mime_type: 'application/json' },
-      }),
-    }
-  )
+  const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: query.trim() },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.1,
+      max_tokens: 256,
+    }),
+  })
 
   if (!aiRes.ok) {
     return new Response(JSON.stringify({ error: 'AI request failed' }), {
@@ -57,7 +59,7 @@ Deno.serve(async (req) => {
   }
 
   const aiData = await aiRes.json()
-  const text = aiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  const text = aiData.choices?.[0]?.message?.content ?? ''
 
   let result
   try {
