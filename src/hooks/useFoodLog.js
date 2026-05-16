@@ -2,13 +2,16 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
-function todayStr() {
+export function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
 export function useFoodLog() {
   const { user } = useAuth()
+  const [selectedDate, setSelectedDate] = useState(todayStr())
   const [log, setLog] = useState([])
+
+  const isToday = selectedDate === todayStr()
 
   const fetchLog = useCallback(async () => {
     if (!user) return
@@ -16,15 +19,15 @@ export function useFoodLog() {
       .from('food_logs')
       .select('*')
       .eq('user_id', user.id)
-      .eq('date', todayStr())
+      .eq('date', selectedDate)
       .order('added_at')
     if (data) setLog(data)
-  }, [user?.id])
+  }, [user?.id, selectedDate])
 
   useEffect(() => { fetchLog() }, [fetchLog])
 
   async function addEntry(food, grams) {
-    if (!user) return
+    if (!user || !isToday) return
     const ratio = grams / 100
     const entry = {
       user_id: user.id,
@@ -48,7 +51,7 @@ export function useFoodLog() {
   }
 
   async function addRawEntry({ name, grams, kcal, protein, carbs, fat }) {
-    if (!user) return
+    if (!user || !isToday) return
     const entry = {
       user_id: user.id,
       date:    todayStr(),
@@ -84,12 +87,13 @@ export function useFoodLog() {
   }
 
   async function removeEntry(id) {
+    if (!isToday) return
     setLog(prev => prev.filter(e => e.id !== id))
     await supabase.from('food_logs').delete().eq('id', id)
   }
 
   async function clearLog() {
-    if (!user) return
+    if (!user || !isToday) return
     setLog([])
     await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', todayStr())
   }
@@ -101,5 +105,9 @@ export function useFoodLog() {
     fat:     Math.round((acc.fat     + (Number(e.fat)     || 0)) * 10) / 10,
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
-  return { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, refresh: fetchLog }
+  return {
+    log, totals, selectedDate, setSelectedDate, isToday,
+    addEntry, addRawEntry, updateEntry, removeEntry, clearLog,
+    refresh: fetchLog,
+  }
 }

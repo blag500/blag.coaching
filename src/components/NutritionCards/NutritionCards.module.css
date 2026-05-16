@@ -75,6 +75,70 @@
   color: var(--bg);
 }
 
+/* Date navigation */
+.dateNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.dateNavBtn {
+  width: 32px;
+  height: 32px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.dateNavBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.dateNavBtn:not(:disabled):active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dateNavLabel {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.todayBtn {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.todayBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
 /* Library tab */
 .library {
   display: flex;

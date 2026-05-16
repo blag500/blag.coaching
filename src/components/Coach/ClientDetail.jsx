@@ -21,7 +21,6 @@ export default function ClientDetail({ client: initialClient, onBack }) {
   const [client, setClient] = useState(initialClient)
   const [tab, setTab] = useState('progress')
   const [stats, setStats] = useState(null)
-  const [foodLogs, setFoodLogs] = useState([])
   const [exerciseLogs, setExerciseLogs] = useState([])
   const [edits, setEdits] = useState({
     name:          initialClient.name          ?? '',
@@ -40,7 +39,6 @@ export default function ClientDetail({ client: initialClient, onBack }) {
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10)
     fetchClientFullStats(client.id).then(setStats)
-    supabase.from('food_logs').select('*').eq('user_id', client.id).order('added_at', { ascending: false }).limit(50).then(({ data }) => setFoodLogs(data || []))
     fetchExerciseLogs(client.id, today).then(({ data }) => setExerciseLogs(data || []))
   }, [client.id])
 
@@ -116,7 +114,7 @@ export default function ClientDetail({ client: initialClient, onBack }) {
 
       <div className={styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
-        {tab === 'nutrition' && <NutritionTab logs={foodLogs} client={client} />}
+        {tab === 'nutrition' && <NutritionTab client={client} />}
         {tab === 'lifts' && <LiftsTab logs={exerciseLogs} />}
         {tab === 'plan' && (
           <TrainingEditor
@@ -291,39 +289,72 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
 
 // ─── Nutrition Tab ───────────────────────────────────────────────────────
 
-function NutritionTab({ logs, client }) {
-  const grouped = {}
-  logs.forEach(log => {
-    if (!grouped[log.date]) grouped[log.date] = []
-    grouped[log.date].push(log)
-  })
+function NutritionTab({ client }) {
+  const today = new Date().toISOString().slice(0, 10)
+  const [selectedDate, setSelectedDate] = useState(today)
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(false)
 
-  const dates = Object.keys(grouped).sort().reverse()
+  useEffect(() => {
+    setLoading(true)
+    supabase
+      .from('food_logs')
+      .select('*')
+      .eq('user_id', client.id)
+      .eq('date', selectedDate)
+      .order('added_at')
+      .then(({ data }) => {
+        setLogs(data || [])
+        setLoading(false)
+      })
+  }, [client.id, selectedDate])
+
+  function shift(days) {
+    const d = new Date(selectedDate + 'T12:00:00')
+    d.setDate(d.getDate() + days)
+    const next = d.toISOString().slice(0, 10)
+    if (next <= today) setSelectedDate(next)
+  }
+
+  const isToday = selectedDate === today
+  const label = new Date(selectedDate + 'T12:00:00').toLocaleDateString('bg-BG', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
+  const totalKcal = logs.reduce((s, l) => s + (l.kcal || 0), 0)
+  const targetKcal = client.calories || 2450
 
   return (
     <div className={styles.nutritionTab}>
-      {dates.length === 0 ? (
-        <p className={styles.empty}>Няма логирани храни</p>
+      <div className={styles.dateNav}>
+        <button className={styles.dateNavBtn} onClick={() => shift(-1)} type="button" aria-label="Предишен ден">‹</button>
+        <span className={styles.dateNavLabel}>{label}</span>
+        <button className={styles.dateNavBtn} onClick={() => shift(1)} disabled={isToday} type="button" aria-label="Следващ ден">›</button>
+        {!isToday && (
+          <button className={styles.todayBtn} onClick={() => setSelectedDate(today)} type="button">ДНЕС</button>
+        )}
+      </div>
+
+      {loading ? (
+        <p className={styles.loading}>Зарежда...</p>
+      ) : logs.length === 0 ? (
+        <p className={styles.empty}>Няма логирани храни за тази дата</p>
       ) : (
-        dates.map(date => (
-          <div key={date} className={styles.dateGroup}>
-            <h4 className={styles.dateHeader}>{date}</h4>
-            <div className={styles.logList}>
-              {grouped[date].map(log => (
-                <div key={log.id} className={styles.logEntry}>
-                  <div className={styles.logName}>{log.name}</div>
-                  <div className={styles.logMacros}>
-                    <span>{log.kcal} ккал</span>
-                    <span>П:{Math.round(log.protein)} В:{Math.round(log.carbs)} М:{Math.round(log.fat)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className={styles.dayTotal}>
-              {`Дневно: ${grouped[date].reduce((s, l) => s + l.kcal, 0)} ккал / ${client.calories} (цел)`}
-            </div>
+        <>
+          <div className={styles.dayTotal}>
+            {totalKcal} / {targetKcal} ккал
           </div>
-        ))
+          <div className={styles.logList}>
+            {logs.map(log => (
+              <div key={log.id} className={styles.logEntry}>
+                <div className={styles.logName}>{log.name}</div>
+                <div className={styles.logMacros}>
+                  <span>{log.kcal} ккал · {log.grams > 0 ? `${log.grams}g` : ''}</span>
+                  <span>П:{Math.round(log.protein)} В:{Math.round(log.carbs)} М:{Math.round(log.fat)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )
