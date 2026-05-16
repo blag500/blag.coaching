@@ -21,7 +21,10 @@ export function useFoodLog() {
       .eq('user_id', user.id)
       .eq('date', selectedDate)
       .order('added_at')
-    if (data) setLog(data)
+    if (data) setLog(prev => {
+      const temps = prev.filter(e => String(e.id).startsWith('temp-'))
+      return temps.length ? [...data, ...temps] : data
+    })
   }, [user?.id, selectedDate])
 
   useEffect(() => { fetchLog() }, [fetchLog])
