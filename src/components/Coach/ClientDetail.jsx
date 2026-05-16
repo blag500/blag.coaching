@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
+import DatePicker from '../DatePicker/DatePicker'
 import Chat from '../Chat/Chat'
 import WeightChart from '../Profile/WeightChart'
 import styles from './ClientDetail.module.css'
@@ -290,8 +291,7 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
 // ─── Nutrition Tab ───────────────────────────────────────────────────────
 
 function NutritionTab({ client }) {
-  const today = new Date().toISOString().slice(0, 10)
-  const [selectedDate, setSelectedDate] = useState(today)
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -309,30 +309,12 @@ function NutritionTab({ client }) {
       })
   }, [client.id, selectedDate])
 
-  function shift(days) {
-    const d = new Date(selectedDate + 'T12:00:00')
-    d.setDate(d.getDate() + days)
-    const next = d.toISOString().slice(0, 10)
-    if (next <= today) setSelectedDate(next)
-  }
-
-  const isToday = selectedDate === today
-  const label = new Date(selectedDate + 'T12:00:00').toLocaleDateString('bg-BG', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
   const totalKcal = logs.reduce((s, l) => s + (l.kcal || 0), 0)
   const targetKcal = client.calories || 2450
 
   return (
     <div className={styles.nutritionTab}>
-      <div className={styles.dateNav}>
-        <button className={styles.dateNavBtn} onClick={() => shift(-1)} type="button" aria-label="Предишен ден">‹</button>
-        <span className={styles.dateNavLabel}>{label}</span>
-        <button className={styles.dateNavBtn} onClick={() => shift(1)} disabled={isToday} type="button" aria-label="Следващ ден">›</button>
-        {!isToday && (
-          <button className={styles.todayBtn} onClick={() => setSelectedDate(today)} type="button">ДНЕС</button>
-        )}
-      </div>
+      <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
 
       {loading ? (
         <p className={styles.loading}>Зарежда...</p>

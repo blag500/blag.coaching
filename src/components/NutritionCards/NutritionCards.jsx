@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { useFoodLog, todayStr } from '../../hooks/useFoodLog'
+import { useFoodLog } from '../../hooks/useFoodLog'
+import DatePicker from '../DatePicker/DatePicker'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import NutritionProgress from './NutritionProgress'
@@ -87,10 +88,10 @@ export default function NutritionCards() {
 
       {view === 'log' ? (
         <>
-          <DateNav selectedDate={selectedDate} onChange={setSelectedDate} />
+          <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
           <NutritionProgress totals={totals} targets={targets} />
-          {isToday && <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} />}
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} readOnly={!isToday} />
+          <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} />
+          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} />
         </>
       ) : (
         <LibraryTab
@@ -110,33 +111,6 @@ export default function NutritionCards() {
           onSave={handleSaveCustomFood}
           onClose={() => setShowBuilder(false)}
         />
-      )}
-    </div>
-  )
-}
-
-// ─── Date Navigation ─────────────────────────────────────────────────────────
-
-function DateNav({ selectedDate, onChange }) {
-  function shift(days) {
-    const d = new Date(selectedDate + 'T12:00:00')
-    d.setDate(d.getDate() + days)
-    const next = d.toISOString().slice(0, 10)
-    if (next <= todayStr()) onChange(next)
-  }
-
-  const isToday = selectedDate === todayStr()
-  const label = new Date(selectedDate + 'T12:00:00').toLocaleDateString('bg-BG', {
-    weekday: 'short', day: 'numeric', month: 'long',
-  })
-
-  return (
-    <div className={styles.dateNav}>
-      <button className={styles.dateNavBtn} onClick={() => shift(-1)} type="button" aria-label="Предишен ден">‹</button>
-      <span className={styles.dateNavLabel}>{label}</span>
-      <button className={styles.dateNavBtn} onClick={() => shift(1)} disabled={isToday} type="button" aria-label="Следващ ден">›</button>
-      {!isToday && (
-        <button className={styles.todayBtn} onClick={() => onChange(todayStr())} type="button">ДНЕС</button>
       )}
     </div>
   )

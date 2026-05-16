@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import styles from './FoodLog.module.css'
 
-export default function FoodLog({ log, onRemove, onClear, onEdit, readOnly }) {
+export default function FoodLog({ log, onRemove, onClear, onEdit }) {
   const [editingId, setEditingId] = useState(null)
   const [draft, setDraft] = useState({})
 
@@ -47,8 +47,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, readOnly }) {
     return (
       <div className={styles.empty}>
         <span className={styles.emptyIcon}>🍽</span>
-        <p>{readOnly ? 'Няма логирани храни за тази дата' : 'Няма добавени храни днес'}</p>
-        {!readOnly && <p className={styles.emptyHint}>Търси и добави храна по-горе</p>}
+        <p>Няма добавени храни</p>
+        <p className={styles.emptyHint}>Търси и добави храна по-горе</p>
       </div>
     )
   }
@@ -57,12 +57,12 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, readOnly }) {
     <div className={styles.wrap}>
       <div className={styles.listHeader}>
         <span className={styles.listTitle}>Дневен лог ({log.length})</span>
-        {!readOnly && <button className={styles.clearBtn} onClick={onClear}>Изчисти</button>}
+        <button className={styles.clearBtn} onClick={onClear}>Изчисти</button>
       </div>
 
       <ul className={styles.list}>
         {log.map((entry, i) =>
-          !readOnly && editingId === entry.id ? (
+          editingId === entry.id ? (
             <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
               <div className={styles.editName}>{entry.name}</div>
 
@@ -128,26 +128,22 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, readOnly }) {
               </div>
               <div className={styles.entryRight}>
                 <span className={styles.entryGrams}>{entry.grams > 0 ? `${entry.grams}g` : ''}</span>
-                {!readOnly && (
-                  <>
-                    <button
-                      className={styles.editBtn}
-                      onClick={() => startEdit(entry)}
-                      aria-label={`Редактирай ${entry.name}`}
-                      type="button"
-                    >
-                      ✎
-                    </button>
-                    <button
-                      className={styles.removeBtn}
-                      onClick={() => onRemove(entry.id)}
-                      aria-label={`Премахни ${entry.name}`}
-                      type="button"
-                    >
-                      ×
-                    </button>
-                  </>
-                )}
+                <button
+                  className={styles.editBtn}
+                  onClick={() => startEdit(entry)}
+                  aria-label={`Редактирай ${entry.name}`}
+                  type="button"
+                >
+                  ✎
+                </button>
+                <button
+                  className={styles.removeBtn}
+                  onClick={() => onRemove(entry.id)}
+                  aria-label={`Премахни ${entry.name}`}
+                  type="button"
+                >
+                  ×
+                </button>
               </div>
             </li>
           )

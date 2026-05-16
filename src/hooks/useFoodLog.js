@@ -27,11 +27,11 @@ export function useFoodLog() {
   useEffect(() => { fetchLog() }, [fetchLog])
 
   async function addEntry(food, grams) {
-    if (!user || !isToday) return
+    if (!user) return
     const ratio = grams / 100
     const entry = {
       user_id: user.id,
-      date:    todayStr(),
+      date:    selectedDate,
       name:    food.name,
       grams,
       kcal:    Math.round(food.per100g.kcal    * ratio),
@@ -51,10 +51,10 @@ export function useFoodLog() {
   }
 
   async function addRawEntry({ name, grams, kcal, protein, carbs, fat }) {
-    if (!user || !isToday) return
+    if (!user) return
     const entry = {
       user_id: user.id,
-      date:    todayStr(),
+      date:    selectedDate,
       name,
       grams:   grams   || 0,
       kcal:    Math.round(kcal),
@@ -87,15 +87,14 @@ export function useFoodLog() {
   }
 
   async function removeEntry(id) {
-    if (!isToday) return
     setLog(prev => prev.filter(e => e.id !== id))
     await supabase.from('food_logs').delete().eq('id', id)
   }
 
   async function clearLog() {
-    if (!user || !isToday) return
+    if (!user) return
     setLog([])
-    await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', todayStr())
+    await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', selectedDate)
   }
 
   const totals = log.reduce((acc, e) => ({

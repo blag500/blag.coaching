@@ -1,0 +1,198 @@
+.wrap {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrowBtn {
+  width: 36px;
+  height: 36px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.arrowBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.arrowBtn:not(:disabled):active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.labelBtn {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.03em;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.labelBtnOpen {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.labelBtn:not(.labelBtnOpen):active {
+  border-color: rgba(255, 183, 77, 0.4);
+}
+
+.todayBtn {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.todayBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
+/* ── Calendar popup ──────────────────────────────────────────────────────── */
+
+.calWrap {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  z-index: 50;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.calNavBtn {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.calNavBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calNavBtn:not(:disabled):active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.calMonthLabel {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calWeekDay {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 0 6px;
+  letter-spacing: 0.04em;
+}
+
+.calDay {
+  aspect-ratio: 1;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.calDay:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.calDay:not(:disabled):not(.calDaySelected):active {
+  background: var(--accent-dim);
+}
+
+.calDayToday {
+  border-color: rgba(255, 183, 77, 0.45);
+  color: var(--accent);
+}
+
+.calDaySelected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
