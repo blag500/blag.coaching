@@ -93,6 +93,55 @@
 }
 
 /* Recent foods */
+.recentSearchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.recentSearch {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.recentSearch:focus {
+  border-color: var(--accent);
+}
+
+.recentSearch::placeholder {
+  color: var(--muted);
+}
+
+.recentSearchClear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.recentSearchClear:active {
+  color: var(--text);
+}
+
 .recentEmpty {
   font-family: var(--font-body);
   font-size: 13px;

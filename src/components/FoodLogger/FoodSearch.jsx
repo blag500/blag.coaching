@@ -298,6 +298,7 @@ function RecentMode({ onAddRaw }) {
   const [loading, setLoading] = useState(true)
   const [selectedName, setSelectedName] = useState(null)
   const [newGrams, setNewGrams] = useState('100')
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -306,17 +307,16 @@ function RecentMode({ onAddRaw }) {
       .select('name, grams, kcal, protein, carbs, fat, added_at')
       .eq('user_id', user.id)
       .order('added_at', { ascending: false })
-      .limit(60)
+      .limit(200)
       .then(({ data }) => {
         if (!data) { setLoading(false); return }
-        // Deduplicate by name, keep most recent
         const seen = new Set()
         const unique = []
         for (const entry of data) {
           if (!seen.has(entry.name)) {
             seen.add(entry.name)
             unique.push(entry)
-            if (unique.length >= 15) break
+            if (unique.length >= 50) break
           }
         }
         setRecents(unique)
@@ -343,14 +343,36 @@ function RecentMode({ onAddRaw }) {
       fat:     Math.round(item.fat     * ratio * 10) / 10,
     })
     setSelectedName(null)
+    setQuery('')
   }
 
   if (loading) return <p className={styles.recentEmpty}>Зарежда...</p>
   if (recents.length === 0) return <p className={styles.recentEmpty}>Няма скорошни храни</p>
 
+  const filtered = query.trim()
+    ? recents.filter(r => r.name.toLowerCase().includes(query.trim().toLowerCase()))
+    : recents
+
   return (
+    <>
+      <div className={styles.recentSearchWrap}>
+        <input
+          className={styles.recentSearch}
+          type="text"
+          placeholder="Филтрирай скорошни..."
+          value={query}
+          onChange={e => { setQuery(e.target.value); setSelectedName(null) }}
+          aria-label="Търси в скорошни"
+        />
+        {query && (
+          <button className={styles.recentSearchClear} onClick={() => { setQuery(''); setSelectedName(null) }} type="button" aria-label="Изчисти">×</button>
+        )}
+      </div>
+      {filtered.length === 0 && (
+        <p className={styles.recentEmpty}>Няма намерени храни</p>
+      )}
     <ul className={styles.recentList}>
-      {recents.map((item, i) => {
+      {filtered.map((item, i) => {
         const isExpanded = selectedName === item.name
         const g = parseFloat(newGrams)
         const base = item.grams > 0 ? item.grams : 100
@@ -410,5 +432,6 @@ function RecentMode({ onAddRaw }) {
         )
       })}
     </ul>
+    </>
   )
 }
