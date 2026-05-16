@@ -55,6 +55,21 @@ export function useUnread() {
     return () => supabase.removeChannel(channel)
   }, [user?.id, fetchUnread])
 
+  // Polling fallback: re-check every 30 s in case Realtime drops
+  useEffect(() => {
+    if (!user) return
+    const id = setInterval(fetchUnread, 30_000)
+    return () => clearInterval(id)
+  }, [user?.id, fetchUnread])
+
+  // Re-check when the app returns to the foreground
+  useEffect(() => {
+    if (!user) return
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchUnread() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [user?.id, fetchUnread])
+
   // Immediately clear badge when chat is opened and messages are marked read
   useEffect(() => {
     const handler = (e) => {

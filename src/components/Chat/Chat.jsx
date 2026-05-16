@@ -29,6 +29,28 @@ export default function Chat({ clientId, clientName, onClose }) {
     })
   }, [otherUserId, clientId])
 
+  // Polling fallback: silently re-fetch every 15 s in case Realtime drops
+  useEffect(() => {
+    if (!otherUserId) return
+    const id = setInterval(async () => {
+      const { data } = await fetchMessages(otherUserId)
+      if (data) setMessages(data)
+    }, 15_000)
+    return () => clearInterval(id)
+  }, [otherUserId])
+
+  // Refresh when the user brings the app back to the foreground
+  useEffect(() => {
+    if (!otherUserId) return
+    const onVisible = async () => {
+      if (document.visibilityState !== 'visible') return
+      const { data } = await fetchMessages(otherUserId)
+      if (data) setMessages(data)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [otherUserId])
+
   // Real-time: append incoming messages without a full refetch
   useEffect(() => {
     if (!user?.id || !otherUserId) return
