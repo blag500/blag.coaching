@@ -30,6 +30,15 @@ function TagIcon() {
   )
 }
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+  )
+}
+
 function ProductCard({ product, currentUserId, onDelete, onEdit }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(FORM_EMPTY)
@@ -50,55 +59,60 @@ function ProductCard({ product, currentUserId, onDelete, onEdit }) {
     setEditing(false)
   }
 
-  if (editing) {
-    return (
-      <div className={`${styles.card} ${styles.cardEditing}`}>
-        {FORM_FIELDS.map(f => (
-          <div key={f.key} className={styles.formField}>
-            <label className={styles.formLabel}>{f.label}</label>
-            <input
-              className={styles.formInput}
-              type="text"
-              value={draft[f.key]}
-              onChange={e => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
-            />
-          </div>
-        ))}
-        <div className={styles.formActions}>
-          <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button">Отказ</button>
-          <button
-            className={styles.submitBtn}
-            onClick={handleSave}
-            disabled={saving || FORM_FIELDS.some(f => !draft[f.key].trim())}
-            type="button"
-          >
-            {saving ? 'Запазва...' : 'Запази'}
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className={styles.card}>
-      <div className={styles.cardTop}>
-        <span className={styles.cardName}>{product.name}</span>
-        {isOwner && (
-          <div className={styles.cardActions}>
-            <button className={styles.editBtn} onClick={startEdit} type="button" aria-label="Редактирай">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13" aria-hidden="true">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
-            <button className={styles.deleteBtn} onClick={() => onDelete(product.id)} type="button" aria-label="Изтрий">×</button>
-          </div>
+    <div className={`${styles.card} ${editing ? styles.cardEditing : ''}`}>
+      {!editing && product.photo_url && (
+        <img src={product.photo_url} alt={product.name} className={styles.cardPhoto} />
+      )}
+      <div className={styles.cardBody}>
+        {editing ? (
+          <>
+            {FORM_FIELDS.map(f => (
+              <div key={f.key} className={styles.formField}>
+                <label className={styles.formLabel}>{f.label}</label>
+                <input
+                  className={styles.formInput}
+                  type="text"
+                  value={draft[f.key]}
+                  onChange={e => setDraft(prev => ({ ...prev, [f.key]: e.target.value }))}
+                />
+              </div>
+            ))}
+            <div className={styles.formActions}>
+              <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button">Отказ</button>
+              <button
+                className={styles.submitBtn}
+                onClick={handleSave}
+                disabled={saving || FORM_FIELDS.some(f => !draft[f.key].trim())}
+                type="button"
+              >
+                {saving ? 'Запазва...' : 'Запази'}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className={styles.cardTop}>
+              <span className={styles.cardName}>{product.name}</span>
+              {isOwner && (
+                <div className={styles.cardActions}>
+                  <button className={styles.editBtn} onClick={startEdit} type="button" aria-label="Редактирай">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13" aria-hidden="true">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  <button className={styles.deleteBtn} onClick={() => onDelete(product.id)} type="button" aria-label="Изтрий">×</button>
+                </div>
+              )}
+            </div>
+            <span className={styles.indicator}>{product.indicator}</span>
+            <div className={styles.cardMeta}>
+              <span className={styles.metaItem}><PinIcon />{product.source}</span>
+              <span className={styles.metaItem}><TagIcon />{product.price}</span>
+            </div>
+          </>
         )}
-      </div>
-      <span className={styles.indicator}>{product.indicator}</span>
-      <div className={styles.cardMeta}>
-        <span className={styles.metaItem}><PinIcon />{product.source}</span>
-        <span className={styles.metaItem}><TagIcon />{product.price}</span>
       </div>
     </div>
   )
@@ -106,12 +120,14 @@ function ProductCard({ product, currentUserId, onDelete, onEdit }) {
 
 export default function EfficientProducts({ onBack }) {
   const { user } = useAuth()
-  const [products, setProducts]   = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [showForm, setShowForm]   = useState(false)
-  const [form, setForm]           = useState(FORM_EMPTY)
+  const [products, setProducts]     = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [showForm, setShowForm]     = useState(false)
+  const [form, setForm]             = useState(FORM_EMPTY)
+  const [photoFile, setPhotoFile]   = useState(null)
+  const [photoPreview, setPhotoPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError]         = useState(null)
+  const [error, setError]           = useState(null)
 
   useEffect(() => {
     supabase
@@ -128,12 +144,27 @@ export default function EfficientProducts({ onBack }) {
     setForm(prev => ({ ...prev, [key]: val }))
   }
 
+  function handlePhotoChange(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
+  function cancelForm() {
+    setShowForm(false)
+    setForm(FORM_EMPTY)
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setError(null)
+  }
+
   async function handleSubmit() {
     if (!user) return
-    const filled = FORM_FIELDS.every(f => form[f.key].trim())
-    if (!filled) return
+    if (!FORM_FIELDS.every(f => form[f.key].trim())) return
     setSubmitting(true)
     setError(null)
+
     const { data, error: err } = await supabase
       .from('efficient_products')
       .insert({
@@ -145,13 +176,33 @@ export default function EfficientProducts({ onBack }) {
       })
       .select()
       .single()
+
     if (err) {
       setError('Грешка при добавяне. Опитай пак.')
-    } else if (data) {
-      setProducts(prev => [data, ...prev])
-      setForm(FORM_EMPTY)
-      setShowForm(false)
+      setSubmitting(false)
+      return
     }
+
+    let product = data
+    if (photoFile) {
+      const ext = photoFile.name.split('.').pop().toLowerCase()
+      const path = `${user.id}/${data.id}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('product-photos')
+        .upload(path, photoFile, { upsert: true })
+      if (!uploadErr) {
+        const { data: urlData } = supabase.storage.from('product-photos').getPublicUrl(path)
+        const photoUrl = urlData.publicUrl
+        await supabase.from('efficient_products').update({ photo_url: photoUrl }).eq('id', data.id)
+        product = { ...data, photo_url: photoUrl }
+      }
+    }
+
+    setProducts(prev => [product, ...prev])
+    setForm(FORM_EMPTY)
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setShowForm(false)
     setSubmitting(false)
   }
 
@@ -193,31 +244,38 @@ export default function EfficientProducts({ onBack }) {
               />
             </div>
           ))}
+
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>Снимка (незадължително)</label>
+            <label className={styles.photoUploadLabel} htmlFor="ep-photo">
+              {photoPreview ? (
+                <img src={photoPreview} alt="преглед" className={styles.photoPreviewImg} />
+              ) : (
+                <span className={styles.photoUploadHint}>
+                  <CameraIcon />
+                  Добави снимка
+                </span>
+              )}
+            </label>
+            <input
+              id="ep-photo"
+              type="file"
+              accept="image/*"
+              className={styles.photoFileInput}
+              onChange={handlePhotoChange}
+            />
+          </div>
+
           {error && <p className={styles.formError}>{error}</p>}
           <div className={styles.formActions}>
-            <button
-              className={styles.cancelBtn}
-              onClick={() => { setShowForm(false); setError(null) }}
-              type="button"
-            >
-              Отказ
-            </button>
-            <button
-              className={styles.submitBtn}
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              type="button"
-            >
+            <button className={styles.cancelBtn} onClick={cancelForm} type="button">Отказ</button>
+            <button className={styles.submitBtn} onClick={handleSubmit} disabled={!canSubmit} type="button">
               {submitting ? 'Изпраща...' : '+ Добави'}
             </button>
           </div>
         </div>
       ) : (
-        <button
-          className={styles.contributeBtn}
-          onClick={() => setShowForm(true)}
-          type="button"
-        >
+        <button className={styles.contributeBtn} onClick={() => setShowForm(true)} type="button">
           + Добави продукт
         </button>
       )}
