@@ -378,51 +378,215 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
 
 function NutritionTab({ client }) {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [logs, setLogs] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [logs, setLogs]         = useState([])
+  const [loading, setLoading]   = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [draft, setDraft]       = useState({})
+  const [showAdd, setShowAdd]   = useState(false)
+  const [newEntry, setNewEntry] = useState({ name: '', grams: '', kcal: '', protein: '', carbs: '', fat: '' })
+  const [adding, setAdding]     = useState(false)
 
   useEffect(() => {
     setLoading(true)
-    supabase
-      .from('food_logs')
-      .select('*')
-      .eq('user_id', client.id)
-      .eq('date', selectedDate)
-      .order('added_at')
-      .then(({ data }) => {
-        setLogs(data || [])
-        setLoading(false)
-      })
+    supabase.from('food_logs').select('*')
+      .eq('user_id', client.id).eq('date', selectedDate).order('added_at')
+      .then(({ data }) => { setLogs(data || []); setLoading(false) })
   }, [client.id, selectedDate])
 
-  const totalKcal = logs.reduce((s, l) => s + (l.kcal || 0), 0)
+  function startEdit(entry) {
+    setEditingId(entry.id)
+    setDraft({
+      name:    entry.name,
+      grams:   String(entry.grams || 0),
+      kcal:    String(entry.kcal),
+      protein: String(entry.protein),
+      carbs:   String(entry.carbs),
+      fat:     String(entry.fat),
+    })
+  }
+
+  function handleDraftGramsChange(entry, val) {
+    const g = parseFloat(val)
+    if (g > 0 && entry.grams > 0) {
+      const ratio = g / entry.grams
+      setDraft(prev => ({
+        ...prev,
+        grams:   val,
+        kcal:    String(Math.round(entry.kcal    * ratio)),
+        protein: String(Math.round(entry.protein * ratio * 10) / 10),
+        carbs:   String(Math.round(entry.carbs   * ratio * 10) / 10),
+        fat:     String(Math.round(entry.fat     * ratio * 10) / 10),
+      }))
+    } else {
+      setDraft(prev => ({ ...prev, grams: val }))
+    }
+  }
+
+  async function saveEdit(id) {
+    const updates = {
+      name:    draft.name.trim(),
+      grams:   parseFloat(draft.grams)              || 0,
+      kcal:    Math.round(parseFloat(draft.kcal)     || 0),
+      protein: Math.round((parseFloat(draft.protein) || 0) * 10) / 10,
+      carbs:   Math.round((parseFloat(draft.carbs)   || 0) * 10) / 10,
+      fat:     Math.round((parseFloat(draft.fat)     || 0) * 10) / 10,
+    }
+    await supabase.from('food_logs').update(updates).eq('id', id)
+    setLogs(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+    setEditingId(null)
+  }
+
+  async function deleteEntry(id) {
+    await supabase.from('food_logs').delete().eq('id', id)
+    setLogs(prev => prev.filter(e => e.id !== id))
+  }
+
+  async function handleAdd() {
+    if (!newEntry.name.trim() || !newEntry.kcal) return
+    setAdding(true)
+    const entry = {
+      user_id: client.id,
+      date:    selectedDate,
+      name:    newEntry.name.trim(),
+      grams:   parseFloat(newEntry.grams)              || 0,
+      kcal:    Math.round(parseFloat(newEntry.kcal)     || 0),
+      protein: Math.round((parseFloat(newEntry.protein) || 0) * 10) / 10,
+      carbs:   Math.round((parseFloat(newEntry.carbs)   || 0) * 10) / 10,
+      fat:     Math.round((parseFloat(newEntry.fat)     || 0) * 10) / 10,
+    }
+    const { data } = await supabase.from('food_logs').insert(entry).select().single()
+    if (data) {
+      setLogs(prev => [...prev, data])
+      setNewEntry({ name: '', grams: '', kcal: '', protein: '', carbs: '', fat: '' })
+      setShowAdd(false)
+    }
+    setAdding(false)
+  }
+
+  const totals = logs.reduce((acc, e) => ({
+    kcal:    Math.round(acc.kcal    + (e.kcal    || 0)),
+    protein: Math.round((acc.protein + (e.protein || 0)) * 10) / 10,
+    carbs:   Math.round((acc.carbs   + (e.carbs   || 0)) * 10) / 10,
+    fat:     Math.round((acc.fat     + (e.fat     || 0)) * 10) / 10,
+  }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
+
   const targetKcal = client.calories || 2450
 
   return (
     <div className={styles.nutritionTab}>
       <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
 
+      {showAdd ? (
+        <div className={styles.addFoodForm}>
+          <input
+            className={styles.addFoodName}
+            type="text"
+            placeholder="Наименование на храната..."
+            value={newEntry.name}
+            onChange={e => setNewEntry(prev => ({ ...prev, name: e.target.value }))}
+          />
+          <div className={styles.addFoodGrid}>
+            {[
+              { key: 'kcal',    label: 'Ккал *'   },
+              { key: 'protein', label: 'Протеин g' },
+              { key: 'carbs',   label: 'Въгл g'   },
+              { key: 'fat',     label: 'Мазнини g' },
+              { key: 'grams',   label: 'Грамаж g'  },
+            ].map(({ key, label }) => (
+              <div key={key} className={styles.addFoodField}>
+                <label className={styles.addFoodLabel}>{label}</label>
+                <input
+                  className={styles.addFoodInput}
+                  type="number" min="0" step="0.1" placeholder="0"
+                  value={newEntry[key]}
+                  onChange={e => setNewEntry(prev => ({ ...prev, [key]: e.target.value }))}
+                />
+              </div>
+            ))}
+          </div>
+          <div className={styles.addFoodActions}>
+            <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">Отказ</button>
+            <button
+              className={styles.addFoodSubmit}
+              onClick={handleAdd}
+              disabled={adding || !newEntry.name.trim() || !newEntry.kcal}
+              type="button"
+            >
+              {adding ? 'Добавя...' : '+ Добави'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button className={styles.addFoodBtn} onClick={() => setShowAdd(true)} type="button">
+          + Добави храна ръчно
+        </button>
+      )}
+
+      {logs.length > 0 && (
+        <div className={styles.dayTotal}>
+          {totals.kcal} / {targetKcal} ккал · П{totals.protein}g · В{totals.carbs}g · М{totals.fat}g
+        </div>
+      )}
+
       {loading ? (
         <p className={styles.loading}>Зарежда...</p>
       ) : logs.length === 0 ? (
         <p className={styles.empty}>Няма логирани храни за тази дата</p>
       ) : (
-        <>
-          <div className={styles.dayTotal}>
-            {totalKcal} / {targetKcal} ккал
-          </div>
-          <div className={styles.logList}>
-            {logs.map(log => (
-              <div key={log.id} className={styles.logEntry}>
-                <div className={styles.logName}>{log.name}</div>
-                <div className={styles.logMacros}>
-                  <span>{log.kcal} ккал · {log.grams > 0 ? `${log.grams}g` : ''}</span>
-                  <span>П:{Math.round(log.protein)} В:{Math.round(log.carbs)} М:{Math.round(log.fat)}</span>
+        <div className={styles.logList}>
+          {logs.map(entry =>
+            editingId === entry.id ? (
+              <div key={entry.id} className={`${styles.logEntry} ${styles.logEntryEditing}`}>
+                <input
+                  className={styles.logEditName}
+                  type="text"
+                  value={draft.name}
+                  onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <div className={styles.logEditGrid}>
+                  <div className={styles.logEditField}>
+                    <label className={styles.logEditLabel}>Грамаж</label>
+                    <input className={styles.logEditInput} type="number" min="0"
+                      value={draft.grams}
+                      onChange={e => handleDraftGramsChange(entry, e.target.value)}
+                    />
+                  </div>
+                  {[
+                    { key: 'kcal',    label: 'Ккал'      },
+                    { key: 'protein', label: 'Протеин g'  },
+                    { key: 'carbs',   label: 'Въгл g'     },
+                    { key: 'fat',     label: 'Мазнини g'  },
+                  ].map(({ key, label }) => (
+                    <div key={key} className={styles.logEditField}>
+                      <label className={styles.logEditLabel}>{label}</label>
+                      <input className={styles.logEditInput} type="number" min="0"
+                        value={draft[key]}
+                        onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.logEditActions}>
+                  <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">Отказ</button>
+                  <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">Запази</button>
                 </div>
               </div>
-            ))}
-          </div>
-        </>
+            ) : (
+              <div key={entry.id} className={styles.logEntry}>
+                <div className={styles.logLeft}>
+                  <span className={styles.logName}>{entry.name}</span>
+                  <span className={styles.logMacros}>
+                    {entry.kcal} ккал{entry.grams > 0 ? ` · ${entry.grams}g` : ''} · П{Math.round(entry.protein * 10) / 10}g · В{Math.round(entry.carbs * 10) / 10}g · М{Math.round(entry.fat * 10) / 10}g
+                  </span>
+                </div>
+                <div className={styles.logEntryActions}>
+                  <button className={styles.logEditBtn} onClick={() => startEdit(entry)} type="button" aria-label="Редактирай">✎</button>
+                  <button className={styles.logDeleteBtn} onClick={() => deleteEntry(entry.id)} type="button" aria-label="Изтрий">×</button>
+                </div>
+              </div>
+            )
+          )}
+        </div>
       )}
     </div>
   )

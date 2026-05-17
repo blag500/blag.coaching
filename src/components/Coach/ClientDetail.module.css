@@ -657,10 +657,147 @@
   overflow: hidden;
 }
 
+/* Add food button */
+.addFoodBtn {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent-dim);
+  border: 1px dashed rgba(255, 183, 77, 0.35);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addFoodBtn:active {
+  background: rgba(255, 183, 77, 0.12);
+}
+
+/* Add food form */
+.addFoodForm {
+  background: var(--surface-1);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addFoodName {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.addFoodName:focus {
+  border-color: var(--accent);
+}
+
+.addFoodName::placeholder {
+  color: var(--muted);
+}
+
+.addFoodGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.addFoodField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.addFoodLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.addFoodInput {
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.addFoodInput:focus {
+  border-color: var(--accent);
+}
+
+.addFoodInput::-webkit-inner-spin-button,
+.addFoodInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.addFoodActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.addFoodCancel {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addFoodSubmit {
+  flex: 2;
+  padding: 10px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addFoodSubmit:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Log entries */
 .logEntry {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 11px 14px;
   border-bottom: 1px solid var(--border);
 }
@@ -669,21 +806,182 @@
   border-bottom: none;
 }
 
+.logLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .logName {
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--text);
-  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logMacros {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
   font-family: var(--font-body);
   font-size: 11px;
   color: var(--muted);
+}
+
+.logEntryActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.logEditBtn {
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.logEditBtn:active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.logDeleteBtn {
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.logDeleteBtn:active {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Inline edit form inside log entry */
+.logEntryEditing {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface-2);
+  border-bottom-color: var(--accent);
+}
+
+.logEditName {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.logEditName:focus {
+  border-color: var(--accent);
+}
+
+.logEditGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.logEditField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.logEditLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.logEditInput {
+  padding: 7px 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.logEditInput:focus {
+  border-color: var(--accent);
+}
+
+.logEditInput::-webkit-inner-spin-button,
+.logEditInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.logEditActions {
+  display: flex;
+  gap: 8px;
+}
+
+.logEditCancel {
+  flex: 1;
+  padding: 9px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logEditSave {
+  flex: 2;
+  padding: 9px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dayTotal {
