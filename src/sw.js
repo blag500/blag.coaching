@@ -26,8 +26,6 @@ self.addEventListener('push', event => {
       body: data.body || 'Ново съобщение',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: 'blag-message',
-      renotify: true,
     })
   )
 })
