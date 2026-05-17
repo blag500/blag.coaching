@@ -368,11 +368,16 @@
   color: var(--muted);
 }
 
-/* AI search button */
-.aiSearchBtn {
-  width: 100%;
-  padding: 11px;
+/* AI search + label scan row */
+.aiActions {
+  display: flex;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.aiSearchBtn {
+  flex: 1;
+  padding: 11px;
   background: var(--accent-dim);
   border: 1px solid rgba(255, 183, 77, 0.3);
   border-radius: var(--radius);
@@ -396,6 +401,43 @@
 .aiSearchBtn:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+.labelScanBtn {
+  flex: 1;
+  padding: 11px 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.labelScanBtn:active {
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.labelScanBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.photoFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .aiPer100g {

@@ -5,6 +5,39 @@ import { suggestMacros } from '../../utils/usda'
 import BarcodeScanner from './BarcodeScanner'
 import styles from './FoodSearch.module.css'
 
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="16" height="16" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+  )
+}
+
+function resizeImage(file, maxDim = 1024) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight))
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(img.naturalWidth  * scale)
+      canvas.height = Math.round(img.naturalHeight * scale)
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('resize failed')); return }
+        const reader = new FileReader()
+        reader.onload = () => resolve({ base64: reader.result.split(',')[1], mediaType: 'image/jpeg' })
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      }, 'image/jpeg', 0.85)
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
 export default function FoodSearch({ onAdd, onAddRaw }) {
   const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent'
 
@@ -37,13 +70,15 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
 // ─── AI macro lookup mode ────────────────────────────────────────────────────
 
 function AiMode({ onAdd, onAddRaw }) {
-  const [query, setQuery]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
-  const [result, setResult]   = useState(null)
-  const [grams, setGrams]     = useState('100')
-  const [scanning, setScanning] = useState(false)
-  const addPanelRef = useRef(null)
+  const [query, setQuery]           = useState('')
+  const [loading, setLoading]       = useState(false)
+  const [labelLoading, setLabelLoading] = useState(false)
+  const [error, setError]           = useState(null)
+  const [result, setResult]         = useState(null)
+  const [grams, setGrams]           = useState('100')
+  const [scanning, setScanning]     = useState(false)
+  const addPanelRef  = useRef(null)
+  const photoInputRef = useRef(null)
 
   useEffect(() => {
     if (result && addPanelRef.current) {
@@ -68,6 +103,29 @@ function AiMode({ onAdd, onAddRaw }) {
       setError('Неуспешно търсене. Провери връзката и опитай отново.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleLabelPhoto(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setLabelLoading(true)
+    setError(null)
+    setResult(null)
+    try {
+      const { base64, mediaType } = await resizeImage(file)
+      const { data, error: fnError } = await supabase.functions.invoke('label-scan', {
+        body: { image: base64, mediaType },
+      })
+      if (fnError) throw fnError
+      if (!data?.per100g) throw new Error('invalid response')
+      setResult(data)
+      setGrams(String(data.typical_grams || 100))
+    } catch {
+      setError('Неуспешно разчитане на етикета. Опитай отново.')
+    } finally {
+      setLabelLoading(false)
     }
   }
 
@@ -121,16 +179,41 @@ function AiMode({ onAdd, onAddRaw }) {
         )}
       </div>
 
-      <button
-        className={styles.aiSearchBtn}
-        onClick={handleSearch}
-        disabled={!query.trim() || loading}
-        type="button"
-      >
-        {loading
-          ? <><span className={styles.spinner} style={{ marginRight: 8 }} />Анализира...</>
-          : 'Намери макроси'}
-      </button>
+      <div className={styles.aiActions}>
+        <button
+          className={styles.aiSearchBtn}
+          onClick={handleSearch}
+          disabled={!query.trim() || loading}
+          type="button"
+        >
+          {loading
+            ? <><span className={styles.spinner} style={{ marginRight: 8 }} />Анализира...</>
+            : 'Намери макроси'}
+        </button>
+
+        <button
+          className={styles.labelScanBtn}
+          onClick={() => photoInputRef.current?.click()}
+          disabled={labelLoading}
+          type="button"
+          title="Снимай хранителна стойност от етикет"
+        >
+          <CameraIcon />
+          {labelLoading
+            ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />Разчита...</>
+            : 'Снимка на етикет'}
+        </button>
+      </div>
+
+      <input
+        className={styles.photoFileInput}
+        type="file"
+        accept="image/*"
+        ref={photoInputRef}
+        onChange={handleLabelPhoto}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
 
       {error && <div className={styles.error}>{error}</div>}
 
