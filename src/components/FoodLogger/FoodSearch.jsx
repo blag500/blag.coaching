@@ -118,7 +118,14 @@ function AiMode({ onAdd, onAddRaw }) {
       const { data, error: fnError } = await supabase.functions.invoke('label-scan', {
         body: { image: base64, mediaType },
       })
-      if (fnError) throw new Error(fnError.message || JSON.stringify(fnError))
+      if (fnError) {
+        let detail = fnError.message
+        try {
+          const body = await fnError.context?.json()
+          detail = JSON.stringify(body)
+        } catch { try { detail = await fnError.context?.text() } catch {} }
+        throw new Error(detail)
+      }
       if (!data?.per100g) throw new Error(`invalid response: ${JSON.stringify(data)}`)
       setResult(data)
       setGrams(String(data.typical_grams || 100))
