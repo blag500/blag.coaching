@@ -11,33 +11,30 @@ function urlBase64ToUint8Array(b64) {
   return Uint8Array.from([...raw].map(c => c.charCodeAt(0)))
 }
 
+export async function registerPushSubscription(userId) {
+  if (!userId || !('serviceWorker' in navigator) || !('PushManager' in window)) return
+  if (Notification.permission !== 'granted') return
+
+  const reg = await navigator.serviceWorker.ready
+  let sub = await reg.pushManager.getSubscription()
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    })
+  }
+
+  await supabase.from('push_subscriptions').upsert(
+    { user_id: userId, endpoint: sub.endpoint, subscription: sub.toJSON() },
+    { onConflict: 'endpoint' }
+  )
+}
+
 export function usePushNotifications() {
   const { user } = useAuth()
 
   useEffect(() => {
-    if (!user || !('serviceWorker' in navigator) || !('PushManager' in window)) return
-
-    async function subscribe() {
-      const permission = await Notification.requestPermission()
-      if (permission !== 'granted') return
-
-      const reg = await navigator.serviceWorker.ready
-
-      // Reuse existing subscription if present
-      let sub = await reg.pushManager.getSubscription()
-      if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        })
-      }
-
-      await supabase.from('push_subscriptions').upsert(
-        { user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON() },
-        { onConflict: 'endpoint' }
-      )
-    }
-
-    subscribe().catch(console.error)
+    if (!user) return
+    registerPushSubscription(user.id).catch(console.error)
   }, [user?.id])
 }

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { suggestMacros } from '../../utils/usda'
 import BarcodeScanner from './BarcodeScanner'
+import RecipeList from '../Recipes/RecipeList'
 import styles from './FoodSearch.module.css'
 
 function CameraIcon() {
@@ -39,15 +40,16 @@ function resizeImage(file, maxDim = 1024) {
 }
 
 export default function FoodSearch({ onAdd, onAddRaw }) {
-  const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent'
+  const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent' | 'recipes'
 
   return (
     <div className={styles.wrap}>
       <div className={styles.modeBar}>
         {[
-          { id: 'ai',     label: 'AI ТЪРСИ' },
-          { id: 'manual', label: 'РЪЧНО' },
-          { id: 'recent', label: 'СКОРОШНИ' },
+          { id: 'ai',      label: 'AI' },
+          { id: 'manual',  label: 'РЪЧНО' },
+          { id: 'recent',  label: 'СКОРОШНИ' },
+          { id: 'recipes', label: 'РЕЦЕПТИ' },
         ].map(m => (
           <button
             key={m.id}
@@ -60,9 +62,10 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
         ))}
       </div>
 
-      {mode === 'ai'     && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} />}
-      {mode === 'manual' && <ManualMode onAddRaw={onAddRaw} />}
-      {mode === 'recent' && <RecentMode onAddRaw={onAddRaw} />}
+      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} />}
+      {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
+      {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
+      {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
     </div>
   )
 }
@@ -226,7 +229,13 @@ function AiMode({ onAdd, onAddRaw }) {
 
       {result && (
         <div ref={addPanelRef} className={styles.addPanel}>
-          <div className={styles.selectedName}>{result.name}</div>
+          <input
+            className={styles.nameInput}
+            type="text"
+            value={result.name}
+            onChange={e => setResult(prev => ({ ...prev, name: e.target.value }))}
+            aria-label="Наименование"
+          />
           <div className={styles.aiPer100g}>
             на 100g: {result.per100g.kcal} ккал · П{result.per100g.protein}g · В{result.per100g.carbs}g · М{result.per100g.fat}g
           </div>

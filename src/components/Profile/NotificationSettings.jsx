@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { useAuth } from '../../contexts/AuthContext'
+import { registerPushSubscription } from '../../hooks/usePushNotifications'
 import styles from './NotificationSettings.module.css'
 
 const DEFAULT = { enabled: false, morningTime: '08:00', eveningTime: '21:00' }
@@ -36,6 +38,7 @@ function scheduleNotifications(settings) {
 }
 
 export default function NotificationSettings() {
+  const { user } = useAuth()
   const [settings, setSettings] = useLocalStorage('blag_notif_v1', DEFAULT)
   const [permission, setPermission] = useState(
     'Notification' in window ? Notification.permission : 'unsupported'
@@ -58,6 +61,7 @@ export default function NotificationSettings() {
         const next = { ...settings, enabled: true }
         setSettings(next)
         scheduleNotifications(next)
+        registerPushSubscription(user?.id).catch(console.error)
         setFeedback('Напомнянията са включени!')
       } else {
         setFeedback('Позволи нотификациите в настройките на браузъра.')

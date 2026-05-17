@@ -28,40 +28,43 @@ Deno.serve(async (req) => {
     })
   }
 
-  const apiKey = Deno.env.get('GEMINI_API_KEY')
+  const apiKey = Deno.env.get('GROQ_API_KEY1')
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY not configured' }), {
+    return new Response(JSON.stringify({ error: 'GROQ_API_KEY1 not configured' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
-  const aiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                inline_data: {
-                  mime_type: mediaType || 'image/jpeg',
-                  data: image,
-                },
+  const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mediaType || 'image/jpeg'};base64,${image}`,
               },
-              { text: PROMPT },
-            ],
-          },
-        ],
-        generationConfig: {
-          maxOutputTokens: 300,
-          temperature: 0,
+            },
+            {
+              type: 'text',
+              text: PROMPT,
+            },
+          ],
         },
-      }),
-    }
-  )
+      ],
+      max_tokens: 300,
+      temperature: 0,
+    }),
+  })
 
   if (!aiRes.ok) {
     const detail = await aiRes.text()
@@ -72,7 +75,7 @@ Deno.serve(async (req) => {
   }
 
   const aiData = await aiRes.json()
-  const text = aiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  const text = aiData.choices?.[0]?.message?.content ?? ''
 
   let result
   try {
