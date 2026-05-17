@@ -1,41 +1,36 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import styles from './FoodLog.module.css'
-
-const UNDO_DELAY = 5000
 
 function UndoIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13" aria-hidden="true">
       <path d="M3 7v6h6"/>
       <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
     </svg>
   )
 }
 
-export default function FoodLog({ log, onRemove, onClear, onEdit }) {
-  const [editingId, setEditingId] = useState(null)
-  const [draft, setDraft]         = useState({})
-  const [pending, setPending]     = useState(null) // { entry }
-  const timerRef = useRef(null)
-
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
+  const [editingId, setEditingId]     = useState(null)
+  const [draft, setDraft]             = useState({})
+  const [lastRemoved, setLastRemoved] = useState(null)
 
   function handleRemove(entry) {
-    // Confirm any in-flight pending delete immediately before starting a new one
-    if (pending) {
-      clearTimeout(timerRef.current)
-      onRemove(pending.entry.id)
-    }
-    timerRef.current = setTimeout(() => {
-      onRemove(entry.id)
-      setPending(null)
-    }, UNDO_DELAY)
-    setPending({ entry })
+    setLastRemoved(entry)
+    onRemove(entry.id)
   }
 
   function handleUndo() {
-    clearTimeout(timerRef.current)
-    setPending(null)
+    if (!lastRemoved) return
+    onAddRaw({
+      name:    lastRemoved.name,
+      grams:   lastRemoved.grams,
+      kcal:    lastRemoved.kcal,
+      protein: lastRemoved.protein,
+      carbs:   lastRemoved.carbs,
+      fat:     lastRemoved.fat,
+    })
+    setLastRemoved(null)
   }
 
   function startEdit(entry) {
@@ -67,8 +62,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
 
   function handleSave(entry) {
     onEdit(entry.id, {
-      grams:   parseFloat(draft.grams)            || 0,
-      kcal:    Math.round(parseFloat(draft.kcal)   || 0),
+      grams:   parseFloat(draft.grams)              || 0,
+      kcal:    Math.round(parseFloat(draft.kcal)     || 0),
       protein: Math.round((parseFloat(draft.protein) || 0) * 10) / 10,
       carbs:   Math.round((parseFloat(draft.carbs)   || 0) * 10) / 10,
       fat:     Math.round((parseFloat(draft.fat)     || 0) * 10) / 10,
@@ -76,9 +71,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
     setEditingId(null)
   }
 
-  const visibleLog = log.filter(e => e.id !== pending?.entry.id)
-
-  if (visibleLog.length === 0 && !pending) {
+  if (log.length === 0) {
     return (
       <div className={styles.empty}>
         <span className={styles.emptyIcon}>🍽</span>
@@ -91,12 +84,24 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.listHeader}>
-        <span className={styles.listTitle}>Дневен лог ({visibleLog.length})</span>
-        <button className={styles.clearBtn} onClick={onClear}>Изчисти</button>
+        <span className={styles.listTitle}>Дневен лог ({log.length})</span>
+        <div className={styles.headerActions}>
+          <button
+            className={`${styles.undoBtn} ${lastRemoved ? styles.undoBtnActive : ''}`}
+            onClick={handleUndo}
+            disabled={!lastRemoved}
+            type="button"
+            aria-label="Отмени последното премахване"
+            title="Отмени"
+          >
+            <UndoIcon />
+          </button>
+          <button className={styles.clearBtn} onClick={onClear} type="button">Изчисти</button>
+        </div>
       </div>
 
       <ul className={styles.list}>
-        {visibleLog.map((entry, i) =>
+        {log.map((entry, i) =>
           editingId === entry.id ? (
             <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
               <div className={styles.editName}>{entry.name}</div>
@@ -172,18 +177,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
           )
         )}
       </ul>
-
-      {pending && (
-        <div className={styles.undoToast}>
-          <span className={styles.undoText}>
-            Премахнато: <strong>{pending.entry.name}</strong>
-          </span>
-          <button className={styles.undoBtn} onClick={handleUndo} type="button">
-            <UndoIcon /> Отмени
-          </button>
-          <div className={styles.undoProgress} key={pending.entry.id} />
-        </div>
-      )}
     </div>
   )
 }

@@ -91,7 +91,7 @@ export default function NutritionCards() {
           <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
           <NutritionProgress totals={totals} targets={targets} />
           <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} />
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} />
+          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} />
         </>
       ) : (
         <LibraryTab
