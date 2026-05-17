@@ -1,9 +1,42 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import styles from './FoodLog.module.css'
+
+const UNDO_DELAY = 5000
+
+function UndoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14" aria-hidden="true">
+      <path d="M3 7v6h6"/>
+      <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+    </svg>
+  )
+}
 
 export default function FoodLog({ log, onRemove, onClear, onEdit }) {
   const [editingId, setEditingId] = useState(null)
-  const [draft, setDraft] = useState({})
+  const [draft, setDraft]         = useState({})
+  const [pending, setPending]     = useState(null) // { entry }
+  const timerRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  function handleRemove(entry) {
+    // Confirm any in-flight pending delete immediately before starting a new one
+    if (pending) {
+      clearTimeout(timerRef.current)
+      onRemove(pending.entry.id)
+    }
+    timerRef.current = setTimeout(() => {
+      onRemove(entry.id)
+      setPending(null)
+    }, UNDO_DELAY)
+    setPending({ entry })
+  }
+
+  function handleUndo() {
+    clearTimeout(timerRef.current)
+    setPending(null)
+  }
 
   function startEdit(entry) {
     setEditingId(entry.id)
@@ -43,7 +76,9 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
     setEditingId(null)
   }
 
-  if (log.length === 0) {
+  const visibleLog = log.filter(e => e.id !== pending?.entry.id)
+
+  if (visibleLog.length === 0 && !pending) {
     return (
       <div className={styles.empty}>
         <span className={styles.emptyIcon}>🍽</span>
@@ -56,12 +91,12 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.listHeader}>
-        <span className={styles.listTitle}>Дневен лог ({log.length})</span>
+        <span className={styles.listTitle}>Дневен лог ({visibleLog.length})</span>
         <button className={styles.clearBtn} onClick={onClear}>Изчисти</button>
       </div>
 
       <ul className={styles.list}>
-        {log.map((entry, i) =>
+        {visibleLog.map((entry, i) =>
           editingId === entry.id ? (
             <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
               <div className={styles.editName}>{entry.name}</div>
@@ -102,20 +137,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
               </div>
 
               <div className={styles.editActions}>
-                <button
-                  className={styles.cancelEditBtn}
-                  onClick={() => setEditingId(null)}
-                  type="button"
-                >
-                  Отказ
-                </button>
-                <button
-                  className={styles.saveEditBtn}
-                  onClick={() => handleSave(entry)}
-                  type="button"
-                >
-                  Запази
-                </button>
+                <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">Отказ</button>
+                <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">Запази</button>
               </div>
             </li>
           ) : (
@@ -138,7 +161,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
                 </button>
                 <button
                   className={styles.removeBtn}
-                  onClick={() => onRemove(entry.id)}
+                  onClick={() => handleRemove(entry)}
                   aria-label={`Премахни ${entry.name}`}
                   type="button"
                 >
@@ -149,6 +172,18 @@ export default function FoodLog({ log, onRemove, onClear, onEdit }) {
           )
         )}
       </ul>
+
+      {pending && (
+        <div className={styles.undoToast}>
+          <span className={styles.undoText}>
+            Премахнато: <strong>{pending.entry.name}</strong>
+          </span>
+          <button className={styles.undoBtn} onClick={handleUndo} type="button">
+            <UndoIcon /> Отмени
+          </button>
+          <div className={styles.undoProgress} key={pending.entry.id} />
+        </div>
+      )}
     </div>
   )
 }

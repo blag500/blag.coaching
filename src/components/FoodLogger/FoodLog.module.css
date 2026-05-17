@@ -289,3 +289,81 @@
   font-size: 14px;
   letter-spacing: 0.06em;
 }
+
+/* Undo toast */
+.undoToast {
+  position: fixed;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  left: 16px;
+  right: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  overflow: hidden;
+  animation: toastIn 200ms var(--ease-out) both;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+.undoText {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 12px;
+}
+
+.undoText strong {
+  color: var(--text);
+}
+
+.undoBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.undoBtn:active {
+  background: rgba(255, 183, 77, 0.18);
+}
+
+/* Progress bar that shrinks over UNDO_DELAY ms */
+.undoProgress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  animation: undoShrink 5s linear forwards;
+}
+
+@keyframes undoShrink {
+  from { transform: scaleX(1) }
+  to   { transform: scaleX(0) }
+}
