@@ -136,7 +136,7 @@ export default function MealBot({ onAddRaw }) {
   const [suggIdx, setSuggIdx]       = useState(0)
   const [typing, setTyping]         = useState(false)
   const sessionRef = useRef(0) // cancels stale async chains on restart
-  const endRef = useRef(null)
+  const feedRef = useRef(null)
 
   const addBot  = (text) => setMessages(p => [...p, { from: 'bot',  text, id: Date.now() + Math.random() }])
   const addUser = (text) => setMessages(p => [...p, { from: 'user', text, id: Date.now() + Math.random() }])
@@ -155,7 +155,7 @@ export default function MealBot({ onAddRaw }) {
   }, [])
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight
   }, [messages, typing])
 
   async function handleStart() {
@@ -307,14 +307,13 @@ export default function MealBot({ onAddRaw }) {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.feed}>
+      <div className={styles.feed} ref={feedRef}>
         {messages.map(msg =>
           msg.from === 'bot'
             ? <BotBubble key={msg.id} text={msg.text} />
             : <UserBubble key={msg.id} text={msg.text} />
         )}
         {typing && <TypingIndicator />}
-        <div ref={endRef} />
       </div>
 
       <div className={styles.controls}>
