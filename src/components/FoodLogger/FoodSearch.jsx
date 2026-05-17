@@ -118,12 +118,12 @@ function AiMode({ onAdd, onAddRaw }) {
       const { data, error: fnError } = await supabase.functions.invoke('label-scan', {
         body: { image: base64, mediaType },
       })
-      if (fnError) throw fnError
-      if (!data?.per100g) throw new Error('invalid response')
+      if (fnError) throw new Error(fnError.message || JSON.stringify(fnError))
+      if (!data?.per100g) throw new Error(`invalid response: ${JSON.stringify(data)}`)
       setResult(data)
       setGrams(String(data.typical_grams || 100))
-    } catch {
-      setError('Неуспешно разчитане на етикета. Опитай отново.')
+    } catch (err) {
+      setError(`Грешка: ${err.message}`)
     } finally {
       setLabelLoading(false)
     }
