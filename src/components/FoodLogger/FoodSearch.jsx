@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { suggestMacros } from '../../utils/usda'
 import BarcodeScanner from './BarcodeScanner'
 import RecipeList from '../Recipes/RecipeList'
+import MealBot from '../MealBot/MealBot'
 import styles from './FoodSearch.module.css'
 
 function CameraIcon() {
@@ -40,7 +41,7 @@ function resizeImage(file, maxDim = 1024) {
 }
 
 export default function FoodSearch({ onAdd, onAddRaw }) {
-  const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent' | 'recipes'
+  const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent' | 'bot' | 'recipes'
 
   return (
     <div className={styles.wrap}>
@@ -48,7 +49,8 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
         {[
           { id: 'ai',      label: 'AI' },
           { id: 'manual',  label: 'РЪЧНО' },
-          { id: 'recent',  label: 'СКОРОШНИ' },
+          { id: 'recent',  label: 'СКОР.' },
+          { id: 'bot',     label: 'БОТ' },
           { id: 'recipes', label: 'РЕЦЕПТИ' },
         ].map(m => (
           <button
@@ -65,6 +67,7 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
       {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
       {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
+      {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
     </div>
   )
