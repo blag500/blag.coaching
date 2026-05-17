@@ -28,42 +28,40 @@ Deno.serve(async (req) => {
     })
   }
 
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
+  const apiKey = Deno.env.get('GEMINI_API_KEY')
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }), {
+    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY not configured' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
-  const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: mediaType || 'image/jpeg',
-                data: image,
+  const aiRes = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: mediaType || 'image/jpeg',
+                  data: image,
+                },
               },
-            },
-            { type: 'text', text: PROMPT },
-          ],
+              { text: PROMPT },
+            ],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 300,
+          temperature: 0,
         },
-      ],
-    }),
-  })
+      }),
+    }
+  )
 
   if (!aiRes.ok) {
     const detail = await aiRes.text()
@@ -74,7 +72,7 @@ Deno.serve(async (req) => {
   }
 
   const aiData = await aiRes.json()
-  const text = aiData.content?.[0]?.text ?? ''
+  const text = aiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
   let result
   try {
