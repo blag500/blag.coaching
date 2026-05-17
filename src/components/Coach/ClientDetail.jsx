@@ -17,18 +17,33 @@ const TABS = [
   { id: 'notes',    label: 'БЕЛЕЖКИ' },
 ]
 
-export default function ClientDetail({ client: initialClient, onBack }) {
-  const { updateClientProfile, fetchClientFullStats, fetchExerciseLogs } = useAuth()
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15" aria-hidden="true">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+      <path d="M10 11v6M14 11v6"/>
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+    </svg>
+  )
+}
+
+export default function ClientDetail({ client: initialClient, onBack, onDelete }) {
+  const { updateClientProfile, deleteClientProfile, fetchClientFullStats, fetchExerciseLogs } = useAuth()
   const [client, setClient] = useState(initialClient)
   const [tab, setTab] = useState('progress')
   const [stats, setStats] = useState(null)
   const [exerciseLogs, setExerciseLogs] = useState([])
+  const [macros, setMacros] = useState({
+    calories: initialClient.calories ?? 2450,
+    protein:  initialClient.protein  ?? 180,
+    carbs:    initialClient.carbs    ?? 250,
+    fat:      initialClient.fat      ?? 70,
+  })
+  const [macroSaving, setMacroSaving] = useState(false)
+  const [macroSaved,  setMacroSaved]  = useState(false)
   const [edits, setEdits] = useState({
     name:          initialClient.name          ?? '',
-    calories:      initialClient.calories      ?? 2450,
-    protein:       initialClient.protein       ?? 180,
-    carbs:         initialClient.carbs         ?? 250,
-    fat:           initialClient.fat           ?? 70,
     target_weight: initialClient.target_weight ?? '',
   })
   const [notes, setNotes] = useState(initialClient.coach_notes ?? '')
@@ -36,6 +51,8 @@ export default function ClientDetail({ client: initialClient, onBack }) {
   const [saved,  setSaved]  = useState(false)
   const [savingPlan, setSavingPlan] = useState(false)
   const [showChat, setShowChat] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10)
@@ -43,14 +60,37 @@ export default function ClientDetail({ client: initialClient, onBack }) {
     fetchExerciseLogs(client.id, today).then(({ data }) => setExerciseLogs(data || []))
   }, [client.id])
 
+  async function saveMacros() {
+    setMacroSaving(true)
+    const updates = {
+      calories: parseInt(macros.calories) || 2450,
+      protein:  parseInt(macros.protein)  || 180,
+      carbs:    parseInt(macros.carbs)    || 250,
+      fat:      parseInt(macros.fat)      || 70,
+    }
+    await updateClientProfile(client.id, updates)
+    setClient(prev => ({ ...prev, ...updates }))
+    setMacroSaving(false)
+    setMacroSaved(true)
+    setTimeout(() => setMacroSaved(false), 2000)
+  }
+
+  async function handleDelete() {
+    setDeleting(true)
+    const { error } = await deleteClientProfile(client.id)
+    if (!error) {
+      onDelete(client.id)
+    } else {
+      console.error('delete client failed:', error)
+      setDeleting(false)
+      setConfirmDelete(false)
+    }
+  }
+
   async function saveGoals() {
     setSaving(true)
     const updates = {
       name:          edits.name,
-      calories:      parseInt(edits.calories)      || 2450,
-      protein:       parseInt(edits.protein)       || 180,
-      carbs:         parseInt(edits.carbs)         || 250,
-      fat:           parseInt(edits.fat)           || 70,
       target_weight: parseFloat(edits.target_weight) || null,
     }
     await updateClientProfile(client.id, updates)
@@ -90,7 +130,31 @@ export default function ClientDetail({ client: initialClient, onBack }) {
         >
           💬
         </button>
+        <button
+          className={`${styles.deleteBtn} ${confirmDelete ? styles.deleteBtnActive : ''}`}
+          onClick={() => setConfirmDelete(v => !v)}
+          type="button"
+          aria-label="Изтрий профила"
+        >
+          <TrashIcon />
+        </button>
       </header>
+
+      {confirmDelete && (
+        <div className={styles.deleteConfirm}>
+          <p className={styles.deleteConfirmText}>
+            Изтрий профила на <strong>{client.name || client.email}</strong>? Действието е необратимо.
+          </p>
+          <div className={styles.deleteConfirmActions}>
+            <button className={styles.deleteCancelBtn} onClick={() => setConfirmDelete(false)} type="button">
+              Отказ
+            </button>
+            <button className={styles.deleteConfirmBtn} onClick={handleDelete} disabled={deleting} type="button">
+              {deleting ? 'Изтрива...' : 'Да, изтрий'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {showChat && (
         <Chat
@@ -99,6 +163,37 @@ export default function ClientDetail({ client: initialClient, onBack }) {
           onClose={() => setShowChat(false)}
         />
       )}
+
+      {/* Macro targets — always visible above tabs */}
+      <div className={styles.macroBar}>
+        <div className={styles.macroBarFields}>
+          {[
+            { key: 'calories', label: 'ККАЛ' },
+            { key: 'protein',  label: 'ПРОТЕИН g' },
+            { key: 'carbs',    label: 'ВЪГЛ g' },
+            { key: 'fat',      label: 'МАЗН g' },
+          ].map(({ key, label }) => (
+            <div key={key} className={styles.macroField}>
+              <label className={styles.macroLabel}>{label}</label>
+              <input
+                className={styles.macroInput}
+                type="number"
+                min="0"
+                value={macros[key]}
+                onChange={e => setMacros(prev => ({ ...prev, [key]: e.target.value }))}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          className={`${styles.macroSaveBtn} ${macroSaved ? styles.macroSaveBtnDone : ''}`}
+          onClick={saveMacros}
+          disabled={macroSaving}
+          type="button"
+        >
+          {macroSaving ? '...' : macroSaved ? '✓' : 'Запази'}
+        </button>
+      </div>
 
       <div className={styles.tabBar}>
         {TABS.map(t => (
@@ -242,7 +337,7 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
   return (
     <div className={styles.goalsTab}>
       <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel}>Име</label>
+        <label className={styles.fieldLabel}>Ime</label>
         <input
           className={styles.fieldInput}
           type="text"
@@ -252,28 +347,19 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
         />
       </div>
 
-      <div className={styles.goalGrid}>
-        {[
-          { key: 'calories',      label: 'Калории',       unit: 'ккал' },
-          { key: 'protein',       label: 'Протеин',        unit: 'g'    },
-          { key: 'carbs',         label: 'Въглехидрати',   unit: 'g'    },
-          { key: 'fat',           label: 'Мазнини',        unit: 'g'    },
-          { key: 'target_weight', label: 'Целево тегло',   unit: 'kg'   },
-        ].map(({ key, label, unit }) => (
-          <div key={key} className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>{label}</label>
-            <div className={styles.inputWrap}>
-              <input
-                className={styles.fieldInput}
-                type="number"
-                min="0"
-                value={edits[key]}
-                onChange={e => set(key, e.target.value)}
-              />
-              <span className={styles.unit}>{unit}</span>
-            </div>
-          </div>
-        ))}
+      <div className={styles.fieldGroup}>
+        <label className={styles.fieldLabel}>Целево тегло</label>
+        <div className={styles.inputWrap}>
+          <input
+            className={styles.fieldInput}
+            type="number"
+            min="0"
+            value={edits.target_weight}
+            onChange={e => set('target_weight', e.target.value)}
+            placeholder="—"
+          />
+          <span className={styles.unit}>kg</span>
+        </div>
       </div>
 
       <button
@@ -282,7 +368,7 @@ function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
         disabled={saving}
         type="button"
       >
-        {saving ? '...' : saved ? '✓ Запазено' : 'Запази целите'}
+        {saving ? '...' : saved ? '✓ Запазено' : 'Запази'}
       </button>
     </div>
   )

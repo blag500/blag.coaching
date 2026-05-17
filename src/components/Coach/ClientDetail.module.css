@@ -70,6 +70,169 @@
   border-color: rgba(255, 183, 77, 0.35);
 }
 
+.deleteBtn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.deleteBtn:active,
+.deleteBtnActive {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+}
+
+/* Delete confirmation strip */
+.deleteConfirm {
+  background: rgba(239, 68, 68, 0.08);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 12px 16px;
+}
+
+.deleteConfirmText {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.deleteConfirmText strong {
+  color: #ef4444;
+}
+
+.deleteConfirmActions {
+  display: flex;
+  gap: 8px;
+}
+
+.deleteCancelBtn {
+  flex: 1;
+  padding: 9px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.deleteConfirmBtn {
+  flex: 2;
+  padding: 9px;
+  background: #ef4444;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.deleteConfirmBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Macro targets bar — always visible above tabs */
+.macroBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.macroBarFields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.macroField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.macroLabel {
+  font-family: var(--font-heading);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.macroInput {
+  width: 100%;
+  padding: 6px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.macroInput:focus {
+  border-color: var(--accent);
+}
+
+.macroInput::-webkit-inner-spin-button,
+.macroInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.macroSaveBtn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  height: 32px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.macroSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.macroSaveBtnDone {
+  background: rgba(255, 183, 77, 0.2);
+  color: var(--accent);
+}
+
 /* Tab bar — horizontally scrollable for 6 tabs */
 .tabBar {
   display: flex;

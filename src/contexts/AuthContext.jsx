@@ -91,6 +91,15 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
+  // Coach: delete a client profile
+  async function deleteClientProfile(clientId) {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', clientId)
+    return { error }
+  }
+
   // Coach: update any client's profile
   async function updateClientProfile(clientId, updates) {
     const { data, error } = await supabase
@@ -300,6 +309,7 @@ export function AuthProvider({ children }) {
       refreshProfile,
       updateProfile,
       updateClientProfile,
+      deleteClientProfile,
       approveClient,
       fetchClients,
       fetchCoaches,

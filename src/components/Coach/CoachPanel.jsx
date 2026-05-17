@@ -34,11 +34,17 @@ export default function CoachPanel() {
     setApprovingId(null)
   }
 
+  function handleClientDeleted(clientId) {
+    setClients(prev => prev.filter(c => c.id !== clientId))
+    setSelectedClient(null)
+  }
+
   if (selectedClient) {
     return (
       <ClientDetail
         client={selectedClient}
         onBack={() => setSelectedClient(null)}
+        onDelete={handleClientDeleted}
       />
     )
   }
