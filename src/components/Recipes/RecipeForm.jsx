@@ -41,6 +41,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
 
   // Ingredient picker
   const [pickerOpen, setPickerOpen]     = useState(false)
+  const [pickerTab, setPickerTab]       = useState('ai') // 'ai' | 'manual'
   const [pickerQuery, setPickerQuery]   = useState('')
   const [pickerLoading, setPickerLoading] = useState(false)
   const [pickerResults, setPickerResults] = useState([])
@@ -48,6 +49,11 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   const [scanning, setScanning]         = useState(false)
   const [pending, setPending]           = useState(null) // { name, per100g }
   const [pendingGrams, setPendingGrams] = useState('100')
+
+  // Manual ingredient entry
+  const emptyManual = { name: '', kcal: '', protein: '', carbs: '', fat: '', grams: '' }
+  const [manual, setManual] = useState(emptyManual)
+  function setM(field, val) { setManual(prev => ({ ...prev, [field]: val })) }
 
   const photoInputRef = useRef(null)
 
@@ -67,10 +73,28 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   // ── Ingredient picker ────────────────────────────────────────────────────────
   function openPicker() {
     setPickerOpen(true)
+    setPickerTab('ai')
     setPending(null)
     setPickerQuery('')
     setPickerResults([])
     setPickerError(null)
+    setManual(emptyManual)
+  }
+
+  function confirmManual() {
+    if (!manual.name.trim() || !manual.kcal) return
+    setIngredients(prev => [...prev, {
+      name:  manual.name.trim(),
+      grams: parseFloat(manual.grams) || 0,
+      per100g: {
+        kcal:    parseFloat(manual.kcal)    || 0,
+        protein: parseFloat(manual.protein) || 0,
+        carbs:   parseFloat(manual.carbs)   || 0,
+        fat:     parseFloat(manual.fat)     || 0,
+      },
+    }])
+    setManual(emptyManual)
+    setPickerOpen(false)
   }
 
   async function handlePickerSearch() {
@@ -212,15 +236,122 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         {/* Picker panel */}
         {pickerOpen && (
           <div className={styles.picker}>
-            {pending ? (
+            {/* Tab toggle + close */}
+            <div className={styles.pickerHeader}>
+              <div className={styles.pickerTabs}>
+                <button
+                  className={`${styles.pickerTab} ${pickerTab === 'ai' ? styles.pickerTabActive : ''}`}
+                  onClick={() => { setPickerTab('ai'); setPending(null) }}
+                  type="button"
+                >AI + Баркод</button>
+                <button
+                  className={`${styles.pickerTab} ${pickerTab === 'manual' ? styles.pickerTabActive : ''}`}
+                  onClick={() => { setPickerTab('manual'); setPending(null) }}
+                  type="button"
+                >Ръчно</button>
+              </div>
+              <button className={styles.pickerClose} onClick={() => setPickerOpen(false)} type="button">×</button>
+            </div>
+
+            {/* AI tab */}
+            {pickerTab === 'ai' && (
+              pending ? (
+                <>
+                  <input
+                    className={styles.pendingName}
+                    value={pending.name}
+                    onChange={e => setPending(p => ({ ...p, name: e.target.value }))}
+                  />
+                  <div className={styles.pendingMacros}>
+                    {pending.per100g.kcal} ккал · П{pending.per100g.protein}g · В{pending.per100g.carbs}g · М{pending.per100g.fat}g / 100g
+                  </div>
+                  <div className={styles.gramRow}>
+                    <label className={styles.gramLabel}>Грамаж</label>
+                    <input
+                      className={styles.gramInput}
+                      type="number"
+                      min="1"
+                      value={pendingGrams}
+                      onChange={e => setPendingGrams(e.target.value)}
+                      autoFocus
+                    />
+                    <span className={styles.gramUnit}>g</span>
+                  </div>
+                  <div className={styles.pickerActions}>
+                    <button className={styles.cancelSmall} onClick={() => setPending(null)} type="button">← Назад</button>
+                    <button className={styles.confirmBtn} onClick={confirmIngredient} type="button">Добави</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.pickerRow}>
+                    <input
+                      className={styles.pickerInput}
+                      type="text"
+                      placeholder="Търси съставка с AI..."
+                      value={pickerQuery}
+                      onChange={e => setPickerQuery(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handlePickerSearch()}
+                      autoFocus
+                    />
+                    <button
+                      className={styles.pickerSearchBtn}
+                      onClick={handlePickerSearch}
+                      disabled={!pickerQuery.trim() || pickerLoading}
+                      type="button"
+                    >
+                      {pickerLoading ? '…' : '→'}
+                    </button>
+                    <button
+                      className={styles.pickerBarcodeBtn}
+                      onClick={() => setScanning(true)}
+                      type="button"
+                      title="Баркод"
+                    >📷</button>
+                  </div>
+                  {pickerError && <p className={styles.pickerError}>{pickerError}</p>}
+                  {pickerResults.map((item, i) => (
+                    <div key={i} className={styles.pickerResult} onClick={() => selectPickerResult(item)}>
+                      <div className={styles.pickerResultName}>{item.name}</div>
+                      <div className={styles.pickerResultMacros}>
+                        {item.per100g.kcal} ккал · П{item.per100g.protein}g / 100g
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )
+            )}
+
+            {/* Manual tab */}
+            {pickerTab === 'manual' && (
               <>
                 <input
                   className={styles.pendingName}
-                  value={pending.name}
-                  onChange={e => setPending(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Наименование..."
+                  value={manual.name}
+                  onChange={e => setM('name', e.target.value)}
+                  autoFocus
                 />
-                <div className={styles.pendingMacros}>
-                  {pending.per100g.kcal} ккал · П{pending.per100g.protein}g · В{pending.per100g.carbs}g · М{pending.per100g.fat}g / 100g
+                <div className={styles.manualGrid}>
+                  {[
+                    { key: 'kcal',    label: 'Ккал' },
+                    { key: 'protein', label: 'Протеин g' },
+                    { key: 'carbs',   label: 'Въгл. g' },
+                    { key: 'fat',     label: 'Мазн. g' },
+                  ].map(({ key, label }) => (
+                    <div key={key} className={styles.manualField}>
+                      <label className={styles.manualLabel}>{label} / 100g</label>
+                      <input
+                        className={styles.manualInput}
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        placeholder="0"
+                        value={manual[key]}
+                        onChange={e => setM(key, e.target.value)}
+                      />
+                    </div>
+                  ))}
                 </div>
                 <div className={styles.gramRow}>
                   <label className={styles.gramLabel}>Грамаж</label>
@@ -228,54 +359,18 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     className={styles.gramInput}
                     type="number"
                     min="1"
-                    value={pendingGrams}
-                    onChange={e => setPendingGrams(e.target.value)}
-                    autoFocus
+                    placeholder="100"
+                    value={manual.grams}
+                    onChange={e => setM('grams', e.target.value)}
                   />
                   <span className={styles.gramUnit}>g</span>
                 </div>
-                <div className={styles.pickerActions}>
-                  <button className={styles.cancelSmall} onClick={() => setPending(null)} type="button">← Назад</button>
-                  <button className={styles.confirmBtn} onClick={confirmIngredient} type="button">Добави</button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className={styles.pickerRow}>
-                  <input
-                    className={styles.pickerInput}
-                    type="text"
-                    placeholder="Търси съставка с AI..."
-                    value={pickerQuery}
-                    onChange={e => setPickerQuery(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handlePickerSearch()}
-                    autoFocus
-                  />
-                  <button
-                    className={styles.pickerSearchBtn}
-                    onClick={handlePickerSearch}
-                    disabled={!pickerQuery.trim() || pickerLoading}
-                    type="button"
-                  >
-                    {pickerLoading ? '…' : '→'}
-                  </button>
-                  <button
-                    className={styles.pickerBarcodeBtn}
-                    onClick={() => setScanning(true)}
-                    type="button"
-                    title="Баркод"
-                  >📷</button>
-                  <button className={styles.pickerClose} onClick={() => setPickerOpen(false)} type="button">×</button>
-                </div>
-                {pickerError && <p className={styles.pickerError}>{pickerError}</p>}
-                {pickerResults.map((item, i) => (
-                  <div key={i} className={styles.pickerResult} onClick={() => selectPickerResult(item)}>
-                    <div className={styles.pickerResultName}>{item.name}</div>
-                    <div className={styles.pickerResultMacros}>
-                      {item.per100g.kcal} ккал · П{item.per100g.protein}g / 100g
-                    </div>
-                  </div>
-                ))}
+                <button
+                  className={styles.confirmBtn}
+                  onClick={confirmManual}
+                  disabled={!manual.name.trim() || !manual.kcal}
+                  type="button"
+                >Добави съставката</button>
               </>
             )}
           </div>
