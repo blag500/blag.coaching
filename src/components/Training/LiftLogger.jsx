@@ -42,7 +42,7 @@ function ProgressChart({ entries }) {
   )
 }
 
-export default function LiftLogger({ exercise, onClose }) {
+export default function LiftLogger({ exercise, onClose, onSaved }) {
   const { user, addExerciseLog } = useAuth()
   const [weight, setWeight] = useState('')
   const [reps, setReps]     = useState('')
@@ -67,15 +67,16 @@ export default function LiftLogger({ exercise, onClose }) {
   async function handleSave() {
     if (!weight || !reps) return
     setSaving(true)
-    await addExerciseLog(exercise.name, weight, reps, sets, notes)
+    const { data } = await addExerciseLog(exercise.name, weight, reps, sets, notes)
     setSaving(false)
     setSaved(true)
-    // Prepend to local history
     const today = new Date().toISOString().slice(0, 10)
+    const w = parseFloat(weight)
     setHistory(prev => [
-      { date: today, weight: parseFloat(weight), reps: parseInt(reps), sets: parseInt(sets) || null },
+      { date: today, weight: w, reps: parseInt(reps), sets: parseInt(sets) || null },
       ...prev,
     ])
+    if (data?.id) onSaved?.({ id: data.id, exerciseName: exercise.name, weight: w })
     setTimeout(() => { setSaved(false); onClose() }, 1400)
   }
 

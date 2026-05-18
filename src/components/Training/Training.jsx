@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
@@ -125,7 +125,7 @@ function WorkoutCalendar({ completions, blocks }) {
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function Training() {
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, updateProfile, removeExerciseLog } = useAuth()
   const isCoach = profile?.role === 'coach'
   const blocks  = getBlocks(profile?.training_plan)
 
@@ -137,6 +137,8 @@ export default function Training() {
   const [completions, setCompletions]   = useState([])
   const [marking, setMarking]           = useState(false)
   const [justMarked, setJustMarked]     = useState(false)
+  const [undoEntry, setUndoEntry]       = useState(null) // { id, exerciseName, weight }
+  const undoTimerRef                    = useRef(null)
 
   useEffect(() => {
     if (!user || isCoach) return
@@ -159,6 +161,19 @@ export default function Training() {
     await updateProfile({ training_plan: newBlocks })
     setSavingPlan(false)
     setEditing(false)
+  }
+
+  function handleSaved(entry) {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    setUndoEntry(entry)
+    undoTimerRef.current = setTimeout(() => setUndoEntry(null), 8000)
+  }
+
+  async function handleUndo() {
+    if (!undoEntry) return
+    clearTimeout(undoTimerRef.current)
+    await removeExerciseLog(undoEntry.id)
+    setUndoEntry(null)
   }
 
   async function handleMarkDone() {
@@ -245,7 +260,7 @@ export default function Training() {
       {/* Progression view */}
       {showProgression && !isCoach && (
         <div className={styles.progressionWrap}>
-          <ProgressionView onClose={() => setShowProgression(false)} />
+          <ProgressionView onClose={() => setShowProgression(false)} blocks={blocks} />
         </div>
       )}
 
@@ -276,7 +291,23 @@ export default function Training() {
       )}
 
       {selectedExercise && (
-        <LiftLogger exercise={selectedExercise} onClose={() => setSelectedExercise(null)} />
+        <LiftLogger
+          exercise={selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {/* Undo toast */}
+      {undoEntry && (
+        <div className={styles.undoToast}>
+          <span className={styles.undoText}>
+            {undoEntry.exerciseName} · {undoEntry.weight}kg
+          </span>
+          <button className={styles.undoBtn} onClick={handleUndo} type="button">
+            Отмени
+          </button>
+        </div>
       )}
     </div>
   )

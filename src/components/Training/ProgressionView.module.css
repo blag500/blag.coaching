@@ -32,39 +32,144 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.closeBtn:active { color: var(--text); }
-
-/* Exercise selector pills */
-.exBar {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 2px;
-}
-
-.exBar::-webkit-scrollbar { display: none; }
-
-.exPill {
-  flex-shrink: 0;
-  padding: 7px 13px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-size: 11px;
-  white-space: nowrap;
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 0;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.exPillActive {
+/* Level 0 — Block grid */
+.blockGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blockBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.blockBtn:active { background: var(--surface-2); }
+
+.blockBtnDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.blockBtnLabel {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  flex: 1;
+}
+
+.blockBtnCount {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.blockBtnArrow {
+  font-size: 18px;
+  color: var(--muted);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Level 1 — Exercise list */
+.blockTitle {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin: 0;
+}
+
+.exList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.exBtn:active { background: var(--surface-2); }
+
+.exBtnName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exBtnMeta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exBtnCount {
+  padding: 2px 7px;
   background: var(--accent-dim);
-  border-color: rgba(255, 183, 77, 0.4);
+  border-radius: 10px;
   color: var(--accent);
+  font-size: 10px;
+}
+
+.exBtnArrow {
+  font-size: 18px;
+  color: var(--muted);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Level 2 — Progression */
+.exTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin: 0;
 }
 
 /* Range bar */
@@ -108,19 +213,9 @@
   overflow: visible;
 }
 
-.noWeight {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--muted);
-  margin: 0;
-  text-align: center;
-  padding: 20px 0;
-}
-
 /* Stats row */
 .statsRow {
   display: flex;
-  gap: 0;
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -136,7 +231,6 @@
   gap: 3px;
   border-right: 1px solid var(--border);
 }
-
 .stat:last-child { border-right: none; }
 
 .statVal {
@@ -151,7 +245,6 @@
   font-family: var(--font-body);
   font-size: 9px;
   color: var(--muted);
-  letter-spacing: 0.05em;
 }
 
 .statUp   { color: #66bb6a; }
@@ -168,7 +261,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 300px;
+  min-width: 280px;
 }
 
 .th {
@@ -183,14 +276,9 @@
   white-space: nowrap;
 }
 
-.thNotes {
-  composes: th;
-  min-width: 100px;
-}
+.thNotes { composes: th; min-width: 80px; }
 
 .tr { transition: background 0.1s; }
-.tr:active { background: var(--surface-2); }
-
 .trLatest .td { color: var(--accent); }
 
 .td {
@@ -207,17 +295,17 @@
   color: var(--muted);
   font-size: 11px;
   white-space: normal;
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .tr:last-child .td { border-bottom: none; }
 
-/* Empty */
-.empty {
+/* Shared */
+.noData {
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--muted);
   margin: 0;
-  padding: 20px 0;
+  padding: 16px 0;
   text-align: center;
 }
