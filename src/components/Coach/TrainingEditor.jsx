@@ -1,165 +1,197 @@
 import { useState } from 'react'
-import { TRAINING_SPLIT } from '../../data/appData'
+import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
 import styles from './TrainingEditor.module.css'
 
-function defaultPlan() {
-  return TRAINING_SPLIT.map((d, i) => ({
-    id: String(i),
-    day: d.day,
-    label: d.label,
-    isRest: d.label === 'REST',
-    muscles: d.muscles || [],
-    exercises: (d.exercises || []).map((e, j) => ({
-      id: `${i}-${j}`,
-      name: e.name,
-      sets: e.sets,
-      reps: e.reps,
-      notes: '',
-    })),
-  }))
+function freshBlock(pos) {
+  return {
+    id: String(Date.now() + pos),
+    label: '',
+    isRest: false,
+    muscles: [],
+    exercises: [],
+  }
 }
 
-function newExercise(dayId, pos) {
-  return { id: `${dayId}-${Date.now()}`, name: '', sets: '3', reps: '10', notes: '' }
+function freshExercise(blockId) {
+  return { id: `${blockId}-${Date.now()}`, name: '', sets: '3', reps: '10' }
+}
+
+function defaultBlocks(initialPlan) {
+  if (initialPlan && initialPlan.length > 0 && initialPlan[0]?.day === undefined) {
+    return initialPlan
+  }
+  return DEFAULT_TRAINING_BLOCKS
 }
 
 export default function TrainingEditor({ initialPlan, onSave, saving }) {
-  const [days, setDays] = useState(() =>
-    initialPlan && initialPlan.length === 7 ? initialPlan : defaultPlan()
-  )
-  const [openDay, setOpenDay] = useState(null)
+  const [blocks, setBlocks] = useState(() => defaultBlocks(initialPlan))
+  const [openId, setOpenId] = useState(null)
 
-  function updateDay(dayId, field, value) {
-    setDays(prev => prev.map(d => d.id === dayId ? { ...d, [field]: value } : d))
+  function updateBlock(id, field, value) {
+    setBlocks(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b))
   }
 
-  function toggleRest(dayId) {
-    setDays(prev => prev.map(d => {
-      if (d.id !== dayId) return d
-      const isRest = !d.isRest
-      return { ...d, isRest, label: isRest ? 'REST' : '', exercises: isRest ? [] : d.exercises }
-    }))
+  function toggleRest(id) {
+    setBlocks(prev => prev.map(b => b.id === id
+      ? { ...b, isRest: !b.isRest, exercises: !b.isRest ? [] : b.exercises }
+      : b
+    ))
   }
 
-  function addExercise(dayId) {
-    setDays(prev => prev.map(d => {
-      if (d.id !== dayId) return d
-      return { ...d, exercises: [...d.exercises, newExercise(dayId, d.exercises.length)] }
-    }))
+  function addBlock() {
+    const nb = freshBlock(blocks.length)
+    setBlocks(prev => [...prev, nb])
+    setOpenId(nb.id)
   }
 
-  function removeExercise(dayId, exId) {
-    setDays(prev => prev.map(d => {
-      if (d.id !== dayId) return d
-      return { ...d, exercises: d.exercises.filter(e => e.id !== exId) }
-    }))
+  function removeBlock(id) {
+    setBlocks(prev => prev.filter(b => b.id !== id))
+    if (openId === id) setOpenId(null)
   }
 
-  function updateExercise(dayId, exId, field, value) {
-    setDays(prev => prev.map(d => {
-      if (d.id !== dayId) return d
-      return {
-        ...d,
-        exercises: d.exercises.map(e => e.id === exId ? { ...e, [field]: value } : e),
-      }
-    }))
+  function addExercise(blockId) {
+    const ex = freshExercise(blockId)
+    setBlocks(prev => prev.map(b =>
+      b.id === blockId ? { ...b, exercises: [...b.exercises, ex] } : b
+    ))
+  }
+
+  function removeExercise(blockId, exId) {
+    setBlocks(prev => prev.map(b =>
+      b.id === blockId ? { ...b, exercises: b.exercises.filter(e => e.id !== exId) } : b
+    ))
+  }
+
+  function updateExercise(blockId, exId, field, value) {
+    setBlocks(prev => prev.map(b =>
+      b.id === blockId
+        ? { ...b, exercises: b.exercises.map(e => e.id === exId ? { ...e, [field]: value } : e) }
+        : b
+    ))
+  }
+
+  function updateMuscles(blockId, raw) {
+    const muscles = raw.split(',').map(s => s.trim()).filter(Boolean)
+    updateBlock(blockId, 'muscles', muscles)
   }
 
   return (
     <div className={styles.wrap}>
-      {days.map(day => {
-        const isOpen = openDay === day.id
+      {blocks.map((block, idx) => {
+        const isOpen = openId === block.id
         return (
-          <div key={day.id} className={`${styles.dayCard} ${day.isRest ? styles.dayRest : ''}`}>
-
-            {/* Day header */}
-            <div className={styles.dayHeader}>
+          <div key={block.id} className={`${styles.blockCard} ${block.isRest ? styles.blockRest : ''}`}>
+            <div className={styles.blockHeader}>
               <button
-                className={styles.dayToggle}
-                onClick={() => setOpenDay(isOpen ? null : day.id)}
+                className={styles.blockToggle}
+                onClick={() => setOpenId(isOpen ? null : block.id)}
                 type="button"
               >
-                <span className={styles.dayName}>{day.day}</span>
-                <span className={`${styles.dayLabel} ${day.isRest ? styles.restLabel : ''}`}>
-                  {day.label || '—'}
-                </span>
+                <span className={styles.blockIdx}>{idx + 1}</span>
+                <span className={styles.blockLabel}>{block.label || '(без име)'}</span>
                 <span className={styles.chevron}>{isOpen ? '▲' : '▼'}</span>
               </button>
-              <button
-                className={`${styles.restToggle} ${day.isRest ? styles.restActive : ''}`}
-                onClick={() => toggleRest(day.id)}
-                type="button"
-              >
-                REST
-              </button>
+              <div className={styles.blockHeaderRight}>
+                <button
+                  className={`${styles.restToggle} ${block.isRest ? styles.restActive : ''}`}
+                  onClick={() => toggleRest(block.id)}
+                  type="button"
+                >
+                  REST
+                </button>
+                <button
+                  className={styles.removeBlock}
+                  onClick={() => removeBlock(block.id)}
+                  type="button"
+                  aria-label="Изтрий блок"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
-            {isOpen && !day.isRest && (
-              <div className={styles.dayBody}>
-                {/* Label input */}
+            {isOpen && (
+              <div className={styles.blockBody}>
                 <div className={styles.fieldRow}>
-                  <label className={styles.fieldLabel}>Наименование</label>
+                  <label className={styles.fieldLabel}>Наименование на блока</label>
                   <input
                     className={styles.fieldInput}
                     type="text"
-                    placeholder="напр. UPPER / LOWER A"
-                    value={day.label}
-                    onChange={e => updateDay(day.id, 'label', e.target.value)}
+                    placeholder="напр. Upper A, Push, Крака..."
+                    value={block.label}
+                    onChange={e => updateBlock(block.id, 'label', e.target.value)}
                   />
                 </div>
 
-                {/* Exercises */}
-                <div className={styles.exList}>
-                  {day.exercises.map((ex, idx) => (
-                    <div key={ex.id} className={styles.exRow}>
-                      <span className={styles.exNum}>{idx + 1}</span>
-                      <input
-                        className={`${styles.exInput} ${styles.exName}`}
-                        type="text"
-                        placeholder="Упражнение"
-                        value={ex.name}
-                        onChange={e => updateExercise(day.id, ex.id, 'name', e.target.value)}
-                      />
-                      <input
-                        className={`${styles.exInput} ${styles.exSets}`}
-                        type="text"
-                        placeholder="Серии"
-                        value={ex.sets}
-                        onChange={e => updateExercise(day.id, ex.id, 'sets', e.target.value)}
-                      />
-                      <input
-                        className={`${styles.exInput} ${styles.exReps}`}
-                        type="text"
-                        placeholder="Повт."
-                        value={ex.reps}
-                        onChange={e => updateExercise(day.id, ex.id, 'reps', e.target.value)}
-                      />
-                      <button
-                        className={styles.exRemove}
-                        onClick={() => removeExercise(day.id, ex.id)}
-                        type="button"
-                        aria-label="Изтрий упражнение"
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
+                {!block.isRest && (
+                  <div className={styles.fieldRow}>
+                    <label className={styles.fieldLabel}>Мускулни групи (разделени със запетая)</label>
+                    <input
+                      className={styles.fieldInput}
+                      type="text"
+                      placeholder="напр. Гърди, Гръб, Рамене"
+                      value={block.muscles.join(', ')}
+                      onChange={e => updateMuscles(block.id, e.target.value)}
+                    />
+                  </div>
+                )}
 
-                <button
-                  className={styles.addExBtn}
-                  onClick={() => addExercise(day.id)}
-                  type="button"
-                >
-                  + Добави упражнение
-                </button>
+                {!block.isRest && (
+                  <div className={styles.exList}>
+                    {block.exercises.map((ex, i) => (
+                      <div key={ex.id} className={styles.exRow}>
+                        <span className={styles.exNum}>{i + 1}</span>
+                        <input
+                          className={`${styles.exInput} ${styles.exName}`}
+                          type="text"
+                          placeholder="Упражнение"
+                          value={ex.name}
+                          onChange={e => updateExercise(block.id, ex.id, 'name', e.target.value)}
+                        />
+                        <input
+                          className={`${styles.exInput} ${styles.exSets}`}
+                          type="text"
+                          placeholder="Сер."
+                          value={ex.sets}
+                          onChange={e => updateExercise(block.id, ex.id, 'sets', e.target.value)}
+                        />
+                        <input
+                          className={`${styles.exInput} ${styles.exReps}`}
+                          type="text"
+                          placeholder="Повт."
+                          value={ex.reps}
+                          onChange={e => updateExercise(block.id, ex.id, 'reps', e.target.value)}
+                        />
+                        <button
+                          className={styles.exRemove}
+                          onClick={() => removeExercise(block.id, ex.id)}
+                          type="button"
+                          aria-label="Изтрий упражнение"
+                        >×</button>
+                      </div>
+                    ))}
+                    <button
+                      className={styles.addExBtn}
+                      onClick={() => addExercise(block.id)}
+                      type="button"
+                    >
+                      + Добави упражнение
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )
       })}
 
+      <button className={styles.addBlockBtn} onClick={addBlock} type="button">
+        + Нов блок
+      </button>
+
       <button
         className={styles.saveBtn}
-        onClick={() => onSave(days)}
+        onClick={() => onSave(blocks)}
         disabled={saving}
         type="button"
       >

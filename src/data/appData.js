@@ -134,6 +134,72 @@ export const TRAINING_SPLIT = [
   },
 ]
 
+export const DEFAULT_TRAINING_BLOCKS = [
+  {
+    id: '0',
+    label: 'Upper A',
+    isRest: false,
+    muscles: ['Гърди', 'Гръб', 'Рамене', 'Ръце'],
+    exercises: [
+      { name: 'Лежанка с щанга',             sets: '4', reps: '6–8'  },
+      { name: 'Наклонена лежанка с дъмбели', sets: '3', reps: '10–12'},
+      { name: 'Набирания с тежест',           sets: '4', reps: '6–8'  },
+      { name: 'Гребане с щанга',              sets: '3', reps: '8–10' },
+      { name: 'Curl с лост',                  sets: '3', reps: '10–12'},
+      { name: 'Трицепс с въже',               sets: '3', reps: '12–15'},
+    ],
+  },
+  {
+    id: '1',
+    label: 'Lower A',
+    isRest: false,
+    muscles: ['Квадрицепси', 'Задно бедро', 'Глутеус', 'Прасци'],
+    exercises: [
+      { name: 'Клек с щанга',          sets: '4', reps: '6–8'  },
+      { name: 'Румънска мъртва тяга',  sets: '4', reps: '8–10' },
+      { name: 'Лег прес',              sets: '3', reps: '10–12'},
+      { name: 'Лег curl (машина)',     sets: '3', reps: '12–15'},
+      { name: 'Прасци прав',           sets: '4', reps: '15–20'},
+    ],
+  },
+  {
+    id: '2',
+    label: 'Upper B',
+    isRest: false,
+    muscles: ['Гърди', 'Гръб', 'Рамене', 'Ръце'],
+    exercises: [
+      { name: 'Прес с дъмбели за рамене',  sets: '4', reps: '8–10' },
+      { name: 'Кабелна флай',             sets: '3', reps: '12–15'},
+      { name: 'Лат пулдаун',              sets: '4', reps: '10–12'},
+      { name: 'Странично вдигане (кабел)', sets: '4', reps: '15–20'},
+      { name: 'Hammer curl',              sets: '3', reps: '12–15'},
+    ],
+  },
+  {
+    id: '3',
+    label: 'Lower B',
+    isRest: false,
+    muscles: ['Квадрицепси', 'Задно бедро', 'Глутеус', 'Прасци'],
+    exercises: [
+      { name: 'Мъртва тяга',              sets: '4', reps: '4–6'                 },
+      { name: 'Bulgarian split squat',    sets: '3', reps: '10–12 (всеки крак)'  },
+      { name: 'Leg extension (машина)',   sets: '3', reps: '12–15'               },
+      { name: 'Seated leg curl',          sets: '3', reps: '12–15'               },
+      { name: 'Прасци седнал',            sets: '4', reps: '15–20'               },
+    ],
+  },
+  {
+    id: '4',
+    label: 'Почивка / Кардио',
+    isRest: true,
+    muscles: [],
+    exercises: [
+      { name: 'Бягане / Колело / Плуване', sets: '1', reps: '30–45 мин' },
+      { name: 'Мобилити и стречинг',       sets: '1', reps: '15 мин'    },
+    ],
+  },
+]
+
 export const DAYS_BG_TO_EN = {
   'Sunday':    'Неделя',
   'Monday':    'Понеделник',

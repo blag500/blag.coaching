@@ -1,12 +1,12 @@
 .wrap {
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-bottom: 8px;
 }
 
-/* Day card */
-.dayCard {
+/* Block card */
+.blockCard {
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -14,21 +14,17 @@
   transition: border-color 0.2s;
 }
 
-.dayRest {
-  opacity: 0.65;
+.blockRest {
+  opacity: 0.7;
 }
 
-.dayCard:not(.dayRest):has(.dayToggle:focus-visible) {
-  border-color: rgba(255, 183, 77, 0.35);
-}
-
-/* Day header */
-.dayHeader {
+/* Block header */
+.blockHeader {
   display: flex;
   align-items: center;
 }
 
-.dayToggle {
+.blockToggle {
   flex: 1;
   display: flex;
   align-items: center;
@@ -42,27 +38,22 @@
   min-width: 0;
 }
 
-.dayName {
+.blockIdx {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.blockLabel {
+  flex: 1;
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.1em;
   color: var(--text);
   white-space: nowrap;
-  min-width: 96px;
-}
-
-.dayLabel {
-  flex: 1;
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--muted);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.restLabel {
-  opacity: 0.5;
 }
 
 .chevron {
@@ -71,11 +62,16 @@
   flex-shrink: 0;
 }
 
+.blockHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 12px;
+}
+
 /* REST toggle */
 .restToggle {
-  flex-shrink: 0;
   padding: 7px 12px;
-  margin-right: 12px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -86,6 +82,7 @@
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 .restActive {
@@ -94,8 +91,26 @@
   border-color: rgba(255, 183, 77, 0.35);
 }
 
-/* Day body */
-.dayBody {
+/* Remove block */
+.removeBlock {
+  width: 28px;
+  height: 28px;
+  background: rgba(220, 60, 60, 0.08);
+  border: 1px solid rgba(220, 60, 60, 0.18);
+  border-radius: 8px;
+  color: rgba(220, 100, 100, 0.75);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+/* Block body */
+.blockBody {
   padding: 0 16px 16px;
   border-top: 1px solid var(--border);
   display: flex;
@@ -103,7 +118,6 @@
   gap: 12px;
 }
 
-/* Field row */
 .fieldRow {
   display: flex;
   flex-direction: column;
@@ -127,14 +141,13 @@
   font-family: var(--font-body);
   font-size: 16px;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s;
   width: 100%;
   box-sizing: border-box;
 }
 
 .fieldInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
 }
 
 /* Exercise list */
@@ -170,29 +183,14 @@
   outline: none;
   transition: border-color 0.15s;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
-.exInput:focus {
-  border-color: var(--accent);
-}
+.exInput:focus { border-color: var(--accent); }
 
-.exName {
-  flex: 1;
-  min-width: 0;
-}
+.exName  { flex: 1; min-width: 0; }
+.exSets  { width: 52px; text-align: center; }
+.exReps  { width: 60px; text-align: center; }
 
-.exSets {
-  width: 48px;
-  text-align: center;
-}
-
-.exReps {
-  width: 56px;
-  text-align: center;
-}
-
-/* Remove button */
 .exRemove {
   width: 30px;
   height: 30px;
@@ -208,14 +206,8 @@
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
 }
 
-.exRemove:active {
-  background: rgba(220, 60, 60, 0.18);
-}
-
-/* Add exercise button */
 .addExBtn {
   padding: 10px 14px;
   background: transparent;
@@ -226,19 +218,34 @@
   font-size: 13px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.addExBtn:active {
-  background: var(--accent-dim);
+.addExBtn:active { background: var(--accent-dim); }
+
+/* Add block button */
+.addBlockBtn {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  border: 1px dashed rgba(255, 183, 77, 0.3);
+  border-radius: 12px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  margin-top: 4px;
+  -webkit-tap-highlight-color: transparent;
 }
+
+.addBlockBtn:active { background: var(--accent-dim); }
 
 /* Save button */
 .saveBtn {
   width: 100%;
   padding: 14px;
-  margin-top: 8px;
+  margin-top: 4px;
   background: var(--accent);
   color: var(--bg);
   border: none;
@@ -248,6 +255,7 @@
   letter-spacing: 0.12em;
   cursor: pointer;
   transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .saveBtn:disabled {
