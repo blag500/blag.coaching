@@ -39,11 +39,12 @@ function CameraIcon() {
   )
 }
 
-function ProductCard({ product, currentUserId, onDelete, onEdit }) {
+function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelete, onEdit }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(FORM_EMPTY)
   const [saving, setSaving] = useState(false)
   const isOwner = product.added_by === currentUserId
+  const addedByName = product.profiles?.name ?? 'Анонимен'
 
   function startEdit() {
     setDraft({ name: product.name, source: product.source, price: product.price, indicator: product.indicator })
@@ -111,6 +112,17 @@ function ProductCard({ product, currentUserId, onDelete, onEdit }) {
               <span className={styles.metaItem}><PinIcon />{product.source}</span>
               <span className={styles.metaItem}><TagIcon />{product.price}</span>
             </div>
+            <div className={styles.cardFooter}>
+              <span className={styles.addedBy}>от {addedByName}</span>
+              <button
+                className={`${styles.likeBtn} ${liked ? styles.likeBtnActive : ''}`}
+                onClick={() => onLike(product.id)}
+                type="button"
+                aria-label="Харесай"
+              >
+                💪 {likeCount > 0 && <span className={styles.likeCount}>{likeCount}</span>}
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -121,6 +133,9 @@ function ProductCard({ product, currentUserId, onDelete, onEdit }) {
 export default function EfficientProducts({ onBack }) {
   const { user } = useAuth()
   const [products, setProducts]     = useState([])
+  const [likeMap, setLikeMap]       = useState({})   // { productId: count }
+  const [likedSet, setLikedSet]     = useState(new Set()) // product IDs liked by current user
+  const [sortBy, setSortBy]         = useState('newest') // 'newest' | 'liked'
   const [loading, setLoading]       = useState(true)
   const [showForm, setShowForm]     = useState(false)
   const [form, setForm]             = useState(FORM_EMPTY)
@@ -130,15 +145,62 @@ export default function EfficientProducts({ onBack }) {
   const [error, setError]           = useState(null)
 
   useEffect(() => {
-    supabase
-      .from('efficient_products')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        if (data) setProducts(data)
-        setLoading(false)
-      })
-  }, [])
+    async function load() {
+      const [productsRes, likesRes] = await Promise.all([
+        supabase
+          .from('efficient_products')
+          .select('*, profiles!added_by(name)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('efficient_product_likes')
+          .select('product_id, user_id'),
+      ])
+
+      if (productsRes.data) setProducts(productsRes.data)
+
+      if (likesRes.data) {
+        const counts = {}
+        const myLikes = new Set()
+        for (const like of likesRes.data) {
+          counts[like.product_id] = (counts[like.product_id] || 0) + 1
+          if (like.user_id === user?.id) myLikes.add(like.product_id)
+        }
+        setLikeMap(counts)
+        setLikedSet(myLikes)
+      }
+
+      setLoading(false)
+    }
+    load()
+  }, [user?.id])
+
+  async function handleLike(productId) {
+    if (!user) return
+    const alreadyLiked = likedSet.has(productId)
+
+    // Optimistic update
+    setLikedSet(prev => {
+      const next = new Set(prev)
+      alreadyLiked ? next.delete(productId) : next.add(productId)
+      return next
+    })
+    setLikeMap(prev => ({
+      ...prev,
+      [productId]: Math.max(0, (prev[productId] || 0) + (alreadyLiked ? -1 : 1)),
+    }))
+
+    if (alreadyLiked) {
+      await supabase
+        .from('efficient_product_likes')
+        .delete()
+        .eq('product_id', productId)
+        .eq('user_id', user.id)
+    } else {
+      await supabase
+        .from('efficient_product_likes')
+        .insert({ product_id: productId, user_id: user.id })
+    }
+  }
 
   function setField(key, val) {
     setForm(prev => ({ ...prev, [key]: val }))
@@ -174,7 +236,7 @@ export default function EfficientProducts({ onBack }) {
         indicator: form.indicator.trim(),
         added_by:  user.id,
       })
-      .select()
+      .select('*, profiles!added_by(name)')
       .single()
 
     if (err) {
@@ -215,6 +277,10 @@ export default function EfficientProducts({ onBack }) {
     const { error } = await supabase.from('efficient_products').update(updates).eq('id', id)
     if (!error) setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p))
   }
+
+  const sorted = sortBy === 'liked'
+    ? [...products].sort((a, b) => (likeMap[b.id] || 0) - (likeMap[a.id] || 0))
+    : products
 
   const canSubmit = FORM_FIELDS.every(f => form[f.key].trim()) && !submitting
 
@@ -280,17 +346,39 @@ export default function EfficientProducts({ onBack }) {
         </button>
       )}
 
+      {!loading && products.length > 0 && (
+        <div className={styles.sortBar}>
+          <button
+            className={`${styles.sortBtn} ${sortBy === 'newest' ? styles.sortBtnActive : ''}`}
+            onClick={() => setSortBy('newest')}
+            type="button"
+          >
+            Най-нови
+          </button>
+          <button
+            className={`${styles.sortBtn} ${sortBy === 'liked' ? styles.sortBtnActive : ''}`}
+            onClick={() => setSortBy('liked')}
+            type="button"
+          >
+            💪 Най-харесвани
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <p className={styles.empty}>Зарежда...</p>
       ) : products.length === 0 ? (
         <p className={styles.empty}>Все още няма продукти. Бъди първият!</p>
       ) : (
         <div className={styles.list}>
-          {products.map(p => (
+          {sorted.map(p => (
             <ProductCard
               key={p.id}
               product={p}
               currentUserId={user?.id}
+              liked={likedSet.has(p.id)}
+              likeCount={likeMap[p.id] || 0}
+              onLike={handleLike}
               onDelete={handleDelete}
               onEdit={handleEdit}
             />

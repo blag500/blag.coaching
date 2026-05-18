@@ -22,9 +22,5 @@ create policy "clients see coach shared recipes"
   on public.recipes for select
   using (
     is_shared = true
-    and exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid()
-        and p.coach_id = recipes.user_id
-    )
+    and user_id = get_coach_id()
   );
