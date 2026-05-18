@@ -1,0 +1,223 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  margin: 0;
+}
+
+.closeBtn {
+  padding: 7px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.closeBtn:active { color: var(--text); }
+
+/* Exercise selector pills */
+.exBar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.exBar::-webkit-scrollbar { display: none; }
+
+.exPill {
+  flex-shrink: 0;
+  padding: 7px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.exPillActive {
+  background: var(--accent-dim);
+  border-color: rgba(255, 183, 77, 0.4);
+  color: var(--accent);
+}
+
+/* Range bar */
+.rangeBar {
+  display: flex;
+  gap: 6px;
+}
+
+.rangeBtn {
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rangeBtnActive {
+  background: var(--accent-dim);
+  border-color: rgba(255, 183, 77, 0.4);
+  color: var(--accent);
+}
+
+/* Chart */
+.chartWrap {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 8px 8px;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.noWeight {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Stats row */
+.statsRow {
+  display: flex;
+  gap: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  gap: 3px;
+  border-right: 1px solid var(--border);
+}
+
+.stat:last-child { border-right: none; }
+
+.statVal {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.statLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.statUp   { color: #66bb6a; }
+.statDown { color: #ef5350; }
+
+/* Table */
+.tableWrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 300px;
+}
+
+.th {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.thNotes {
+  composes: th;
+  min-width: 100px;
+}
+
+.tr { transition: background 0.1s; }
+.tr:active { background: var(--surface-2); }
+
+.trLatest .td { color: var(--accent); }
+
+.td {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  white-space: nowrap;
+}
+
+.tdNotes {
+  composes: td;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: normal;
+  min-width: 100px;
+}
+
+.tr:last-child .td { border-bottom: none; }
+
+/* Empty */
+.empty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  padding: 20px 0;
+  text-align: center;
+}

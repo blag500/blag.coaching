@@ -5,6 +5,7 @@ import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
 import DayCard from './DayCard'
 import LiftLogger from './LiftLogger'
 import TrainingEditor from '../Coach/TrainingEditor'
+import ProgressionView from './ProgressionView'
 import styles from './Training.module.css'
 
 // Detect old 7-day format
@@ -130,6 +131,7 @@ export default function Training() {
 
   const [selectedId, setSelectedId]     = useState(blocks[0]?.id ?? '0')
   const [selectedExercise, setSelectedExercise] = useState(null)
+  const [showProgression, setShowProgression] = useState(false)
   const [editing, setEditing]           = useState(false)
   const [savingPlan, setSavingPlan]     = useState(false)
   const [completions, setCompletions]   = useState([])
@@ -217,11 +219,11 @@ export default function Training() {
         {blocks.map((block, idx) => (
           <button
             key={block.id}
-            className={`${styles.pill} ${selectedId === block.id ? styles.activePill : ''}`}
-            style={selectedId === block.id ? { background: blockColor(idx), borderColor: blockColor(idx) } : {}}
-            onClick={() => { setSelectedId(block.id); setJustMarked(false) }}
+            className={`${styles.pill} ${selectedId === block.id && !showProgression ? styles.activePill : ''}`}
+            style={selectedId === block.id && !showProgression ? { background: blockColor(idx), borderColor: blockColor(idx) } : {}}
+            onClick={() => { setSelectedId(block.id); setJustMarked(false); setShowProgression(false) }}
             role="tab"
-            aria-selected={selectedId === block.id}
+            aria-selected={selectedId === block.id && !showProgression}
             type="button"
           >
             {block.label}
@@ -229,8 +231,26 @@ export default function Training() {
         ))}
       </div>
 
+      {/* Progression toggle button */}
+      {!isCoach && (
+        <button
+          className={`${styles.progressionBtn} ${showProgression ? styles.progressionBtnActive : ''}`}
+          onClick={() => setShowProgression(p => !p)}
+          type="button"
+        >
+          📊 Прогресия
+        </button>
+      )}
+
+      {/* Progression view */}
+      {showProgression && !isCoach && (
+        <div className={styles.progressionWrap}>
+          <ProgressionView onClose={() => setShowProgression(false)} />
+        </div>
+      )}
+
       {/* Exercise list */}
-      {selectedBlock && (
+      {!showProgression && selectedBlock && (
         <div className={styles.blockContent}>
           <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} />
 
@@ -248,7 +268,7 @@ export default function Training() {
       )}
 
       {/* History calendar */}
-      {!isCoach && (
+      {!isCoach && !showProgression && (
         <section className={styles.historySection}>
           <h2 className={styles.historyTitle}>ИСТОРИЯ</h2>
           <WorkoutCalendar completions={completions} blocks={blocks} />
