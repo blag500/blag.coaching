@@ -8,6 +8,7 @@ export function useUnread() {
   const { user } = useAuth()
   const [unreadByUser, setUnreadByUser] = useState({})
   const instanceId = useRef(++instanceCounter).current
+  const suppressUntil = useRef(0)
 
   const fetchUnread = useCallback(async () => {
     if (!user) return
@@ -35,8 +36,9 @@ export function useUnread() {
         table: 'messages',
         filter: `to_user_id=eq.${user.id}`,
       }, payload => {
+        // Skip re-fetch during suppression window (just after marking read)
+        if (Date.now() < suppressUntil.current) return
         fetchUnread()
-        // Notify when a new message arrives and the app is not in focus
         if (
           payload.eventType === 'INSERT' &&
           document.visibilityState !== 'visible' &&
@@ -55,14 +57,12 @@ export function useUnread() {
     return () => supabase.removeChannel(channel)
   }, [user?.id, fetchUnread])
 
-  // Polling fallback: re-check every 30 s in case Realtime drops
   useEffect(() => {
     if (!user) return
     const id = setInterval(fetchUnread, 30_000)
     return () => clearInterval(id)
   }, [user?.id, fetchUnread])
 
-  // Re-check when the app returns to the foreground
   useEffect(() => {
     if (!user) return
     const onVisible = () => { if (document.visibilityState === 'visible') fetchUnread() }
@@ -70,18 +70,18 @@ export function useUnread() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [user?.id, fetchUnread])
 
-  // Immediately clear badge when chat is opened and messages are marked read,
-  // then re-fetch from DB to confirm (catches any remaining unread from other senders)
   useEffect(() => {
     const handler = (e) => {
       const { userId } = e.detail
+      // Suppress Realtime-triggered fetches for 600 ms so the optimistic
+      // clear isn't overwritten by the UPDATE event that fires immediately
+      suppressUntil.current = Date.now() + 600
       setUnreadByUser(prev => {
         const next = { ...prev }
         delete next[userId]
         return next
       })
-      // Short delay lets the DB update propagate before re-fetching
-      setTimeout(fetchUnread, 400)
+      setTimeout(fetchUnread, 600)
     }
     window.addEventListener('blag:messages-read', handler)
     return () => window.removeEventListener('blag:messages-read', handler)
