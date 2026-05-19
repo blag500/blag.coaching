@@ -70,20 +70,22 @@ export function useUnread() {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [user?.id, fetchUnread])
 
-  // Immediately clear badge when chat is opened and messages are marked read
+  // Immediately clear badge when chat is opened and messages are marked read,
+  // then re-fetch from DB to confirm (catches any remaining unread from other senders)
   useEffect(() => {
     const handler = (e) => {
       const { userId } = e.detail
       setUnreadByUser(prev => {
-        if (!prev[userId]) return prev
         const next = { ...prev }
         delete next[userId]
         return next
       })
+      // Short delay lets the DB update propagate before re-fetching
+      setTimeout(fetchUnread, 400)
     }
     window.addEventListener('blag:messages-read', handler)
     return () => window.removeEventListener('blag:messages-read', handler)
-  }, [])
+  }, [fetchUnread])
 
   const totalUnread = Object.values(unreadByUser).reduce((a, b) => a + b, 0)
   return { unreadByUser, totalUnread }

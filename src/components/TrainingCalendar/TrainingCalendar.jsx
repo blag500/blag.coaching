@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './TrainingCalendar.module.css'
 
@@ -349,7 +350,7 @@ export default function TrainingCalendar() {
         )}
       </div>
 
-      {showForm && (
+      {showForm && createPortal(
         <div className={styles.overlay} onClick={() => setShowForm(false)}>
           <div className={styles.sheet} onClick={e => e.stopPropagation()}>
             <div className={styles.sheetHandle} />
@@ -360,51 +361,55 @@ export default function TrainingCalendar() {
               )}
               <button className={styles.closeBtn} onClick={() => setShowForm(false)} type="button">✕</button>
             </div>
-            <form onSubmit={handleSubmit} className={styles.form}>
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Дата</label>
-                  <input type="date" value={fDate} onChange={e => setFDate(e.target.value)} className={styles.input} required />
+            <div className={styles.sheetBody}>
+              <form id="calForm" onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Дата</label>
+                    <input type="date" value={fDate} onChange={e => setFDate(e.target.value)} className={styles.input} required />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Час</label>
+                    <input type="time" value={fTime} onChange={e => setFTime(e.target.value)} className={styles.input} required />
+                  </div>
                 </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Час</label>
-                  <input type="time" value={fTime} onChange={e => setFTime(e.target.value)} className={styles.input} required />
-                </div>
-              </div>
 
-              <label className={styles.formLabel}>Вид тренировка</label>
-              <select value={fTitle} onChange={e => setFTitle(e.target.value)} className={styles.input}>
-                {SESSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
+                <label className={styles.formLabel}>Вид тренировка</label>
+                <select value={fTitle} onChange={e => setFTitle(e.target.value)} className={styles.input}>
+                  {SESSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
 
-              {isCoach && formMode === 'create' && (
-                <>
-                  <label className={styles.formLabel}>Клиент</label>
-                  <select value={fClientId} onChange={e => setFClientId(e.target.value)} className={styles.input} required>
-                    {clients.map(c => (
-                      <option key={c.id} value={c.id}>{c.name || c.email}</option>
-                    ))}
-                  </select>
-                </>
-              )}
+                {isCoach && formMode === 'create' && (
+                  <>
+                    <label className={styles.formLabel}>Клиент</label>
+                    <select value={fClientId} onChange={e => setFClientId(e.target.value)} className={styles.input} required>
+                      {clients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name || c.email}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
 
-              <label className={styles.formLabel}>Бележка (по желание)</label>
-              <textarea
-                value={fNotes}
-                onChange={e => setFNotes(e.target.value)}
-                className={`${styles.input} ${styles.textarea}`}
-                rows={3}
-                placeholder="Цел, специфики..."
-              />
+                <label className={styles.formLabel}>Бележка (по желание)</label>
+                <textarea
+                  value={fNotes}
+                  onChange={e => setFNotes(e.target.value)}
+                  className={`${styles.input} ${styles.textarea}`}
+                  rows={3}
+                  placeholder="Цел, специфики..."
+                />
+              </form>
+            </div>
 
+            <div className={styles.sheetFooter}>
               {formErr && <p className={styles.formErr}>{formErr}</p>}
-
-              <button type="submit" className={styles.submitBtn} disabled={saving}>
+              <button type="submit" form="calForm" className={styles.submitBtn} disabled={saving}>
                 {saving ? 'Запазва...' : submitLabels[formMode]}
               </button>
-            </form>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
