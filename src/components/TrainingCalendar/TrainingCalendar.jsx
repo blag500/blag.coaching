@@ -456,10 +456,7 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
                 <button className={styles.declineBtn} onClick={() => onStatus(session.id, 'declined')}  type="button">НЕ</button>
               </>
             )}
-            {isPending && requestedByMe && (
-              <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">Отмени</button>
-            )}
-            {isConfirmed && !isPast && (
+            {(isPending || isConfirmed) && !isPast && (
               <>
                 {isCoach && (
                   <button className={styles.editIconBtn} onClick={() => onCoachEdit(session)} type="button" aria-label="Редактирай">
@@ -472,7 +469,12 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
                 {!isCoach && !hasEditReq && (
                   <button className={styles.proposeBtn} onClick={() => onClientPropose(session)} type="button">Промени</button>
                 )}
-                <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">Отмени</button>
+                {isPending && requestedByMe && (
+                  <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">Отмени</button>
+                )}
+                {isConfirmed && (
+                  <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">Отмени</button>
+                )}
               </>
             )}
             {isConfirmed && isPast && isCoach && (
