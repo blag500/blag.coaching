@@ -36,6 +36,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
   function startEdit(entry) {
     setEditingId(entry.id)
     setDraft({
+      name:    entry.name,
       grams:   String(entry.grams || ''),
       kcal:    String(entry.kcal),
       protein: String(entry.protein),
@@ -62,6 +63,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
 
   function handleSave(entry) {
     onEdit(entry.id, {
+      name:    draft.name.trim() || entry.name,
       grams:   parseFloat(draft.grams)              || 0,
       kcal:    Math.round(parseFloat(draft.kcal)     || 0),
       protein: Math.round((parseFloat(draft.protein) || 0) * 10) / 10,
@@ -104,7 +106,17 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
         {log.map((entry, i) =>
           editingId === entry.id ? (
             <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
-              <div className={styles.editName}>{entry.name}</div>
+              <div className={styles.editNameField}>
+                <label className={styles.editLabel} htmlFor={`edit-name-${entry.id}`}>Наименование</label>
+                <input
+                  id={`edit-name-${entry.id}`}
+                  className={styles.editInput}
+                  type="text"
+                  value={draft.name}
+                  onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
+                  autoFocus
+                />
+              </div>
 
               {entry.grams > 0 && (
                 <div className={styles.editGramsRow}>
@@ -115,7 +127,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
                     min="1"
                     value={draft.grams}
                     onChange={e => handleGramsChange(entry, e.target.value)}
-                    autoFocus
                   />
                   <span className={styles.editUnit}>g</span>
                 </div>

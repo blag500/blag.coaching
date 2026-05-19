@@ -230,13 +230,9 @@
   animation: none;
 }
 
-.editName {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.editNameField {
+  display: flex;
+  flex-direction: column;
 }
 
 .editGramsRow {

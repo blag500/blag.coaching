@@ -18,7 +18,17 @@ function freshExercise(blockId) {
 
 function defaultBlocks(initialPlan) {
   if (initialPlan && initialPlan.length > 0 && initialPlan[0]?.day === undefined) {
-    return initialPlan
+    return initialPlan.map((block, bi) => {
+      const blockId = block.id || String(Date.now() + bi)
+      return {
+        ...block,
+        id: blockId,
+        exercises: (block.exercises || []).map((ex, ei) => ({
+          ...ex,
+          id: ex.id || `${blockId}-${ei}-${Date.now()}`,
+        })),
+      }
+    })
   }
   return DEFAULT_TRAINING_BLOCKS
 }

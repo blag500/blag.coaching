@@ -23,9 +23,10 @@ function fmtTime(iso: string) {
 
 interface Party { id: string; name: string | null; email: string }
 interface Packet {
-  userId: string; email: string
+  userId: string
   pushTitle: string; pushBody: string
-  subject: string; html: string
+  // email only sent for high-value client-facing events; omit to skip
+  email?: string; subject?: string; html?: string
 }
 
 function buildPacket(event: string, s: any): Packet | null {
@@ -46,10 +47,12 @@ function buildPacket(event: string, s: any): Packet | null {
 
   if (event === 'created') {
     if (s.requested_by === coach.id) {
+      // Coach scheduled → email + push to client
       return {
-        userId: client.id, email: client.email,
+        userId: client.id,
         pushTitle: 'Нова тренировка 💪',
         pushBody: `${coachName} насрочи тренировка за ${dateStr} в ${timeStr}`,
+        email: client.email,
         subject: `Нова тренировка: ${dateStr} в ${timeStr}`,
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
           <h2 style="color:#ffb74d;margin:0 0 12px">Нова тренировка</h2>
@@ -60,40 +63,30 @@ function buildPacket(event: string, s: any): Packet | null {
         </div>`,
       }
     } else {
+      // Client requested → push-only to coach
       return {
-        userId: coach.id, email: coach.email,
+        userId: coach.id,
         pushTitle: 'Заявка за тренировка',
         pushBody: `${clientName} заяви тренировка за ${dateStr} в ${timeStr}`,
-        subject: `${clientName} заяви тренировка: ${dateStr}`,
-        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
-          <h2 style="color:#ffb74d;margin:0 0 12px">Нова заявка за тренировка</h2>
-          <p>Здравей,</p>
-          <p><strong>${clientName}</strong> заяви нова тренировка.</p>
-          ${sessionTable}
-          <p>Влез в приложението и потвърди от секция <strong>ГРАФИК</strong>.</p>
-        </div>`,
       }
     }
   }
 
   if (event === 'confirmed') {
     if (s.requested_by === coach.id) {
+      // Coach created, client confirmed → push-only to coach
       return {
-        userId: coach.id, email: coach.email,
+        userId: coach.id,
         pushTitle: 'Тренировка потвърдена ✅',
         pushBody: `${clientName} потвърди тренировката за ${dateStr} в ${timeStr}`,
-        subject: `Потвърдена тренировка: ${dateStr}`,
-        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
-          <h2 style="color:#66BB6A;margin:0 0 12px">Тренировката е потвърдена ✅</h2>
-          <p><strong>${clientName}</strong> потвърди тренировката.</p>
-          ${sessionTable}
-        </div>`,
       }
     } else {
+      // Client requested, coach confirmed → email + push to client
       return {
-        userId: client.id, email: client.email,
+        userId: client.id,
         pushTitle: 'Тренировка потвърдена ✅',
         pushBody: `${coachName} потвърди тренировката за ${dateStr} в ${timeStr}`,
+        email: client.email,
         subject: `Потвърдена тренировка: ${dateStr}`,
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
           <h2 style="color:#66BB6A;margin:0 0 12px">Тренировката е потвърдена ✅</h2>
@@ -108,21 +101,18 @@ function buildPacket(event: string, s: any): Packet | null {
   if (event === 'cancelled' || event === 'declined') {
     const word = event === 'cancelled' ? 'отменена' : 'отхвърлена'
     const verb = event === 'cancelled' ? 'отмени'   : 'отхвърли'
+    // Push-only for both parties on cancellation/decline
     if (s.requested_by === coach.id) {
       return {
-        userId: coach.id, email: coach.email,
+        userId: coach.id,
         pushTitle: `Тренировка ${word}`,
         pushBody: `${clientName} ${verb} тренировката за ${dateStr}`,
-        subject: `Тренировка ${word}: ${dateStr}`,
-        html: `<p>${clientName} ${verb} тренировката за <strong>${dateStr} в ${timeStr}</strong>.</p>`,
       }
     } else {
       return {
-        userId: client.id, email: client.email,
+        userId: client.id,
         pushTitle: `Тренировка ${word}`,
         pushBody: `${coachName} ${verb} тренировката за ${dateStr}`,
-        subject: `Тренировка ${word}: ${dateStr}`,
-        html: `<p>Здравей ${clientName}, ${coachName} ${verb} тренировката за <strong>${dateStr} в ${timeStr}</strong>.</p>`,
       }
     }
   }
@@ -163,8 +153,8 @@ async function doWork(sessionId: string, event: string) {
     console.log('no push subscriptions for user', packet.userId)
   }
 
-  // Email via Resend
-  if (RESEND_API_KEY) {
+  // Email via Resend — only for high-value client-facing events
+  if (RESEND_API_KEY && packet.email) {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -180,6 +170,8 @@ async function doWork(sessionId: string, event: string) {
     })
     const resBody = await res.json().catch(() => ({}))
     console.log('resend status:', res.status, JSON.stringify(resBody))
+  } else if (!packet.email) {
+    console.log('push-only event, skipping email')
   } else {
     console.log('no RESEND_API_KEY set')
   }
