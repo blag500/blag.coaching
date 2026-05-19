@@ -172,7 +172,7 @@ async function doWork(sessionId: string, event: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Blag Coaching <onboarding@resend.dev>',
+        from: 'Blag Coaching <noreply@blag-coaching.com>',
         to: [packet.email],
         subject: packet.subject,
         html: packet.html,
