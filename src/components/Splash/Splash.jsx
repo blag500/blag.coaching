@@ -17,11 +17,14 @@ export default function Splash({ onDone }) {
 
   return (
     <div className={`${styles.splash} ${leaving ? styles.leaving : ''}`}>
-      <div className={styles.inner}>
-        <img src="/icon-192.png" className={styles.logo} alt="" aria-hidden="true" />
-        <h1 className={styles.title}>BLAG COACHING</h1>
-        <div className={styles.divider} aria-hidden="true" />
-        <p className={styles.tagline}>Be blag, Be better</p>
+      <div className={styles.armsRow}>
+        <div className={styles.armLeft} aria-hidden="true" />
+        <div className={styles.brandCenter}>
+          <h1 className={styles.title}>BLAG COACHING</h1>
+          <div className={styles.divider} aria-hidden="true" />
+          <p className={styles.tagline}>Be blag, Be better</p>
+        </div>
+        <div className={styles.armRight} aria-hidden="true" />
       </div>
     </div>
   )

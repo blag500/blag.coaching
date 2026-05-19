@@ -8,11 +8,7 @@
   z-index: 9999;
   opacity: 1;
   transition: opacity 0.6s var(--ease-in-out);
-  background-image: radial-gradient(
-    ellipse 72% 48% at 50% 50%,
-    rgba(255, 183, 77, 0.10) 0%,
-    transparent 70%
-  );
+  overflow: hidden;
 }
 
 .splash.leaving {
@@ -20,70 +16,96 @@
   pointer-events: none;
 }
 
-.inner {
+.armsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  padding: 0 16px;
+}
+
+.armLeft,
+.armRight {
+  flex: 0 0 auto;
+  width: 140px;
+  height: 220px;
+  background-image: url('/arms.jpeg');
+  background-size: 200% auto;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+}
+
+.armLeft {
+  background-position: 0% center;
+  animation: armSlideLeft 1s var(--ease-out) 0.05s both;
+}
+
+.armRight {
+  background-position: 100% center;
+  animation: armSlideRight 1s var(--ease-out) 0.05s both;
+}
+
+.brandCenter {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   text-align: center;
-  padding: 0 32px;
-}
-
-.logo {
-  width: 128px;
-  height: 128px;
-  border-radius: 24px;
-  animation: logoReveal 1.3s var(--ease-out) 0.05s both;
+  padding: 0 8px;
 }
 
 .title {
   font-family: var(--font-heading);
-  font-size: 54px;
+  font-size: 42px;
   letter-spacing: 0.2em;
   color: #ffb74d;
   line-height: 1;
-  animation: titleReveal 1s var(--ease-out) 0.8s both;
+  animation: titleReveal 1s var(--ease-out) 0.6s both;
 }
 
 .divider {
   width: 56px;
   height: 1px;
   background: linear-gradient(to right, transparent, #ffb74d, transparent);
-  animation: dividerExpand 0.7s var(--ease-out) 1.45s both;
+  animation: dividerExpand 0.7s var(--ease-out) 1.2s both;
 }
 
 .tagline {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  animation: taglineIn 0.65s var(--ease-out) 1.75s both;
+  animation: taglineIn 0.65s var(--ease-out) 1.5s both;
 }
 
-@keyframes logoReveal {
-  /* Phase 1 (0–35%): B fades in and scales up, arms still clipped */
-  0% {
+@keyframes armSlideLeft {
+  from {
     opacity: 0;
-    transform: scale(0.78);
-    clip-path: inset(0 33% 0 33%);
+    transform: translateX(-120%);
   }
-  35% {
+  to {
     opacity: 1;
-    transform: scale(1);
-    clip-path: inset(0 33% 0 33%);
+    transform: translateX(0);
   }
-  /* Phase 2 (35–100%): arms sweep outward */
-  100% {
+}
+
+@keyframes armSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+  to {
     opacity: 1;
-    transform: scale(1);
-    clip-path: inset(0 0% 0 0%);
+    transform: translateX(0);
   }
 }
 
 @keyframes titleReveal {
   from {
     opacity: 0;
-    transform: translateY(24px) scale(0.92);
+    transform: translateY(20px) scale(0.92);
     letter-spacing: 0.04em;
   }
   to {
@@ -107,7 +129,7 @@
 @keyframes taglineIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
     letter-spacing: 0.06em;
   }
   to {
@@ -117,16 +139,26 @@
   }
 }
 
+@media (max-width: 380px) {
+  .armLeft,
+  .armRight {
+    width: 100px;
+    height: 160px;
+  }
+  .title {
+    font-size: 32px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .logo,
+  .armLeft,
+  .armRight,
   .title,
   .divider,
   .tagline {
     animation: none;
     opacity: 1;
     transform: none;
-    clip-path: none;
-    width: auto;
   }
   .divider { width: 56px; }
 }
