@@ -18,19 +18,23 @@ function freshExercise(blockId) {
 
 function defaultBlocks(initialPlan) {
   if (initialPlan && initialPlan.length > 0 && initialPlan[0]?.day === undefined) {
-    return initialPlan.map((block, bi) => {
-      const blockId = block.id || String(Date.now() + bi)
+    return initialPlan.map(block => {
+      const blockId = block.id || crypto.randomUUID()
       return {
         ...block,
         id: blockId,
-        exercises: (block.exercises || []).map((ex, ei) => ({
+        exercises: (block.exercises || []).map(ex => ({
           ...ex,
-          id: ex.id || `${blockId}-${ei}-${Date.now()}`,
+          id: ex.id || crypto.randomUUID(),
         })),
       }
     })
   }
-  return DEFAULT_TRAINING_BLOCKS
+  // Deep-copy so DEFAULT_TRAINING_BLOCKS is never mutated by React state updates
+  return DEFAULT_TRAINING_BLOCKS.map(block => ({
+    ...block,
+    exercises: block.exercises.map(ex => ({ ...ex })),
+  }))
 }
 
 export default function TrainingEditor({ initialPlan, onSave, saving }) {
