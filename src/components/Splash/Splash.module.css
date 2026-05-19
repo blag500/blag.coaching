@@ -29,20 +29,27 @@
   padding: 0 32px;
 }
 
+.logo {
+  width: 128px;
+  height: 128px;
+  border-radius: 24px;
+  animation: logoReveal 1.3s var(--ease-out) 0.05s both;
+}
+
 .title {
   font-family: var(--font-heading);
   font-size: 54px;
   letter-spacing: 0.2em;
   color: #ffb74d;
   line-height: 1;
-  animation: titleReveal 1s var(--ease-out) 0.1s both;
+  animation: titleReveal 1s var(--ease-out) 0.8s both;
 }
 
 .divider {
   width: 56px;
   height: 1px;
   background: linear-gradient(to right, transparent, #ffb74d, transparent);
-  animation: dividerExpand 0.7s var(--ease-out) 0.75s both;
+  animation: dividerExpand 0.7s var(--ease-out) 1.45s both;
 }
 
 .tagline {
@@ -50,7 +57,27 @@
   color: var(--muted);
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  animation: taglineIn 0.65s var(--ease-out) 1.05s both;
+  animation: taglineIn 0.65s var(--ease-out) 1.75s both;
+}
+
+@keyframes logoReveal {
+  /* Phase 1 (0–35%): B fades in and scales up, arms still clipped */
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+    clip-path: inset(0 33% 0 33%);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1);
+    clip-path: inset(0 33% 0 33%);
+  }
+  /* Phase 2 (35–100%): arms sweep outward */
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    clip-path: inset(0 0% 0 0%);
+  }
 }
 
 @keyframes titleReveal {
@@ -91,12 +118,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .logo,
   .title,
   .divider,
   .tagline {
     animation: none;
     opacity: 1;
     transform: none;
-    width: 56px;
+    clip-path: none;
+    width: auto;
   }
+  .divider { width: 56px; }
 }
