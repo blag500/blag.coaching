@@ -46,7 +46,6 @@ function buildPacket(event: string, s: any): Packet | null {
 
   if (event === 'created') {
     if (s.requested_by === coach.id) {
-      // Coach scheduled → notify client
       return {
         userId: client.id, email: client.email,
         pushTitle: 'Нова тренировка 💪',
@@ -61,7 +60,6 @@ function buildPacket(event: string, s: any): Packet | null {
         </div>`,
       }
     } else {
-      // Client requested → notify coach
       return {
         userId: coach.id, email: coach.email,
         pushTitle: 'Заявка за тренировка',
@@ -79,7 +77,6 @@ function buildPacket(event: string, s: any): Packet | null {
   }
 
   if (event === 'confirmed') {
-    // Notify the original requester that the other party confirmed
     if (s.requested_by === coach.id) {
       return {
         userId: coach.id, email: coach.email,
@@ -111,7 +108,6 @@ function buildPacket(event: string, s: any): Packet | null {
   if (event === 'cancelled' || event === 'declined') {
     const word = event === 'cancelled' ? 'отменена' : 'отхвърлена'
     const verb = event === 'cancelled' ? 'отмени'   : 'отхвърли'
-    // Notify whoever did NOT initiate the cancellation — simpler: notify the requester
     if (s.requested_by === coach.id) {
       return {
         userId: coach.id, email: coach.email,
@@ -134,28 +130,22 @@ function buildPacket(event: string, s: any): Packet | null {
   return null
 }
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
-
-  const { sessionId, event } = await req.json()
-  if (!sessionId || !event) {
-    return new Response('missing sessionId or event', { status: 400, headers: CORS })
-  }
-
+async function doWork(sessionId: string, event: string) {
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
-  const { data: s } = await supabase
+  const { data: s, error } = await supabase
     .from('training_sessions')
     .select('*, coach:profiles!fk_ts_coach(id, name, email), client:profiles!fk_ts_client(id, name, email)')
     .eq('id', sessionId)
     .single()
 
-  if (!s) return new Response('session not found', { status: 404, headers: CORS })
+  if (error || !s) {
+    console.error('session fetch error:', error)
+    return
+  }
 
   const packet = buildPacket(event, s)
-  if (!packet) return new Response(JSON.stringify({ ok: true, skipped: true }), {
-    headers: { 'Content-Type': 'application/json', ...CORS },
-  })
+  if (!packet) return
 
   // Push notification
   const { data: subs } = await supabase
@@ -165,12 +155,17 @@ Deno.serve(async (req) => {
 
   if (subs?.length) {
     const payload = JSON.stringify({ title: packet.pushTitle, body: packet.pushBody })
-    await Promise.allSettled(subs.map((row: any) => webpush.sendNotification(row.subscription, payload)))
+    const results = await Promise.allSettled(
+      subs.map((row: any) => webpush.sendNotification(row.subscription, payload))
+    )
+    console.log('push results:', JSON.stringify(results.map(r => r.status)))
+  } else {
+    console.log('no push subscriptions for user', packet.userId)
   }
 
   // Email via Resend
   if (RESEND_API_KEY) {
-    await fetch('https://api.resend.com/emails', {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
@@ -182,8 +177,25 @@ Deno.serve(async (req) => {
         subject: packet.subject,
         html: packet.html,
       }),
-    }).catch(() => {})
+    })
+    const resBody = await res.json().catch(() => ({}))
+    console.log('resend status:', res.status, JSON.stringify(resBody))
+  } else {
+    console.log('no RESEND_API_KEY set')
   }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
+
+  const { sessionId, event } = await req.json()
+  if (!sessionId || !event) {
+    return new Response('missing sessionId or event', { status: 400, headers: CORS })
+  }
+
+  // Respond immediately so the client doesn't keep the connection open,
+  // then finish the work in the background
+  EdgeRuntime.waitUntil(doWork(sessionId, event))
 
   return new Response(JSON.stringify({ ok: true }), {
     headers: { 'Content-Type': 'application/json', ...CORS },
