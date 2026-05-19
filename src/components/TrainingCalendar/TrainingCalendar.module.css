@@ -160,6 +160,43 @@
 .dot_completed { background: var(--muted); }
 
 /* Tab bar */
+/* Client filter pills */
+.clientFilter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 0 14px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.clientFilter::-webkit-scrollbar { display: none; }
+
+.filterPill {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filterPill:active {
+  background: rgba(255, 183, 77, 0.08);
+}
+
+.filterPillActive {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 183, 77, 0.08);
+}
+
 .tabBar {
   display: flex;
   gap: 8px;

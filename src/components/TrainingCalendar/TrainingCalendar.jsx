@@ -56,6 +56,7 @@ export default function TrainingCalendar() {
   const [clients,  setClients]  = useState([])
   const [loading,  setLoading]  = useState(true)
   const [activeTab, setActiveTab] = useState('upcoming')
+  const [filterClientId, setFilterClientId] = useState('all')
 
   // form
   const [formMode,  setFormMode]  = useState('create')
@@ -112,6 +113,7 @@ export default function TrainingCalendar() {
     if (!day) return []
     return sessions.filter(s => {
       if (s.status === 'declined' || s.status === 'cancelled') return false
+      if (filterClientId !== 'all' && s.client?.id !== filterClientId) return false
       const d = new Date(s.scheduled_at)
       return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
     })
@@ -267,18 +269,22 @@ export default function TrainingCalendar() {
   }
 
   const allSelSessions = allSessionsForDay(selDay)
-  const selSessions = allSelSessions.filter(s =>
-    activeTab === 'upcoming'
+  const selSessions = allSelSessions.filter(s => {
+    if (filterClientId !== 'all' && s.client?.id !== filterClientId) return false
+    return activeTab === 'upcoming'
       ? s.status === 'pending' || s.status === 'confirmed'
       : s.status === 'completed' || s.status === 'cancelled' || s.status === 'declined'
-  )
+  })
 
   const historySessions = useMemo(() => {
     return sessions
-      .filter(s => ['completed', 'cancelled', 'declined'].includes(s.status) ||
-        (new Date(s.scheduled_at) < today && s.status !== 'pending' && s.status !== 'confirmed'))
+      .filter(s => {
+        if (filterClientId !== 'all' && s.client?.id !== filterClientId) return false
+        return ['completed', 'cancelled', 'declined'].includes(s.status) ||
+          (new Date(s.scheduled_at) < today && s.status !== 'pending' && s.status !== 'confirmed')
+      })
       .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
-  }, [sessions])
+  }, [sessions, filterClientId])
 
   const historyByDate = useMemo(() => {
     const groups = {}
@@ -318,6 +324,28 @@ export default function TrainingCalendar() {
         <span className={styles.monthLabel}>{MONTHS_BG[month]} {year}</span>
         <button className={styles.navBtn} onClick={nextMonth} type="button" aria-label="Следващ месец">›</button>
       </div>
+
+      {isCoach && clients.length > 0 && (
+        <div className={styles.clientFilter}>
+          <button
+            className={`${styles.filterPill} ${filterClientId === 'all' ? styles.filterPillActive : ''}`}
+            onClick={() => setFilterClientId('all')}
+            type="button"
+          >
+            ВСИЧКИ
+          </button>
+          {clients.map(c => (
+            <button
+              key={c.id}
+              className={`${styles.filterPill} ${filterClientId === c.id ? styles.filterPillActive : ''}`}
+              onClick={() => setFilterClientId(c.id)}
+              type="button"
+            >
+              {(c.name || c.email || '').split(' ')[0].toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.calWrap}>
         <div className={styles.calGrid}>
