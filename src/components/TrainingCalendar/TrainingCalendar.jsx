@@ -1,7 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 import styles from './TrainingCalendar.module.css'
+
+function notifySession(sessionId, event) {
+  supabase.functions.invoke('notify-training-session', { body: { sessionId, event } }).catch(() => {})
+}
 
 const DAYS_SHORT  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 const MONTHS_BG   = ['ЯНУАРИ','ФЕВРУАРИ','МАРТ','АПРИЛ','МАЙ','ЮНИ','ЮЛИ','АВГУСТ','СЕПТЕМВРИ','ОКТОМВРИ','НОЕМВРИ','ДЕКЕМВРИ']
@@ -172,6 +177,7 @@ export default function TrainingCalendar() {
       setSaving(false)
       if (error) { console.error('createTrainingSession error:', error); setFormErr(error.message || 'Грешка при запазване'); return }
       setSessions(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)))
+      notifySession(data.id, 'created')
 
     } else if (formMode === 'coach-edit') {
       const { error } = await updateSession(editingSess.id, {
@@ -207,7 +213,12 @@ export default function TrainingCalendar() {
 
   async function handleStatus(sessionId, newStatus) {
     const { error } = await updateSessionStatus(sessionId, newStatus)
-    if (!error) setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: newStatus } : s))
+    if (!error) {
+      setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: newStatus } : s))
+      if (newStatus === 'confirmed' || newStatus === 'cancelled' || newStatus === 'declined') {
+        notifySession(sessionId, newStatus)
+      }
+    }
   }
 
   async function handleAcceptEdit(session) {
