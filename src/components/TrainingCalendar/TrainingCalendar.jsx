@@ -4,8 +4,10 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import styles from './TrainingCalendar.module.css'
 
-function notifySession(sessionId, event) {
-  supabase.functions.invoke('notify-training-session', { body: { sessionId, event } }).catch(() => {})
+async function notifySession(sessionId, event) {
+  try {
+    await supabase.functions.invoke('notify-training-session', { body: { sessionId, event } })
+  } catch (_) { /* silent */ }
 }
 
 const DAYS_SHORT  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
