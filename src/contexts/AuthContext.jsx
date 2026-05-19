@@ -210,10 +210,11 @@ export function AuthProvider({ children }) {
 
   // Messaging
   async function fetchMessages(otherUserId) {
+    if (!otherUserId || !session?.user.id) return { data: null, error: null }
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .or(`and(from_user_id.eq.${session?.user.id},to_user_id.eq.${otherUserId}),and(from_user_id.eq.${otherUserId},to_user_id.eq.${session?.user.id})`)
+      .or(`and(from_user_id.eq.${session.user.id},to_user_id.eq.${otherUserId}),and(from_user_id.eq.${otherUserId},to_user_id.eq.${session.user.id})`)
       .order('created_at')
     return { data, error }
   }
@@ -285,10 +286,11 @@ export function AuthProvider({ children }) {
   }
 
   async function markMessagesAsRead(otherUserId) {
+    if (!otherUserId || !session?.user.id) return
     await supabase
       .from('messages')
       .update({ read_at: new Date().toISOString() })
-      .eq('to_user_id', session?.user.id)
+      .eq('to_user_id', session.user.id)
       .eq('from_user_id', otherUserId)
       .is('read_at', null)
   }

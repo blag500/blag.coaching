@@ -33,6 +33,7 @@ export default function Chat({ clientId, clientName, onClose }) {
   useEffect(() => {
     if (!otherUserId) return
     const id = setInterval(async () => {
+      if (!otherUserId) return
       const { data } = await fetchMessages(otherUserId)
       if (data) setMessages(data)
     }, 15_000)
@@ -43,7 +44,7 @@ export default function Chat({ clientId, clientName, onClose }) {
   useEffect(() => {
     if (!otherUserId) return
     const onVisible = async () => {
-      if (document.visibilityState !== 'visible') return
+      if (document.visibilityState !== 'visible' || !otherUserId) return
       const { data } = await fetchMessages(otherUserId)
       if (data) setMessages(data)
     }
