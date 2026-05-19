@@ -170,7 +170,7 @@ export default function TrainingCalendar() {
         notes: fNotes || null,
       })
       setSaving(false)
-      if (error) { setFormErr('Грешка при запазване'); return }
+      if (error) { console.error('createTrainingSession error:', error); setFormErr(error.message || 'Грешка при запазване'); return }
       setSessions(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)))
 
     } else if (formMode === 'coach-edit') {
