@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -55,6 +55,7 @@ export default function TrainingCalendar() {
   const [sessions, setSessions] = useState([])
   const [clients,  setClients]  = useState([])
   const [loading,  setLoading]  = useState(true)
+  const [activeTab, setActiveTab] = useState('upcoming')
 
   // form
   const [formMode,  setFormMode]  = useState('create')
@@ -265,7 +266,32 @@ export default function TrainingCalendar() {
     }
   }
 
-  const selSessions = allSessionsForDay(selDay)
+  const allSelSessions = allSessionsForDay(selDay)
+  const selSessions = allSelSessions.filter(s =>
+    activeTab === 'upcoming'
+      ? s.status === 'pending' || s.status === 'confirmed'
+      : s.status === 'completed' || s.status === 'cancelled' || s.status === 'declined'
+  )
+
+  const historySessions = useMemo(() => {
+    return sessions
+      .filter(s => ['completed', 'cancelled', 'declined'].includes(s.status) ||
+        (new Date(s.scheduled_at) < today && s.status !== 'pending' && s.status !== 'confirmed'))
+      .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
+  }, [sessions])
+
+  const historyByDate = useMemo(() => {
+    const groups = {}
+    historySessions.forEach(s => {
+      const key = new Date(s.scheduled_at).toLocaleDateString('bg-BG', {
+        weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
+      }).toUpperCase()
+      if (!groups[key]) groups[key] = []
+      groups[key].push(s)
+    })
+    return Object.entries(groups)
+  }, [historySessions])
+
   const isToday  = d => d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
   const isSel    = d => d === selDay
 
@@ -328,40 +354,92 @@ export default function TrainingCalendar() {
         </div>
       </div>
 
-      <div className={styles.daySection}>
-        <div className={styles.daySectionHead}>
-          <span className={styles.daySectionTitle}>
-            {new Date(year, month, selDay).toLocaleDateString('bg-BG', {
-              weekday: 'short', day: 'numeric', month: 'long',
-            }).toUpperCase()}
-          </span>
-          <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
-            + ЗАЯВИ
-          </button>
-        </div>
-
-        {loading ? (
-          <p className={styles.empty}>Зарежда...</p>
-        ) : selSessions.length === 0 ? (
-          <p className={styles.empty}>Няма тренировки за този ден.</p>
-        ) : (
-          <div className={styles.sessionList}>
-            {selSessions.map(s => (
-              <SessionCard
-                key={s.id}
-                session={s}
-                isCoach={isCoach}
-                myId={profile?.id}
-                onStatus={handleStatus}
-                onCoachEdit={openCoachEdit}
-                onClientPropose={openClientPropose}
-                onAcceptEdit={handleAcceptEdit}
-                onDeclineEdit={handleDeclineEdit}
-              />
-            ))}
-          </div>
-        )}
+      {/* Tab bar */}
+      <div className={styles.tabBar}>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'upcoming' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('upcoming')} type="button"
+        >
+          ПРЕДСТОЯЩИ
+          {sessions.filter(s => s.status === 'pending' || s.status === 'confirmed').length > 0 && (
+            <span className={styles.tabCount}>
+              {sessions.filter(s => s.status === 'pending' || s.status === 'confirmed').length}
+            </span>
+          )}
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'history' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('history')} type="button"
+        >
+          ИСТОРИЯ
+        </button>
       </div>
+
+      {activeTab === 'upcoming' ? (
+        <div className={styles.daySection}>
+          <div className={styles.daySectionHead}>
+            <span className={styles.daySectionTitle}>
+              {new Date(year, month, selDay).toLocaleDateString('bg-BG', {
+                weekday: 'short', day: 'numeric', month: 'long',
+              }).toUpperCase()}
+            </span>
+            <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
+              + ЗАЯВИ
+            </button>
+          </div>
+
+          {loading ? (
+            <p className={styles.empty}>Зарежда...</p>
+          ) : selSessions.length === 0 ? (
+            <p className={styles.empty}>Няма предстоящи тренировки за този ден.</p>
+          ) : (
+            <div className={styles.sessionList}>
+              {selSessions.map(s => (
+                <SessionCard
+                  key={s.id}
+                  session={s}
+                  isCoach={isCoach}
+                  myId={profile?.id}
+                  onStatus={handleStatus}
+                  onCoachEdit={openCoachEdit}
+                  onClientPropose={openClientPropose}
+                  onAcceptEdit={handleAcceptEdit}
+                  onDeclineEdit={handleDeclineEdit}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className={styles.historySection}>
+          {loading ? (
+            <p className={styles.empty}>Зарежда...</p>
+          ) : historyByDate.length === 0 ? (
+            <p className={styles.empty}>Няма минали тренировки.</p>
+          ) : (
+            historyByDate.map(([dateLabel, daySessions]) => (
+              <div key={dateLabel} className={styles.historyGroup}>
+                <p className={styles.historyDate}>{dateLabel}</p>
+                <div className={styles.sessionList}>
+                  {daySessions.map(s => (
+                    <SessionCard
+                      key={s.id}
+                      session={s}
+                      isCoach={isCoach}
+                      myId={profile?.id}
+                      onStatus={handleStatus}
+                      onCoachEdit={openCoachEdit}
+                      onClientPropose={openClientPropose}
+                      onAcceptEdit={handleAcceptEdit}
+                      onDeclineEdit={handleDeclineEdit}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {showForm && createPortal(
         <div className={styles.overlay} onClick={() => setShowForm(false)}>

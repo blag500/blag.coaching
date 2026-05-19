@@ -159,6 +159,76 @@
 .dot_confirmed { background: #66BB6A; }
 .dot_completed { background: var(--muted); }
 
+/* Tab bar */
+.tabBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabBtnActive {
+  background: var(--accent-dim);
+  border-color: rgba(255, 183, 77, 0.4);
+  color: var(--accent);
+}
+
+.tabCount {
+  min-width: 18px;
+  height: 18px;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 9px;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+/* History section */
+.historySection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.historyGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyDate {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
 /* Day section */
 .daySection {
   display: flex;
