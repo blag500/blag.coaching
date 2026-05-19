@@ -365,9 +365,10 @@
   border-radius: 20px 20px 0 0;
   border: 1px solid var(--border);
   border-bottom: none;
-  padding: 0 20px calc(env(safe-area-inset-bottom) + 24px);
+  padding: 0 20px calc(env(safe-area-inset-bottom) + 16px);
   max-height: 90vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sheetHandle {
@@ -466,6 +467,8 @@ select.input {
 }
 
 .submitBtn {
+  position: sticky;
+  bottom: calc(env(safe-area-inset-bottom) + 8px);
   margin-top: 16px;
   width: 100%;
   padding: 14px;
@@ -478,6 +481,7 @@ select.input {
   letter-spacing: 0.08em;
   cursor: pointer;
   transition: opacity 0.15s;
+  box-shadow: 0 -8px 16px var(--surface-1);
 }
 
 .submitBtn:disabled {
