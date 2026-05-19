@@ -155,3 +155,89 @@
   justify-content: center;
   padding: 0 5px;
 }
+
+/* Upcoming sessions */
+.upcomingList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px 4px;
+}
+
+.upcomingCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 12px;
+}
+
+.ucard_pending   { border-left-color: var(--accent); }
+.ucard_confirmed { border-left-color: #66BB6A; }
+
+.upcomingDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 48px;
+  flex-shrink: 0;
+}
+
+.upcomingDay {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.upcomingTime {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.upcomingInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upcomingClient {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upcomingTitle {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upcomingBadge {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 3px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ubadge_pending   { background: rgba(255,183,77,0.12);  color: var(--accent); }
+.ubadge_confirmed { background: rgba(102,187,106,0.12); color: #66BB6A; }

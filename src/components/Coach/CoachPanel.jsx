@@ -1,29 +1,56 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useUnread } from '../../hooks/useUnread'
 import ClientDetail from './ClientDetail'
 import Chat from '../Chat/Chat'
 import styles from './CoachPanel.module.css'
 
+const STATUS_LABELS = { pending: 'ЧАКА', confirmed: 'ПОТВЪРДЕНО' }
+
+const MONTHS_SHORT = ['ЯНУ','ФЕВ','МАР','АПР','МАЙ','ЮНИ','ЮЛИ','АВГ','СЕП','ОКТ','НОЕ','ДЕК']
+
+function fmtDay(iso) {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2,'0')} ${MONTHS_SHORT[d.getMonth()]}`
+}
+function fmtTime(iso) {
+  const d = new Date(iso)
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+}
+
 export default function CoachPanel() {
-  const { fetchClients, fetchCoaches, approveClient } = useAuth()
+  const { fetchClients, fetchCoaches, approveClient, fetchTrainingSessions } = useAuth()
   const { unreadByUser } = useUnread()
   const [clients, setClients]           = useState([])
   const [coaches, setCoaches]           = useState([])
+  const [sessions, setSessions]         = useState([])
   const [loading, setLoading]           = useState(true)
   const [approvingId, setApprovingId]   = useState(null)
   const [selectedClient, setSelectedClient] = useState(null)
   const [chatCoach, setChatCoach]       = useState(null)
 
   useEffect(() => {
-    Promise.all([fetchClients(), fetchCoaches()])
-      .then(([clientsRes, coachesRes]) => {
-        if (clientsRes.data) setClients(clientsRes.data)
-        if (coachesRes.data) setCoaches(coachesRes.data)
+    Promise.all([fetchClients(), fetchCoaches(), fetchTrainingSessions()])
+      .then(([clientsRes, coachesRes, sessionsRes]) => {
+        if (clientsRes.data)  setClients(clientsRes.data)
+        if (coachesRes.data)  setCoaches(coachesRes.data)
+        if (sessionsRes.data) setSessions(sessionsRes.data)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
+
+  const upcoming = useMemo(() => {
+    const now     = new Date()
+    const cutoff  = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    return sessions
+      .filter(s => {
+        if (s.status === 'cancelled' || s.status === 'declined' || s.status === 'completed') return false
+        const d = new Date(s.scheduled_at)
+        return d >= now && d <= cutoff
+      })
+      .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
+  }, [sessions])
 
   async function handleApprove(clientId) {
     setApprovingId(clientId)
@@ -69,6 +96,35 @@ export default function CoachPanel() {
           {clients.filter(c => c.approved === false).length > 0 && ` · ${clients.filter(c => c.approved === false).length} чакащи`}
         </p>
       </header>
+
+      {upcoming.length > 0 && (
+        <>
+          <p className={styles.sectionTitle}>
+            ПРЕДСТОЯЩИ 7 ДНИ
+            <span className={styles.badge}>{upcoming.length}</span>
+          </p>
+          <div className={styles.upcomingList}>
+            {upcoming.map(s => {
+              const clientName = s.client?.name || s.client?.email || '—'
+              return (
+                <div key={s.id} className={`${styles.upcomingCard} ${styles['ucard_' + s.status]}`}>
+                  <div className={styles.upcomingDate}>
+                    <span className={styles.upcomingDay}>{fmtDay(s.scheduled_at)}</span>
+                    <span className={styles.upcomingTime}>{fmtTime(s.scheduled_at)}</span>
+                  </div>
+                  <div className={styles.upcomingInfo}>
+                    <span className={styles.upcomingClient}>{clientName}</span>
+                    <span className={styles.upcomingTitle}>{s.title}</span>
+                  </div>
+                  <span className={`${styles.upcomingBadge} ${styles['ubadge_' + s.status]}`}>
+                    {STATUS_LABELS[s.status] ?? s.status}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {(() => {
         const pending  = clients.filter(c => c.approved === false)
