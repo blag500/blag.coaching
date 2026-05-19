@@ -49,13 +49,14 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
     const g = parseFloat(val)
     if (g > 0 && entry.grams > 0) {
       const ratio = g / entry.grams
-      setDraft({
+      setDraft(prev => ({
+        ...prev,
         grams:   val,
         kcal:    String(Math.round(entry.kcal    * ratio)),
         protein: String(Math.round(entry.protein * ratio * 10) / 10),
         carbs:   String(Math.round(entry.carbs   * ratio * 10) / 10),
         fat:     String(Math.round(entry.fat     * ratio * 10) / 10),
-      })
+      }))
     } else {
       setDraft(prev => ({ ...prev, grams: val }))
     }
