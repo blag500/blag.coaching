@@ -118,19 +118,17 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
                 />
               </div>
 
-              {entry.grams > 0 && (
-                <div className={styles.editGramsRow}>
-                  <label className={styles.editLabel}>Грамаж</label>
-                  <input
-                    className={styles.editInput}
-                    type="number"
-                    min="1"
-                    value={draft.grams}
-                    onChange={e => handleGramsChange(entry, e.target.value)}
-                  />
-                  <span className={styles.editUnit}>g</span>
-                </div>
-              )}
+              <div className={styles.editGramsRow}>
+                <label className={styles.editLabel}>Грамаж</label>
+                <input
+                  className={styles.editInput}
+                  type="number"
+                  min="0"
+                  value={draft.grams}
+                  onChange={e => handleGramsChange(entry, e.target.value)}
+                />
+                <span className={styles.editUnit}>g</span>
+              </div>
 
               <div className={styles.editMacroGrid}>
                 {[
