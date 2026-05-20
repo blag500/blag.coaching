@@ -32,10 +32,11 @@ export default function RecipeList({ onAddRaw }) {
 
   async function loadRecipes() {
     if (!user) return
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('recipes')
       .select('*')
       .order('created_at', { ascending: false })
+    if (error) console.error('loadRecipes error:', error)
     setRecipes(data || [])
     setLoading(false)
   }

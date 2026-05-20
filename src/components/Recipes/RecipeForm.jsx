@@ -187,7 +187,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         .from('recipes').insert(payload).select().single())
     }
 
-    if (err) { setSaveError('Грешка при запазване.'); setSaving(false); return }
+    if (err) { console.error('Recipe save error:', err); setSaveError(err.message || 'Грешка при запазване.'); setSaving(false); return }
     onSave(data)
   }
 
