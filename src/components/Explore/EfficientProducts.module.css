@@ -265,6 +265,7 @@
   height: 155px;
   object-fit: cover;
   display: block;
+  cursor: zoom-in;
 }
 
 .cardBody {
@@ -423,4 +424,28 @@
 .deleteBtn:active {
   color: #ef4444;
   border-color: #ef4444;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lightboxIn 0.2s ease both;
+}
+
+.lightboxImg {
+  max-width: 100vw;
+  max-height: 100dvh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+@keyframes lightboxIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

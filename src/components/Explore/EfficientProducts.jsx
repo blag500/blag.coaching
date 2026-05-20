@@ -39,7 +39,7 @@ function CameraIcon() {
   )
 }
 
-function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelete, onEdit }) {
+function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelete, onEdit, onPhotoClick }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(FORM_EMPTY)
   const [saving, setSaving] = useState(false)
@@ -63,7 +63,12 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
   return (
     <div className={`${styles.card} ${editing ? styles.cardEditing : ''}`}>
       {!editing && product.photo_url && (
-        <img src={product.photo_url} alt={product.name} className={styles.cardPhoto} />
+        <img
+          src={product.photo_url}
+          alt={product.name}
+          className={styles.cardPhoto}
+          onClick={() => onPhotoClick(product.photo_url)}
+        />
       )}
       <div className={styles.cardBody}>
         {editing ? (
@@ -143,6 +148,7 @@ export default function EfficientProducts({ onBack }) {
   const [photoPreview, setPhotoPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError]           = useState(null)
+  const [lightboxUrl, setLightboxUrl] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -286,6 +292,11 @@ export default function EfficientProducts({ onBack }) {
 
   return (
     <div className={styles.page}>
+      {lightboxUrl && (
+        <div className={styles.lightbox} onClick={() => setLightboxUrl(null)}>
+          <img src={lightboxUrl} className={styles.lightboxImg} alt="" />
+        </div>
+      )}
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">
           ← ОТКРИЙ
@@ -381,6 +392,7 @@ export default function EfficientProducts({ onBack }) {
               onLike={handleLike}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              onPhotoClick={setLightboxUrl}
             />
           ))}
         </div>
