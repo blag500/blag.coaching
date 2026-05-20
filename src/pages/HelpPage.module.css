@@ -1,0 +1,455 @@
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+
+.page {
+  min-height: 100vh;
+  background: #0C0A06;
+  color: #F2E8CF;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(12, 10, 6, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 183, 77, 0.15);
+}
+
+.headerInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.logoText {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.25rem;
+  color: #ffb74d;
+  letter-spacing: 0.08em;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.langToggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.langBtn {
+  background: none;
+  border: none;
+  color: rgba(242, 232, 207, 0.5);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.langBtnActive {
+  background: rgba(255, 183, 77, 0.15);
+  color: #ffb74d;
+}
+
+.openAppBtn {
+  display: inline-flex;
+  align-items: center;
+  background: #ffb74d;
+  color: #0C0A06;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  padding: 8px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.openAppBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+
+.hero {
+  background: linear-gradient(135deg, #0C0A06 0%, #1a1408 50%, #0C0A06 100%);
+  border-bottom: 1px solid rgba(255, 183, 77, 0.1);
+  padding: 80px 24px 72px;
+  text-align: center;
+}
+
+.heroInner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.heroHeadline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  letter-spacing: 0.04em;
+  color: #ffb74d;
+  line-height: 1.1;
+  margin: 0 0 20px;
+}
+
+.heroSub {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: rgba(242, 232, 207, 0.7);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────────── */
+
+.section {
+  padding: 64px 24px;
+}
+
+.section:nth-child(even) {
+  background: rgba(255, 183, 77, 0.03);
+}
+
+.sectionInner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 0.08em;
+  color: #ffb74d;
+  margin: 0 0 40px;
+  text-align: center;
+}
+
+/* ── Plan cards ───────────────────────────────────────────────────────────── */
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.planCard {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 183, 77, 0.15);
+  border-radius: 16px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.planCardPro {
+  background: rgba(255, 183, 77, 0.06);
+  border-color: rgba(255, 183, 77, 0.45);
+  box-shadow: 0 0 40px rgba(255, 183, 77, 0.08);
+}
+
+.planBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffb74d;
+  color: #0C0A06;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 3px 14px;
+  border-radius: 99px;
+}
+
+.planName {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  color: #ffb74d;
+  margin-bottom: 6px;
+}
+
+.planPrice {
+  font-size: 0.8rem;
+  color: rgba(242, 232, 207, 0.45);
+  margin-bottom: 8px;
+}
+
+.planTagline {
+  font-size: 0.85rem;
+  color: rgba(242, 232, 207, 0.65);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.planDivider {
+  height: 1px;
+  background: rgba(255, 183, 77, 0.12);
+  margin-bottom: 20px;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(242, 232, 207, 0.85);
+}
+
+.featureItem svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.featureOff span {
+  color: rgba(242, 232, 207, 0.3);
+}
+
+.planCta {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(255, 183, 77, 0.4);
+  background: transparent;
+  color: #ffb74d;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: auto;
+}
+
+.planCta:hover {
+  background: rgba(255, 183, 77, 0.1);
+}
+
+.planCtaPro {
+  background: #ffb74d;
+  color: #0C0A06;
+  border-color: #ffb74d;
+}
+
+.planCtaPro:hover {
+  background: #ffc870;
+  opacity: 1;
+}
+
+/* ── Articles / accordion ─────────────────────────────────────────────────── */
+
+.articleList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.article {
+  border: 1px solid rgba(255, 183, 77, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.articleOpen {
+  border-color: rgba(255, 183, 77, 0.3);
+}
+
+.articleHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 16px;
+  transition: background 0.15s;
+}
+
+.articleHeader:hover {
+  background: rgba(255, 183, 77, 0.04);
+}
+
+.articleTitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  color: #F2E8CF;
+}
+
+.articleChevron {
+  font-size: 1.4rem;
+  color: #ffb74d;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.articleBody {
+  padding: 0 24px 24px;
+  border-top: 1px solid rgba(255, 183, 77, 0.08);
+}
+
+.articleText {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: rgba(242, 232, 207, 0.75);
+  white-space: pre-line;
+  margin: 20px 0 0;
+}
+
+/* ── Comparison table ─────────────────────────────────────────────────────── */
+
+.compTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.85rem;
+}
+
+.compTh {
+  padding: 10px 12px;
+  text-align: left;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  color: #ffb74d;
+  border-bottom: 1px solid rgba(255, 183, 77, 0.2);
+}
+
+.compThCenter {
+  text-align: center;
+}
+
+.compRow:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.compTd {
+  padding: 10px 12px;
+  color: rgba(242, 232, 207, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.compTdCenter {
+  text-align: center;
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────────── */
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.faqItem {
+  border-left: 2px solid rgba(255, 183, 77, 0.3);
+  padding-left: 16px;
+}
+
+.faqQ {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #F2E8CF;
+  margin: 0 0 6px;
+}
+
+.faqA {
+  font-size: 0.85rem;
+  color: rgba(242, 232, 207, 0.65);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.footer {
+  border-top: 1px solid rgba(255, 183, 77, 0.1);
+  padding: 32px 24px;
+}
+
+.footerInner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footerBrand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: #ffb74d;
+}
+
+.footerCopy {
+  font-size: 0.75rem;
+  color: rgba(242, 232, 207, 0.35);
+}
+
+.footerLink {
+  font-size: 0.8rem;
+  color: rgba(255, 183, 77, 0.7);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footerLink:hover {
+  color: #ffb74d;
+}
