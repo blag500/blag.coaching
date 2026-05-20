@@ -287,6 +287,12 @@
   color: var(--muted);
 }
 
+.dayActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 .addBtn {
   background: var(--accent-dim);
   color: var(--accent);
@@ -298,10 +304,32 @@
   padding: 7px 14px;
   cursor: pointer;
   transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .addBtn:active {
   opacity: 0.75;
+}
+
+.restDayBtn {
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.restDayBtn:active {
+  opacity: 0.75;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .empty {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
@@ -290,12 +291,13 @@ export default function Training() {
         </section>
       )}
 
-      {selectedExercise && (
+      {selectedExercise && createPortal(
         <LiftLogger
           exercise={selectedExercise}
           onClose={() => setSelectedExercise(null)}
           onSaved={handleSaved}
-        />
+        />,
+        document.body
       )}
 
       {/* Undo toast */}

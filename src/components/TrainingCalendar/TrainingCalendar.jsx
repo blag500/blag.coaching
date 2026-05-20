@@ -12,7 +12,7 @@ async function notifySession(sessionId, event) {
 
 const DAYS_SHORT  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 const MONTHS_BG   = ['ЯНУАРИ','ФЕВРУАРИ','МАРТ','АПРИЛ','МАЙ','ЮНИ','ЮЛИ','АВГУСТ','СЕПТЕМВРИ','ОКТОМВРИ','НОЕМВРИ','ДЕКЕМВРИ']
-const SESSION_TYPES = ['Тренировка','Горна част','Долна част','Цяло тяло','Кардио','Гърди / Трицепс','Гръб / Бицепс','Рамене','Крака']
+const SESSION_TYPES = ['Тренировка','Горна част','Долна част','Цяло тяло','Кардио','Гърди / Трицепс','Гръб / Бицепс','Рамене','Крака','Почивен ден']
 
 const STATUS_LABELS = {
   pending:   'ЧАКА',
@@ -216,6 +216,22 @@ export default function TrainingCalendar() {
     setShowForm(false)
   }
 
+  async function handleRestDay() {
+    const coachId  = isCoach ? profile.id : profile.coach_id
+    const clientId = isCoach ? (fClientId || clients[0]?.id) : profile.id
+    if (!coachId || !clientId) return
+    const scheduledAt = new Date(`${toDateInput(year, month, selDay)}T09:00:00`).toISOString()
+    const { data, error } = await createTrainingSession({
+      coachId, clientId, scheduledAt,
+      title: 'Почивен ден',
+      notes: null,
+    })
+    if (!error && data) {
+      setSessions(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)))
+      notifySession(data.id, 'created')
+    }
+  }
+
   async function handleStatus(sessionId, newStatus) {
     const { error } = await updateSessionStatus(sessionId, newStatus)
     if (!error) {
@@ -411,9 +427,14 @@ export default function TrainingCalendar() {
                 weekday: 'short', day: 'numeric', month: 'long',
               }).toUpperCase()}
             </span>
-            <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
-              + ЗАЯВИ
-            </button>
+            <div className={styles.dayActions}>
+              <button className={styles.restDayBtn} onClick={handleRestDay} type="button">
+                🌙 ПОЧИВЕН
+              </button>
+              <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
+                + ЗАЯВИ
+              </button>
+            </div>
           </div>
 
           {loading ? (
