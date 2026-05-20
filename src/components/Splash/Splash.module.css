@@ -22,27 +22,27 @@
   justify-content: center;
   width: 100%;
   max-width: 600px;
-  padding: 0 16px;
+  padding: 0 8px;
 }
 
 .armLeft,
 .armRight {
   flex: 0 0 auto;
-  width: 140px;
-  height: 220px;
+  width: 120px;
+  height: 200px;
   background-image: url('/arms.jpeg');
-  background-size: 200% auto;
+  background-size: contain;
   background-repeat: no-repeat;
+  background-position: center;
+  filter: invert(1) hue-rotate(180deg);
   mix-blend-mode: screen;
 }
 
 .armLeft {
-  background-position: 0% center;
   animation: armSlideLeft 1s var(--ease-out) 0.05s both;
 }
 
 .armRight {
-  background-position: 100% center;
   animation: armSlideRight 1s var(--ease-out) 0.05s both;
 }
 
@@ -94,11 +94,11 @@
 @keyframes armSlideRight {
   from {
     opacity: 0;
-    transform: translateX(120%);
+    transform: scaleX(-1) translateX(-120%);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: scaleX(-1) translateX(0);
   }
 }
 
@@ -142,8 +142,8 @@
 @media (max-width: 380px) {
   .armLeft,
   .armRight {
-    width: 100px;
-    height: 160px;
+    width: 85px;
+    height: 140px;
   }
   .title {
     font-size: 32px;
@@ -159,6 +159,9 @@
     animation: none;
     opacity: 1;
     transform: none;
+  }
+  .armRight {
+    transform: scaleX(-1);
   }
   .divider { width: 56px; }
 }
