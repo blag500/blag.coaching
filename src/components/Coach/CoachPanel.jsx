@@ -141,7 +141,14 @@ export default function CoachPanel() {
                   {pending.map(client => (
                     <div key={client.id} className={styles.card}>
                       <div className={styles.clientInfo}>
-                        <span className={styles.clientName}>{client.name || '—'}</span>
+                        <div className={styles.clientNameRow}>
+                          <span className={styles.clientName}>{client.name || '—'}</span>
+                          {client.plan && (
+                            <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
+                              {client.plan.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
                         <span className={styles.clientEmail}>{client.email}</span>
                       </div>
                       <button
@@ -172,7 +179,14 @@ export default function CoachPanel() {
                       type="button"
                     >
                       <div className={styles.clientInfo}>
-                        <span className={styles.clientName}>{client.name || '—'}</span>
+                        <div className={styles.clientNameRow}>
+                          <span className={styles.clientName}>{client.name || '—'}</span>
+                          {client.plan && (
+                            <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
+                              {client.plan.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
                         <span className={styles.clientEmail}>{client.email}</span>
                       </div>
                       <div className={styles.macroSnippet}>

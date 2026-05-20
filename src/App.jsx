@@ -13,6 +13,7 @@ import Splash from './components/Splash/Splash'
 import ChatButton from './components/Compliance/SOSButton'
 import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
+import PlanSelector from './components/Auth/PlanSelector'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
@@ -54,6 +55,8 @@ function AppShell() {
   if (!session) return <AuthScreen />
 
   const isCoach = profile?.role === 'coach'
+
+  if (!isCoach && profile && !profile.plan) return <PlanSelector />
 
   if (profile && !isCoach && profile.approved === false) {
     return <PendingApproval />
