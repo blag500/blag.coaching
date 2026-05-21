@@ -13,17 +13,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: CORS })
   }
 
-  // Verify the caller is a coach using their JWT
+  const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+
+  // Verify caller identity using their JWT token
   const authHeader = req.headers.get('authorization') ?? ''
-  const callerClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-    global: { headers: { authorization: authHeader } },
-  })
-  const { data: { user: caller } } = await callerClient.auth.getUser()
-  if (!caller) {
+  const token = authHeader.replace('Bearer ', '')
+  const { data: { user: caller }, error: authError } = await adminClient.auth.getUser(token)
+  if (authError || !caller) {
     return new Response('unauthorized', { status: 401, headers: CORS })
   }
-
-  const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
   // Confirm caller is a coach
   const { data: callerProfile } = await adminClient
