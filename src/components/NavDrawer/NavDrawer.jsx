@@ -67,13 +67,14 @@ const CLIENT_TABS = [
 ]
 
 const COACH_TABS = [
-  { id: 'clients',    label: 'КЛИЕНТИ',   Icon: ClientsIcon   },
-  { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
-  { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
-  { id: 'training',   label: 'ТРЕНИРОВКА', Icon: TrainingIcon  },
-  { id: 'calendar',   label: 'ГРАФИК',    Icon: CalendarIcon  },
-  { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
-  { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
+  { id: 'clients',    label: 'КЛИЕНТИ',        Icon: ClientsIcon   },
+  { id: 'nutrition',  label: 'NUTRITION',      Icon: NutritionIcon },
+  { id: 'compliance', label: 'НАВИЦИ',         Icon: HabitsIcon    },
+  { id: 'training',   label: 'ТРЕНИРОВКА',     Icon: TrainingIcon  },
+  { id: 'recovery',   label: 'ВЪЗСТАНОВЯВАНЕ', Icon: RecoveryIcon  },
+  { id: 'calendar',   label: 'ГРАФИК',         Icon: CalendarIcon  },
+  { id: 'profile',    label: 'ПРОФИЛ',         Icon: ProfileIcon   },
+  { id: 'explore',    label: 'ОТКРИЙ',         Icon: ExploreIcon   },
 ]
 
 export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
