@@ -21,44 +21,49 @@
 .headerInner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 24px;
-  height: 64px;
+  padding: 0 20px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .logoIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  flex-shrink: 0;
 }
 
 .logoText {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: #ffb74d;
   letter-spacing: 0.08em;
+  white-space: nowrap;
 }
 
 .headerRight {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .langToggle {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 7px;
   overflow: hidden;
 }
 
@@ -67,9 +72,9 @@
   border: none;
   color: rgba(242, 232, 207, 0.5);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 6px 12px;
+  padding: 6px 10px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -85,11 +90,12 @@
   background: #ffb74d;
   color: #0C0A06;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   letter-spacing: 0.06em;
-  padding: 8px 18px;
+  padding: 8px 14px;
   border-radius: 8px;
   text-decoration: none;
+  white-space: nowrap;
   transition: opacity 0.15s;
 }
 
@@ -100,9 +106,9 @@
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 
 .hero {
-  background: linear-gradient(135deg, #0C0A06 0%, #1a1408 50%, #0C0A06 100%);
+  background: linear-gradient(160deg, #0C0A06 0%, #1a1408 50%, #0C0A06 100%);
   border-bottom: 1px solid rgba(255, 183, 77, 0.1);
-  padding: 80px 24px 72px;
+  padding: 56px 20px 48px;
   text-align: center;
 }
 
@@ -113,24 +119,24 @@
 
 .heroHeadline {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-size: clamp(1.75rem, 6vw, 3.5rem);
   letter-spacing: 0.04em;
   color: #ffb74d;
   line-height: 1.1;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 }
 
 .heroSub {
-  font-size: clamp(0.9rem, 2vw, 1.1rem);
-  color: rgba(242, 232, 207, 0.7);
-  line-height: 1.6;
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  color: rgba(242, 232, 207, 0.65);
+  line-height: 1.65;
   margin: 0;
 }
 
 /* ── Sections ─────────────────────────────────────────────────────────────── */
 
 .section {
-  padding: 64px 24px;
+  padding: 48px 20px;
 }
 
 .section:nth-child(even) {
@@ -144,10 +150,10 @@
 
 .sectionTitle {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   letter-spacing: 0.08em;
   color: #ffb74d;
-  margin: 0 0 40px;
+  margin: 0 0 28px;
   text-align: center;
 }
 
@@ -156,15 +162,9 @@
 .plansGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
   max-width: 800px;
   margin: 0 auto;
-}
-
-@media (max-width: 600px) {
-  .plansGrid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .planCard {
@@ -172,30 +172,30 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 183, 77, 0.15);
   border-radius: 16px;
-  padding: 32px 28px;
+  padding: 28px 22px;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .planCardPro {
   background: rgba(255, 183, 77, 0.06);
   border-color: rgba(255, 183, 77, 0.45);
-  box-shadow: 0 0 40px rgba(255, 183, 77, 0.08);
+  box-shadow: 0 0 40px rgba(255, 183, 77, 0.07);
 }
 
 .planBadge {
   position: absolute;
-  top: -12px;
+  top: -11px;
   left: 50%;
   transform: translateX(-50%);
   background: #ffb74d;
   color: #0C0A06;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   letter-spacing: 0.1em;
-  padding: 3px 14px;
+  padding: 3px 12px;
   border-radius: 99px;
+  white-space: nowrap;
 }
 
 .planName {
@@ -203,45 +203,45 @@
   font-size: 2rem;
   letter-spacing: 0.08em;
   color: #ffb74d;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .planPrice {
-  font-size: 0.8rem;
-  color: rgba(242, 232, 207, 0.45);
-  margin-bottom: 8px;
+  font-size: 0.78rem;
+  color: rgba(242, 232, 207, 0.4);
+  margin-bottom: 6px;
 }
 
 .planTagline {
-  font-size: 0.85rem;
-  color: rgba(242, 232, 207, 0.65);
-  line-height: 1.5;
-  margin-bottom: 20px;
+  font-size: 0.82rem;
+  color: rgba(242, 232, 207, 0.6);
+  line-height: 1.45;
+  margin-bottom: 16px;
 }
 
 .planDivider {
   height: 1px;
   background: rgba(255, 183, 77, 0.12);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .featureList {
   list-style: none;
   padding: 0;
-  margin: 0 0 28px;
+  margin: 0 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
   flex: 1;
 }
 
 .featureItem {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  font-size: 0.85rem;
+  gap: 9px;
+  font-size: 0.82rem;
   line-height: 1.4;
-  color: rgba(242, 232, 207, 0.85);
+  color: rgba(242, 232, 207, 0.82);
 }
 
 .featureItem svg {
@@ -250,13 +250,13 @@
 }
 
 .featureOff span {
-  color: rgba(242, 232, 207, 0.3);
+  color: rgba(242, 232, 207, 0.28);
 }
 
 .planCta {
   display: block;
   width: 100%;
-  padding: 14px;
+  padding: 13px;
   border: 1px solid rgba(255, 183, 77, 0.4);
   background: transparent;
   color: #ffb74d;
@@ -284,7 +284,6 @@
 
 .planCtaPro:hover {
   background: #ffc870;
-  opacity: 1;
 }
 
 /* ── Articles / accordion ─────────────────────────────────────────────────── */
@@ -313,12 +312,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 17px 20px;
   background: rgba(255, 255, 255, 0.02);
   border: none;
   cursor: pointer;
   text-align: left;
-  gap: 16px;
+  gap: 12px;
   transition: background 0.15s;
 }
 
@@ -328,29 +327,29 @@
 
 .articleTitle {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   letter-spacing: 0.05em;
   color: #F2E8CF;
 }
 
 .articleChevron {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: #ffb74d;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .articleBody {
-  padding: 0 24px 24px;
+  padding: 0 20px 20px;
   border-top: 1px solid rgba(255, 183, 77, 0.08);
 }
 
 .articleText {
-  font-size: 0.9rem;
+  font-size: 0.87rem;
   line-height: 1.75;
-  color: rgba(242, 232, 207, 0.75);
+  color: rgba(242, 232, 207, 0.72);
   white-space: pre-line;
-  margin: 20px 0 0;
+  margin: 16px 0 0;
 }
 
 /* ── Comparison table ─────────────────────────────────────────────────────── */
@@ -358,15 +357,15 @@
 .compTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
-  font-size: 0.85rem;
+  margin-top: 16px;
+  font-size: 0.82rem;
 }
 
 .compTh {
-  padding: 10px 12px;
+  padding: 9px 10px;
   text-align: left;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   letter-spacing: 0.08em;
   color: #ffb74d;
   border-bottom: 1px solid rgba(255, 183, 77, 0.2);
@@ -381,8 +380,8 @@
 }
 
 .compTd {
-  padding: 10px 12px;
-  color: rgba(242, 232, 207, 0.75);
+  padding: 9px 10px;
+  color: rgba(242, 232, 207, 0.72);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -395,25 +394,25 @@
 .faqList {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-top: 20px;
+  gap: 18px;
+  margin-top: 16px;
 }
 
 .faqItem {
   border-left: 2px solid rgba(255, 183, 77, 0.3);
-  padding-left: 16px;
+  padding-left: 14px;
 }
 
 .faqQ {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #F2E8CF;
-  margin: 0 0 6px;
+  margin: 0 0 5px;
 }
 
 .faqA {
-  font-size: 0.85rem;
-  color: rgba(242, 232, 207, 0.65);
+  font-size: 0.82rem;
+  color: rgba(242, 232, 207, 0.62);
   line-height: 1.6;
   margin: 0;
 }
@@ -422,7 +421,7 @@
 
 .footer {
   border-top: 1px solid rgba(255, 183, 77, 0.1);
-  padding: 32px 24px;
+  padding: 24px 20px;
 }
 
 .footerInner {
@@ -432,28 +431,128 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .footerBrand {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   letter-spacing: 0.08em;
   color: #ffb74d;
 }
 
 .footerCopy {
-  font-size: 0.75rem;
-  color: rgba(242, 232, 207, 0.35);
+  font-size: 0.72rem;
+  color: rgba(242, 232, 207, 0.3);
 }
 
 .footerLink {
-  font-size: 0.8rem;
-  color: rgba(255, 183, 77, 0.7);
+  font-size: 0.78rem;
+  color: rgba(255, 183, 77, 0.65);
   text-decoration: none;
   transition: color 0.15s;
 }
 
 .footerLink:hover {
   color: #ffb74d;
+}
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .headerInner {
+    height: 52px;
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .logoText {
+    display: none;
+  }
+
+  .logoIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .openAppBtn {
+    font-size: 0.75rem;
+    padding: 7px 11px;
+    border-radius: 7px;
+  }
+
+  .langBtn {
+    padding: 5px 9px;
+    font-size: 0.68rem;
+  }
+
+  .hero {
+    padding: 36px 16px 32px;
+  }
+
+  .heroHeadline {
+    font-size: 1.65rem;
+    margin-bottom: 12px;
+  }
+
+  .heroSub {
+    font-size: 0.82rem;
+  }
+
+  .section {
+    padding: 32px 16px;
+  }
+
+  .sectionTitle {
+    font-size: 1.35rem;
+    margin-bottom: 20px;
+  }
+
+  .plansGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .planCard {
+    padding: 22px 18px;
+  }
+
+  .planName {
+    font-size: 1.75rem;
+  }
+
+  .featureList {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .featureItem {
+    font-size: 0.8rem;
+  }
+
+  .articleHeader {
+    padding: 15px 16px;
+  }
+
+  .articleBody {
+    padding: 0 16px 18px;
+  }
+
+  .articleText {
+    font-size: 0.82rem;
+    margin-top: 14px;
+  }
+
+  .compTable {
+    font-size: 0.78rem;
+  }
+
+  .compTh,
+  .compTd {
+    padding: 8px 8px;
+  }
+
+  .footerCopy {
+    display: none;
+  }
 }
