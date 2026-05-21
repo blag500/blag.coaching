@@ -34,7 +34,7 @@ const PLANS = [
 ]
 
 export default function PlanSelector() {
-  const { profile, updateProfile } = useAuth()
+  const { profile, refreshProfile } = useAuth()
   const [selecting, setSelecting] = useState(null)
   const [saveError, setSaveError] = useState(null)
 
@@ -42,12 +42,13 @@ export default function PlanSelector() {
     if (selecting) return
     setSelecting(planId)
     setSaveError(null)
-    const { error } = await updateProfile({ plan: planId, approved: false })
+    const { error } = await supabase.rpc('select_plan', { plan_choice: planId })
     if (error) {
       setSelecting(null)
       setSaveError('Грешка при запазване — моля, опитай отново.')
       return
     }
+    await refreshProfile()
 
     const coachId = profile?.coach_id
     if (coachId) {
