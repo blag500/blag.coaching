@@ -60,13 +60,20 @@ function AppShell() {
 
   if (!session) return <AuthScreen />
 
-  const isCoach = profile?.role === 'coach'
-
-  if (!isCoach && profile && !profile.plan) return <PlanSelector />
-
-  if (profile && !isCoach && profile.plan_pending) {
-    return <PendingApproval />
+  // Session known but profile not yet fetched — keep showing the loader
+  if (!profile) {
+    return (
+      <div className={styles.loadingScreen}>
+        <span className={styles.loadingDot} />
+      </div>
+    )
   }
+
+  const isCoach = profile.role === 'coach'
+
+  if (!isCoach && !profile.plan) return <PlanSelector />
+
+  if (!isCoach && profile.plan_pending) return <PendingApproval />
 
   const pages = {
     nutrition:  <NutritionCards />,
