@@ -113,6 +113,14 @@
   color: #ef4444;
 }
 
+.deleteErrorText {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #ef4444;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
 .deleteConfirmActions {
   display: flex;
   gap: 8px;

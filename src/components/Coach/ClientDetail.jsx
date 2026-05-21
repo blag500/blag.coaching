@@ -53,6 +53,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   const [showChat, setShowChat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10)
@@ -77,13 +78,14 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
 
   async function handleDelete() {
     setDeleting(true)
+    setDeleteError(null)
     const { error } = await deleteClientProfile(client.id)
     if (!error) {
       onDelete(client.id)
     } else {
-      console.error('delete client failed:', error)
+      const msg = error?.message || error?.context?.responseText || JSON.stringify(error)
+      setDeleteError(`Грешка: ${msg}`)
       setDeleting(false)
-      setConfirmDelete(false)
     }
   }
 
@@ -145,8 +147,11 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
           <p className={styles.deleteConfirmText}>
             Изтрий профила на <strong>{client.name || client.email}</strong>? Действието е необратимо.
           </p>
+          {deleteError && (
+            <p className={styles.deleteErrorText}>{deleteError}</p>
+          )}
           <div className={styles.deleteConfirmActions}>
-            <button className={styles.deleteCancelBtn} onClick={() => setConfirmDelete(false)} type="button">
+            <button className={styles.deleteCancelBtn} onClick={() => { setConfirmDelete(false); setDeleteError(null) }} type="button">
               Отказ
             </button>
             <button className={styles.deleteConfirmBtn} onClick={handleDelete} disabled={deleting} type="button">

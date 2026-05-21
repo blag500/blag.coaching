@@ -15,34 +15,46 @@ Deno.serve(async (req) => {
 
   const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
-  // Verify caller identity using their JWT token
+  // Verify caller identity
   const authHeader = req.headers.get('authorization') ?? ''
-  const token = authHeader.replace('Bearer ', '')
-  const { data: { user: caller }, error: authError } = await adminClient.auth.getUser(token)
-  if (authError || !caller) {
-    return new Response('unauthorized', { status: 401, headers: CORS })
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+  if (!token) {
+    return new Response('missing token', { status: 401, headers: CORS })
+  }
+
+  const { data: userData, error: authError } = await adminClient.auth.getUser(token)
+  if (authError || !userData?.user) {
+    return new Response(`unauthorized: ${authError?.message ?? 'no user'}`, { status: 401, headers: CORS })
   }
 
   // Confirm caller is a coach
-  const { data: callerProfile } = await adminClient
+  const { data: callerProfile, error: profileError } = await adminClient
     .from('profiles')
     .select('role')
-    .eq('id', caller.id)
+    .eq('id', userData.user.id)
     .single()
 
-  if (callerProfile?.role !== 'coach') {
-    return new Response('forbidden', { status: 403, headers: CORS })
+  if (profileError || callerProfile?.role !== 'coach') {
+    return new Response(`forbidden: ${profileError?.message ?? 'not a coach'}`, { status: 403, headers: CORS })
   }
 
-  const { userId } = await req.json()
+  // Parse body
+  let userId: string
+  try {
+    const body = await req.json()
+    userId = body.userId
+  } catch {
+    return new Response('invalid json body', { status: 400, headers: CORS })
+  }
+
   if (!userId) {
     return new Response('missing userId', { status: 400, headers: CORS })
   }
 
   // Delete the auth user — cascades to profile via DB foreign key
-  const { error } = await adminClient.auth.admin.deleteUser(userId)
-  if (error) {
-    return new Response(error.message, { status: 500, headers: CORS })
+  const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId)
+  if (deleteError) {
+    return new Response(`delete failed: ${deleteError.message}`, { status: 500, headers: CORS })
   }
 
   return new Response(JSON.stringify({ ok: true }), {
