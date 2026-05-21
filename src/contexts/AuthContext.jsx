@@ -149,7 +149,7 @@ export function AuthProvider({ children }) {
   async function approveClient(clientId) {
     const { error } = await supabase
       .from('profiles')
-      .update({ approved: true })
+      .update({ approved: true, plan_pending: false })
       .eq('id', clientId)
     return { error }
   }

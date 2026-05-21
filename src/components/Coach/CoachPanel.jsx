@@ -92,8 +92,8 @@ export default function CoachPanel() {
       <header className={styles.header}>
         <h1 className={styles.title}>КЛИЕНТИ</h1>
         <p className={styles.subtitle}>
-          {clients.filter(c => c.approved).length} одобрени
-          {clients.filter(c => !c.approved).length > 0 && ` · ${clients.filter(c => !c.approved).length} чакащи`}
+          {clients.filter(c => !c.plan_pending).length} одобрени
+          {clients.filter(c => c.plan_pending).length > 0 && ` · ${clients.filter(c => c.plan_pending).length} чакащи`}
         </p>
       </header>
 
@@ -127,8 +127,8 @@ export default function CoachPanel() {
       )}
 
       {(() => {
-        const pending  = clients.filter(c => !c.approved)
-        const approved = clients.filter(c => c.approved)
+        const pending  = clients.filter(c => c.plan_pending)
+        const approved = clients.filter(c => !c.plan_pending)
         return (
           <>
             {pending.length > 0 && (

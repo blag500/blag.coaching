@@ -60,7 +60,7 @@ function AppShell() {
 
   if (!isCoach && profile && !profile.plan) return <PlanSelector />
 
-  if (profile && !isCoach && !profile.approved) {
+  if (profile && !isCoach && profile.plan_pending) {
     return <PendingApproval />
   }
 
