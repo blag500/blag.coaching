@@ -57,8 +57,6 @@ export default function CoachPanel() {
     const { error } = await approveClient(clientId)
     if (!error) {
       setClients(prev => prev.map(c => c.id === clientId ? { ...c, approved: true, plan_pending: false } : c))
-    } else {
-      alert(`Грешка при одобрение: ${error?.message ?? JSON.stringify(error)}`)
     }
     setApprovingId(null)
   }
