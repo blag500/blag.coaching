@@ -142,14 +142,14 @@ export default function Training() {
   const undoTimerRef                    = useRef(null)
 
   useEffect(() => {
-    if (!user || isCoach) return
+    if (!user) return
     supabase
       .from('workout_completions')
       .select('block_label, completed_date')
       .eq('user_id', user.id)
       .order('completed_date', { ascending: false })
       .then(({ data }) => { if (data) setCompletions(data) })
-  }, [user?.id, isCoach])
+  }, [user?.id])
 
   const selectedBlock = blocks.find(b => b.id === selectedId) ?? blocks[0]
   const todayStr = new Date().toISOString().slice(0, 10)
@@ -248,18 +248,16 @@ export default function Training() {
       </div>
 
       {/* Progression toggle button */}
-      {!isCoach && (
-        <button
-          className={`${styles.progressionBtn} ${showProgression ? styles.progressionBtnActive : ''}`}
-          onClick={() => setShowProgression(p => !p)}
-          type="button"
-        >
-          📊 Прогресия
-        </button>
-      )}
+      <button
+        className={`${styles.progressionBtn} ${showProgression ? styles.progressionBtnActive : ''}`}
+        onClick={() => setShowProgression(p => !p)}
+        type="button"
+      >
+        📊 Прогресия
+      </button>
 
       {/* Progression view */}
-      {showProgression && !isCoach && (
+      {showProgression && (
         <div className={styles.progressionWrap}>
           <ProgressionView onClose={() => setShowProgression(false)} blocks={blocks} />
         </div>
@@ -270,7 +268,7 @@ export default function Training() {
         <div className={styles.blockContent}>
           <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} />
 
-          {!isCoach && !selectedBlock.isRest && (
+          {!selectedBlock.isRest && (
             <button
               className={`${styles.markDoneBtn} ${alreadyMarkedToday || justMarked ? styles.markDoneDone : ''}`}
               onClick={handleMarkDone}
@@ -284,7 +282,7 @@ export default function Training() {
       )}
 
       {/* History calendar */}
-      {!isCoach && !showProgression && (
+      {!showProgression && (
         <section className={styles.historySection}>
           <h2 className={styles.historyTitle}>ИСТОРИЯ</h2>
           <WorkoutCalendar completions={completions} blocks={blocks} />
