@@ -56,7 +56,7 @@ export default function CoachPanel() {
     setApprovingId(clientId)
     const { error } = await approveClient(clientId)
     if (!error) {
-      setClients(prev => prev.map(c => c.id === clientId ? { ...c, approved: true } : c))
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, approved: true, plan_pending: false } : c))
     }
     setApprovingId(null)
   }
