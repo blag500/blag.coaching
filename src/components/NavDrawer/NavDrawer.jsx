@@ -50,14 +50,20 @@ const CalendarIcon = () => (
     <line x1="3"  y1="10" x2="21" y2="10" />
   </svg>
 )
+const RecoveryIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" />
+  </svg>
+)
 
 const CLIENT_TABS = [
-  { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
-  { id: 'compliance', label: 'НАВИЦИ',    Icon: HabitsIcon    },
-  { id: 'training',   label: 'ТРЕНИРОВКА', Icon: TrainingIcon  },
-  { id: 'calendar',   label: 'ГРАФИК',    Icon: CalendarIcon  },
-  { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
-  { id: 'explore',    label: 'ОТКРИЙ',    Icon: ExploreIcon   },
+  { id: 'nutrition',  label: 'NUTRITION',       Icon: NutritionIcon },
+  { id: 'compliance', label: 'НАВИЦИ',          Icon: HabitsIcon    },
+  { id: 'training',   label: 'ТРЕНИРОВКА',      Icon: TrainingIcon  },
+  { id: 'recovery',   label: 'ВЪЗСТАНОВЯВАНЕ',  Icon: RecoveryIcon  },
+  { id: 'calendar',   label: 'ГРАФИК',          Icon: CalendarIcon  },
+  { id: 'profile',    label: 'ПРОФИЛ',          Icon: ProfileIcon   },
+  { id: 'explore',    label: 'ОТКРИЙ',          Icon: ExploreIcon   },
 ]
 
 const COACH_TABS = [

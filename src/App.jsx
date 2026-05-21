@@ -15,6 +15,8 @@ import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
 import PlanSelector from './components/Auth/PlanSelector'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
+import Recovery from './pages/Recovery'
+import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
 
@@ -66,6 +68,7 @@ function AppShell() {
     nutrition:  <NutritionCards />,
     compliance: <Compliance />,
     training:   <Training />,
+    recovery:   <Recovery />,
     profile:    <Profile />,
     clients:    <CoachPanel />,
     explore:    <Explore />,
@@ -82,6 +85,7 @@ function AppShell() {
         isCoach={isCoach}
       />
 
+      <NotificationPrompt />
       <main className={styles.content}>
         <div key={activeTab} className={styles.page}>
           {pages[activeTab] ?? null}

@@ -1,0 +1,92 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 10, 6, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 env(safe-area-inset-bottom, 0);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 183, 77, 0.2);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  padding: 28px 24px calc(24px + env(safe-area-inset-bottom, 0));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0)    }
+}
+
+.iconWrap {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.body {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 24px;
+  max-width: 320px;
+}
+
+.allowBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: opacity 0.15s;
+}
+
+.allowBtn:hover {
+  opacity: 0.88;
+}
+
+.dismissBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 6px;
+  transition: color 0.15s;
+}
+
+.dismissBtn:hover {
+  color: var(--text);
+}
