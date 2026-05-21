@@ -5,9 +5,7 @@
   margin: 0 auto;
 }
 
-.header {
-  margin-bottom: 24px;
-}
+.header { margin-bottom: 4px; }
 
 .title {
   font-family: var(--font-heading);
@@ -25,40 +23,69 @@
   text-transform: capitalize;
 }
 
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
+/* ── Readiness ring ─────────────────────────────────────────────────────────── */
+
+.ringWrap {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 12px;
 }
 
-.cardTitle {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  margin: 0 0 16px;
+.ringSvg { display: block; }
+
+.ringEmpty {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 8px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ── Form ─────────────────────────────────────────────────────────────────── */
+.ringEmptyLabel {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 0 8px;
+  line-height: 1.4;
+}
+
+/* ── Form & cards ───────────────────────────────────────────────────────────── */
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
+}
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin: 0 0 12px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-bottom: 12px;
 }
 
+.field:last-child { margin-bottom: 0; }
+
 .label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--muted);
-  letter-spacing: 0.04em;
 }
 
 .input {
@@ -74,16 +101,11 @@
   box-sizing: border-box;
 }
 
-.input:focus {
-  border-color: rgba(255, 183, 77, 0.4);
-}
+.input:focus { border-color: rgba(255,183,77,0.4); }
 
-/* ── Stars ────────────────────────────────────────────────────────────────── */
+/* ── Stars ──────────────────────────────────────────────────────────────────── */
 
-.stars {
-  display: flex;
-  gap: 6px;
-}
+.stars { display: flex; gap: 6px; }
 
 .star {
   background: none;
@@ -96,92 +118,180 @@
   transition: color 0.1s, transform 0.1s;
 }
 
-.star:active {
-  transform: scale(0.9);
+.star:active { transform: scale(0.88); }
+.starOn { color: var(--accent); }
+
+/* ── Scale 1–5 ──────────────────────────────────────────────────────────────── */
+
+.scaleWrap { display: flex; flex-direction: column; gap: 6px; }
+
+.scale { display: flex; gap: 8px; }
+
+.scaleBtn {
+  flex: 1;
+  height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
-.starOn {
+.scaleBtnOn {
+  background: rgba(255,183,77,0.18);
+  border-color: var(--accent);
   color: var(--accent);
 }
 
-/* ── Save button ──────────────────────────────────────────────────────────── */
-
-.saveBtn {
-  width: 100%;
-  padding: 13px;
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  border-radius: 10px;
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: opacity 0.15s, background 0.2s;
-}
-
-.saveBtn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.saveBtnDone {
-  background: #81C784;
-}
-
-/* ── Chart ────────────────────────────────────────────────────────────────── */
-
-.chartWrap {
-  margin-bottom: 16px;
-}
-
-.chart {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.chartLabels {
+.scaleLabels {
   display: flex;
   justify-content: space-between;
-  margin-top: 4px;
-}
-
-.chartLabel {
   font-size: 0.65rem;
   color: var(--muted);
+  padding: 0 2px;
 }
 
-/* ── Log list ─────────────────────────────────────────────────────────────── */
+/* ── Mood ───────────────────────────────────────────────────────────────────── */
 
-.logList {
+.moodRow { display: flex; gap: 8px; justify-content: space-between; }
+
+.moodBtn {
+  flex: 1;
+  height: 48px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all 0.15s;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
+  align-items: center;
+  justify-content: center;
 }
 
-.logRow {
+.moodBtnOn {
+  background: rgba(255,183,77,0.15);
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+
+/* ── Hydration ──────────────────────────────────────────────────────────────── */
+
+.hydrationWrap { display: flex; flex-direction: column; gap: 10px; }
+
+.hydrationGlasses {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.glass {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.2;
+  transition: opacity 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.glassFull { opacity: 1; }
+
+.glass:active { transform: scale(0.88); }
+
+.hydrationControls {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.82rem;
-  padding: 4px 0;
 }
 
-.logDate {
-  color: var(--muted);
-  min-width: 56px;
-}
-
-.logDur {
+.hydBtn {
+  width: 36px;
+  height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   color: var(--text);
-  min-width: 40px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
 }
 
-.logQuality {
-  color: var(--accent);
-  font-size: 0.7rem;
-  letter-spacing: -1px;
+.hydBtn:hover { background: rgba(255,183,77,0.1); }
+
+.hydCount {
+  font-size: 0.85rem;
+  color: var(--muted);
 }
+
+/* ── Save button ────────────────────────────────────────────────────────────── */
+
+.saveBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.2s;
+  margin-top: 4px;
+}
+
+.saveBtn:disabled { opacity: 0.35; cursor: default; }
+.saveBtnDone { background: #81C784; }
+
+/* ── History ────────────────────────────────────────────────────────────────── */
+
+.histSection {
+  margin-top: 24px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.histTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
+.histHeader,
+.histRow {
+  display: grid;
+  grid-template-columns: 56px 40px 36px 44px 36px;
+  gap: 4px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 0.75rem;
+}
+
+.histHeader {
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+  font-size: 0.68rem;
+}
+
+.histRow { border-bottom: 1px solid rgba(255,255,255,0.03); }
+.histRow:last-child { border-bottom: none; }
+
+.histDate { color: var(--muted); }
+.histScore { font-family: var(--font-heading); font-size: 0.9rem; }
+.histSleep { color: var(--text); }
+.histMood  { text-align: center; }
+.histHyd   { color: var(--muted); }
