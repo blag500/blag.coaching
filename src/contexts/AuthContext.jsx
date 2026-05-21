@@ -21,6 +21,9 @@ export function AuthProvider({ children }) {
       } else {
         setProfile(data)
       }
+    } else {
+      // Auth account exists but no profile — account was deleted, sign out
+      await supabase.auth.signOut()
     }
   }
 
