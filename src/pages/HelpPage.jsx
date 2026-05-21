@@ -280,9 +280,9 @@ function PlanCard({ plan, highlight }) {
           </li>
         ))}
       </ul>
-      <button className={`${styles.planCta} ${highlight ? styles.planCtaPro : ''}`} type="button">
+      <a href="/" className={`${styles.planCta} ${highlight ? styles.planCtaPro : ''}`}>
         {plan.cta}
-      </button>
+      </a>
     </div>
   )
 }

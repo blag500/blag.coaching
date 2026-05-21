@@ -36,11 +36,18 @@ const PLANS = [
 export default function PlanSelector() {
   const { profile, updateProfile } = useAuth()
   const [selecting, setSelecting] = useState(null)
+  const [saveError, setSaveError] = useState(null)
 
   async function handleSelect(planId) {
     if (selecting) return
     setSelecting(planId)
-    await updateProfile({ plan: planId, approved: true })
+    setSaveError(null)
+    const { error } = await updateProfile({ plan: planId, approved: true })
+    if (error) {
+      setSelecting(null)
+      setSaveError('Грешка при запазване — моля, опитай отново.')
+      return
+    }
 
     const coachId = profile?.coach_id
     if (coachId) {
@@ -91,6 +98,7 @@ export default function PlanSelector() {
           ))}
         </div>
 
+        {saveError && <p className={styles.saveError}>{saveError}</p>}
         <p className={styles.note}>Планът може да се промени по-късно от треньора.</p>
       </div>
     </div>

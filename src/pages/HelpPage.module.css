@@ -254,6 +254,7 @@
 }
 
 .planCta {
+  display: block;
   width: 100%;
   padding: 14px;
   border: 1px solid rgba(255, 183, 77, 0.4);
@@ -266,6 +267,9 @@
   cursor: pointer;
   transition: all 0.15s;
   margin-top: auto;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 
 .planCta:hover {
