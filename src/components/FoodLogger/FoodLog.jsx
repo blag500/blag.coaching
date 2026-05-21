@@ -78,8 +78,15 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
     return (
       <div className={styles.empty}>
         <span className={styles.emptyIcon}>🍽</span>
-        <p>Няма добавени храни</p>
-        <p className={styles.emptyHint}>Търси и добави храна по-горе</p>
+        <p className={styles.emptyTitle}>Няма логнато хранене днес</p>
+        <p className={styles.emptyHint}>Търси продукт или сканирай баркод по-горе</p>
+        <button
+          className={styles.emptyBtn}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          type="button"
+        >
+          + ДОБАВИ ХРАНА
+        </button>
       </div>
     )
   }
