@@ -268,16 +268,20 @@ export default function Training() {
         <div className={styles.blockContent}>
           <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} />
 
-          {!selectedBlock.isRest && (
-            <button
-              className={`${styles.markDoneBtn} ${alreadyMarkedToday || justMarked ? styles.markDoneDone : ''}`}
-              onClick={handleMarkDone}
-              disabled={marking || alreadyMarkedToday}
-              type="button"
-            >
-              {alreadyMarkedToday || justMarked ? '✓ Отбелязано за днес!' : marking ? '...' : '✓ Маркирай като готово'}
-            </button>
-          )}
+          <button
+            className={`${styles.markDoneBtn} ${alreadyMarkedToday || justMarked ? styles.markDoneDone : ''}`}
+            onClick={handleMarkDone}
+            disabled={marking || alreadyMarkedToday}
+            type="button"
+          >
+            {alreadyMarkedToday || justMarked
+              ? '✓ Отбелязано за днес!'
+              : marking
+              ? '...'
+              : selectedBlock.isRest
+              ? '✓ Маркирай почивен ден'
+              : '✓ Маркирай като готово'}
+          </button>
         </div>
       )}
 
