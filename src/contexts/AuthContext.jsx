@@ -148,6 +148,15 @@ export function AuthProvider({ children }) {
 
   async function approveClient(clientId) {
     const { error } = await supabase.rpc('approve_client', { client_id: clientId })
+    if (!error) {
+      supabase.functions.invoke('send-push', {
+        body: {
+          toUserId: clientId,
+          title: 'Одобрен си!',
+          body: 'Твоят акаунт беше одобрен от треньора. Добре дошъл!',
+        },
+      }).catch(() => {})
+    }
     return { error }
   }
 

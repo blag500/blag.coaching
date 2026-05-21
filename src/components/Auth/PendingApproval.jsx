@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './PendingApproval.module.css'
 
@@ -12,6 +12,14 @@ const ClockIcon = () => (
 export default function PendingApproval() {
   const { profile, signOut, refreshProfile } = useAuth()
   const [checking, setChecking] = useState(false)
+
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === 'visible') refreshProfile()
+    }
+    document.addEventListener('visibilitychange', handler)
+    return () => document.removeEventListener('visibilitychange', handler)
+  }, [refreshProfile])
 
   async function handleCheck() {
     setChecking(true)
