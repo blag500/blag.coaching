@@ -48,9 +48,23 @@ export default function PlanSelector() {
       setSaveError('Грешка при запазване — моля, опитай отново.')
       return
     }
+
+    // Verify plan_pending was actually set — if not, the DB function is stale
+    const { data: check } = await supabase
+      .from('profiles')
+      .select('plan_pending, coach_id')
+      .single()
+    if (!check?.plan_pending) {
+      // Force it via a direct update as fallback
+      await supabase
+        .from('profiles')
+        .update({ plan_pending: true })
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+    }
+
     await refreshProfile()
 
-    const coachId = profile?.coach_id
+    const coachId = check?.coach_id || profile?.coach_id
     if (coachId) {
       const planLabel = planId === 'pro' ? 'Pro' : 'Plus'
       const clientName = profile?.name || profile?.email || 'Нов клиент'
