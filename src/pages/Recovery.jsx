@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSleepLogs, calcReadiness } from '../hooks/useSleepLogs'
 import styles from './Recovery.module.css'
 
-const MONTHS_BG = ['яну','фев','мар','апр','май','юни','юли','авг','сеп','окт','ное','дек']
+const MONTHS_BG      = ['яну','фев','мар','апр','май','юни','юли','авг','сеп','окт','ное','дек']
+const MONTHS_FULL_BG = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември']
+const DAYS_SHORT     = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
 const HYDRATION_TARGET = 8
 
 // ── Readiness ring ────────────────────────────────────────────────────────────
@@ -121,6 +123,80 @@ function HydrationCounter({ value, onChange }) {
         <span className={styles.hydCount}>{value} / {HYDRATION_TARGET}</span>
         <button type="button" className={styles.hydBtn}
           onClick={() => onChange(Math.min(HYDRATION_TARGET, value + 1))}>+</button>
+      </div>
+    </div>
+  )
+}
+
+// ── Recovery calendar ─────────────────────────────────────────────────────────
+
+function RecoveryCalendar({ logs }) {
+  const today = new Date()
+  const [year, setYear]   = useState(today.getFullYear())
+  const [month, setMonth] = useState(today.getMonth())
+  const todayStr = today.toISOString().slice(0, 10)
+
+  const logMap = useMemo(() => {
+    const m = {}
+    logs.forEach(l => { m[l.date] = l })
+    return m
+  }, [logs])
+
+  function prev() {
+    if (month === 0) { setYear(y => y - 1); setMonth(11) }
+    else setMonth(m => m - 1)
+  }
+  function next() {
+    if (month === 11) { setYear(y => y + 1); setMonth(0) }
+    else setMonth(m => m + 1)
+  }
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const firstDow    = (new Date(year, month, 1).getDay() + 6) % 7 // Mon = 0
+
+  const cells = []
+  for (let i = 0; i < firstDow; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mm      = String(month + 1).padStart(2, '0')
+    const dd      = String(d).padStart(2, '0')
+    const dateStr = `${year}-${mm}-${dd}`
+    cells.push({ day: d, dateStr, log: logMap[dateStr] ?? null })
+  }
+
+  return (
+    <div className={styles.cal}>
+      <div className={styles.calHeader}>
+        <button className={styles.calNav} onClick={prev} type="button">‹</button>
+        <span className={styles.calTitle}>{MONTHS_FULL_BG[month]} {year}</span>
+        <button className={styles.calNav} onClick={next} type="button">›</button>
+      </div>
+      <div className={styles.calDow}>
+        {DAYS_SHORT.map(d => <span key={d} className={styles.calDowCell}>{d}</span>)}
+      </div>
+      <div className={styles.calGrid}>
+        {cells.map((cell, i) => {
+          if (!cell) return <div key={`e-${i}`} />
+          const score = cell.log ? calcReadiness(cell.log) : null
+          const dotColor = score !== null ? readinessColor(score) : null
+          return (
+            <div key={cell.dateStr}
+              className={`${styles.calDay} ${cell.dateStr === todayStr ? styles.calToday : ''}`}
+            >
+              <span className={styles.calNum}>{cell.day}</span>
+              {dotColor && (
+                <span className={styles.calDot} style={{ background: dotColor }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className={styles.calLegend}>
+        {[['#81C784','Отлично (80+)'],['#ffb74d','Добре (60–79)'],['#ff8a65','Умерено (40–59)'],['#ef5350','Ниско (<40)']].map(([color, label]) => (
+          <span key={color} className={styles.calLegendItem}>
+            <span className={styles.calDot} style={{ background: color }} />
+            {label}
+          </span>
+        ))}
       </div>
     </div>
   )
@@ -275,6 +351,14 @@ export default function Recovery() {
           {saved ? '✓ Запазено' : saving ? '...' : 'Запази деня'}
         </button>
       </form>
+
+      {/* Calendar */}
+      {!loading && logs.length > 0 && (
+        <section className={styles.calSection}>
+          <h2 className={styles.calSectionTitle}>КАЛЕНДАР</h2>
+          <RecoveryCalendar logs={logs} />
+        </section>
+      )}
 
       {/* History */}
       {!loading && logs.length > 0 && (

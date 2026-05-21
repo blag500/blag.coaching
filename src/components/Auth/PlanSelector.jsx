@@ -42,7 +42,7 @@ export default function PlanSelector() {
     if (selecting) return
     setSelecting(planId)
     setSaveError(null)
-    const { error } = await updateProfile({ plan: planId, approved: true })
+    const { error } = await updateProfile({ plan: planId })
     if (error) {
       setSelecting(null)
       setSaveError('Грешка при запазване — моля, опитай отново.')

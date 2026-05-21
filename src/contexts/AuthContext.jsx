@@ -91,12 +91,11 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
-  // Coach: delete a client profile
+  // Coach: delete a client — removes their auth user so they must re-register
   async function deleteClientProfile(clientId) {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', clientId)
+    const { error } = await supabase.functions.invoke('delete-user', {
+      body: { userId: clientId },
+    })
     return { error }
   }
 
