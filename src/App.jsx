@@ -14,6 +14,7 @@ import ChatButton from './components/Compliance/SOSButton'
 import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
 import PlanSelector from './components/Auth/PlanSelector'
+import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import Recovery from './pages/Recovery'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
@@ -25,6 +26,7 @@ function AppShell() {
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('nutrition')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
   const hiddenAtRef = useRef(null)
 
   usePushNotifications()
@@ -75,8 +77,14 @@ function AppShell() {
     calendar:   <TrainingCalendar />,
   }
 
+  function dismissWelcome() {
+    localStorage.setItem('blag_welcome_seen', '1')
+    setShowWelcome(false)
+  }
+
   return (
     <div className={styles.shell}>
+      {!isCoach && showWelcome && <WelcomeOverlay onDone={dismissWelcome} />}
       <NavDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}

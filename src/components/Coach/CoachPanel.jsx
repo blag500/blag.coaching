@@ -19,7 +19,7 @@ function fmtTime(iso) {
 }
 
 export default function CoachPanel() {
-  const { fetchClients, fetchCoaches, approveClient, fetchTrainingSessions } = useAuth()
+  const { fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, sendMessage } = useAuth()
   const { unreadByUser } = useUnread()
   const [clients, setClients]           = useState([])
   const [coaches, setCoaches]           = useState([])
@@ -57,6 +57,7 @@ export default function CoachPanel() {
     const { error } = await approveClient(clientId)
     if (!error) {
       setClients(prev => prev.map(c => c.id === clientId ? { ...c, approved: true, plan_pending: false } : c))
+      sendMessage(clientId, 'Добре дошъл! Аз съм Николай - Head Coach, твоят треньор.').catch(() => {})
     }
     setApprovingId(null)
   }
