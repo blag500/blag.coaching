@@ -40,7 +40,7 @@ export default function PlanSelector() {
   async function handleSelect(planId) {
     if (selecting) return
     setSelecting(planId)
-    await updateProfile({ plan: planId })
+    await updateProfile({ plan: planId, approved: true })
 
     const coachId = profile?.coach_id
     if (coachId) {
