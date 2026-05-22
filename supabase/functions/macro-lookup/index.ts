@@ -3,17 +3,73 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const SYSTEM_PROMPT = `You are a nutrition database. Given a food or meal description, respond with ONLY a valid JSON object — no markdown, no explanation, nothing else.
+const SYSTEM_PROMPT = `You are a precise nutrition database. Given a food or meal description, return ONLY a valid JSON object — no markdown, no explanation.
 
-Format exactly:
-{"name":"<food name>","per100g":{"kcal":<number>,"protein":<number>,"carbs":<number>,"fat":<number>},"typical_grams":<number>}
+If the query has typos, spelling mistakes, or transliteration errors, identify the most likely intended food and use its correct name.
+If you genuinely cannot identify a real food from the query, return exactly: {"error":"unrecognized"}
+
+Otherwise return:
+{"name":"<correct food name>","per100g":{"kcal":<number>,"protein":<number>,"carbs":<number>,"fat":<number>},"typical_grams":<number>}
 
 Rules:
-- All macro values are per 100g of the food
-- typical_grams is a realistic single serving size in grams
-- Respond in the same language as the query (Bulgarian if query is in Bulgarian)
+- All macro values are per 100g, based on USDA or established nutritional data
+- typical_grams is a realistic single serving in grams
 - All values must be plain numbers, not strings
-- Base values on established nutritional data (USDA, etc.)`
+- Macros must be nutritionally consistent: kcal ≈ protein×4 + carbs×4 + fat×9 (within 20%)
+- Use the same language as the query for the food name (Bulgarian if query is in Bulgarian)`
+
+function clamp(val: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, val))
+}
+
+function validateAndFix(result: Record<string, unknown>): { ok: true; data: unknown } | { ok: false; reason: string } {
+  if (result.error === 'unrecognized') return { ok: false, reason: 'unrecognized' }
+
+  const { name, per100g, typical_grams } = result as {
+    name: unknown
+    per100g: { kcal: unknown; protein: unknown; carbs: unknown; fat: unknown }
+    typical_grams: unknown
+  }
+
+  if (typeof name !== 'string' || !name.trim()) return { ok: false, reason: 'missing name' }
+  if (!per100g || typeof per100g !== 'object')  return { ok: false, reason: 'missing per100g' }
+
+  let { kcal, protein, carbs, fat } = per100g as { kcal: unknown; protein: unknown; carbs: unknown; fat: unknown }
+
+  if (typeof kcal !== 'number' || typeof protein !== 'number' ||
+      typeof carbs !== 'number' || typeof fat !== 'number') {
+    return { ok: false, reason: 'non-numeric macros' }
+  }
+
+  // Clamp to realistic per-100g ranges
+  protein = clamp(protein, 0, 100)
+  carbs   = clamp(carbs,   0, 100)
+  fat     = clamp(fat,     0, 100)
+
+  // Recalculate kcal from macros if the model's value is clearly wrong
+  const estimatedKcal = protein * 4 + carbs * 4 + fat * 9
+  if (kcal <= 0 || kcal > 950 || (estimatedKcal > 5 && Math.abs(estimatedKcal - kcal) / Math.max(kcal, estimatedKcal) > 0.35)) {
+    kcal = Math.round(estimatedKcal)
+  }
+
+  kcal = clamp(Math.round(kcal), 0, 950)
+
+  return {
+    ok: true,
+    data: {
+      name: (name as string).trim(),
+      per100g: {
+        kcal,
+        protein: Math.round(protein * 10) / 10,
+        carbs:   Math.round(carbs   * 10) / 10,
+        fat:     Math.round(fat     * 10) / 10,
+      },
+      typical_grams: typeof typical_grams === 'number' && typical_grams > 0
+        ? Math.round(typical_grams)
+        : 100,
+    },
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -40,7 +96,7 @@ Deno.serve(async (req) => {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'authorization': `Bearer ${apiKey}` },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: query.trim() },
@@ -61,17 +117,27 @@ Deno.serve(async (req) => {
   const aiData = await aiRes.json()
   const text = aiData.choices?.[0]?.message?.content ?? ''
 
-  let result
+  let parsed: Record<string, unknown>
   try {
-    result = JSON.parse(text)
+    parsed = JSON.parse(text)
   } catch {
-    return new Response(JSON.stringify({ error: 'Could not parse response', raw: text }), {
+    return new Response(JSON.stringify({ error: 'parse_failed' }), {
       status: 502,
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
-  return new Response(JSON.stringify(result), {
+  const validation = validateAndFix(parsed)
+
+  if (!validation.ok) {
+    const status = validation.reason === 'unrecognized' ? 422 : 502
+    return new Response(JSON.stringify({ error: validation.reason }), {
+      status,
+      headers: { 'Content-Type': 'application/json', ...CORS },
+    })
+  }
+
+  return new Response(JSON.stringify(validation.data), {
     headers: { 'Content-Type': 'application/json', ...CORS },
   })
 })

@@ -101,7 +101,16 @@ function AiMode({ onAdd, onAddRaw }) {
       const { data, error: fnError } = await supabase.functions.invoke('macro-lookup', {
         body: { query: query.trim() },
       })
-      if (fnError) throw fnError
+      if (fnError) {
+        let body
+        try { body = await fnError.context?.json() } catch { /* ignore */ }
+        if (fnError.context?.status === 422 || body?.error === 'unrecognized') {
+          setError('Не разпознахме тази храна. Опитай с по-ясно описание.')
+        } else {
+          setError('Неуспешно търсене. Провери връзката и опитай отново.')
+        }
+        return
+      }
       if (!data?.per100g) throw new Error('invalid response')
       setResult(data)
       setGrams(String(data.typical_grams || 100))
