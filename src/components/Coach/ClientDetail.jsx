@@ -226,6 +226,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
         )}
         {tab === 'goals' && (
           <GoalsTab
+            client={client}
             edits={edits}
             setEdits={setEdits}
             onSave={saveGoals}
@@ -334,15 +335,47 @@ function ProgressTab({ stats, client }) {
 
 // ─── Goals Tab ───────────────────────────────────────────────────────────────
 
-function GoalsTab({ edits, setEdits, onSave, saving, saved }) {
+function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
   function set(field, value) {
     setEdits(prev => ({ ...prev, [field]: value }))
   }
 
+  const hasIntake = client.phone || client.age || client.intake_goal || client.intake_notes
+
   return (
     <div className={styles.goalsTab}>
+      {hasIntake && (
+        <div className={styles.intakeSection}>
+          <p className={styles.intakeSectionTitle}>ДАННИ ОТ КЛИЕНТА</p>
+          {(client.phone || client.age) && (
+            <div className={styles.intakeRow}>
+              {client.phone && (
+                <a href={`tel:${client.phone}`} className={styles.intakePhone}>
+                  📞 {client.phone}
+                </a>
+              )}
+              {client.age && (
+                <span className={styles.intakeAge}>{client.age} год.</span>
+              )}
+            </div>
+          )}
+          {client.intake_goal && (
+            <div className={styles.intakeBlock}>
+              <span className={styles.intakeKey}>Цел</span>
+              <p className={styles.intakeValue}>{client.intake_goal}</p>
+            </div>
+          )}
+          {client.intake_notes && (
+            <div className={styles.intakeBlock}>
+              <span className={styles.intakeKey}>Здравни бележки</span>
+              <p className={styles.intakeValue}>{client.intake_notes}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel}>Ime</label>
+        <label className={styles.fieldLabel}>Имe</label>
         <input
           className={styles.fieldInput}
           type="text"
