@@ -605,6 +605,39 @@ select.input {
   cursor: pointer;
 }
 
+.typeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.typeChip {
+  padding: 7px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.typeChipActive {
+  background: rgba(255, 183, 77, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.clientUpcomingSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .textarea {
   resize: none;
   line-height: 1.5;

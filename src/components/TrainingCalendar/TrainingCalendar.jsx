@@ -314,6 +314,22 @@ export default function TrainingCalendar() {
     return Object.entries(groups)
   }, [historySessions])
 
+  const clientUpcomingGroups = useMemo(() => {
+    if (isCoach) return []
+    const upcoming = sessions
+      .filter(s => s.status === 'pending' || s.status === 'confirmed')
+      .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
+    const groups = {}
+    upcoming.forEach(s => {
+      const key = new Date(s.scheduled_at).toLocaleDateString('bg-BG', {
+        weekday: 'long', day: 'numeric', month: 'long',
+      }).toUpperCase()
+      if (!groups[key]) groups[key] = []
+      groups[key].push(s)
+    })
+    return Object.entries(groups)
+  }, [sessions, isCoach])
+
   const isToday  = d => d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
   const isSel    = d => d === selDay
 
@@ -420,45 +436,86 @@ export default function TrainingCalendar() {
       </div>
 
       {activeTab === 'upcoming' ? (
-        <div className={styles.daySection}>
-          <div className={styles.daySectionHead}>
-            <span className={styles.daySectionTitle}>
-              {new Date(year, month, selDay).toLocaleDateString('bg-BG', {
-                weekday: 'short', day: 'numeric', month: 'long',
-              }).toUpperCase()}
-            </span>
-            <div className={styles.dayActions}>
-              <button className={styles.restDayBtn} onClick={handleRestDay} type="button">
-                🌙 ПОЧИВЕН
-              </button>
+        !isCoach ? (
+          /* Client: all upcoming sessions grouped by date */
+          <div className={styles.clientUpcomingSection}>
+            <div className={styles.daySectionHead}>
+              <span className={styles.daySectionTitle}>ПРЕДСТОЯЩИ ТРЕНИРОВКИ</span>
               <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
                 + ЗАЯВИ
               </button>
             </div>
+            {loading ? (
+              <p className={styles.empty}>Зарежда...</p>
+            ) : clientUpcomingGroups.length === 0 ? (
+              <p className={styles.empty}>Нямаш предстоящи тренировки.{'\n'}Избери ден от календара и заяви.</p>
+            ) : (
+              <div className={styles.historySection}>
+                {clientUpcomingGroups.map(([dateLabel, daySessions]) => (
+                  <div key={dateLabel} className={styles.historyGroup}>
+                    <p className={styles.historyDate}>{dateLabel}</p>
+                    <div className={styles.sessionList}>
+                      {daySessions.map(s => (
+                        <SessionCard
+                          key={s.id}
+                          session={s}
+                          isCoach={false}
+                          myId={profile?.id}
+                          onStatus={handleStatus}
+                          onCoachEdit={openCoachEdit}
+                          onClientPropose={openClientPropose}
+                          onAcceptEdit={handleAcceptEdit}
+                          onDeclineEdit={handleDeclineEdit}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-
-          {loading ? (
-            <p className={styles.empty}>Зарежда...</p>
-          ) : selSessions.length === 0 ? (
-            <p className={styles.empty}>Няма предстоящи тренировки за този ден.</p>
-          ) : (
-            <div className={styles.sessionList}>
-              {selSessions.map(s => (
-                <SessionCard
-                  key={s.id}
-                  session={s}
-                  isCoach={isCoach}
-                  myId={profile?.id}
-                  onStatus={handleStatus}
-                  onCoachEdit={openCoachEdit}
-                  onClientPropose={openClientPropose}
-                  onAcceptEdit={handleAcceptEdit}
-                  onDeclineEdit={handleDeclineEdit}
-                />
-              ))}
+        ) : (
+          /* Coach: day-filtered view */
+          <div className={styles.daySection}>
+            <div className={styles.daySectionHead}>
+              <span className={styles.daySectionTitle}>
+                {new Date(year, month, selDay).toLocaleDateString('bg-BG', {
+                  weekday: 'short', day: 'numeric', month: 'long',
+                }).toUpperCase()}
+              </span>
+              <div className={styles.dayActions}>
+                <button className={styles.restDayBtn} onClick={handleRestDay} type="button">
+                  🌙 ПОЧИВЕН
+                </button>
+                <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
+                  + ЗАЯВИ
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+
+            {loading ? (
+              <p className={styles.empty}>Зарежда...</p>
+            ) : selSessions.length === 0 ? (
+              <p className={styles.empty}>Няма предстоящи тренировки за този ден.</p>
+            ) : (
+              <div className={styles.sessionList}>
+                {selSessions.map(s => (
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    isCoach={true}
+                    myId={profile?.id}
+                    onStatus={handleStatus}
+                    onCoachEdit={openCoachEdit}
+                    onClientPropose={openClientPropose}
+                    onAcceptEdit={handleAcceptEdit}
+                    onDeclineEdit={handleDeclineEdit}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )
       ) : (
         <div className={styles.historySection}>
           {loading ? (
@@ -496,8 +553,8 @@ export default function TrainingCalendar() {
             <div className={styles.sheetHandle} />
             <div className={styles.sheetHeader}>
               <span className={styles.sheetTitle}>{formTitles[formMode]}</span>
-              {formMode === 'client-propose' && (
-                <span className={styles.sheetSub}>треньорът ще одобри</span>
+              {(formMode === 'client-propose' || (!isCoach && formMode === 'create')) && (
+                <span className={styles.sheetSub}>треньорът ще потвърди</span>
               )}
               <button className={styles.closeBtn} onClick={() => setShowForm(false)} type="button">✕</button>
             </div>
@@ -515,9 +572,18 @@ export default function TrainingCalendar() {
                 </div>
 
                 <label className={styles.formLabel}>Вид тренировка</label>
-                <select value={fTitle} onChange={e => setFTitle(e.target.value)} className={styles.input}>
-                  {SESSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <div className={styles.typeChips}>
+                  {(isCoach ? SESSION_TYPES : SESSION_TYPES.filter(t => t !== 'Почивен ден')).map(t => (
+                    <button
+                      key={t}
+                      type="button"
+                      className={`${styles.typeChip} ${fTitle === t ? styles.typeChipActive : ''}`}
+                      onClick={() => setFTitle(t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
 
                 {isCoach && formMode === 'create' && (
                   <>
