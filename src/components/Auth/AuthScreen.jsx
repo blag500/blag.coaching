@@ -46,6 +46,23 @@ export default function AuthScreen() {
           <span className={styles.brandSub}>COACHING</span>
         </div>
 
+        <div className={styles.pitch}>
+          <p className={styles.pitchTagline}>Личен треньор в джоба ти</p>
+          <div className={styles.pitchTags}>
+            <span className={styles.pitchTag}>🥗 Хранене</span>
+            <span className={styles.pitchTag}>💪 Тренировки</span>
+            <span className={styles.pitchTag}>📊 Прогрес</span>
+          </div>
+          <a
+            className={styles.pitchLink}
+            href="https://blag-coaching.com/help"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Разбери как работи →
+          </a>
+        </div>
+
         <div className={styles.toggle}>
           <button
             className={`${styles.toggleBtn} ${mode === 'login' ? styles.toggleActive : ''}`}

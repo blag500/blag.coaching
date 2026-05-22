@@ -340,19 +340,22 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
     setEdits(prev => ({ ...prev, [field]: value }))
   }
 
-  const hasIntake = client.phone || client.age || client.intake_training_days || client.intake_goal || client.intake_notes
+  const hasIntake = client.phone || client.age || client.intake_training_days || client.intake_call_time || client.intake_goal || client.intake_notes
 
   return (
     <div className={styles.goalsTab}>
       {hasIntake && (
         <div className={styles.intakeSection}>
           <p className={styles.intakeSectionTitle}>ДАННИ ОТ КЛИЕНТА</p>
-          {(client.phone || client.age || client.intake_training_days) && (
+          {(client.phone || client.age || client.intake_training_days || client.intake_call_time) && (
             <div className={styles.intakeRow}>
               {client.phone && (
                 <a href={`tel:${client.phone}`} className={styles.intakePhone}>
                   📞 {client.phone}
                 </a>
+              )}
+              {client.intake_call_time && (
+                <span className={styles.intakeAge}>🕐 {client.intake_call_time}ч.</span>
               )}
               {client.age && (
                 <span className={styles.intakeAge}>{client.age} год.</span>

@@ -8,6 +8,7 @@ export default function ContactForm() {
   const [phone,        setPhone]        = useState(profile?.phone || '')
   const [age,          setAge]          = useState(profile?.age   || '')
   const [trainingDays, setTrainingDays] = useState(profile?.intake_training_days || null)
+  const [callTime,     setCallTime]     = useState(profile?.intake_call_time || null)
   const [goal,         setGoal]         = useState(profile?.intake_goal  || '')
   const [notes,        setNotes]        = useState(profile?.intake_notes || '')
   const [saving, setSaving] = useState(false)
@@ -19,6 +20,7 @@ export default function ContactForm() {
     if (phone.trim())  updates.phone                = phone.trim()
     if (age)           updates.age                  = parseInt(age, 10)
     if (trainingDays)  updates.intake_training_days = trainingDays
+    if (callTime)      updates.intake_call_time     = callTime
     if (goal.trim())   updates.intake_goal          = goal.trim()
     if (notes.trim())  updates.intake_notes         = notes.trim()
     await updateProfile(updates)
@@ -73,6 +75,30 @@ export default function ContactForm() {
             value={age}
             onChange={e => setAge(e.target.value)}
           />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>
+            Кога можем да те потърсим по телефона?
+            <span className={styles.optional}> (по избор)</span>
+          </label>
+          <div className={styles.chips}>
+            {[
+              { id: '8-12',  label: 'Сутринта 8–12' },
+              { id: '12-16', label: 'Обед 12–16'    },
+              { id: '16-20', label: 'Следобед 16–20' },
+              { id: '20+',   label: 'Вечерта 20+'   },
+            ].map(t => (
+              <button
+                key={t.id}
+                type="button"
+                className={`${styles.chip} ${callTime === t.id ? styles.chipActive : ''}`}
+                onClick={() => setCallTime(prev => prev === t.id ? null : t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className={styles.field}>

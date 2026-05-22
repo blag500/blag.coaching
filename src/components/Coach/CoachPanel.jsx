@@ -159,6 +159,9 @@ export default function CoachPanel() {
                                   📞 {client.phone}
                                 </a>
                               )}
+                              {client.intake_call_time && (
+                                <span className={styles.intakeAge}>🕐 {client.intake_call_time}ч.</span>
+                              )}
                               {client.age && (
                                 <span className={styles.intakeAge}>{client.age} год.</span>
                               )}
