@@ -152,7 +152,7 @@ export default function CoachPanel() {
                             )}
                           </div>
                           <span className={styles.clientEmail}>{client.email}</span>
-                          {(client.phone || client.age) && (
+                          {(client.phone || client.age || client.intake_training_days) && (
                             <div className={styles.intakeMeta}>
                               {client.phone && (
                                 <a href={`tel:${client.phone}`} className={styles.intakePhone}>
@@ -161,6 +161,9 @@ export default function CoachPanel() {
                               )}
                               {client.age && (
                                 <span className={styles.intakeAge}>{client.age} год.</span>
+                              )}
+                              {client.intake_training_days && (
+                                <span className={styles.intakeAge}>{client.intake_training_days}×/седм.</span>
                               )}
                             </div>
                           )}

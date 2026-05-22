@@ -4,21 +4,23 @@ import styles from './ContactForm.module.css'
 
 export default function ContactForm() {
   const { profile, updateProfile } = useAuth()
-  const [name,  setName]  = useState(profile?.name  || '')
-  const [phone, setPhone] = useState(profile?.phone || '')
-  const [age,   setAge]   = useState(profile?.age   || '')
-  const [goal,  setGoal]  = useState(profile?.intake_goal  || '')
-  const [notes, setNotes] = useState(profile?.intake_notes || '')
+  const [name,         setName]         = useState(profile?.name  || '')
+  const [phone,        setPhone]        = useState(profile?.phone || '')
+  const [age,          setAge]          = useState(profile?.age   || '')
+  const [trainingDays, setTrainingDays] = useState(profile?.intake_training_days || null)
+  const [goal,         setGoal]         = useState(profile?.intake_goal  || '')
+  const [notes,        setNotes]        = useState(profile?.intake_notes || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSubmit() {
     setSaving(true)
     const updates = { intake_done: true }
-    if (name.trim())  updates.name         = name.trim()
-    if (phone.trim()) updates.phone        = phone.trim()
-    if (age)          updates.age          = parseInt(age, 10)
-    if (goal.trim())  updates.intake_goal  = goal.trim()
-    if (notes.trim()) updates.intake_notes = notes.trim()
+    if (name.trim())   updates.name                 = name.trim()
+    if (phone.trim())  updates.phone                = phone.trim()
+    if (age)           updates.age                  = parseInt(age, 10)
+    if (trainingDays)  updates.intake_training_days = trainingDays
+    if (goal.trim())   updates.intake_goal          = goal.trim()
+    if (notes.trim())  updates.intake_notes         = notes.trim()
     await updateProfile(updates)
     setSaving(false)
   }
@@ -71,6 +73,22 @@ export default function ContactForm() {
             value={age}
             onChange={e => setAge(e.target.value)}
           />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Колко дни в седмицата искаш да тренираш?</label>
+          <div className={styles.chips}>
+            {[1, 2, 3, 4, 5, 6].map(d => (
+              <button
+                key={d}
+                type="button"
+                className={`${styles.chip} ${trainingDays === d ? styles.chipActive : ''}`}
+                onClick={() => setTrainingDays(prev => prev === d ? null : d)}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className={styles.field}>

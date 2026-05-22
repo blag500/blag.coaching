@@ -89,6 +89,33 @@
   max-width: 120px;
 }
 
+.chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  width: 44px;
+  height: 44px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chipActive {
+  background: rgba(255, 183, 77, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .textarea {
   padding: 0.75rem 1rem;
   background: var(--surface-2);
