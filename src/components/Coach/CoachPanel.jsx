@@ -140,26 +140,54 @@ export default function CoachPanel() {
                 </p>
                 <div className={styles.list}>
                   {pending.map(client => (
-                    <div key={client.id} className={styles.card}>
-                      <div className={styles.clientInfo}>
-                        <div className={styles.clientNameRow}>
-                          <span className={styles.clientName}>{client.name || '—'}</span>
-                          {client.plan && (
-                            <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
-                              {client.plan.toUpperCase()}
-                            </span>
+                    <div key={client.id} className={styles.pendingCard}>
+                      <div className={styles.pendingTop}>
+                        <div className={styles.clientInfo}>
+                          <div className={styles.clientNameRow}>
+                            <span className={styles.clientName}>{client.name || '—'}</span>
+                            {client.plan && (
+                              <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
+                                {client.plan.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <span className={styles.clientEmail}>{client.email}</span>
+                          {(client.phone || client.age) && (
+                            <div className={styles.intakeMeta}>
+                              {client.phone && (
+                                <a href={`tel:${client.phone}`} className={styles.intakePhone}>
+                                  📞 {client.phone}
+                                </a>
+                              )}
+                              {client.age && (
+                                <span className={styles.intakeAge}>{client.age} год.</span>
+                              )}
+                            </div>
                           )}
                         </div>
-                        <span className={styles.clientEmail}>{client.email}</span>
+                        <button
+                          className={styles.approveBtn}
+                          onClick={() => handleApprove(client.id)}
+                          disabled={approvingId === client.id}
+                          type="button"
+                        >
+                          {approvingId === client.id ? '...' : 'ОДОБРИ'}
+                        </button>
                       </div>
-                      <button
-                        className={styles.approveBtn}
-                        onClick={() => handleApprove(client.id)}
-                        disabled={approvingId === client.id}
-                        type="button"
-                      >
-                        {approvingId === client.id ? '...' : 'ОДОБРИ'}
-                      </button>
+                      {(client.intake_goal || client.intake_notes) && (
+                        <div className={styles.intakeDetails}>
+                          {client.intake_goal && (
+                            <p className={styles.intakeRow}>
+                              <span className={styles.intakeKey}>Цел: </span>{client.intake_goal}
+                            </p>
+                          )}
+                          {client.intake_notes && (
+                            <p className={styles.intakeRow}>
+                              <span className={styles.intakeKey}>Бележки: </span>{client.intake_notes}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

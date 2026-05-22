@@ -140,6 +140,66 @@
   gap: 8px;
 }
 
+/* Pending client card — vertical layout to fit intake details */
+.pendingCard {
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 14px;
+  margin: 0 16px 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pendingTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.intakeMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.intakePhone {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.intakeAge {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.intakeDetails {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intakeRow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.intakeKey {
+  color: var(--accent);
+  opacity: 0.8;
+}
+
 .approveBtn {
   flex-shrink: 0;
   padding: 7px 14px;

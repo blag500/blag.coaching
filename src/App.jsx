@@ -14,6 +14,7 @@ import ChatButton from './components/Compliance/SOSButton'
 import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
 import PlanSelector from './components/Auth/PlanSelector'
+import ContactForm from './components/Auth/ContactForm'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import SetupProfile from './components/Auth/SetupProfile'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
@@ -72,6 +73,8 @@ function AppShell() {
   const isCoach = profile.role === 'coach'
 
   if (!isCoach && !profile.plan) return <PlanSelector />
+
+  if (!isCoach && profile.plan && !profile.intake_done) return <ContactForm />
 
   if (!isCoach && profile.plan_pending) return <PendingApproval />
 
