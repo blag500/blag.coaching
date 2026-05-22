@@ -32,7 +32,7 @@ const MACRO_COLORS = {
 
 export default function Profile() {
   const { profile, user, updateProfile, signOut } = useAuth()
-  const { weights, todayEntry, trend, addWeight } = useWeightLog()
+  const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
   const history = useHabitHistory()
   const [targetWeight, setTargetWeight] = useLocalStorage('blag_target_weight_v1', '')
 
@@ -46,6 +46,7 @@ export default function Profile() {
 
   const [weeklyKcal, setWeeklyKcal] = useState(null)
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
+  const [weightRange, setWeightRange] = useState('1M')
   const isCoach = profile?.role === 'coach'
 
   useEffect(() => {
@@ -100,6 +101,28 @@ export default function Profile() {
     : trend > 0 ? `+${trend} kg тази седмица ↑`
     : trend < 0 ? `${trend} kg тази седмица ↓`
     : 'Без промяна тази седмица'
+
+  const RANGE_DAYS = { '2W': 14, '1M': 30, '3M': 90, 'ALL': null }
+  const filteredWeights = useMemo(() => {
+    const days = RANGE_DAYS[weightRange]
+    if (!days) return weights
+    const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10)
+    return weights.filter(w => w.date >= cutoff)
+  }, [weights, weightRange])
+
+  const weightStats = useMemo(() => {
+    if (filteredWeights.length === 0) return null
+    const kgs = filteredWeights.map(w => w.kg)
+    const change = filteredWeights.length >= 2
+      ? Math.round((kgs[kgs.length - 1] - kgs[0]) * 10) / 10
+      : null
+    return {
+      count: filteredWeights.length,
+      min:   Math.min(...kgs),
+      max:   Math.max(...kgs),
+      change,
+    }
+  }, [filteredWeights])
 
   async function handleNameSave(e) {
     e.preventDefault()
@@ -240,9 +263,92 @@ export default function Profile() {
         {trendLabel && <p className={styles.trend}>{trendLabel}</p>}
 
         {weights.length >= 2 ? (
-          <div className={styles.sparklineWrap}>
-            <WeightChart weights={weights} targetWeight={targetW} gradId="wcProfile" />
-          </div>
+          <>
+            <div className={styles.sparklineWrap}>
+              <WeightChart
+                weights={weights}
+                targetWeight={targetW}
+                gradId="wcProfile"
+                range={weightRange}
+                onRange={setWeightRange}
+              />
+            </div>
+
+            {weightStats && (
+              <div className={styles.weightStatsRow}>
+                <div className={styles.weightStat}>
+                  <span className={styles.weightStatVal}>{weightStats.count}</span>
+                  <span className={styles.weightStatLabel}>записа</span>
+                </div>
+                <div className={styles.weightStat}>
+                  <span className={styles.weightStatVal}>{weightStats.min}</span>
+                  <span className={styles.weightStatLabel}>мин. kg</span>
+                </div>
+                <div className={styles.weightStat}>
+                  <span className={styles.weightStatVal}>{weightStats.max}</span>
+                  <span className={styles.weightStatLabel}>макс. kg</span>
+                </div>
+                {weightStats.change !== null && (
+                  <div className={styles.weightStat}>
+                    <span className={`${styles.weightStatVal} ${weightStats.change > 0 ? styles.up : weightStats.change < 0 ? styles.down : ''}`}>
+                      {weightStats.change > 0 ? `+${weightStats.change}` : weightStats.change}
+                    </span>
+                    <span className={styles.weightStatLabel}>промяна kg</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {filteredWeights.length > 0 && (
+              <div className={styles.weightTableWrap}>
+                <table className={styles.weightTable}>
+                  <thead>
+                    <tr>
+                      <th className={styles.weightTh}>Дата</th>
+                      <th className={styles.weightTh}>Тегло</th>
+                      <th className={styles.weightTh}>Промяна</th>
+                      <th className={styles.weightTh} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...filteredWeights].reverse().map((entry, i, arr) => {
+                      const prev  = arr[i + 1]
+                      const delta = prev ? Math.round((entry.kg - prev.kg) * 10) / 10 : null
+                      const isLatest = i === 0
+                      return (
+                        <tr
+                          key={entry.date}
+                          className={`${isLatest ? styles.weightTrLatest : styles.weightTr}`}
+                        >
+                          <td className={styles.weightTd}>
+                            {new Date(entry.date).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })}
+                          </td>
+                          <td className={styles.weightTd}>{entry.kg} kg</td>
+                          <td className={styles.weightTd}>
+                            {delta === null ? '—' : (
+                              <span className={delta > 0 ? styles.deltaUp : delta < 0 ? styles.deltaDown : styles.deltaNeutral}>
+                                {delta > 0 ? `+${delta}` : delta} kg
+                              </span>
+                            )}
+                          </td>
+                          <td className={styles.weightTd}>
+                            <button
+                              className={styles.weightDeleteBtn}
+                              onClick={() => removeWeight(entry.date)}
+                              type="button"
+                              aria-label="Изтрий"
+                            >
+                              ×
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         ) : (
           <p className={styles.emptyHint}>Запиши тегло поне 2 дни, за да видиш графика</p>
         )}

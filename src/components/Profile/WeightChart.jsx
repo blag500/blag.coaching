@@ -27,8 +27,10 @@ function smoothPath(pts) {
   return d
 }
 
-export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad' }) {
-  const [range, setRange] = useState('1M')
+export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', range: rangeProp, onRange: onRangeProp }) {
+  const [rangeInternal, setRangeInternal] = useState('1M')
+  const range    = rangeProp    ?? rangeInternal
+  const setRange = onRangeProp  ?? setRangeInternal
 
   const rangeObj = RANGES.find(r => r.key === range)
   const cutoff = rangeObj.days
