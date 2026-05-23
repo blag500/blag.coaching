@@ -2,13 +2,24 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './ContactForm.module.css'
 
+const CALL_TIMES = [
+  { id: '8-12',  label: 'Сутринта', sub: '8–12ч'  },
+  { id: '12-16', label: 'Обед',     sub: '12–16ч' },
+  { id: '16-20', label: 'Следобед', sub: '16–20ч' },
+  { id: '20+',   label: 'Вечерта',  sub: '20+ч'   },
+]
+const PRESET_IDS = CALL_TIMES.map(t => t.id)
+
 export default function ContactForm() {
   const { profile, updateProfile } = useAuth()
+  const existing = profile?.intake_call_time || null
   const [name,         setName]         = useState(profile?.name  || '')
   const [phone,        setPhone]        = useState(profile?.phone || '')
   const [age,          setAge]          = useState(profile?.age   || '')
   const [trainingDays, setTrainingDays] = useState(profile?.intake_training_days || null)
-  const [callTime,     setCallTime]     = useState(profile?.intake_call_time || null)
+  const [callPreset,   setCallPreset]   = useState(PRESET_IDS.includes(existing) ? existing : null)
+  const [callCustom,   setCallCustom]   = useState(existing && !PRESET_IDS.includes(existing) ? existing : '')
+  const [customMode,   setCustomMode]   = useState(!!(existing && !PRESET_IDS.includes(existing)))
   const [goal,         setGoal]         = useState(profile?.intake_goal  || '')
   const [notes,        setNotes]        = useState(profile?.intake_notes || '')
   const [saving, setSaving] = useState(false)
@@ -20,7 +31,8 @@ export default function ContactForm() {
     if (phone.trim())  updates.phone                = phone.trim()
     if (age)           updates.age                  = parseInt(age, 10)
     if (trainingDays)  updates.intake_training_days = trainingDays
-    if (callTime)      updates.intake_call_time     = callTime
+    const finalCallTime = customMode ? callCustom : callPreset
+    if (finalCallTime) updates.intake_call_time     = finalCallTime
     if (goal.trim())   updates.intake_goal          = goal.trim()
     if (notes.trim())  updates.intake_notes         = notes.trim()
     await updateProfile(updates)
@@ -37,7 +49,7 @@ export default function ContactForm() {
         </p>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="cf-name">Имe</label>
+          <label className={styles.label} htmlFor="cf-name">Имe <span className={styles.required}>*</span></label>
           <input
             id="cf-name"
             className={styles.input}
@@ -50,7 +62,7 @@ export default function ContactForm() {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="cf-phone">Телефон</label>
+          <label className={styles.label} htmlFor="cf-phone">Телефон <span className={styles.required}>*</span></label>
           <input
             id="cf-phone"
             className={styles.input}
@@ -82,23 +94,35 @@ export default function ContactForm() {
             Кога можем да те потърсим по телефона?
             <span className={styles.optional}> (по избор)</span>
           </label>
-          <div className={styles.chips}>
-            {[
-              { id: '8-12',  label: 'Сутринта 8–12' },
-              { id: '12-16', label: 'Обед 12–16'    },
-              { id: '16-20', label: 'Следобед 16–20' },
-              { id: '20+',   label: 'Вечерта 20+'   },
-            ].map(t => (
+          <div className={styles.callTimeGrid}>
+            {CALL_TIMES.map(t => (
               <button
                 key={t.id}
                 type="button"
-                className={`${styles.chip} ${callTime === t.id ? styles.chipActive : ''}`}
-                onClick={() => setCallTime(prev => prev === t.id ? null : t.id)}
+                className={`${styles.callChip} ${!customMode && callPreset === t.id ? styles.chipActive : ''}`}
+                onClick={() => { setCustomMode(false); setCallPreset(prev => prev === t.id ? null : t.id) }}
               >
-                {t.label}
+                <span className={styles.callChipLabel}>{t.label}</span>
+                <span className={styles.callChipSub}>{t.sub}</span>
               </button>
             ))}
+            <button
+              type="button"
+              className={`${styles.callChip} ${styles.callChipCustom} ${customMode ? styles.chipActive : ''}`}
+              onClick={() => setCustomMode(m => !m)}
+            >
+              <span className={styles.callChipLabel}>Конкретен час</span>
+            </button>
           </div>
+          {customMode && (
+            <input
+              type="time"
+              className={`${styles.input} ${styles.inputNarrow}`}
+              value={callCustom}
+              onChange={e => setCallCustom(e.target.value)}
+              style={{ marginTop: '0.5rem' }}
+            />
+          )}
         </div>
 
         <div className={styles.field}>

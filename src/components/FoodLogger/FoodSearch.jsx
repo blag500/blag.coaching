@@ -64,7 +64,7 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
         ))}
       </div>
 
-      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} />}
+      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
       {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
@@ -75,7 +75,7 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
 
 // ─── AI macro lookup mode ────────────────────────────────────────────────────
 
-function AiMode({ onAdd, onAddRaw }) {
+function AiMode({ onAdd, onAddRaw, onAdded }) {
   const [query, setQuery]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [labelLoading, setLabelLoading] = useState(false)
@@ -158,11 +158,11 @@ function AiMode({ onAdd, onAddRaw }) {
     setQuery('')
   }
 
-  function handleAdd() {
+  async function handleAdd() {
     const g = parseFloat(grams)
     if (!g || g <= 0 || !result) return
     const ratio = g / 100
-    onAddRaw({
+    await onAddRaw({
       name:    result.name,
       grams:   g,
       kcal:    Math.round(result.per100g.kcal    * ratio),
@@ -173,6 +173,7 @@ function AiMode({ onAdd, onAddRaw }) {
     setResult(null)
     setQuery('')
     setGrams('100')
+    onAdded?.()
   }
 
   const g = parseFloat(grams)

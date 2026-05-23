@@ -116,6 +116,52 @@
   color: var(--accent);
 }
 
+/* Call time 2×2 grid */
+.callTimeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.callChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.7rem 0.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.callChipCustom {
+  grid-column: 1 / -1;
+}
+
+.callChipLabel {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.callChipSub {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  opacity: 0.65;
+  line-height: 1;
+}
+
+.required {
+  color: var(--accent);
+  font-style: normal;
+}
+
 .textarea {
   padding: 0.75rem 1rem;
   background: var(--surface-2);
