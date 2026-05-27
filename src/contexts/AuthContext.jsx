@@ -216,6 +216,35 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
+  // Coach: add an exercise log entry on behalf of a client
+  async function addExerciseLogForClient(clientId, exerciseName, weight, reps, sets, notes, date) {
+    const { data, error } = await supabase
+      .from('exercise_logs')
+      .insert({
+        user_id:       clientId,
+        date:          date,
+        exercise_name: exerciseName,
+        weight:        weight  ? parseFloat(weight) : null,
+        reps:          reps    ? parseInt(reps)     : null,
+        sets:          sets    ? parseInt(sets)     : null,
+        notes:         notes   || null,
+      })
+      .select()
+      .single()
+    return { data, error }
+  }
+
+  // Coach: update any exercise log entry (weight, reps, sets, notes, name)
+  async function updateExerciseLog(logId, updates) {
+    const { data, error } = await supabase
+      .from('exercise_logs')
+      .update(updates)
+      .eq('id', logId)
+      .select()
+      .single()
+    return { data, error }
+  }
+
   // Messaging
   async function fetchMessages(otherUserId) {
     if (!otherUserId || !session?.user.id) return { data: null, error: null }
@@ -335,6 +364,8 @@ export function AuthProvider({ children }) {
       fetchMessages,
       sendMessage,
       markMessagesAsRead,
+      addExerciseLogForClient,
+      updateExerciseLog,
     }}>
       {children}
     </AuthContext.Provider>

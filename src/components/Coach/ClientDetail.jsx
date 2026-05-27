@@ -29,11 +29,10 @@ function TrashIcon() {
 }
 
 export default function ClientDetail({ client: initialClient, onBack, onDelete }) {
-  const { updateClientProfile, deleteClientProfile, fetchClientFullStats, fetchExerciseLogs } = useAuth()
+  const { updateClientProfile, deleteClientProfile, fetchClientFullStats } = useAuth()
   const [client, setClient] = useState(initialClient)
   const [tab, setTab] = useState('progress')
   const [stats, setStats] = useState(null)
-  const [exerciseLogs, setExerciseLogs] = useState([])
   const [macros, setMacros] = useState({
     calories: initialClient.calories ?? 2450,
     protein:  initialClient.protein  ?? 180,
@@ -56,9 +55,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   const [deleteError, setDeleteError] = useState(null)
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10)
     fetchClientFullStats(client.id).then(setStats)
-    fetchExerciseLogs(client.id, today).then(({ data }) => setExerciseLogs(data || []))
   }, [client.id])
 
   async function saveMacros() {
@@ -216,7 +213,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
       <div className={styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
-        {tab === 'lifts' && <LiftsTab logs={exerciseLogs} />}
+        {tab === 'lifts' && <LiftsTab clientId={client.id} />}
         {tab === 'plan' && (
           <TrainingEditor
             initialPlan={client.training_plan}
@@ -638,26 +635,331 @@ function NutritionTab({ client }) {
 
 // ─── Lifts Tab ───────────────────────────────────────────────────────────
 
-function LiftsTab({ logs }) {
+function LiftsTab({ clientId }) {
+  const { addExerciseLogForClient, updateExerciseLog, removeExerciseLog } = useAuth()
+  const [subTab,       setSubTab]       = useState('log')
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [logs,         setLogs]         = useState([])
+  const [loading,      setLoading]      = useState(false)
+  const [showAdd,      setShowAdd]      = useState(false)
+  const [newEntry,     setNewEntry]     = useState({ name: '', weight: '', reps: '', sets: '', notes: '' })
+  const [adding,       setAdding]       = useState(false)
+  const [editingId,    setEditingId]    = useState(null)
+  const [draft,        setDraft]        = useState({})
+  // progression
+  const [allLogs,      setAllLogs]      = useState(null)
+  const [selectedEx,   setSelectedEx]   = useState(null)
+
+  // Fetch diary logs for selected date
+  useEffect(() => {
+    if (subTab !== 'log') return
+    setLoading(true)
+    supabase.from('exercise_logs').select('*')
+      .eq('user_id', clientId).eq('date', selectedDate).order('created_at')
+      .then(({ data }) => { setLogs(data || []); setLoading(false) })
+  }, [clientId, selectedDate, subTab])
+
+  // Fetch all logs for progression (lazy, cached until invalidated)
+  useEffect(() => {
+    if (subTab !== 'progression') return
+    if (allLogs !== null) return
+    supabase.from('exercise_logs')
+      .select('exercise_name, date, weight, reps, sets')
+      .eq('user_id', clientId)
+      .order('date', { ascending: true })
+      .then(({ data }) => {
+        const d = data || []
+        setAllLogs(d)
+        if (d.length > 0 && !selectedEx) {
+          const names = [...new Set(d.map(r => r.exercise_name))].sort()
+          setSelectedEx(names[0])
+        }
+      })
+  }, [subTab, clientId, allLogs, selectedEx])
+
+  function invalidateAll() {
+    setAllLogs(null)
+  }
+
+  async function handleAdd() {
+    if (!newEntry.name.trim()) return
+    setAdding(true)
+    const { data } = await addExerciseLogForClient(
+      clientId, newEntry.name.trim(),
+      newEntry.weight, newEntry.reps, newEntry.sets, newEntry.notes,
+      selectedDate
+    )
+    if (data) {
+      setLogs(prev => [...prev, data])
+      setNewEntry({ name: '', weight: '', reps: '', sets: '', notes: '' })
+      setShowAdd(false)
+      invalidateAll()
+    }
+    setAdding(false)
+  }
+
+  function startEdit(log) {
+    setEditingId(log.id)
+    setDraft({
+      name:   log.exercise_name,
+      weight: String(log.weight ?? ''),
+      reps:   String(log.reps   ?? ''),
+      sets:   String(log.sets   ?? ''),
+      notes:  log.notes ?? '',
+    })
+  }
+
+  async function saveEdit(id) {
+    const updates = {
+      exercise_name: draft.name.trim(),
+      weight: draft.weight ? parseFloat(draft.weight) : null,
+      reps:   draft.reps   ? parseInt(draft.reps)     : null,
+      sets:   draft.sets   ? parseInt(draft.sets)     : null,
+      notes:  draft.notes.trim() || null,
+    }
+    const { data } = await updateExerciseLog(id, updates)
+    if (data) {
+      setLogs(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l))
+      invalidateAll()
+    }
+    setEditingId(null)
+  }
+
+  async function handleDelete(id) {
+    await removeExerciseLog(id)
+    setLogs(prev => prev.filter(l => l.id !== id))
+    invalidateAll()
+  }
+
+  const exNames   = allLogs ? [...new Set(allLogs.map(r => r.exercise_name))].sort() : []
+  const exHistory = selectedEx && allLogs ? allLogs.filter(r => r.exercise_name === selectedEx) : []
+
   return (
     <div className={styles.liftsTab}>
-      {logs.length === 0 ? (
-        <p className={styles.empty}>Няма логирани упражнения</p>
-      ) : (
-        <div className={styles.liftList}>
-          {logs.map(log => (
-            <div key={log.id} className={styles.liftEntry}>
-              <div className={styles.liftName}>{log.exercise_name}</div>
-              <div className={styles.liftStats}>
-                <span>{log.weight ? `${log.weight} kg` : '—'}</span>
-                <span>{log.reps ? `${log.reps} × ${log.sets || 1}` : '—'}</span>
+
+      {/* Sub-tab toggle */}
+      <div className={styles.liftsSubTabs}>
+        <button
+          className={`${styles.liftsSubTab} ${subTab === 'log' ? styles.liftsSubTabActive : ''}`}
+          onClick={() => setSubTab('log')} type="button"
+        >ДНЕВНИК</button>
+        <button
+          className={`${styles.liftsSubTab} ${subTab === 'progression' ? styles.liftsSubTabActive : ''}`}
+          onClick={() => setSubTab('progression')} type="button"
+        >ПРОГРЕСИЯ</button>
+      </div>
+
+      {/* ── DIARY view ── */}
+      {subTab === 'log' && (
+        <>
+          <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
+
+          {showAdd ? (
+            <div className={styles.addFoodForm}>
+              <input
+                className={styles.addFoodName}
+                type="text"
+                placeholder="Упражнение *"
+                autoFocus
+                value={newEntry.name}
+                onChange={e => setNewEntry(p => ({ ...p, name: e.target.value }))}
+              />
+              <div className={styles.liftAddGrid}>
+                {[
+                  { key: 'weight', label: 'Кг',     step: '0.5' },
+                  { key: 'reps',   label: 'Повт.',   step: '1'   },
+                  { key: 'sets',   label: 'Серии',   step: '1'   },
+                ].map(({ key, label, step }) => (
+                  <div key={key} className={styles.addFoodField}>
+                    <label className={styles.addFoodLabel}>{label}</label>
+                    <input
+                      className={styles.addFoodInput}
+                      type="number" min="0" step={step} placeholder="—"
+                      value={newEntry[key]}
+                      onChange={e => setNewEntry(p => ({ ...p, [key]: e.target.value }))}
+                    />
+                  </div>
+                ))}
               </div>
-              {log.notes && <p className={styles.liftNotes}>{log.notes}</p>}
+              <input
+                className={styles.addFoodName}
+                type="text"
+                placeholder="Бележки (по избор)"
+                value={newEntry.notes}
+                onChange={e => setNewEntry(p => ({ ...p, notes: e.target.value }))}
+              />
+              <div className={styles.addFoodActions}>
+                <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">Отказ</button>
+                <button
+                  className={styles.addFoodSubmit}
+                  onClick={handleAdd}
+                  disabled={adding || !newEntry.name.trim()}
+                  type="button"
+                >
+                  {adding ? 'Добавя...' : '+ Добави'}
+                </button>
+              </div>
             </div>
-          ))}
+          ) : (
+            <button className={styles.addFoodBtn} onClick={() => setShowAdd(true)} type="button">
+              + Добави упражнение
+            </button>
+          )}
+
+          {loading ? (
+            <p className={styles.loading}>Зарежда...</p>
+          ) : logs.length === 0 ? (
+            <p className={styles.empty}>Няма логирани упражнения за тази дата</p>
+          ) : (
+            <div className={styles.liftList}>
+              {logs.map(log =>
+                editingId === log.id ? (
+                  <div key={log.id} className={`${styles.logEntry} ${styles.logEntryEditing}`}>
+                    <input
+                      className={styles.logEditName}
+                      type="text"
+                      value={draft.name}
+                      onChange={e => setDraft(p => ({ ...p, name: e.target.value }))}
+                    />
+                    <div className={styles.liftEditGrid}>
+                      {[
+                        { key: 'weight', label: 'Кг',   step: '0.5' },
+                        { key: 'reps',   label: 'Повт.', step: '1'   },
+                        { key: 'sets',   label: 'Серии', step: '1'   },
+                      ].map(({ key, label, step }) => (
+                        <div key={key} className={styles.logEditField}>
+                          <label className={styles.logEditLabel}>{label}</label>
+                          <input className={styles.logEditInput}
+                            type="number" min="0" step={step}
+                            value={draft[key]}
+                            onChange={e => setDraft(p => ({ ...p, [key]: e.target.value }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <input
+                      className={`${styles.logEditInput} ${styles.liftNotesInput}`}
+                      type="text" placeholder="Бележки"
+                      value={draft.notes}
+                      onChange={e => setDraft(p => ({ ...p, notes: e.target.value }))}
+                    />
+                    <div className={styles.logEditActions}>
+                      <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">Отказ</button>
+                      <button className={styles.logEditSave} onClick={() => saveEdit(log.id)} type="button">Запази</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={log.id} className={`${styles.liftEntry} ${styles.liftEntryRow}`}>
+                    <div className={styles.liftInfo}>
+                      <span className={styles.liftName}>{log.exercise_name}</span>
+                      <span className={styles.liftStats}>
+                        {log.weight != null && <span className={styles.liftKg}>{log.weight} кг</span>}
+                        {log.reps && <span>{log.sets || 1} × {log.reps}</span>}
+                        {log.notes && <span className={styles.liftNoteInline}>{log.notes}</span>}
+                      </span>
+                    </div>
+                    <div className={styles.logEntryActions}>
+                      <button className={styles.logEditBtn} onClick={() => startEdit(log)} type="button" aria-label="Редактирай">✎</button>
+                      <button className={styles.logDeleteBtn} onClick={() => handleDelete(log.id)} type="button" aria-label="Изтрий">×</button>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── PROGRESSION view ── */}
+      {subTab === 'progression' && (
+        <div className={styles.progressionWrap}>
+          {allLogs === null ? (
+            <p className={styles.loading}>Зарежда...</p>
+          ) : exNames.length === 0 ? (
+            <p className={styles.empty}>Няма записани упражнения</p>
+          ) : (
+            <>
+              <div className={styles.exPicker}>
+                {exNames.map(name => (
+                  <button
+                    key={name}
+                    className={`${styles.exPickerChip} ${selectedEx === name ? styles.exPickerChipActive : ''}`}
+                    onClick={() => setSelectedEx(name)}
+                    type="button"
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+
+              {selectedEx && exHistory.length > 0 && (
+                <div className={styles.exHistoryWrap}>
+                  {exHistory.filter(r => r.weight != null).length > 1 && (
+                    <LiftProgressChart data={exHistory} />
+                  )}
+                  <div className={styles.exHistoryTable}>
+                    <div className={styles.exHistoryHeader}>
+                      <span>Дата</span>
+                      <span>Кг</span>
+                      <span>Серии × Повт.</span>
+                    </div>
+                    {[...exHistory].reverse().map((row, i) => (
+                      <div key={i} className={styles.exHistoryRow}>
+                        <span className={styles.exHistoryDate}>
+                          {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+                        </span>
+                        <span className={styles.exHistoryKg}>
+                          {row.weight != null ? `${row.weight} кг` : '—'}
+                        </span>
+                        <span>{row.sets && row.reps ? `${row.sets} × ${row.reps}` : '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>
+  )
+}
+
+// Simple weight-over-time sparkline for the progression view
+function LiftProgressChart({ data }) {
+  const pts = data
+    .filter(r => r.weight != null)
+    .map(r => ({ w: parseFloat(r.weight) }))
+  if (pts.length < 2) return null
+
+  const W = 280, H = 72
+  const pad = { l: 30, r: 8, t: 8, b: 8 }
+  const iW = W - pad.l - pad.r
+  const iH = H - pad.t - pad.b
+  const minW = Math.min(...pts.map(p => p.w))
+  const maxW = Math.max(...pts.map(p => p.w))
+  const rng  = maxW - minW || 1
+
+  const xs = pts.map((_, i) => pad.l + (i / (pts.length - 1)) * iW)
+  const ys = pts.map(p  => pad.t + iH - ((p.w - minW) / rng) * iH)
+  const poly = pts.map((_, i) => `${xs[i].toFixed(1)},${ys[i].toFixed(1)}`).join(' ')
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className={styles.liftSparkline} aria-hidden="true">
+      <polyline
+        points={poly}
+        fill="none"
+        stroke="var(--accent)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {pts.map((p, i) => (
+        <circle key={i} cx={xs[i]} cy={ys[i]} r="3" fill="var(--accent)" />
+      ))}
+      <text x={pad.l - 4} y={pad.t + 7}  textAnchor="end" fill="var(--muted)" fontSize="9">{maxW}</text>
+      <text x={pad.l - 4} y={pad.t + iH} textAnchor="end" fill="var(--muted)" fontSize="9">{minW}</text>
+    </svg>
   )
 }
 
