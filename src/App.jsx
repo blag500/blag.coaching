@@ -16,7 +16,6 @@ import PendingApproval from './components/Auth/PendingApproval'
 import PlanSelector from './components/Auth/PlanSelector'
 import ContactForm from './components/Auth/ContactForm'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
-import SetupProfile from './components/Auth/SetupProfile'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import Recovery from './pages/Recovery'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
@@ -29,7 +28,6 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('nutrition')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
-  const [showSetup,   setShowSetup]   = useState(() => !localStorage.getItem('blag_setup_done'))
   const hiddenAtRef = useRef(null)
 
   usePushNotifications()
@@ -94,15 +92,9 @@ function AppShell() {
     setShowWelcome(false)
   }
 
-  function dismissSetup() {
-    localStorage.setItem('blag_setup_done', '1')
-    setShowSetup(false)
-  }
-
   return (
     <div className={styles.shell}>
       {!isCoach && showWelcome && <WelcomeOverlay onDone={dismissWelcome} />}
-      {!isCoach && !showWelcome && showSetup && <SetupProfile onDone={dismissSetup} />}
       <NavDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}

@@ -8,6 +8,7 @@ export default function Chat({ clientId, clientName, onClose }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
+  const [sendError, setSendError] = useState(null)
   const messagesEndRef = useRef(null)
   const isCoach = profile?.role === 'coach'
   const otherUserId = isCoach ? clientId : profile?.coach_id
@@ -78,9 +79,14 @@ export default function Chat({ clientId, clientName, onClose }) {
 
   async function handleSend() {
     if (!input.trim() || !otherUserId) return
+    const text = input.trim()
     setInput('')
-    const { data, error } = await sendMessage(otherUserId, input.trim())
-    if (!error && data) {
+    setSendError(null)
+    const { data, error } = await sendMessage(otherUserId, text)
+    if (error || !data) {
+      setInput(text)        // restore so user doesn't lose their message
+      setSendError('Грешка при изпращане — опитай отново')
+    } else {
       setMessages(prev => [...prev, data])
     }
   }
@@ -97,6 +103,8 @@ export default function Chat({ clientId, clientName, onClose }) {
       <div className={styles.messages}>
         {loading ? (
           <p className={styles.loading}>Зарежда...</p>
+        ) : !otherUserId ? (
+          <p className={styles.empty}>Не е намерен треньор — опресни приложението</p>
         ) : messages.length === 0 ? (
           <p className={styles.empty}>Няма съобщения</p>
         ) : (
@@ -115,19 +123,22 @@ export default function Chat({ clientId, clientName, onClose }) {
         <div ref={messagesEndRef} />
       </div>
 
+      {sendError && (
+        <p className={styles.sendError}>{sendError}</p>
+      )}
       <div className={styles.input}>
         <input
           className={styles.field}
           type="text"
           placeholder="Напиши съобщение..."
           value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyPress={e => e.key === 'Enter' && handleSend()}
+          onChange={e => { setInput(e.target.value); if (sendError) setSendError(null) }}
+          onKeyDown={e => e.key === 'Enter' && handleSend()}
         />
         <button
           className={styles.send}
           onClick={handleSend}
-          disabled={!input.trim()}
+          disabled={!input.trim() || !otherUserId}
           type="button"
         >
           ›
