@@ -17,6 +17,7 @@ import PlanSelector from './components/Auth/PlanSelector'
 import ContactForm from './components/Auth/ContactForm'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
+import LearnPage from './components/Learn/LearnPage'
 import Recovery from './pages/Recovery'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import { usePushNotifications } from './hooks/usePushNotifications'
@@ -85,6 +86,7 @@ function AppShell() {
     clients:    <CoachPanel />,
     explore:    <Explore />,
     calendar:   <TrainingCalendar />,
+    learn:      <LearnPage />,
   }
 
   function dismissWelcome() {

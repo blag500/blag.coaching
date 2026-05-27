@@ -55,6 +55,12 @@ const RecoveryIcon = () => (
     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" />
   </svg>
 )
+const LearnIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+  </svg>
+)
 
 const CLIENT_TABS = [
   { id: 'nutrition',  label: 'NUTRITION',       Icon: NutritionIcon },
@@ -64,6 +70,7 @@ const CLIENT_TABS = [
   { id: 'calendar',   label: 'ГРАФИК',          Icon: CalendarIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',          Icon: ProfileIcon   },
   { id: 'explore',    label: 'ОТКРИЙ',          Icon: ExploreIcon   },
+  { id: 'learn',      label: 'ЗНАНИЯ',          Icon: LearnIcon     },
 ]
 
 const COACH_TABS = [
@@ -75,6 +82,7 @@ const COACH_TABS = [
   { id: 'calendar',   label: 'ГРАФИК',         Icon: CalendarIcon  },
   { id: 'profile',    label: 'ПРОФИЛ',         Icon: ProfileIcon   },
   { id: 'explore',    label: 'ОТКРИЙ',         Icon: ExploreIcon   },
+  { id: 'learn',      label: 'ЗНАНИЯ',         Icon: LearnIcon     },
 ]
 
 export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {

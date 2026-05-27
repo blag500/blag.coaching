@@ -1,0 +1,377 @@
+/* ============================================================
+   LearnPage — science quiz card deck
+   ============================================================ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0 0 6rem;
+  background: var(--bg);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.25rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.scoreCorrect { color: #66BB6A; }
+.scoreSep     { color: var(--muted); }
+.scoreWrong   { color: #ef5350; }
+
+/* ── Progress bar ── */
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 1.25rem 1rem;
+  flex-shrink: 0;
+}
+
+.progressBar {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.35s ease;
+}
+
+.progressLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Deck area ── */
+.deckArea {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 1rem;
+}
+
+/* Ghost card peeking behind */
+.cardBehind {
+  position: absolute;
+  top: 6px;
+  left: calc(1rem + 6px);
+  right: calc(1rem + 6px);
+  bottom: -6px;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 183, 77, 0.08);
+  border-radius: 18px;
+  transform: scale(0.97);
+  opacity: 0.5;
+}
+
+/* Main card */
+.card {
+  position: relative;
+  width: 100%;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 183, 77, 0.15);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  touch-action: pan-y;
+  cursor: default;
+  overflow: hidden;
+}
+
+@keyframes exitLeft {
+  from { transform: translateX(0) rotate(0deg); opacity: 1; }
+  to   { transform: translateX(-110vw) rotate(-18deg); opacity: 0; }
+}
+
+.cardExit {
+  animation: exitLeft 0.31s ease-in forwards;
+}
+
+/* ── Category badge ── */
+.categoryBadge {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+  margin-bottom: 0.9rem;
+}
+
+/* ── Question ── */
+.question {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0 0 1.1rem;
+}
+
+/* ── Options ── */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: var(--surface-2);
+  border: 1px solid rgba(255, 183, 77, 0.1);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.option:not(:disabled):active {
+  background: rgba(255, 183, 77, 0.08);
+}
+
+.optLetter {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 18px;
+  letter-spacing: 0.05em;
+}
+
+.optText {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Answer state variants */
+.optCorrect {
+  background: rgba(102, 187, 106, 0.15);
+  border-color: #66BB6A;
+  color: #66BB6A;
+}
+
+.optCorrect .optLetter { color: #66BB6A; }
+
+.optWrong {
+  background: rgba(239, 83, 80, 0.12);
+  border-color: #ef5350;
+  color: #ef5350;
+}
+
+.optWrong .optLetter { color: #ef5350; }
+
+.optDim {
+  opacity: 0.35;
+}
+
+/* ── Explanation panel ── */
+@keyframes explainIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.explain {
+  margin-top: 1rem;
+  border-radius: 12px;
+  padding: 0.95rem 1rem;
+  animation: explainIn 0.25s ease;
+  border: 1px solid;
+}
+
+.explainOk {
+  background: rgba(102, 187, 106, 0.1);
+  border-color: rgba(102, 187, 106, 0.3);
+}
+
+.explainFail {
+  background: rgba(239, 83, 80, 0.08);
+  border-color: rgba(239, 83, 80, 0.25);
+}
+
+.explainVerdict {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  margin: 0 0 6px;
+}
+
+.explainOk  .explainVerdict { color: #66BB6A; }
+.explainFail .explainVerdict { color: #ef5350; }
+
+.explainText {
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0 0 0.8rem;
+  opacity: 0.9;
+}
+
+.nextBtn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.nextBtn:active { opacity: 0.8; }
+
+/* ── Swipe hint ── */
+.swipeHint {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  padding: 0.6rem 1rem 0;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Summary screen
+   ============================================================ */
+.summaryCard {
+  margin: 1.5rem 1rem 0;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 183, 77, 0.15);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.summaryScore {
+  font-family: var(--font-heading);
+  font-size: 5rem;
+  line-height: 1;
+  color: var(--accent);
+  margin: 0 0 4px;
+}
+
+.summaryTotal {
+  font-size: 2.4rem;
+  color: var(--muted);
+}
+
+.summaryPct {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 0.6rem;
+}
+
+.summaryMsg {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  margin: 0 0 1.2rem;
+  line-height: 1.5;
+}
+
+.summaryBar {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.summaryFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #81C784);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.summaryBreakdown {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.8rem;
+}
+
+.summaryBItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.summaryBVal {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--text);
+}
+
+.summaryBLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.restartBtn {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.restartBtn:active { opacity: 0.8; }
