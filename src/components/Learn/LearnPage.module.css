@@ -375,3 +375,230 @@
 }
 
 .restartBtn:active { opacity: 0.8; }
+
+/* ============================================================
+   Loading spinner
+   ============================================================ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255, 183, 77, 0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 3rem auto 0;
+}
+
+/* ============================================================
+   History view
+   ============================================================ */
+
+/* Streak badge */
+.streakBadge {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--accent);
+  background: rgba(255, 183, 77, 0.1);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 20px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* Today card */
+.todayCard {
+  margin: 0 1rem 1.25rem;
+  background: var(--surface-1);
+  border: 1px solid rgba(255, 183, 77, 0.18);
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.todayLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+
+.todayScore {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--accent);
+  margin: 0 0 4px;
+}
+
+.todayTotal {
+  font-size: 1.5rem;
+  color: var(--muted);
+}
+
+.todayPctText {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Conic-gradient ring */
+.todayRing {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.todayRingInner {
+  position: absolute;
+  inset: 8px;
+  background: var(--surface-1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todayPctNum {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.noResultText {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Sections */
+.sectionWrap {
+  margin: 0 1rem 1.5rem;
+}
+
+.sectionLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0 0 0.65rem;
+}
+
+/* Calendar */
+.calDowRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.calDow {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0.6;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calCell,
+.calCellEmpty {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calCellEmpty {
+  background: transparent;
+}
+
+.calCellToday {
+  border: 1px solid rgba(255, 183, 77, 0.45);
+}
+
+.calDot {
+  width: 55%;
+  height: 55%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.calDotGreen  { background: #66BB6A; }
+.calDotYellow { background: #FFA726; }
+.calDotRed    { background: #ef5350; }
+
+.calLegend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.legendDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendText {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Pass rate chart */
+.passChart {
+  display: block;
+  overflow: visible;
+}
+
+/* Replay button */
+.replayWrap {
+  padding: 0 1rem 1.5rem;
+}
+
+.replayBtn {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.replayBtn:active { opacity: 0.8; }

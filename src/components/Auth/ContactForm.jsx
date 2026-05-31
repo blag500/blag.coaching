@@ -99,7 +99,7 @@ export default function ContactForm() {
               <button
                 key={t.id}
                 type="button"
-                className={`${styles.callChip} ${!customMode && callPreset === t.id ? styles.chipActive : ''}`}
+                className={`${styles.callChip} ${!customMode && callPreset === t.id ? styles.callChipActive : ''}`}
                 onClick={() => { setCustomMode(false); setCallPreset(prev => prev === t.id ? null : t.id) }}
               >
                 <span className={styles.callChipLabel}>{t.label}</span>
@@ -108,7 +108,7 @@ export default function ContactForm() {
             ))}
             <button
               type="button"
-              className={`${styles.callChip} ${styles.callChipCustom} ${customMode ? styles.chipActive : ''}`}
+              className={`${styles.callChip} ${styles.callChipCustom} ${customMode ? styles.callChipActive : ''}`}
               onClick={() => setCustomMode(m => !m)}
             >
               <span className={styles.callChipLabel}>Конкретен час</span>

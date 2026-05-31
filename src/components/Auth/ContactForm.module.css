@@ -139,6 +139,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.callChipActive {
+  background: rgba(255, 183, 77, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .callChipCustom {
   grid-column: 1 / -1;
 }
