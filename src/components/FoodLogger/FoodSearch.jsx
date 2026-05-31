@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { suggestMacros } from '../../utils/usda'
-import BarcodeScanner from './BarcodeScanner'
 import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
 import styles from './FoodSearch.module.css'
@@ -82,7 +81,6 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
   const [error, setError]           = useState(null)
   const [result, setResult]         = useState(null)
   const [grams, setGrams]           = useState('100')
-  const [scanning, setScanning]     = useState(false)
   const addPanelRef  = useRef(null)
   const photoInputRef = useRef(null)
 
@@ -151,13 +149,6 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
     }
   }
 
-  function handleBarcodeFound(food) {
-    setScanning(false)
-    setResult({ name: food.name, per100g: food.per100g, typical_grams: 100 })
-    setGrams('100')
-    setQuery('')
-  }
-
   async function handleAdd() {
     const g = parseFloat(grams)
     if (!g || g <= 0 || !result) return
@@ -180,10 +171,6 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
 
   return (
     <>
-      {scanning && (
-        <BarcodeScanner onFound={handleBarcodeFound} onClose={() => setScanning(false)} />
-      )}
-
       <div className={styles.inputWrap}>
         <span className={styles.searchIcon} aria-hidden="true">✨</span>
         <input
@@ -195,10 +182,8 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
           placeholder="Опиши ястие или съставка..."
           aria-label="AI търсене на макроси"
         />
-        {query ? (
+        {query && (
           <button className={styles.clear} onClick={() => { setQuery(''); setResult(null); setError(null) }} aria-label="Изчисти">×</button>
-        ) : (
-          <button className={styles.scanBtn} onClick={() => setScanning(true)} aria-label="Баркод" title="Скенирай баркод">📷</button>
         )}
       </div>
 

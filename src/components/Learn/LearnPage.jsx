@@ -5,6 +5,8 @@ import { LEARN_CARDS } from '../../data/learnCards'
 import styles from './LearnPage.module.css'
 
 // ── Helpers ───────────────────────────────────────────────────
+const QUIZ_SIZE = 10  // cards per session
+
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -138,11 +140,11 @@ function LearnDeck({ savedProgress, onComplete }) {
   const cardMap = Object.fromEntries(LEARN_CARDS.map(c => [c.id, c]))
 
   const [cards] = useState(() => {
-    if (savedProgress?.cardIds?.length === LEARN_CARDS.length) {
+    if (savedProgress?.cardIds?.length === QUIZ_SIZE) {
       const restored = savedProgress.cardIds.map(id => cardMap[id]).filter(Boolean)
-      if (restored.length === LEARN_CARDS.length) return restored
+      if (restored.length === QUIZ_SIZE) return restored
     }
-    return shuffle([...LEARN_CARDS])
+    return shuffle([...LEARN_CARDS]).slice(0, QUIZ_SIZE)
   })
 
   const startIndex   = Math.min(savedProgress?.index ?? 0, cards.length - 1)
