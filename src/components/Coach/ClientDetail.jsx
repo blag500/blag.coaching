@@ -664,7 +664,7 @@ function LiftsTab({ clientId }) {
     if (subTab !== 'progression') return
     if (allLogs !== null) return
     supabase.from('exercise_logs')
-      .select('exercise_name, date, weight, reps, sets')
+      .select('id, exercise_name, date, weight, reps, sets, notes')
       .eq('user_id', clientId)
       .order('date', { ascending: true })
       .then(({ data }) => {
@@ -679,6 +679,19 @@ function LiftsTab({ clientId }) {
 
   function invalidateAll() {
     setAllLogs(null)
+  }
+
+  // Progression: inline edit/delete without full re-fetch
+  async function handleProgDelete(logId) {
+    await removeExerciseLog(logId)
+    setAllLogs(prev => prev ? prev.filter(l => l.id !== logId) : null)
+  }
+
+  async function handleProgUpdate(logId, updates) {
+    const { data } = await updateExerciseLog(logId, updates)
+    if (data) {
+      setAllLogs(prev => prev ? prev.map(l => l.id === logId ? { ...l, ...updates } : l) : null)
+    }
   }
 
   async function handleAdd() {
@@ -897,29 +910,97 @@ function LiftsTab({ clientId }) {
                   {exHistory.filter(r => r.weight != null).length > 1 && (
                     <LiftProgressChart data={exHistory} />
                   )}
-                  <div className={styles.exHistoryTable}>
-                    <div className={styles.exHistoryHeader}>
-                      <span>Дата</span>
-                      <span>Кг</span>
-                      <span>Серии × Повт.</span>
-                    </div>
-                    {[...exHistory].reverse().map((row, i) => (
-                      <div key={i} className={styles.exHistoryRow}>
-                        <span className={styles.exHistoryDate}>
-                          {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
-                        </span>
-                        <span className={styles.exHistoryKg}>
-                          {row.weight != null ? `${row.weight} кг` : '—'}
-                        </span>
-                        <span>{row.sets && row.reps ? `${row.sets} × ${row.reps}` : '—'}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <ProgHistoryTable
+                    rows={[...exHistory].reverse()}
+                    onDelete={handleProgDelete}
+                    onUpdate={handleProgUpdate}
+                  />
                 </div>
               )}
             </>
           )}
         </div>
+      )}
+    </div>
+  )
+}
+
+// Editable progression history table for the coach view
+function ProgHistoryTable({ rows, onDelete, onUpdate }) {
+  const [editId, setEditId] = useState(null)
+  const [draft,  setDraft]  = useState({})
+  const [saving, setSaving] = useState(false)
+
+  function startEdit(row) {
+    setEditId(row.id)
+    setDraft({
+      weight: String(row.weight ?? ''),
+      reps:   String(row.reps   ?? ''),
+      sets:   String(row.sets   ?? ''),
+      notes:  row.notes || '',
+    })
+  }
+
+  async function saveEdit() {
+    setSaving(true)
+    const updates = {
+      weight: draft.weight ? parseFloat(draft.weight) : null,
+      reps:   draft.reps   ? parseInt(draft.reps)     : null,
+      sets:   draft.sets   ? parseInt(draft.sets)     : null,
+      notes:  draft.notes.trim() || null,
+    }
+    await onUpdate(editId, updates)
+    setSaving(false)
+    setEditId(null)
+  }
+
+  return (
+    <div className={styles.exHistoryTable}>
+      <div className={styles.exHistoryHeader}>
+        <span>Дата</span>
+        <span>Кг</span>
+        <span>Серии × Повт.</span>
+        <span />
+      </div>
+      {rows.map((row) =>
+        editId === row.id ? (
+          <div key={row.id} className={`${styles.exHistoryRow} ${styles.exHistoryRowEdit}`}>
+            <span className={styles.exHistoryDate}>
+              {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+            </span>
+            <input
+              className={styles.progEditInput}
+              type="number" min="0" step="0.5" placeholder="кг"
+              value={draft.weight}
+              onChange={e => setDraft(p => ({ ...p, weight: e.target.value }))}
+            />
+            <div className={styles.progEditPair}>
+              <input className={styles.progEditInput} type="number" min="0" placeholder="сер."
+                value={draft.sets} onChange={e => setDraft(p => ({ ...p, sets: e.target.value }))} />
+              <span className={styles.progEditSep}>×</span>
+              <input className={styles.progEditInput} type="number" min="0" placeholder="повт."
+                value={draft.reps} onChange={e => setDraft(p => ({ ...p, reps: e.target.value }))} />
+            </div>
+            <div className={styles.progEditActions}>
+              <button className={styles.progSaveBtn} onClick={saveEdit} disabled={saving} type="button">✓</button>
+              <button className={styles.progCancelBtn} onClick={() => setEditId(null)} type="button">✕</button>
+            </div>
+          </div>
+        ) : (
+          <div key={row.id} className={styles.exHistoryRow}>
+            <span className={styles.exHistoryDate}>
+              {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+            </span>
+            <span className={styles.exHistoryKg}>
+              {row.weight != null ? `${row.weight} кг` : '—'}
+            </span>
+            <span>{row.sets && row.reps ? `${row.sets} × ${row.reps}` : '—'}</span>
+            <div className={styles.progEditActions}>
+              <button className={styles.progEditBtn} onClick={() => startEdit(row)} type="button" aria-label="Редактирай">✎</button>
+              <button className={styles.progDeleteBtn} onClick={() => onDelete(row.id)} type="button" aria-label="Изтрий">✕</button>
+            </div>
+          </div>
+        )
       )}
     </div>
   )

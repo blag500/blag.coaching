@@ -7,6 +7,7 @@ import DayCard from './DayCard'
 import LiftLogger from './LiftLogger'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
+import DatePicker from '../DatePicker/DatePicker'
 import styles from './Training.module.css'
 
 // Detect old 7-day format
@@ -140,6 +141,7 @@ export default function Training() {
   const [justMarked, setJustMarked]     = useState(false)
   const [undoEntry, setUndoEntry]       = useState(null) // { id, exerciseName, weight }
   const undoTimerRef                    = useRef(null)
+  const [logDate, setLogDate]           = useState(() => new Date().toISOString().slice(0, 10))
 
   useEffect(() => {
     if (!user) return
@@ -153,8 +155,8 @@ export default function Training() {
 
   const selectedBlock = blocks.find(b => b.id === selectedId) ?? blocks[0]
   const todayStr = new Date().toISOString().slice(0, 10)
-  const alreadyMarkedToday = completions.some(
-    c => c.completed_date === todayStr && c.block_label === selectedBlock?.label
+  const alreadyMarked = completions.some(
+    c => c.completed_date === logDate && c.block_label === selectedBlock?.label
   )
 
   async function handleSavePlan(newBlocks) {
@@ -178,17 +180,17 @@ export default function Training() {
   }
 
   async function handleMarkDone() {
-    if (!user || marking || alreadyMarkedToday) return
+    if (!user || marking || alreadyMarked) return
     setMarking(true)
     const { error } = await supabase
       .from('workout_completions')
       .upsert(
-        { user_id: user.id, block_label: selectedBlock.label, completed_date: todayStr },
+        { user_id: user.id, block_label: selectedBlock.label, completed_date: logDate },
         { onConflict: 'user_id,block_label,completed_date', ignoreDuplicates: true }
       )
     if (!error) {
       setCompletions(prev => [
-        { block_label: selectedBlock.label, completed_date: todayStr },
+        { block_label: selectedBlock.label, completed_date: logDate },
         ...prev,
       ])
       setJustMarked(true)
@@ -266,21 +268,23 @@ export default function Training() {
       {/* Exercise list */}
       {!showProgression && selectedBlock && (
         <div className={styles.blockContent}>
+          <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
+
           <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} />
 
           <button
-            className={`${styles.markDoneBtn} ${alreadyMarkedToday || justMarked ? styles.markDoneDone : ''}`}
+            className={`${styles.markDoneBtn} ${alreadyMarked || justMarked ? styles.markDoneDone : ''}`}
             onClick={handleMarkDone}
-            disabled={marking || alreadyMarkedToday}
+            disabled={marking || alreadyMarked}
             type="button"
           >
-            {alreadyMarkedToday || justMarked
-              ? '✓ Отбелязано за днес!'
+            {alreadyMarked || justMarked
+              ? `✓ Отбелязано${logDate !== todayStr ? ` за ${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}` : ' за днес'}!`
               : marking
               ? '...'
               : selectedBlock.isRest
-              ? '✓ Маркирай почивен ден'
-              : '✓ Маркирай като готово'}
+              ? `✓ Маркирай почивен ден${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`
+              : `✓ Маркирай като готово${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`}
           </button>
         </div>
       )}
@@ -296,6 +300,7 @@ export default function Training() {
       {selectedExercise && createPortal(
         <LiftLogger
           exercise={selectedExercise}
+          date={logDate}
           onClose={() => setSelectedExercise(null)}
           onSaved={handleSaved}
         />,

@@ -300,6 +300,88 @@
 
 .tr:last-child .td { border-bottom: none; }
 
+/* Action column */
+.thAction {
+  composes: th;
+  width: 54px;
+  text-align: right;
+}
+
+.tdAction {
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  white-space: nowrap;
+  text-align: right;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.tr:last-child .tdAction { border-bottom: none; }
+
+.editRowBtn, .deleteRowBtn, .saveRowBtn, .cancelRowBtn {
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.editRowBtn {
+  background: rgba(255, 183, 77, 0.1);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  color: var(--accent);
+}
+.editRowBtn:hover { background: rgba(255, 183, 77, 0.18); }
+
+.deleteRowBtn {
+  background: rgba(239, 83, 80, 0.08);
+  border: 1px solid rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+.deleteRowBtn:hover { background: rgba(239, 83, 80, 0.15); }
+
+.saveRowBtn {
+  background: rgba(102, 187, 106, 0.12);
+  border: 1px solid rgba(102, 187, 106, 0.3);
+  color: #66BB6A;
+}
+.saveRowBtn:disabled { opacity: 0.5; }
+
+.cancelRowBtn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* Inline edit cells */
+.trEdit .td { vertical-align: middle; }
+
+.tdEdit {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+
+.editInput {
+  width: 56px;
+  padding: 4px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 11px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.editInput:focus { border-color: var(--accent); }
+
 /* Shared */
 .noData {
   font-family: var(--font-body);

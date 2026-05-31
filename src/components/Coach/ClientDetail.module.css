@@ -1252,7 +1252,7 @@
 
 .exHistoryHeader {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 2fr;
+  grid-template-columns: 2fr 1.2fr 2fr 54px;
   padding: 8px 12px;
   background: var(--surface-1);
   border-bottom: 1px solid var(--border);
@@ -1264,17 +1264,96 @@
 
 .exHistoryRow {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 2fr;
-  padding: 10px 12px;
+  grid-template-columns: 2fr 1.2fr 2fr 54px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--text);
   align-items: center;
+  gap: 4px;
 }
 
 .exHistoryRow:last-child {
   border-bottom: none;
+}
+
+.exHistoryRowEdit {
+  grid-template-columns: 2fr 1.2fr 2fr 54px;
+  gap: 6px;
+  padding: 6px 10px;
+}
+
+/* Prog table actions */
+.progEditActions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.progEditBtn, .progDeleteBtn, .progSaveBtn, .progCancelBtn {
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.progEditBtn {
+  background: rgba(255, 183, 77, 0.1);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  color: var(--accent);
+}
+
+.progDeleteBtn {
+  background: rgba(239, 83, 80, 0.08);
+  border: 1px solid rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.progSaveBtn {
+  background: rgba(102, 187, 106, 0.12);
+  border: 1px solid rgba(102, 187, 106, 0.3);
+  color: #66BB6A;
+}
+.progSaveBtn:disabled { opacity: 0.5; }
+
+.progCancelBtn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.progEditInput {
+  width: 100%;
+  padding: 4px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 11px;
+  outline: none;
+  -webkit-appearance: none;
+  min-width: 0;
+}
+.progEditInput:focus { border-color: var(--accent); }
+
+.progEditPair {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.progEditSep {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
 }
 
 .exHistoryDate {

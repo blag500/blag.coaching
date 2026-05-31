@@ -84,36 +84,98 @@ function ExerciseChart({ entries }) {
   )
 }
 
-function ExerciseTable({ entries }) {
+// ── Editable table ───────────────────────────────────────────────────────────
+
+function ExerciseTable({ entries, onDelete, onUpdate }) {
+  const [editId, setEditId] = useState(null)
+  const [draft,  setDraft]  = useState({})
+  const [saving, setSaving] = useState(false)
+
+  function startEdit(e) {
+    setEditId(e.id)
+    setDraft({
+      weight: String(e.weight ?? ''),
+      reps:   String(e.reps   ?? ''),
+      sets:   String(e.sets   ?? ''),
+      notes:  e.notes || '',
+    })
+  }
+
+  async function saveEdit() {
+    setSaving(true)
+    const updates = {
+      weight: draft.weight ? parseFloat(draft.weight) : null,
+      reps:   draft.reps   ? parseInt(draft.reps)     : null,
+      sets:   draft.sets   ? parseInt(draft.sets)     : null,
+      notes:  draft.notes.trim() || null,
+    }
+    await onUpdate(editId, updates)
+    setSaving(false)
+    setEditId(null)
+  }
+
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th className={styles.th}>Дата</th>
-          <th className={styles.th}>Тегло</th>
-          <th className={styles.th}>Повт.</th>
-          <th className={styles.th}>Серии</th>
-          <th className={styles.thNotes}>Бележки</th>
-        </tr>
-      </thead>
-      <tbody>
-        {entries.map((e, i) => (
-          <tr key={i} className={`${styles.tr} ${i === 0 ? styles.trLatest : ''}`}>
-            <td className={styles.td}>{e.date}</td>
-            <td className={styles.td}>{e.weight ? `${e.weight}kg` : '—'}</td>
-            <td className={styles.td}>{e.reps ?? '—'}</td>
-            <td className={styles.td}>{e.sets ?? '—'}</td>
-            <td className={`${styles.td} ${styles.tdNotes}`}>{e.notes || '—'}</td>
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th className={styles.th}>Дата</th>
+            <th className={styles.th}>Тегло</th>
+            <th className={styles.th}>Повт.</th>
+            <th className={styles.th}>Серии</th>
+            <th className={styles.thNotes}>Бележки</th>
+            <th className={styles.thAction} />
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {entries.map((e, i) =>
+            editId === e.id ? (
+              <tr key={e.id} className={styles.trEdit}>
+                <td className={styles.td} style={{ whiteSpace: 'nowrap' }}>{e.date?.slice(5)}</td>
+                <td className={styles.tdEdit}>
+                  <input className={styles.editInput} type="number" min="0" step="0.5"
+                    value={draft.weight} onChange={ev => setDraft(p => ({ ...p, weight: ev.target.value }))} />
+                </td>
+                <td className={styles.tdEdit}>
+                  <input className={styles.editInput} type="number" min="0"
+                    value={draft.reps} onChange={ev => setDraft(p => ({ ...p, reps: ev.target.value }))} />
+                </td>
+                <td className={styles.tdEdit}>
+                  <input className={styles.editInput} type="number" min="0"
+                    value={draft.sets} onChange={ev => setDraft(p => ({ ...p, sets: ev.target.value }))} />
+                </td>
+                <td className={styles.tdEdit}>
+                  <input className={styles.editInput} type="text" placeholder="Бележки"
+                    value={draft.notes} onChange={ev => setDraft(p => ({ ...p, notes: ev.target.value }))} />
+                </td>
+                <td className={styles.tdAction}>
+                  <button className={styles.saveRowBtn} onClick={saveEdit} disabled={saving} type="button">✓</button>
+                  <button className={styles.cancelRowBtn} onClick={() => setEditId(null)} type="button">✕</button>
+                </td>
+              </tr>
+            ) : (
+              <tr key={e.id ?? i} className={`${styles.tr} ${i === 0 ? styles.trLatest : ''}`}>
+                <td className={styles.td}>{e.date}</td>
+                <td className={styles.td}>{e.weight ? `${e.weight}kg` : '—'}</td>
+                <td className={styles.td}>{e.reps ?? '—'}</td>
+                <td className={styles.td}>{e.sets ?? '—'}</td>
+                <td className={`${styles.td} ${styles.tdNotes}`}>{e.notes || '—'}</td>
+                <td className={styles.tdAction}>
+                  <button className={styles.editRowBtn} onClick={() => startEdit(e)} type="button" aria-label="Редактирай">✎</button>
+                  <button className={styles.deleteRowBtn} onClick={() => onDelete(e.id)} type="button" aria-label="Изтрий">✕</button>
+                </td>
+              </tr>
+            )
+          )}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
 // ── Level 2: progression for one exercise ────────────────────────────────────
 
-function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel }) {
+function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate }) {
   const [range, setRange] = useState('ALL')
 
   const chronoEntries = useMemo(() => {
@@ -176,7 +238,7 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel }) {
             )}
           </div>
 
-          <div className={styles.tableWrap}><ExerciseTable entries={tableEntries} /></div>
+          <ExerciseTable entries={tableEntries} onDelete={onDelete} onUpdate={onUpdate} />
         </>
       )}
     </div>
@@ -266,7 +328,7 @@ export default function ProgressionView({ onClose, blocks = [] }) {
     if (!user) return
     supabase
       .from('exercise_logs')
-      .select('exercise_name, date, weight, reps, sets, notes')
+      .select('id, exercise_name, date, weight, reps, sets, notes')
       .eq('user_id', user.id)
       .order('date', { ascending: true })
       .then(({ data }) => { if (data) setAllLogsArr(data); setLoading(false) })
@@ -281,6 +343,21 @@ export default function ProgressionView({ onClose, blocks = [] }) {
     return m
   }, [allLogsArr])
 
+  async function handleDelete(id) {
+    await supabase.from('exercise_logs').delete().eq('id', id)
+    setAllLogsArr(prev => prev.filter(l => l.id !== id))
+  }
+
+  async function handleUpdate(id, updates) {
+    const { data } = await supabase
+      .from('exercise_logs')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    if (data) setAllLogsArr(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l))
+  }
+
   if (loading) return <div className={styles.wrap}><p className={styles.noData}>Зарежда...</p></div>
 
   if (selectedBlock && selectedEx) {
@@ -290,6 +367,8 @@ export default function ProgressionView({ onClose, blocks = [] }) {
         allLogs={allLogs}
         blockLabel={selectedBlock.label}
         onBack={() => setSelectedEx(null)}
+        onDelete={handleDelete}
+        onUpdate={handleUpdate}
       />
     )
   }

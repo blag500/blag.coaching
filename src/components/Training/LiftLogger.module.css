@@ -50,6 +50,17 @@
   margin: -6px 0 0;
 }
 
+.dateNote {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid rgba(255, 183, 77, 0.2);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: -6px 0 0;
+}
+
 .fields {
   display: flex;
   flex-direction: column;

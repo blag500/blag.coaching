@@ -42,14 +42,18 @@ function ProgressChart({ entries }) {
   )
 }
 
-export default function LiftLogger({ exercise, onClose, onSaved }) {
+export default function LiftLogger({ exercise, date, onClose, onSaved }) {
   const { user, addExerciseLog } = useAuth()
+  const todayStr   = new Date().toISOString().slice(0, 10)
+  const logDate    = date || todayStr
+  const isPastDate = logDate !== todayStr
+
   const [weight, setWeight] = useState('')
   const [reps, setReps]     = useState('')
   const [sets, setSets]     = useState('')
   const [notes, setNotes]   = useState('')
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved]   = useState(false)
+  const [saved,  setSaved]  = useState(false)
   const [history, setHistory] = useState([])
 
   useEffect(() => {
@@ -67,13 +71,12 @@ export default function LiftLogger({ exercise, onClose, onSaved }) {
   async function handleSave() {
     if (!weight || !reps) return
     setSaving(true)
-    const { data } = await addExerciseLog(exercise.name, weight, reps, sets, notes)
+    const { data } = await addExerciseLog(exercise.name, weight, reps, sets, notes, logDate)
     setSaving(false)
     setSaved(true)
-    const today = new Date().toISOString().slice(0, 10)
     const w = parseFloat(weight)
     setHistory(prev => [
-      { date: today, weight: w, reps: parseInt(reps), sets: parseInt(sets) || null },
+      { date: logDate, weight: w, reps: parseInt(reps), sets: parseInt(sets) || null },
       ...prev,
     ])
     if (data?.id) onSaved?.({ id: data.id, exerciseName: exercise.name, weight: w })
@@ -90,6 +93,11 @@ export default function LiftLogger({ exercise, onClose, onSaved }) {
         <h3 className={styles.title}>{exercise.name}</h3>
         {exercise.sets && (
           <p className={styles.target}>Цел: {exercise.sets} серии × {exercise.reps} повт.</p>
+        )}
+        {isPastDate && (
+          <p className={styles.dateNote}>
+            📅 За {new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
         )}
 
         <div className={styles.fields}>

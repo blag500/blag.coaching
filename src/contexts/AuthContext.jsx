@@ -190,13 +190,13 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
-  async function addExerciseLog(exerciseName, weight, reps, sets, notes) {
-    const today = new Date().toISOString().slice(0, 10)
+  async function addExerciseLog(exerciseName, weight, reps, sets, notes, date) {
+    const logDate = date || new Date().toISOString().slice(0, 10)
     const { data, error } = await supabase
       .from('exercise_logs')
       .insert({
         user_id: session?.user.id,
-        date: today,
+        date: logDate,
         exercise_name: exerciseName,
         weight: weight ? parseFloat(weight) : null,
         reps: reps ? parseInt(reps) : null,
