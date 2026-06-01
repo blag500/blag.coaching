@@ -12,7 +12,8 @@
       "Bash(Get-ChildItem *)",
       "Bash(grep -E \"\\\\.\\(jsx?|css\\)$\")",
       "Bash(copy *)",
-      "PowerShell(Copy-Item *)"
+      "PowerShell(Copy-Item *)",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"fitness coaching mobile PWA dark luxury premium\" --design-system -p \"Blag Coaching\" -f markdown)"
     ]
   }
 }

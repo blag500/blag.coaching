@@ -109,6 +109,9 @@
   color: var(--muted);
   cursor: pointer;
   padding: 0;
+  /* Expand tap area to 44px without changing visual size */
+  margin: -8px;
+  padding: 8px;
   opacity: 0.4;
   transition: opacity 0.15s, border-color 0.15s, color 0.15s;
   -webkit-tap-highlight-color: transparent;
@@ -218,7 +221,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  /* Expand tap area to 44px */
+  padding: 10px;
+  margin: -10px;
 }
 
 .editBtn:active {
@@ -238,7 +243,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  /* Expand tap area to 44px */
+  padding: 10px;
+  margin: -10px;
 }
 
 .removeBtn:hover {

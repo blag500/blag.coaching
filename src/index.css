@@ -48,6 +48,8 @@ button {
   cursor: pointer;
   font-family: var(--font-body);
   -webkit-tap-highlight-color: transparent;
+  /* Base transition ensures the spring-back is also animated, not instant */
+  transition: transform 180ms var(--ease-out), opacity 150ms var(--ease-out);
 }
 
 input, textarea, select {
@@ -58,7 +60,23 @@ input, textarea, select {
 
 button:active, [role="button"]:active {
   transform: scale(0.97);
-  transition: transform 120ms var(--ease-out);
+  transition: transform 80ms var(--ease-out);  /* fast press, slow release */
+}
+
+/* Keyboard / switch-access focus ring — only shows when not using a pointer */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(255, 183, 77, 0.45);
+  outline-offset: 1px;
 }
 
 ::-webkit-scrollbar {

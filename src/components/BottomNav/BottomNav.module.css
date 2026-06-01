@@ -37,8 +37,8 @@
 }
 
 .tab:active {
-  transform: scale(0.84);
-  transition: transform 100ms var(--ease-out);
+  transform: scale(0.88);
+  transition: transform 80ms var(--ease-out);
 }
 
 .tab.active {
