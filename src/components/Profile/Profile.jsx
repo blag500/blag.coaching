@@ -51,6 +51,16 @@ export default function Profile() {
   const [weightRange, setWeightRange] = useState('1M')
   const isCoach = profile?.role === 'coach'
 
+  // Editable macro targets (coach sets their own; clients read-only via profile)
+  const [macros, setMacros] = useState({
+    calories: profile?.calories ?? 2450,
+    protein:  profile?.protein  ?? 180,
+    carbs:    profile?.carbs    ?? 250,
+    fat:      profile?.fat      ?? 70,
+  })
+  const [macrosSaving, setMacrosSaving] = useState(false)
+  const [macrosSaved,  setMacrosSaved]  = useState(false)
+
   useEffect(() => {
     if (profile?.name) setName(profile.name)
   }, [profile?.name])
@@ -177,6 +187,19 @@ export default function Profile() {
     setSavingCoachPlan(false)
   }
 
+  async function handleMacrosSave() {
+    setMacrosSaving(true)
+    await updateProfile({
+      calories: parseInt(macros.calories) || 0,
+      protein:  parseInt(macros.protein)  || 0,
+      carbs:    parseInt(macros.carbs)    || 0,
+      fat:      parseInt(macros.fat)      || 0,
+    })
+    setMacrosSaving(false)
+    setMacrosSaved(true)
+    setTimeout(() => setMacrosSaved(false), 2000)
+  }
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -209,14 +232,57 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* Today's nutrition progress + macro targets */}
+      {/* Macro targets — editable for coach, read-only display for clients */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>
+          {isCoach ? 'МОИТЕ МАКРО ЦЕЛИ' : 'ЦЕЛИ (зададени от треньора)'}
+        </h2>
+        <div className={styles.macroEditGrid}>
+          {[
+            { key: 'calories', label: 'КАЛОРИИ', unit: 'ккал', color: MACRO_COLORS.calories },
+            { key: 'protein',  label: 'ПРОТЕИН',  unit: 'g',    color: MACRO_COLORS.protein  },
+            { key: 'carbs',    label: 'ВЪГЛ.',    unit: 'g',    color: MACRO_COLORS.carbs    },
+            { key: 'fat',      label: 'МАЗНИНИ',  unit: 'g',    color: MACRO_COLORS.fat      },
+          ].map(({ key, label, unit, color }) => (
+            <div key={key} className={styles.macroEditField}>
+              <span className={styles.macroEditLabel} style={{ color }}>{label}</span>
+              {isCoach ? (
+                <input
+                  className={styles.macroEditInput}
+                  type="number"
+                  min="0"
+                  value={macros[key]}
+                  onChange={e => setMacros(prev => ({ ...prev, [key]: e.target.value }))}
+                />
+              ) : (
+                <span className={styles.macroEditValue} style={{ color }}>
+                  {profile?.[key === 'calories' ? 'calories' : key] ?? '—'}
+                </span>
+              )}
+              <span className={styles.macroEditUnit}>{unit}</span>
+            </div>
+          ))}
+        </div>
+        {isCoach && (
+          <button
+            className={`${styles.saveSettingsBtn} ${macrosSaved ? styles.saved : ''}`}
+            onClick={handleMacrosSave}
+            disabled={macrosSaving}
+            type="button"
+          >
+            {macrosSaving ? '...' : macrosSaved ? '✓ Запазено' : 'Запази цели'}
+          </button>
+        )}
+      </section>
+
+      {/* Today's nutrition progress ring */}
       <NutritionProgress
         totals={todayTotals}
         targets={{
-          kcal:    profile?.calories ?? 0,
-          protein: profile?.protein  ?? 0,
-          carbs:   profile?.carbs    ?? 0,
-          fat:     profile?.fat      ?? 0,
+          kcal:    parseInt(macros.calories) || 0,
+          protein: parseInt(macros.protein)  || 0,
+          carbs:   parseInt(macros.carbs)    || 0,
+          fat:     parseInt(macros.fat)      || 0,
         }}
       />
 

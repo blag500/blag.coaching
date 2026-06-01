@@ -130,6 +130,65 @@
   margin-top: 4px;
 }
 
+/* Editable macro targets grid */
+.macroEditGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.macroEditField {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 12px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.macroEditLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.macroEditInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  width: 100%;
+  padding: 2px 0 4px;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.macroEditInput::-webkit-outer-spin-button,
+.macroEditInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.macroEditInput:focus {
+  border-bottom-color: var(--accent);
+}
+
+.macroEditValue {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.macroEditUnit {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
 /* Weight */
 .label {
   display: block;
