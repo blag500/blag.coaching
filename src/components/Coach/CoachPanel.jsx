@@ -5,7 +5,11 @@ import ClientDetail from './ClientDetail'
 import Chat from '../Chat/Chat'
 import styles from './CoachPanel.module.css'
 
-const STATUS_LABELS = { pending: 'ЧАКА', confirmed: 'ПОТВЪРДЕНО' }
+const STATUS_LABELS = {
+  pending:   'ЧАКА',
+  confirmed: 'ПОТВЪРДЕНО',
+  completed: 'ПРОВЕДЕНО',
+}
 
 const MONTHS_SHORT = ['ЯНУ','ФЕВ','МАР','АПР','МАЙ','ЮНИ','ЮЛИ','АВГ','СЕП','ОКТ','НОЕ','ДЕК']
 
@@ -17,17 +21,48 @@ function fmtTime(iso) {
   const d = new Date(iso)
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
+function localNow() {
+  const d = new Date()
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 16)
+}
+
+function SessionCard({ s }) {
+  const clientName = s.client?.name || s.client?.email || '—'
+  return (
+    <div className={`${styles.upcomingCard} ${styles['ucard_' + s.status] || ''}`}>
+      <div className={styles.upcomingDate}>
+        <span className={styles.upcomingDay}>{fmtDay(s.scheduled_at)}</span>
+        <span className={styles.upcomingTime}>{fmtTime(s.scheduled_at)}</span>
+      </div>
+      <div className={styles.upcomingInfo}>
+        <span className={styles.upcomingClient}>{clientName}</span>
+        <span className={styles.upcomingTitle}>{s.title}</span>
+      </div>
+      <span className={`${styles.upcomingBadge} ${styles['ubadge_' + s.status] || ''}`}>
+        {STATUS_LABELS[s.status] ?? s.status}
+      </span>
+    </div>
+  )
+}
 
 export default function CoachPanel() {
-  const { fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, sendMessage } = useAuth()
+  const { user, fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, createTrainingSession, sendMessage } = useAuth()
   const { unreadByUser } = useUnread()
-  const [clients, setClients]           = useState([])
-  const [coaches, setCoaches]           = useState([])
-  const [sessions, setSessions]         = useState([])
-  const [loading, setLoading]           = useState(true)
-  const [approvingId, setApprovingId]   = useState(null)
+
+  const [clients, setClients]               = useState([])
+  const [coaches, setCoaches]               = useState([])
+  const [sessions, setSessions]             = useState([])
+  const [loading, setLoading]               = useState(true)
+  const [approvingId, setApprovingId]       = useState(null)
   const [selectedClient, setSelectedClient] = useState(null)
-  const [chatCoach, setChatCoach]       = useState(null)
+  const [chatCoach, setChatCoach]           = useState(null)
+
+  const [showAddSession, setShowAddSession] = useState(false)
+  const [sessionForm, setSessionForm]       = useState({
+    clientId: '', scheduledAt: '', title: 'Тренировка', duration: '60', notes: '',
+  })
+  const [savingSession, setSavingSession]   = useState(false)
 
   useEffect(() => {
     Promise.all([fetchClients(), fetchCoaches(), fetchTrainingSessions()])
@@ -40,9 +75,10 @@ export default function CoachPanel() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Upcoming: non-completed, within next 7 days
   const upcoming = useMemo(() => {
-    const now     = new Date()
-    const cutoff  = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    const now    = new Date()
+    const cutoff = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
     return sessions
       .filter(s => {
         if (s.status === 'cancelled' || s.status === 'declined' || s.status === 'completed') return false
@@ -51,6 +87,52 @@ export default function CoachPanel() {
       })
       .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
   }, [sessions])
+
+  // Recent completed: past 14 days
+  const recentCompleted = useMemo(() => {
+    const now    = new Date()
+    const cutoff = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+    return sessions
+      .filter(s => {
+        if (s.status !== 'completed') return false
+        const d = new Date(s.scheduled_at)
+        return d >= cutoff && d <= now
+      })
+      .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
+  }, [sessions])
+
+  const approvedClients = useMemo(() => clients.filter(c => !c.plan_pending), [clients])
+
+  function openAddSession() {
+    setSessionForm({
+      clientId:    approvedClients[0]?.id || '',
+      scheduledAt: localNow(),
+      title:       'Тренировка',
+      duration:    '60',
+      notes:       '',
+    })
+    setShowAddSession(true)
+  }
+
+  async function handleAddSession(e) {
+    e.preventDefault()
+    if (!sessionForm.clientId || !sessionForm.scheduledAt) return
+    setSavingSession(true)
+    const scheduledAt = new Date(sessionForm.scheduledAt).toISOString()
+    const isPast      = new Date(scheduledAt) < new Date()
+    const { data, error } = await createTrainingSession({
+      coachId:         user.id,
+      clientId:        sessionForm.clientId,
+      scheduledAt,
+      title:           sessionForm.title || 'Тренировка',
+      notes:           sessionForm.notes || null,
+      durationMinutes: parseInt(sessionForm.duration) || 60,
+      status:          isPast ? 'completed' : 'pending',
+    })
+    if (!error && data) setSessions(prev => [...prev, data])
+    setSavingSession(false)
+    setShowAddSession(false)
+  }
 
   async function handleApprove(clientId) {
     setApprovingId(clientId)
@@ -88,6 +170,8 @@ export default function CoachPanel() {
     )
   }
 
+  const hasSessions = upcoming.length > 0 || recentCompleted.length > 0
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -98,35 +182,41 @@ export default function CoachPanel() {
         </p>
       </header>
 
-      {upcoming.length > 0 && (
+      {/* Sessions section — always shown */}
+      <div className={styles.sessionsHeader}>
+        <span className={styles.sessionsHeaderTitle}>
+          ЗАНЯТИЯ
+          {upcoming.length > 0 && <span className={styles.badge}>{upcoming.length}</span>}
+        </span>
+        <button className={styles.addSessionBtn} onClick={openAddSession} type="button">
+          + НОВО
+        </button>
+      </div>
+
+      {hasSessions ? (
         <>
-          <p className={styles.sectionTitle}>
-            ПРЕДСТОЯЩИ 7 ДНИ
-            <span className={styles.badge}>{upcoming.length}</span>
-          </p>
-          <div className={styles.upcomingList}>
-            {upcoming.map(s => {
-              const clientName = s.client?.name || s.client?.email || '—'
-              return (
-                <div key={s.id} className={`${styles.upcomingCard} ${styles['ucard_' + s.status]}`}>
-                  <div className={styles.upcomingDate}>
-                    <span className={styles.upcomingDay}>{fmtDay(s.scheduled_at)}</span>
-                    <span className={styles.upcomingTime}>{fmtTime(s.scheduled_at)}</span>
-                  </div>
-                  <div className={styles.upcomingInfo}>
-                    <span className={styles.upcomingClient}>{clientName}</span>
-                    <span className={styles.upcomingTitle}>{s.title}</span>
-                  </div>
-                  <span className={`${styles.upcomingBadge} ${styles['ubadge_' + s.status]}`}>
-                    {STATUS_LABELS[s.status] ?? s.status}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+          {upcoming.length > 0 && (
+            <>
+              <p className={styles.sessionsSubLabel}>ПРЕДСТОЯЩИ 7 ДНИ</p>
+              <div className={styles.upcomingList}>
+                {upcoming.map(s => <SessionCard key={s.id} s={s} />)}
+              </div>
+            </>
+          )}
+          {recentCompleted.length > 0 && (
+            <>
+              <p className={styles.sessionsSubLabel}>ПОСЛЕДНИ 14 ДНИ</p>
+              <div className={styles.upcomingList}>
+                {recentCompleted.map(s => <SessionCard key={s.id} s={s} />)}
+              </div>
+            </>
+          )}
         </>
+      ) : (
+        <p className={styles.sessionsEmpty}>Няма занятия</p>
       )}
 
+      {/* Clients list */}
       {(() => {
         const pending  = clients.filter(c => c.plan_pending)
         const approved = clients.filter(c => !c.plan_pending)
@@ -241,6 +331,7 @@ export default function CoachPanel() {
         )
       })()}
 
+      {/* Coaches */}
       {coaches.length > 0 && (
         <>
           <p className={styles.sectionTitle}>КОЛЕГИ</p>
@@ -272,6 +363,85 @@ export default function CoachPanel() {
           clientName={chatCoach.name || chatCoach.email}
           onClose={() => setChatCoach(null)}
         />
+      )}
+
+      {/* Add session modal */}
+      {showAddSession && (
+        <div className={styles.modal} onClick={() => setShowAddSession(false)}>
+          <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+            <div className={styles.handle} />
+            <p className={styles.modalTitle}>НОВО ЗАНЯТИЕ</p>
+            <form className={styles.sessionForm} onSubmit={handleAddSession}>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>КЛИЕНТ</label>
+                <select
+                  className={styles.formSelect}
+                  value={sessionForm.clientId}
+                  onChange={e => setSessionForm(p => ({ ...p, clientId: e.target.value }))}
+                  required
+                >
+                  <option value="">— избери клиент —</option>
+                  {approvedClients.map(c => (
+                    <option key={c.id} value={c.id}>{c.name || c.email}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>ДАТА И ЧАС</label>
+                <input
+                  type="datetime-local"
+                  className={styles.formInput}
+                  value={sessionForm.scheduledAt}
+                  onChange={e => setSessionForm(p => ({ ...p, scheduledAt: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>ЗАГЛАВИЕ</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={sessionForm.title}
+                  onChange={e => setSessionForm(p => ({ ...p, title: e.target.value }))}
+                  placeholder="Тренировка"
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>ВРЕМЕТРАЕНЕ (МИН)</label>
+                <input
+                  type="number"
+                  className={styles.formInput}
+                  value={sessionForm.duration}
+                  onChange={e => setSessionForm(p => ({ ...p, duration: e.target.value }))}
+                  min="1"
+                  max="300"
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>БЕЛЕЖКИ (по избор)</label>
+                <textarea
+                  className={styles.formTextarea}
+                  value={sessionForm.notes}
+                  onChange={e => setSessionForm(p => ({ ...p, notes: e.target.value }))}
+                  rows={2}
+                  placeholder="..."
+                />
+              </div>
+              <div className={styles.formActions}>
+                <button type="button" className={styles.formCancelBtn} onClick={() => setShowAddSession(false)}>
+                  ОТКАЗ
+                </button>
+                <button
+                  type="submit"
+                  className={styles.formSaveBtn}
+                  disabled={savingSession || !sessionForm.clientId || !sessionForm.scheduledAt}
+                >
+                  {savingSession ? '...' : 'ЗАПАЗИ'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )

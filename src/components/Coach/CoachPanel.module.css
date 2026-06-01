@@ -324,3 +324,197 @@
 
 .ubadge_pending   { background: rgba(255,183,77,0.12);  color: var(--accent); }
 .ubadge_confirmed { background: rgba(102,187,106,0.12); color: #66BB6A; }
+.ucard_completed  { border-left-color: var(--muted); opacity: 0.75; }
+.ubadge_completed { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+/* Sessions section header */
+.sessionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 16px 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.sessionsHeaderTitle {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sessionsSubLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 6px 16px 0;
+  opacity: 0.6;
+}
+
+.sessionsEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 16px 4px;
+  opacity: 0.6;
+}
+
+.addSessionBtn {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid rgba(255, 183, 77, 0.2);
+  border-radius: 7px;
+  padding: 5px 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.addSessionBtn:active {
+  background: rgba(255, 183, 77, 0.16);
+}
+
+/* Add session modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modalSheet {
+  width: 100%;
+  background: var(--surface-1);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 20px calc(32px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: slideUpPanel 0.28s ease;
+}
+
+@keyframes slideUpPanel {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0) }
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+.modalTitle {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.sessionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+
+.formInput:focus,
+.formSelect:focus,
+.formTextarea:focus {
+  border-color: var(--accent);
+}
+
+.formTextarea {
+  resize: none;
+  line-height: 1.4;
+}
+
+.formSelect {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.formCancelBtn {
+  flex: 1;
+  padding: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.formSaveBtn {
+  flex: 2;
+  padding: 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.formSaveBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

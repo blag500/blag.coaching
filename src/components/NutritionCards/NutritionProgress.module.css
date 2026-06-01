@@ -2,64 +2,117 @@
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 14px 16px 16px;
   margin-bottom: 20px;
 }
 
 .heading {
+  display: block;
   font-family: var(--font-heading);
   font-size: 11px;
   letter-spacing: 0.2em;
   color: var(--muted);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+}
+
+/* ── Side-by-side layout ─────────────────────── */
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ── Donut column ────────────────────────────── */
+
+.donutCol {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend {
+  display: flex;
+  gap: 10px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legendDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLetter {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+}
+
+/* ── Bars column ─────────────────────────────── */
+
+.barsCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
 }
 
 .row {
-  margin-bottom: 13px;
-}
-
-.row:last-child {
-  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .meta {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 5px;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
 .label {
   font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  letter-spacing: 0.08em;
   color: var(--muted);
+  flex-shrink: 0;
 }
 
 .values {
   font-family: var(--font-heading);
-  font-size: 13px;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  letter-spacing: 0.02em;
   display: flex;
   align-items: baseline;
   gap: 1px;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .unit {
-  font-size: 9px;
+  font-size: 8px;
   opacity: 0.75;
   margin-left: 1px;
 }
 
 .sep {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--muted);
-  margin: 0 3px;
+  margin: 0 2px;
 }
 
 .track {
-  height: 4px;
+  height: 3px;
   background: var(--surface-2);
   border-radius: 2px;
   overflow: hidden;

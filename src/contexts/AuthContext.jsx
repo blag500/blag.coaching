@@ -289,7 +289,7 @@ export function AuthProvider({ children }) {
     return { data, error }
   }
 
-  async function createTrainingSession({ coachId, clientId, scheduledAt, title, notes, durationMinutes }) {
+  async function createTrainingSession({ coachId, clientId, scheduledAt, title, notes, durationMinutes, status }) {
     const { data, error } = await supabase
       .from('training_sessions')
       .insert({
@@ -299,7 +299,8 @@ export function AuthProvider({ children }) {
         scheduled_at:     scheduledAt,
         duration_minutes: durationMinutes || 60,
         title,
-        notes: notes || null,
+        notes:            notes || null,
+        ...(status ? { status } : {}),
       })
       .select('*, coach:profiles!fk_ts_coach(name, email), client:profiles!fk_ts_client(name, email)')
       .single()

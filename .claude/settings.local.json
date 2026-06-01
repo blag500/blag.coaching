@@ -8,7 +8,11 @@
       "Bash(git push *)",
       "Bash(npx supabase *)",
       "Bash(npm run *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(grep -E \"\\\\.\\(jsx?|css\\)$\")",
+      "Bash(copy *)",
+      "PowerShell(Copy-Item *)"
     ]
   }
 }

@@ -50,7 +50,7 @@ export default function ChatButton() {
             strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-          <span className={styles.chatLabel}>ЧАТ</span>
+          <span className={styles.chatLabel}>ТРЕНЬОР</span>
           {totalUnread > 0 && (
             <span className={styles.badge}>{totalUnread > 9 ? '9+' : totalUnread}</span>
           )}

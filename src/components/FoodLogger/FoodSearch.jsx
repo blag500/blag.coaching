@@ -79,22 +79,28 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
   const [loading, setLoading]       = useState(false)
   const [labelLoading, setLabelLoading] = useState(false)
   const [error, setError]           = useState(null)
-  const [result, setResult]         = useState(null)
+  const [result, setResult]         = useState(null)      // single food
+  const [multiItems, setMultiItems] = useState(null)      // multi-food array
   const [grams, setGrams]           = useState('100')
   const addPanelRef  = useRef(null)
   const photoInputRef = useRef(null)
 
   useEffect(() => {
-    if (result && addPanelRef.current) {
+    if ((result || multiItems) && addPanelRef.current) {
       setTimeout(() => addPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60)
     }
-  }, [result])
+  }, [result, multiItems])
+
+  function resetResults() {
+    setResult(null)
+    setMultiItems(null)
+    setError(null)
+  }
 
   async function handleSearch() {
     if (!query.trim() || loading) return
     setLoading(true)
-    setError(null)
-    setResult(null)
+    resetResults()
     try {
       const { data, error: fnError } = await supabase.functions.invoke('macro-lookup', {
         body: { query: query.trim() },
@@ -109,6 +115,19 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         }
         return
       }
+      // Multi-food response
+      if (data?.type === 'multi' && Array.isArray(data.items)) {
+        setMultiItems(data.items.map(item => ({
+          ...item,
+          // store per-gram ratios so we can recalculate when grams change
+          _pgKcal:    item.kcal    / item.grams,
+          _pgProtein: item.protein / item.grams,
+          _pgCarbs:   item.carbs   / item.grams,
+          _pgFat:     item.fat     / item.grams,
+        })))
+        return
+      }
+      // Single food response
       if (!data?.per100g) throw new Error('invalid response')
       setResult(data)
       setGrams(String(data.typical_grams || 100))
@@ -126,6 +145,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
     setLabelLoading(true)
     setError(null)
     setResult(null)
+    setMultiItems(null)
     try {
       const { base64, mediaType } = await resizeImage(file)
       const { data, error: fnError } = await supabase.functions.invoke('label-scan', {
@@ -177,13 +197,13 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
           className={styles.input}
           type="text"
           value={query}
-          onChange={e => { setQuery(e.target.value); setResult(null); setError(null) }}
+          onChange={e => { setQuery(e.target.value); resetResults() }}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          placeholder="Опиши ястие или съставка..."
+          placeholder="Храна или няколко с запетая..."
           aria-label="AI търсене на макроси"
         />
         {query && (
-          <button className={styles.clear} onClick={() => { setQuery(''); setResult(null); setError(null) }} aria-label="Изчисти">×</button>
+          <button className={styles.clear} onClick={() => { setQuery(''); resetResults() }} aria-label="Изчисти">×</button>
         )}
       </div>
 
@@ -265,7 +285,128 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
           </div>
         </div>
       )}
+
+      {multiItems && (
+        <div ref={addPanelRef}>
+          <MultiAddPanel
+            initialItems={multiItems}
+            onAdd={(items) => {
+              items.forEach(item => onAddRaw({
+                name:    item.name,
+                grams:   item.grams,
+                kcal:    item.kcal,
+                protein: item.protein,
+                carbs:   item.carbs,
+                fat:     item.fat,
+              }))
+              setMultiItems(null)
+              setQuery('')
+              onAdded?.()
+            }}
+            onCancel={() => setMultiItems(null)}
+          />
+        </div>
+      )}
     </>
+  )
+}
+
+// ─── Multi-food confirmation panel ───────────────────────────────────────────
+
+function MultiAddPanel({ initialItems, onAdd, onCancel }) {
+  const [items, setItems] = useState(initialItems)
+
+  function updateGrams(idx, rawVal) {
+    const g = Math.max(10, parseFloat(rawVal) || 10)
+    setItems(prev => prev.map((item, i) => {
+      if (i !== idx) return item
+      const gr = Math.round(g)
+      return {
+        ...item,
+        grams:   gr,
+        kcal:    Math.round(item._pgKcal    * gr),
+        protein: Math.round(item._pgProtein * gr * 10) / 10,
+        carbs:   Math.round(item._pgCarbs   * gr * 10) / 10,
+        fat:     Math.round(item._pgFat     * gr * 10) / 10,
+      }
+    }))
+  }
+
+  function removeItem(idx) {
+    setItems(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  const totals = items.reduce((acc, item) => ({
+    kcal:    Math.round(acc.kcal    + item.kcal),
+    protein: Math.round((acc.protein + item.protein) * 10) / 10,
+    carbs:   Math.round((acc.carbs   + item.carbs)   * 10) / 10,
+    fat:     Math.round((acc.fat     + item.fat)     * 10) / 10,
+  }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
+
+  if (items.length === 0) {
+    return (
+      <div className={styles.multiPanel}>
+        <p className={styles.multiEmpty}>Всички храни са премахнати.</p>
+        <button className={styles.cancelBtn} onClick={onCancel} type="button">Назад</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.multiPanel}>
+      <div className={styles.multiHeader}>
+        <span className={styles.multiTitle}>
+          {items.length} {items.length === 1 ? 'храна' : 'храни'} — провери грамажа
+        </span>
+        <span className={styles.multiHint}>Коригирай количествата при нужда</span>
+      </div>
+
+      <div className={styles.multiList}>
+        {items.map((item, i) => (
+          <div key={i} className={styles.multiItem}>
+            <div className={styles.multiItemHead}>
+              <span className={styles.multiItemName}>{item.name}</span>
+              <button
+                className={styles.multiItemRemove}
+                onClick={() => removeItem(i)}
+                type="button"
+                aria-label="Премахни"
+              >×</button>
+            </div>
+            <div className={styles.multiItemRow}>
+              <div className={styles.multiGramWrap}>
+                <input
+                  className={styles.gramInput}
+                  type="number"
+                  min="10"
+                  max="2000"
+                  value={item.grams}
+                  onChange={e => updateGrams(i, e.target.value)}
+                />
+                <span className={styles.gramUnit}>g</span>
+              </div>
+              <span className={styles.multiItemMacros}>
+                {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.multiTotals}>
+        <span className={styles.multiTotalsLabel}>ОБЩО</span>
+        <span className={styles.multiTotalsVal}>
+          {totals.kcal} ккал · П{totals.protein}g · В{totals.carbs}g · М{totals.fat}g
+        </span>
+      </div>
+
+      <div className={styles.panelActions}>
+        <button className={styles.cancelBtn} onClick={onCancel} type="button">Назад</button>
+        <button className={styles.addBtn} onClick={() => onAdd(items)} type="button">
+          + Добави {items.length === 1 ? '1 храна' : `${items.length} храни`}
+        </button>
+      </div>
+    </div>
   )
 }
 

@@ -546,6 +546,157 @@
   opacity: 0.85;
 }
 
+/* Multi-food confirmation panel */
+.multiPanel {
+  margin-top: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.multiHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.multiTitle {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.multiHint {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.multiList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.multiItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.multiItem:last-child {
+  border-bottom: none;
+}
+
+.multiItemHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.multiItemName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiItemRemove {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid rgba(220, 60, 60, 0.25);
+  border-radius: 6px;
+  color: rgba(220, 100, 100, 0.7);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+
+.multiItemRemove:active {
+  background: rgba(220, 60, 60, 0.1);
+}
+
+.multiItemRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.multiGramWrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.multiItemMacros {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multiTotals {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+}
+
+.multiTotalsLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.multiTotalsVal {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  text-align: right;
+}
+
+.multiEmpty {
+  padding: 16px 14px 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Multi panel actions row */
+.multiPanel .panelActions {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+}
+
 /* USDA macro suggestions */
 .suggLoading {
   font-family: var(--font-body);

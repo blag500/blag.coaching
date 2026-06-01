@@ -8,6 +8,7 @@ import { HABITS } from '../../data/appData'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import TrainingEditor from '../Coach/TrainingEditor'
+import NutritionProgress from '../NutritionCards/NutritionProgress'
 import styles from './Profile.module.css'
 
   function calcStreak(history) {
@@ -45,6 +46,7 @@ export default function Profile() {
   const [targetInput, setTargetInput] = useState(String(targetWeight ?? ''))
 
   const [weeklyKcal, setWeeklyKcal] = useState(null)
+  const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 })
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
   const isCoach = profile?.role === 'coach'
@@ -67,6 +69,29 @@ export default function Profile() {
         data.forEach(e => { byDate[e.date] = (byDate[e.date] || 0) + e.kcal })
         const days = Object.values(byDate)
         setWeeklyKcal(Math.round(days.reduce((s, v) => s + v, 0) / days.length))
+      })
+  }, [user?.id])
+
+  // Fetch today's macro totals for the nutrition progress ring
+  useEffect(() => {
+    if (!user) return
+    const today = new Date().toISOString().slice(0, 10)
+    supabase
+      .from('food_logs')
+      .select('kcal, protein, carbs, fat')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .then(({ data }) => {
+        if (!data?.length) return
+        setTodayTotals(data.reduce(
+          (acc, e) => ({
+            kcal:    Math.round(acc.kcal    + (e.kcal    || 0)),
+            protein: Math.round((acc.protein + (e.protein || 0)) * 10) / 10,
+            carbs:   Math.round((acc.carbs   + (e.carbs   || 0)) * 10) / 10,
+            fat:     Math.round((acc.fat     + (e.fat     || 0)) * 10) / 10,
+          }),
+          { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+        ))
       })
   }, [user?.id])
 
@@ -184,26 +209,16 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* Coach-set macro targets — read only */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ЦЕЛИ (зададени от треньора)</h2>
-        <div className={styles.macroGrid}>
-          {[
-            { key: 'calories', label: 'Калории',     unit: 'ккал', value: profile?.calories },
-            { key: 'protein',  label: 'Протеин',      unit: 'g',    value: profile?.protein  },
-            { key: 'carbs',    label: 'Въглехидрати', unit: 'g',    value: profile?.carbs    },
-            { key: 'fat',      label: 'Мазнини',      unit: 'g',    value: profile?.fat      },
-          ].map(({ key, label, unit, value }) => (
-            <div key={key} className={styles.macroBox} style={{ borderColor: MACRO_COLORS[key] + '55' }}>
-              <span className={styles.macroValue} style={{ color: MACRO_COLORS[key] }}>
-                {value ?? '—'}
-              </span>
-              <span className={styles.macroUnit}>{unit}</span>
-              <span className={styles.macroLabel}>{label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Today's nutrition progress + macro targets */}
+      <NutritionProgress
+        totals={todayTotals}
+        targets={{
+          kcal:    profile?.calories ?? 0,
+          protein: profile?.protein  ?? 0,
+          carbs:   profile?.carbs    ?? 0,
+          fat:     profile?.fat      ?? 0,
+        }}
+      />
 
       {/* Weight tracker */}
       <section className={styles.card}>
