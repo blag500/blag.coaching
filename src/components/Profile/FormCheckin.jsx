@@ -26,6 +26,7 @@ export default function FormCheckin() {
   const [trainDesire,   setTrainDesire]   = useState(null)
   const [weeklyWin,     setWeeklyWin]     = useState('')
   const [weeklyImprove, setWeeklyImprove] = useState('')
+  const [showWeekly,    setShowWeekly]    = useState(false)
   const [notes,         setNotes]         = useState('')
   const [photoFile,     setPhotoFile]     = useState(null)
   const [previewUrl,    setPreviewUrl]    = useState(null)
@@ -50,8 +51,8 @@ export default function FormCheckin() {
           if (today.sleep_hours      != null) setSleepHours(String(today.sleep_hours))
           if (today.gym_performance  != null) setGymPerf(today.gym_performance)
           if (today.training_desire  != null) setTrainDesire(today.training_desire)
-          if (today.weekly_win)               setWeeklyWin(today.weekly_win)
-          if (today.weekly_improve)           setWeeklyImprove(today.weekly_improve)
+          if (today.weekly_win)               { setWeeklyWin(today.weekly_win);         setShowWeekly(true) }
+          if (today.weekly_improve)           { setWeeklyImprove(today.weekly_improve); setShowWeekly(true) }
           if (today.notes)                    setNotes(today.notes)
         }
       })
@@ -178,30 +179,25 @@ export default function FormCheckin() {
           </div>
         </div>
 
-        {/* Gym performance */}
-        <div className={styles.field}>
-          <label className={styles.label}>ТРЕНИРОВКА</label>
+        {/* Training section — grouped */}
+        <div className={styles.trainingSection}>
+          <p className={styles.sectionLabel}>ТРЕНИРОВКА</p>
+
           <div className={styles.tapRow}>
             {GYM_PERF.map(({ label, activeClass }, i) => (
               <button
                 key={i}
                 type="button"
-                className={[
-                  styles.tapBtn,
-                  gymPerf === i ? styles[activeClass] : '',
-                ].join(' ')}
+                className={[styles.tapBtn, gymPerf === i ? styles[activeClass] : ''].join(' ')}
                 onClick={() => setGymPerf(gymPerf === i ? null : i)}
               >
                 {label}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Training desire */}
-        <div className={styles.field}>
-          <label className={styles.label}>ЖЕЛАНИЕ ЗА ТРЕН.</label>
           <div className={styles.desireRow}>
+            <span className={styles.desireLabel}>ЖЕЛАНИЕ</span>
             {[0, 1, 2, 3, 4, 5].map(n => (
               <button
                 key={n}
@@ -215,33 +211,7 @@ export default function FormCheckin() {
           </div>
         </div>
 
-        {/* Weekly win */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="ci-win">ПОБЕДА ЗА СЕДМИЦАТА</label>
-          <input
-            id="ci-win"
-            className={styles.input}
-            type="text"
-            placeholder="Нещо, което мина добре..."
-            value={weeklyWin}
-            onChange={e => setWeeklyWin(e.target.value)}
-          />
-        </div>
-
-        {/* Weekly improve */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="ci-improve">ЩО ДА ПОДОБРЯ</label>
-          <input
-            id="ci-improve"
-            className={styles.input}
-            type="text"
-            placeholder="Нещо за следващата седмица..."
-            value={weeklyImprove}
-            onChange={e => setWeeklyImprove(e.target.value)}
-          />
-        </div>
-
-        {/* Notes */}
+        {/* Note */}
         <div className={styles.field}>
           <label className={styles.label} htmlFor="ci-notes">БЕЛЕЖКА</label>
           <input
@@ -253,6 +223,43 @@ export default function FormCheckin() {
             onChange={e => setNotes(e.target.value)}
           />
         </div>
+
+        {/* Weekly section — collapsible */}
+        <button
+          type="button"
+          className={styles.weeklyToggle}
+          onClick={() => setShowWeekly(v => !v)}
+        >
+          СЕДМИЧНО РЕЗЮМЕ
+          <span className={`${styles.chevron} ${showWeekly ? styles.chevronOpen : ''}`}>▾</span>
+        </button>
+
+        {showWeekly && (
+          <div className={styles.weeklySection}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="ci-win">ПОБЕДА ЗА СЕДМИЦАТА</label>
+              <input
+                id="ci-win"
+                className={styles.input}
+                type="text"
+                placeholder="Нещо, което мина добре..."
+                value={weeklyWin}
+                onChange={e => setWeeklyWin(e.target.value)}
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="ci-improve">ЩО ДА ПОДОБРЯ</label>
+              <input
+                id="ci-improve"
+                className={styles.input}
+                type="text"
+                placeholder="Нещо за следващата седмица..."
+                value={weeklyImprove}
+                onChange={e => setWeeklyImprove(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Photo */}
         <input
