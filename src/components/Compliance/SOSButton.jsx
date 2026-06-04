@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useUnread } from '../../hooks/useUnread'
 import Chat from '../Chat/Chat'
@@ -12,6 +12,20 @@ export default function ChatButton() {
   const [hidden, setHidden] = useState(() => localStorage.getItem(STORAGE_KEY) === 'true')
   const isCoach = profile?.role === 'coach'
   const { totalUnread } = useUnread()
+
+  // Open chat automatically when tapping a message push notification
+  useEffect(() => {
+    if (!user || isCoach) return
+    function onSwMessage(event) {
+      if (event.data?.type === 'OPEN_CHAT') {
+        setHidden(false)
+        localStorage.setItem(STORAGE_KEY, 'false')
+        setShowChat(true)
+      }
+    }
+    navigator.serviceWorker?.addEventListener('message', onSwMessage)
+    return () => navigator.serviceWorker?.removeEventListener('message', onSwMessage)
+  }, [user?.id, isCoach])
 
   if (!user || isCoach) return null
 

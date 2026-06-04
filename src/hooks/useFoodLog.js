@@ -100,6 +100,25 @@ export function useFoodLog() {
     await supabase.from('food_logs').delete().eq('user_id', user.id).eq('date', selectedDate)
   }
 
+  async function uploadMealPhoto(entryId, file) {
+    if (!user) return
+    const ext  = file.name.split('.').pop() || 'jpg'
+    const path = `${user.id}/${entryId}.${ext}`
+    const { error } = await supabase.storage
+      .from('meal-photos')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (error) return
+    const { data: urlData } = supabase.storage.from('meal-photos').getPublicUrl(path)
+    await updateEntry(entryId, { photo_url: urlData.publicUrl })
+  }
+
+  async function removeMealPhoto(entryId, photoUrl) {
+    if (!user || !photoUrl) return
+    const afterBucket = photoUrl.split('/meal-photos/')[1]
+    if (afterBucket) await supabase.storage.from('meal-photos').remove([afterBucket])
+    await updateEntry(entryId, { photo_url: null })
+  }
+
   const totals = log.reduce((acc, e) => ({
     kcal:    Math.round(acc.kcal    + (Number(e.kcal)    || 0)),
     protein: Math.round((acc.protein + (Number(e.protein) || 0)) * 10) / 10,
@@ -110,6 +129,7 @@ export function useFoodLog() {
   return {
     log, totals, selectedDate, setSelectedDate, isToday,
     addEntry, addRawEntry, updateEntry, removeEntry, clearLog,
+    uploadMealPhoto, removeMealPhoto,
     refresh: fetchLog,
   }
 }

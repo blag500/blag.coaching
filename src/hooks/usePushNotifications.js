@@ -24,6 +24,7 @@ export async function registerPushSubscription(userId) {
     })
   }
 
+  // Always upsert — keeps the DB in sync even if the subscription object changed
   await supabase.from('push_subscriptions').upsert(
     { user_id: userId, endpoint: sub.endpoint, subscription: sub.toJSON() },
     { onConflict: 'endpoint' }
@@ -35,6 +36,18 @@ export function usePushNotifications() {
 
   useEffect(() => {
     if (!user) return
+
+    // Register on mount
     registerPushSubscription(user.id).catch(console.error)
+
+    // Re-register every time the app comes back to the foreground —
+    // mobile browsers expire push subscriptions after periods of inactivity
+    function onVisible() {
+      if (document.visibilityState === 'visible') {
+        registerPushSubscription(user.id).catch(console.error)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [user?.id])
 }

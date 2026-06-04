@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: CORS })
   }
 
-  const { toUserId, title, body } = await req.json()
+  const { toUserId, title, body, tag } = await req.json()
   if (!toUserId) {
     return new Response('missing toUserId', { status: 400, headers: CORS })
   }
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
   const { data: subs } = await supabase
     .from('push_subscriptions')
-    .select('subscription')
+    .select('endpoint, subscription')
     .eq('user_id', toUserId)
 
   if (!subs?.length) {
@@ -39,13 +39,36 @@ Deno.serve(async (req) => {
     })
   }
 
-  const payload = JSON.stringify({ title: title || 'Blag Coaching', body: body || 'Ново съобщение' })
+  const payload = JSON.stringify({
+    title: title || 'Blag Coaching',
+    body:  body  || 'Ново съобщение',
+    tag:   tag   || 'default',
+    data:  { type: tag || 'default' },
+  })
 
-  await Promise.allSettled(
+  const results = await Promise.allSettled(
     subs.map(row => webpush.sendNotification(row.subscription, payload))
   )
 
-  return new Response(JSON.stringify({ sent: subs.length }), {
+  // Clean up subscriptions that the push service has permanently invalidated (410 Gone)
+  const deadEndpoints: string[] = []
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      const status = result.reason?.statusCode ?? result.reason?.status
+      if (status === 410 || status === 404) {
+        deadEndpoints.push(subs[i].endpoint)
+      }
+    }
+  })
+  if (deadEndpoints.length > 0) {
+    await supabase
+      .from('push_subscriptions')
+      .delete()
+      .in('endpoint', deadEndpoints)
+  }
+
+  const sent = results.filter(r => r.status === 'fulfilled').length
+  return new Response(JSON.stringify({ sent, dead: deadEndpoints.length }), {
     headers: { 'Content-Type': 'application/json', ...CORS },
   })
 })

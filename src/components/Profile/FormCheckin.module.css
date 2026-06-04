@@ -1,0 +1,361 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldGrow {
+  flex: 1;
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.weightWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input {
+  padding: 9px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  transition: border-color 180ms var(--ease-out);
+  width: 100%;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.input::-webkit-inner-spin-button,
+.input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+/* fixed width for weight input */
+.weightWrap .input {
+  width: 90px;
+}
+
+.unit {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Photo pick button */
+.photoPickBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 180ms var(--ease-out), color 180ms var(--ease-out);
+  width: 100%;
+  justify-content: center;
+}
+
+.photoPickBtn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Preview */
+.previewArea {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.previewImg {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.removePhotoBtn {
+  background: none;
+  border: none;
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+}
+
+/* Save button */
+.saveBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 12px;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.saveBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.saveBtnDone {
+  background: rgba(102, 187, 106, 0.15);
+  color: #66BB6A;
+  border-color: rgba(102, 187, 106, 0.3);
+}
+
+/* Gallery */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  position: relative;
+}
+
+.photoBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.noPhoto {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--border);
+  flex-shrink: 0;
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cardDate {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.cardWeight {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.cardNotes {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+  opacity: 0.4;
+  transition: opacity 180ms var(--ease-out), color 180ms var(--ease-out);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  /* 44px tap target */
+  margin: -6px;
+}
+
+.deleteBtn:active {
+  opacity: 1;
+  color: var(--red);
+}
+
+/* Tap selector (gym performance) */
+.tapRow {
+  display: flex;
+  gap: 8px;
+}
+
+.tapBtn {
+  flex: 1;
+  padding: 9px 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tapBtnRed   { background: rgba(239,83,80,0.12);  border-color: #EF5350; color: #EF5350; }
+.tapBtnAmber { background: rgba(255,183,77,0.12);  border-color: #FFB74D; color: #FFB74D; }
+.tapBtnGreen { background: rgba(102,187,106,0.12); border-color: #66BB6A; color: #66BB6A; }
+
+/* Desire row (0–5) */
+.desireRow {
+  display: flex;
+  gap: 6px;
+}
+
+.desireBtn {
+  flex: 1;
+  aspect-ratio: 1;
+  min-height: 38px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.desireBtnActive {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Card chips */
+.cardChips {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface-1);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  line-height: 1.6;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: zoom-out;
+  opacity: 1;
+  transition: opacity 150ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.lightboxImg {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 12px;
+  object-fit: contain;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}

@@ -90,7 +90,7 @@ export function AuthProvider({ children }) {
       .eq('id', session.user.id)
       .select()
       .single()
-    if (!error && data) setProfile(data)
+    if (!error && data) setProfile(prev => ({ ...data, coach_id: prev?.coach_id }))
     return { error }
   }
 
@@ -273,11 +273,28 @@ export function AuthProvider({ children }) {
         body: {
           toUserId,
           title: profile?.name || 'Blag Coaching',
-          body: content.length > 80 ? content.slice(0, 77) + '…' : content,
+          body:  content.length > 80 ? content.slice(0, 77) + '…' : content,
+          tag:   'message',
         },
       }).catch(() => {})
     }
     return { data, error }
+  }
+
+  // Coach: batch-fetch today's kcal + last-active date for all clients in one go
+  async function fetchAllClientsStats(clientIds) {
+    if (!clientIds.length) return {}
+    const today         = new Date().toISOString().slice(0, 10)
+    const thirtyDaysAgo = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+    const [todayRes, recentRes] = await Promise.all([
+      supabase.from('food_logs').select('user_id, kcal').in('user_id', clientIds).eq('date', today),
+      supabase.from('food_logs').select('user_id, date').in('user_id', clientIds).gte('date', thirtyDaysAgo).order('date', { ascending: false }),
+    ])
+    const stats = {}
+    clientIds.forEach(id => { stats[id] = { kcalToday: 0, lastActive: null } })
+    ;(todayRes.data  || []).forEach(e => { if (stats[e.user_id]) stats[e.user_id].kcalToday += e.kcal })
+    ;(recentRes.data || []).forEach(e => { if (stats[e.user_id] && !stats[e.user_id].lastActive) stats[e.user_id].lastActive = e.date })
+    return stats
   }
 
   // Training sessions
@@ -355,6 +372,7 @@ export function AuthProvider({ children }) {
       fetchCoaches,
       fetchClientStats,
       fetchClientFullStats,
+      fetchAllClientsStats,
       fetchExerciseLogs,
       addExerciseLog,
       removeExerciseLog,

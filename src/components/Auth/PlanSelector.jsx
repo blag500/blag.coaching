@@ -82,6 +82,7 @@ export default function PlanSelector() {
     <div className={styles.page}>
       <div className={styles.inner}>
         <div className={styles.brand}>BLAG COACHING</div>
+        <p className={styles.eyebrow}>СТЪПКА 1 ОТ 3</p>
         <h1 className={styles.title}>ИЗБЕРИ СВОЯ ПЛАН</h1>
         <p className={styles.sub}>Треньорът ще се свърже с теб лично след избора.</p>
 

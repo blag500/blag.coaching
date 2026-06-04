@@ -38,7 +38,7 @@
   font-size: 13px;
   letter-spacing: 0.1em;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity 180ms var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -113,7 +113,7 @@
   margin: -8px;
   padding: 8px;
   opacity: 0.4;
-  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  transition: opacity 180ms var(--ease-out), border-color 180ms var(--ease-out), color 180ms var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -198,12 +198,14 @@
 .entryRight {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+  /* row itself is tall enough — no need for negative-margin tap hacks */
+  min-height: 44px;
 }
 
 .entryGrams {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--accent);
   font-family: var(--font-heading);
   letter-spacing: 0.04em;
@@ -216,14 +218,12 @@
   color: var(--muted);
   font-size: 14px;
   line-height: 1;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Expand tap area to 44px */
-  padding: 10px;
-  margin: -10px;
+  flex-shrink: 0;
 }
 
 .editBtn:active {
@@ -238,14 +238,12 @@
   color: var(--muted);
   font-size: 16px;
   line-height: 1;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Expand tap area to 44px */
-  padding: 10px;
-  margin: -10px;
+  flex-shrink: 0;
 }
 
 .removeBtn:hover {
@@ -296,7 +294,7 @@
   outline: none;
   box-sizing: border-box;
   -webkit-appearance: none;
-  transition: border-color 0.15s;
+  transition: border-color 180ms var(--ease-out);
 }
 
 .editInput:focus {
@@ -330,6 +328,41 @@
   flex-direction: column;
 }
 
+.editPhotoRow {
+  display: flex;
+}
+
+.editPhotoAddBtn,
+.editPhotoRemoveBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 180ms var(--ease-out);
+}
+
+.editPhotoAddBtn {
+  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid rgba(255, 183, 77, 0.2);
+  color: var(--accent);
+}
+
+.editPhotoAddBtn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.editPhotoRemoveBtn {
+  background: rgba(255, 68, 85, 0.08);
+  border: 1px solid rgba(255, 68, 85, 0.2);
+  color: var(--red);
+}
+
 .editActions {
   display: flex;
   gap: 8px;
@@ -357,5 +390,136 @@
   font-family: var(--font-heading);
   font-size: 14px;
   letter-spacing: 0.06em;
+}
+
+/* ── Meal photo ─────────────────────────────────────────── */
+
+/* Thumbnail button on the left of the entry */
+.thumbBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thumbImg {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+/* Camera icon button */
+.cameraBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: opacity 180ms var(--ease-out), border-color 180ms var(--ease-out), color 180ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.cameraBtn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+  opacity: 1;
+}
+
+.cameraBtnLoading {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* When a photo already exists: the button becomes a remove (×) indicator */
+.cameraBtnHasPhoto {
+  opacity: 0.35;
+  color: var(--red);
+  border-color: rgba(255, 68, 85, 0.25);
+}
+
+.cameraBtnHasPhoto:active {
+  border-color: var(--red);
+  opacity: 1;
+}
+
+/* Upload spinner dot */
+.uploadDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1;   }
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.94);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: zoom-out;
+  opacity: 1;
+  transition: opacity 150ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.lightboxImg {
+  max-width: 100%;
+  max-height: 88vh;
+  border-radius: 12px;
+  object-fit: contain;
+  cursor: default;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+.lightboxClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
 }
 

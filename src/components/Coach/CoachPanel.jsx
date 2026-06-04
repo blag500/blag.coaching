@@ -27,6 +27,34 @@ function localNow() {
   return d.toISOString().slice(0, 16)
 }
 
+const TODAY = new Date().toISOString().slice(0, 10)
+const YESTERDAY = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+
+function lastActiveLabel(date) {
+  if (!date) return 'неактивен'
+  if (date === TODAY)     return 'днес'
+  if (date === YESTERDAY) return 'вчера'
+  const days = Math.round((new Date(TODAY) - new Date(date)) / 86400000)
+  return `${days} дни`
+}
+
+function sortPriority(c, stats) {
+  const s = stats[c.id]
+  if (!s?.lastActive) return 2
+  if (s.lastActive === TODAY) return 0
+  return 1
+}
+
+function clientSortCompare(a, b, stats) {
+  const ka = sortPriority(a, stats)
+  const kb = sortPriority(b, stats)
+  if (ka !== kb) return ka - kb
+  const la = stats[a.id]?.lastActive || ''
+  const lb = stats[b.id]?.lastActive || ''
+  if (la !== lb) return lb.localeCompare(la)
+  return (a.name || '').localeCompare(b.name || '')
+}
+
 function SessionCard({ s }) {
   const clientName = s.client?.name || s.client?.email || '—'
   return (
@@ -47,12 +75,13 @@ function SessionCard({ s }) {
 }
 
 export default function CoachPanel() {
-  const { user, fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, createTrainingSession, sendMessage } = useAuth()
+  const { user, fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, createTrainingSession, sendMessage, fetchAllClientsStats } = useAuth()
   const { unreadByUser } = useUnread()
 
   const [clients, setClients]               = useState([])
   const [coaches, setCoaches]               = useState([])
   const [sessions, setSessions]             = useState([])
+  const [clientStats, setClientStats]       = useState({})
   const [loading, setLoading]               = useState(true)
   const [approvingId, setApprovingId]       = useState(null)
   const [selectedClient, setSelectedClient] = useState(null)
@@ -66,10 +95,15 @@ export default function CoachPanel() {
 
   useEffect(() => {
     Promise.all([fetchClients(), fetchCoaches(), fetchTrainingSessions()])
-      .then(([clientsRes, coachesRes, sessionsRes]) => {
+      .then(async ([clientsRes, coachesRes, sessionsRes]) => {
         if (clientsRes.data)  setClients(clientsRes.data)
         if (coachesRes.data)  setCoaches(coachesRes.data)
         if (sessionsRes.data) setSessions(sessionsRes.data)
+        const approvedIds = (clientsRes.data || []).filter(c => !c.plan_pending).map(c => c.id)
+        if (approvedIds.length) {
+          const stats = await fetchAllClientsStats(approvedIds)
+          setClientStats(stats)
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -296,34 +330,48 @@ export default function CoachPanel() {
               <>
                 {pending.length > 0 && <p className={styles.sectionTitle}>КЛИЕНТИ</p>}
                 <div className={styles.list}>
-                  {approved.map(client => (
-                    <button
-                      key={client.id}
-                      className={styles.card}
-                      onClick={() => setSelectedClient(client)}
-                      type="button"
-                    >
-                      <div className={styles.clientInfo}>
-                        <div className={styles.clientNameRow}>
-                          <span className={styles.clientName}>{client.name || '—'}</span>
-                          {client.plan && (
-                            <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
-                              {client.plan.toUpperCase()}
-                            </span>
+                  {[...approved]
+                    .sort((a, b) => clientSortCompare(a, b, clientStats))
+                    .map(client => {
+                      const s = clientStats[client.id]
+                      const label = lastActiveLabel(s?.lastActive)
+                      const isToday = s?.lastActive === TODAY
+                      return (
+                        <button
+                          key={client.id}
+                          className={styles.card}
+                          onClick={() => setSelectedClient(client)}
+                          type="button"
+                        >
+                          <div className={styles.clientInfo}>
+                            <div className={styles.clientNameRow}>
+                              <span className={styles.clientName}>{client.name || '—'}</span>
+                              {client.plan && (
+                                <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
+                                  {client.plan.toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <div className={styles.clientMeta}>
+                              {s?.kcalToday > 0
+                                ? <span className={styles.kcalToday}>{Math.round(s.kcalToday)} ккал</span>
+                                : <span className={styles.kcalEmpty}>—</span>
+                              }
+                              {client.calories > 0 && s?.kcalToday > 0 &&
+                                <span className={styles.kcalTarget}>/ {client.calories}</span>
+                              }
+                              <span className={styles.metaDot}>·</span>
+                              <span className={isToday ? styles.activeToday : styles.activeMuted}>{label}</span>
+                            </div>
+                          </div>
+                          {unreadByUser[client.id] > 0 && (
+                            <span className={styles.badge}>{unreadByUser[client.id] > 9 ? '9+' : unreadByUser[client.id]}</span>
                           )}
-                        </div>
-                        <span className={styles.clientEmail}>{client.email}</span>
-                      </div>
-                      <div className={styles.macroSnippet}>
-                        <span>{client.calories ?? '—'} ккал</span>
-                        <span>{client.protein ?? '—'}g П</span>
-                      </div>
-                      {unreadByUser[client.id] > 0 && (
-                        <span className={styles.badge}>{unreadByUser[client.id] > 9 ? '9+' : unreadByUser[client.id]}</span>
-                      )}
-                      <span className={styles.chevron}>›</span>
-                    </button>
-                  ))}
+                          <span className={styles.chevron}>›</span>
+                        </button>
+                      )
+                    })
+                  }
                 </div>
               </>
             )}

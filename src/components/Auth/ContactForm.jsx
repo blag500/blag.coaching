@@ -24,7 +24,12 @@ export default function ContactForm() {
   const [notes,        setNotes]        = useState(profile?.intake_notes || '')
   const [saving, setSaving] = useState(false)
 
+  const [error, setError] = useState('')
+
   async function handleSubmit() {
+    if (!name.trim()) { setError('Моля, въведи своето име.'); return }
+    if (!phone.trim()) { setError('Моля, въведи телефонен номер.'); return }
+    setError('')
     setSaving(true)
     const updates = { intake_done: true }
     if (name.trim())   updates.name                 = name.trim()
@@ -168,6 +173,7 @@ export default function ContactForm() {
           />
         </div>
 
+        {error && <p className={styles.errorMsg}>{error}</p>}
         <button
           className={styles.cta}
           onClick={handleSubmit}

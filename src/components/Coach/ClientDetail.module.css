@@ -865,10 +865,29 @@
 .logEntry {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   padding: 11px 14px;
   border-bottom: 1px solid var(--border);
+}
+
+/* Meal photo thumbnail (coach view) */
+.logThumbBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logThumbImg {
+  width: 38px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
 }
 
 .logEntry:last-child {
@@ -898,16 +917,24 @@
   color: var(--muted);
 }
 
+.logGrams {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
 .logEntryActions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  min-height: 44px;
 }
 
 .logEditBtn {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   background: none;
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -918,8 +945,9 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out);
 }
 
 .logEditBtn:active {
@@ -928,8 +956,8 @@
 }
 
 .logDeleteBtn {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   background: none;
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -941,8 +969,9 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out);
 }
 
 .logDeleteBtn:active {
@@ -1396,4 +1425,119 @@
 .saveBtnDone {
   background: rgba(255, 183, 77, 0.18);
   border-color: rgba(255, 183, 77, 0.45);
+}
+
+/* ─── Check-in Tab ─────────────────────────────────────────────────────────── */
+
+.checkinTab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.checkinCard {
+  display: flex;
+  gap: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.checkinPhotoBtn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  align-self: flex-start;
+}
+
+.checkinThumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.checkinBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkinRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.checkinDate {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.checkinWeight {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.checkinChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.checkinChip {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface-2);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+.checkinWin {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #66BB6A;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkinImprove {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.checkinNotes {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

@@ -120,6 +120,50 @@
   color: var(--muted);
 }
 
+.clientMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+
+.kcalToday {
+  color: var(--accent);
+  font-size: 11px;
+}
+
+.kcalEmpty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.kcalTarget {
+  color: var(--muted);
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.metaDot {
+  color: var(--muted);
+  opacity: 0.4;
+  font-size: 10px;
+}
+
+.activeToday {
+  color: #66BB6A;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.activeMuted {
+  color: var(--muted);
+  font-size: 10px;
+  opacity: 0.7;
+}
+
 .chevron {
   font-size: 20px;
   color: var(--muted);

@@ -9,6 +9,8 @@ import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import TrainingEditor from '../Coach/TrainingEditor'
 import NutritionProgress from '../NutritionCards/NutritionProgress'
+import ActivityCalendar from './ActivityCalendar'
+import FormCheckin from './FormCheckin'
 import styles from './Profile.module.css'
 
   function calcStreak(history) {
@@ -206,6 +208,12 @@ export default function Profile() {
         <h1 className={styles.title}>ПРОФИЛ</h1>
         {profile?.name && <p className={styles.subtitle}>{profile.name}</p>}
       </header>
+
+      {/* Activity calendar */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>АКТИВНОСТ</h2>
+        <ActivityCalendar />
+      </section>
 
       {/* Weekly summary */}
       <section className={styles.card}>
@@ -463,6 +471,12 @@ export default function Profile() {
             {nameSaved ? '✓ Запазено' : 'Запази'}
           </button>
         </form>
+      </section>
+
+      {/* Form check-in: weight + photo */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>CHECK-IN НА ФОРМА</h2>
+        <FormCheckin />
       </section>
 
       <NotificationSettings />

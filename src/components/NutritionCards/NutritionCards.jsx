@@ -13,7 +13,7 @@ import styles from './NutritionCards.module.css'
 
 export default function NutritionCards() {
   const { profile } = useAuth()
-  const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
+  const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { distance, refreshing } = usePullToRefresh(refresh)
   const { foods: customFoods, loading: foodsLoading, saveFood, deleteFood } = useCustomFoods()
   const [view, setView] = useState('log')
@@ -91,7 +91,7 @@ export default function NutritionCards() {
           <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
           <NutritionProgress totals={totals} targets={targets} />
           <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} />
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} />
+          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} />
         </>
       ) : (
         <LibraryTab

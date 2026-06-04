@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import styles from './FoodLog.module.css'
 
 function UndoIcon() {
@@ -10,10 +10,24 @@ function UndoIcon() {
   )
 }
 
-export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
-  const [editingId, setEditingId]     = useState(null)
-  const [draft, setDraft]             = useState({})
-  const [lastRemoved, setLastRemoved] = useState(null)
+function CameraIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+  )
+}
+
+export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove }) {
+  const [editingId,    setEditingId]    = useState(null)
+  const [draft,        setDraft]        = useState({})
+  const [lastRemoved,  setLastRemoved]  = useState(null)
+  const [uploadingId,  setUploadingId]  = useState(null)
+  const [lightboxUrl,  setLightboxUrl]  = useState(null)
+
+  const photoInputRef  = useRef()
+  const photoTargetRef = useRef(null)  // which entry id the next pick targets
 
   function handleRemove(entry) {
     setLastRemoved(entry)
@@ -74,6 +88,24 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
     setEditingId(null)
   }
 
+  function openPhotoPicker(entryId) {
+    photoTargetRef.current = entryId
+    if (photoInputRef.current) {
+      photoInputRef.current.value = ''
+      photoInputRef.current.click()
+    }
+  }
+
+  async function handlePhotoSelected(e) {
+    const file = e.target.files[0]
+    if (!file || !photoTargetRef.current || !onPhotoUpload) return
+    const id = photoTargetRef.current
+    setUploadingId(id)
+    await onPhotoUpload(id, file)
+    setUploadingId(null)
+    photoTargetRef.current = null
+  }
+
   if (log.length === 0) {
     return (
       <div className={styles.empty}>
@@ -93,6 +125,16 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
 
   return (
     <div className={styles.wrap}>
+      {/* Hidden file input shared across all entries */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={handlePhotoSelected}
+      />
+
       <div className={styles.listHeader}>
         <span className={styles.listTitle}>Дневен лог ({log.length})</span>
         <div className={styles.headerActions}>
@@ -158,6 +200,33 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
                 ))}
               </div>
 
+              {onPhotoUpload && (
+                <div className={styles.editPhotoRow}>
+                  {entry.photo_url ? (
+                    <button
+                      type="button"
+                      className={styles.editPhotoRemoveBtn}
+                      onClick={() => onPhotoRemove && onPhotoRemove(entry.id, entry.photo_url)}
+                    >
+                      × Премахни снимката
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.editPhotoAddBtn}
+                      onClick={() => openPhotoPicker(entry.id)}
+                      disabled={uploadingId === entry.id}
+                    >
+                      {uploadingId === entry.id ? (
+                        <><span className={styles.uploadDot} /> Качва...</>
+                      ) : (
+                        <><CameraIcon /> Добави снимка</>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
+
               <div className={styles.editActions}>
                 <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">Отказ</button>
                 <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">Запази</button>
@@ -165,14 +234,27 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
             </li>
           ) : (
             <li key={entry.id} className={styles.entry} style={{ '--i': i }}>
+              {/* Meal photo: thumbnail on left side if present */}
+              {entry.photo_url && (
+                <button
+                  type="button"
+                  className={styles.thumbBtn}
+                  onClick={() => setLightboxUrl(entry.photo_url)}
+                  aria-label="Виж снимката"
+                >
+                  <img src={entry.photo_url} className={styles.thumbImg} alt="" />
+                </button>
+              )}
+
               <div className={styles.entryLeft}>
                 <span className={styles.entryName}>{entry.name}</span>
                 <span className={styles.entryMacros}>
+                  {entry.grams > 0 && <><span className={styles.entryGrams}>{entry.grams}g</span> · </>}
                   {entry.kcal} ккал · П{entry.protein}g · В{entry.carbs}g · М{entry.fat}g
                 </span>
               </div>
+
               <div className={styles.entryRight}>
-                <span className={styles.entryGrams}>{entry.grams > 0 ? `${entry.grams}g` : ''}</span>
                 <button
                   className={styles.editBtn}
                   onClick={() => startEdit(entry)}
@@ -194,6 +276,14 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw }) {
           )
         )}
       </ul>
+
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div className={styles.lightbox} onClick={() => setLightboxUrl(null)}>
+          <img src={lightboxUrl} className={styles.lightboxImg} alt="Ястие" />
+          <button type="button" className={styles.lightboxClose} onClick={() => setLightboxUrl(null)} aria-label="Затвори">×</button>
+        </div>
+      )}
     </div>
   )
 }

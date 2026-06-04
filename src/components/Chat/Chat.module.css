@@ -68,17 +68,13 @@
   flex-direction: column;
   gap: 4px;
   max-width: 80%;
-  animation: slideIn 0.3s ease;
-}
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
 
-@keyframes slideIn {
-  from {
+  @starting-style {
     opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateY(6px);
   }
 }
 
@@ -145,7 +141,7 @@
   font-family: var(--font-body);
   font-size: 16px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 180ms var(--ease-out);
 }
 
 .field:focus {
@@ -171,7 +167,7 @@
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
+  transition: background 180ms var(--ease-out);
 }
 
 .send:disabled {

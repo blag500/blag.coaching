@@ -9,12 +9,13 @@ import WeightChart from '../Profile/WeightChart'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
-  { id: 'progress', label: 'ПРОГРЕС' },
+  { id: 'progress',  label: 'ПРОГРЕС' },
+  { id: 'checkin',   label: 'CHECK-IN' },
   { id: 'nutrition', label: 'ХРАНЕНЕ' },
-  { id: 'lifts',    label: 'УПРАЖНЕНИЯ' },
-  { id: 'plan',     label: 'ПЛАН' },
-  { id: 'goals',    label: 'ЦЕЛИ' },
-  { id: 'notes',    label: 'БЕЛЕЖКИ' },
+  { id: 'lifts',     label: 'УПРАЖНЕНИЯ' },
+  { id: 'plan',      label: 'ПЛАН' },
+  { id: 'goals',     label: 'ЦЕЛИ' },
+  { id: 'notes',     label: 'БЕЛЕЖКИ' },
 ]
 
 function TrashIcon() {
@@ -212,6 +213,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
 
       <div className={styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
+        {tab === 'checkin'  && <CheckinTab clientId={client.id} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
         {tab === 'lifts' && <LiftsTab clientId={client.id} />}
         {tab === 'plan' && (
@@ -426,6 +428,7 @@ function NutritionTab({ client }) {
   const [showAdd, setShowAdd]   = useState(false)
   const [newEntry, setNewEntry] = useState({ name: '', grams: '', kcal: '', protein: '', carbs: '', fat: '' })
   const [adding, setAdding]     = useState(false)
+  const [lightboxUrl, setLightboxUrl] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -614,10 +617,21 @@ function NutritionTab({ client }) {
               </div>
             ) : (
               <div key={entry.id} className={styles.logEntry}>
+                {entry.photo_url && (
+                  <button
+                    type="button"
+                    className={styles.logThumbBtn}
+                    onClick={() => setLightboxUrl(entry.photo_url)}
+                    aria-label="Виж снимката на ястието"
+                  >
+                    <img src={entry.photo_url} className={styles.logThumbImg} alt="" />
+                  </button>
+                )}
                 <div className={styles.logLeft}>
                   <span className={styles.logName}>{entry.name}</span>
                   <span className={styles.logMacros}>
-                    {entry.kcal} ккал{entry.grams > 0 ? ` · ${entry.grams}g` : ''} · П{Math.round(entry.protein * 10) / 10}g · В{Math.round(entry.carbs * 10) / 10}g · М{Math.round(entry.fat * 10) / 10}g
+                    {entry.grams > 0 && <><span className={styles.logGrams}>{entry.grams}g</span> · </>}
+                    {entry.kcal} ккал · П{Math.round(entry.protein * 10) / 10}g · В{Math.round(entry.carbs * 10) / 10}g · М{Math.round(entry.fat * 10) / 10}g
                   </span>
                 </div>
                 <div className={styles.logEntryActions}>
@@ -627,6 +641,17 @@ function NutritionTab({ client }) {
               </div>
             )
           )}
+        </div>
+      )}
+
+      {/* Meal photo lightbox */}
+      {lightboxUrl && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.94)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', cursor: 'zoom-out' }}
+          onClick={() => setLightboxUrl(null)}
+        >
+          <img src={lightboxUrl} alt="Ястие" style={{ maxWidth: '100%', maxHeight: '88vh', borderRadius: '12px', objectFit: 'contain' }} />
+          <button type="button" onClick={() => setLightboxUrl(null)} aria-label="Затвори" style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '50%', color: '#fff', fontSize: 20, width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       )}
     </div>
@@ -1041,6 +1066,92 @@ function LiftProgressChart({ data }) {
       <text x={pad.l - 4} y={pad.t + 7}  textAnchor="end" fill="var(--muted)" fontSize="9">{maxW}</text>
       <text x={pad.l - 4} y={pad.t + iH} textAnchor="end" fill="var(--muted)" fontSize="9">{minW}</text>
     </svg>
+  )
+}
+
+// ─── Check-in Tab ────────────────────────────────────────────────────────────
+
+const GYM_PERF_LABEL = ['↓ СПАД', '= ЗАДРЖ', '↑ РЪСТ']
+const GYM_PERF_COLOR = ['#EF5350', '#FFB74D', '#66BB6A']
+
+function CheckinTab({ clientId }) {
+  const [checkins,  setCheckins]  = useState([])
+  const [loading,   setLoading]   = useState(true)
+  const [lightbox,  setLightbox]  = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from('form_checkins')
+      .select('*')
+      .eq('user_id', clientId)
+      .order('date', { ascending: false })
+      .limit(60)
+      .then(({ data }) => { setCheckins(data || []); setLoading(false) })
+  }, [clientId])
+
+  if (loading) return <p className={styles.loading}>Зарежда...</p>
+  if (checkins.length === 0) return <p className={styles.empty}>Няма check-in записи</p>
+
+  return (
+    <div className={styles.checkinTab}>
+      {checkins.map(c => (
+        <div key={c.id} className={styles.checkinCard}>
+          {c.photo_url && (
+            <button
+              type="button"
+              className={styles.checkinPhotoBtn}
+              onClick={() => setLightbox(c.photo_url)}
+            >
+              <img src={c.photo_url} className={styles.checkinThumb} alt={c.date} />
+            </button>
+          )}
+          <div className={styles.checkinBody}>
+            <div className={styles.checkinRow}>
+              <span className={styles.checkinDate}>
+                {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+              </span>
+              {c.weight_kg != null && (
+                <span className={styles.checkinWeight}>{c.weight_kg} кг</span>
+              )}
+            </div>
+            <div className={styles.checkinChips}>
+              {c.sleep_hours != null && (
+                <span className={styles.checkinChip}>{c.sleep_hours}ч сън</span>
+              )}
+              {c.gym_performance != null && (
+                <span
+                  className={styles.checkinChip}
+                  style={{ color: GYM_PERF_COLOR[c.gym_performance], borderColor: GYM_PERF_COLOR[c.gym_performance] + '66' }}
+                >
+                  {GYM_PERF_LABEL[c.gym_performance]}
+                </span>
+              )}
+              {c.training_desire != null && (
+                <span className={styles.checkinChip}>желание {c.training_desire}/5</span>
+              )}
+            </div>
+            {c.weekly_win && (
+              <p className={styles.checkinWin}>Победа: {c.weekly_win}</p>
+            )}
+            {c.weekly_improve && (
+              <p className={styles.checkinImprove}>Подобрение: {c.weekly_improve}</p>
+            )}
+            {c.notes && (
+              <p className={styles.checkinNotes}>{c.notes}</p>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {lightbox && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.94)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', cursor: 'zoom-out' }}
+          onClick={() => setLightbox(null)}
+        >
+          <img src={lightbox} alt="Check-in" style={{ maxWidth: '100%', maxHeight: '88vh', borderRadius: '12px', objectFit: 'contain' }} />
+        </div>
+      )}
+    </div>
   )
 }
 

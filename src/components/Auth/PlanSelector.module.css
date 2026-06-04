@@ -24,6 +24,15 @@
   opacity: 0.7;
 }
 
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  opacity: 0.7;
+  margin: 0 0 6px;
+}
+
 .title {
   font-family: var(--font-heading);
   font-size: 2rem;

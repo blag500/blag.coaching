@@ -34,8 +34,8 @@ export default function PendingApproval() {
       </div>
       <h1 className={styles.title}>ОЧАКВА ОДОБРЕНИЕ</h1>
       <p className={styles.text}>
-        Твоят акаунт чака потвърждение от треньора.
-        Ще получиш пълен достъп след одобрение.
+        Треньорът получи заявката ти и ще те одобри в рамките на 24 часа.
+        Ще получиш пълен достъп веднага след одобрение.
       </p>
       {profile?.email && (
         <p className={styles.email}>{profile.email}</p>
