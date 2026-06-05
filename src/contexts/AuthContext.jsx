@@ -247,15 +247,15 @@ export function AuthProvider({ children }) {
 
   // Messaging
   async function fetchMessages(otherUserId) {
+    console.log('[chat] fetchMessages called — otherUserId:', otherUserId, 'session uid:', session?.user?.id)
     if (!otherUserId || !session?.user.id) return { data: null, error: null }
     const me = session.user.id
     const [sent, received] = await Promise.all([
       supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', otherUserId),
       supabase.from('messages').select('*').eq('from_user_id', otherUserId).eq('to_user_id', me),
     ])
-    console.log('[chat] me:', me, 'other:', otherUserId)
-    console.log('[chat] sent:', sent.data, sent.error)
-    console.log('[chat] received:', received.data, received.error)
+    console.log('[chat] sent:', sent.data?.length, sent.error)
+    console.log('[chat] received:', received.data?.length, received.error)
     const data = [...(sent.data || []), ...(received.data || [])]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
     const error = sent.error || received.error || null
