@@ -249,12 +249,13 @@ export function AuthProvider({ children }) {
   async function fetchMessages(otherUserId) {
     if (!otherUserId || !session?.user.id) return { data: null, error: null }
     const me = session.user.id
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`from_user_id.eq.${me},to_user_id.eq.${me}`)
-      .or(`from_user_id.eq.${otherUserId},to_user_id.eq.${otherUserId}`)
-      .order('created_at')
+    const [sent, received] = await Promise.all([
+      supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', otherUserId),
+      supabase.from('messages').select('*').eq('from_user_id', otherUserId).eq('to_user_id', me),
+    ])
+    const data = [...(sent.data || []), ...(received.data || [])]
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    const error = sent.error || received.error || null
     return { data, error }
   }
 
