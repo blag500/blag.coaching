@@ -248,10 +248,12 @@ export function AuthProvider({ children }) {
   // Messaging
   async function fetchMessages(otherUserId) {
     if (!otherUserId || !session?.user.id) return { data: null, error: null }
+    const me = session.user.id
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .or(`and(from_user_id.eq.${session.user.id},to_user_id.eq.${otherUserId}),and(from_user_id.eq.${otherUserId},to_user_id.eq.${session.user.id})`)
+      .or(`from_user_id.eq.${me},to_user_id.eq.${me}`)
+      .or(`from_user_id.eq.${otherUserId},to_user_id.eq.${otherUserId}`)
       .order('created_at')
     return { data, error }
   }
