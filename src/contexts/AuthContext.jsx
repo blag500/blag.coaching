@@ -253,6 +253,9 @@ export function AuthProvider({ children }) {
       supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', otherUserId),
       supabase.from('messages').select('*').eq('from_user_id', otherUserId).eq('to_user_id', me),
     ])
+    console.log('[chat] me:', me, 'other:', otherUserId)
+    console.log('[chat] sent:', sent.data, sent.error)
+    console.log('[chat] received:', received.data, received.error)
     const data = [...(sent.data || []), ...(received.data || [])]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
     const error = sent.error || received.error || null
