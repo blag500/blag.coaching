@@ -30,6 +30,29 @@
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
+  box-shadow: var(--card-highlight);
+  animation: cardIn 320ms var(--ease-out) both;
+}
+
+.card:nth-child(1) { animation-delay: 40ms; }
+.card:nth-child(2) { animation-delay: 75ms; }
+.card:nth-child(3) { animation-delay: 110ms; }
+.card:nth-child(4) { animation-delay: 145ms; }
+.card:nth-child(5) { animation-delay: 180ms; }
+.card:nth-child(6) { animation-delay: 215ms; }
+.card:nth-child(7) { animation-delay: 250ms; }
+.card:nth-child(8) { animation-delay: 285ms; }
+.card:nth-child(n+9) { animation-delay: 320ms; }
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .sectionTitle {
