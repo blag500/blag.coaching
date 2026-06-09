@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { suggestMacros } from '../../utils/usda'
+import { searchFoods } from '../../utils/openFoodFacts'
 import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
 import styles from './FoodSearch.module.css'
@@ -39,8 +40,8 @@ function resizeImage(file, maxDim = 1024) {
   })
 }
 
-export default function FoodSearch({ onAdd, onAddRaw }) {
-  const [mode, setMode] = useState('ai') // 'ai' | 'manual' | 'recent' | 'bot' | 'recipes'
+export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} }) {
+  const [mode, setMode] = useState('ai')
 
   return (
     <div className={styles.wrap}>
@@ -49,6 +50,7 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
           { id: 'ai',      label: 'AI' },
           { id: 'manual',  label: 'РЪЧНО' },
           { id: 'recent',  label: 'СКОР.' },
+          { id: 'suggest', label: 'ПРЕПОР.' },
           { id: 'bot',     label: 'БОТ' },
           { id: 'recipes', label: 'РЕЦЕПТИ' },
         ].map(m => (
@@ -66,6 +68,7 @@ export default function FoodSearch({ onAdd, onAddRaw }) {
       {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
       {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
+      {mode === 'suggest' && <SuggestMode totals={totals} targets={targets} onAddRaw={onAddRaw} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
     </div>
@@ -671,5 +674,258 @@ function RecentMode({ onAddRaw }) {
       })}
     </ul>
     </>
+  )
+}
+
+// ─── Suggest / Препоръки mode ─────────────────────────────────────────────────
+
+function scoreHistoryFoods(foods, remaining) {
+  if (remaining.kcal <= 30) return []
+  return foods
+    .map(f => {
+      const base = f.grams > 0 ? f.grams : 100
+      const kpg = f.kcal / base
+      if (kpg <= 0) return null
+      const sugG    = Math.min(600, Math.max(30, Math.round((remaining.kcal * 0.5) / kpg)))
+      const kcal    = Math.round(kpg * sugG)
+      const protein = Math.round((f.protein / base) * sugG * 10) / 10
+      const carbs   = Math.round((f.carbs   / base) * sugG * 10) / 10
+      const fat     = Math.round((f.fat     / base) * sugG * 10) / 10
+      const ps      = remaining.protein > 0 ? Math.min(1, protein / remaining.protein) : 0.5
+      const cs      = remaining.carbs   > 0 ? Math.min(1, carbs   / remaining.carbs)   : 0.5
+      const fs      = remaining.fat     > 0 ? Math.min(1, fat     / remaining.fat)     : 0.5
+      const over    = kcal > remaining.kcal * 1.1 ? 0.6 : 1
+      return { name: f.name, grams: sugG, kcal, protein, carbs, fat,
+               score: (ps * 0.5 + cs * 0.3 + fs * 0.2) * over }
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6)
+}
+
+function buildOFFQuery(remaining, targets) {
+  const pctP = targets.protein > 0 ? remaining.protein / targets.protein : 0
+  const pctC = targets.carbs   > 0 ? remaining.carbs   / targets.carbs   : 0
+  const pctF = targets.fat     > 0 ? remaining.fat     / targets.fat     : 0
+  if (pctP >= pctC && pctP >= pctF) return 'chicken eggs protein'
+  if (pctC >= pctP && pctC >= pctF) return 'rice oatmeal'
+  return 'nuts almonds'
+}
+
+function SuggestCard({ item, onAdd, hint }) {
+  const [expanded, setExpanded] = useState(false)
+  const [grams, setGrams]       = useState(String(item.grams))
+
+  const g     = parseFloat(grams) || 0
+  const ratio = item.grams > 0 ? g / item.grams : 0
+
+  function handleAdd() {
+    onAdd({
+      name:    item.name,
+      grams:   g,
+      kcal:    Math.round(item.kcal    * ratio),
+      protein: Math.round(item.protein * ratio * 10) / 10,
+      carbs:   Math.round(item.carbs   * ratio * 10) / 10,
+      fat:     Math.round(item.fat     * ratio * 10) / 10,
+    })
+  }
+
+  return (
+    <li className={`${styles.suggestCard} ${expanded ? styles.suggestCardExpanded : ''}`}>
+      {expanded ? (
+        <>
+          <span className={styles.suggestCardName}>{item.name}</span>
+          <div className={styles.gramRow}>
+            <label className={styles.gramLabel}>Грамаж</label>
+            <input
+              className={styles.gramInput}
+              type="number" min="1" max="2000"
+              value={grams}
+              onChange={e => setGrams(e.target.value)}
+              autoFocus
+            />
+            <span className={styles.gramUnit}>g</span>
+          </div>
+          {ratio > 0 && (
+            <div className={styles.preview}>
+              {Math.round(item.kcal * ratio)} ккал ·
+              П {Math.round(item.protein * ratio * 10) / 10}g ·
+              В {Math.round(item.carbs   * ratio * 10) / 10}g ·
+              М {Math.round(item.fat     * ratio * 10) / 10}g
+            </div>
+          )}
+          <div className={styles.panelActions}>
+            <button className={styles.cancelBtn} onClick={() => setExpanded(false)} type="button">Назад</button>
+            <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className={styles.suggestCardInfo}>
+            <span className={styles.suggestCardName}>{item.name}</span>
+            <span className={styles.suggestCardMacros}>
+              {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g · {item.grams}g
+            </span>
+            {hint && <span className={styles.suggestCardHint}>{hint}</span>}
+          </div>
+          <button className={styles.suggestAddBtn} onClick={() => setExpanded(true)} type="button">+</button>
+        </>
+      )}
+    </li>
+  )
+}
+
+function HistorySuggestions({ remaining, onAddRaw }) {
+  const { profile } = useAuth()
+  const [items, setItems]     = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!profile?.id) return
+    supabase
+      .from('food_logs')
+      .select('name, grams, kcal, protein, carbs, fat')
+      .eq('user_id', profile.id)
+      .order('logged_at', { ascending: false })
+      .limit(200)
+      .then(({ data }) => {
+        if (!data) { setLoading(false); return }
+        const seen = new Set()
+        const unique = data.filter(r => {
+          if (seen.has(r.name)) return false
+          seen.add(r.name)
+          return true
+        })
+        setItems(scoreHistoryFoods(unique, remaining))
+        setLoading(false)
+      })
+  }, [profile?.id])
+
+  if (loading) return <p className={styles.suggestEmpty}>Зарежда...</p>
+  if (!items?.length) return <p className={styles.suggestEmpty}>Няма история за анализ</p>
+
+  return (
+    <ul className={styles.suggestList}>
+      {items.map((item, i) => (
+        <SuggestCard key={i} item={item} hint="от история" onAdd={onAddRaw} />
+      ))}
+    </ul>
+  )
+}
+
+function OFFSuggestions({ remaining, targets, onAddRaw }) {
+  const [query, setQuery]     = useState('')
+  const [items, setItems]     = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState(null)
+  const autoRan               = useRef(false)
+
+  useEffect(() => {
+    if (autoRan.current) return
+    autoRan.current = true
+    const q = buildOFFQuery(remaining, targets)
+    setQuery(q)
+    runSearch(q)
+  }, [])
+
+  async function runSearch(q) {
+    if (!q.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      const results = await searchFoods(q.trim())
+      const scored = results
+        .filter(r => r.per100g.kcal > 0)
+        .map(r => {
+          const kpg  = r.per100g.kcal / 100
+          const sugG = Math.min(600, Math.max(30, Math.round((remaining.kcal * 0.5) / kpg)))
+          return {
+            name:    r.name + (r.brand ? ` (${r.brand})` : ''),
+            grams:   sugG,
+            kcal:    Math.round(r.per100g.kcal    / 100 * sugG),
+            protein: Math.round(r.per100g.protein / 100 * sugG * 10) / 10,
+            carbs:   Math.round(r.per100g.carbs   / 100 * sugG * 10) / 10,
+            fat:     Math.round(r.per100g.fat     / 100 * sugG * 10) / 10,
+          }
+        })
+        .slice(0, 8)
+      setItems(scored)
+    } catch {
+      setError('Грешка при търсене')
+    }
+    setLoading(false)
+  }
+
+  return (
+    <>
+      <div className={styles.offSearchRow}>
+        <input
+          className={styles.offSearch}
+          type="text"
+          placeholder="Търси в OpenFoodFacts..."
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && runSearch(query)}
+        />
+        <button
+          className={styles.offSearchBtn}
+          onClick={() => runSearch(query)}
+          type="button"
+          disabled={loading}
+        >
+          {loading ? '...' : '→'}
+        </button>
+      </div>
+      {error && <p className={styles.suggestEmpty}>{error}</p>}
+      {!loading && items?.length === 0 && <p className={styles.suggestEmpty}>Няма резултати</p>}
+      {items && items.length > 0 && (
+        <ul className={styles.suggestList}>
+          {items.map((item, i) => (
+            <SuggestCard key={i} item={item} hint="OpenFoodFacts" onAdd={onAddRaw} />
+          ))}
+        </ul>
+      )}
+    </>
+  )
+}
+
+function SuggestMode({ totals, targets, onAddRaw }) {
+  const [subTab, setSubTab] = useState('history')
+
+  const remaining = {
+    kcal:    Math.max(0, (targets.kcal    || 0) - (totals.kcal    || 0)),
+    protein: Math.max(0, (targets.protein || 0) - (totals.protein || 0)),
+    carbs:   Math.max(0, (targets.carbs   || 0) - (totals.carbs   || 0)),
+    fat:     Math.max(0, (targets.fat     || 0) - (totals.fat     || 0)),
+  }
+
+  return (
+    <div className={styles.suggestWrap}>
+      <div className={styles.remainingBanner}>
+        <span className={styles.remainingLabel}>Остават</span>
+        <div className={styles.remainingValues}>
+          <span className={styles.remKcal}>{Math.round(remaining.kcal)} ккал</span>
+          <span className={styles.remMacro}>П {Math.round(remaining.protein)}g</span>
+          <span className={styles.remMacro}>В {Math.round(remaining.carbs)}g</span>
+          <span className={styles.remMacro}>М {Math.round(remaining.fat)}g</span>
+        </div>
+      </div>
+
+      <div className={styles.subTabRow}>
+        <button
+          className={`${styles.subTabBtn} ${subTab === 'history' ? styles.subTabActive : ''}`}
+          onClick={() => setSubTab('history')}
+          type="button"
+        >МОЯ ИСТОРИЯ</button>
+        <button
+          className={`${styles.subTabBtn} ${subTab === 'off' ? styles.subTabActive : ''}`}
+          onClick={() => setSubTab('off')}
+          type="button"
+        >НОВИ ХРАНИ</button>
+      </div>
+
+      {subTab === 'history' && <HistorySuggestions remaining={remaining} onAddRaw={onAddRaw} />}
+      {subTab === 'off'     && <OFFSuggestions remaining={remaining} targets={targets} onAddRaw={onAddRaw} />}
+    </div>
   )
 }
