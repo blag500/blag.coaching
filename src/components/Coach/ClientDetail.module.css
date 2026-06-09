@@ -1541,3 +1541,245 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ─── Sessions tab ─────────────────────────────────────────────────────── */
+
+.sessionsTab {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.sessionCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sessionInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sessionDate {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.sessionTitle {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.sessionPrice {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.sessionRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.sessionBadges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.sessionStatusBadge {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.sStatus_pending   { background: rgba(255,183,77,0.1);   color: var(--accent); }
+.sStatus_confirmed { background: rgba(102,187,106,0.1);  color: #66BB6A; }
+.sStatus_completed { background: rgba(255,255,255,0.05); color: var(--muted); }
+.sStatus_declined  { background: rgba(239,83,80,0.1);    color: #EF5350; }
+.sStatus_cancelled { background: rgba(239,83,80,0.1);    color: #EF5350; }
+
+.sessionPayBadge {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.sPay_invoiced { background: rgba(255,183,77,0.1);   color: var(--accent); }
+.sPay_paid     { background: rgba(102,187,106,0.15); color: #66BB6A; }
+
+.invoiceBtn {
+  padding: 5px 11px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(255,183,77,0.3);
+  border-radius: 7px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.invoiceBtn:active { background: rgba(255,183,77,0.18); }
+
+/* Invoice modal */
+.invoiceOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0,0,0,0.62);
+}
+
+@keyframes slideUpPanel {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0) }
+}
+
+.invoiceSheet {
+  width: 100%;
+  background: var(--surface-1);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 24px calc(40px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: slideUpPanel 0.26s var(--ease-out) both;
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+.invoiceTitle {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.invoiceSubtitle {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  margin-top: -6px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.priceInput {
+  flex: 1;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  text-align: right;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+.priceInput::-webkit-outer-spin-button,
+.priceInput::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.priceInput:focus {
+  border-color: var(--accent);
+  box-shadow: var(--accent-glow);
+}
+
+.priceCurrency {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.invoiceError {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--red);
+  margin: 0;
+}
+
+.invoiceActions {
+  display: flex;
+  gap: 10px;
+}
+
+.invoiceCancelBtn {
+  flex: 1;
+  padding: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.invoiceCancelBtn:disabled { opacity: 0.5; }
+
+.invoiceConfirmBtn {
+  flex: 2;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.invoiceConfirmBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

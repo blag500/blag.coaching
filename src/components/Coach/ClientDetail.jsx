@@ -11,6 +11,7 @@ import styles from './ClientDetail.module.css'
 const TABS = [
   { id: 'progress',  label: 'ПРОГРЕС' },
   { id: 'checkin',   label: 'CHECK-IN' },
+  { id: 'sessions',  label: 'ГРАФИК' },
   { id: 'nutrition', label: 'ХРАНЕНЕ' },
   { id: 'lifts',     label: 'УПРАЖНЕНИЯ' },
   { id: 'plan',      label: 'ПЛАН' },
@@ -213,7 +214,8 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
 
       <div className={styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
-        {tab === 'checkin'  && <CheckinTab clientId={client.id} />}
+        {tab === 'checkin'   && <CheckinTab clientId={client.id} />}
+        {tab === 'sessions'  && <SessionsTab clientId={client.id} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
         {tab === 'lifts' && <LiftsTab clientId={client.id} />}
         {tab === 'plan' && (
@@ -1073,6 +1075,154 @@ function LiftProgressChart({ data }) {
 
 const GYM_PERF_LABEL = ['↓ СПАД', '= ЗАДРЖ', '↑ РЪСТ']
 const GYM_PERF_COLOR = ['#EF5350', '#FFB74D', '#66BB6A']
+
+// ─── Sessions Tab ────────────────────────────────────────────────────────────
+
+const MONTHS_CD = ['ЯНУ','ФЕВ','МАР','АПР','МАЙ','ЮНИ','ЮЛИ','АВГ','СЕП','ОКТ','НОЕ','ДЕК']
+
+function fmtSessionDT(iso) {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2,'0')} ${MONTHS_CD[d.getMonth()]}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+}
+
+const SESSION_STATUS_LABEL = {
+  pending:   'ЧАКА',
+  confirmed: 'ПОТВЪРД.',
+  completed: 'ПРОВЕДЕНО',
+  declined:  'ОТКАЗАНА',
+  cancelled: 'ОТМЕНЕНА',
+}
+
+const PAY_LABEL = { invoiced: 'ИЗПРАТЕНА', paid: 'ПЛАТЕНО' }
+
+function SessionsTab({ clientId }) {
+  const [sessions,     setSessions]     = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [modal,        setModal]        = useState(null)
+  const [price,        setPrice]        = useState('')
+  const [invoicing,    setInvoicing]    = useState(false)
+  const [invoiceError, setInvoiceError] = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from('training_sessions')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('scheduled_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => { setSessions(data || []); setLoading(false) })
+  }, [clientId])
+
+  async function handleInvoice() {
+    const priceParsed = parseFloat(price)
+    if (!priceParsed || priceParsed <= 0) return
+    setInvoicing(true)
+    setInvoiceError(null)
+    const { data, error } = await supabase.functions.invoke('create-invoice', {
+      body: { session_id: modal.id, price_bgn: priceParsed },
+    })
+    if (error || data?.error) {
+      setInvoiceError(error?.message || data?.error || 'Грешка при изпращане')
+      setInvoicing(false)
+      return
+    }
+    setSessions(prev => prev.map(s =>
+      s.id === modal.id
+        ? { ...s, payment_status: 'invoiced', stripe_invoice_id: data.invoice_id, price_bgn: priceParsed }
+        : s
+    ))
+    setModal(null)
+    setPrice('')
+    setInvoicing(false)
+  }
+
+  if (loading) return <p className={styles.loading}>Зарежда...</p>
+  if (sessions.length === 0) return <p className={styles.empty}>Няма сесии за този клиент</p>
+
+  return (
+    <div className={styles.sessionsTab}>
+      {sessions.map(s => {
+        const canInvoice = (s.status === 'confirmed' || s.status === 'completed') && !s.payment_status
+        return (
+          <div key={s.id} className={styles.sessionCard}>
+            <div className={styles.sessionInfo}>
+              <span className={styles.sessionDate}>{fmtSessionDT(s.scheduled_at)}</span>
+              <span className={styles.sessionTitle}>{s.title}</span>
+              {s.price_bgn != null && (
+                <span className={styles.sessionPrice}>{s.price_bgn} лв.</span>
+              )}
+            </div>
+            <div className={styles.sessionRight}>
+              <div className={styles.sessionBadges}>
+                <span className={`${styles.sessionStatusBadge} ${styles['sStatus_' + s.status] || ''}`}>
+                  {SESSION_STATUS_LABEL[s.status] ?? s.status}
+                </span>
+                {s.payment_status && (
+                  <span className={`${styles.sessionPayBadge} ${styles['sPay_' + s.payment_status] || ''}`}>
+                    {PAY_LABEL[s.payment_status] ?? s.payment_status}
+                  </span>
+                )}
+              </div>
+              {canInvoice && (
+                <button
+                  className={styles.invoiceBtn}
+                  onClick={() => { setModal(s); setPrice(''); setInvoiceError(null) }}
+                  type="button"
+                >
+                  ФАКТУРА
+                </button>
+              )}
+            </div>
+          </div>
+        )
+      })}
+
+      {modal && (
+        <div className={styles.invoiceOverlay} onClick={e => e.target === e.currentTarget && setModal(null)}>
+          <div className={styles.invoiceSheet}>
+            <div className={styles.handle} />
+            <p className={styles.invoiceTitle}>ИЗПРАТИ ФАКТУРА</p>
+            <p className={styles.invoiceSubtitle}>{modal.title} · {fmtSessionDT(modal.scheduled_at)}</p>
+            <div className={styles.priceRow}>
+              <input
+                className={styles.priceInput}
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                autoFocus
+              />
+              <span className={styles.priceCurrency}>лв.</span>
+            </div>
+            {invoiceError && <p className={styles.invoiceError}>{invoiceError}</p>}
+            <div className={styles.invoiceActions}>
+              <button
+                className={styles.invoiceCancelBtn}
+                onClick={() => setModal(null)}
+                disabled={invoicing}
+                type="button"
+              >
+                Отказ
+              </button>
+              <button
+                className={styles.invoiceConfirmBtn}
+                onClick={handleInvoice}
+                disabled={invoicing || !price || parseFloat(price) <= 0}
+                type="button"
+              >
+                {invoicing ? 'Изпраща...' : 'Изпрати'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Checkin Tab ──────────────────────────────────────────────────────────────
 
 function CheckinTab({ clientId }) {
   const [checkins,  setCheckins]  = useState([])
