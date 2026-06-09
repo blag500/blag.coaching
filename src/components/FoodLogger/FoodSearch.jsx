@@ -199,7 +199,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
           value={query}
           onChange={e => { setQuery(e.target.value); resetResults() }}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          placeholder="Храна или няколко с запетая..."
+          placeholder="Храна или няколко със запетая..."
           aria-label="AI търсене на макроси"
         />
         {query && (
