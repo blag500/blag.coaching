@@ -1255,6 +1255,43 @@ function SessionsTab({ clientId, client }) {
   )
 }
 
+// ─── Photo Timeline ───────────────────────────────────────────────────────────
+
+function PhotoTimeline({ checkins, onPhotoClick }) {
+  const photos = [...checkins]
+    .filter(c => c.photo_url)
+    .sort((a, b) => a.date.localeCompare(b.date)) // oldest left → newest right
+
+  if (photos.length === 0) return null
+
+  return (
+    <div className={styles.photoTimeline}>
+      <span className={styles.photoTimelineLabel}>ПРОГРЕС СНИМКИ — {photos.length}</span>
+      <div className={styles.photoScroll}>
+        {photos.map((c, i) => {
+          const isLatest = i === photos.length - 1
+          return (
+            <button
+              key={c.id}
+              type="button"
+              className={`${styles.photoItem} ${isLatest ? styles.photoItemLatest : ''}`}
+              onClick={() => onPhotoClick(c.photo_url)}
+            >
+              <img src={c.photo_url} className={styles.photoImg} alt={c.date} />
+              <span className={styles.photoDate}>
+                {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: 'short' })}
+              </span>
+              {c.weight_kg != null && (
+                <span className={styles.photoWeight}>{c.weight_kg}кг</span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ─── Checkin Tab ──────────────────────────────────────────────────────────────
 
 const TREND_PERIODS = [
@@ -1368,6 +1405,7 @@ function CheckinTab({ clientId }) {
 
   return (
     <div className={styles.checkinTab}>
+      <PhotoTimeline checkins={checkins} onPhotoClick={setLightbox} />
       <CheckinTrends checkins={checkins} />
       {checkins.map(c => (
         <div key={c.id} className={styles.checkinCard}>
