@@ -38,25 +38,29 @@ function toDateInput(year, month, day) {
 
 function isoToDateInput(iso) {
   if (!iso) return ''
-  const d = new Date(iso)
-  return toDateInput(d.getFullYear(), d.getMonth(), d.getDate())
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Europe/Sofia' })
 }
 
 function isoToTimeInput(iso) {
   if (!iso) return '10:00'
-  const d = new Date(iso)
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
+}
+
+// Sofia-aware "today" — returns { year, month (0-based), day }
+function getSofiaToday() {
+  const parts = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Sofia' }).split('-').map(Number)
+  return { year: parts[0], month: parts[1] - 1, day: parts[2] }
 }
 
 // formMode: 'create' | 'coach-edit' | 'client-propose'
 export default function TrainingCalendar() {
   const { profile, fetchTrainingSessions, createTrainingSession, updateSessionStatus, updateSession, fetchClients } = useAuth()
-  const isCoach = profile?.role === 'coach'
-  const today   = new Date()
+  const isCoach   = profile?.role === 'coach'
+  const today     = getSofiaToday()
 
-  const [year,     setYear]     = useState(today.getFullYear())
-  const [month,    setMonth]    = useState(today.getMonth())
-  const [selDay,   setSelDay]   = useState(today.getDate())
+  const [year,     setYear]     = useState(today.year)
+  const [month,    setMonth]    = useState(today.month)
+  const [selDay,   setSelDay]   = useState(today.day)
   const [sessions, setSessions] = useState([])
   const [clients,  setClients]  = useState([])
   const [loading,  setLoading]  = useState(true)
@@ -308,8 +312,9 @@ export default function TrainingCalendar() {
     return sessions
       .filter(s => {
         if (filterClientId !== 'all' && s.client?.id !== filterClientId) return false
+        const todayStr = `${today.year}-${String(today.month + 1).padStart(2,'0')}-${String(today.day).padStart(2,'0')}`
         return ['completed', 'cancelled', 'declined'].includes(s.status) ||
-          (new Date(s.scheduled_at) < today && s.status !== 'pending' && s.status !== 'confirmed')
+          (sofiaDateStr(s.scheduled_at) < todayStr && s.status !== 'pending' && s.status !== 'confirmed')
       })
       .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
   }, [sessions, filterClientId])
@@ -342,7 +347,7 @@ export default function TrainingCalendar() {
     return Object.entries(groups)
   }, [sessions, isCoach])
 
-  const isToday  = d => d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
+  const isToday  = d => d === today.day && month === today.month && year === today.year
   const isSel    = d => d === selDay
 
   const formTitles = {
@@ -492,7 +497,7 @@ export default function TrainingCalendar() {
             <div className={styles.daySectionHead}>
               <span className={styles.daySectionTitle}>
                 {new Date(year, month, selDay).toLocaleDateString('bg-BG', {
-                  weekday: 'short', day: 'numeric', month: 'long',
+                  weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Europe/Sofia',
                 }).toUpperCase()}
               </span>
               <div className={styles.dayActions}>
