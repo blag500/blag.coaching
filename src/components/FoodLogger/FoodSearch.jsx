@@ -47,12 +47,12 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
     <div className={styles.wrap}>
       <div className={styles.modeBar}>
         {[
-          { id: 'ai',      label: 'AI' },
-          { id: 'manual',  label: 'РЪЧНО' },
-          { id: 'recent',  label: 'СКОР.' },
-          { id: 'suggest', label: 'ПРЕПОР.' },
-          { id: 'bot',     label: 'БОТ' },
-          { id: 'recipes', label: 'РЕЦЕПТИ' },
+          { id: 'ai',      label: 'AI',      icon: '◈' },
+          { id: 'manual',  label: 'РЪЧНО',   icon: '✎' },
+          { id: 'recent',  label: 'СКОР.',   icon: '↺' },
+          { id: 'suggest', label: 'ПРЕПОР.', icon: '★' },
+          { id: 'bot',     label: 'БОТ',     icon: '◉' },
+          { id: 'recipes', label: 'РЕЦЕПТИ', icon: '≡' },
         ].map(m => (
           <button
             key={m.id}
@@ -60,7 +60,8 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
             onClick={() => setMode(m.id)}
             type="button"
           >
-            {m.label}
+            <span className={styles.modeBtnIcon}>{m.icon}</span>
+            <span>{m.label}</span>
           </button>
         ))}
       </div>
