@@ -179,6 +179,12 @@ export default function Profile() {
         {profile?.name && <p className={styles.subtitle}>{profile.name}</p>}
       </header>
 
+      {/* Form check-in — daily action, lives at the top */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>CHECK-IN НА ФОРМА</h2>
+        <FormCheckin />
+      </section>
+
       {/* Activity calendar */}
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>АКТИВНОСТ</h2>
@@ -422,12 +428,6 @@ export default function Profile() {
             {nameSaved ? '✓ Запазено' : 'Запази'}
           </button>
         </form>
-      </section>
-
-      {/* Form check-in: weight + photo */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>CHECK-IN НА ФОРМА</h2>
-        <FormCheckin />
       </section>
 
       <NotificationSettings />

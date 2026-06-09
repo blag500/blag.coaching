@@ -1257,6 +1257,97 @@ function SessionsTab({ clientId, client }) {
 
 // ─── Checkin Tab ──────────────────────────────────────────────────────────────
 
+const TREND_PERIODS = [
+  { label: '7Д',    days: 7  },
+  { label: '30Д',   days: 30 },
+  { label: 'ВСИЧКО', days: null },
+]
+
+function CheckinTrends({ checkins }) {
+  const [period, setPeriod] = useState(30)
+
+  const filtered = period === null ? checkins : checkins.filter(c => {
+    const cutoff = new Date(Date.now() - period * 86400000).toISOString().slice(0, 10)
+    return c.date >= cutoff
+  })
+
+  if (filtered.length === 0) return null
+
+  const sleepArr   = filtered.filter(c => c.sleep_hours    != null).map(c => c.sleep_hours)
+  const desireArr  = filtered.filter(c => c.training_desire != null).map(c => c.training_desire)
+  const gymCounts  = [0, 0, 0]
+  filtered.forEach(c => { if (c.gym_performance != null) gymCounts[c.gym_performance]++ })
+
+  const weightArr  = filtered.filter(c => c.weight_kg != null).sort((a, b) => a.date.localeCompare(b.date))
+  const wFirst     = weightArr[0]?.weight_kg ?? null
+  const wLast      = weightArr[weightArr.length - 1]?.weight_kg ?? null
+  const wDelta     = wFirst !== null && wLast !== null && wFirst !== wLast
+    ? Math.round((wLast - wFirst) * 10) / 10 : null
+
+  const avgSleep   = sleepArr.length  ? (sleepArr.reduce((a, b) => a + b, 0)  / sleepArr.length).toFixed(1)  : null
+  const avgDesire  = desireArr.length ? (desireArr.reduce((a, b) => a + b, 0) / desireArr.length).toFixed(1) : null
+  const hasGym     = gymCounts.some(n => n > 0)
+
+  return (
+    <div className={styles.checkinTrends}>
+      <div className={styles.trendsPeriodRow}>
+        <span className={styles.trendsLabel}>СРЕДНИ СТОЙНОСТИ</span>
+        <div className={styles.trendsPeriodBtns}>
+          {TREND_PERIODS.map(p => (
+            <button
+              key={p.label}
+              type="button"
+              className={`${styles.trendsPeriodBtn} ${period === p.days ? styles.trendsPeriodBtnActive : ''}`}
+              onClick={() => setPeriod(p.days)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.trendsStats}>
+        {avgSleep !== null && (
+          <div className={styles.trendsStat}>
+            <span className={styles.trendsStatVal}>{avgSleep}<span className={styles.trendsStatUnit}>ч</span></span>
+            <span className={styles.trendsStatLabel}>ср. сън</span>
+          </div>
+        )}
+        {avgDesire !== null && (
+          <div className={styles.trendsStat}>
+            <span className={styles.trendsStatVal}>{avgDesire}<span className={styles.trendsStatUnit}>/5</span></span>
+            <span className={styles.trendsStatLabel}>желание</span>
+          </div>
+        )}
+        {hasGym && (
+          <div className={styles.trendsStat}>
+            <span className={styles.trendsStatVal}>
+              {gymCounts[2] > 0 && <span style={{ color: '#66BB6A' }}>↑{gymCounts[2]} </span>}
+              {gymCounts[1] > 0 && <span style={{ color: '#FFB74D' }}>={gymCounts[1]} </span>}
+              {gymCounts[0] > 0 && <span style={{ color: '#EF5350' }}>↓{gymCounts[0]}</span>}
+            </span>
+            <span className={styles.trendsStatLabel}>зала</span>
+          </div>
+        )}
+        {wLast !== null && (
+          <div className={styles.trendsStat}>
+            <span className={styles.trendsStatVal}>
+              {wLast}<span className={styles.trendsStatUnit}>кг</span>
+            </span>
+            <span className={styles.trendsStatLabel}>
+              {wDelta !== null
+                ? <span style={{ color: wDelta < 0 ? '#66BB6A' : '#EF5350' }}>
+                    {wDelta > 0 ? `+${wDelta}` : wDelta} кг
+                  </span>
+                : 'последно'}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function CheckinTab({ clientId }) {
   const [checkins,  setCheckins]  = useState([])
   const [loading,   setLoading]   = useState(true)
@@ -1277,6 +1368,7 @@ function CheckinTab({ clientId }) {
 
   return (
     <div className={styles.checkinTab}>
+      <CheckinTrends checkins={checkins} />
       {checkins.map(c => (
         <div key={c.id} className={styles.checkinCard}>
           {c.photo_url && (
