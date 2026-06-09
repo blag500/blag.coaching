@@ -40,33 +40,68 @@ function resizeImage(file, maxDim = 1024) {
   })
 }
 
+const PRIMARY_MODES = [
+  { id: 'ai',     label: 'AI' },
+  { id: 'recent', label: 'СКОР.' },
+  { id: 'manual', label: 'РЪЧНО' },
+]
+const MORE_MODES = [
+  { id: 'suggest', label: 'ПРЕПОР.' },
+  { id: 'bot',     label: 'БОТ' },
+  { id: 'recipes', label: 'РЕЦЕПТИ' },
+]
+
 export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} }) {
-  const [mode, setMode] = useState('ai')
+  const [mode, setMode]         = useState('ai')
+  const [showMore, setShowMore] = useState(false)
+
+  const isMoreMode = MORE_MODES.some(m => m.id === mode)
+  const moreLabel  = isMoreMode ? MORE_MODES.find(m => m.id === mode).label : '···'
+
+  function selectMode(id) {
+    setMode(id)
+    setShowMore(false)
+  }
 
   return (
     <div className={styles.wrap}>
       <div className={styles.modeBar}>
-        {[
-          { id: 'ai',      label: 'AI',      icon: '◈' },
-          { id: 'manual',  label: 'РЪЧНО',   icon: '✎' },
-          { id: 'recent',  label: 'СКОР.',   icon: '↺' },
-          { id: 'suggest', label: 'ПРЕПОР.', icon: '★' },
-          { id: 'bot',     label: 'БОТ',     icon: '◉' },
-          { id: 'recipes', label: 'РЕЦЕПТИ', icon: '≡' },
-        ].map(m => (
+        {PRIMARY_MODES.map(m => (
           <button
             key={m.id}
             className={`${styles.modeBtn} ${mode === m.id ? styles.modeBtnActive : ''}`}
-            onClick={() => setMode(m.id)}
+            onClick={() => selectMode(m.id)}
             type="button"
           >
-            <span className={styles.modeBtnIcon}>{m.icon}</span>
-            <span>{m.label}</span>
+            {m.label}
           </button>
         ))}
+        <button
+          className={`${styles.modeMore} ${isMoreMode || showMore ? styles.modeMoreActive : ''}`}
+          onClick={() => setShowMore(v => !v)}
+          type="button"
+          aria-label="Още опции"
+        >
+          {moreLabel}
+        </button>
       </div>
 
-      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
+      {showMore && (
+        <div className={styles.morePanel}>
+          {MORE_MODES.map(m => (
+            <button
+              key={m.id}
+              className={`${styles.morePanelBtn} ${mode === m.id ? styles.morePanelBtnActive : ''}`}
+              onClick={() => selectMode(m.id)}
+              type="button"
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => selectMode('recent')} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
       {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
       {mode === 'suggest' && <SuggestMode totals={totals} targets={targets} onAddRaw={onAddRaw} />}
