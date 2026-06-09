@@ -288,7 +288,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     <input
                       className={styles.pickerInput}
                       type="text"
-                      placeholder="Търси съставка с AI..."
+                      placeholder="Търси съставка със AI..."
                       value={pickerQuery}
                       onChange={e => setPickerQuery(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handlePickerSearch()}
