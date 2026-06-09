@@ -527,6 +527,7 @@ export default function TrainingCalendar() {
                     onClientPropose={openClientPropose}
                     onAcceptEdit={handleAcceptEdit}
                     onDeclineEdit={handleDeclineEdit}
+                    onDelete={handleDeleteSession}
                   />
                 ))}
               </div>
