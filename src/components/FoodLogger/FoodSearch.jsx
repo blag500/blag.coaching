@@ -765,8 +765,8 @@ function SuggestCard({ item, onAdd, hint }) {
             <span className={styles.suggestCardName}>{item.name}</span>
             <span className={styles.suggestCardMacros}>
               {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g · {item.grams}g
+              {hint && <span className={styles.suggestCardHint}> · {hint}</span>}
             </span>
-            {hint && <span className={styles.suggestCardHint}>{hint}</span>}
           </div>
           <button className={styles.suggestAddBtn} onClick={() => setExpanded(true)} type="button">+</button>
         </>
