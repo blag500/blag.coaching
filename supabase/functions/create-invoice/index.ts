@@ -34,17 +34,17 @@ async function stripeGet(path: string) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
-  let session_id: string, price_bgn: number
+  let session_id: string, price_eur: number
   try {
     const body = await req.json()
     session_id = body.session_id
-    price_bgn  = parseFloat(body.price_bgn)
+    price_eur  = parseFloat(body.price_eur)
   } catch {
     return new Response('invalid json', { status: 400, headers: CORS })
   }
 
-  if (!session_id || !price_bgn || price_bgn <= 0) {
-    return new Response('missing session_id or price_bgn', { status: 400, headers: CORS })
+  if (!session_id || !price_eur || price_eur <= 0) {
+    return new Response('missing session_id or price_eur', { status: 400, headers: CORS })
   }
 
   const db = createClient(SUPABASE_URL, SERVICE_KEY)
@@ -78,12 +78,12 @@ Deno.serve(async (req) => {
       customerId = customer.id
     }
 
-    // Invoice item
-    const amountStotinki = String(Math.round(price_bgn * 100))
+    // Invoice item (EUR cents)
+    const amountCents = String(Math.round(price_eur * 100))
     await stripePost('/invoiceitems', {
       customer:    customerId,
-      amount:      amountStotinki,
-      currency:    'bgn',
+      amount:      amountCents,
+      currency:    'eur',
       description,
     })
 
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
       .update({
         stripe_invoice_id: invoice.id,
         payment_status:    'invoiced',
-        price_bgn,
+        price_eur,
       })
       .eq('id', session_id)
 

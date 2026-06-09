@@ -13,7 +13,21 @@
       "Bash(grep -E \"\\\\.\\(jsx?|css\\)$\")",
       "Bash(copy *)",
       "PowerShell(Copy-Item *)",
-      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"fitness coaching mobile PWA dark luxury premium\" --design-system -p \"Blag Coaching\" -f markdown)"
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"fitness coaching mobile PWA dark luxury premium\" --design-system -p \"Blag Coaching\" -f markdown)",
+      "Bash(npx skills *)",
+      "Bash(Select-Object -First 10 FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Nikolay\" -Recurse -Directory -ErrorAction SilentlyContinue -Depth 6 | Where-Object { $_.Name -eq \".obsidian\" } | Select-Object FullName)",
+      "PowerShell(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'c:\\\\Users\\\\Nikolay\\\\Desktop\\\\su\\\\J3U materials\\\\Coaching-Foundations-Module-1-lecture-1-becoming-a-top-coach.pdf'\\); print\\(len\\(pdf.pages\\), 'pages'\\); print\\(pdf.pages[0].extract_text\\(\\)[:3000]\\)\")",
+      "PowerShell($docx = \"c:\\\\Users\\\\Nikolay\\\\Desktop\\\\su\\\\J3U materials\\\\Client-Assessment-form.docx\"; $zip = [System.IO.Compression.ZipFile]::OpenRead\\($docx\\); $entry = $zip.Entries | Where-Object { $_.FullName -eq \"word/document.xml\" }; $reader = New-Object System.IO.StreamReader\\($entry.Open\\(\\)\\); $xml = $reader.ReadToEnd\\(\\); $reader.Close\\(\\); $zip.Dispose\\(\\); $xml -replace '<[^>]+>','' -replace '&amp;','&' -replace '&lt;','<' -replace '&gt;','>' | Select-String -Pattern '\\\\S' | Select-Object -First 100 | ForEach-Object { $_.Line })",
+      "PowerShell(pip install *)",
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $docx = \"c:\\\\Users\\\\Nikolay\\\\Desktop\\\\su\\\\J3U materials\\\\Client-Assessment-form.docx\"; $zip = [System.IO.Compression.ZipFile]::OpenRead\\($docx\\); $entry = $zip.Entries | Where-Object { $_.FullName -eq \"word/document.xml\" }; $reader = New-Object System.IO.StreamReader\\($entry.Open\\(\\)\\); $xml = $reader.ReadToEnd\\(\\); $reader.Close\\(\\); $zip.Dispose\\(\\); \\($xml -replace '<[^>]+>','' -replace '&amp;','&' -replace '&lt;','<' -replace '&gt;','>'\\) -split '\\\\s+' | Where-Object { $_ -ne '' } | Select-Object -First 500 | Out-String)",
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $docx = \"c:\\\\Users\\\\Nikolay\\\\Desktop\\\\su\\\\J3U materials\\\\Client-Assessment-form.docx\"; $zip = [System.IO.Compression.ZipFile]::OpenRead\\($docx\\); $entry = $zip.Entries | Where-Object { $_.FullName -eq \"word/document.xml\" }; $reader = New-Object System.IO.StreamReader\\($entry.Open\\(\\)\\); $xml = $reader.ReadToEnd\\(\\); $reader.Close\\(\\); $zip.Dispose\\(\\); \\($xml -replace '<[^>]+>','' -replace '&amp;','&' -replace '&lt;','<' -replace '&gt;','>'\\) -split '\\\\s+' | Where-Object { $_ -ne '' } | Select-Object -Skip 500 | Out-String)",
+      "Bash(git rm *)",
+      "Bash(python -c ' *)",
+      "Bash(dir *)",
+      "Bash(python *)",
+      "Bash(npx vite *)",
+      "Bash(gh auth *)"
     ]
   }
 }

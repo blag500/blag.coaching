@@ -215,7 +215,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
       <div className={styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
         {tab === 'checkin'   && <CheckinTab clientId={client.id} />}
-        {tab === 'sessions'  && <SessionsTab clientId={client.id} />}
+        {tab === 'sessions'  && <SessionsTab clientId={client.id} client={client} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
         {tab === 'lifts' && <LiftsTab clientId={client.id} />}
         {tab === 'plan' && (
@@ -1095,11 +1095,13 @@ const SESSION_STATUS_LABEL = {
 
 const PAY_LABEL = { invoiced: 'ИЗПРАТЕНА', paid: 'ПЛАТЕНО' }
 
-function SessionsTab({ clientId }) {
+function SessionsTab({ clientId, client }) {
   const [sessions,     setSessions]     = useState([])
   const [loading,      setLoading]      = useState(true)
   const [modal,        setModal]        = useState(null)
   const [price,        setPrice]        = useState('')
+  const [defaultPrice, setDefaultPrice] = useState(String(client?.session_price_eur ?? ''))
+  const [savingDefault, setSavingDefault] = useState(false)
   const [invoicing,    setInvoicing]    = useState(false)
   const [invoiceError, setInvoiceError] = useState(null)
 
@@ -1113,13 +1115,26 @@ function SessionsTab({ clientId }) {
       .then(({ data }) => { setSessions(data || []); setLoading(false) })
   }, [clientId])
 
+  async function saveDefaultPrice() {
+    const val = parseFloat(defaultPrice) || null
+    setSavingDefault(true)
+    await supabase.from('profiles').update({ session_price_eur: val }).eq('id', clientId)
+    setSavingDefault(false)
+  }
+
+  function openModal(s) {
+    setModal(s)
+    setPrice(String(client?.session_price_eur ?? ''))
+    setInvoiceError(null)
+  }
+
   async function handleInvoice() {
-    const priceParsed = parseFloat(price)
-    if (!priceParsed || priceParsed <= 0) return
+    const priceVal = parseFloat(price)
+    if (!priceVal || priceVal <= 0) return
     setInvoicing(true)
     setInvoiceError(null)
     const { data, error } = await supabase.functions.invoke('create-invoice', {
-      body: { session_id: modal.id, price_bgn: priceParsed },
+      body: { session_id: modal.id, price_eur: priceVal },
     })
     if (error || data?.error) {
       setInvoiceError(error?.message || data?.error || 'Грешка при изпращане')
@@ -1128,7 +1143,7 @@ function SessionsTab({ clientId }) {
     }
     setSessions(prev => prev.map(s =>
       s.id === modal.id
-        ? { ...s, payment_status: 'invoiced', stripe_invoice_id: data.invoice_id, price_bgn: priceParsed }
+        ? { ...s, payment_status: 'invoiced', stripe_invoice_id: data.invoice_id, price_eur: priceVal }
         : s
     ))
     setModal(null)
@@ -1137,10 +1152,28 @@ function SessionsTab({ clientId }) {
   }
 
   if (loading) return <p className={styles.loading}>Зарежда...</p>
-  if (sessions.length === 0) return <p className={styles.empty}>Няма сесии за този клиент</p>
 
   return (
     <div className={styles.sessionsTab}>
+      {/* Default price setting */}
+      <div className={styles.defaultPriceRow}>
+        <span className={styles.defaultPriceLabel}>Цена на сесия</span>
+        <input
+          className={styles.defaultPriceInput}
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="—"
+          value={defaultPrice}
+          onChange={e => setDefaultPrice(e.target.value)}
+          onBlur={saveDefaultPrice}
+        />
+        <span className={styles.defaultPriceCurrency}>EUR</span>
+        {savingDefault && <span className={styles.defaultPriceSaving}>…</span>}
+      </div>
+
+      {sessions.length === 0 && <p className={styles.empty}>Няма сесии за този клиент</p>}
+
       {sessions.map(s => {
         const canInvoice = (s.status === 'confirmed' || s.status === 'completed') && !s.payment_status
         return (
@@ -1148,8 +1181,8 @@ function SessionsTab({ clientId }) {
             <div className={styles.sessionInfo}>
               <span className={styles.sessionDate}>{fmtSessionDT(s.scheduled_at)}</span>
               <span className={styles.sessionTitle}>{s.title}</span>
-              {s.price_bgn != null && (
-                <span className={styles.sessionPrice}>{s.price_bgn} лв.</span>
+              {s.price_eur != null && (
+                <span className={styles.sessionPrice}>{s.price_eur} €</span>
               )}
             </div>
             <div className={styles.sessionRight}>
@@ -1166,7 +1199,7 @@ function SessionsTab({ clientId }) {
               {canInvoice && (
                 <button
                   className={styles.invoiceBtn}
-                  onClick={() => { setModal(s); setPrice(''); setInvoiceError(null) }}
+                  onClick={() => openModal(s)}
                   type="button"
                 >
                   ФАКТУРА
@@ -1194,7 +1227,7 @@ function SessionsTab({ clientId }) {
                 onChange={e => setPrice(e.target.value)}
                 autoFocus
               />
-              <span className={styles.priceCurrency}>лв.</span>
+              <span className={styles.priceCurrency}>EUR</span>
             </div>
             {invoiceError && <p className={styles.invoiceError}>{invoiceError}</p>}
             <div className={styles.invoiceActions}>

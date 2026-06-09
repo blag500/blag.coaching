@@ -4,13 +4,13 @@ import { useWeightLog } from '../../hooks/useWeightLog'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { supabase } from '../../lib/supabase'
-import { HABITS } from '../../data/appData'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import TrainingEditor from '../Coach/TrainingEditor'
 import NutritionProgress from '../NutritionCards/NutritionProgress'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
+import WeeklySnapshot from './WeeklySnapshot'
 import styles from './Profile.module.css'
 
   function calcStreak(history) {
@@ -47,7 +47,6 @@ export default function Profile() {
   const [weightSaved, setWeightSaved] = useState(false)
   const [targetInput, setTargetInput] = useState(String(targetWeight ?? ''))
 
-  const [weeklyKcal, setWeeklyKcal] = useState(null)
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 })
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
@@ -66,23 +65,6 @@ export default function Profile() {
   useEffect(() => {
     if (profile?.name) setName(profile.name)
   }, [profile?.name])
-
-  useEffect(() => {
-    if (!user) return
-    const sevenDaysAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)
-    supabase
-      .from('food_logs')
-      .select('date, kcal')
-      .eq('user_id', user.id)
-      .gte('date', sevenDaysAgo)
-      .then(({ data }) => {
-        if (!data || data.length === 0) return
-        const byDate = {}
-        data.forEach(e => { byDate[e.date] = (byDate[e.date] || 0) + e.kcal })
-        const days = Object.values(byDate)
-        setWeeklyKcal(Math.round(days.reduce((s, v) => s + v, 0) / days.length))
-      })
-  }, [user?.id])
 
   // Fetch today's macro totals for the nutrition progress ring
   useEffect(() => {
@@ -106,18 +88,6 @@ export default function Profile() {
         ))
       })
   }, [user?.id])
-
-  const weeklyHabitPct = useMemo(() => {
-    let completed = 0, days = 0
-    for (let i = 0; i < 7; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const iso = d.toISOString().slice(0, 10)
-      const e = history.get(iso)
-      if (e) { completed += e.completed; days++ }
-    }
-    return days > 0 ? Math.round((completed / (days * HABITS.length)) * 100) : null
-  }, [history])
 
   const streak = useMemo(() => calcStreak(history), [history])
 
@@ -215,29 +185,10 @@ export default function Profile() {
         <ActivityCalendar />
       </section>
 
-      {/* Weekly summary */}
+      {/* Weekly snapshot */}
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>СЕДМИЧНО РЕЗЮМЕ</h2>
-        <div className={styles.summaryGrid}>
-          <div className={styles.summaryBox}>
-            <span className={styles.summaryValue}>
-              {weeklyKcal !== null ? weeklyKcal : '—'}
-            </span>
-            <span className={styles.summaryLabel}>ср. ккал/ден</span>
-          </div>
-          <div className={styles.summaryBox}>
-            <span className={styles.summaryValue}>
-              {weeklyHabitPct !== null ? `${weeklyHabitPct}%` : '—'}
-            </span>
-            <span className={styles.summaryLabel}>навици тази седмица</span>
-          </div>
-          <div className={styles.summaryBox}>
-            <span className={`${styles.summaryValue} ${streak > 0 ? styles.streakValue : ''}`}>
-              {streak > 0 ? streak : '—'}
-            </span>
-            <span className={styles.summaryLabel}>поредни дни</span>
-          </div>
-        </div>
+        <WeeklySnapshot kcalTarget={parseInt(macros.calories) || 0} />
       </section>
 
       {/* Macro targets — editable for coach, read-only display for clients */}
