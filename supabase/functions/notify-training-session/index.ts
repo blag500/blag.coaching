@@ -15,10 +15,10 @@ const CORS = {
 }
 
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })
+  return new Date(iso).toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Sofia' })
 }
 function fmtTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
 }
 
 interface Party { id: string; name: string | null; email: string }

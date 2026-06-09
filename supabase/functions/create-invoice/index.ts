@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
   const email     = session.client.email as string
   const name      = (session.client.name || email) as string
   const dateLabel = new Date(session.scheduled_at).toLocaleDateString('bg-BG', {
-    day: '2-digit', month: 'long', year: 'numeric',
+    day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Europe/Sofia',
   })
   const description = `${session.title} — ${dateLabel}`
 
