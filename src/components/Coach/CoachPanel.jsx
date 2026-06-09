@@ -55,8 +55,9 @@ function clientSortCompare(a, b, stats) {
   return (a.name || '').localeCompare(b.name || '')
 }
 
-function SessionCard({ s }) {
+function SessionCard({ s, onCancel }) {
   const clientName = s.client?.name || s.client?.email || '—'
+  const canCancel  = s.status === 'pending' || s.status === 'confirmed'
   return (
     <div className={`${styles.upcomingCard} ${styles['ucard_' + s.status] || ''}`}>
       <div className={styles.upcomingDate}>
@@ -70,12 +71,22 @@ function SessionCard({ s }) {
       <span className={`${styles.upcomingBadge} ${styles['ubadge_' + s.status] || ''}`}>
         {STATUS_LABELS[s.status] ?? s.status}
       </span>
+      {canCancel && onCancel && (
+        <button
+          className={styles.cancelSessionBtn}
+          onClick={() => onCancel(s.id)}
+          type="button"
+          aria-label="Отмени тренировката"
+        >
+          ×
+        </button>
+      )}
     </div>
   )
 }
 
 export default function CoachPanel() {
-  const { user, fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, createTrainingSession, sendMessage, fetchAllClientsStats } = useAuth()
+  const { user, fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, createTrainingSession, updateSessionStatus, sendMessage, fetchAllClientsStats } = useAuth()
   const { unreadByUser } = useUnread()
 
   const [clients, setClients]               = useState([])
@@ -178,6 +189,11 @@ export default function CoachPanel() {
     setApprovingId(null)
   }
 
+  async function handleCancelSession(sessionId) {
+    const { error } = await updateSessionStatus(sessionId, 'cancelled')
+    if (!error) setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: 'cancelled' } : s))
+  }
+
   function handleClientDeleted(clientId) {
     setClients(prev => prev.filter(c => c.id !== clientId))
     setSelectedClient(null)
@@ -233,7 +249,7 @@ export default function CoachPanel() {
             <>
               <p className={styles.sessionsSubLabel}>ПРЕДСТОЯЩИ 7 ДНИ</p>
               <div className={styles.upcomingList}>
-                {upcoming.map(s => <SessionCard key={s.id} s={s} />)}
+                {upcoming.map(s => <SessionCard key={s.id} s={s} onCancel={handleCancelSession} />)}
               </div>
             </>
           )}

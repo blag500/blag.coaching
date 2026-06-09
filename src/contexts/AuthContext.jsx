@@ -307,7 +307,7 @@ export function AuthProvider({ children }) {
   async function fetchTrainingSessions() {
     const { data, error } = await supabase
       .from('training_sessions')
-      .select('*, coach:profiles!fk_ts_coach(name, email), client:profiles!fk_ts_client(name, email)')
+      .select('*, coach:profiles!fk_ts_coach(id, name, email), client:profiles!fk_ts_client(id, name, email)')
       .order('scheduled_at')
     return { data, error }
   }
@@ -325,7 +325,7 @@ export function AuthProvider({ children }) {
         notes:            notes || null,
         ...(status ? { status } : {}),
       })
-      .select('*, coach:profiles!fk_ts_coach(name, email), client:profiles!fk_ts_client(name, email)')
+      .select('*, coach:profiles!fk_ts_coach(id, name, email), client:profiles!fk_ts_client(id, name, email)')
       .single()
     return { data, error }
   }

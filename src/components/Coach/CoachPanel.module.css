@@ -392,6 +392,30 @@
 .ucard_completed  { border-left-color: var(--muted); opacity: 0.75; }
 .ubadge_completed { background: rgba(255,255,255,0.05); color: var(--muted); }
 
+.cancelSessionBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.cancelSessionBtn:active {
+  border-color: #ef5350;
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.08);
+}
+
 /* Sessions section header */
 .sessionsHeader {
   display: flex;
