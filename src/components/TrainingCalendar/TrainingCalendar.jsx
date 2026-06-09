@@ -24,7 +24,12 @@ const STATUS_LABELS = {
 
 function fmtTime(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
+}
+
+function sofiaDateStr(iso) {
+  // Returns 'YYYY-MM-DD' in Sofia timezone for calendar day matching
+  return new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Europe/Sofia' })
 }
 
 function toDateInput(year, month, day) {
@@ -109,22 +114,24 @@ export default function TrainingCalendar() {
     else setMonth(m => m + 1)
   }
 
+  function dayKey(y, m, d) {
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  }
+
   function visibleSessionsForDay(day) {
     if (!day) return []
+    const target = dayKey(year, month, day)
     return sessions.filter(s => {
       if (s.status === 'declined' || s.status === 'cancelled') return false
-      if (filterClientId !== 'all' && s.client?.id !== filterClientId) return false
-      const d = new Date(s.scheduled_at)
-      return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
+      if (filterClientId !== 'all' && s.client_id !== filterClientId) return false
+      return sofiaDateStr(s.scheduled_at) === target
     })
   }
 
   function allSessionsForDay(day) {
     if (!day) return []
-    return sessions.filter(s => {
-      const d = new Date(s.scheduled_at)
-      return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
-    })
+    const target = dayKey(year, month, day)
+    return sessions.filter(s => sofiaDateStr(s.scheduled_at) === target)
   }
 
   // ── Form helpers ───────────────────────────────────────────
@@ -232,6 +239,11 @@ export default function TrainingCalendar() {
     }
   }
 
+  async function handleDeleteSession(sessionId) {
+    await supabase.from('training_sessions').delete().eq('id', sessionId)
+    setSessions(prev => prev.filter(s => s.id !== sessionId))
+  }
+
   async function handleStatus(sessionId, newStatus) {
     const { error } = await updateSessionStatus(sessionId, newStatus)
     if (!error) {
@@ -286,7 +298,7 @@ export default function TrainingCalendar() {
 
   const allSelSessions = allSessionsForDay(selDay)
   const selSessions = allSelSessions.filter(s => {
-    if (filterClientId !== 'all' && s.client?.id !== filterClientId) return false
+    if (filterClientId !== 'all' && s.client_id !== filterClientId) return false
     return activeTab === 'upcoming'
       ? s.status === 'pending' || s.status === 'confirmed'
       : s.status === 'completed' || s.status === 'cancelled' || s.status === 'declined'
@@ -306,7 +318,7 @@ export default function TrainingCalendar() {
     const groups = {}
     historySessions.forEach(s => {
       const key = new Date(s.scheduled_at).toLocaleDateString('bg-BG', {
-        weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
+        weekday: 'short', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Sofia',
       }).toUpperCase()
       if (!groups[key]) groups[key] = []
       groups[key].push(s)
@@ -322,7 +334,7 @@ export default function TrainingCalendar() {
     const groups = {}
     upcoming.forEach(s => {
       const key = new Date(s.scheduled_at).toLocaleDateString('bg-BG', {
-        weekday: 'long', day: 'numeric', month: 'long',
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Sofia',
       }).toUpperCase()
       if (!groups[key]) groups[key] = []
       groups[key].push(s)
@@ -538,6 +550,7 @@ export default function TrainingCalendar() {
                       onClientPropose={openClientPropose}
                       onAcceptEdit={handleAcceptEdit}
                       onDeclineEdit={handleDeclineEdit}
+                      onDelete={isCoach ? handleDeleteSession : undefined}
                     />
                   ))}
                 </div>
@@ -621,7 +634,7 @@ export default function TrainingCalendar() {
   )
 }
 
-function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPropose, onAcceptEdit, onDeclineEdit }) {
+function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPropose, onAcceptEdit, onDeclineEdit, onDelete }) {
   const isPending     = session.status === 'pending'
   const isConfirmed   = session.status === 'confirmed'
   const requestedByMe = session.requested_by === myId
@@ -674,6 +687,9 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
             )}
             {isConfirmed && isPast && isCoach && (
               <button className={styles.completeBtn} onClick={() => onStatus(session.id, 'completed')} type="button">Проведена</button>
+            )}
+            {onDelete && (
+              <button className={styles.deleteSessionBtn} onClick={() => onDelete(session.id)} type="button" aria-label="Изтрий">×</button>
             )}
           </div>
         </div>

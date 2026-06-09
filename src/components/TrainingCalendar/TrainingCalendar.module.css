@@ -484,6 +484,30 @@
   opacity: 0.7;
 }
 
+.deleteSessionBtn {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.deleteSessionBtn:active {
+  border-color: #ef5350;
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.08);
+}
+
 /* Form bottom sheet */
 .overlay {
   position: fixed;
