@@ -36,10 +36,10 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   const [tab, setTab] = useState('progress')
   const [stats, setStats] = useState(null)
   const [macros, setMacros] = useState({
-    calories: initialClient.calories ?? 2450,
-    protein:  initialClient.protein  ?? 180,
-    carbs:    initialClient.carbs    ?? 250,
-    fat:      initialClient.fat      ?? 70,
+    calories: initialClient.calories ?? '',
+    protein:  initialClient.protein  ?? '',
+    carbs:    initialClient.carbs    ?? '',
+    fat:      initialClient.fat      ?? '',
   })
   const [macroSaving, setMacroSaving] = useState(false)
   const [macroSaved,  setMacroSaved]  = useState(false)
@@ -63,10 +63,10 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   async function saveMacros() {
     setMacroSaving(true)
     const updates = {
-      calories: parseInt(macros.calories) || 2450,
-      protein:  parseInt(macros.protein)  || 180,
-      carbs:    parseInt(macros.carbs)    || 250,
-      fat:      parseInt(macros.fat)      || 70,
+      calories: parseInt(macros.calories) || null,
+      protein:  parseInt(macros.protein)  || null,
+      carbs:    parseInt(macros.carbs)    || null,
+      fat:      parseInt(macros.fat)      || null,
     }
     await updateClientProfile(client.id, updates)
     setClient(prev => ({ ...prev, ...updates }))
@@ -271,7 +271,7 @@ function ProgressTab({ stats, client }) {
     })
   }
 
-  const targetKcal = client.calories || 2450
+  const targetKcal = client.calories || 0
   const maxKcal    = Math.max(...days.map(d => d.kcal), targetKcal)
 
   return (
@@ -516,7 +516,7 @@ function NutritionTab({ client }) {
     fat:     Math.round((acc.fat     + (e.fat     || 0)) * 10) / 10,
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
-  const targetKcal = client.calories || 2450
+  const targetKcal = client.calories || 0
 
   return (
     <div className={styles.nutritionTab}>

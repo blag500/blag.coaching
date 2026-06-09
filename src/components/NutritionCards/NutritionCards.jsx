@@ -21,10 +21,10 @@ export default function NutritionCards() {
   const [logServings, setLogServings] = useState({}) // id → servings input
 
   const targets = {
-    kcal:    profile?.calories ?? 2450,
-    protein: profile?.protein  ?? 180,
-    carbs:   profile?.carbs    ?? 250,
-    fat:     profile?.fat      ?? 70,
+    kcal:    profile?.calories ?? 0,
+    protein: profile?.protein  ?? 0,
+    carbs:   profile?.carbs    ?? 0,
+    fat:     profile?.fat      ?? 0,
   }
 
   async function handleSaveCustomFood(data) {

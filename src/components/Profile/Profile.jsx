@@ -54,10 +54,10 @@ export default function Profile() {
 
   // Editable macro targets (coach sets their own; clients read-only via profile)
   const [macros, setMacros] = useState({
-    calories: profile?.calories ?? 2450,
-    protein:  profile?.protein  ?? 180,
-    carbs:    profile?.carbs    ?? 250,
-    fat:      profile?.fat      ?? 70,
+    calories: profile?.calories ?? '',
+    protein:  profile?.protein  ?? '',
+    carbs:    profile?.carbs    ?? '',
+    fat:      profile?.fat      ?? '',
   })
   const [macrosSaving, setMacrosSaving] = useState(false)
   const [macrosSaved,  setMacrosSaved]  = useState(false)
