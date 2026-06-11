@@ -74,61 +74,61 @@
   color: var(--muted);
 }
 
-.progressTrack {
-  height: 6px;
-  background: var(--surface-2);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 99px;
-  transition: width 0.4s ease;
-}
-
-.progressFull {
-  background: #ef5350;
-}
-
-.macroRow {
+.pieRow {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 16px;
 }
 
-.macroChip {
+.legend {
   flex: 1;
-  background: var(--surface-2);
-  border-radius: 10px;
-  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 
-.macroChipLabel {
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.legendLabel {
   font-family: var(--font-heading);
   font-size: 9px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--muted);
 }
 
-.macroChipVal {
+.legendVal {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text);
   line-height: 1;
 }
 
-.macroOver {
+.legendOver {
   color: #ef5350;
 }
 
-.macroChipTarget {
+.legendTarget {
   font-family: var(--font-body);
   font-size: 10px;
   color: var(--muted);
+  font-weight: normal;
 }
 
 .kcalHint {
