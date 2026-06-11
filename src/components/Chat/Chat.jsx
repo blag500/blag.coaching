@@ -9,82 +9,102 @@ export default function Chat({ clientId, clientName, onClose }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sendError, setSendError] = useState(null)
+  // For clients: the coach's UUID, derived from messages or RPC
+  const [resolvedCoachId, setResolvedCoachId] = useState(null)
   const messagesEndRef = useRef(null)
   const isCoach = profile?.role === 'coach'
-  const otherUserId = isCoach ? clientId : profile?.coach_id
+
+  // Who we're chatting with
+  const otherUserId = isCoach ? clientId : resolvedCoachId
 
   async function markRead(userId) {
+    if (!userId) return
     await markMessagesAsRead(userId)
     window.dispatchEvent(new CustomEvent('blag:messages-read', { detail: { userId } }))
   }
 
+  // Initial load
   useEffect(() => {
-    if (!otherUserId) {
-      setLoading(false)
-      return
-    }
-    fetchMessages(otherUserId).then(async ({ data }) => {
-      setMessages(data || [])
-      setLoading(false)
-      await markRead(otherUserId)
-    })
-  }, [otherUserId, clientId])
+    if (isCoach && !clientId) { setLoading(false); return }
 
-  // Polling fallback: silently re-fetch every 15 s in case Realtime drops
+    fetchMessages(isCoach ? clientId : null).then(async ({ data }) => {
+      const msgs = data || []
+      setMessages(msgs)
+      setLoading(false)
+
+      if (!isCoach) {
+        // Derive coach ID from messages, fall back to profile or RPC
+        const coachMsg = msgs.find(m => m.from_user_id !== user?.id)
+        const coachId  = coachMsg?.from_user_id
+          || profile?.coach_id
+          || (await supabase.rpc('get_coach_id').then(r => r.data))
+        setResolvedCoachId(coachId || null)
+        if (coachId) markRead(coachId)
+      } else {
+        markRead(clientId)
+      }
+    })
+  }, [user?.id, isCoach ? clientId : 'client'])
+
+  // Polling fallback every 15 s
   useEffect(() => {
-    if (!otherUserId) return
     const id = setInterval(async () => {
-      if (!otherUserId) return
-      const { data } = await fetchMessages(otherUserId)
+      const { data } = await fetchMessages(isCoach ? otherUserId : null)
       if (data) setMessages(data)
     }, 15_000)
     return () => clearInterval(id)
   }, [otherUserId])
 
-  // Refresh when the user brings the app back to the foreground
+  // Re-fetch on foreground
   useEffect(() => {
-    if (!otherUserId) return
     const onVisible = async () => {
-      if (document.visibilityState !== 'visible' || !otherUserId) return
-      const { data } = await fetchMessages(otherUserId)
+      if (document.visibilityState !== 'visible') return
+      const { data } = await fetchMessages(isCoach ? otherUserId : null)
       if (data) setMessages(data)
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [otherUserId])
 
-  // Real-time: append incoming messages without a full refetch
+  // Realtime: new message arrives
   useEffect(() => {
-    if (!user?.id || !otherUserId) return
+    if (!user?.id) return
     const channel = supabase
-      .channel(`chat_${user.id}_${otherUserId}`)
+      .channel(`chat_${user.id}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${user.id}` },
         payload => {
           const msg = payload.new
-          if (msg.from_user_id === otherUserId) {
-            setMessages(prev => [...prev, msg])
-            markRead(otherUserId)
-          }
+          // For coach: only show messages from this specific client
+          if (isCoach && msg.from_user_id !== clientId) return
+          setMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev
+            return [...prev, msg]
+          })
+          // If we now know who the coach is, update resolvedCoachId
+          if (!isCoach && !resolvedCoachId) setResolvedCoachId(msg.from_user_id)
+          markRead(msg.from_user_id)
         }
       )
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [user?.id, otherUserId])
+  }, [user?.id, isCoach, clientId, resolvedCoachId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   async function handleSend() {
-    if (!input.trim() || !otherUserId) return
+    if (!input.trim()) return
+    const toId = otherUserId
+    if (!toId) { setSendError('Треньорът не е намерен — опресни приложението'); return }
     const text = input.trim()
     setInput('')
     setSendError(null)
-    const { data, error } = await sendMessage(otherUserId, text)
+    const { data, error } = await sendMessage(toId, text)
     if (error || !data) {
-      setInput(text)        // restore so user doesn't lose their message
+      setInput(text)
       setSendError('Грешка при изпращане — опитай отново')
     } else {
       setMessages(prev => [...prev, data])
@@ -103,8 +123,6 @@ export default function Chat({ clientId, clientName, onClose }) {
       <div className={styles.messages}>
         {loading ? (
           <p className={styles.loading}>Зарежда...</p>
-        ) : !otherUserId ? (
-          <p className={styles.empty}>Не е намерен треньор — опресни приложението</p>
         ) : messages.length === 0 ? (
           <p className={styles.empty}>Няма съобщения</p>
         ) : (
@@ -123,9 +141,7 @@ export default function Chat({ clientId, clientName, onClose }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {sendError && (
-        <p className={styles.sendError}>{sendError}</p>
-      )}
+      {sendError && <p className={styles.sendError}>{sendError}</p>}
       <div className={styles.input}>
         <input
           className={styles.field}
@@ -138,7 +154,7 @@ export default function Chat({ clientId, clientName, onClose }) {
         <button
           className={styles.send}
           onClick={handleSend}
-          disabled={!input.trim() || !otherUserId}
+          disabled={!input.trim()}
           type="button"
         >
           ›
