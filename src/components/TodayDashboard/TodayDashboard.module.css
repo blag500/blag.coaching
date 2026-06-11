@@ -238,24 +238,20 @@
 .dotRow {
   display: flex;
   justify-content: space-between;
-  gap: 4px;
-}
-
-.dotCol {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .dot {
-  width: 28px;
-  height: 28px;
+  flex: 1;
+  aspect-ratio: 1;
+  max-width: 38px;
   border-radius: 50%;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dotDone {
@@ -264,18 +260,25 @@
 }
 
 .dotToday {
-  border-color: rgba(255, 183, 77, 0.6);
+  border-color: rgba(255, 183, 77, 0.7);
 }
 
 .dotToday.dotDone {
-  box-shadow: 0 0 8px rgba(255, 183, 77, 0.4);
+  box-shadow: 0 0 10px rgba(255, 183, 77, 0.45);
 }
 
 .dotLabel {
   font-family: var(--font-body);
   font-size: 9px;
   color: var(--muted);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.dotLabelDone {
+  color: var(--bg);
+  font-weight: bold;
 }
 
 .dotLabelToday {

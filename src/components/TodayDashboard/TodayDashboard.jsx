@@ -129,9 +129,12 @@ export default function TodayDashboard({ onNavigate }) {
 
         <div className={styles.dotRow}>
           {last7.map(day => (
-            <div key={day.ds} className={styles.dotCol}>
-              <div className={`${styles.dot} ${day.done ? styles.dotDone : ''} ${day.isToday ? styles.dotToday : ''}`} />
-              <span className={`${styles.dotLabel} ${day.isToday ? styles.dotLabelToday : ''}`}>{day.dow}</span>
+            <div key={day.ds}
+              className={`${styles.dot} ${day.done ? styles.dotDone : ''} ${day.isToday ? styles.dotToday : ''}`}
+            >
+              <span className={`${styles.dotLabel} ${day.done ? styles.dotLabelDone : ''} ${day.isToday && !day.done ? styles.dotLabelToday : ''}`}>
+                {day.dow}
+              </span>
             </div>
           ))}
         </div>
