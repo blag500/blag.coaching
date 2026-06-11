@@ -431,6 +431,19 @@ function NutritionTab({ client }) {
   const [newEntry, setNewEntry] = useState({ name: '', grams: '', kcal: '', protein: '', carbs: '', fat: '' })
   const [adding, setAdding]     = useState(false)
   const [lightboxUrl, setLightboxUrl] = useState(null)
+  const [mealPhotos, setMealPhotos] = useState([])
+
+  // Fetch recent meal photos (last 30 days) once on mount
+  useEffect(() => {
+    const since = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+    supabase.from('food_logs')
+      .select('id, name, date, photo_url')
+      .eq('user_id', client.id)
+      .gte('date', since)
+      .not('photo_url', 'is', null)
+      .order('date', { ascending: false })
+      .then(({ data }) => setMealPhotos(data || []))
+  }, [client.id])
 
   useEffect(() => {
     setLoading(true)
@@ -520,6 +533,24 @@ function NutritionTab({ client }) {
 
   return (
     <div className={styles.nutritionTab}>
+      {mealPhotos.length > 0 && (
+        <div className={styles.mealPhotoStrip}>
+          <span className={styles.mealPhotoStripLabel}>СНИМКИ НА ЯСТИЯ — {mealPhotos.length}</span>
+          <div className={styles.mealPhotoScroll}>
+            {mealPhotos.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                className={styles.mealPhotoItem}
+                onClick={() => { setLightboxUrl(p.photo_url); setSelectedDate(p.date) }}
+              >
+                <img src={p.photo_url} className={styles.mealPhotoImg} alt={p.name} />
+                <span className={styles.mealPhotoDate}>{p.date.slice(5)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
 
       {showAdd ? (
