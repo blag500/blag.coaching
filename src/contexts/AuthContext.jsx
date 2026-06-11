@@ -247,16 +247,30 @@ export function AuthProvider({ children }) {
 
   // Messaging
   async function fetchMessages(otherUserId) {
-    if (!otherUserId || !session?.user.id) return { data: null, error: null }
+    if (!session?.user.id) return { data: null, error: null }
     const me = session.user.id
+    const isClient = profile?.role !== 'coach'
+
+    if (isClient) {
+      // For clients: fetch all messages to/from me — don't rely on coach_id being correct
+      const [sent, received] = await Promise.all([
+        supabase.from('messages').select('*').eq('from_user_id', me),
+        supabase.from('messages').select('*').eq('to_user_id', me),
+      ])
+      const data = [...(sent.data || []), ...(received.data || [])]
+        .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      return { data, error: sent.error || received.error || null }
+    }
+
+    // Coach: filter by specific client
+    if (!otherUserId) return { data: null, error: null }
     const [sent, received] = await Promise.all([
       supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', otherUserId),
       supabase.from('messages').select('*').eq('from_user_id', otherUserId).eq('to_user_id', me),
     ])
     const data = [...(sent.data || []), ...(received.data || [])]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
-    const error = sent.error || received.error || null
-    return { data, error }
+    return { data, error: sent.error || received.error || null }
   }
 
   async function sendMessage(toUserId, content) {

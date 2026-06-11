@@ -8,7 +8,6 @@ export default function Chat({ clientId, clientName, onClose }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState(null)
   const [sendError, setSendError] = useState(null)
   const messagesEndRef = useRef(null)
   const isCoach = profile?.role === 'coach'
@@ -24,11 +23,10 @@ export default function Chat({ clientId, clientName, onClose }) {
       setLoading(false)
       return
     }
-    fetchMessages(otherUserId).then(async ({ data, error }) => {
-      if (error) setFetchError(JSON.stringify(error))
+    fetchMessages(otherUserId).then(async ({ data }) => {
       setMessages(data || [])
       setLoading(false)
-      if (!error) await markRead(otherUserId)
+      await markRead(otherUserId)
     })
   }, [otherUserId, clientId])
 
@@ -106,9 +104,7 @@ export default function Chat({ clientId, clientName, onClose }) {
         {loading ? (
           <p className={styles.loading}>Зарежда...</p>
         ) : !otherUserId ? (
-          <p className={styles.empty}>Не е намерен треньор (coach_id: {String(profile?.coach_id)})</p>
-        ) : fetchError ? (
-          <p className={styles.empty}>Грешка: {fetchError}</p>
+          <p className={styles.empty}>Не е намерен треньор — опресни приложението</p>
         ) : messages.length === 0 ? (
           <p className={styles.empty}>Няма съобщения</p>
         ) : (
