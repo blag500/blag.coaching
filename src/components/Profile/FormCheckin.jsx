@@ -8,9 +8,9 @@ function todayStr() {
 }
 
 const GYM_PERF = [
-  { label: '↓ СПАД',  activeClass: 'tapBtnRed'   },
-  { label: '= ЗАДРЖ', activeClass: 'tapBtnAmber'  },
-  { label: '↑ РЪСТ',  activeClass: 'tapBtnGreen'  },
+  { label: 'СПАД',  icon: '↓', activeClass: 'tapBtnRed'   },
+  { label: 'ЗАДРЖ', icon: '–', activeClass: 'tapBtnAmber'  },
+  { label: 'РЪСТ',  icon: '↑', activeClass: 'tapBtnGreen'  },
 ]
 
 const GYM_PERF_COLORS = ['#EF5350', '#FFB74D', '#66BB6A']
@@ -82,7 +82,6 @@ export default function FormCheckin() {
     if (!user) return
     setUploading(true)
 
-    // Preserve existing photo unless user picked a new one
     const existing = checkins.find(c => c.date === todayStr())
     let photo_url = existing?.photo_url || null
 
@@ -147,76 +146,80 @@ export default function FormCheckin() {
     <div>
       <form onSubmit={handleSubmit} className={styles.form}>
 
-        {/* Weight + Sleep */}
-        <div className={styles.inputRow}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="ci-weight">ТЕГЛО</label>
-            <div className={styles.weightWrap}>
+        {/* ── Metrics: Weight + Sleep ── */}
+        <div className={styles.metricsCard}>
+          <div className={styles.metricField}>
+            <span className={styles.metricLabel}>ТЕГЛО</span>
+            <div className={styles.metricInputRow}>
               <input
                 id="ci-weight"
-                className={styles.input}
+                className={styles.metricInput}
                 type="number" step="0.1" min="20" max="300"
                 placeholder="85.0"
                 value={weight}
                 onChange={e => setWeight(e.target.value)}
               />
-              <span className={styles.unit}>кг</span>
+              <span className={styles.metricUnit}>кг</span>
             </div>
           </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="ci-sleep">СЪН</label>
-            <div className={styles.weightWrap}>
+          <div className={styles.metricDivider} />
+          <div className={styles.metricField}>
+            <span className={styles.metricLabel}>СЪН</span>
+            <div className={styles.metricInputRow}>
               <input
                 id="ci-sleep"
-                className={styles.input}
+                className={styles.metricInput}
                 type="number" step="0.5" min="0" max="24"
                 placeholder="7.5"
                 value={sleepHours}
                 onChange={e => setSleepHours(e.target.value)}
               />
-              <span className={styles.unit}>ч.</span>
+              <span className={styles.metricUnit}>ч.</span>
             </div>
           </div>
         </div>
 
-        {/* Training section — grouped */}
-        <div className={styles.trainingSection}>
-          <p className={styles.sectionLabel}>ТРЕНИРОВКА</p>
+        {/* ── Training ── */}
+        <div className={styles.card}>
+          <span className={styles.cardLabel}>ТРЕНИРОВКА</span>
 
-          <div className={styles.tapRow}>
-            {GYM_PERF.map(({ label, activeClass }, i) => (
+          <div className={styles.perfRow}>
+            {GYM_PERF.map(({ label, icon, activeClass }, i) => (
               <button
                 key={i}
                 type="button"
-                className={[styles.tapBtn, gymPerf === i ? styles[activeClass] : ''].join(' ')}
+                className={`${styles.perfBtn} ${gymPerf === i ? styles[activeClass] : ''}`}
                 onClick={() => setGymPerf(gymPerf === i ? null : i)}
               >
-                {label}
+                <span className={styles.perfIcon}>{icon}</span>
+                <span className={styles.perfLabel}>{label}</span>
               </button>
             ))}
           </div>
 
-          <div className={styles.desireRow}>
-            <span className={styles.desireLabel}>ЖЕЛАНИЕ</span>
-            {[0, 1, 2, 3, 4, 5].map(n => (
-              <button
-                key={n}
-                type="button"
-                className={`${styles.desireBtn} ${trainDesire === n ? styles.desireBtnActive : ''}`}
-                onClick={() => setTrainDesire(trainDesire === n ? null : n)}
-              >
-                {n}
-              </button>
-            ))}
+          <div className={styles.desireSection}>
+            <span className={styles.desireSectionLabel}>ЖЕЛАНИЕ</span>
+            <div className={styles.desireRow}>
+              {[0, 1, 2, 3, 4, 5].map(n => (
+                <button
+                  key={n}
+                  type="button"
+                  className={`${styles.desireBtn} ${trainDesire === n ? styles.desireBtnActive : ''}`}
+                  onClick={() => setTrainDesire(trainDesire === n ? null : n)}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Note */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="ci-notes">БЕЛЕЖКА</label>
+        {/* ── Note ── */}
+        <div className={styles.card}>
+          <span className={styles.cardLabel}>БЕЛЕЖКА</span>
           <input
             id="ci-notes"
-            className={styles.input}
+            className={styles.noteInput}
             type="text"
             placeholder="Как се чувствам..."
             value={notes}
@@ -224,7 +227,7 @@ export default function FormCheckin() {
           />
         </div>
 
-        {/* Weekly section — collapsible */}
+        {/* ── Weekly collapsible ── */}
         <button
           type="button"
           className={styles.weeklyToggle}
@@ -235,23 +238,23 @@ export default function FormCheckin() {
         </button>
 
         {showWeekly && (
-          <div className={styles.weeklySection}>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="ci-win">ПОБЕДА ЗА СЕДМИЦАТА</label>
+          <div className={styles.card}>
+            <div className={styles.weeklyField}>
+              <span className={styles.cardLabel}>ПОБЕДА ЗА СЕДМИЦАТА</span>
               <input
                 id="ci-win"
-                className={styles.input}
+                className={styles.noteInput}
                 type="text"
                 placeholder="Нещо, което мина добре..."
                 value={weeklyWin}
                 onChange={e => setWeeklyWin(e.target.value)}
               />
             </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="ci-improve">ЩО ДА ПОДОБРЯ</label>
+            <div className={styles.weeklyField}>
+              <span className={styles.cardLabel}>ЩО ДА ПОДОБРЯ</span>
               <input
                 id="ci-improve"
-                className={styles.input}
+                className={styles.noteInput}
                 type="text"
                 placeholder="Нещо за следващата седмица..."
                 value={weeklyImprove}
@@ -261,7 +264,7 @@ export default function FormCheckin() {
           </div>
         )}
 
-        {/* Photo */}
+        {/* ── Photo ── */}
         <input
           ref={fileRef}
           type="file"
@@ -284,7 +287,7 @@ export default function FormCheckin() {
             className={styles.photoPickBtn}
             onClick={() => fileRef.current.click()}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
               <circle cx="12" cy="13" r="4"/>
             </svg>
@@ -297,15 +300,15 @@ export default function FormCheckin() {
           className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
           disabled={uploading || !canSave}
         >
-          {uploading ? '...' : saved ? '✓ Записано' : 'Запази днешния check-in'}
+          {uploading ? '...' : saved ? '✓ ЗАПИСАНО' : 'ЗАПАЗИ ЧЕК-ИН'}
         </button>
       </form>
 
-      {/* Gallery */}
+      {/* ── Gallery ── */}
       {checkins.length > 0 && (
         <div className={styles.gallery}>
           {checkins.map(c => (
-            <div key={c.id} className={styles.card}>
+            <div key={c.id} className={styles.galleryCard}>
               {c.photo_url ? (
                 <button
                   type="button"
@@ -338,7 +341,7 @@ export default function FormCheckin() {
                       className={styles.chip}
                       style={{ color: GYM_PERF_COLORS[c.gym_performance], borderColor: GYM_PERF_COLORS[c.gym_performance] + '55' }}
                     >
-                      {c.gym_performance === 0 ? '↓' : c.gym_performance === 1 ? '=' : '↑'}
+                      {c.gym_performance === 0 ? '↓' : c.gym_performance === 1 ? '–' : '↑'}
                     </span>
                   )}
                   {c.training_desire != null && (
@@ -362,7 +365,7 @@ export default function FormCheckin() {
         </div>
       )}
 
-      {/* Lightbox */}
+      {/* ── Lightbox ── */}
       {lightbox && (
         <div className={styles.lightbox} onClick={() => setLightbox(null)}>
           <img src={lightbox} className={styles.lightboxImg} alt="Check-in" />
