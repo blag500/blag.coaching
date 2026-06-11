@@ -1,15 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
-import { useWeightLog } from '../../hooks/useWeightLog'
 import styles from './TodayDashboard.module.css'
 
+const DAYS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+
+function dateStr(offset = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() - offset)
+  return d.toISOString().slice(0, 10)
+}
+
+function daysAgoLabel(date) {
+  const today = dateStr(0)
+  const yesterday = dateStr(1)
+  if (date === today)     return 'днес'
+  if (date === yesterday) return 'вчера'
+  const diff = Math.round((new Date(today) - new Date(date)) / 86400000)
+  return `преди ${diff} дни`
+}
+
 export default function TodayDashboard({ onNavigate }) {
-  const { profile } = useAuth()
-  const { log, totals, addRawEntry } = useFoodLog()
-  const { todayEntry, weights, addWeight } = useWeightLog()
-  const [weightInput, setWeightInput] = useState('')
-  const [weightSaved, setWeightSaved] = useState(false)
+  const { profile, user } = useAuth()
+  const { log, totals } = useFoodLog()
+  const [workouts, setWorkouts] = useState([])
 
   const targets = {
     kcal:    profile?.calories ?? 0,
@@ -18,22 +33,44 @@ export default function TodayDashboard({ onNavigate }) {
     fat:     profile?.fat      ?? 0,
   }
 
-  const pctKcal    = targets.kcal > 0 ? Math.min(1, (totals.kcal || 0) / targets.kcal) : 0
   const kcalLeft   = Math.max(0, targets.kcal - (totals.kcal || 0))
   const recentFood = [...(log || [])].reverse().slice(0, 3)
-
-  const lastWeight = weights.length > 1 ? weights[weights.length - 2] : null
   const hour       = new Date().getHours()
   const greeting   = hour < 12 ? 'ДОБРО УТРО' : hour < 18 ? 'ДОБЪР ДЕН' : 'ДОБЪР ВЕЧЕР'
 
-  async function handleLogWeight() {
-    const kg = parseFloat(weightInput.replace(',', '.'))
-    if (!kg || kg < 20 || kg > 300) return
-    await addWeight(kg)
-    setWeightInput('')
-    setWeightSaved(true)
-    setTimeout(() => setWeightSaved(false), 2000)
+  useEffect(() => {
+    if (!user?.id) return
+    const since = dateStr(13)
+    supabase
+      .from('exercise_logs')
+      .select('block_label, completed_date')
+      .eq('user_id', user.id)
+      .gte('completed_date', since)
+      .order('completed_date', { ascending: false })
+      .then(({ data }) => { if (data) setWorkouts(data) })
+  }, [user?.id])
+
+  // Last 7 days: oldest → newest (left → right)
+  const last7 = Array.from({ length: 7 }, (_, i) => {
+    const offset = 6 - i
+    const ds     = dateStr(offset)
+    const done   = workouts.some(w => w.completed_date === ds)
+    const labels = [...new Set(workouts.filter(w => w.completed_date === ds).map(w => w.block_label))]
+    const d      = new Date(); d.setDate(d.getDate() - offset)
+    return { ds, dow: DAYS_SHORT[d.getDay()], done, labels, isToday: offset === 0 }
+  })
+
+  // Streak (consecutive days going back from today or yesterday)
+  const doneSet = new Set(workouts.map(w => w.completed_date))
+  let streak = 0
+  let startOffset = doneSet.has(dateStr(0)) ? 0 : 1
+  for (let i = startOffset; i <= 13; i++) {
+    if (doneSet.has(dateStr(i))) streak++
+    else break
   }
+
+  const lastWorkout  = workouts[0] ?? null
+  const todayWorkouts = workouts.filter(w => w.completed_date === dateStr(0))
 
   return (
     <div className={styles.page}>
@@ -48,9 +85,9 @@ export default function TodayDashboard({ onNavigate }) {
         <div className={styles.pieRow}>
           <MacroPie totals={totals} targets={targets} />
           <div className={styles.legend}>
-            <LegendItem color="#42A5F5" label="ПРОТЕИН" value={Math.round(totals.protein || 0)} target={targets.protein} />
-            <LegendItem color="#66BB6A" label="ВЪГЛЕХИДРАТИ" value={Math.round(totals.carbs || 0)} target={targets.carbs} />
-            <LegendItem color="#ffb74d" label="МАЗНИНИ" value={Math.round(totals.fat || 0)} target={targets.fat} />
+            <LegendItem color="#42A5F5" label="ПРОТЕИН"      value={Math.round(totals.protein || 0)} target={targets.protein} />
+            <LegendItem color="#66BB6A" label="ВЪГЛЕХИДРАТИ" value={Math.round(totals.carbs   || 0)} target={targets.carbs}   />
+            <LegendItem color="#ffb74d" label="МАЗНИНИ"      value={Math.round(totals.fat     || 0)} target={targets.fat}     />
           </div>
         </div>
         {kcalLeft > 0 && (
@@ -81,51 +118,45 @@ export default function TodayDashboard({ onNavigate }) {
         </div>
       )}
 
-      {/* ── Weight ── */}
-      <div className={styles.card}>
-        <span className={styles.cardLabel}>ТЕГЛО</span>
-        {todayEntry ? (
-          <div className={styles.weightDone}>
-            <span className={styles.weightVal}>{todayEntry.kg} кг</span>
-            <span className={styles.weightTag}>логнато днес</span>
-            {lastWeight && (
-              <span className={styles.weightDelta}>
-                {todayEntry.kg > lastWeight.kg ? '+' : ''}{Math.round((todayEntry.kg - lastWeight.kg) * 10) / 10} кг от последното
-              </span>
-            )}
-          </div>
-        ) : (
-          <>
-            {weights.length > 0 && (
-              <p className={styles.weightLast}>Последно: {weights[weights.length - 1].kg} кг</p>
-            )}
-            <div className={styles.weightRow}>
-              <input
-                className={styles.weightInput}
-                type="number"
-                inputMode="decimal"
-                placeholder="0.0 кг"
-                value={weightInput}
-                onChange={e => setWeightInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLogWeight()}
-              />
-              <button
-                className={`${styles.weightBtn} ${weightSaved ? styles.weightBtnSaved : ''}`}
-                onClick={handleLogWeight}
-                type="button"
-              >
-                {weightSaved ? '✓' : 'ЛОГНИ'}
-              </button>
+      {/* ── Training card ── */}
+      <button className={styles.trainingCard} onClick={() => onNavigate('training')} type="button">
+        <div className={styles.trainingHeader}>
+          <span className={styles.cardLabel}>ТРЕНИНГ</span>
+          {streak > 1 && (
+            <span className={styles.streak}>🔥 {streak} поред</span>
+          )}
+        </div>
+
+        <div className={styles.dotRow}>
+          {last7.map(day => (
+            <div key={day.ds} className={styles.dotCol}>
+              <div className={`${styles.dot} ${day.done ? styles.dotDone : ''} ${day.isToday ? styles.dotToday : ''}`} />
+              <span className={`${styles.dotLabel} ${day.isToday ? styles.dotLabelToday : ''}`}>{day.dow}</span>
             </div>
-          </>
-        )}
-      </div>
+          ))}
+        </div>
+
+        <div className={styles.trainingFooter}>
+          {todayWorkouts.length > 0 ? (
+            <span className={styles.trainingDone}>
+              ✓ {todayWorkouts.map(w => w.block_label).join(' · ')} · днес
+            </span>
+          ) : lastWorkout ? (
+            <span className={styles.trainingLast}>
+              Последно: {lastWorkout.block_label} · {daysAgoLabel(lastWorkout.completed_date)}
+            </span>
+          ) : (
+            <span className={styles.trainingEmpty}>Няма логнати тренировки</span>
+          )}
+          <span className={styles.trainingArrow}>→</span>
+        </div>
+      </button>
 
       {/* ── Check-in shortcut ── */}
       <button className={styles.checkinCard} onClick={() => onNavigate('profile')} type="button">
         <div className={styles.checkinText}>
           <span className={styles.cardLabel}>СЕДМИЧЕН ЧЕК-ИН</span>
-          <span className={styles.checkinSub}>Снимки · Съни · Прогрес</span>
+          <span className={styles.checkinSub}>Снимки · Сън · Прогрес</span>
         </div>
         <span className={styles.checkinArrow}>→</span>
       </button>
@@ -151,49 +182,31 @@ function MacroPie({ totals, targets }) {
 
   return (
     <svg width="130" height="130" viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
-      {/* Track */}
       <circle cx="60" cy="60" r={r} fill="none" stroke="var(--surface-2)" strokeWidth={sw} />
-      {/* Fat */}
       {fLen > 0.5 && (
         <circle cx="60" cy="60" r={r} fill="none" stroke="#ffb74d" strokeWidth={sw}
-          strokeDasharray={`${fLen} ${circ}`}
-          strokeDashoffset={-(pLen + cLen)}
-          transform="rotate(-90 60 60)"
-          strokeLinecap="butt"
-        />
+          strokeDasharray={`${fLen} ${circ}`} strokeDashoffset={-(pLen + cLen)}
+          transform="rotate(-90 60 60)" strokeLinecap="butt" />
       )}
-      {/* Carbs */}
       {cLen > 0.5 && (
         <circle cx="60" cy="60" r={r} fill="none" stroke="#66BB6A" strokeWidth={sw}
-          strokeDasharray={`${cLen} ${circ}`}
-          strokeDashoffset={-pLen}
-          transform="rotate(-90 60 60)"
-          strokeLinecap="butt"
-        />
+          strokeDasharray={`${cLen} ${circ}`} strokeDashoffset={-pLen}
+          transform="rotate(-90 60 60)" strokeLinecap="butt" />
       )}
-      {/* Protein */}
       {pLen > 0.5 && (
         <circle cx="60" cy="60" r={r} fill="none" stroke="#42A5F5" strokeWidth={sw}
-          strokeDasharray={`${pLen} ${circ}`}
-          strokeDashoffset={0}
-          transform="rotate(-90 60 60)"
-          strokeLinecap="butt"
-        />
+          strokeDasharray={`${pLen} ${circ}`} strokeDashoffset={0}
+          transform="rotate(-90 60 60)" strokeLinecap="butt" />
       )}
-      {/* Center kcal */}
       <text x="60" y="53" textAnchor="middle"
         fill={over ? '#ef5350' : 'var(--text)'}
         fontSize="22" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">
         {Math.round(totals.kcal || 0)}
       </text>
-      <text x="60" y="66" textAnchor="middle"
-        fill="var(--muted)" fontSize="9" fontFamily="'JetBrains Mono', monospace">
-        ккал
-      </text>
-      <text x="60" y="78" textAnchor="middle"
-        fill="var(--muted)" fontSize="9" fontFamily="'JetBrains Mono', monospace">
-        / {targets.kcal}
-      </text>
+      <text x="60" y="66" textAnchor="middle" fill="var(--muted)"
+        fontSize="9" fontFamily="'JetBrains Mono', monospace">ккал</text>
+      <text x="60" y="78" textAnchor="middle" fill="var(--muted)"
+        fontSize="9" fontFamily="'JetBrains Mono', monospace">/ {targets.kcal}</text>
     </svg>
   )
 }
