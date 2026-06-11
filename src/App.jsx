@@ -19,6 +19,7 @@ import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
 import Recovery from './pages/Recovery'
+import TodayDashboard from './components/TodayDashboard/TodayDashboard'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
@@ -26,7 +27,7 @@ import styles from './App.module.css'
 function AppShell() {
   const { session, profile, loading } = useAuth()
   const [splash, setSplash] = useState(true)
-  const [activeTab, setActiveTab] = useState('nutrition')
+  const [activeTab, setActiveTab] = useState('today')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
   const hiddenAtRef = useRef(null)
@@ -78,6 +79,7 @@ function AppShell() {
   if (!isCoach && profile.plan_pending) return <PendingApproval />
 
   const pages = {
+    today:      <TodayDashboard onNavigate={setActiveTab} />,
     nutrition:  <NutritionCards />,
     compliance: <Compliance />,
     training:   <Training />,
