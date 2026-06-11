@@ -255,7 +255,7 @@ export default function Training() {
         onClick={() => setShowProgression(p => !p)}
         type="button"
       >
-        📊 Прогресия
+        ПРОГРЕСИЯ
       </button>
 
       {/* Progression view */}

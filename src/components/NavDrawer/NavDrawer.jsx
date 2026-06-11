@@ -1,3 +1,4 @@
+import { useAuth } from '../../contexts/AuthContext'
 import styles from './NavDrawer.module.css'
 
 const NutritionIcon = () => (
@@ -86,6 +87,7 @@ const COACH_TABS = [
 ]
 
 export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
+  const { profile } = useAuth()
   const tabs = isCoach ? COACH_TABS : CLIENT_TABS
 
   function handleNav(id) {
@@ -114,6 +116,20 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
             </svg>
           </button>
         </div>
+
+        {profile && (
+          <div className={styles.userSection}>
+            <div className={styles.avatar}>
+              {(profile.name || '?')[0].toUpperCase()}
+            </div>
+            <div className={styles.userInfo}>
+              <span className={styles.userName}>{profile.name || profile.email}</span>
+              <span className={styles.userRole}>
+                {isCoach ? 'ТРЕНЬОР' : (profile.plan?.toUpperCase() ?? 'CLIENT')}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className={styles.nav}>
           {tabs.map(tab => (

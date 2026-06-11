@@ -85,8 +85,34 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
   const goalY = targetWeight != null ? toY(targetWeight) : null
   const goalInRange = goalY != null && goalY >= PAD_T && goalY <= H - PAD_B
 
+  const lastKg   = data[data.length - 1].kg
+  const prevKg   = data.length >= 2 ? data[data.length - 2].kg : null
+  const delta    = prevKg != null ? Math.round((lastKg - prevKg) * 10) / 10 : null
+  const deltaPos = delta != null && delta > 0
+  const deltaNeg = delta != null && delta < 0
+
   return (
     <div className={styles.wrap}>
+      <div className={styles.statRow}>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>ТЕКУЩО</span>
+          <span className={styles.statVal}>{lastKg} кг</span>
+        </div>
+        {delta != null && (
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>ПРОМЯНА</span>
+            <span className={`${styles.statVal} ${deltaPos ? styles.statPos : deltaNeg ? styles.statNeg : ''}`}>
+              {delta > 0 ? '+' : ''}{delta} кг
+            </span>
+          </div>
+        )}
+        {targetWeight != null && (
+          <div className={styles.stat}>
+            <span className={styles.statLabel}>ЦЕЛ</span>
+            <span className={styles.statVal}>{targetWeight} кг</span>
+          </div>
+        )}
+      </div>
       <RangePills range={range} onRange={setRange} />
       <svg
         viewBox={`0 0 ${W} ${H}`}

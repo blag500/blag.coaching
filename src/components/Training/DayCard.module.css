@@ -1,10 +1,11 @@
 .card {
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 16px;
   overflow: hidden;
 }
 
+/* ── Header ── */
 .cardHeader {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
@@ -14,12 +15,12 @@
   flex-wrap: wrap;
 }
 
-.label {
+.blockLabel {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.12em;
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 
@@ -30,7 +31,8 @@
 }
 
 .muscle {
-  font-size: 11px;
+  font-family: var(--font-body);
+  font-size: 10px;
   color: var(--muted);
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -38,106 +40,99 @@
   padding: 2px 8px;
 }
 
-/* Rest day */
+/* ── Rest day ── */
 .restMsg {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 40px 16px;
   gap: 6px;
-  color: var(--muted);
   text-align: center;
 }
 
 .restIcon {
-  font-size: 32px;
+  font-size: 36px;
   margin-bottom: 4px;
 }
 
+.restTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  margin: 0;
+}
+
 .restSub {
+  font-family: var(--font-body);
   font-size: 11px;
+  color: var(--muted);
+  margin: 0;
   opacity: 0.7;
 }
 
-/* Exercise table */
-.table {
-  width: 100%;
-  border-collapse: collapse;
+/* ── Exercise list ── */
+.exList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.thName,
-.thSets,
-.thReps,
-.thAction {
-  padding: 10px 16px;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  text-align: left;
-  font-weight: 400;
+.exRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
+  transition: background 120ms;
 }
 
-.thSets,
-.thReps,
-.thAction {
-  text-align: center;
-  width: 60px;
-}
-
-.row {
-  border-bottom: 1px solid var(--border);
-  transition: background 150ms var(--ease-out);
-}
-
-.row:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.row:last-child {
+.exRow:last-child {
   border-bottom: none;
 }
 
 .exName {
-  padding: 12px 16px;
-  font-size: 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
   color: var(--text);
-  line-height: 1.3;
+  flex: 1;
+  line-height: 1.35;
 }
 
-.exSets,
-.exReps {
-  padding: 12px 16px;
-  font-size: 12px;
-  color: var(--accent);
+.exRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.exBadge {
   font-family: var(--font-heading);
-  letter-spacing: 0.04em;
-  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
   white-space: nowrap;
 }
 
-.exAction {
-  padding: 8px 12px;
-  text-align: center;
-}
-
 .logBtn {
-  width: 32px;
-  height: 32px;
-  background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
-  border-radius: 8px;
-  color: var(--accent);
-  font-size: 18px;
+  width: 34px;
+  height: 34px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: var(--bg);
+  font-size: 20px;
   line-height: 1;
+  font-weight: 300;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
+  transition: opacity 0.12s;
 }
 
 .logBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  opacity: 0.8;
 }

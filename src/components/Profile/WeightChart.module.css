@@ -1,6 +1,46 @@
 .wrap {
-  /* inherits card context */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
+
+/* ── Stat row ── */
+.statRow {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stat + .stat {
+  padding-left: 16px;
+  border-left: 1px solid var(--border);
+  margin-left: 16px;
+}
+
+.statLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.statVal {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.statPos { color: #ef5350; }
+.statNeg { color: #66BB6A; }
 
 .pills {
   display: flex;

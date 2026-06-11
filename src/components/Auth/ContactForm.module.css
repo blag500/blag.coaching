@@ -15,6 +15,15 @@
   gap: 0;
 }
 
+.brand {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  opacity: 0.6;
+  margin-bottom: 20px;
+}
+
 .eyebrow {
   font-family: var(--font-body);
   font-size: 0.65rem;
@@ -62,10 +71,10 @@
 }
 
 .input {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 1rem;
@@ -169,10 +178,10 @@
 }
 
 .textarea {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 0.875rem;

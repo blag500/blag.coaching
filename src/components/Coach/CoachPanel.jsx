@@ -379,6 +379,17 @@ export default function CoachPanel() {
                               <span className={styles.metaDot}>·</span>
                               <span className={isToday ? styles.activeToday : styles.activeMuted}>{label}</span>
                             </div>
+                            {client.calories > 0 && (
+                              <div className={styles.kcalBar}>
+                                <div
+                                  className={styles.kcalBarFill}
+                                  style={{
+                                    width: `${Math.min(100, Math.round(((s?.kcalToday || 0) / client.calories) * 100))}%`,
+                                    background: (s?.kcalToday || 0) > client.calories ? '#ef5350' : 'var(--accent)',
+                                  }}
+                                />
+                              </div>
+                            )}
                           </div>
                           {unreadByUser[client.id] > 0 && (
                             <span className={styles.badge}>{unreadByUser[client.id] > 9 ? '9+' : unreadByUser[client.id]}</span>

@@ -9,27 +9,28 @@ function labelBg(label) {
   if (l.startsWith('PULL'))  return '#4FC3F7'
   if (l.startsWith('LEG'))   return '#81C784'
   if (l.startsWith('CARDIO') || l.includes('КАРДИО')) return '#CE93D8'
-  if (l === 'REST' || l.includes('ПОЧИВК')) return '#2A2A3A'
+  if (l === 'REST' || l.includes('ПОЧИВК')) return 'transparent'
   return '#3A3A4A'
 }
 
 function labelFg(label) {
   const l = (label || '').toUpperCase()
-  if (l === 'REST' || l.includes('ПОЧИВК')) return '#8888AA'
+  if (l === 'REST' || l.includes('ПОЧИВК')) return 'var(--muted)'
   return '#0A0A0F'
 }
 
 export default function DayCard({ dayData, onLogLift }) {
   const { profile } = useAuth()
   const { label, muscles = [], exercises = [], isRest: isRestFlag } = dayData
-  const isRest = isRestFlag || (label || '').toUpperCase() === 'REST'
+  const isRest  = isRestFlag || (label || '').toUpperCase() === 'REST'
   const isCoach = profile?.role === 'coach'
 
   return (
     <div className={styles.card}>
+      {/* Header */}
       <div className={styles.cardHeader}>
         <span
-          className={styles.label}
+          className={styles.blockLabel}
           style={{ background: labelBg(label), color: labelFg(label) }}
         >
           {label}
@@ -41,44 +42,34 @@ export default function DayCard({ dayData, onLogLift }) {
         )}
       </div>
 
+      {/* Body */}
       {isRest ? (
         <div className={styles.restMsg}>
           <span className={styles.restIcon}>🛌</span>
-          <p>Почивка & Възстановяване</p>
-          <p className={styles.restSub}>Сън, хидратация, мобилити</p>
+          <p className={styles.restTitle}>Почивка</p>
+          <p className={styles.restSub}>Сън · Хидратация · Мобилити</p>
         </div>
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.thName}>Упражнение</th>
-              <th className={styles.thSets}>Серии</th>
-              <th className={styles.thReps}>Повторения</th>
-              {!isCoach && <th className={styles.thAction}>—</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {exercises.map((ex, i) => (
-              <tr key={i} className={styles.row}>
-                <td className={styles.exName}>{ex.name}</td>
-                <td className={styles.exSets}>{ex.sets}</td>
-                <td className={styles.exReps}>{ex.reps}</td>
+        <ul className={styles.exList}>
+          {exercises.map((ex, i) => (
+            <li key={i} className={styles.exRow}>
+              <span className={styles.exName}>{ex.name}</span>
+              <div className={styles.exRight}>
+                <span className={styles.exBadge}>{ex.sets} × {ex.reps}</span>
                 {!isCoach && (
-                  <td className={styles.exAction}>
-                    <button
-                      className={styles.logBtn}
-                      onClick={() => onLogLift?.(ex)}
-                      type="button"
-                      title="Логирай тежест"
-                    >
-                      ⊕
-                    </button>
-                  </td>
+                  <button
+                    className={styles.logBtn}
+                    onClick={() => onLogLift?.(ex)}
+                    type="button"
+                    aria-label={`Логирай ${ex.name}`}
+                  >
+                    +
+                  </button>
                 )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   )
