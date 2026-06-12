@@ -201,7 +201,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
 
       <div className={tab === 'chat' ? styles.bodyChat : styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
-        {tab === 'chat'      && <ChatPage clientId={client.id} clientName={client.name || client.email} embedded />}
+        {tab === 'chat'      && <ChatPage clientId={client.id} clientName={client.name || client.email} clientAvatarUrl={client.avatar_url} embedded />}
         {tab === 'checkin'   && <CheckinTab clientId={client.id} />}
         {tab === 'sessions'  && <SessionsTab clientId={client.id} client={client} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}

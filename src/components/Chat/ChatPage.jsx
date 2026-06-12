@@ -28,7 +28,56 @@ function groupByDate(messages) {
   return groups
 }
 
-export default function ChatPage({ clientId, clientName, embedded = false }) {
+function CoachChatList({ embedded, onSelect }) {
+  const { fetchClients } = useAuth()
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchClients().then(({ data }) => {
+      setClients(data || [])
+      setLoading(false)
+    })
+  }, [])
+
+  return (
+    <div className={embedded ? styles.pageEmbedded : styles.page}>
+      <div className={styles.header}>
+        <div className={styles.avatar}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </div>
+        <span className={styles.headerName}>ЧАТОВЕ</span>
+      </div>
+      <div className={styles.feed}>
+        {loading ? (
+          <p className={styles.empty}>Зарежда...</p>
+        ) : clients.length === 0 ? (
+          <p className={styles.empty}>Няма клиенти</p>
+        ) : clients.map(c => (
+          <button
+            key={c.id}
+            type="button"
+            className={styles.clientRow}
+            onClick={() => onSelect(c.id, c.name || c.email, c.avatar_url)}
+          >
+            <div className={styles.clientAvatar}>
+              {c.avatar_url
+                ? <img src={c.avatar_url} className={styles.avatarImg} alt="" />
+                : (c.name || '?')[0].toUpperCase()
+              }
+            </div>
+            <span className={styles.clientRowName}>{c.name || c.email}</span>
+            <span className={styles.clientChevron}>›</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedded = false }) {
   const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
   const [messages, setMessages]       = useState([])
   const [input, setInput]             = useState('')
@@ -37,14 +86,18 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
   const [uploading, setUploading]     = useState(false)
   const [lightboxUrl, setLightboxUrl] = useState(null)
   const [resolvedCoachId, setResolvedCoachId] = useState(null)
+  const [otherProfile, setOtherProfile] = useState(null)
+
+  const [selectedClientId,     setSelectedClientId]     = useState(clientId || null)
+  const [selectedClientName,   setSelectedClientName]   = useState(clientName || '')
+  const [selectedClientAvatar, setSelectedClientAvatar] = useState(clientAvatarUrl || null)
 
   const messagesEndRef = useRef(null)
   const fileInputRef   = useRef(null)
   const inputRef       = useRef(null)
   const isCoach = profile?.role === 'coach'
 
-  const otherUserId = isCoach ? clientId : resolvedCoachId
-  const displayName = isCoach ? (clientName || 'Клиент') : 'Треньор'
+  const otherUserId = isCoach ? selectedClientId : resolvedCoachId
 
   async function markRead(userId) {
     if (!userId) return
@@ -53,9 +106,10 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
   }
 
   useEffect(() => {
-    if (isCoach && !clientId) { setLoading(false); return }
+    if (isCoach && !selectedClientId) { setLoading(false); return }
+    setLoading(true)
 
-    fetchMessages(isCoach ? clientId : null).then(async ({ data }) => {
+    fetchMessages(isCoach ? selectedClientId : null).then(async ({ data }) => {
       const msgs = data || []
       setMessages(msgs)
       setLoading(false)
@@ -68,12 +122,21 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
         setResolvedCoachId(coachId || null)
         if (coachId) markRead(coachId)
       } else {
-        markRead(clientId)
+        markRead(selectedClientId)
       }
     })
-  }, [user?.id, isCoach ? clientId : 'client'])
+  }, [user?.id, isCoach ? selectedClientId : 'client'])
+
+  // Fetch the other person's profile (name + avatar) for the header
+  useEffect(() => {
+    const otherId = isCoach ? selectedClientId : resolvedCoachId
+    if (!otherId) return
+    supabase.from('profiles').select('name, avatar_url').eq('id', otherId).single()
+      .then(({ data }) => { if (data) setOtherProfile(data) })
+  }, [resolvedCoachId, selectedClientId])
 
   useEffect(() => {
+    if (!otherUserId) return
     const id = setInterval(async () => {
       const { data } = await fetchMessages(isCoach ? otherUserId : null)
       if (data) setMessages(data)
@@ -82,6 +145,7 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
   }, [otherUserId])
 
   useEffect(() => {
+    if (!otherUserId) return
     const onVisible = async () => {
       if (document.visibilityState !== 'visible') return
       const { data } = await fetchMessages(isCoach ? otherUserId : null)
@@ -94,13 +158,13 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
   useEffect(() => {
     if (!user?.id) return
     const channel = supabase
-      .channel(`chatpage_${user.id}_${clientId || 'client'}`)
+      .channel(`chatpage_${user.id}_${selectedClientId || 'client'}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${user.id}` },
         payload => {
           const msg = payload.new
-          if (isCoach && msg.from_user_id !== clientId) return
+          if (isCoach && msg.from_user_id !== selectedClientId) return
           setMessages(prev => {
             if (prev.some(m => m.id === msg.id)) return prev
             return [...prev, msg]
@@ -111,7 +175,7 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
       )
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [user?.id, isCoach, clientId, resolvedCoachId])
+  }, [user?.id, isCoach, selectedClientId, resolvedCoachId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -156,6 +220,25 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
     e.target.value = ''
   }
 
+  // Coach with no client selected → show client picker
+  if (isCoach && !selectedClientId) {
+    return (
+      <CoachChatList
+        embedded={embedded}
+        onSelect={(id, name, avatar) => {
+          setSelectedClientId(id)
+          setSelectedClientName(name)
+          setSelectedClientAvatar(avatar)
+          setOtherProfile(null)
+          setMessages([])
+          setLoading(true)
+        }}
+      />
+    )
+  }
+
+  const displayName   = otherProfile?.name      || (isCoach ? (selectedClientName || 'Клиент') : 'Треньор')
+  const displayAvatar = otherProfile?.avatar_url || (isCoach ? selectedClientAvatar : null)
   const items = groupByDate(messages)
 
   return (
@@ -167,7 +250,21 @@ export default function ChatPage({ clientId, clientName, embedded = false }) {
       )}
 
       <div className={styles.header}>
-        <div className={styles.avatar}>{displayName[0]?.toUpperCase()}</div>
+        {isCoach && !embedded && (
+          <button
+            type="button"
+            className={styles.backBtn}
+            onClick={() => { setSelectedClientId(null); setMessages([]) }}
+          >
+            ‹
+          </button>
+        )}
+        <div className={styles.avatar}>
+          {displayAvatar
+            ? <img src={displayAvatar} className={styles.avatarImg} alt="" />
+            : displayName[0]?.toUpperCase()
+          }
+        </div>
         <span className={styles.headerName}>{displayName}</span>
       </div>
 

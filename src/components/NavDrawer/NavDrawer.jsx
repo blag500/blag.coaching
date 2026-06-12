@@ -81,6 +81,7 @@ const CLIENT_TABS = [
 ]
 
 const COACH_TABS = [
+  { id: 'chat',       label: 'ЧАТ',            Icon: ChatIcon      },
   { id: 'clients',    label: 'КЛИЕНТИ',        Icon: ClientsIcon   },
   { id: 'nutrition',  label: 'NUTRITION',      Icon: NutritionIcon },
   { id: 'compliance', label: 'НАВИЦИ',         Icon: HabitsIcon    },

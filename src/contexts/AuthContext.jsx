@@ -275,14 +275,15 @@ export function AuthProvider({ children }) {
 
   async function sendMessage(toUserId, content, photoUrl = null) {
     if (!session?.user) return { error: 'Not authenticated' }
+    const payload = {
+      from_user_id: session.user.id,
+      to_user_id:   toUserId,
+      content:      content || null,
+    }
+    if (photoUrl) payload.photo_url = photoUrl
     const { data, error } = await supabase
       .from('messages')
-      .insert({
-        from_user_id: session.user.id,
-        to_user_id: toUserId,
-        content:   content || null,
-        photo_url: photoUrl || null,
-      })
+      .insert(payload)
       .select()
       .single()
     if (!error) {
