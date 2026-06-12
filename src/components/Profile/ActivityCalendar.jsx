@@ -30,22 +30,26 @@ export default function ActivityCalendar() {
     const to   = `${year}-${mm}-${String(last).padStart(2, '0')}`
 
     Promise.all([
-      supabase.from('food_logs')       .select('date').eq('user_id', user.id).gte('date', from).lte('date', to),
-      supabase.from('exercise_logs')   .select('date').eq('user_id', user.id).gte('date', from).lte('date', to),
-      supabase.from('habit_completions').select('date, completed').eq('user_id', user.id).gte('date', from).lte('date', to),
-      supabase.from('weight_logs')     .select('date').eq('user_id', user.id).gte('date', from).lte('date', to),
-      supabase.from('form_checkins').select('date').eq('user_id', user.id).gte('date', from).lte('date', to).not('sleep_hours', 'is', null),
-    ]).then(([food, training, habits, weight, sleep]) => {
+      supabase.from('food_logs')          .select('date').eq('user_id', user.id).gte('date', from).lte('date', to),
+      supabase.from('workout_completions').select('completed_date').eq('user_id', user.id).gte('completed_date', from).lte('completed_date', to),
+      supabase.from('habit_completions')  .select('date, completed').eq('user_id', user.id).gte('date', from).lte('date', to),
+      supabase.from('weight_logs')        .select('date').eq('user_id', user.id).gte('date', from).lte('date', to),
+      supabase.from('form_checkins')      .select('date').eq('user_id', user.id).gte('date', from).lte('date', to).not('weight_kg', 'is', null),
+      supabase.from('sleep_logs')         .select('date').eq('user_id', user.id).gte('date', from).lte('date', to).not('duration_hours', 'is', null),
+      supabase.from('form_checkins')      .select('date').eq('user_id', user.id).gte('date', from).lte('date', to).not('sleep_hours', 'is', null),
+    ]).then(([food, training, habits, weight, checkinWeight, sleepLog, checkinSleep]) => {
       const map = new Map()
       const ensure = d => {
         if (!map.has(d)) map.set(d, { food: false, training: false, habits: false, weight: false, sleep: false })
         return map.get(d)
       }
 
-      food.data?.forEach(({ date })     => { ensure(date).food     = true })
-      training.data?.forEach(({ date }) => { ensure(date).training = true })
-      weight.data?.forEach(({ date })   => { ensure(date).weight   = true })
-      sleep.data?.forEach(({ date })    => { ensure(date).sleep    = true })
+      food.data?.forEach(({ date })                  => { ensure(date).food     = true })
+      training.data?.forEach(({ completed_date: d }) => { ensure(d).training   = true })
+      weight.data?.forEach(({ date })                => { ensure(date).weight   = true })
+      checkinWeight.data?.forEach(({ date })         => { ensure(date).weight   = true })
+      sleepLog.data?.forEach(({ date })              => { ensure(date).sleep    = true })
+      checkinSleep.data?.forEach(({ date })          => { ensure(date).sleep    = true })
 
       const habitCount = {}
       habits.data?.forEach(({ date, completed }) => {
