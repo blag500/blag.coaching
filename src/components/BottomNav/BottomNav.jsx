@@ -1,3 +1,4 @@
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './BottomNav.module.css'
 
 const NutritionIcon = () => (
@@ -52,39 +53,41 @@ const TodayIcon = () => (
   </svg>
 )
 
-const TABS = [
-  { id: 'today',      label: 'ДНЕС',      Icon: TodayIcon     },
-  { id: 'nutrition',  label: 'NUTRITION', Icon: NutritionIcon },
-  { id: 'training',   label: 'ТРЕНИНГ',   Icon: TrainingIcon  },
-  { id: 'profile',    label: 'ПРОФИЛ',    Icon: ProfileIcon   },
-  { id: 'menu',       label: 'МЕНЮ',      Icon: MenuIcon      },
+const TAB_IDS = [
+  { id: 'today',     key: 'nav.today',    Icon: TodayIcon     },
+  { id: 'nutrition', key: 'nav.nutrition', Icon: NutritionIcon },
+  { id: 'training',  key: 'nav.training',  Icon: TrainingIcon  },
+  { id: 'profile',   key: 'nav.profile',   Icon: ProfileIcon   },
+  { id: 'menu',      key: 'nav.menu',      Icon: MenuIcon      },
 ]
 
 export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
+  const { t } = useSettings()
+
   function handleClick(id) {
-    if (id === 'menu') {
-      onMenuOpen()
-    } else {
-      onTabChange(id)
-    }
+    if (id === 'menu') onMenuOpen()
+    else onTabChange(id)
   }
 
   return (
     <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
-      {TABS.map(tab => (
-        <button
-          key={tab.id}
-          className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-          onClick={() => handleClick(tab.id)}
-          aria-label={tab.label}
-          type="button"
-        >
-          <span className={styles.iconWrap}>
-            <tab.Icon />
-          </span>
-          <span className={styles.label}>{tab.label}</span>
-        </button>
-      ))}
+      {TAB_IDS.map(tab => {
+        const label = t(tab.key)
+        return (
+          <button
+            key={tab.id}
+            className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+            onClick={() => handleClick(tab.id)}
+            aria-label={label}
+            type="button"
+          >
+            <span className={styles.iconWrap}>
+              <tab.Icon />
+            </span>
+            <span className={styles.label}>{label}</span>
+          </button>
+        )
+      })}
     </nav>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
@@ -35,6 +36,7 @@ const MACRO_COLORS = {
 
 export default function Profile() {
   const { profile, user, updateProfile, signOut } = useAuth()
+  const { theme, setTheme, lang, setLang, t } = useSettings()
   const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
   const history = useHabitHistory()
   const [targetWeight, setTargetWeight] = useLocalStorage('blag_target_weight_v1', '')
@@ -461,8 +463,42 @@ export default function Profile() {
       <NotificationSettings />
 
       <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>{t('settings.appearance')}</h2>
+        <div className={styles.settingsRow}>
+          <span className={styles.settingsLabel}>{t('settings.theme')}</span>
+          <div className={styles.toggleGroup}>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${theme === 'dark'  ? styles.toggleBtnActive : ''}`}
+              onClick={() => setTheme('dark')}
+            >🌙 {t('settings.theme.dark')}</button>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${theme === 'light' ? styles.toggleBtnActive : ''}`}
+              onClick={() => setTheme('light')}
+            >☀️ {t('settings.theme.light')}</button>
+          </div>
+        </div>
+        <div className={styles.settingsRow}>
+          <span className={styles.settingsLabel}>{t('settings.language')}</span>
+          <div className={styles.toggleGroup}>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${lang === 'bg' ? styles.toggleBtnActive : ''}`}
+              onClick={() => setLang('bg')}
+            >БГ</button>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${lang === 'en' ? styles.toggleBtnActive : ''}`}
+              onClick={() => setLang('en')}
+            >EN</button>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.card}>
         <button className={styles.signOutBtn} onClick={signOut} type="button">
-          Изход от акаунта
+          {lang === 'en' ? 'Sign out' : 'Изход от акаунта'}
         </button>
       </section>
     </div>

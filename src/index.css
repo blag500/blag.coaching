@@ -37,6 +37,23 @@
   --surface-glass: rgba(12, 10, 6, 0.82);
 }
 
+html[data-theme="light"] {
+  --bg:        #F5F0E8;
+  --surface-1: #FFFFFF;
+  --surface-2: #EDE8DE;
+  --accent:    #C07800;
+  --accent-dim: rgba(192, 120, 0, 0.1);
+  --text:      #1A1300;
+  --muted:     #7A6840;
+  --border:    #D4C8A8;
+  --red:       #D32F2F;
+  --surface-glass: rgba(245, 240, 232, 0.92);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-glow: 0 0 28px rgba(192, 120, 0, 0.15);
+  --accent-glow: 0 0 0 3px rgba(192,120,0,0.08), 0 0 20px rgba(192,120,0,0.05);
+  --card-highlight: inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
 html, body, #root {
   height: 100%;
   background: var(--bg);

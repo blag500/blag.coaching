@@ -1,4 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './NavDrawer.module.css'
 
 const NutritionIcon = () => (
@@ -68,34 +69,35 @@ const ChatIcon = () => (
   </svg>
 )
 
-const CLIENT_TABS = [
-  { id: 'chat',       label: 'ЧАТ',             Icon: ChatIcon      },
-  { id: 'nutrition',  label: 'NUTRITION',       Icon: NutritionIcon },
-  { id: 'compliance', label: 'НАВИЦИ',          Icon: HabitsIcon    },
-  { id: 'training',   label: 'ТРЕНИРОВКА',      Icon: TrainingIcon  },
-  { id: 'recovery',   label: 'ВЪЗСТАНОВЯВАНЕ',  Icon: RecoveryIcon  },
-  { id: 'calendar',   label: 'ГРАФИК',          Icon: CalendarIcon  },
-  { id: 'profile',    label: 'ПРОФИЛ',          Icon: ProfileIcon   },
-  { id: 'explore',    label: 'ОТКРИЙ',          Icon: ExploreIcon   },
-  { id: 'learn',      label: 'ЗНАНИЯ',          Icon: LearnIcon     },
+const CLIENT_TAB_DEFS = [
+  { id: 'chat',       key: 'nav.chat',         Icon: ChatIcon      },
+  { id: 'nutrition',  key: 'nav.nutrition',    Icon: NutritionIcon },
+  { id: 'compliance', key: 'nav.habits',       Icon: HabitsIcon    },
+  { id: 'training',   key: 'nav.training_long',Icon: TrainingIcon  },
+  { id: 'recovery',   key: 'nav.recovery',     Icon: RecoveryIcon  },
+  { id: 'calendar',   key: 'nav.schedule',     Icon: CalendarIcon  },
+  { id: 'profile',    key: 'nav.profile',      Icon: ProfileIcon   },
+  { id: 'explore',    key: 'nav.explore',      Icon: ExploreIcon   },
+  { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
 ]
 
-const COACH_TABS = [
-  { id: 'chat',       label: 'ЧАТ',            Icon: ChatIcon      },
-  { id: 'clients',    label: 'КЛИЕНТИ',        Icon: ClientsIcon   },
-  { id: 'nutrition',  label: 'NUTRITION',      Icon: NutritionIcon },
-  { id: 'compliance', label: 'НАВИЦИ',         Icon: HabitsIcon    },
-  { id: 'training',   label: 'ТРЕНИРОВКА',     Icon: TrainingIcon  },
-  { id: 'recovery',   label: 'ВЪЗСТАНОВЯВАНЕ', Icon: RecoveryIcon  },
-  { id: 'calendar',   label: 'ГРАФИК',         Icon: CalendarIcon  },
-  { id: 'profile',    label: 'ПРОФИЛ',         Icon: ProfileIcon   },
-  { id: 'explore',    label: 'ОТКРИЙ',         Icon: ExploreIcon   },
-  { id: 'learn',      label: 'ЗНАНИЯ',         Icon: LearnIcon     },
+const COACH_TAB_DEFS = [
+  { id: 'chat',       key: 'nav.chat',         Icon: ChatIcon      },
+  { id: 'clients',    key: 'nav.clients',      Icon: ClientsIcon   },
+  { id: 'nutrition',  key: 'nav.nutrition',    Icon: NutritionIcon },
+  { id: 'compliance', key: 'nav.habits',       Icon: HabitsIcon    },
+  { id: 'training',   key: 'nav.training_long',Icon: TrainingIcon  },
+  { id: 'recovery',   key: 'nav.recovery',     Icon: RecoveryIcon  },
+  { id: 'calendar',   key: 'nav.schedule',     Icon: CalendarIcon  },
+  { id: 'profile',    key: 'nav.profile',      Icon: ProfileIcon   },
+  { id: 'explore',    key: 'nav.explore',      Icon: ExploreIcon   },
+  { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
 ]
 
 export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
   const { profile } = useAuth()
-  const tabs = isCoach ? COACH_TABS : CLIENT_TABS
+  const { t } = useSettings()
+  const tabDefs = isCoach ? COACH_TAB_DEFS : CLIENT_TAB_DEFS
 
   function handleNav(id) {
     onTabChange(id)
@@ -135,28 +137,31 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
             <div className={styles.userInfo}>
               <span className={styles.userName}>{profile.name || profile.email}</span>
               <span className={styles.userRole}>
-                {isCoach ? 'ТРЕНЬОР' : (profile.plan?.toUpperCase() ?? 'CLIENT')}
+                {isCoach ? (t('nav.clients') === 'CLIENTS' ? 'COACH' : 'ТРЕНЬОР') : (profile.plan?.toUpperCase() ?? 'CLIENT')}
               </span>
             </div>
           </div>
         )}
 
         <div className={styles.nav}>
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`${styles.item} ${activeTab === tab.id ? styles.itemActive : ''}`}
-              onClick={() => handleNav(tab.id)}
-              type="button"
-              aria-current={activeTab === tab.id ? 'page' : undefined}
-            >
-              <span className={styles.iconWrap}>
-                <tab.Icon />
-              </span>
-              <span className={styles.label}>{tab.label}</span>
-              {activeTab === tab.id && <span className={styles.activeDot} aria-hidden="true" />}
-            </button>
-          ))}
+          {tabDefs.map(tab => {
+            const label = t(tab.key)
+            return (
+              <button
+                key={tab.id}
+                className={`${styles.item} ${activeTab === tab.id ? styles.itemActive : ''}`}
+                onClick={() => handleNav(tab.id)}
+                type="button"
+                aria-current={activeTab === tab.id ? 'page' : undefined}
+              >
+                <span className={styles.iconWrap}>
+                  <tab.Icon />
+                </span>
+                <span className={styles.label}>{label}</span>
+                {activeTab === tab.id && <span className={styles.activeDot} aria-hidden="true" />}
+              </button>
+            )
+          })}
         </div>
       </div>
     </>

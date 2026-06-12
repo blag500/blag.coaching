@@ -230,7 +230,9 @@ function CoachLiveCard({ data, onPhotoClick }) {
           const isToday = i === 6
           return (
             <div key={d.date} className={styles.dotCol}>
-              <div className={`${styles.dot} ${d.trained ? styles.dotDone : ''} ${isToday ? styles.dotToday : ''}`} />
+              <div className={`${styles.dot} ${d.trained ? styles.dotDone : ''} ${isToday ? styles.dotToday : ''}`}>
+                <span className={styles.dotEmoji}>{d.trained ? '💪' : '💤'}</span>
+              </div>
               <span className={`${styles.dotLabel} ${isToday ? styles.dotLabelToday : ''}`}>
                 {DAYS_BG[dayObj.getDay()]}
               </span>

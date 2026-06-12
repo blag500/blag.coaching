@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { SettingsProvider } from './contexts/SettingsContext'
 import HelpPage from './pages/HelpPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import NavDrawer from './components/NavDrawer/NavDrawer'
@@ -126,8 +127,10 @@ function AppShell() {
 export default function App() {
   if (window.location.pathname === '/help') return <HelpPage />
   return (
-    <AuthProvider>
-      <AppShell />
-    </AuthProvider>
+    <SettingsProvider>
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
+    </SettingsProvider>
   )
 }

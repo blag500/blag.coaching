@@ -440,6 +440,51 @@
   margin: 0;
 }
 
+.settingsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settingsRow:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settingsLabel {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.toggleGroup {
+  display: flex;
+  gap: 6px;
+}
+
+.toggleBtn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, background 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggleBtnActive {
+  background: rgba(255, 183, 77, 0.12);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .signOutBtn {
   width: 100%;
   padding: 13px;

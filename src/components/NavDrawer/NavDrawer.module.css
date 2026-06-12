@@ -19,7 +19,7 @@
   bottom: 0;
   width: 72%;
   max-width: 280px;
-  background: #111008;
+  background: var(--bg);
   border-right: 1px solid rgba(255, 183, 77, 0.12);
   box-shadow: 8px 0 40px rgba(0, 0, 0, 0.6);
   z-index: 201;
