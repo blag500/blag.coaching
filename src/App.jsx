@@ -10,7 +10,6 @@ import Profile from './components/Profile/Profile'
 import CoachPanel from './components/Coach/CoachPanel'
 import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
-import ChatButton from './components/Compliance/SOSButton'
 import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
@@ -115,8 +114,7 @@ function AppShell() {
           {pages[activeTab] ?? null}
         </div>
       </main>
-      {!isCoach && <ChatButton onNavigate={setActiveTab} />}
-      <BottomNav
+<BottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onMenuOpen={() => setDrawerOpen(true)}
