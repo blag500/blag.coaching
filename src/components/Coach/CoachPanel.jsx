@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useUnread } from '../../hooks/useUnread'
 import ClientDetail from './ClientDetail'
 import Chat from '../Chat/Chat'
+import { supabase } from '../../lib/supabase'
 import styles from './CoachPanel.module.css'
 
 const STATUS_LABELS = {
@@ -440,6 +441,9 @@ export default function CoachPanel() {
         />
       )}
 
+      {/* ── Showcase manager ── */}
+      <ShowcaseManager />
+
       {/* Add session modal */}
       {showAddSession && (
         <div className={styles.modal} onClick={() => setShowAddSession(false)}>
@@ -512,6 +516,181 @@ export default function CoachPanel() {
                   disabled={savingSession || !sessionForm.clientId || !sessionForm.scheduledAt}
                 >
                   {savingSession ? '...' : 'ЗАПАЗИ'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Showcase Manager ─────────────────────────────────────────────────────────
+
+const CAT_LABEL = { training: 'ТРЕНИНГ', nutrition: 'ХРАНЕНЕ' }
+const CAT_COLOR = { training: '#FFB74D', nutrition: '#66BB6A' }
+
+const EMPTY_FORM = { category: 'training', title: '', body: '' }
+
+function ShowcaseManager() {
+  const fileRef = useRef()
+  const [posts,    setPosts]    = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [form,     setForm]     = useState(EMPTY_FORM)
+  const [photoFile, setPhotoFile] = useState(null)
+  const [saving,   setSaving]   = useState(false)
+  const [editId,   setEditId]   = useState(null)
+
+  useEffect(() => {
+    supabase.from('showcase_posts').select('*')
+      .order('sort_order').order('created_at', { ascending: false })
+      .then(({ data }) => setPosts(data || []))
+  }, [])
+
+  function openNew() {
+    setForm(EMPTY_FORM)
+    setPhotoFile(null)
+    setEditId(null)
+    setShowForm(true)
+  }
+
+  function openEdit(post) {
+    setForm({ category: post.category, title: post.title, body: post.body || '' })
+    setPhotoFile(null)
+    setEditId(post.id)
+    setShowForm(true)
+  }
+
+  async function handleSave(e) {
+    e.preventDefault()
+    if (!form.title.trim()) return
+    setSaving(true)
+
+    let photo_url = editId ? posts.find(p => p.id === editId)?.photo_url || null : null
+
+    if (photoFile) {
+      const ext  = photoFile.name.split('.').pop() || 'jpg'
+      const path = `${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('showcase-photos')
+        .upload(path, photoFile, { contentType: photoFile.type })
+      if (!upErr) {
+        const { data: urlData } = supabase.storage.from('showcase-photos').getPublicUrl(path)
+        photo_url = urlData.publicUrl
+      }
+    }
+
+    const payload = { category: form.category, title: form.title.trim(), body: form.body.trim() || null, photo_url }
+
+    if (editId) {
+      const { data } = await supabase.from('showcase_posts').update(payload).eq('id', editId).select().single()
+      if (data) setPosts(prev => prev.map(p => p.id === editId ? data : p))
+    } else {
+      const { data } = await supabase.from('showcase_posts').insert(payload).select().single()
+      if (data) setPosts(prev => [data, ...prev])
+    }
+
+    setSaving(false)
+    setShowForm(false)
+    setPhotoFile(null)
+  }
+
+  async function handleDelete(id) {
+    await supabase.from('showcase_posts').delete().eq('id', id)
+    setPosts(prev => prev.filter(p => p.id !== id))
+  }
+
+  return (
+    <div>
+      <div className={styles.sessionsHeader}>
+        <span className={styles.sessionsHeaderTitle}>ВДЪХНОВЕНИЕ</span>
+        <button className={styles.addSessionBtn} onClick={openNew} type="button">+ НОВА</button>
+      </div>
+
+      {posts.length === 0 && !showForm && (
+        <p className={styles.empty} style={{ marginTop: 8 }}>Все още няма публикации.</p>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {posts.map(post => (
+          <div key={post.id} className={styles.sessionItem} style={{ alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: 9, letterSpacing: '0.14em', color: CAT_COLOR[post.category] }}>
+                {CAT_LABEL[post.category]}
+              </span>
+              <p style={{ fontFamily: 'var(--font-heading)', fontSize: 14, color: 'var(--text)', margin: '2px 0 0', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {post.title}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <button type="button" onClick={() => openEdit(post)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 13, padding: 0 }}>✎</button>
+              <button type="button" onClick={() => handleDelete(post.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 16, padding: 0, opacity: 0.5 }}>×</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {showForm && (
+        <div className={styles.modal} onClick={() => setShowForm(false)}>
+          <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>{editId ? 'РЕДАКТИРАЙ' : 'НОВА ПУБЛИКАЦИЯ'}</h3>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>КАТЕГОРИЯ</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {['training', 'nutrition'].map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setForm(p => ({ ...p, category: cat }))}
+                      style={{
+                        flex: 1, padding: '8px 0',
+                        background: form.category === cat ? `${CAT_COLOR[cat]}18` : 'transparent',
+                        border: `1px solid ${form.category === cat ? CAT_COLOR[cat] : 'var(--border)'}`,
+                        borderRadius: 8,
+                        color: form.category === cat ? CAT_COLOR[cat] : 'var(--muted)',
+                        fontFamily: 'var(--font-heading)', fontSize: 11, letterSpacing: '0.1em',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {CAT_LABEL[cat]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>ЗАГЛАВИЕ</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={form.title}
+                  onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
+                  placeholder="Заглавие на публикацията..."
+                  required
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>СЪДЪРЖАНИЕ (по избор)</label>
+                <textarea
+                  className={styles.formTextarea}
+                  value={form.body}
+                  onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
+                  rows={5}
+                  placeholder="Описание, програма, съвети..."
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>СНИМКА (по избор)</label>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setPhotoFile(e.target.files[0] || null)} />
+                <button type="button" className={styles.formCancelBtn} onClick={() => fileRef.current.click()}>
+                  {photoFile ? `✓ ${photoFile.name}` : '+ Избери снимка'}
+                </button>
+              </div>
+              <div className={styles.formActions}>
+                <button type="button" className={styles.formCancelBtn} onClick={() => setShowForm(false)}>ОТКАЗ</button>
+                <button type="submit" className={styles.formSaveBtn} disabled={saving || !form.title.trim()}>
+                  {saving ? '...' : 'ПУБЛИКУВАЙ'}
                 </button>
               </div>
             </form>

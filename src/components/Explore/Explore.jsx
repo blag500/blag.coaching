@@ -1,9 +1,21 @@
 import { useState } from 'react'
 import EfficientProducts from './EfficientProducts'
 import ShoppingList from '../ShoppingList/ShoppingList'
+import ShowcasePage from './ShowcasePage'
 import styles from './Explore.module.css'
 
 const SECTIONS = [
+  {
+    id: 'showcase',
+    title: 'ВДЪХНОВЕНИЕ',
+    desc: 'Тренинг програми и хранене от треньора',
+    accent: '#FFB74D',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+    ),
+  },
   {
     id: 'products',
     title: 'ЕФЕКТИВНИ ПРОДУКТИ',
@@ -40,6 +52,9 @@ const COMING_SOON = [
 export default function Explore() {
   const [page, setPage] = useState(null)
 
+  if (page === 'showcase') {
+    return <ShowcasePage onBack={() => setPage(null)} />
+  }
   if (page === 'products') {
     return <EfficientProducts onBack={() => setPage(null)} />
   }
