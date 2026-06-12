@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
@@ -159,6 +159,24 @@ export default function Profile() {
     setSavingCoachPlan(false)
   }
 
+  const avatarInputRef = useRef(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setAvatarUploading(true)
+    const ext  = file.name.split('.').pop()
+    const path = `${user.id}/avatar.${ext}`
+    const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+    if (!upErr) {
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+      await updateProfile({ avatar_url: publicUrl + `?t=${Date.now()}` })
+    }
+    setAvatarUploading(false)
+    e.target.value = ''
+  }
+
   async function handleMacrosSave() {
     setMacrosSaving(true)
     await updateProfile({
@@ -175,8 +193,18 @@ export default function Profile() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>ПРОФИЛ</h1>
-        {profile?.name && <p className={styles.subtitle}>{profile.name}</p>}
+        <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+        <button className={styles.avatarBtn} onClick={() => avatarInputRef.current?.click()} type="button" aria-label="Смени снимка">
+          {profile?.avatar_url
+            ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
+            : <span className={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</span>
+          }
+          <span className={styles.avatarOverlay}>{avatarUploading ? '…' : '✎'}</span>
+        </button>
+        <div className={styles.headerInfo}>
+          <h1 className={styles.title}>{profile?.name || 'ПРОФИЛ'}</h1>
+          {profile?.plan && <p className={styles.subtitle}>{profile.plan.toUpperCase()}</p>}
+        </div>
       </header>
 
       {/* Form check-in — daily action, lives at the top */}

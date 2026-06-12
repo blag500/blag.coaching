@@ -126,7 +126,10 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
         {profile && (
           <div className={styles.userSection}>
             <div className={styles.avatar}>
-              {(profile.name || '?')[0].toUpperCase()}
+              {profile.avatar_url
+                ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
+                : (profile.name || '?')[0].toUpperCase()
+              }
             </div>
             <div className={styles.userInfo}>
               <span className={styles.userName}>{profile.name || profile.email}</span>
