@@ -252,8 +252,8 @@
   width: 100%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.12);
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
