@@ -120,7 +120,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${tab === 'chat' ? styles.pageChat : ''}`}>
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">
           ← КЛИЕНТИ

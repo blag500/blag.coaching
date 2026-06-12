@@ -275,17 +275,27 @@
   border-bottom-color: var(--accent);
 }
 
+/* Chat tab: lock page to viewport so only the inner feed scrolls */
+.pageChat {
+  min-height: unset !important;
+  height: 100dvh;
+  overflow: hidden;
+  padding-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Body */
 .body {
   overflow: hidden;
 }
 
 .bodyChat {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 220px);
+  flex: 1;
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Loading */
