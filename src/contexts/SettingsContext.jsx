@@ -4,7 +4,7 @@ const TRANSLATIONS = {
   bg: {
     'nav.today':        'ДНЕС',
     'nav.nutrition':    'ХРАНЕНЕ',
-    'nav.training':     'ТРЕНИНГ',
+    'nav.training':     'ТРЕНИРОВКА',
     'nav.training_long':'ТРЕНИРОВКА',
     'nav.profile':      'ПРОФИЛ',
     'nav.menu':         'МЕНЮ',
