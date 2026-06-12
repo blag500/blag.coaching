@@ -11,6 +11,7 @@ import CoachPanel from './components/Coach/CoachPanel'
 import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatButton from './components/Compliance/SOSButton'
+import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
 import PendingApproval from './components/Auth/PendingApproval'
 import PlanSelector from './components/Auth/PlanSelector'
@@ -89,6 +90,7 @@ function AppShell() {
     explore:    <Explore />,
     calendar:   <TrainingCalendar />,
     learn:      <LearnPage />,
+    chat:       <ChatPage />,
   }
 
   function dismissWelcome() {
@@ -113,7 +115,7 @@ function AppShell() {
           {pages[activeTab] ?? null}
         </div>
       </main>
-      <ChatButton />
+      {!isCoach && <ChatButton onNavigate={setActiveTab} />}
       <BottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}

@@ -9,12 +9,13 @@ export default function Chat({ clientId, clientName, onClose }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sendError, setSendError] = useState(null)
-  // For clients: the coach's UUID, derived from messages or RPC
+  const [uploading, setUploading] = useState(false)
+  const [lightboxUrl, setLightboxUrl] = useState(null)
   const [resolvedCoachId, setResolvedCoachId] = useState(null)
   const messagesEndRef = useRef(null)
+  const fileInputRef   = useRef(null)
   const isCoach = profile?.role === 'coach'
 
-  // Who we're chatting with
   const otherUserId = isCoach ? clientId : resolvedCoachId
 
   async function markRead(userId) {
@@ -23,7 +24,6 @@ export default function Chat({ clientId, clientName, onClose }) {
     window.dispatchEvent(new CustomEvent('blag:messages-read', { detail: { userId } }))
   }
 
-  // Initial load
   useEffect(() => {
     if (isCoach && !clientId) { setLoading(false); return }
 
@@ -33,7 +33,6 @@ export default function Chat({ clientId, clientName, onClose }) {
       setLoading(false)
 
       if (!isCoach) {
-        // Derive coach ID from messages, fall back to profile or RPC
         const coachMsg = msgs.find(m => m.from_user_id !== user?.id)
         const coachId  = coachMsg?.from_user_id
           || profile?.coach_id
@@ -46,7 +45,6 @@ export default function Chat({ clientId, clientName, onClose }) {
     })
   }, [user?.id, isCoach ? clientId : 'client'])
 
-  // Polling fallback every 15 s
   useEffect(() => {
     const id = setInterval(async () => {
       const { data } = await fetchMessages(isCoach ? otherUserId : null)
@@ -55,7 +53,6 @@ export default function Chat({ clientId, clientName, onClose }) {
     return () => clearInterval(id)
   }, [otherUserId])
 
-  // Re-fetch on foreground
   useEffect(() => {
     const onVisible = async () => {
       if (document.visibilityState !== 'visible') return
@@ -66,7 +63,6 @@ export default function Chat({ clientId, clientName, onClose }) {
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [otherUserId])
 
-  // Realtime: new message arrives
   useEffect(() => {
     if (!user?.id) return
     const channel = supabase
@@ -76,13 +72,11 @@ export default function Chat({ clientId, clientName, onClose }) {
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${user.id}` },
         payload => {
           const msg = payload.new
-          // For coach: only show messages from this specific client
           if (isCoach && msg.from_user_id !== clientId) return
           setMessages(prev => {
             if (prev.some(m => m.id === msg.id)) return prev
             return [...prev, msg]
           })
-          // If we now know who the coach is, update resolvedCoachId
           if (!isCoach && !resolvedCoachId) setResolvedCoachId(msg.from_user_id)
           markRead(msg.from_user_id)
         }
@@ -111,10 +105,40 @@ export default function Chat({ clientId, clientName, onClose }) {
     }
   }
 
+  async function handlePhoto(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const toId = otherUserId
+    if (!toId) { setSendError('Треньорът не е намерен — опресни приложението'); return }
+
+    setUploading(true)
+    setSendError(null)
+    const ext  = file.name.split('.').pop()
+    const path = `${user.id}/${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage.from('chat-photos').upload(path, file)
+    if (upErr) { setSendError('Грешка при качване на снимката'); setUploading(false); return }
+
+    const { data: { publicUrl } } = supabase.storage.from('chat-photos').getPublicUrl(path)
+    const { data, error } = await sendMessage(toId, null, publicUrl)
+    if (error || !data) {
+      setSendError('Грешка при изпращане')
+    } else {
+      setMessages(prev => [...prev, data])
+    }
+    setUploading(false)
+    e.target.value = ''
+  }
+
   const displayName = isCoach ? clientName : 'Треньор'
 
   return (
     <div className={styles.chat}>
+      {lightboxUrl && (
+        <div className={styles.lightbox} onClick={() => setLightboxUrl(null)}>
+          <img src={lightboxUrl} className={styles.lightboxImg} alt="" />
+        </div>
+      )}
+
       <div className={styles.header}>
         <span className={styles.title}>{displayName}</span>
         <button className={styles.closeBtn} onClick={onClose} type="button">×</button>
@@ -131,7 +155,16 @@ export default function Chat({ clientId, clientName, onClose }) {
               key={msg.id}
               className={`${styles.message} ${msg.from_user_id === user?.id ? styles.sent : styles.received}`}
             >
-              <span className={styles.text}>{msg.content}</span>
+              {msg.photo_url ? (
+                <img
+                  src={msg.photo_url}
+                  className={styles.photoBubble}
+                  alt="снимка"
+                  onClick={() => setLightboxUrl(msg.photo_url)}
+                />
+              ) : (
+                <span className={styles.text}>{msg.content}</span>
+              )}
               <span className={styles.time}>
                 {new Date(msg.created_at).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
               </span>
@@ -143,6 +176,22 @@ export default function Chat({ clientId, clientName, onClose }) {
 
       {sendError && <p className={styles.sendError}>{sendError}</p>}
       <div className={styles.input}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handlePhoto}
+        />
+        <button
+          className={styles.cameraBtn}
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || !otherUserId}
+          type="button"
+          aria-label="Изпрати снимка"
+        >
+          {uploading ? '…' : '📷'}
+        </button>
         <input
           className={styles.field}
           type="text"

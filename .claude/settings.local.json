@@ -27,7 +27,10 @@
       "Bash(dir *)",
       "Bash(python *)",
       "Bash(npx vite *)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(git remote *)",
+      "mcp__claude_ai_Stripe__get_stripe_account_info",
+      "mcp__claude_ai_Stripe__stripe_api_read"
     ]
   }
 }

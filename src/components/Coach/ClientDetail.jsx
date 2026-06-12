@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
+const DEFAULT_HABITS = HABITS
 import TrainingEditor from './TrainingEditor'
 import DatePicker from '../DatePicker/DatePicker'
-import Chat from '../Chat/Chat'
+import ChatPage from '../Chat/ChatPage'
 import WeightChart from '../Profile/WeightChart'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
   { id: 'progress',  label: 'ПРОГРЕС' },
+  { id: 'chat',      label: 'ЧАТ' },
   { id: 'checkin',   label: 'CHECK-IN' },
   { id: 'sessions',  label: 'ГРАФИК' },
   { id: 'nutrition', label: 'ХРАНЕНЕ' },
@@ -46,12 +48,12 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   const [edits, setEdits] = useState({
     name:          initialClient.name          ?? '',
     target_weight: initialClient.target_weight ?? '',
+    habits:        initialClient.habits        ?? null,
   })
   const [notes, setNotes] = useState(initialClient.coach_notes ?? '')
   const [saving, setSaving] = useState(false)
   const [saved,  setSaved]  = useState(false)
   const [savingPlan, setSavingPlan] = useState(false)
-  const [showChat, setShowChat] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
@@ -93,6 +95,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
     const updates = {
       name:          edits.name,
       target_weight: parseFloat(edits.target_weight) || null,
+      habits:        edits.habits,
     }
     await updateClientProfile(client.id, updates)
     setClient(prev => ({ ...prev, ...updates }))
@@ -124,14 +127,6 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
         </button>
         <span className={styles.clientName}>{client.name || client.email}</span>
         <button
-          className={styles.chatBtn}
-          onClick={() => setShowChat(v => !v)}
-          type="button"
-          aria-label="Чат с клиента"
-        >
-          💬
-        </button>
-        <button
           className={`${styles.deleteBtn} ${confirmDelete ? styles.deleteBtnActive : ''}`}
           onClick={() => setConfirmDelete(v => !v)}
           type="button"
@@ -158,14 +153,6 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
             </button>
           </div>
         </div>
-      )}
-
-      {showChat && (
-        <Chat
-          clientId={client.id}
-          clientName={client.name || client.email}
-          onClose={() => setShowChat(false)}
-        />
       )}
 
       {/* Macro targets — always visible above tabs */}
@@ -212,8 +199,9 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
         ))}
       </div>
 
-      <div className={styles.body}>
+      <div className={tab === 'chat' ? styles.bodyChat : styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
+        {tab === 'chat'      && <ChatPage clientId={client.id} clientName={client.name || client.email} embedded />}
         {tab === 'checkin'   && <CheckinTab clientId={client.id} />}
         {tab === 'sessions'  && <SessionsTab clientId={client.id} client={client} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
@@ -407,6 +395,11 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
         </div>
       </div>
 
+      <HabitsEditor
+        habits={edits.habits}
+        onChange={h => setEdits(prev => ({ ...prev, habits: h }))}
+      />
+
       <button
         className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
         onClick={onSave}
@@ -415,6 +408,81 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
       >
         {saving ? '...' : saved ? '✓ Запазено' : 'Запази'}
       </button>
+    </div>
+  )
+}
+
+function HabitsEditor({ habits, onChange }) {
+  const list = habits ?? DEFAULT_HABITS
+  const [newEmoji, setNewEmoji] = useState('')
+  const [newLabel, setNewLabel] = useState('')
+
+  function update(idx, field, value) {
+    const next = list.map((h, i) => i === idx ? { ...h, [field]: value } : h)
+    onChange(next)
+  }
+
+  function remove(idx) {
+    onChange(list.filter((_, i) => i !== idx))
+  }
+
+  function add() {
+    if (!newLabel.trim()) return
+    const id = newLabel.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') + '_' + Date.now()
+    onChange([...list, { id, emoji: newEmoji || '•', label: newLabel.trim() }])
+    setNewEmoji('')
+    setNewLabel('')
+  }
+
+  function resetToDefaults() {
+    onChange(null)
+  }
+
+  return (
+    <div className={styles.habitsEditorSection}>
+      <div className={styles.habitsEditorHeader}>
+        <span className={styles.fieldLabel}>НАВИЦИ</span>
+        {habits !== null && (
+          <button className={styles.habitsResetBtn} onClick={resetToDefaults} type="button">
+            Стандартни
+          </button>
+        )}
+      </div>
+      <div className={styles.habitsList}>
+        {list.map((h, i) => (
+          <div key={h.id} className={styles.habitRow}>
+            <input
+              className={styles.habitEmojiInput}
+              value={h.emoji}
+              onChange={e => update(i, 'emoji', e.target.value)}
+              maxLength={2}
+            />
+            <input
+              className={styles.habitLabelInput}
+              value={h.label}
+              onChange={e => update(i, 'label', e.target.value)}
+            />
+            <button className={styles.habitRemoveBtn} onClick={() => remove(i)} type="button">✕</button>
+          </div>
+        ))}
+      </div>
+      <div className={styles.habitAddRow}>
+        <input
+          className={styles.habitEmojiInput}
+          value={newEmoji}
+          onChange={e => setNewEmoji(e.target.value)}
+          placeholder="🔥"
+          maxLength={2}
+        />
+        <input
+          className={styles.habitLabelInput}
+          value={newLabel}
+          onChange={e => setNewLabel(e.target.value)}
+          placeholder="Нов навик..."
+          onKeyDown={e => e.key === 'Enter' && add()}
+        />
+        <button className={styles.habitAddBtn} onClick={add} type="button">+</button>
+      </div>
     </div>
   )
 }

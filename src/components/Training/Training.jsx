@@ -16,7 +16,7 @@ function isOldFormat(plan) {
 }
 
 function getBlocks(plan) {
-  if (!plan || plan.length === 0 || isOldFormat(plan)) return DEFAULT_TRAINING_BLOCKS
+  if (!plan || plan.length === 0 || isOldFormat(plan)) return null
   return plan
 }
 
@@ -131,7 +131,7 @@ export default function Training() {
   const isCoach = profile?.role === 'coach'
   const blocks  = getBlocks(profile?.training_plan)
 
-  const [selectedId, setSelectedId]     = useState(blocks[0]?.id ?? '0')
+  const [selectedId, setSelectedId]     = useState(blocks?.[0]?.id ?? '0')
   const [selectedExercise, setSelectedExercise] = useState(null)
   const [showProgression, setShowProgression] = useState(false)
   const [editing, setEditing]           = useState(false)
@@ -153,7 +153,7 @@ export default function Training() {
       .then(({ data }) => { if (data) setCompletions(data) })
   }, [user?.id])
 
-  const selectedBlock = blocks.find(b => b.id === selectedId) ?? blocks[0]
+  const selectedBlock = blocks ? (blocks.find(b => b.id === selectedId) ?? blocks[0]) : null
   const todayStr = new Date().toISOString().slice(0, 10)
   const alreadyMarked = completions.some(
     c => c.completed_date === logDate && c.block_label === selectedBlock?.label
@@ -215,6 +215,28 @@ export default function Training() {
           onSave={handleSavePlan}
           saving={savingPlan}
         />
+      </div>
+    )
+  }
+
+  if (!blocks) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <div className={styles.headerRow}>
+            <h1 className={styles.title}>ТРЕНИНГ</h1>
+            {isCoach && (
+              <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
+                РЕДАКТИРАЙ
+              </button>
+            )}
+          </div>
+        </header>
+        <div className={styles.noPlanWrap}>
+          <p className={styles.noPlanIcon}>🏋️</p>
+          <p className={styles.noPlanTitle}>ПРОГРАМАТА СЕ ПОДГОТВЯ</p>
+          <p className={styles.noPlanSub}>Треньорът подготвя твоята тренировъчна програма. Очаквай скоро!</p>
+        </div>
       </div>
     )
   }

@@ -273,24 +273,28 @@ export function AuthProvider({ children }) {
     return { data, error: sent.error || received.error || null }
   }
 
-  async function sendMessage(toUserId, content) {
+  async function sendMessage(toUserId, content, photoUrl = null) {
     if (!session?.user) return { error: 'Not authenticated' }
     const { data, error } = await supabase
       .from('messages')
       .insert({
         from_user_id: session.user.id,
         to_user_id: toUserId,
-        content,
+        content:   content || null,
+        photo_url: photoUrl || null,
       })
       .select()
       .single()
     if (!error) {
+      const pushBody = content
+        ? (content.length > 80 ? content.slice(0, 77) + '…' : content)
+        : '📷 Снимка'
       // Fire-and-forget push to recipient
       supabase.functions.invoke('send-push', {
         body: {
           toUserId,
           title: profile?.name || 'Blag Coaching',
-          body:  content.length > 80 ? content.slice(0, 77) + '…' : content,
+          body:  pushBody,
           tag:   'message',
         },
       }).catch(() => {})

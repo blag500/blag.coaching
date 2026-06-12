@@ -1,5 +1,4 @@
 import { useHabitsToday } from '../../hooks/useHabitsToday'
-import { HABITS } from '../../data/appData'
 import HabitCheckbox from './HabitCheckbox'
 import RingProgress from './RingProgress'
 import StreakBar from './StreakBar'
@@ -8,9 +7,9 @@ import SupplementSection from './SupplementSection'
 import styles from './Compliance.module.css'
 
 export default function Compliance() {
-  const { checked, toggle } = useHabitsToday()
+  const { habits, checked, toggle } = useHabitsToday()
 
-  const completedCount = HABITS.filter(h => checked[h.id]).length
+  const completedCount = habits.filter(h => checked[h.id]).length
   const today = new Date().toLocaleDateString('bg-BG', {
     weekday: 'long', day: 'numeric', month: 'long',
   })
@@ -22,10 +21,10 @@ export default function Compliance() {
         <p className={styles.date}>{today}</p>
       </header>
 
-      <RingProgress completed={completedCount} total={HABITS.length} />
+      <RingProgress completed={completedCount} total={habits.length} />
 
       <div className={styles.list}>
-        {HABITS.map((habit, i) => (
+        {habits.map((habit, i) => (
           <HabitCheckbox
             key={habit.id}
             habit={habit}

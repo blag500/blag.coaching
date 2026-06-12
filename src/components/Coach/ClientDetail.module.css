@@ -280,6 +280,14 @@
   overflow: hidden;
 }
 
+.bodyChat {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 220px);
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Loading */
 .loading {
   text-align: center;
@@ -532,6 +540,107 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+/* ─── Habits Editor ────────────────────────────────────────────────────── */
+
+.habitsEditorSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.habitsEditorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.habitsResetBtn {
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  opacity: 0.7;
+}
+
+.habitsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.habitRow,
+.habitAddRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.habitEmojiInput {
+  width: 36px;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 16px;
+  padding: 6px 4px;
+  flex-shrink: 0;
+}
+
+.habitLabelInput {
+  flex: 1;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 7px 10px;
+}
+
+.habitLabelInput:focus,
+.habitEmojiInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.habitRemoveBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.habitRemoveBtn:hover {
+  opacity: 1;
+  color: #e57373;
+}
+
+.habitAddBtn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 183, 77, 0.12);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fieldGroup {
