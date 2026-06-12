@@ -1,56 +1,65 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-/* ── Shared card ── */
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
+/* ── Section divider ── */
+.section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.cardLabel {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
+.section:first-child {
+  padding-top: 0;
 }
 
-/* ── Metrics card (weight + sleep) ── */
-.metricsCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 0;
+.section:last-of-type {
+  border-bottom: none;
+}
+
+.sectionLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ── Metrics: Weight + Sleep ── */
+.metricsRow {
   display: flex;
-  overflow: hidden;
+  gap: 24px;
 }
 
 .metricField {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 18px 16px 16px;
+  gap: 4px;
 }
 
 .metricLabel {
   font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 9px;
+  letter-spacing: 0.18em;
   color: var(--muted);
+  opacity: 0.7;
 }
 
 .metricInputRow {
   display: flex;
   align-items: baseline;
   gap: 6px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  transition: border-color 180ms;
+}
+
+.metricInputRow:focus-within {
+  border-color: var(--accent);
 }
 
 .metricInput {
@@ -59,7 +68,7 @@
   outline: none;
   color: var(--text);
   font-family: var(--font-heading);
-  font-size: 36px;
+  font-size: 32px;
   letter-spacing: 0.02em;
   line-height: 1;
   width: 100%;
@@ -79,17 +88,9 @@
 
 .metricUnit {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--muted);
   flex-shrink: 0;
-  padding-bottom: 4px;
-}
-
-.metricDivider {
-  width: 1px;
-  background: var(--border);
-  align-self: stretch;
-  margin: 14px 0;
 }
 
 /* ── Performance buttons ── */
@@ -100,64 +101,55 @@
 
 .perfBtn {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 8px;
-  background: var(--surface-2);
+  padding: 11px 6px;
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 10px;
   color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.08em;
   cursor: pointer;
   transition: background 150ms, border-color 150ms, color 150ms;
   -webkit-tap-highlight-color: transparent;
 }
 
-.perfIcon {
-  font-family: var(--font-heading);
-  font-size: 22px;
-  line-height: 1;
-}
-
-.perfLabel {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-}
-
-.tapBtnRed   { background: rgba(239,83,80,0.12);  border-color: #EF5350; color: #EF5350; }
-.tapBtnAmber { background: rgba(255,183,77,0.12);  border-color: #FFB74D; color: #FFB74D; }
-.tapBtnGreen { background: rgba(102,187,106,0.12); border-color: #66BB6A; color: #66BB6A; }
+.tapBtnRed   { border-color: #EF5350; color: #EF5350; background: rgba(239,83,80,0.08); }
+.tapBtnAmber { border-color: #FFB74D; color: #FFB74D; background: rgba(255,183,77,0.08); }
+.tapBtnGreen { border-color: #66BB6A; color: #66BB6A; background: rgba(102,187,106,0.08); }
 
 /* ── Desire scale ── */
-.desireSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.desireSectionLabel {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-}
-
 .desireRow {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+}
+
+.desireLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  opacity: 0.7;
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.desireDots {
+  display: flex;
+  gap: 8px;
+  flex: 1;
 }
 
 .desireBtn {
   flex: 1;
   aspect-ratio: 1;
-  background: var(--surface-2);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 50%;
   color: var(--muted);
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 12px;
   cursor: pointer;
   transition: background 150ms, border-color 150ms, color 150ms;
   -webkit-tap-highlight-color: transparent;
@@ -169,20 +161,21 @@
 }
 
 .desireBtnActive {
-  background: rgba(255,183,77,0.15);
+  background: rgba(255,183,77,0.12);
   border-color: var(--accent);
   color: var(--accent);
 }
 
 /* ── Note input ── */
 .noteInput {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
-  padding: 12px 14px;
+  padding: 0 0 8px;
   outline: none;
   width: 100%;
   box-sizing: border-box;
@@ -194,32 +187,35 @@
   border-color: var(--accent);
 }
 
+.noteInput::placeholder {
+  color: var(--border);
+}
+
 /* ── Weekly section ── */
 .weeklyToggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 14px 16px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  padding: 0;
+  background: transparent;
+  border: none;
   color: var(--muted);
   font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  opacity: 0.7;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: border-color 150ms, color 150ms;
+  transition: opacity 150ms;
 }
 
 .weeklyToggle:active {
-  border-color: var(--accent);
-  color: var(--accent);
+  opacity: 1;
 }
 
 .chevron {
-  font-size: 14px;
+  font-size: 12px;
   transition: transform 200ms;
   display: inline-block;
 }
@@ -228,72 +224,83 @@
   transform: rotate(180deg);
 }
 
+.weeklyFields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .weeklyField {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 /* ── Photo ── */
+.photoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .photoPickBtn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 16px;
-  background: var(--surface-1);
-  border: 1px dashed rgba(255,183,77,0.25);
-  border-radius: 14px;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 13px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: border-color 180ms, color 180ms;
-  width: 100%;
-  justify-content: center;
+  transition: color 180ms;
+  opacity: 0.7;
 }
 
 .photoPickBtn:active {
-  border-color: var(--accent);
   color: var(--accent);
+  opacity: 1;
 }
 
 .previewArea {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
 }
 
 .previewImg {
-  width: 100%;
-  max-height: 220px;
+  width: 72px;
+  height: 72px;
   object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  border-radius: 10px;
+  flex-shrink: 0;
 }
 
 .removePhotoBtn {
   background: none;
   border: none;
-  color: var(--red);
+  color: var(--muted);
   font-family: var(--font-body);
   font-size: 12px;
   cursor: pointer;
   padding: 0;
-  opacity: 0.8;
+  opacity: 0.6;
+  align-self: center;
 }
 
 /* ── Save button ── */
 .saveBtn {
   width: 100%;
-  padding: 16px;
+  padding: 15px;
+  margin-top: 8px;
   background: var(--accent);
   color: var(--bg);
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   letter-spacing: 0.1em;
   cursor: pointer;
   transition: opacity 150ms, background 150ms;
@@ -301,7 +308,7 @@
 }
 
 .saveBtn:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: default;
 }
 
@@ -317,18 +324,17 @@
 .gallery {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
 }
 
 .galleryCard {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 
@@ -338,23 +344,23 @@
   padding: 0;
   cursor: pointer;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
 .thumb {
-  width: 60px;
-  height: 60px;
+  width: 52px;
+  height: 52px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 8px;
   display: block;
 }
 
 .noPhoto {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   display: flex;
@@ -367,14 +373,14 @@
 .cardInfo {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
 
 .cardDate {
   font-family: var(--font-heading);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--muted);
   line-height: 1;
@@ -382,10 +388,10 @@
 
 .cardWeight {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 20px;
   letter-spacing: 0.04em;
   color: var(--accent);
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .cardNotes {
@@ -405,7 +411,7 @@
   cursor: pointer;
   padding: 6px;
   line-height: 1;
-  opacity: 0.4;
+  opacity: 0.35;
   transition: opacity 180ms, color 180ms;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
@@ -417,23 +423,17 @@
   color: var(--red);
 }
 
-/* ── Chips ── */
 .cardChips {
   display: flex;
-  gap: 5px;
-  align-items: center;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
 .chip {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
-  background: var(--surface-2);
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  line-height: 1.6;
+  opacity: 0.7;
 }
 
 /* ── Lightbox ── */
@@ -447,12 +447,6 @@
   justify-content: center;
   padding: 20px;
   cursor: zoom-out;
-  opacity: 1;
-  transition: opacity 150ms;
-
-  @starting-style {
-    opacity: 0;
-  }
 }
 
 .lightboxImg {
@@ -460,12 +454,4 @@
   max-height: 90vh;
   border-radius: 12px;
   object-fit: contain;
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 200ms, transform 200ms;
-
-  @starting-style {
-    opacity: 0;
-    transform: scale(0.92);
-  }
 }

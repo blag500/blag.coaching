@@ -147,41 +147,42 @@ export default function FormCheckin() {
       <form onSubmit={handleSubmit} className={styles.form}>
 
         {/* ── Metrics: Weight + Sleep ── */}
-        <div className={styles.metricsCard}>
-          <div className={styles.metricField}>
-            <span className={styles.metricLabel}>ТЕГЛО</span>
-            <div className={styles.metricInputRow}>
-              <input
-                id="ci-weight"
-                className={styles.metricInput}
-                type="number" step="0.1" min="20" max="300"
-                placeholder="85.0"
-                value={weight}
-                onChange={e => setWeight(e.target.value)}
-              />
-              <span className={styles.metricUnit}>кг</span>
+        <div className={styles.section}>
+          <div className={styles.metricsRow}>
+            <div className={styles.metricField}>
+              <span className={styles.metricLabel}>ТЕГЛО</span>
+              <div className={styles.metricInputRow}>
+                <input
+                  id="ci-weight"
+                  className={styles.metricInput}
+                  type="number" step="0.1" min="20" max="300"
+                  placeholder="—"
+                  value={weight}
+                  onChange={e => setWeight(e.target.value)}
+                />
+                <span className={styles.metricUnit}>кг</span>
+              </div>
             </div>
-          </div>
-          <div className={styles.metricDivider} />
-          <div className={styles.metricField}>
-            <span className={styles.metricLabel}>СЪН</span>
-            <div className={styles.metricInputRow}>
-              <input
-                id="ci-sleep"
-                className={styles.metricInput}
-                type="number" step="0.5" min="0" max="24"
-                placeholder="7.5"
-                value={sleepHours}
-                onChange={e => setSleepHours(e.target.value)}
-              />
-              <span className={styles.metricUnit}>ч.</span>
+            <div className={styles.metricField}>
+              <span className={styles.metricLabel}>СЪН</span>
+              <div className={styles.metricInputRow}>
+                <input
+                  id="ci-sleep"
+                  className={styles.metricInput}
+                  type="number" step="0.5" min="0" max="24"
+                  placeholder="—"
+                  value={sleepHours}
+                  onChange={e => setSleepHours(e.target.value)}
+                />
+                <span className={styles.metricUnit}>ч.</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* ── Training ── */}
-        <div className={styles.card}>
-          <span className={styles.cardLabel}>ТРЕНИРОВКА</span>
+        <div className={styles.section}>
+          <span className={styles.sectionLabel}>ТРЕНИРОВКА</span>
 
           <div className={styles.perfRow}>
             {GYM_PERF.map(({ label, icon, activeClass }, i) => (
@@ -191,15 +192,14 @@ export default function FormCheckin() {
                 className={`${styles.perfBtn} ${gymPerf === i ? styles[activeClass] : ''}`}
                 onClick={() => setGymPerf(gymPerf === i ? null : i)}
               >
-                <span className={styles.perfIcon}>{icon}</span>
-                <span className={styles.perfLabel}>{label}</span>
+                {icon} {label}
               </button>
             ))}
           </div>
 
-          <div className={styles.desireSection}>
-            <span className={styles.desireSectionLabel}>ЖЕЛАНИЕ</span>
-            <div className={styles.desireRow}>
+          <div className={styles.desireRow}>
+            <span className={styles.desireLabel}>ЖЕЛАНИЕ</span>
+            <div className={styles.desireDots}>
               {[0, 1, 2, 3, 4, 5].map(n => (
                 <button
                   key={n}
@@ -215,8 +215,8 @@ export default function FormCheckin() {
         </div>
 
         {/* ── Note ── */}
-        <div className={styles.card}>
-          <span className={styles.cardLabel}>БЕЛЕЖКА</span>
+        <div className={styles.section}>
+          <span className={styles.sectionLabel}>БЕЛЕЖКА</span>
           <input
             id="ci-notes"
             className={styles.noteInput}
@@ -228,72 +228,76 @@ export default function FormCheckin() {
         </div>
 
         {/* ── Weekly collapsible ── */}
-        <button
-          type="button"
-          className={styles.weeklyToggle}
-          onClick={() => setShowWeekly(v => !v)}
-        >
-          СЕДМИЧНО РЕЗЮМЕ
-          <span className={`${styles.chevron} ${showWeekly ? styles.chevronOpen : ''}`}>▾</span>
-        </button>
-
-        {showWeekly && (
-          <div className={styles.card}>
-            <div className={styles.weeklyField}>
-              <span className={styles.cardLabel}>ПОБЕДА ЗА СЕДМИЦАТА</span>
-              <input
-                id="ci-win"
-                className={styles.noteInput}
-                type="text"
-                placeholder="Нещо, което мина добре..."
-                value={weeklyWin}
-                onChange={e => setWeeklyWin(e.target.value)}
-              />
-            </div>
-            <div className={styles.weeklyField}>
-              <span className={styles.cardLabel}>ЩО ДА ПОДОБРЯ</span>
-              <input
-                id="ci-improve"
-                className={styles.noteInput}
-                type="text"
-                placeholder="Нещо за следващата седмица..."
-                value={weeklyImprove}
-                onChange={e => setWeeklyImprove(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* ── Photo ── */}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          style={{ display: 'none' }}
-          onChange={handlePhotoChange}
-        />
-
-        {previewUrl ? (
-          <div className={styles.previewArea}>
-            <img src={previewUrl} className={styles.previewImg} alt="Preview" />
-            <button type="button" className={styles.removePhotoBtn} onClick={clearPhoto}>
-              × Премахни снимката
-            </button>
-          </div>
-        ) : (
+        <div className={styles.section}>
           <button
             type="button"
-            className={styles.photoPickBtn}
-            onClick={() => fileRef.current.click()}
+            className={styles.weeklyToggle}
+            onClick={() => setShowWeekly(v => !v)}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-              <circle cx="12" cy="13" r="4"/>
-            </svg>
-            Добави снимка на форма
+            СЕДМИЧНО РЕЗЮМЕ
+            <span className={`${styles.chevron} ${showWeekly ? styles.chevronOpen : ''}`}>▾</span>
           </button>
-        )}
+
+          {showWeekly && (
+            <div className={styles.weeklyFields}>
+              <div className={styles.weeklyField}>
+                <span className={styles.sectionLabel}>ПОБЕДА ЗА СЕДМИЦАТА</span>
+                <input
+                  id="ci-win"
+                  className={styles.noteInput}
+                  type="text"
+                  placeholder="Нещо, което мина добре..."
+                  value={weeklyWin}
+                  onChange={e => setWeeklyWin(e.target.value)}
+                />
+              </div>
+              <div className={styles.weeklyField}>
+                <span className={styles.sectionLabel}>ЩО ДА ПОДОБРЯ</span>
+                <input
+                  id="ci-improve"
+                  className={styles.noteInput}
+                  type="text"
+                  placeholder="Нещо за следващата седмица..."
+                  value={weeklyImprove}
+                  onChange={e => setWeeklyImprove(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Photo ── */}
+        <div className={styles.section}>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={handlePhotoChange}
+          />
+
+          {previewUrl ? (
+            <div className={styles.previewArea}>
+              <img src={previewUrl} className={styles.previewImg} alt="Preview" />
+              <button type="button" className={styles.removePhotoBtn} onClick={clearPhoto}>
+                × Премахни
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className={styles.photoPickBtn}
+              onClick={() => fileRef.current.click()}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              Добави снимка на форма
+            </button>
+          )}
+        </div>
 
         <button
           type="submit"
