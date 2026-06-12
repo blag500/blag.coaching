@@ -123,45 +123,58 @@ function scoreItem(item, prefs) {
   return score
 }
 
+/** Round a gram amount to a realistic serving size. */
+function roundServing(g) {
+  if (g <= 30)  return 30
+  if (g <= 80)  return Math.round(g / 10) * 10
+  if (g <= 200) return Math.round(g / 25) * 25
+  return Math.round(g / 50) * 50
+}
+
 /**
- * Greedily pick 1-3 foods from history to cover `gap` of the given macro.
- * Returns portion-adjusted food objects + remaining deficit after the picks.
+ * Suggest 1-3 foods from history that fit approximately within `gap` of the
+ * given macro.  Uses the user's typical serving size — NOT a calculated exact
+ * portion — so suggestions are realistic and never try to hit the gap precisely.
  */
 function buildMacroSuggestions(macro, gap, foods) {
   const key = macro === 'kcal' ? 'kcalPerGram' : `${macro}PerGram`
 
-  const sorted = foods
-    .filter(f => f[key] > 0.01) // must contain a meaningful amount
-    .sort((a, b) => b[key] - a[key])
-    .slice(0, 15) // top 15 most dense candidates
+  const candidates = foods
+    .filter(f => f[key] > 0.01 && f.avgGrams >= 15)
+    .map(f => {
+      const grams  = roundServing(f.avgGrams)
+      const contrib = f[key] * grams
+      const ratio  = contrib / gap  // how much of the gap one serving covers
+      // Prefer servings that cover 25–100% of what's left per item.
+      // Heavily penalise servings that would overshoot by more than 50%.
+      const fit = ratio >= 0.2 && ratio <= 1.5
+        ? f.frequency * Math.max(0, 1 - Math.abs(ratio - 0.65) * 1.2)
+        : 0
+      return { ...f, grams, contrib, fit }
+    })
+    .filter(c => c.fit > 0)
+    .sort((a, b) => b.fit - a.fit)
 
   const result = []
-  let remaining = gap
+  let totalContrib = 0
 
-  for (const food of sorted) {
-    if (remaining <= 0.5) break
+  for (const c of candidates) {
     if (result.length >= 3) break
-
-    // How many grams to cover `remaining`?
-    const gramsNeeded  = remaining / food[key]
-    // Cap at 1.5× typical serving or 500 g; minimum 30 g
-    const maxGrams     = Math.min(food.avgGrams * 1.5, 500)
-    const rawGrams     = Math.max(30, Math.min(gramsNeeded, maxGrams))
-    const grams        = Math.round(rawGrams / 10) * 10  // round to nearest 10 g
+    // Stop adding more items once we're at ~75% coverage with at least one pick
+    if (result.length >= 1 && totalContrib >= gap * 0.75) break
 
     result.push({
-      name:    food.name,
-      grams,
-      kcal:    Math.round(food.kcalPerGram    * grams),
-      protein: Math.round(food.proteinPerGram * grams * 10) / 10,
-      carbs:   Math.round(food.carbsPerGram   * grams * 10) / 10,
-      fat:     Math.round(food.fatPerGram     * grams * 10) / 10,
+      name:    c.name,
+      grams:   c.grams,
+      kcal:    Math.round(c.kcalPerGram    * c.grams),
+      protein: Math.round(c.proteinPerGram * c.grams * 10) / 10,
+      carbs:   Math.round(c.carbsPerGram   * c.grams * 10) / 10,
+      fat:     Math.round(c.fatPerGram     * c.grams * 10) / 10,
     })
-
-    remaining -= food[key] * grams
+    totalContrib += c.contrib
   }
 
-  return { suggestions: result, remaining: Math.max(0, Math.round(remaining * 10) / 10) }
+  return { suggestions: result, totalContrib: Math.round(totalContrib) }
 }
 
 /**
@@ -488,7 +501,7 @@ export default function MealBot({ onAddRaw }) {
     if (!items) return
 
     const gap = macroDeficits[macro]
-    const { suggestions: suggs, remaining } = buildMacroSuggestions(macro, gap, items)
+    const { suggestions: suggs, totalContrib } = buildMacroSuggestions(macro, gap, items)
 
     if (!suggs.length) {
       await botSay(
@@ -502,24 +515,15 @@ export default function MealBot({ onAddRaw }) {
 
     const foodLines = suggs.map(sg => {
       const macroVal = macro === 'kcal'
-        ? `${sg.kcal} ккал`
-        : `${sg[macro]}g ${m.label.toLowerCase()}`
+        ? `~${sg.kcal} ккал`
+        : `~${sg[macro]}g ${m.label.toLowerCase()}`
       return `🍴 **${sg.name}** — ${sg.grams}g → ${macroVal}`
     }).join('\n')
 
-    const totalMacro = Math.round(
-      suggs.reduce((sum, sg) => sum + (macro === 'kcal' ? sg.kcal : sg[macro]), 0) * 10
-    ) / 10
-
-    const coverNote = remaining <= 1
-      ? `✅ Покрива нуждата ти напълно!`
-      : `⚡ Остават още **${remaining}${m.unit}** след добавяне.`
-
     await botSay(
-      `Намерих решение! 💡\n\n` +
-      `За да покриеш **${gap}${m.unit}** ${m.label.toLowerCase()}:\n\n` +
+      `Ето храни от историята ти, подходящи за оставащите ~**${gap}${m.unit}**:\n\n` +
       `${foodLines}\n\n` +
-      `📊 Общо: **${totalMacro}${m.unit}** — ${coverNote}`,
+      `📊 Заедно дават около **${totalContrib}${m.unit}** — добра приблизителна покривка.`,
       s
     )
     if (sessionRef.current !== s) return
