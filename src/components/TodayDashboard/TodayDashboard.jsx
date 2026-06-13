@@ -88,7 +88,7 @@ export default function TodayDashboard({ onNavigate }) {
   const prevTrain = useRef(false)
 
   const kcalPct = Math.min((totals.kcal || 0) / Math.max(targets.kcal || 1, 1), 1)
-  const calDone  = targets.kcal > 0 && kcalPct >= 1.0
+  const calDone  = targets.kcal > 0 && kcalPct >= 0.8
   const habsDone = habits.length > 0 && completedHabits >= habits.length
 
   useEffect(() => {
