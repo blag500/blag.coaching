@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './AvatarCropper.module.css'
 
-const CROP = 280
+const CROP = 240
 
 function getTouchDist(touches) {
   const dx = touches[0].clientX - touches[1].clientX
@@ -129,7 +130,7 @@ export default function AvatarCropper({ file, onConfirm, onCancel }) {
     draggable: false,
   }
 
-  return (
+  return createPortal(
     <div className={styles.overlay}>
       <div className={styles.sheet}>
         <p className={styles.hint}>Плъзни · Щипни за мащаб</p>
@@ -156,6 +157,7 @@ export default function AvatarCropper({ file, onConfirm, onCancel }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
