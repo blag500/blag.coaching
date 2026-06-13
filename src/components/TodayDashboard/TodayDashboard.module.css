@@ -547,3 +547,43 @@
   font-size: 18px;
   color: var(--accent);
 }
+
+/* ── Rewards shortcut ── */
+.rewardsBtn {
+  background: transparent;
+  border: 1px dashed rgba(255, 183, 77, 0.22);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  text-align: left;
+}
+
+.rewardsBtn:active {
+  border-color: rgba(255, 183, 77, 0.45);
+  background: rgba(255, 183, 77, 0.04);
+}
+
+.rewardsBtnInner {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rewardsBtnEmojis {
+  font-size: 16px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.rewardsBtnLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}

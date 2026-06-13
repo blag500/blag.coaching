@@ -22,6 +22,7 @@ import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
 import Recovery from './pages/Recovery'
 import TodayDashboard from './components/TodayDashboard/TodayDashboard'
+import RewardsPage from './components/Rewards/RewardsPage'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
@@ -93,6 +94,7 @@ function AppShell() {
     calendar:   <TrainingCalendar />,
     learn:      <LearnPage />,
     chat:       <ChatPage />,
+    rewards:    <RewardsPage onBack={() => setActiveTab('today')} />,
   }
 
   function dismissWelcome() {

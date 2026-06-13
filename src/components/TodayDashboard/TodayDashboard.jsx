@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { useWaterLog } from '../../hooks/useWaterLog'
+import BadgePopup from './BadgePopup'
 import styles from './TodayDashboard.module.css'
 
 const DAYS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -79,8 +80,47 @@ export default function TodayDashboard({ onNavigate }) {
   const totalHabits     = habits.length || 1
   const trainedToday    = todayWorkouts.length > 0
 
+  // ── Badge detection ──
+  const [badgeQueue, setBadgeQueue] = useState([])
+  const prevCal   = useRef(false)
+  const prevHabs  = useRef(false)
+  const prevTrain = useRef(false)
+
+  const kcalPct = Math.min((totals.kcal || 0) / Math.max(targets.kcal || 1, 1), 1)
+  const calDone  = targets.kcal > 0 && kcalPct >= 1.0
+  const habsDone = habits.length > 0 && completedHabits >= habits.length
+
+  useEffect(() => {
+    const today    = new Date().toISOString().slice(0, 10)
+    const justCal  = calDone     && !prevCal.current
+    const justHabs = habsDone    && !prevHabs.current
+    const justTrain = trainedToday && !prevTrain.current
+    const earned   = []
+
+    function award(type) {
+      const k = `blag_badge_${type}_${today}`
+      if (!localStorage.getItem(k)) { localStorage.setItem(k, '1'); earned.push(type) }
+    }
+
+    if (justCal)   award('calories')
+    if (justHabs)  award('habits')
+    if (justTrain) award('training')
+    if ((justCal || justHabs || justTrain) && calDone && habsDone && trainedToday) {
+      award('perfect')
+    }
+
+    prevCal.current   = calDone
+    prevHabs.current  = habsDone
+    prevTrain.current = trainedToday
+
+    if (earned.length) setBadgeQueue(q => [...q, ...earned])
+  }, [calDone, habsDone, trainedToday])
+
   return (
     <div className={styles.page}>
+      {badgeQueue[0] && (
+        <BadgePopup badge={badgeQueue[0]} onDone={() => setBadgeQueue(q => q.slice(1))} />
+      )}
       <header className={styles.header}>
         <p className={styles.greeting}>{greeting}</p>
         <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
@@ -91,7 +131,7 @@ export default function TodayDashboard({ onNavigate }) {
         <span className={styles.cardLabel}>АКТИВНОСТ ДНЕС</span>
         <div className={styles.ringsRow}>
           <ActivityRings
-            kcalPct={Math.min((totals.kcal || 0) / Math.max(targets.kcal || 1, 1), 1)}
+            kcalPct={kcalPct}
             habitsPct={completedHabits / totalHabits}
             trained={trainedToday}
             kcalVal={Math.round(totals.kcal || 0)}
@@ -206,6 +246,15 @@ export default function TodayDashboard({ onNavigate }) {
           <span className={styles.cardLabel}>СЕДМИЧЕН ЧЕК-ИН</span>
           <span className={styles.checkinSub}>Снимки · Сън · Прогрес</span>
         </div>
+        <span className={styles.checkinArrow}>→</span>
+      </button>
+
+      {/* ── Rewards shortcut ── */}
+      <button className={styles.rewardsBtn} onClick={() => onNavigate('rewards')} type="button">
+        <span className={styles.rewardsBtnInner}>
+          <span className={styles.rewardsBtnEmojis}>⭐ 🥗 ✅ 💪</span>
+          <span className={styles.rewardsBtnLabel}>НАГРАДИ И ЗНАЧКИ</span>
+        </span>
         <span className={styles.checkinArrow}>→</span>
       </button>
     </div>

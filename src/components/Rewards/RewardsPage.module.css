@@ -1,0 +1,225 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 20px 16px 100px;
+  gap: 16px;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin: 0;
+  line-height: 1;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 4px 0 0;
+  letter-spacing: 0.04em;
+}
+
+/* ── Stats chips ── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.chip {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.chipAccent {
+  border-color: rgba(255, 183, 77, 0.3);
+  background: rgba(255, 183, 77, 0.06);
+}
+
+.chipEmoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.chipNum {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.chipAccent .chipNum {
+  color: var(--accent);
+}
+
+.chipLabel {
+  font-family: var(--font-heading);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ── Month nav ── */
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.monthBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.monthBtn:active {
+  background: rgba(255,255,255,0.06);
+}
+
+.monthLabel {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+/* ── Calendar ── */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayHeader {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.cell {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 2px 4px;
+  gap: 3px;
+}
+
+.cellToday {
+  border-color: rgba(255, 183, 77, 0.5);
+  background: rgba(255, 183, 77, 0.05);
+}
+
+.cellFuture {
+  opacity: 0.25;
+}
+
+.dayNum {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.cellToday .dayNum {
+  color: var(--accent);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+}
+
+.badge {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ── Legend ── */
+.legend {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legendEmoji {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.legendText {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.empty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 20px;
+}
