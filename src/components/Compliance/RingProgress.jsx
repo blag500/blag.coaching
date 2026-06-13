@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import styles from './RingProgress.module.css'
 
 const R = 50
@@ -7,6 +8,18 @@ export default function RingProgress({ completed, total }) {
   const pct = total > 0 ? completed / total : 0
   const offset = CIRCUMFERENCE - pct * CIRCUMFERENCE
   const perfect = completed === total && total > 0
+
+  const [animOffset, setAnimOffset] = useState(CIRCUMFERENCE)
+  const mounted = useRef(false)
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      const raf = requestAnimationFrame(() => setAnimOffset(offset))
+      return () => cancelAnimationFrame(raf)
+    }
+    setAnimOffset(offset)
+  }, [offset])
 
   return (
     <div className={styles.wrap}>
@@ -33,7 +46,7 @@ export default function RingProgress({ completed, total }) {
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={offset}
+            strokeDashoffset={animOffset}
             transform="rotate(-90 60 60)"
             className={styles.fill}
           />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
@@ -209,30 +209,44 @@ export default function TodayDashboard({ onNavigate }) {
 
 function ActivityRings({ kcalPct, habitsPct, trained, kcalVal }) {
   const cx = 60, cy = 60
-  const rings = [
-    { r: 50, sw: 9,  pct: kcalPct,             color: '#ffb74d',  bg: 'rgba(255,183,77,0.12)'  },
-    { r: 37, sw: 9,  pct: habitsPct,            color: '#AB47BC',  bg: 'rgba(171,71,188,0.12)'  },
-    { r: 24, sw: 9,  pct: trained ? 1 : 0,      color: '#66BB6A',  bg: 'rgba(102,187,106,0.12)' },
+  const ringDefs = [
+    { r: 50, sw: 9, pct: kcalPct,          color: '#ffb74d', bg: 'rgba(255,183,77,0.12)',   delay: '0ms'   },
+    { r: 37, sw: 9, pct: habitsPct,         color: '#AB47BC', bg: 'rgba(171,71,188,0.12)',   delay: '80ms'  },
+    { r: 24, sw: 9, pct: trained ? 1 : 0,  color: '#66BB6A', bg: 'rgba(102,187,106,0.12)',  delay: '160ms' },
   ]
+
+  // Animate each ring from 0 to its target on mount
+  const [animPcts, setAnimPcts] = useState([0, 0, 0])
+  const mounted = useRef(false)
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      const raf = requestAnimationFrame(() =>
+        setAnimPcts([kcalPct, habitsPct, trained ? 1 : 0])
+      )
+      return () => cancelAnimationFrame(raf)
+    }
+    setAnimPcts([kcalPct, habitsPct, trained ? 1 : 0])
+  }, [kcalPct, habitsPct, trained])
 
   return (
     <svg width="134" height="134" viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
-      {rings.map((ring, idx) => {
-        const circ = 2 * Math.PI * ring.r
-        const filled = ring.pct * circ
+      {ringDefs.map((ring, idx) => {
+        const circ   = 2 * Math.PI * ring.r
+        const offset = circ - animPcts[idx] * circ
         return (
           <g key={idx}>
             <circle cx={cx} cy={cy} r={ring.r} fill="none" stroke={ring.bg} strokeWidth={ring.sw} />
-            {filled > 0.5 && (
-              <circle
-                cx={cx} cy={cy} r={ring.r} fill="none"
-                stroke={ring.color} strokeWidth={ring.sw}
-                strokeDasharray={`${filled} ${circ}`}
-                strokeDashoffset={0}
-                transform={`rotate(-90 ${cx} ${cy})`}
-                strokeLinecap="round"
-              />
-            )}
+            <circle
+              cx={cx} cy={cy} r={ring.r} fill="none"
+              stroke={ring.color} strokeWidth={ring.sw}
+              strokeDasharray={circ}
+              strokeDashoffset={offset}
+              transform={`rotate(-90 ${cx} ${cy})`}
+              strokeLinecap="round"
+              style={{ transition: `stroke-dashoffset 0.9s cubic-bezier(0.4,0,0.2,1) ${ring.delay}` }}
+            />
           </g>
         )
       })}

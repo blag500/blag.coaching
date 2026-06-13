@@ -153,7 +153,7 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
         )}
 
         <div className={styles.nav}>
-          {tabDefs.map(tab => {
+          {tabDefs.map((tab, idx) => {
             const label = t(tab.key)
             return (
               <button
@@ -162,6 +162,7 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
                 onClick={() => handleNav(tab.id)}
                 type="button"
                 aria-current={activeTab === tab.id ? 'page' : undefined}
+                style={{ '--i': idx }}
               >
                 <span className={styles.iconWrap}>
                   <tab.Icon />

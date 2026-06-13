@@ -171,6 +171,12 @@
   max-width: 75%;
   gap: 3px;
   margin-bottom: 4px;
+  animation: msgIn 0.22s var(--ease-out) both;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
 .rowSent {

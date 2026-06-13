@@ -182,6 +182,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.drawerOpen .item {
+  animation: navItemIn 320ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 28ms + 60ms);
+}
+
+@keyframes navItemIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 .item:active {
   background: rgba(255, 183, 77, 0.06);
 }
