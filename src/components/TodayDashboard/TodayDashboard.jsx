@@ -164,7 +164,7 @@ export default function TodayDashboard({ onNavigate }) {
       {/* ── Training card ── */}
       <button className={styles.trainingCard} onClick={() => onNavigate('training')} type="button">
         <div className={styles.trainingHeader}>
-          <span className={styles.cardLabel}>ТРЕНИНГ</span>
+          <span className={styles.cardLabel}>ТРЕНИРОВКА</span>
           {streak > 1 && (
             <span className={styles.streak}>🔥 {streak} поред</span>
           )}
@@ -179,20 +179,25 @@ export default function TodayDashboard({ onNavigate }) {
           ))}
         </div>
 
-        <div className={styles.trainingFooter}>
-          {todayWorkouts.length > 0 ? (
+        {todayWorkouts.length > 0 ? (
+          <div className={styles.trainingFooter}>
             <span className={styles.trainingDone}>
-              ✓ {todayWorkouts.map(w => w.block_label).join(' · ')} · днес
+              ✓ {todayWorkouts.map(w => w.block_label).join(' · ')}
             </span>
-          ) : lastWorkout ? (
-            <span className={styles.trainingLast}>
-              Последно: {lastWorkout.block_label} · {daysAgoLabel(lastWorkout.completed_date)}
-            </span>
-          ) : (
-            <span className={styles.trainingEmpty}>Няма логнати тренировки</span>
-          )}
-          <span className={styles.trainingArrow}>→</span>
-        </div>
+            <span className={styles.trainingArrow}>→</span>
+          </div>
+        ) : (
+          <div className={styles.trainingCta}>
+            <div className={styles.trainingCtaText}>
+              {lastWorkout ? (
+                <span className={styles.trainingLast}>Последно: {lastWorkout.block_label} · {daysAgoLabel(lastWorkout.completed_date)}</span>
+              ) : (
+                <span className={styles.trainingLast}>Все още няма тренировки този месец</span>
+              )}
+            </div>
+            <span className={styles.trainingCtaBtn}>ЛОГНИ →</span>
+          </div>
+        )}
       </button>
 
       {/* ── Check-in shortcut ── */}

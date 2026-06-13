@@ -480,6 +480,30 @@
   opacity: 0.6;
 }
 
+.trainingCta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 183, 77, 0.06);
+  border: 1px dashed rgba(255, 183, 77, 0.25);
+  border-radius: 10px;
+}
+
+.trainingCtaText {
+  flex: 1;
+  min-width: 0;
+}
+
+.trainingCtaBtn {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
 .trainingArrow {
   font-family: var(--font-body);
   font-size: 16px;
