@@ -45,13 +45,14 @@ export default function TodayDashboard({ onNavigate }) {
   useEffect(() => {
     if (!user?.id) return
     const since = dateStr(13)
-    supabase
-      .from('exercise_logs')
-      .select('block_label, completed_date')
-      .eq('user_id', user.id)
-      .gte('completed_date', since)
-      .order('completed_date', { ascending: false })
-      .then(({ data }) => { if (data) setWorkouts(data) })
+    Promise.all([
+      supabase.from('exercise_logs').select('block_label, completed_date').eq('user_id', user.id).gte('completed_date', since),
+      supabase.from('workout_completions').select('block_label, completed_date').eq('user_id', user.id).gte('completed_date', since),
+    ]).then(([ex, wo]) => {
+      const merged = [...(ex.data || []), ...(wo.data || [])]
+      merged.sort((a, b) => b.completed_date.localeCompare(a.completed_date))
+      setWorkouts(merged)
+    })
   }, [user?.id])
 
   // Last 7 days: oldest → newest (left → right)
