@@ -9,6 +9,7 @@ import Compliance from './components/Compliance/Compliance'
 import Training from './components/Training/Training'
 import Profile from './components/Profile/Profile'
 import CoachPanel from './components/Coach/CoachPanel'
+import CoachMyDay from './components/Coach/CoachMyDay'
 import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatPage from './components/Chat/ChatPage'
@@ -87,6 +88,7 @@ function AppShell() {
     recovery:   <Recovery />,
     profile:    <Profile />,
     clients:    <CoachPanel />,
+    coachday:   <CoachMyDay />,
     explore:    <Explore />,
     calendar:   <TrainingCalendar />,
     learn:      <LearnPage />,

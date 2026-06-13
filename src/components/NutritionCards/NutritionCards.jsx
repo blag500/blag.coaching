@@ -50,8 +50,16 @@ export default function NutritionCards() {
   const pullPct   = Math.min(distance / 68, 1)
   const showPull  = distance > 4
 
+  const remaining = {
+    kcal:    targets.kcal    - Math.round(totals.kcal    || 0),
+    protein: targets.protein - Math.round(totals.protein || 0),
+    carbs:   targets.carbs   - Math.round(totals.carbs   || 0),
+    fat:     targets.fat     - Math.round(totals.fat     || 0),
+  }
+
   return (
     <div className={styles.page}>
+      {view === 'log' && <MacroRemainingBar remaining={remaining} targets={targets} />}
       {showPull && (
         <div className={styles.pullIndicator} style={{ height: distance, opacity: pullPct }}>
           <svg
@@ -179,6 +187,42 @@ function LibraryTab({ recipes, products, loading, logServings, setLogServings, o
       <div className={styles.templatesSection}>
         <h3 className={styles.groupLabel}>ШАБЛОНИ</h3>
         <MealCards />
+      </div>
+    </div>
+  )
+}
+
+// ─── Macro Remaining Bar ─────────────────────────────────────────────────────
+
+function macroColor(remaining, target) {
+  if (remaining < 0) return '#ef5350'
+  if (target > 0 && remaining / target < 0.15) return '#ffb74d'
+  return '#66BB6A'
+}
+
+function MacroRemainingBar({ remaining, targets }) {
+  const items = [
+    { label: 'Ккал',  val: remaining.kcal,    target: targets.kcal,    unit: '' },
+    { label: 'П',     val: remaining.protein,  target: targets.protein,  unit: 'g' },
+    { label: 'В',     val: remaining.carbs,    target: targets.carbs,    unit: 'g' },
+    { label: 'М',     val: remaining.fat,      target: targets.fat,      unit: 'g' },
+  ]
+
+  return (
+    <div className={styles.remainBar}>
+      <span className={styles.remainTitle}>ОСТАВАЩО</span>
+      <div className={styles.remainItems}>
+        {items.map(item => (
+          <div key={item.label} className={styles.remainItem}>
+            <span className={styles.remainLabel}>{item.label}</span>
+            <span
+              className={styles.remainVal}
+              style={{ color: macroColor(item.val, item.target) }}
+            >
+              {item.val > 0 ? item.val : item.val === 0 ? '0' : item.val}{item.unit}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )

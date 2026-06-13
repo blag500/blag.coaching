@@ -278,7 +278,7 @@
 /* Chat tab: lock page to viewport so only the inner feed scrolls */
 .pageChat {
   min-height: unset !important;
-  height: 100dvh;
+  height: calc(100dvh - 80px - env(safe-area-inset-bottom));
   overflow: hidden;
   padding-bottom: 0 !important;
   display: flex;

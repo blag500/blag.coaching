@@ -30,7 +30,10 @@
       "Bash(gh auth *)",
       "Bash(git remote *)",
       "mcp__claude_ai_Stripe__get_stripe_account_info",
-      "mcp__claude_ai_Stripe__stripe_api_read"
+      "mcp__claude_ai_Stripe__stripe_api_read",
+      "Bash(powershell -Command \"Get-ChildItem -Path 'C:\\\\Users\\\\Nikolay' -Recurse -Filter '.obsidian' -Directory -ErrorAction SilentlyContinue | Select-Object -First 5 FullName\")",
+      "PowerShell(head -50)",
+      "Bash(del *)"
     ]
   }
 }

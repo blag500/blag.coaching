@@ -54,6 +54,169 @@
   color: var(--muted);
 }
 
+/* ── Activity rings ── */
+.ringsRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ringsLegend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ringLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ringLegendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ringLegendLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.ringLegendVal {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ── Macro mini grid ── */
+.macroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.macroCell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.macroCellLabel {
+  font-family: var(--font-heading);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+
+.macroCellVal {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.macroCellUnit {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  margin-left: 1px;
+}
+
+.macroCellTarget {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.macroCellOver {
+  color: #ef5350;
+}
+
+/* ── Water row (inside activity card) ── */
+.waterRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.waterLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  flex-shrink: 0;
+  width: 52px;
+}
+
+.waterGlasses {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.waterDrop {
+  width: 9px;
+  height: 9px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: rgba(66, 165, 245, 0.18);
+  border: 1px solid rgba(66, 165, 245, 0.3);
+  flex-shrink: 0;
+}
+
+.waterDropFull {
+  background: #42A5F5;
+  border-color: #42A5F5;
+}
+
+.waterActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.waterCount {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: #42A5F5;
+  min-width: 28px;
+  text-align: right;
+}
+
+.waterBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(66, 165, 245, 0.15);
+  border: 1px solid rgba(66, 165, 245, 0.35);
+  color: #42A5F5;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+  padding: 0;
+}
+
+.waterBtn:active {
+  background: rgba(66, 165, 245, 0.3);
+}
+
 /* ── Calories ── */
 .kcalVal {
   font-family: var(--font-heading);

@@ -81,9 +81,17 @@ const CLIENT_TAB_DEFS = [
   { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
 ]
 
+const MyDayIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+)
+
 const COACH_TAB_DEFS = [
   { id: 'chat',       key: 'nav.chat',         Icon: ChatIcon      },
   { id: 'clients',    key: 'nav.clients',      Icon: ClientsIcon   },
+  { id: 'coachday',   key: 'nav.myDay',        Icon: MyDayIcon     },
   { id: 'nutrition',  key: 'nav.nutrition',    Icon: NutritionIcon },
   { id: 'compliance', key: 'nav.habits',       Icon: HabitsIcon    },
   { id: 'training',   key: 'nav.training_long',Icon: TrainingIcon  },
@@ -127,7 +135,7 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
         </div>
 
         {profile && (
-          <div className={styles.userSection}>
+          <button className={styles.userSection} onClick={() => handleNav('profile')} type="button">
             <div className={styles.avatar}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
@@ -140,7 +148,8 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
                 {isCoach ? (t('nav.clients') === 'CLIENTS' ? 'COACH' : 'ТРЕНЬОР') : (profile.plan?.toUpperCase() ?? 'CLIENT')}
               </span>
             </div>
-          </div>
+            <span className={styles.userArrow}>→</span>
+          </button>
         )}
 
         <div className={styles.nav}>

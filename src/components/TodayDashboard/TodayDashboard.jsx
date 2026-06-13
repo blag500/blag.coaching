@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
+import { useHabitsToday } from '../../hooks/useHabitsToday'
+import { useWaterLog } from '../../hooks/useWaterLog'
 import styles from './TodayDashboard.module.css'
 
 const DAYS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -24,6 +26,8 @@ function daysAgoLabel(date) {
 export default function TodayDashboard({ onNavigate }) {
   const { profile, user } = useAuth()
   const { log, totals } = useFoodLog()
+  const { habits, checked } = useHabitsToday()
+  const { glasses, target: waterTarget, add: addWater } = useWaterLog()
   const [workouts, setWorkouts] = useState([])
 
   const targets = {
@@ -33,7 +37,6 @@ export default function TodayDashboard({ onNavigate }) {
     fat:     profile?.fat      ?? 0,
   }
 
-  const kcalLeft   = Math.max(0, targets.kcal - (totals.kcal || 0))
   const recentFood = [...(log || [])].reverse().slice(0, 3)
   const hour       = new Date().getHours()
   const greeting   = hour < 12 ? 'ДОБРО УТРО' : hour < 18 ? 'ДОБЪР ДЕН' : 'ДОБЪР ВЕЧЕР'
@@ -69,8 +72,12 @@ export default function TodayDashboard({ onNavigate }) {
     else break
   }
 
-  const lastWorkout  = workouts[0] ?? null
+  const lastWorkout   = workouts[0] ?? null
   const todayWorkouts = workouts.filter(w => w.completed_date === dateStr(0))
+
+  const completedHabits = habits.filter(h => checked[h.id]).length
+  const totalHabits     = habits.length || 1
+  const trainedToday    = todayWorkouts.length > 0
 
   return (
     <div className={styles.page}>
@@ -79,20 +86,56 @@ export default function TodayDashboard({ onNavigate }) {
         <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
       </header>
 
-      {/* ── Calories card ── */}
+      {/* ── Activity rings card ── */}
       <div className={styles.card}>
-        <span className={styles.cardLabel}>КАЛОРИИ ДНЕС</span>
-        <div className={styles.pieRow}>
-          <MacroPie totals={totals} targets={targets} />
-          <div className={styles.legend}>
-            <LegendItem color="#42A5F5" label="ПРОТЕИН"      value={Math.round(totals.protein || 0)} target={targets.protein} />
-            <LegendItem color="#66BB6A" label="ВЪГЛЕХИДРАТИ" value={Math.round(totals.carbs   || 0)} target={targets.carbs}   />
-            <LegendItem color="#ffb74d" label="МАЗНИНИ"      value={Math.round(totals.fat     || 0)} target={targets.fat}     />
+        <span className={styles.cardLabel}>АКТИВНОСТ ДНЕС</span>
+        <div className={styles.ringsRow}>
+          <ActivityRings
+            kcalPct={Math.min((totals.kcal || 0) / Math.max(targets.kcal || 1, 1), 1)}
+            habitsPct={completedHabits / totalHabits}
+            trained={trainedToday}
+            kcalVal={Math.round(totals.kcal || 0)}
+          />
+          <div className={styles.ringsLegend}>
+            <div className={styles.ringLegendItem}>
+              <span className={styles.ringLegendDot} style={{ background: '#ffb74d' }} />
+              <span className={styles.ringLegendLabel}>Калории</span>
+              <span className={styles.ringLegendVal}>{Math.round(totals.kcal || 0)} / {targets.kcal}</span>
+            </div>
+            <div className={styles.ringLegendItem}>
+              <span className={styles.ringLegendDot} style={{ background: '#AB47BC' }} />
+              <span className={styles.ringLegendLabel}>Навици</span>
+              <span className={styles.ringLegendVal}>{completedHabits} / {habits.length}</span>
+            </div>
+            <div className={styles.ringLegendItem}>
+              <span className={styles.ringLegendDot} style={{ background: '#66BB6A' }} />
+              <span className={styles.ringLegendLabel}>Тренинг</span>
+              <span className={styles.ringLegendVal}>{trainedToday ? '✓' : '—'}</span>
+            </div>
           </div>
         </div>
-        {kcalLeft > 0 && (
-          <p className={styles.kcalHint}>Остават {Math.round(kcalLeft)} ккал за деня</p>
-        )}
+
+        {/* ── Macro mini grid ── */}
+        <div className={styles.macroGrid}>
+          <MacroCell label="ПРОТЕИН" value={Math.round(totals.protein || 0)} target={targets.protein} color="#42A5F5" unit="g" />
+          <MacroCell label="ВЪГЛЕХИДРАТИ" value={Math.round(totals.carbs || 0)} target={targets.carbs} color="#66BB6A" unit="g" />
+          <MacroCell label="МАЗНИНИ" value={Math.round(totals.fat || 0)} target={targets.fat} color="#ffb74d" unit="g" />
+          <MacroCell label="ОСТАВАЩИ" value={Math.max(0, targets.kcal - Math.round(totals.kcal || 0))} target={targets.kcal} color="var(--muted)" unit="ккал" noOver />
+        </div>
+
+        {/* ── Water row ── */}
+        <div className={styles.waterRow}>
+          <span className={styles.waterLabel}>💧 ВОДА</span>
+          <div className={styles.waterGlasses}>
+            {Array.from({ length: waterTarget }, (_, i) => (
+              <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
+            ))}
+          </div>
+          <div className={styles.waterActions}>
+            <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
+            <button type="button" className={styles.waterBtn} onClick={() => addWater(1)} aria-label="Добави чаша">+</button>
+          </div>
+        </div>
       </div>
 
       {/* ── Quick log button ── */}
@@ -164,64 +207,56 @@ export default function TodayDashboard({ onNavigate }) {
   )
 }
 
-function MacroPie({ totals, targets }) {
-  const r    = 44
-  const sw   = 15
-  const circ = 2 * Math.PI * r
-
-  const pKcal = (totals.protein || 0) * 4
-  const cKcal = (totals.carbs   || 0) * 4
-  const fKcal = (totals.fat     || 0) * 9
-  const tKcal = Math.max(targets.kcal || 1, 1)
-
-  const pLen = Math.min(pKcal / tKcal, 1) * circ
-  const cLen = Math.min(cKcal / tKcal, Math.max(0, 1 - pKcal / tKcal)) * circ
-  const fLen = Math.min(fKcal / tKcal, Math.max(0, 1 - (pKcal + cKcal) / tKcal)) * circ
-
-  const over = (totals.kcal || 0) > tKcal
+function ActivityRings({ kcalPct, habitsPct, trained, kcalVal }) {
+  const cx = 60, cy = 60
+  const rings = [
+    { r: 50, sw: 9,  pct: kcalPct,             color: '#ffb74d',  bg: 'rgba(255,183,77,0.12)'  },
+    { r: 37, sw: 9,  pct: habitsPct,            color: '#AB47BC',  bg: 'rgba(171,71,188,0.12)'  },
+    { r: 24, sw: 9,  pct: trained ? 1 : 0,      color: '#66BB6A',  bg: 'rgba(102,187,106,0.12)' },
+  ]
 
   return (
-    <svg width="130" height="130" viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
-      <circle cx="60" cy="60" r={r} fill="none" stroke="var(--surface-2)" strokeWidth={sw} />
-      {fLen > 0.5 && (
-        <circle cx="60" cy="60" r={r} fill="none" stroke="#ffb74d" strokeWidth={sw}
-          strokeDasharray={`${fLen} ${circ}`} strokeDashoffset={-(pLen + cLen)}
-          transform="rotate(-90 60 60)" strokeLinecap="butt" />
-      )}
-      {cLen > 0.5 && (
-        <circle cx="60" cy="60" r={r} fill="none" stroke="#66BB6A" strokeWidth={sw}
-          strokeDasharray={`${cLen} ${circ}`} strokeDashoffset={-pLen}
-          transform="rotate(-90 60 60)" strokeLinecap="butt" />
-      )}
-      {pLen > 0.5 && (
-        <circle cx="60" cy="60" r={r} fill="none" stroke="#42A5F5" strokeWidth={sw}
-          strokeDasharray={`${pLen} ${circ}`} strokeDashoffset={0}
-          transform="rotate(-90 60 60)" strokeLinecap="butt" />
-      )}
-      <text x="60" y="53" textAnchor="middle"
-        fill={over ? '#ef5350' : 'var(--text)'}
-        fontSize="22" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">
-        {Math.round(totals.kcal || 0)}
+    <svg width="134" height="134" viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
+      {rings.map((ring, idx) => {
+        const circ = 2 * Math.PI * ring.r
+        const filled = ring.pct * circ
+        return (
+          <g key={idx}>
+            <circle cx={cx} cy={cy} r={ring.r} fill="none" stroke={ring.bg} strokeWidth={ring.sw} />
+            {filled > 0.5 && (
+              <circle
+                cx={cx} cy={cy} r={ring.r} fill="none"
+                stroke={ring.color} strokeWidth={ring.sw}
+                strokeDasharray={`${filled} ${circ}`}
+                strokeDashoffset={0}
+                transform={`rotate(-90 ${cx} ${cy})`}
+                strokeLinecap="round"
+              />
+            )}
+          </g>
+        )
+      })}
+      <text x={cx} y={cy - 6} textAnchor="middle"
+        fill="var(--text)" fontSize="20" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">
+        {kcalVal}
       </text>
-      <text x="60" y="66" textAnchor="middle" fill="var(--muted)"
+      <text x={cx} y={cy + 8} textAnchor="middle" fill="var(--muted)"
         fontSize="9" fontFamily="'JetBrains Mono', monospace">ккал</text>
-      <text x="60" y="78" textAnchor="middle" fill="var(--muted)"
-        fontSize="9" fontFamily="'JetBrains Mono', monospace">/ {targets.kcal}</text>
     </svg>
   )
 }
 
-function LegendItem({ color, label, value, target }) {
-  const over = target > 0 && value > target
+function MacroCell({ label, value, target, color, unit, noOver }) {
+  const over = !noOver && target > 0 && value > target
   return (
-    <div className={styles.legendItem}>
-      <span className={styles.legendDot} style={{ background: color }} />
-      <div className={styles.legendText}>
-        <span className={styles.legendLabel}>{label}</span>
-        <span className={`${styles.legendVal} ${over ? styles.legendOver : ''}`}>
-          {value}g <span className={styles.legendTarget}>/ {target}g</span>
-        </span>
-      </div>
+    <div className={styles.macroCell}>
+      <span className={styles.macroCellLabel} style={{ color }}>{label}</span>
+      <span className={`${styles.macroCellVal} ${over ? styles.macroCellOver : ''}`}>
+        {value}<span className={styles.macroCellUnit}>{unit}</span>
+      </span>
+      {target > 0 && !noOver && (
+        <span className={styles.macroCellTarget}>/ {target}{unit}</span>
+      )}
     </div>
   )
 }

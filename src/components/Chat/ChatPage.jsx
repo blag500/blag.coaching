@@ -92,9 +92,10 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
   const [selectedClientName,   setSelectedClientName]   = useState(clientName || '')
   const [selectedClientAvatar, setSelectedClientAvatar] = useState(clientAvatarUrl || null)
 
-  const messagesEndRef = useRef(null)
-  const fileInputRef   = useRef(null)
-  const inputRef       = useRef(null)
+  const messagesEndRef    = useRef(null)
+  const fileInputRef      = useRef(null)
+  const inputRef          = useRef(null)
+  const initialScrollDone = useRef(false)
   const isCoach = profile?.role === 'coach'
 
   const otherUserId = isCoach ? selectedClientId : resolvedCoachId
@@ -178,7 +179,10 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
   }, [user?.id, isCoach, selectedClientId, resolvedCoachId])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (!messages.length) return
+    const behavior = initialScrollDone.current ? 'smooth' : 'instant'
+    messagesEndRef.current?.scrollIntoView({ behavior })
+    initialScrollDone.current = true
   }, [messages])
 
   async function handleSend() {
@@ -232,6 +236,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
           setOtherProfile(null)
           setMessages([])
           setLoading(true)
+          initialScrollDone.current = false
         }}
       />
     )

@@ -3,23 +3,32 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './ActivityCalendar.module.css'
 
-const DOTS = [
-  { key: 'food',     color: '#66BB6A', label: 'Хранене'   },
-  { key: 'training', color: '#FFB74D', label: 'Тренировка' },
-  { key: 'habits',   color: '#4FC3F7', label: 'Навици'    },
-  { key: 'weight',   color: '#F06292', label: 'Тегло'     },
-  { key: 'sleep',    color: '#CE93D8', label: 'Сън'       },
+const CATEGORIES = [
+  { key: 'training', color: '#FFB74D', label: 'Тренировка', emoji: '💪' },
+  { key: 'food',     color: '#66BB6A', label: 'Хранене',    emoji: '🥗' },
+  { key: 'habits',   color: '#4FC3F7', label: 'Навици',     emoji: '✅' },
+  { key: 'weight',   color: '#F06292', label: 'Тегло',      emoji: '⚖️' },
+  { key: 'sleep',    color: '#CE93D8', label: 'Сън',        emoji: '😴' },
 ]
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+
+function heatColor(count) {
+  if (count === 0) return 'transparent'
+  if (count === 1) return 'rgba(255,183,77,0.22)'
+  if (count === 2) return 'rgba(255,183,77,0.42)'
+  if (count === 3) return 'rgba(255,183,77,0.62)'
+  if (count === 4) return 'rgba(255,183,77,0.82)'
+  return 'var(--accent)'
+}
 
 export default function ActivityCalendar() {
   const { user } = useAuth()
   const today = new Date().toISOString().slice(0, 10)
 
-  const [year,  setYear]  = useState(() => new Date().getFullYear())
-  const [month, setMonth] = useState(() => new Date().getMonth())  // 0-based
-  const [actMap, setActMap] = useState(new Map())
+  const [year,        setYear]        = useState(() => new Date().getFullYear())
+  const [month,       setMonth]       = useState(() => new Date().getMonth())
+  const [actMap,      setActMap]      = useState(new Map())
   const [selectedDay, setSelectedDay] = useState(null)
 
   useEffect(() => {
@@ -64,22 +73,34 @@ export default function ActivityCalendar() {
   }, [user?.id, year, month])
 
   const { startOffset, daysInMonth } = useMemo(() => {
-    const first = new Date(year, month, 1).getDay()      // 0=Sun
+    const first = new Date(year, month, 1).getDay()
     return {
-      startOffset: (first + 6) % 7,                      // Mon-first
+      startOffset: (first + 6) % 7,
       daysInMonth: new Date(year, month + 1, 0).getDate(),
     }
   }, [year, month])
 
+  const monthStats = useMemo(() => {
+    let training = 0, food = 0, habits = 0, activeDays = 0
+    actMap.forEach(act => {
+      const anyActive = Object.values(act).some(Boolean)
+      if (anyActive) activeDays++
+      if (act.training) training++
+      if (act.food) food++
+      if (act.habits) habits++
+    })
+    return { training, food, habits, activeDays }
+  }, [actMap])
+
   function prevMonth() {
+    setSelectedDay(null)
     if (month === 0) { setYear(y => y - 1); setMonth(11) }
     else setMonth(m => m - 1)
-    setSelectedDay(null)
   }
   function nextMonth() {
+    setSelectedDay(null)
     if (month === 11) { setYear(y => y + 1); setMonth(0) }
     else setMonth(m => m + 1)
-    setSelectedDay(null)
   }
 
   const monthName = new Date(year, month, 1).toLocaleString('bg-BG', { month: 'long' })
@@ -91,21 +112,23 @@ export default function ActivityCalendar() {
     const dd      = String(day).padStart(2, '0')
     const dateStr = `${year}-${mm}-${dd}`
     const act     = actMap.get(dateStr) || {}
-    return {
-      day,
-      dateStr,
-      act,
-      isToday:  dateStr === today,
-      isFuture: dateStr >  today,
-      hasAny:   Object.values(act).some(Boolean),
-    }
+    const count   = Object.values(act).filter(Boolean).length
+    return { day, dateStr, act, count, isToday: dateStr === today, isFuture: dateStr > today }
   })
 
   const selAct = selectedDay ? (actMap.get(selectedDay) || {}) : null
 
   return (
     <div>
-      {/* Header */}
+      {/* Monthly stats */}
+      <div className={styles.stats}>
+        <StatChip emoji="📅" value={monthStats.activeDays} label="активни дни" />
+        <StatChip emoji="💪" value={monthStats.training}   label="тренировки" />
+        <StatChip emoji="🥗" value={monthStats.food}       label="дни хранене" />
+        <StatChip emoji="✅" value={monthStats.habits}     label="дни навици" />
+      </div>
+
+      {/* Month navigation */}
       <div className={styles.header}>
         <button className={styles.navBtn} onClick={prevMonth} type="button">‹</button>
         <span className={styles.monthLabel}>{monthName.toUpperCase()} {year}</span>
@@ -121,61 +144,69 @@ export default function ActivityCalendar() {
       <div className={styles.grid}>
         {cells.map((cell, i) => {
           if (!cell) return <div key={`e-${i}`} />
-          const { day, dateStr, act, isToday, isFuture, hasAny } = cell
+          const { day, dateStr, count, isToday, isFuture } = cell
           return (
             <button
               key={dateStr}
               type="button"
               className={[
                 styles.cell,
-                isToday    ? styles.todayCell    : '',
-                isFuture   ? styles.futureCell   : '',
+                isToday  ? styles.todayCell    : '',
+                isFuture ? styles.futureCell   : '',
                 selectedDay === dateStr ? styles.selectedCell : '',
               ].join(' ')}
               onClick={() => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
             >
+              <span
+                className={styles.heatDot}
+                style={{ background: isFuture ? 'transparent' : heatColor(count) }}
+              />
               <span className={styles.dayNum}>{day}</span>
-              {hasAny && !isFuture && (
-                <div className={styles.dots}>
-                  {DOTS.map(({ key, color }) =>
-                    act[key] ? <span key={key} className={styles.dot} style={{ background: color }} /> : null
-                  )}
-                </div>
-              )}
             </button>
           )
         })}
       </div>
 
-      {/* Legend */}
-      <div className={styles.legend}>
-        {DOTS.map(({ key, color, label }) => (
-          <span key={key} className={styles.legendItem}>
-            <span className={styles.dot} style={{ background: color }} />
-            {label}
-          </span>
+      {/* Heat legend */}
+      <div className={styles.heatLegend}>
+        <span className={styles.heatLegendLabel}>Малко</span>
+        {[1, 2, 3, 4, 5].map(n => (
+          <span key={n} className={styles.heatSwatch} style={{ background: heatColor(n) }} />
         ))}
+        <span className={styles.heatLegendLabel}>Много</span>
       </div>
 
       {/* Day detail panel */}
-      {selectedDay && (
+      {selectedDay && selAct && (
         <div className={styles.detail}>
           <p className={styles.detailDate}>
-            {new Date(selectedDay + 'T12:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' })}
+            {new Date(selectedDay + 'T12:00').toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <div className={styles.detailRow}>
-            {DOTS.map(({ key, color, label }) => (
-              <span
-                key={key}
-                className={`${styles.detailBadge} ${selAct[key] ? styles.detailBadgeOn : styles.detailBadgeOff}`}
-              >
-                <span className={styles.dot} style={{ background: selAct[key] ? color : 'var(--border)' }} />
-                {label}
-              </span>
-            ))}
-          </div>
+          {Object.values(selAct).every(v => !v) ? (
+            <p className={styles.detailEmpty}>Няма записана активност за този ден</p>
+          ) : (
+            <div className={styles.detailRow}>
+              {CATEGORIES.map(({ key, color, label, emoji }) =>
+                selAct[key] ? (
+                  <span key={key} className={styles.detailBadge} style={{ borderColor: color + '55', color }}>
+                    {emoji} {label}
+                  </span>
+                ) : null
+              )}
+            </div>
+          )}
         </div>
       )}
+    </div>
+  )
+}
+
+function StatChip({ emoji, value, label }) {
+  return (
+    <div className={styles.statChip}>
+      <span className={styles.statEmoji}>{emoji}</span>
+      <span className={styles.statValue}>{value}</span>
+      <span className={styles.statLabel}>{label}</span>
     </div>
   )
 }

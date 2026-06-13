@@ -8,10 +8,10 @@ import { supabase } from '../../lib/supabase'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import TrainingEditor from '../Coach/TrainingEditor'
-import NutritionProgress from '../NutritionCards/NutritionProgress'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
 import WeeklySnapshot from './WeeklySnapshot'
+import AvatarCropper from './AvatarCropper'
 import styles from './Profile.module.css'
 
   function calcStreak(history) {
@@ -49,7 +49,6 @@ export default function Profile() {
   const [weightSaved, setWeightSaved] = useState(false)
   const [targetInput, setTargetInput] = useState(String(targetWeight ?? ''))
 
-  const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 })
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
   const isCoach = profile?.role === 'coach'
@@ -67,29 +66,6 @@ export default function Profile() {
   useEffect(() => {
     if (profile?.name) setName(profile.name)
   }, [profile?.name])
-
-  // Fetch today's macro totals for the nutrition progress ring
-  useEffect(() => {
-    if (!user) return
-    const today = new Date().toISOString().slice(0, 10)
-    supabase
-      .from('food_logs')
-      .select('kcal, protein, carbs, fat')
-      .eq('user_id', user.id)
-      .eq('date', today)
-      .then(({ data }) => {
-        if (!data?.length) return
-        setTodayTotals(data.reduce(
-          (acc, e) => ({
-            kcal:    Math.round(acc.kcal    + (e.kcal    || 0)),
-            protein: Math.round((acc.protein + (e.protein || 0)) * 10) / 10,
-            carbs:   Math.round((acc.carbs   + (e.carbs   || 0)) * 10) / 10,
-            fat:     Math.round((acc.fat     + (e.fat     || 0)) * 10) / 10,
-          }),
-          { kcal: 0, protein: 0, carbs: 0, fat: 0 }
-        ))
-      })
-  }, [user?.id])
 
   const streak = useMemo(() => calcStreak(history), [history])
 
@@ -163,20 +139,26 @@ export default function Profile() {
 
   const avatarInputRef = useRef(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
+  const [cropFile, setCropFile] = useState(null)
 
-  async function handleAvatarChange(e) {
+  function handleAvatarChange(e) {
     const file = e.target.files?.[0]
-    if (!file || !user) return
+    if (!file) return
+    setCropFile(file)
+    e.target.value = ''
+  }
+
+  async function handleCropConfirm(blob) {
+    setCropFile(null)
+    if (!user) return
     setAvatarUploading(true)
-    const ext  = file.name.split('.').pop()
-    const path = `${user.id}/avatar.${ext}`
-    const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+    const path = `${user.id}/avatar.jpg`
+    const { error: upErr } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
     if (!upErr) {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
       await updateProfile({ avatar_url: publicUrl + `?t=${Date.now()}` })
     }
     setAvatarUploading(false)
-    e.target.value = ''
   }
 
   async function handleMacrosSave() {
@@ -194,6 +176,13 @@ export default function Profile() {
 
   return (
     <div className={styles.page}>
+      {cropFile && (
+        <AvatarCropper
+          file={cropFile}
+          onConfirm={handleCropConfirm}
+          onCancel={() => setCropFile(null)}
+        />
+      )}
       <header className={styles.header}>
         <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
         <button className={styles.avatarBtn} onClick={() => avatarInputRef.current?.click()} type="button" aria-label="Смени снимка">
@@ -217,7 +206,8 @@ export default function Profile() {
 
       {/* Activity calendar */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>АКТИВНОСТ</h2>
+        <h2 className={styles.sectionTitle}>ДНЕВНА АКТИВНОСТ</h2>
+        <p className={styles.sectionSub}>Кликни върху ден за детайли</p>
         <ActivityCalendar />
       </section>
 
@@ -269,17 +259,6 @@ export default function Profile() {
           </button>
         )}
       </section>
-
-      {/* Today's nutrition progress ring */}
-      <NutritionProgress
-        totals={todayTotals}
-        targets={{
-          kcal:    parseInt(macros.calories) || 0,
-          protein: parseInt(macros.protein)  || 0,
-          carbs:   parseInt(macros.carbs)    || 0,
-          fat:     parseInt(macros.fat)      || 0,
-        }}
-      />
 
       {/* Weight tracker */}
       <section className={styles.card}>
