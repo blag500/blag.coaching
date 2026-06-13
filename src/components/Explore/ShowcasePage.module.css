@@ -354,6 +354,18 @@
   color: var(--accent);
 }
 
+.dotWorkoutLabel {
+  font-family: var(--font-heading);
+  font-size: 7px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-align: center;
+  max-width: 32px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Habit bars ── */
 .habitBars {
   display: grid;

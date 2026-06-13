@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 import { HABITS as DEFAULT_HABITS } from '../../data/appData'
 import styles from './ShowcasePage.module.css'
 
 const CATEGORIES = [
   { id: null,        label: 'ВСИЧКО' },
-  { id: 'training',  label: 'ТРЕНИНГ' },
+  { id: 'training',  label: 'ТРЕНИРОВКА' },
   { id: 'nutrition', label: 'ХРАНЕНЕ' },
 ]
-const CAT_LABEL = { training: 'ТРЕНИНГ', nutrition: 'ХРАНЕНЕ' }
+const CAT_LABEL = { training: 'ТРЕНИРОВКА', nutrition: 'ХРАНЕНЕ' }
 const CAT_COLOR = { training: '#FFB74D', nutrition: '#66BB6A' }
 
 const DAYS_BG = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -22,6 +23,7 @@ function last7Days() {
 }
 
 export default function ShowcasePage({ onBack }) {
+  const { user, profile: myProfile } = useAuth()
   const [posts,      setPosts]      = useState([])
   const [loading,    setLoading]    = useState(true)
   const [filter,     setFilter]     = useState(null)
@@ -31,8 +33,15 @@ export default function ShowcasePage({ onBack }) {
 
   useEffect(() => {
     async function load() {
-      // Resolve coach ID
-      const { data: coachId } = await supabase.rpc('get_coach_id')
+      // If the viewer IS the coach, use their own ID directly.
+      // Otherwise resolve via RPC (client looking up their coach).
+      let coachId
+      if (myProfile?.role === 'coach') {
+        coachId = user?.id
+      } else {
+        const { data } = await supabase.rpc('get_coach_id')
+        coachId = data
+      }
       if (!coachId) { setLoading(false); return }
 
       const days = last7Days()
@@ -43,6 +52,7 @@ export default function ShowcasePage({ onBack }) {
         profileRes,
         postsRes,
         workoutsRes,
+        exerciseRes,
         habitsRes,
         nutritionRes,
         checkinsRes,
@@ -51,13 +61,20 @@ export default function ShowcasePage({ onBack }) {
         supabase.from('profiles').select('name, avatar_url, calories, protein, carbs, fat, habits').eq('id', coachId).single(),
         supabase.from('showcase_posts').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
         supabase.from('workout_completions').select('completed_date, block_label').eq('user_id', coachId).gte('completed_date', since),
+        supabase.from('exercise_logs').select('completed_date, block_label').eq('user_id', coachId).gte('completed_date', since),
         supabase.from('habit_completions').select('date, habit_id, completed').eq('user_id', coachId).gte('date', since),
         supabase.from('food_logs').select('date, kcal, protein, carbs, fat').eq('user_id', coachId).gte('date', since),
         supabase.from('form_checkins').select('date, photo_url, weight_kg, gym_performance, sleep_hours').eq('user_id', coachId).gte('date', new Date(Date.now() - 59 * 86400000).toISOString().slice(0, 10)).not('photo_url', 'is', null).order('date', { ascending: false }).limit(20),
         supabase.from('sleep_logs').select('date, duration_hours, quality').eq('user_id', coachId).gte('date', since).order('date', { ascending: false }).limit(1),
       ])
 
-      const profile  = profileRes.data || {}
+      // Merge fetched profile with myProfile as fallback so name/avatar always resolve
+      const fetched  = profileRes.data || {}
+      const profile  = {
+        ...fetched,
+        name:       fetched.name       || myProfile?.name       || '',
+        avatar_url: fetched.avatar_url || myProfile?.avatar_url || null,
+      }
       const habits   = (profile.habits?.length > 0) ? profile.habits : DEFAULT_HABITS
       const habitIds = habits.map(h => h.id)
 
@@ -78,8 +95,14 @@ export default function ShowcasePage({ onBack }) {
         if (row.completed) habitsByDay[row.date][row.habit_id] = true
       }
 
-      // Training per day
-      const trainedDays = new Set((workoutsRes.data || []).map(r => r.completed_date))
+      // Training per day — merge workout_completions + exercise_logs
+      const allWorkouts = [...(workoutsRes.data || []), ...(exerciseRes.data || [])]
+      const trainedDays = new Set(allWorkouts.map(r => r.completed_date))
+      const workoutLabelsByDay = {}
+      allWorkouts.forEach(r => {
+        if (!workoutLabelsByDay[r.completed_date]) workoutLabelsByDay[r.completed_date] = new Set()
+        if (r.block_label) workoutLabelsByDay[r.completed_date].add(r.block_label)
+      })
 
       // Build day summaries
       const daySummaries = days.map(date => {
@@ -89,6 +112,7 @@ export default function ShowcasePage({ onBack }) {
         return {
           date,
           trained: trainedDays.has(date),
+          workoutLabels: workoutLabelsByDay[date] ? [...workoutLabelsByDay[date]] : [],
           habitsDone: doneHabits,
           habitsTotal: habitIds.length,
           kcal: Math.round(nutrition?.kcal || 0),
@@ -121,7 +145,7 @@ export default function ShowcasePage({ onBack }) {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [user?.id, myProfile?.role])
 
   const visible = filter ? posts.filter(p => p.category === filter) : posts
 
@@ -223,16 +247,18 @@ function CoachLiveCard({ data, onPhotoClick }) {
       </div>
 
       {/* Last 7 days training dots */}
-      <div className={styles.sectionMini}>ТРЕНИНГ — ПОСЛЕДНИ 7 ДНИ</div>
+      <div className={styles.sectionMini}>ТРЕНИРОВКА — ПОСЛЕДНИ 7 ДНИ</div>
       <div className={styles.dotRow}>
         {daySummaries.map((d, i) => {
           const dayObj = new Date(d.date)
           const isToday = i === 6
+          const label = d.workoutLabels?.[0] ?? null
           return (
             <div key={d.date} className={styles.dotCol}>
               <div className={`${styles.dot} ${d.trained ? styles.dotDone : ''} ${isToday ? styles.dotToday : ''}`}>
-                <span className={styles.dotEmoji}>{d.trained ? '💪' : '💤'}</span>
+                {d.trained && <span className={styles.dotEmoji}>💪</span>}
               </div>
+              {label && <span className={styles.dotWorkoutLabel}>{label}</span>}
               <span className={`${styles.dotLabel} ${isToday ? styles.dotLabelToday : ''}`}>
                 {DAYS_BG[dayObj.getDay()]}
               </span>
@@ -288,7 +314,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
           <span className={`${styles.statVal} ${today.trained ? styles.statGreen : styles.statMuted}`}>
             {today.trained ? '✓' : '—'}
           </span>
-          <span className={styles.statLabel}>ТРЕНИНГ</span>
+          <span className={styles.statLabel}>ТРЕНИРОВКА</span>
         </div>
       </div>
 
