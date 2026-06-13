@@ -305,12 +305,16 @@ function ActivityRings({ kcalPct, habitsPct, trained, kcalVal }) {
           </g>
         )
       })}
-      <text x={cx} y={cy - 6} textAnchor="middle"
-        fill="var(--text)" fontSize="20" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">
-        {kcalVal}
+      {kcalVal > 0 && (
+        <text x={cx} y={cy - 2} textAnchor="middle"
+          fill="var(--text)" fontSize="13" fontFamily="'Bebas Neue', sans-serif" letterSpacing="0.5">
+          {kcalVal}
+        </text>
+      )}
+      <text x={cx} y={kcalVal > 0 ? cy + 8 : cy + 3} textAnchor="middle"
+        fill="var(--muted)" fontSize="7" fontFamily="'JetBrains Mono', monospace">
+        ккал
       </text>
-      <text x={cx} y={cy + 8} textAnchor="middle" fill="var(--muted)"
-        fontSize="9" fontFamily="'JetBrains Mono', monospace">ккал</text>
     </svg>
   )
 }

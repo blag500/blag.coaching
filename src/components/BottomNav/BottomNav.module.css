@@ -16,6 +16,10 @@
   display: flex;
   z-index: 100;
   padding: 0 6px;
+  /* Force GPU compositing — prevents Safari fixed-position flicker during scroll momentum */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .tab {
