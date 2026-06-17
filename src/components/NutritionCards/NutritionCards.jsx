@@ -25,8 +25,7 @@ function greeting() {
   const h = new Date().getHours()
   if (h >= 5  && h < 12) return 'ДОБРО УТРО'
   if (h >= 12 && h < 17) return 'ДОБЪР ДЕН'
-  if (h >= 17) return 'ДОБЪР ВЕЧЕР'
-  return 'ДОБРА НОЩ'
+  return 'ДОБЪР ВЕЧЕР'
 }
 
 export default function NutritionCards() {
