@@ -32,10 +32,17 @@ const MONTHS_BG = [
 ]
 const DAYS_SHORT = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
 
-function buildCalendar(year, month, completionMap, blocks) {
-  const daysInMonth  = new Date(year, month + 1, 0).getDate()
-  const rawFirstDay  = new Date(year, month, 1).getDay()
-  const firstDow     = (rawFirstDay + 6) % 7 // Monday = 0
+// "UPPER A" → "UA", "LOWER B" → "LB", "PUSH" → "PU"
+function abbrev(label) {
+  const parts = (label || '').trim().split(/\s+/)
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  return label.slice(0, 2).toUpperCase()
+}
+
+function buildCalendar(year, month, completionMap) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const rawFirstDay = new Date(year, month, 1).getDay()
+  const firstDow    = (rawFirstDay + 6) % 7 // Monday = 0
 
   const cells = []
   for (let i = 0; i < firstDow; i++) cells.push(null)
@@ -58,12 +65,19 @@ function WorkoutCalendar({ completions, blocks }) {
     const m = {}
     for (const c of completions) {
       if (!m[c.completed_date]) m[c.completed_date] = []
-      m[c.completed_date].push(c.block_label)
+      if (!m[c.completed_date].includes(c.block_label))
+        m[c.completed_date].push(c.block_label)
     }
     return m
   }, [completions])
 
-  const cells = buildCalendar(year, month, completionMap, blocks)
+  const cells = buildCalendar(year, month, completionMap)
+
+  // Count workouts in current view month
+  const monthCount = useMemo(() => {
+    const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`
+    return completions.filter(c => c.completed_date.startsWith(prefix)).length
+  }, [completions, year, month])
 
   function prev() {
     if (month === 0) { setYear(y => y - 1); setMonth(11) }
@@ -74,15 +88,21 @@ function WorkoutCalendar({ completions, blocks }) {
     else setMonth(m => m + 1)
   }
 
-  // Build block → color map by label
   const colorMap = {}
   blocks.forEach((b, i) => { colorMap[b.label] = blockColor(i) })
+
+  const isPast = (dateStr) => dateStr < todayStr
 
   return (
     <div className={styles.calendar}>
       <div className={styles.calHeader}>
         <button className={styles.calNav} onClick={prev} type="button">‹</button>
-        <span className={styles.calTitle}>{MONTHS_BG[month]} {year}</span>
+        <div className={styles.calTitleGroup}>
+          <span className={styles.calTitle}>{MONTHS_BG[month]} {year}</span>
+          {monthCount > 0 && (
+            <span className={styles.calMonthCount}>{monthCount} тренировки</span>
+          )}
+        </div>
         <button className={styles.calNav} onClick={next} type="button">›</button>
       </div>
 
@@ -95,16 +115,25 @@ function WorkoutCalendar({ completions, blocks }) {
           !cell
             ? <div key={`e-${i}`} />
             : (
-              <div key={cell.dateStr} className={`${styles.calDay} ${cell.dateStr === todayStr ? styles.calToday : ''}`}>
+              <div
+                key={cell.dateStr}
+                className={[
+                  styles.calDay,
+                  cell.dateStr === todayStr ? styles.calToday : '',
+                  cell.labels.length > 0 ? styles.calDone : '',
+                  isPast(cell.dateStr) && cell.labels.length === 0 ? styles.calMissed : '',
+                ].join(' ')}
+              >
                 <span className={styles.calNum}>{cell.day}</span>
-                <div className={styles.calDots}>
-                  {cell.labels.slice(0, 3).map((label, li) => (
+                <div className={styles.calChips}>
+                  {cell.labels.slice(0, 2).map((label, li) => (
                     <span
                       key={li}
-                      className={styles.calDot}
+                      className={styles.calChip}
                       style={{ background: colorMap[label] || '#8888AA' }}
-                      title={label}
-                    />
+                    >
+                      {abbrev(label)}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -115,7 +144,9 @@ function WorkoutCalendar({ completions, blocks }) {
       <div className={styles.calLegend}>
         {blocks.map((b, i) => (
           <span key={b.id} className={styles.calLegendItem}>
-            <span className={styles.calDot} style={{ background: blockColor(i) }} />
+            <span className={styles.calChip} style={{ background: blockColor(i) }}>
+              {abbrev(b.label)}
+            </span>
             {b.label}
           </span>
         ))}
@@ -195,6 +226,24 @@ export default function Training() {
       ])
       setJustMarked(true)
       setTimeout(() => setJustMarked(false), 2500)
+    }
+    setMarking(false)
+  }
+
+  async function handleUnmarkDone() {
+    if (!user || marking) return
+    setMarking(true)
+    const { error } = await supabase
+      .from('workout_completions')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('block_label', selectedBlock.label)
+      .eq('completed_date', logDate)
+    if (!error) {
+      setCompletions(prev =>
+        prev.filter(c => !(c.completed_date === logDate && c.block_label === selectedBlock.label))
+      )
+      setJustMarked(false)
     }
     setMarking(false)
   }
@@ -308,6 +357,11 @@ export default function Training() {
               ? `✓ Маркирай почивен ден${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`
               : `✓ Маркирай като готово${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`}
           </button>
+          {alreadyMarked && (
+            <button className={styles.unmarkBtn} onClick={handleUnmarkDone} disabled={marking} type="button">
+              × Премахни маркирането
+            </button>
+          )}
         </div>
       )}
 

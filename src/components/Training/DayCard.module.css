@@ -7,12 +7,58 @@
 
 /* ── Header ── */
 .cardHeader {
-  padding: 14px 16px;
+  position: relative;
+  width: 100%;
+  padding: 14px 40px 14px 16px;
+  border: none;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-align: left;
+}
+
+.cardHeader:active {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.card:has(.body:not(.bodyOpen)) .cardHeader {
+  border-bottom-color: transparent;
+}
+
+/* ── Chevron ── */
+.chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.chevronOpen {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+/* ── Collapsible body ── */
+.body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bodyOpen {
+  grid-template-rows: 1fr;
+}
+
+.bodyInner {
+  overflow: hidden;
 }
 
 .blockLabel {
