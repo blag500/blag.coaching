@@ -1,5 +1,77 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import styles from './HelpPage.module.css'
+
+// ─── PWA Install Demo ─────────────────────────────────────────────────────────
+
+function PwaInstallDemo({ lang }) {
+  const [platform, setPlatform] = useState('ios')
+  const [step, setStep] = useState(0)
+  const bg = lang === 'bg'
+
+  const steps = {
+    ios: [
+      { icon: '🌐', main: bg ? 'Отвори blag-coaching.com в Safari' : 'Open blag-coaching.com in Safari' },
+      { icon: '⬆️', main: bg ? 'Натисни бутона Сподели' : 'Tap the Share button', sub: bg ? 'квадрат със стрелка, долу в средата' : 'square with arrow, bottom center' },
+      { icon: '📲', main: bg ? 'Натисни „Добавяне към начален екран"' : 'Tap "Add to Home Screen"', sub: bg ? 'превъртай надолу в менюто' : 'scroll down in the menu' },
+      { icon: '✅', main: bg ? 'Натисни Добавяне — готово!' : 'Tap Add — done!', sub: bg ? 'Иконата се появява на Home Screen' : 'Icon appears on your Home Screen' },
+    ],
+    android: [
+      { icon: '🌐', main: bg ? 'Отвори blag-coaching.com в Chrome' : 'Open blag-coaching.com in Chrome' },
+      { icon: '⋮', main: bg ? 'Натисни трите точки горе вдясно' : 'Tap three dots (top right)' },
+      { icon: '📲', main: bg ? 'Избери „Инсталиране на приложение"' : 'Select "Install app"', sub: bg ? 'или „Добавяне към начален екран"' : 'or "Add to Home Screen"' },
+      { icon: '✅', main: bg ? 'Потвърди — готово!' : 'Confirm — done!', sub: bg ? 'Иконата се появява на Home Screen' : 'Icon appears on your Home Screen' },
+    ],
+  }
+
+  const current = steps[platform]
+
+  useEffect(() => {
+    setStep(0)
+    const id = setInterval(() => setStep(s => (s + 1) % current.length), 2600)
+    return () => clearInterval(id)
+  }, [platform])
+
+  const s = current[step]
+
+  return (
+    <div className={styles.pwaDemo}>
+      <div className={styles.pwaTabs}>
+        <button className={`${styles.pwaTab} ${platform === 'ios' ? styles.pwaTabActive : ''}`} onClick={() => setPlatform('ios')} type="button">
+          📱 iPhone
+        </button>
+        <button className={`${styles.pwaTab} ${platform === 'android' ? styles.pwaTabActive : ''}`} onClick={() => setPlatform('android')} type="button">
+          🤖 Android
+        </button>
+      </div>
+
+      <div className={styles.pwaPhone}>
+        <div className={styles.pwaNotch} />
+        <div className={styles.pwaAddressBar}>
+          <span className={styles.pwaUrl}>blag-coaching.com</span>
+        </div>
+        <div className={styles.pwaScreen}>
+          <span className={styles.pwaCounter}>{step + 1} / {current.length}</span>
+          <span className={styles.pwaIcon}>{s.icon}</span>
+          <p className={styles.pwaMain}>{s.main}</p>
+          {s.sub && <p className={styles.pwaSub}>{s.sub}</p>}
+        </div>
+        {platform === 'ios' && <div className={styles.pwaHomeBar} />}
+      </div>
+
+      <div className={styles.pwaDots}>
+        {current.map((_, i) => (
+          <button
+            key={i}
+            className={`${styles.pwaDot} ${i === step ? styles.pwaDotActive : ''}`}
+            onClick={() => setStep(i)}
+            type="button"
+            aria-label={`Step ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ─── Knowledge base content ───────────────────────────────────────────────────
 
@@ -12,6 +84,7 @@ const KB = {
     no_results: 'Няма резултати за',
     contact_title: 'Нямаш отговор?',
     contact_sub: 'Пиши директно на треньора от чат секцията в приложението.',
+    contact_email_label: 'Или изпрати имейл на:',
     open_app: 'Отвори приложението',
     back: '← Назад',
     back_to: '← Назад към',
@@ -56,6 +129,7 @@ const KB = {
             id: 'install',
             title: 'Как да инсталирам приложението?',
             popular: true,
+            demo: 'pwa-install',
             body: `ИНСТАЛИРАНЕ НА IPHONE (Safari)
 
 1. Отвори blag-coaching.com в Safari
@@ -642,6 +716,7 @@ PUSH ИЗВЕСТИЯ НА IPHONE
     no_results: 'No results for',
     contact_title: 'Still need help?',
     contact_sub: 'Message your coach directly from the Chat tab inside the app.',
+    contact_email_label: 'Or send an email to:',
     open_app: 'Open app',
     back: '← Back',
     back_to: '← Back to',
@@ -686,6 +761,7 @@ IMPORTANT: Newly registered clients see a "Pending Approval" screen. Your coach 
             id: 'install',
             title: 'How do I install the app?',
             popular: true,
+            demo: 'pwa-install',
             body: `INSTALL ON IPHONE (Safari)
 
 1. Open blag-coaching.com in Safari
@@ -1331,6 +1407,7 @@ export default function HelpPage() {
               {selectedCat?.icon} {selectedCat?.title}
             </span>
             <h1 className={styles.articleDetailTitle}>{selectedArticle.title}</h1>
+            {selectedArticle.demo === 'pwa-install' && <PwaInstallDemo lang={lang} />}
             <div className={styles.articleDetailBody}>
               {selectedArticle.body.split('\n\n').map((para, i) => {
                 if (/^[A-ZААБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯЁІЇЄ].*[A-ZААБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯЁІЇЄ\n]$/.test(para.trim()) && para.trim().length < 80 && !para.includes('•') && !para.match(/^\d+\./)) {
@@ -1520,6 +1597,8 @@ export default function HelpPage() {
             <div className={styles.contactBox}>
               <p className={styles.contactTitle}>{t.contact_title}</p>
               <p className={styles.contactSub}>{t.contact_sub}</p>
+              <p className={styles.contactEmailLabel}>{t.contact_email_label}</p>
+              <a href="mailto:info@blag-coaching.com" className={styles.contactEmail}>info@blag-coaching.com</a>
             </div>
           </>
         )}

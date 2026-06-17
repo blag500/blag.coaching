@@ -345,6 +345,168 @@
   margin: 0;
 }
 
+.contactEmailLabel {
+  font-size: 0.78rem;
+  color: rgba(242, 232, 207, 0.4);
+  margin: 14px 0 4px;
+}
+
+.contactEmail {
+  display: inline-block;
+  font-size: 0.88rem;
+  color: #ffb74d;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 183, 77, 0.3);
+  transition: border-color 150ms, color 150ms;
+}
+
+.contactEmail:hover {
+  color: #ffd080;
+  border-bottom-color: rgba(255, 183, 77, 0.7);
+}
+
+/* ── PWA Install Demo ───────────────────────────────────────────────────────── */
+
+.pwaDemo {
+  background: rgba(255, 183, 77, 0.04);
+  border: 1px solid rgba(255, 183, 77, 0.14);
+  border-radius: 16px;
+  padding: 20px 16px;
+  margin: 4px 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pwaTabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.pwaTab {
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: none;
+  background: none;
+  color: rgba(242, 232, 207, 0.45);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.pwaTabActive {
+  background: rgba(255, 183, 77, 0.14);
+  color: #ffb74d;
+}
+
+.pwaPhone {
+  width: 156px;
+  background: #0e0b07;
+  border: 2px solid rgba(255, 183, 77, 0.22);
+  border-radius: 26px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 270px;
+}
+
+.pwaNotch {
+  width: 56px;
+  height: 16px;
+  background: #060503;
+  border-radius: 0 0 10px 10px;
+  margin: 0 auto;
+}
+
+.pwaAddressBar {
+  background: rgba(255, 255, 255, 0.05);
+  margin: 6px 10px;
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pwaUrl {
+  font-size: 9px;
+  color: rgba(242, 232, 207, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.pwaScreen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.pwaCounter {
+  font-size: 9px;
+  color: rgba(255, 183, 77, 0.45);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+}
+
+.pwaIcon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.pwaMain {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #F2E8CF;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.pwaSub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(242, 232, 207, 0.4);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.pwaHomeBar {
+  width: 52px;
+  height: 4px;
+  background: rgba(255, 183, 77, 0.28);
+  border-radius: 2px;
+  margin: 6px auto 10px;
+}
+
+.pwaDots {
+  display: flex;
+  gap: 8px;
+}
+
+.pwaDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 183, 77, 0.18);
+  cursor: pointer;
+  padding: 0;
+  transition: background 200ms, transform 200ms;
+}
+
+.pwaDotActive {
+  background: #ffb74d;
+  transform: scale(1.25);
+}
+
 /* ── Search results ─────────────────────────────────────────────────────────── */
 
 .noResults {
