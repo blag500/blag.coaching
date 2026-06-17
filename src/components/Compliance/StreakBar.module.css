@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -57,20 +57,20 @@
 }
 
 .col.colToday .barTrack {
-  outline: 1.5px solid rgba(255, 183, 77,0.5);
+  outline: 1.5px solid rgba(var(--accent-rgb),0.5);
   outline-offset: -1px;
 }
 
 .barFill {
   width: 100%;
-  background: rgba(255, 183, 77,0.45);
+  background: rgba(var(--accent-rgb),0.45);
   border-radius: 4px;
   transition: height 0.55s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .barFill.barDone {
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(255, 183, 77,0.4);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb),0.4);
 }
 
 .dayLabel {
@@ -84,3 +84,4 @@
 .dayLabel.dayDone {
   color: var(--accent);
 }
+

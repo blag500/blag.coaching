@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -86,9 +86,9 @@
 }
 
 .restActive {
-  background: rgba(255, 183, 77, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   color: var(--accent);
-  border-color: rgba(255, 183, 77, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 /* Remove block */
@@ -211,7 +211,7 @@
 .addExBtn {
   padding: 10px 14px;
   background: transparent;
-  border: 1px dashed rgba(255, 183, 77, 0.25);
+  border: 1px dashed rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-body);
@@ -228,7 +228,7 @@
   width: 100%;
   padding: 13px;
   background: transparent;
-  border: 1px dashed rgba(255, 183, 77, 0.3);
+  border: 1px dashed rgba(var(--accent-rgb), 0.3);
   border-radius: 12px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -262,3 +262,4 @@
   opacity: 0.5;
   cursor: default;
 }
+

@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   padding: 0 0 16px;
 }
 
@@ -23,7 +23,7 @@
 
 .filterInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10);
 }
 
 .filterInput::placeholder {
@@ -60,7 +60,7 @@
 .chipActive {
   background: var(--accent-dim);
   color: var(--accent);
-  border-color: rgba(255, 183, 77, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 /* Suggestion */
@@ -295,8 +295,8 @@
 
 .toolChip {
   padding: 4px 10px;
-  background: rgba(255, 183, 77, 0.18);
-  border: 1px solid rgba(255, 183, 77, 0.35);
+  background: rgba(var(--accent-rgb), 0.18);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   border-radius: 99px;
   font-family: var(--font-body);
   font-size: 11px;
@@ -317,3 +317,4 @@
   font-size: 10px;
   color: rgba(255,255,255,0.45);
 }
+

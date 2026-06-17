@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   margin-bottom: 20px;
 }
 
@@ -36,10 +36,10 @@
 }
 
 .modeBtnActive {
-  background: rgba(255, 183, 77, 0.1);
-  border-color: rgba(255, 183, 77, 0.55);
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: rgba(var(--accent-rgb), 0.55);
   color: var(--accent);
-  box-shadow: 0 0 10px rgba(255, 183, 77, 0.12);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.12);
 }
 
 .modeBtnActive .modeBtnIcon {
@@ -101,7 +101,7 @@
 }
 
 .addBtnDone {
-  background: rgba(255, 183, 77, 0.18) !important;
+  background: rgba(var(--accent-rgb), 0.18) !important;
   color: var(--accent) !important;
 }
 
@@ -223,7 +223,7 @@
   width: 32px;
   height: 32px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-size: 20px;
@@ -237,7 +237,7 @@
 }
 
 .recentAddBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 .inputWrap {
@@ -392,7 +392,7 @@
   flex: 1;
   padding: 11px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: var(--radius);
   color: var(--accent);
   font-family: var(--font-heading);
@@ -408,7 +408,7 @@
 }
 
 .aiSearchBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 .aiSearchBtn:disabled {
@@ -843,8 +843,8 @@
 }
 
 .subTabActive {
-  background: rgba(255, 183, 77, 0.1);
-  border-color: rgba(255, 183, 77, 0.5);
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: rgba(var(--accent-rgb), 0.5);
   color: var(--accent);
 }
 
@@ -880,7 +880,7 @@
   gap: 10px;
   padding: 14px;
   background: var(--surface-2);
-  border-bottom: 1px solid rgba(255, 183, 77, 0.5);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.5);
 }
 
 .suggestCardInfo {
@@ -915,7 +915,7 @@
   width: 32px;
   height: 32px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-size: 20px;
@@ -929,7 +929,7 @@
 }
 
 .suggestAddBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 .suggestEmpty {
@@ -964,7 +964,7 @@
 .offSearchBtn {
   padding: 10px 16px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 10px;
   color: var(--accent);
   font-size: 18px;
@@ -973,5 +973,6 @@
 }
 
 .offSearchBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
+

@@ -8,7 +8,7 @@
   backdrop-filter: blur(32px) saturate(180%);
   -webkit-backdrop-filter: blur(32px) saturate(180%);
   border-radius: 32px;
-  border: 1px solid rgba(255, 183, 77,0.15);
+  border: 1px solid rgba(var(--accent-rgb),0.15);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.7),
     0 6px 20px rgba(0, 0, 0, 0.45),
@@ -54,9 +54,9 @@
   content: '';
   position: absolute;
   inset: 5px 3px;
-  background: rgba(255, 183, 77, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   border-radius: 20px;
-  box-shadow: 0 0 18px rgba(255, 183, 77, 0.18);
+  box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.18);
   opacity: 0;
   transform: scale(0.88);
   transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);

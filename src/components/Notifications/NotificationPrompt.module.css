@@ -1,4 +1,4 @@
-.overlay {
+﻿.overlay {
   position: fixed;
   inset: 0;
   background: rgba(12, 10, 6, 0.75);
@@ -20,7 +20,7 @@
   width: 100%;
   max-width: 480px;
   background: var(--surface-1);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-bottom: none;
   border-radius: 20px 20px 0 0;
   padding: 28px 24px calc(24px + env(safe-area-inset-bottom, 0));
@@ -90,3 +90,4 @@
 .dismissBtn:hover {
   color: var(--text);
 }
+

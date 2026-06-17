@@ -1,4 +1,4 @@
-.modal {
+﻿.modal {
   position: fixed;
   inset: 0;
   z-index: 120;
@@ -208,7 +208,7 @@
 .addIngBtn {
   padding: 10px 14px;
   background: transparent;
-  border: 1px dashed rgba(255, 183, 77, 0.25);
+  border: 1px dashed rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-body);
@@ -338,3 +338,4 @@
   opacity: 0.45;
   cursor: default;
 }
+

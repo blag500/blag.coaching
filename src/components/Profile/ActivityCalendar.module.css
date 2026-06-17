@@ -1,4 +1,4 @@
-/* ── Monthly stats row ── */
+﻿/* ── Monthly stats row ── */
 .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -118,7 +118,7 @@
 }
 
 .todayCell {
-  outline: 1px solid rgba(255, 183, 77, 0.5);
+  outline: 1px solid rgba(var(--accent-rgb), 0.5);
 }
 
 .todayCell .dayNum {
@@ -126,8 +126,8 @@
 }
 
 .selectedCell {
-  background: rgba(255, 183, 77, 0.1);
-  outline: 1px solid rgba(255, 183, 77, 0.4);
+  background: rgba(var(--accent-rgb), 0.1);
+  outline: 1px solid rgba(var(--accent-rgb), 0.4);
 }
 
 .futureCell {
@@ -223,3 +223,4 @@
   font-size: 11px;
   background: rgba(255, 255, 255, 0.03);
 }
+

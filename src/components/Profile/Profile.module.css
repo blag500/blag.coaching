@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100vh;
   padding: calc(env(safe-area-inset-top) + 20px) 16px calc(92px + env(safe-area-inset-bottom));
   max-width: 480px;
@@ -17,8 +17,8 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 183, 77, 0.35);
-  background: rgba(255, 183, 77, 0.1);
+  border: 2px solid rgba(var(--accent-rgb), 0.35);
+  background: rgba(var(--accent-rgb), 0.1);
   flex-shrink: 0;
   cursor: pointer;
   overflow: hidden;
@@ -316,7 +316,7 @@
 
 .weightInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .unit {
@@ -411,7 +411,7 @@
 
 .textInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .saveSettingsBtn {
@@ -419,7 +419,7 @@
   padding: 13px;
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 12px;
   font-family: var(--font-heading);
   font-size: 15px;
@@ -490,7 +490,7 @@
 }
 
 .toggleBtnActive {
-  background: rgba(255, 183, 77, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -582,7 +582,7 @@
 }
 
 .weightTrLatest {
-  background: rgba(255, 183, 77, 0.05);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 
 .weightTd {
@@ -616,3 +616,4 @@
   opacity: 1;
   color: #ef5350;
 }
+

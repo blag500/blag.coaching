@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   display: flex;
   flex-direction: column;
   min-height: 100%;
@@ -63,7 +63,7 @@
 }
 
 .filterBtnActive {
-  background: rgba(255, 183, 77, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -91,7 +91,7 @@
 }
 
 .card:active {
-  border-color: rgba(255, 183, 77, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 .cardImg {
@@ -218,7 +218,7 @@
 /* ── Coach live card ── */
 .liveCard {
   background: var(--surface-1);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: 18px;
   padding: 18px 16px 14px;
   display: flex;
@@ -236,8 +236,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(255, 183, 77, 0.15);
-  border: 2px solid rgba(255, 183, 77, 0.35);
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 2px solid rgba(var(--accent-rgb), 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,8 +277,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 183, 77, 0.12);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 10px;
   padding: 6px 12px;
 }
@@ -341,7 +341,7 @@
 }
 
 .dotToday {
-  border-color: rgba(255, 183, 77, 0.6);
+  border-color: rgba(var(--accent-rgb), 0.6);
 }
 
 .dotLabel {
@@ -393,7 +393,7 @@
 
 .habitBarFill {
   width: 100%;
-  background: rgba(255, 183, 77, 0.5);
+  background: rgba(var(--accent-rgb), 0.5);
   border-radius: 4px;
   transition: height 0.3s;
   min-height: 2px;
@@ -509,3 +509,4 @@
   border-radius: 12px;
   object-fit: contain;
 }
+

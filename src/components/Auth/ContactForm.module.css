@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100dvh;
   background: var(--bg);
   display: flex;
@@ -120,7 +120,7 @@
 }
 
 .chipActive {
-  background: rgba(255, 183, 77, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -149,7 +149,7 @@
 }
 
 .callChipActive {
-  background: rgba(255, 183, 77, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -231,3 +231,4 @@
 .cta:not(:disabled):hover {
   opacity: 0.88;
 }
+

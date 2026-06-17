@@ -1,4 +1,4 @@
-.chat {
+﻿.chat {
   position: fixed;
   bottom: calc(160px + env(safe-area-inset-bottom));
   right: 12px;
@@ -157,7 +157,7 @@
   height: 36px;
   flex-shrink: 0;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 10px;
   color: var(--accent);
   font-size: 20px;
@@ -176,7 +176,7 @@
 }
 
 .send:not(:disabled):active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 .cameraBtn {
@@ -231,3 +231,4 @@
   border-radius: 12px;
   object-fit: contain;
 }
+

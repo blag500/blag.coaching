@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -58,7 +58,7 @@
   padding: 13px;
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 12px;
   font-family: var(--font-heading);
   font-size: 15px;
@@ -96,3 +96,4 @@
   border-color: var(--red);
   color: var(--red);
 }
+

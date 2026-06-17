@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -194,7 +194,7 @@
 
 .rangeBtnActive {
   background: var(--accent-dim);
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
   color: var(--accent);
 }
 
@@ -332,11 +332,11 @@
 }
 
 .editRowBtn {
-  background: rgba(255, 183, 77, 0.1);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   color: var(--accent);
 }
-.editRowBtn:hover { background: rgba(255, 183, 77, 0.18); }
+.editRowBtn:hover { background: rgba(var(--accent-rgb), 0.18); }
 
 .deleteRowBtn {
   background: rgba(239, 83, 80, 0.08);
@@ -391,3 +391,4 @@
   padding: 16px 0;
   text-align: center;
 }
+

@@ -1,4 +1,4 @@
-.backdrop {
+﻿.backdrop {
   position: fixed;
   inset: 0;
   background: rgba(12, 10, 6, 0.92);
@@ -11,7 +11,7 @@
 
 .card {
   background: var(--surface-1);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 12px;
   padding: 2rem 1.5rem 1.75rem;
   width: 100%;
@@ -100,3 +100,4 @@
 .cta:hover {
   opacity: 0.88;
 }
+

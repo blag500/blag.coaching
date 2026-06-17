@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -241,7 +241,7 @@
 }
 
 .trainDotOn {
-  background: rgba(255, 183, 77, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-color: var(--accent);
 }
 
@@ -347,3 +347,4 @@
   padding: 24px 0 8px;
   margin: 0;
 }
+

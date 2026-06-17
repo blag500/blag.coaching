@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100vh;
   padding: calc(env(safe-area-inset-top) + 20px) 16px calc(136px + env(safe-area-inset-bottom));
   max-width: 480px;
@@ -160,7 +160,7 @@
   flex-shrink: 0;
   padding: 6px 10px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -171,7 +171,7 @@
 }
 
 .todayBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 /* Library tab */
@@ -360,7 +360,7 @@
   flex: 1;
   padding: 9px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -371,7 +371,7 @@
 }
 
 .logBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 .delBtn {
@@ -449,3 +449,4 @@
   line-height: 1;
   transition: color 0.2s;
 }
+

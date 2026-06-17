@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100vh;
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
   background: var(--bg);
@@ -67,7 +67,7 @@
 
 .chatBtn:active {
   background: var(--accent-dim);
-  border-color: rgba(255, 183, 77, 0.35);
+  border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 .deleteBtn {
@@ -237,7 +237,7 @@
 }
 
 .macroSaveBtnDone {
-  background: rgba(255, 183, 77, 0.2);
+  background: rgba(var(--accent-rgb), 0.2);
   color: var(--accent);
 }
 
@@ -357,7 +357,7 @@
 
 .bar {
   width: 100%;
-  background: rgba(255, 183, 77, 0.55);
+  background: rgba(var(--accent-rgb), 0.55);
   border-radius: 4px 4px 0 0;
   min-height: 2px;
   transition: height 0.3s ease;
@@ -372,8 +372,8 @@
   left: -3px;
   right: -3px;
   height: 1px;
-  background: rgba(255, 183, 77, 0.4);
-  border-top: 1px dashed rgba(255, 183, 77, 0.5);
+  background: rgba(var(--accent-rgb), 0.4);
+  border-top: 1px dashed rgba(var(--accent-rgb), 0.5);
   pointer-events: none;
 }
 
@@ -487,7 +487,7 @@
 
 .intakeSection {
   background: var(--surface-1);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: 10px;
   padding: 12px 14px;
   display: flex;
@@ -640,8 +640,8 @@
 .habitAddBtn {
   width: 32px;
   height: 32px;
-  background: rgba(255, 183, 77, 0.12);
-  border: 1px solid rgba(255, 183, 77, 0.3);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 6px;
   color: var(--accent);
   font-size: 18px;
@@ -688,7 +688,7 @@
 
 .fieldInput:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10);
 }
 
 .fieldInput[type='number']::-webkit-inner-spin-button,
@@ -733,7 +733,7 @@
 
 .notesArea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.10);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10);
 }
 
 .notesArea::placeholder {
@@ -854,7 +854,7 @@
   flex-shrink: 0;
   padding: 6px 10px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -865,7 +865,7 @@
 }
 
 .todayBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 .empty {
@@ -905,7 +905,7 @@
   width: 100%;
   padding: 11px;
   background: var(--accent-dim);
-  border: 1px dashed rgba(255, 183, 77, 0.35);
+  border: 1px dashed rgba(var(--accent-rgb), 0.35);
   border-radius: 10px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -917,7 +917,7 @@
 }
 
 .addFoodBtn:active {
-  background: rgba(255, 183, 77, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
 }
 
 /* Add food form */
@@ -1427,7 +1427,7 @@
 
 .exPickerChipActive {
   background: var(--accent-dim);
-  border-color: rgba(255, 183, 77, 0.5);
+  border-color: rgba(var(--accent-rgb), 0.5);
   color: var(--accent);
 }
 
@@ -1506,8 +1506,8 @@
 }
 
 .progEditBtn {
-  background: rgba(255, 183, 77, 0.1);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   color: var(--accent);
 }
 
@@ -1578,7 +1578,7 @@
   padding: 14px;
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 12px;
   font-family: var(--font-heading);
   font-size: 14px;
@@ -1597,8 +1597,8 @@
 }
 
 .saveBtnDone {
-  background: rgba(255, 183, 77, 0.18);
-  border-color: rgba(255, 183, 77, 0.45);
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.45);
 }
 
 /* ─── Check-in Tab ─────────────────────────────────────────────────────────── */
@@ -2161,3 +2161,4 @@
   opacity: 0.4;
   cursor: default;
 }
+

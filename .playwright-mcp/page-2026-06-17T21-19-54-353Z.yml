@@ -1,0 +1,104 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "BLAG COACHING" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: BLAG COACHING
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - button "БГ" [ref=e10] [cursor=pointer]
+          - button "EN" [ref=e11] [cursor=pointer]
+        - link "Отвори приложението" [ref=e12] [cursor=pointer]:
+          - /url: /
+  - generic [ref=e14]:
+    - heading "HELP CENTER" [level=1] [ref=e15]
+    - paragraph [ref=e16]: Blag Coaching
+    - generic [ref=e17]:
+      - img
+      - textbox "Търси в помощния център..." [ref=e18]
+  - generic [ref=e19]:
+    - generic [ref=e20]:
+      - heading "ПОПУЛЯРНИ СТАТИИ" [level=2] [ref=e21]
+      - generic [ref=e22]:
+        - button "Какво е Blag Coaching? Начало ›" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24]: Какво е Blag Coaching?
+          - generic [ref=e25]: Начало ›
+        - button "Как да се регистрирам? Начало ›" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: Как да се регистрирам?
+          - generic [ref=e28]: Начало ›
+        - button "Как да инсталирам приложението? Начало ›" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: Как да инсталирам приложението?
+          - generic [ref=e31]: Начало ›
+        - button "Как да запиша храна? Хранене ›" [ref=e32] [cursor=pointer]:
+          - generic [ref=e33]: Как да запиша храна?
+          - generic [ref=e34]: Хранене ›
+        - button "Какво е MealBot (AI асистент)? Хранене ›" [ref=e35] [cursor=pointer]:
+          - generic [ref=e36]: Какво е MealBot (AI асистент)?
+          - generic [ref=e37]: Хранене ›
+        - button "Как изглежда тренировъчният ми план? Тренировка ›" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: Как изглежда тренировъчният ми план?
+          - generic [ref=e40]: Тренировка ›
+    - generic [ref=e41]:
+      - heading "КАТЕГОРИИ" [level=2] [ref=e42]
+      - generic [ref=e43]:
+        - button "🚀 Начало Регистрация, инсталиране, активиране 5 ›" [ref=e44] [cursor=pointer]:
+          - generic [ref=e45]: 🚀
+          - generic [ref=e46]:
+            - generic [ref=e47]: Начало
+            - generic [ref=e48]: Регистрация, инсталиране, активиране
+          - generic [ref=e49]: "5"
+          - generic [ref=e50]: ›
+        - button "🥗 Хранене Логване на храна, MealBot, рецепти 6 ›" [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]: 🥗
+          - generic [ref=e53]:
+            - generic [ref=e54]: Хранене
+            - generic [ref=e55]: Логване на храна, MealBot, рецепти
+          - generic [ref=e56]: "6"
+          - generic [ref=e57]: ›
+        - button "💪 Тренировка План, логване, прогресия 3 ›" [ref=e58] [cursor=pointer]:
+          - generic [ref=e59]: 💪
+          - generic [ref=e60]:
+            - generic [ref=e61]: Тренировка
+            - generic [ref=e62]: План, логване, прогресия
+          - generic [ref=e63]: "3"
+          - generic [ref=e64]: ›
+        - button "✅ Навици & Прогрес Дневни навици, check-in, тегло 5 ›" [ref=e65] [cursor=pointer]:
+          - generic [ref=e66]: ✅
+          - generic [ref=e67]:
+            - generic [ref=e68]: Навици & Прогрес
+            - generic [ref=e69]: Дневни навици, check-in, тегло
+          - generic [ref=e70]: "5"
+          - generic [ref=e71]: ›
+        - button "💬 Чат Съобщения, снимки, известия 3 ›" [ref=e72] [cursor=pointer]:
+          - generic [ref=e73]: 💬
+          - generic [ref=e74]:
+            - generic [ref=e75]: Чат
+            - generic [ref=e76]: Съобщения, снимки, известия
+          - generic [ref=e77]: "3"
+          - generic [ref=e78]: ›
+        - button "⚙️ Профил & Настройки Аватар, тема, език, макроси 4 ›" [ref=e79] [cursor=pointer]:
+          - generic [ref=e80]: ⚙️
+          - generic [ref=e81]:
+            - generic [ref=e82]: Профил & Настройки
+            - generic [ref=e83]: Аватар, тема, език, макроси
+          - generic [ref=e84]: "4"
+          - generic [ref=e85]: ›
+        - button "🔧 Технически Офлайн режим, проблеми, устройства 4 ›" [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]: 🔧
+          - generic [ref=e88]:
+            - generic [ref=e89]: Технически
+            - generic [ref=e90]: Офлайн режим, проблеми, устройства
+          - generic [ref=e91]: "4"
+          - generic [ref=e92]: ›
+    - generic [ref=e93]:
+      - paragraph [ref=e94]: Нямаш отговор?
+      - paragraph [ref=e95]: Пиши директно на треньора от чат секцията в приложението.
+      - paragraph [ref=e96]: "Или изпрати имейл на:"
+      - link "info@blag-coaching.com" [ref=e97] [cursor=pointer]:
+        - /url: mailto:info@blag-coaching.com
+  - contentinfo [ref=e98]:
+    - generic [ref=e99]:
+      - generic [ref=e100]: BLAG COACHING
+      - generic [ref=e101]: © 2026 All rights reserved
+      - link "Отвори приложението →" [ref=e102] [cursor=pointer]:
+        - /url: /

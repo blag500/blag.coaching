@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -394,7 +394,7 @@
 }
 
 .trainingCard:active {
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .trainingHeader {
@@ -437,11 +437,11 @@
 }
 
 .dotToday {
-  border-color: rgba(255, 183, 77, 0.6);
+  border-color: rgba(var(--accent-rgb), 0.6);
 }
 
 .dotToday.dotDone {
-  box-shadow: 0 0 10px rgba(255, 183, 77, 0.4);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4);
 }
 
 .dotLabel {
@@ -486,8 +486,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 14px;
-  background: rgba(255, 183, 77, 0.06);
-  border: 1px dashed rgba(255, 183, 77, 0.25);
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px dashed rgba(var(--accent-rgb), 0.25);
   border-radius: 10px;
 }
 
@@ -527,7 +527,7 @@
 }
 
 .checkinCard:active {
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .checkinText {
@@ -551,7 +551,7 @@
 /* ── Rewards shortcut ── */
 .rewardsBtn {
   background: transparent;
-  border: 1px dashed rgba(255, 183, 77, 0.22);
+  border: 1px dashed rgba(var(--accent-rgb), 0.22);
   border-radius: 16px;
   padding: 12px 16px;
   display: flex;
@@ -565,8 +565,8 @@
 }
 
 .rewardsBtn:active {
-  border-color: rgba(255, 183, 77, 0.45);
-  background: rgba(255, 183, 77, 0.04);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.04);
 }
 
 .rewardsBtnInner {
@@ -587,3 +587,4 @@
   letter-spacing: 0.14em;
   color: var(--muted);
 }
+

@@ -25,6 +25,8 @@
   --radius-lg:   24px;
   --radius-xl:   32px;
 
+  --accent-rgb: 255, 183, 77;
+
   --shadow-card: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
   --shadow-glow: 0 0 28px rgba(255, 183, 77, 0.22);
   --accent-glow: 0 0 0 3px rgba(255,183,77,0.10), 0 0 20px rgba(255,183,77,0.07);
@@ -38,6 +40,7 @@
 }
 
 html[data-theme="light"] {
+  --accent-rgb: 192, 120, 0;
   --bg:        #F5F0E8;
   --surface-1: #FFFFFF;
   --surface-2: #EDE8DE;
@@ -55,6 +58,7 @@ html[data-theme="light"] {
 }
 
 html[data-theme="glass"] {
+  --accent-rgb: 144, 202, 249;
   --bg:        #06101A;
   --surface-1: rgba(12, 24, 42, 0.72);
   --surface-2: rgba(18, 32, 54, 0.82);

@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   position: relative;
   margin-bottom: 14px;
 }
@@ -63,14 +63,14 @@
 }
 
 .labelBtn:not(.labelBtnOpen):active {
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .todayBtn {
   flex-shrink: 0;
   padding: 7px 10px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -82,7 +82,7 @@
 }
 
 .todayBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 /* ── Calendar popup ──────────────────────────────────────────────────────── */
@@ -186,7 +186,7 @@
 }
 
 .calDayToday {
-  border-color: rgba(255, 183, 77, 0.45);
+  border-color: rgba(var(--accent-rgb), 0.45);
   color: var(--accent);
 }
 
@@ -196,3 +196,4 @@
   color: var(--bg);
   font-weight: 600;
 }
+

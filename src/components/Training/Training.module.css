@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100vh;
   padding: calc(env(safe-area-inset-top) + 20px) 16px calc(100px + env(safe-area-inset-bottom));
   max-width: 480px;
@@ -59,7 +59,7 @@
 .editBtn {
   padding: 8px 12px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -71,7 +71,7 @@
 }
 
 .editBtn:active {
-  background: rgba(255, 183, 77, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
 }
 
 /* Block pill selector */
@@ -105,7 +105,7 @@
 
 .activePill {
   color: var(--bg);
-  box-shadow: 0 0 14px rgba(255, 183, 77, 0.32), 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.32), 0 2px 6px rgba(0,0,0,0.3);
 }
 
 /* Undo toast */
@@ -175,7 +175,7 @@
 
 .progressionBtnActive {
   background: var(--accent-dim);
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
   color: var(--accent);
 }
 
@@ -334,7 +334,7 @@
 }
 
 .calToday {
-  background: rgba(255, 183, 77, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   outline: 1.5px solid var(--accent);
   outline-offset: -1px;
 }
@@ -408,3 +408,4 @@
   padding: 2px 0;
   font-size: 8px;
 }
+

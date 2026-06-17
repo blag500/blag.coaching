@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 96px);
   left: 50%;
@@ -29,7 +29,7 @@
   align-items: center;
   gap: 12px;
   background: var(--surface-1);
-  border: 1px solid rgba(255, 183, 77, 0.45);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 18px;
   padding: 14px 20px 14px 16px;
   min-width: 220px;
@@ -62,3 +62,4 @@
   color: var(--muted);
   line-height: 1.4;
 }
+

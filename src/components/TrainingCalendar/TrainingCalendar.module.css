@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   min-height: 100vh;
   padding: calc(env(safe-area-inset-top) + 20px) 16px calc(92px + env(safe-area-inset-bottom));
   max-width: 480px;
@@ -102,21 +102,21 @@
 }
 
 .dayCellActive:hover {
-  background: rgba(255, 183, 77, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .dayCellActive:active {
-  background: rgba(255, 183, 77, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
 }
 
 .todayCell .dayNum {
-  background: rgba(255, 183, 77, 0.15);
-  border: 1px solid rgba(255, 183, 77, 0.4);
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
   color: var(--accent);
 }
 
 .selCell {
-  background: rgba(255, 183, 77, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
 }
 
 .selCell .dayNum {
@@ -188,13 +188,13 @@
 }
 
 .filterPill:active {
-  background: rgba(255, 183, 77, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .filterPillActive {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(255, 183, 77, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .tabBar {
@@ -224,7 +224,7 @@
 
 .tabBtnActive {
   background: var(--accent-dim);
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
   color: var(--accent);
 }
 
@@ -296,7 +296,7 @@
 .addBtn {
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   font-family: var(--font-heading);
   font-size: 12px;
@@ -622,7 +622,7 @@
 
 .input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 select.input {
@@ -651,7 +651,7 @@ select.input {
 }
 
 .typeChipActive {
-  background: rgba(255, 183, 77, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -713,8 +713,8 @@ select.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 183, 77, 0.08);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: 7px;
   color: var(--accent);
   cursor: pointer;
@@ -733,8 +733,8 @@ select.input {
   border-radius: 7px;
   cursor: pointer;
   transition: opacity 0.15s;
-  border: 1px solid rgba(255, 183, 77, 0.25);
-  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  background: rgba(var(--accent-rgb), 0.08);
   color: var(--accent);
 }
 
@@ -789,3 +789,4 @@ select.input {
   color: var(--muted);
   font-style: italic;
 }
+

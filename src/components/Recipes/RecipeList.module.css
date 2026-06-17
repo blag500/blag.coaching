@@ -1,4 +1,4 @@
-.wrap {
+﻿.wrap {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -151,7 +151,7 @@
   width: 32px;
   height: 32px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255, 183, 77, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: 8px;
   color: var(--accent);
   font-size: 20px;
@@ -346,3 +346,4 @@
 }
 
 .logBtn:active { opacity: 0.85; }
+

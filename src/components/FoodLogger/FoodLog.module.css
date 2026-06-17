@@ -1,4 +1,4 @@
-.empty {
+﻿.empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,7 +124,7 @@
 .undoBtnActive {
   opacity: 1;
   color: var(--accent);
-  border-color: rgba(255, 183, 77, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .undoBtnActive:active {
@@ -200,7 +200,7 @@
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
-  /* row itself is tall enough — no need for negative-margin tap hacks */
+  /* row itself is tall enough вЂ” no need for negative-margin tap hacks */
   min-height: 44px;
 }
 
@@ -347,8 +347,8 @@
 }
 
 .editPhotoAddBtn {
-  background: rgba(255, 183, 77, 0.08);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
   color: var(--accent);
 }
 
@@ -392,7 +392,7 @@
   letter-spacing: 0.06em;
 }
 
-/* ── Meal photo ─────────────────────────────────────────── */
+/* в”Ђв”Ђ Meal photo в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ */
 
 /* Thumbnail button on the left of the entry */
 .thumbBtn {
@@ -443,7 +443,7 @@
   pointer-events: none;
 }
 
-/* When a photo already exists: the button becomes a remove (×) indicator */
+/* When a photo already exists: the button becomes a remove (Г—) indicator */
 .cameraBtnHasPhoto {
   opacity: 0.35;
   color: var(--red);
@@ -522,4 +522,5 @@
   line-height: 1;
   padding: 0;
 }
+
 
