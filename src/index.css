@@ -58,16 +58,16 @@ html[data-theme="glass"] {
   --bg:        #06101A;
   --surface-1: rgba(12, 24, 42, 0.72);
   --surface-2: rgba(18, 32, 54, 0.82);
-  --accent:    #F2C94C;
-  --accent-dim: rgba(242, 201, 76, 0.12);
+  --accent:    #90CAF9;
+  --accent-dim: rgba(144, 202, 249, 0.12);
   --text:      #DCE8F5;
   --muted:     #4A6A8A;
   --border:    rgba(80, 130, 180, 0.18);
   --red:       #FF4455;
   --surface-glass: rgba(6, 14, 24, 0.80);
   --shadow-card: 0 8px 32px rgba(0, 8, 20, 0.70), 0 2px 8px rgba(0, 8, 20, 0.40);
-  --shadow-glow: 0 0 28px rgba(242, 201, 76, 0.18);
-  --accent-glow: 0 0 0 3px rgba(242,201,76,0.10), 0 0 20px rgba(242,201,76,0.07);
+  --shadow-glow: 0 0 28px rgba(144, 202, 249, 0.18);
+  --accent-glow: 0 0 0 3px rgba(144,202,249,0.10), 0 0 20px rgba(144,202,249,0.07);
   --card-highlight: inset 0 1px 0 rgba(100, 160, 220, 0.10);
 }
 
