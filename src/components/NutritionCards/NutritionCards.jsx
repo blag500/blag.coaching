@@ -11,6 +11,24 @@ import MealCards from '../MealCards/MealCards'
 import RecipeBuilder from '../FoodLogger/RecipeBuilder'
 import styles from './NutritionCards.module.css'
 
+const QUOTES = [
+  'Дисциплината е разликата между това, което искаш сега, и това, което искаш най-много.',
+  'Тялото постига това, което умът вярва.',
+  'Не се сравнявай с другите. Сравнявай се с този, който беше вчера.',
+  'Всяка тренировка е инвестиция в следващата.',
+  'Болката е временна. Гордостта е завинаги.',
+  'Успехът е сумата от малките усилия, повтаряни всеки ден.',
+  'Не чакай мотивация. Изгради дисциплина.',
+]
+
+function greeting() {
+  const h = new Date().getHours()
+  if (h >= 5  && h < 12) return 'ДОБРО УТРО'
+  if (h >= 12 && h < 17) return 'ДОБЪР ДЕН'
+  if (h >= 17 && h < 22) return 'ДОБЪР ВЕЧЕР'
+  return 'ДОБРА НОЩ'
+}
+
 export default function NutritionCards() {
   const { profile } = useAuth()
   const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
@@ -57,6 +75,9 @@ export default function NutritionCards() {
     fat:     targets.fat     - Math.round(totals.fat     || 0),
   }
 
+  const firstName = (profile?.name || '').split(' ')[0].toUpperCase()
+  const dailyQuote = QUOTES[new Date().getDay() % QUOTES.length]
+
   return (
     <div className={styles.page}>
       {view === 'log' && <MacroRemainingBar remaining={remaining} targets={targets} />}
@@ -73,8 +94,15 @@ export default function NutritionCards() {
         </div>
       )}
       <header className={styles.header}>
-        <h1 className={styles.title}>NUTRITION</h1>
-        <p className={styles.subtitle}>Дневен прием и рецепти</p>
+        <h1 className={styles.title}>
+          {greeting()}{firstName ? `, ${firstName}` : ''}
+        </h1>
+        <div className={styles.avatar}>
+          {profile?.avatar_url
+            ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
+            : <span className={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</span>
+          }
+        </div>
       </header>
 
       <div className={styles.toggle}>
@@ -100,6 +128,7 @@ export default function NutritionCards() {
           <NutritionProgress totals={totals} targets={targets} />
           <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} totals={totals} targets={targets} />
           <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} />
+          <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : (
         <LibraryTab

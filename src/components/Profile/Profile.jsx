@@ -456,6 +456,11 @@ export default function Profile() {
               className={`${styles.toggleBtn} ${theme === 'light' ? styles.toggleBtnActive : ''}`}
               onClick={() => setTheme('light')}
             >☀️ {t('settings.theme.light')}</button>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${theme === 'glass' ? styles.toggleBtnActive : ''}`}
+              onClick={() => setTheme('glass')}
+            >💎 {t('settings.theme.glass')}</button>
           </div>
         </div>
         <div className={styles.settingsRow}>

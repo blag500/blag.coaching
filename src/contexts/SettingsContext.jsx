@@ -18,8 +18,9 @@ const TRANSLATIONS = {
     'nav.myDay':        'МОЙ ДЕН',
     'settings.appearance': 'ИЗГЛЕД',
     'settings.theme':      'Тема',
-    'settings.theme.dark': 'ТЪМЕН',
-    'settings.theme.light':'СВЕТЪЛ',
+    'settings.theme.dark':  'ТЪМЕН',
+    'settings.theme.light': 'СВЕТЪЛ',
+    'settings.theme.glass': 'КРИСТАЛ',
     'settings.language':   'Език',
   },
   en: {
@@ -39,8 +40,9 @@ const TRANSLATIONS = {
     'nav.myDay':        'MY DAY',
     'settings.appearance': 'APPEARANCE',
     'settings.theme':      'Theme',
-    'settings.theme.dark': 'DARK',
-    'settings.theme.light':'LIGHT',
+    'settings.theme.dark':  'DARK',
+    'settings.theme.light': 'LIGHT',
+    'settings.theme.glass': 'CRYSTAL',
     'settings.language':   'Language',
   },
 }
