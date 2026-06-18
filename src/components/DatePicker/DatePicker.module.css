@@ -197,3 +197,7 @@
   font-weight: 600;
 }
 
+.calDayFuture {
+  opacity: 0.5;
+}
+

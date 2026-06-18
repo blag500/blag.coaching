@@ -46,7 +46,7 @@ export default function LiftLogger({ exercise, date, onClose, onSaved }) {
   const { user, addExerciseLog } = useAuth()
   const todayStr   = new Date().toISOString().slice(0, 10)
   const logDate    = date || todayStr
-  const isPastDate = logDate !== todayStr
+  const isOtherDate = logDate !== todayStr
 
   const [weight, setWeight] = useState('')
   const [reps, setReps]     = useState('')
@@ -94,7 +94,7 @@ export default function LiftLogger({ exercise, date, onClose, onSaved }) {
         {exercise.sets && (
           <p className={styles.target}>Цел: {exercise.sets} серии × {exercise.reps} повт.</p>
         )}
-        {isPastDate && (
+        {isOtherDate && (
           <p className={styles.dateNote}>
             📅 За {new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>

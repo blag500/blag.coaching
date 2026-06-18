@@ -12,8 +12,7 @@ export default function DatePicker({ selectedDate, onChange }) {
   function shiftDate(days) {
     const d = new Date(selectedDate + 'T12:00:00')
     d.setDate(d.getDate() + days)
-    const next = d.toISOString().slice(0, 10)
-    if (next <= todayStr()) onChange(next)
+    onChange(d.toISOString().slice(0, 10))
   }
 
   function selectDate(dateStr) {
@@ -48,7 +47,7 @@ export default function DatePicker({ selectedDate, onChange }) {
         >
           {label}
         </button>
-        <button className={styles.arrowBtn} onClick={() => shiftDate(1)} disabled={isToday} type="button" aria-label="Следващ ден">›</button>
+        <button className={styles.arrowBtn} onClick={() => shiftDate(1)} type="button" aria-label="Следващ ден">›</button>
         {!isToday && (
           <button
             className={styles.todayBtn}
@@ -77,15 +76,11 @@ function MiniCal({ selectedDate, onSelect }) {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d)
   while (cells.length % 7 !== 0) cells.push(null)
 
-  const now = new Date()
-  const canNext = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth())
-
   function prev() {
     const d = new Date(year, month - 1, 1)
     setYear(d.getFullYear()); setMonth(d.getMonth())
   }
   function next() {
-    if (!canNext) return
     const d = new Date(year, month + 1, 1)
     setYear(d.getFullYear()); setMonth(d.getMonth())
   }
@@ -97,7 +92,7 @@ function MiniCal({ selectedDate, onSelect }) {
       <div className={styles.calHeader}>
         <button className={styles.calNavBtn} onClick={prev} type="button">‹</button>
         <span className={styles.calMonthLabel}>{monthLabel}</span>
-        <button className={styles.calNavBtn} onClick={next} disabled={!canNext} type="button">›</button>
+        <button className={styles.calNavBtn} onClick={next} type="button">›</button>
       </div>
       <div className={styles.calGrid}>
         {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'].map(d => (
@@ -112,9 +107,8 @@ function MiniCal({ selectedDate, onSelect }) {
           return (
             <button
               key={dateStr}
-              className={`${styles.calDay} ${isSelected ? styles.calDaySelected : ''} ${isToday && !isSelected ? styles.calDayToday : ''}`}
+              className={`${styles.calDay} ${isSelected ? styles.calDaySelected : ''} ${isToday && !isSelected ? styles.calDayToday : ''} ${isFuture && !isSelected ? styles.calDayFuture : ''}`}
               onClick={() => onSelect(dateStr)}
-              disabled={isFuture}
               type="button"
             >
               {day}
