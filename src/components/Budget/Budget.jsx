@@ -50,7 +50,7 @@ function SetupView({ existing, onSave, onBack }) {
       </div>
 
       <div className={styles.card}>
-        <label className={styles.label}>Оставащ бюджет за месеца (лв.)</label>
+        <label className={styles.label}>Оставащ бюджет за месеца (€)</label>
         <input
           className={styles.input}
           type="number" inputMode="decimal" step="0.01" min="0"
@@ -70,7 +70,7 @@ function SetupView({ existing, onSave, onBack }) {
           onChange={e => setBufferPct(e.target.value)}
         />
         <p className={styles.hint}>
-          Резервирани: {fmt((parseFloat(budgetAmt) || 0) * (parseFloat(bufferPct) || 0) / 100)} лв.
+          Резервирани: {fmt((parseFloat(budgetAmt) || 0) * (parseFloat(bufferPct) || 0) / 100)} €
         </p>
       </div>
 
@@ -100,7 +100,7 @@ function SetupView({ existing, onSave, onBack }) {
         ))}
         {expenses.length > 0 && (
           <p className={styles.hint}>
-            Общо планирани: {fmt(expenses.reduce((s,e) => s + (Number(e.amount)||0), 0))} лв.
+            Общо планирани: {fmt(expenses.reduce((s,e) => s + (Number(e.amount)||0), 0))} €
           </p>
         )}
       </div>
@@ -137,31 +137,23 @@ function AddForm({ onAdd }) {
 
   return (
     <div className={styles.addForm}>
+      <input
+        className={styles.input}
+        type="text"
+        placeholder="Кафе, обяд, транспорт..."
+        value={desc}
+        onChange={e => setDesc(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && amtRef.current?.focus()}
+      />
       <div className={styles.addRow}>
         <input
-          className={`${styles.input} ${styles.inputFlex}`}
-          type="text"
-          placeholder="Описание (опционално)"
-          value={desc}
-          onChange={e => setDesc(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && amtRef.current?.focus()}
-        />
-        <input
           ref={amtRef}
-          className={`${styles.input} ${styles.inputAmt}`}
+          className={`${styles.input} ${styles.inputFlex}`}
           type="number" inputMode="decimal" step="0.01" min="0"
-          placeholder="0.00"
+          placeholder="0,00 €"
           value={amount}
           onChange={e => setAmount(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
-        />
-      </div>
-      <div className={styles.addRow}>
-        <input
-          className={`${styles.input} ${styles.inputFlex}`}
-          type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
         />
         <button
           className={styles.addBtn}
@@ -172,6 +164,12 @@ function AddForm({ onAdd }) {
           + ДОБАВИ
         </button>
       </div>
+      <input
+        className={`${styles.input} ${styles.dateInput}`}
+        type="date"
+        value={date}
+        onChange={e => setDate(e.target.value)}
+      />
     </div>
   )
 }
@@ -218,12 +216,12 @@ function MonthCalendar({ transactions, dailyQuota }) {
         >
           <span className={styles.calDate}>{day.label}</span>
           <span className={styles.calSpent}>
-            {day.isPayday ? '—' : day.spent > 0 ? `${fmt(day.spent)} лв.` : '—'}
+            {day.isPayday ? '—' : day.spent > 0 ? `${fmt(day.spent)} €` : '—'}
           </span>
           <span className={`${styles.calRem} ${day.remaining !== null && day.remaining < 0 ? styles.calRemNeg : ''}`}>
             {day.isPayday
               ? <span className={styles.salary}>ЗАПЛАТА ↑</span>
-              : `${day.remaining >= 0 ? '' : '−'}${fmt(day.remaining)} лв.`
+              : `${day.remaining >= 0 ? '' : '−'}${fmt(day.remaining)} €`
             }
           </span>
         </div>
@@ -301,7 +299,7 @@ export default function Budget() {
       <div className={`${styles.hero} ${remaining < 0 ? styles.heroNeg : ''}`}>
         <div className={styles.heroAmt}>
           {remaining < 0 ? '−' : ''}{fmt(remaining)}
-          <span className={styles.heroCurrency}> лв.</span>
+          <span className={styles.heroCurrency}> €</span>
         </div>
         <div className={styles.heroLabel}>остават за днес</div>
       </div>
@@ -350,12 +348,12 @@ export default function Budget() {
               <div key={date} className={styles.txnGroup}>
                 <div className={styles.txnGroupHdr}>
                   <span className={styles.txnDate}>{dateLabel}</span>
-                  <span className={styles.txnDayTotal}>{fmt(dayTotal)} лв.</span>
+                  <span className={styles.txnDayTotal}>{fmt(dayTotal)} €</span>
                 </div>
                 {byDate[date].map(txn => (
                   <div key={txn.id} className={styles.txnRow}>
                     <span className={styles.txnDesc}>{txn.description || '—'}</span>
-                    <span className={styles.txnAmt}>{fmt(txn.amount)} лв.</span>
+                    <span className={styles.txnAmt}>{fmt(txn.amount)} €</span>
                     <button
                       className={styles.txnDel}
                       onClick={() => deleteTransaction(txn.id)}
