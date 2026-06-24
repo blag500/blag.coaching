@@ -3,6 +3,7 @@
   padding: calc(env(safe-area-inset-top) + 12px) 16px calc(100px + env(safe-area-inset-bottom));
   max-width: 480px;
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 /* ── Loading ─────────────────────────────────────────────────── */
@@ -38,6 +39,40 @@
   color: var(--text);
   line-height: 1;
 }
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Currency toggle pill */
+.currencyToggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 11px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  transition: border-color 0.15s;
+}
+.currencyToggle:hover { border-color: var(--accent); }
+.currActive   { color: var(--accent); font-weight: 700; }
+.currInactive { color: var(--muted); }
+.currSep      { color: var(--muted); font-size: 10px; }
+
+/* Badge shown in setup header */
+.currencyBadge {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
 .settingsBtn {
   display: flex;
   align-items: center;
@@ -157,6 +192,7 @@
   align-items: stretch;
 }
 .inputFlex { flex: 1; min-width: 0; }
+.inputAmt  { width: 90px; flex-shrink: 0; }
 .dateInput {
   font-size: 12px;
   color: var(--muted);
@@ -195,9 +231,25 @@
 .input::placeholder { color: var(--muted); }
 .input:focus { border-color: var(--accent); }
 
+/* ── Spending chart ──────────────────────────────────────────── */
+.chartWrap {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 14px 8px;
+  margin-bottom: 12px;
+}
+.chartTitle {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
 /* ── Calendar toggle ─────────────────────────────────────────── */
 .calToggle {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -228,6 +280,8 @@
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 12px;
+  width: 100%;
+  min-width: 0;
 }
 .calHead {
   display: grid;
@@ -265,9 +319,9 @@
 .calPayday {
   background: rgba(76, 175, 80, 0.05) !important;
 }
-.calDate  { color: var(--text); }
-.calSpent { text-align: right; color: var(--muted); }
-.calRem   { text-align: right; color: var(--text); }
+.calDate  { color: var(--text); min-width: 0; overflow: hidden; }
+.calSpent { text-align: right; color: var(--muted); min-width: 0; overflow: hidden; white-space: nowrap; }
+.calRem   { text-align: right; color: var(--text);  min-width: 0; overflow: hidden; white-space: nowrap; }
 .calRemNeg { color: var(--red); }
 .salary {
   font-family: var(--font-heading);
@@ -421,6 +475,9 @@
 .ghostBtn:hover { background: rgba(var(--accent-rgb), 0.08); }
 
 .saveBtn {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
   width: 100%;
   font-family: var(--font-heading);
   font-size: 16px;
