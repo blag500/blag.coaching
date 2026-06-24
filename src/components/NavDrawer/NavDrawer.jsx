@@ -69,6 +69,14 @@ const ChatIcon = () => (
   </svg>
 )
 
+const BudgetIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <line x1="2" y1="10" x2="22" y2="10"/>
+    <line x1="7" y1="15" x2="9" y2="15"/>
+  </svg>
+)
+
 const CLIENT_TAB_DEFS = [
   { id: 'chat',       key: 'nav.chat',         Icon: ChatIcon      },
   { id: 'nutrition',  key: 'nav.nutrition',    Icon: NutritionIcon },
@@ -79,6 +87,7 @@ const CLIENT_TAB_DEFS = [
   { id: 'profile',    key: 'nav.profile',      Icon: ProfileIcon   },
   { id: 'explore',    key: 'nav.explore',      Icon: ExploreIcon   },
   { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
+  { id: 'budget',     key: 'nav.budget',       Icon: BudgetIcon    },
 ]
 
 const MyDayIcon = () => (
@@ -100,6 +109,7 @@ const COACH_TAB_DEFS = [
   { id: 'profile',    key: 'nav.profile',      Icon: ProfileIcon   },
   { id: 'explore',    key: 'nav.explore',      Icon: ExploreIcon   },
   { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
+  { id: 'budget',     key: 'nav.budget',       Icon: BudgetIcon    },
 ]
 
 export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
