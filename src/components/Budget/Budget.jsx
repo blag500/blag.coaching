@@ -27,19 +27,26 @@ function monthLabel(m) {
 
 function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selectedMonth }) {
   const [budgetAmt, setBudgetAmt] = useState(
-    existing ? String(Math.round(disp(existing.budget_amount) * 100) / 100) : ''
+    existing?.budget_amount ? String(Math.round(disp(existing.budget_amount) * 100) / 100) : ''
   )
   const [bufferPct, setBufferPct] = useState(existing ? existing.buffer_pct * 100 : 10)
-  const [expenses, setExpenses]   = useState(
+  const [savingsAmt, setSavingsAmt] = useState(
+    existing?.savings_amount ? String(Math.round(disp(existing.savings_amount) * 100) / 100) : ''
+  )
+  const [expenses, setExpenses] = useState(
     existing?.planned_expenses?.length
-      ? existing.planned_expenses.map(e => ({ name: e.name, amount: String(Math.round(disp(e.amount) * 100) / 100) }))
-      : [{ name: '', amount: '' }]
+      ? existing.planned_expenses.map(e => ({
+          name:   e.name,
+          amount: String(Math.round(disp(e.amount) * 100) / 100),
+          note:   e.note || '',
+        }))
+      : [{ name: '', amount: '', note: '' }]
   )
   const [saving, setSaving] = useState(false)
 
-  function addExpense()       { setExpenses(p => [...p, { name: '', amount: '' }]) }
-  function removeExpense(i)   { setExpenses(p => p.filter((_, j) => j !== i)) }
-  function setField(i, k, v)  { setExpenses(p => p.map((e, j) => j === i ? { ...e, [k]: v } : e)) }
+  function addExpense()            { setExpenses(p => [...p, { name: '', amount: '', note: '' }]) }
+  function removeExpense(i)        { setExpenses(p => p.filter((_, j) => j !== i)) }
+  function setField(i, k, v)       { setExpenses(p => p.map((e, j) => j === i ? { ...e, [k]: v } : e)) }
 
   const budgetNum  = parseFloat(budgetAmt) || 0
   const bufferNum  = parseFloat(bufferPct) || 0
@@ -52,9 +59,14 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
     await onSave({
       budget_amount:    toBGN(parseFloat(budgetAmt)),
       buffer_pct:       bufferNum / 100,
+      savings_amount:   toBGN(parseFloat(savingsAmt) || 0),
       planned_expenses: expenses
         .filter(e => Number(e.amount) > 0)
-        .map(e => ({ name: e.name || 'Разход', amount: toBGN(parseFloat(e.amount)) })),
+        .map(e => ({
+          name:   e.name || 'Разход',
+          amount: toBGN(parseFloat(e.amount)),
+          note:   e.note.trim(),
+        })),
     })
     setSaving(false)
   }
@@ -95,27 +107,48 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
       </div>
 
       <div className={styles.card}>
+        <label className={styles.label}>Спестявания / краен резерв ({sym})</label>
+        <input
+          className={styles.input}
+          type="number" inputMode="decimal" step="0.01" min="0"
+          value={savingsAmt}
+          onChange={e => setSavingsAmt(e.target.value)}
+          placeholder="0.00"
+        />
+        <p className={styles.hint}>Не влиза в дневната квота — показва се само при нужда</p>
+      </div>
+
+      <div className={styles.card}>
         <div className={styles.cardHeader}>
           <span className={styles.label}>Планирани разходи</span>
           <button className={styles.ghostBtn} onClick={addExpense} type="button">+ Добави</button>
         </div>
         {expenses.map((exp, i) => (
-          <div key={i} className={styles.expenseRow}>
+          <div key={i} className={styles.expenseItem}>
+            <div className={styles.expenseRow}>
+              <input
+                className={`${styles.input} ${styles.inputFlex}`}
+                type="text"
+                placeholder="Наименование"
+                value={exp.name}
+                onChange={e => setField(i, 'name', e.target.value)}
+              />
+              <input
+                className={`${styles.input} ${styles.inputAmt}`}
+                type="number" inputMode="decimal" step="0.01"
+                placeholder="0.00"
+                value={exp.amount}
+                onChange={e => setField(i, 'amount', e.target.value)}
+              />
+              <button className={styles.removeBtn} onClick={() => removeExpense(i)} type="button">×</button>
+            </div>
             <input
-              className={`${styles.input} ${styles.inputFlex}`}
+              className={`${styles.input} ${styles.noteInput}`}
               type="text"
-              placeholder="Наименование"
-              value={exp.name}
-              onChange={e => setField(i, 'name', e.target.value)}
+              placeholder="Бележка (незадължително)"
+              value={exp.note}
+              onChange={e => setField(i, 'note', e.target.value)}
             />
-            <input
-              className={`${styles.input} ${styles.inputAmt}`}
-              type="number" inputMode="decimal" step="0.01"
-              placeholder="0.00"
-              value={exp.amount}
-              onChange={e => setField(i, 'amount', e.target.value)}
-            />
-            <button className={styles.removeBtn} onClick={() => removeExpense(i)} type="button">×</button>
           </div>
         ))}
         {expenses.length > 0 && (
@@ -196,8 +229,7 @@ function AddForm({ onAdd, sym, toBGN, defaultDate }) {
 function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
   const today       = new Date()
   const todayStr    = todayISO()
-  const currentMs   = monthStart()
-  const isCurrentM  = selectedMonth === currentMs
+  const isCurrentM  = selectedMonth === monthStart()
   const selDate     = new Date(selectedMonth + 'T12:00')
   const endOfMonth  = new Date(selDate.getFullYear(), selDate.getMonth() + 1, 0)
   const paydayStr   = localISO(endOfMonth)
@@ -258,8 +290,7 @@ function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
 function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
   const today      = new Date()
   const todayStr   = localISO(today)
-  const currentMs  = monthStart()
-  const isCurrentM = selectedMonth === currentMs
+  const isCurrentM = selectedMonth === monthStart()
   const selDate    = new Date(selectedMonth + 'T12:00')
   const first      = new Date(selDate.getFullYear(), selDate.getMonth(), 1)
   const endOfMonth = new Date(selDate.getFullYear(), selDate.getMonth() + 1, 0)
@@ -281,25 +312,22 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
   const cW  = W - PAD.left - PAD.right
   const cH  = H - PAD.top  - PAD.bottom
 
-  const maxVal  = Math.max(...days.map(d => d.spent), dailyQuota) * 1.25
-  const step    = cW / days.length
-  const barW    = Math.max(step * 0.6, 1.5)
-  const toY     = v => PAD.top + cH * (1 - v / maxVal)
-  const quotaY  = toY(dailyQuota)
-
+  const maxVal     = Math.max(...days.map(d => d.spent), dailyQuota) * 1.25
+  const step       = cW / days.length
+  const barW       = Math.max(step * 0.6, 1.5)
+  const toY        = v => PAD.top + cH * (1 - v / maxVal)
+  const quotaY     = toY(dailyQuota)
   const labelEvery = Math.ceil(days.length / 7)
 
   return (
     <div className={styles.chartWrap}>
       <div className={styles.chartTitle}>Разходи по дни • {sym}</div>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
-
         <line
           x1={PAD.left} y1={PAD.top + cH}
           x2={PAD.left + cW} y2={PAD.top + cH}
           stroke="rgba(242,232,207,0.08)" strokeWidth="1"
         />
-
         <line
           x1={PAD.left} y1={quotaY}
           x2={PAD.left + cW} y2={quotaY}
@@ -312,7 +340,6 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
         >
           {fmt(disp(dailyQuota))}
         </text>
-
         {days.map((day, i) => {
           const cx   = PAD.left + i * step + step / 2
           const bx   = cx - barW / 2
@@ -326,23 +353,15 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
                 ? '#ef5350'
                 : '#4CAF50'
           const showLabel = i === 0 || i === days.length - 1 || day.isToday || i % labelEvery === 0
-
           return (
             <g key={day.ds}>
               {day.spent === 0 && (
-                <rect
-                  x={bx} y={PAD.top} width={barW} height={cH}
-                  fill="rgba(242,232,207,0.04)" rx="2"
-                />
+                <rect x={bx} y={PAD.top} width={barW} height={cH} fill="rgba(242,232,207,0.04)" rx="2" />
               )}
               <rect
-                x={bx}
-                y={bH > 0 ? by : PAD.top + cH - 1}
-                width={barW}
-                height={Math.max(bH, 1)}
-                rx="2"
-                fill={fill}
-                opacity={day.isToday ? 1 : 0.82}
+                x={bx} y={bH > 0 ? by : PAD.top + cH - 1}
+                width={barW} height={Math.max(bH, 1)} rx="2"
+                fill={fill} opacity={day.isToday ? 1 : 0.82}
               />
               {showLabel && (
                 <text
@@ -424,20 +443,21 @@ export default function Budget() {
     : 0
   const totalSpent = transactions.reduce((s, t) => s + +t.amount, 0)
 
-  // Hero: daily remaining for current month, monthly remaining for others
-  const heroValue  = isCurrentMonth ? dailyQuota - spentToday : available - totalSpent
-  const heroLabel  = isCurrentMonth
+  const heroValue = isCurrentMonth ? dailyQuota - spentToday : available - totalSpent
+  const heroLabel = isCurrentMonth
     ? 'остават за днес'
     : heroValue >= 0 ? 'остатък за месеца' : 'превишен бюджет'
+  const isNeg = heroValue < 0
+
+  const savings = config.savings_amount ?? 0
 
   const byDate = {}
   transactions.forEach(t => {
     if (!byDate[t.date]) byDate[t.date] = []
     byDate[t.date].push(t)
   })
-  const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
+  const sortedDates  = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
   const selMonthName = selDate.toLocaleString('bg-BG', { month: 'long' })
-
   const defaultAddDate = isCurrentMonth ? todayISO() : selectedMonth
 
   return (
@@ -469,9 +489,9 @@ export default function Budget() {
       </div>
 
       {/* Hero */}
-      <div className={`${styles.hero} ${heroValue < 0 ? styles.heroNeg : ''}`}>
+      <div className={`${styles.hero} ${isNeg ? styles.heroNeg : ''}`}>
         <div className={styles.heroAmt}>
-          {heroValue < 0 ? '−' : ''}{fmt(disp(heroValue))}
+          {isNeg ? '−' : ''}{fmt(disp(heroValue))}
           <span className={styles.heroCurrency}> {sym}</span>
         </div>
         <div className={styles.heroLabel}>{heroLabel}</div>
@@ -500,14 +520,31 @@ export default function Budget() {
         <div className={styles.plannedWrap}>
           <div className={styles.plannedHdr}>
             <span className={styles.plannedTitle}>ПЛАНИРАНИ РАЗХОДИ</span>
-            <span className={styles.plannedTotal}>{fmt(disp(totalPlan))} {sym}</span>
+            <div className={styles.plannedHdrRight}>
+              <span className={styles.plannedTotal}>{fmt(disp(totalPlan))} {sym}</span>
+              <button className={styles.plannedEditBtn} onClick={() => setView('setup')} type="button">✎</button>
+            </div>
           </div>
           {(config.planned_expenses ?? []).map((e, i) => (
             <div key={i} className={styles.plannedRow}>
-              <span className={styles.plannedName}>{e.name}</span>
+              <div className={styles.plannedInfo}>
+                <span className={styles.plannedName}>{e.name}</span>
+                {e.note && <span className={styles.plannedNote}>{e.note}</span>}
+              </div>
               <span className={styles.plannedAmt}>{fmt(disp(e.amount))} {sym}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Savings / emergency reserve */}
+      {savings > 0 && (
+        <div className={`${styles.savingsCard} ${isNeg ? styles.savingsAlert : ''}`}>
+          <div className={styles.savingsInfo}>
+            <span className={styles.savingsLabel}>КРАЕН РЕЗЕРВ</span>
+            {isNeg && <span className={styles.savingsHint}>бюджетът е изчерпан</span>}
+          </div>
+          <span className={styles.savingsAmt}>{fmt(disp(savings))} {sym}</span>
         </div>
       )}
 

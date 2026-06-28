@@ -202,11 +202,28 @@
   letter-spacing: 0.1em;
   color: var(--accent);
 }
+.plannedHdrRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .plannedTotal {
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--muted);
 }
+.plannedEditBtn {
+  font-size: 14px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.plannedEditBtn:hover { color: var(--accent); }
+
 .plannedRow {
   display: flex;
   align-items: center;
@@ -218,9 +235,22 @@
   font-size: 13px;
 }
 .plannedRow:last-child { border-bottom: none; }
-.plannedName {
+.plannedInfo {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.plannedName {
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plannedNote {
+  font-size: 11px;
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -230,6 +260,48 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* ── Savings / emergency reserve ─────────────────────────────── */
+.savingsCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.savingsAlert {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--accent-rgb), 0.06);
+}
+.savingsInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.savingsLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.savingsAlert .savingsLabel { color: var(--accent); }
+.savingsHint {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: rgba(var(--accent-rgb), 0.7);
+}
+.savingsAmt {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.savingsAlert .savingsAmt { color: var(--accent); }
 
 /* ── Stats strip ─────────────────────────────────────────────── */
 .stats {
@@ -532,10 +604,22 @@
   color: var(--muted);
   margin-top: 2px;
 }
+.expenseItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.expenseItem:last-of-type { margin-bottom: 0; }
 .expenseRow {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+.noteInput {
+  font-size: 11px !important;
+  padding: 6px 12px !important;
+  color: var(--muted) !important;
 }
 .removeBtn {
   width: 28px;
