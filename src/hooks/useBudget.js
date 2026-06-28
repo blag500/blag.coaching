@@ -2,25 +2,35 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
-function monthStart() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+export function monthStart(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`
 }
 
-export function useBudget() {
+export function nextMonthStart(monthStr) {
+  const d = new Date(monthStr + 'T12:00')
+  d.setMonth(d.getMonth() + 1)
+  return monthStart(d)
+}
+
+export function prevMonthStart(monthStr) {
+  const d = new Date(monthStr + 'T12:00')
+  d.setMonth(d.getMonth() - 1)
+  return monthStart(d)
+}
+
+export function useBudget(month) {
   const { user } = useAuth()
-  const [config, setConfig] = useState(undefined)   // undefined = loading, null = no config
+  const [config, setConfig] = useState(undefined)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) return
+    if (!user || !month) return
     load()
-  }, [user?.id])
+  }, [user?.id, month])
 
   async function load() {
     setLoading(true)
-    const month = monthStart()
     const [{ data: cfg }, { data: txns }] = await Promise.all([
       supabase
         .from('budget_config')
@@ -33,6 +43,7 @@ export function useBudget() {
         .select('*')
         .eq('user_id', user.id)
         .gte('date', month)
+        .lt('date', nextMonthStart(month))
         .order('date', { ascending: false })
         .order('created_at', { ascending: false }),
     ])
@@ -42,7 +53,6 @@ export function useBudget() {
   }
 
   async function upsertConfig(data) {
-    const month = monthStart()
     const { data: row } = await supabase
       .from('budget_config')
       .upsert(

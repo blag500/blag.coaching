@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useBudget } from '../../hooks/useBudget'
+import { useBudget, monthStart, nextMonthStart, prevMonthStart } from '../../hooks/useBudget'
 import styles from './Budget.module.css'
 
 const RATE = 1.95583  // official fixed rate: 1 EUR = 1.95583 BGN
@@ -19,9 +19,13 @@ function todayISO() {
   return localISO()
 }
 
+function monthLabel(m) {
+  return new Date(m + 'T12:00').toLocaleString('bg-BG', { month: 'long', year: 'numeric' }).toUpperCase()
+}
+
 // ── Setup view ────────────────────────────────────────────────────
 
-function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN }) {
+function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selectedMonth }) {
   const [budgetAmt, setBudgetAmt] = useState(
     existing ? String(Math.round(disp(existing.budget_amount) * 100) / 100) : ''
   )
@@ -64,6 +68,8 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN }) {
         <h1 className={styles.title}>НАСТРОЙКИ</h1>
         <span className={styles.currencyBadge}>{sym}</span>
       </div>
+
+      <div className={styles.setupMonthLabel}>{monthLabel(selectedMonth)}</div>
 
       <div className={styles.card}>
         <label className={styles.label}>Оставащ бюджет за месеца ({sym})</label>
@@ -131,8 +137,8 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN }) {
 
 // ── Add transaction form ──────────────────────────────────────────
 
-function AddForm({ onAdd, sym, toBGN }) {
-  const [date,   setDate]   = useState(todayISO())
+function AddForm({ onAdd, sym, toBGN, defaultDate }) {
+  const [date,   setDate]   = useState(defaultDate || todayISO())
   const [desc,   setDesc]   = useState('')
   const [amount, setAmount] = useState('')
   const amtRef = useRef(null)
@@ -143,7 +149,6 @@ function AddForm({ onAdd, sym, toBGN }) {
     await onAdd({ date, description: desc.trim() || null, amount: toBGN(parsed) })
     setDesc('')
     setAmount('')
-    setDate(todayISO())
     amtRef.current?.focus()
   }
 
@@ -188,20 +193,26 @@ function AddForm({ onAdd, sym, toBGN }) {
 
 // ── Monthly calendar ──────────────────────────────────────────────
 
-function MonthCalendar({ transactions, dailyQuota, disp, sym }) {
-  const today      = new Date()
-  const todayStr   = todayISO()
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-  const paydayStr  = localISO(endOfMonth)
+function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
+  const today       = new Date()
+  const todayStr    = todayISO()
+  const currentMs   = monthStart()
+  const isCurrentM  = selectedMonth === currentMs
+  const selDate     = new Date(selectedMonth + 'T12:00')
+  const endOfMonth  = new Date(selDate.getFullYear(), selDate.getMonth() + 1, 0)
+  const paydayStr   = localISO(endOfMonth)
 
   const days = []
-  const d = new Date(today)
+  const startDate = isCurrentM
+    ? new Date(today)
+    : new Date(selDate.getFullYear(), selDate.getMonth(), 1)
+  const d = new Date(startDate)
   while (d <= endOfMonth) {
     const ds    = localISO(d)
     const spent = transactions.filter(t => t.date === ds).reduce((s, t) => s + +t.amount, 0)
     days.push({
       ds,
-      label:     `${d.getDate()}/${today.getMonth() + 1}`,
+      label:     `${d.getDate()}/${selDate.getMonth() + 1}`,
       isToday:   ds === todayStr,
       isPayday:  ds === paydayStr,
       spent,
@@ -244,15 +255,19 @@ function MonthCalendar({ transactions, dailyQuota, disp, sym }) {
 
 // ── Spending bar chart ────────────────────────────────────────────
 
-function SpendingChart({ transactions, dailyQuota, disp, sym }) {
-  const today    = new Date()
-  const todayStr = localISO(today)
-  const first    = new Date(today.getFullYear(), today.getMonth(), 1)
+function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
+  const today      = new Date()
+  const todayStr   = localISO(today)
+  const currentMs  = monthStart()
+  const isCurrentM = selectedMonth === currentMs
+  const selDate    = new Date(selectedMonth + 'T12:00')
+  const first      = new Date(selDate.getFullYear(), selDate.getMonth(), 1)
+  const endOfMonth = new Date(selDate.getFullYear(), selDate.getMonth() + 1, 0)
+  const lastDay    = isCurrentM ? today : endOfMonth
 
-  // One entry per day from 1st to today
   const days = []
   const d = new Date(first)
-  while (d <= today) {
+  while (d <= lastDay) {
     const ds    = localISO(d)
     const spent = transactions.filter(t => t.date === ds).reduce((s, t) => s + +t.amount, 0)
     days.push({ ds, spent, day: d.getDate(), isToday: ds === todayStr })
@@ -272,12 +287,6 @@ function SpendingChart({ transactions, dailyQuota, disp, sym }) {
   const toY     = v => PAD.top + cH * (1 - v / maxVal)
   const quotaY  = toY(dailyQuota)
 
-  // Y-axis reference labels: 0 and quota
-  const yLabels = [
-    { v: dailyQuota, label: fmt(disp(dailyQuota)) },
-  ]
-
-  // X label strategy: always show 1st, last (today), and evenly spaced
   const labelEvery = Math.ceil(days.length / 7)
 
   return (
@@ -285,20 +294,17 @@ function SpendingChart({ transactions, dailyQuota, disp, sym }) {
       <div className={styles.chartTitle}>Разходи по дни • {sym}</div>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
 
-        {/* Zero baseline */}
         <line
           x1={PAD.left} y1={PAD.top + cH}
           x2={PAD.left + cW} y2={PAD.top + cH}
           stroke="rgba(242,232,207,0.08)" strokeWidth="1"
         />
 
-        {/* Quota reference line */}
         <line
           x1={PAD.left} y1={quotaY}
           x2={PAD.left + cW} y2={quotaY}
           stroke="rgba(255,183,77,0.4)" strokeWidth="1" strokeDasharray="4,3"
         />
-        {/* Quota y-label */}
         <text
           x={PAD.left - 4} y={quotaY + 3}
           textAnchor="end" fontSize="7" fill="rgba(255,183,77,0.6)"
@@ -307,7 +313,6 @@ function SpendingChart({ transactions, dailyQuota, disp, sym }) {
           {fmt(disp(dailyQuota))}
         </text>
 
-        {/* Bars */}
         {days.map((day, i) => {
           const cx   = PAD.left + i * step + step / 2
           const bx   = cx - barW / 2
@@ -324,14 +329,12 @@ function SpendingChart({ transactions, dailyQuota, disp, sym }) {
 
           return (
             <g key={day.ds}>
-              {/* ghost bar when no spend — shows the grid */}
               {day.spent === 0 && (
                 <rect
                   x={bx} y={PAD.top} width={barW} height={cH}
                   fill="rgba(242,232,207,0.04)" rx="2"
                 />
               )}
-              {/* actual spend bar */}
               <rect
                 x={bx}
                 y={bH > 0 ? by : PAD.top + cH - 1}
@@ -341,7 +344,6 @@ function SpendingChart({ transactions, dailyQuota, disp, sym }) {
                 fill={fill}
                 opacity={day.isToday ? 1 : 0.82}
               />
-              {/* x-axis label */}
               {showLabel && (
                 <text
                   x={cx} y={H - 4}
@@ -362,17 +364,18 @@ function SpendingChart({ transactions, dailyQuota, disp, sym }) {
 // ── Main Budget page ──────────────────────────────────────────────
 
 export default function Budget() {
-  const { config, transactions, loading, upsertConfig, addTransaction, deleteTransaction } = useBudget()
+  const currentMonthStr = monthStart()
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthStr)
+  const { config, transactions, loading, upsertConfig, addTransaction, deleteTransaction } = useBudget(selectedMonth)
   const [view,         setView]         = useState('dashboard')
   const [showCalendar, setShowCalendar] = useState(false)
   const [currency, setCurrency] = useState(
     () => localStorage.getItem('budget_currency') || 'BGN'
   )
 
-  // All stored values are in BGN. These helpers convert for display/input.
-  const sym  = currency === 'EUR' ? '€' : 'лв.'
-  const disp = (bgn) => currency === 'EUR' ? bgn / RATE : bgn
-  const toBGN = (n)  => currency === 'EUR' ? n * RATE   : n
+  const sym   = currency === 'EUR' ? '€' : 'лв.'
+  const disp  = (bgn) => currency === 'EUR' ? bgn / RATE : bgn
+  const toBGN = (n)   => currency === 'EUR' ? n * RATE   : n
 
   function toggleCurrency() {
     const next = currency === 'BGN' ? 'EUR' : 'BGN'
@@ -395,23 +398,37 @@ export default function Budget() {
         onSave={async data => { await upsertConfig(data); setView('dashboard') }}
         onBack={config ? () => setView('dashboard') : null}
         currency={currency} sym={sym} disp={disp} toBGN={toBGN}
+        selectedMonth={selectedMonth}
       />
     )
   }
 
   // ── Calculations (all in BGN) ──
-  const today      = new Date()
-  const todayStr   = todayISO()
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-  const daysToEnd  = endOfMonth.getDate() - today.getDate()
+  const today          = new Date()
+  const todayStr       = todayISO()
+  const isCurrentMonth = selectedMonth === currentMonthStr
+  const selDate        = new Date(selectedMonth + 'T12:00')
+  const endOfMonth     = new Date(selDate.getFullYear(), selDate.getMonth() + 1, 0)
+  const totalDays      = endOfMonth.getDate()
+  const daysToEnd      = isCurrentMonth
+    ? endOfMonth.getDate() - today.getDate()
+    : totalDays
 
   const totalPlan  = (config.planned_expenses ?? []).reduce((s, e) => s + +e.amount, 0)
   const bufferAmt  = config.budget_amount * config.buffer_pct
   const available  = config.budget_amount - totalPlan - bufferAmt
   const dailyQuota = daysToEnd > 0 ? available / daysToEnd : available
 
-  const spentToday = transactions.filter(t => t.date === todayStr).reduce((s, t) => s + +t.amount, 0)
-  const remaining  = dailyQuota - spentToday
+  const spentToday = isCurrentMonth
+    ? transactions.filter(t => t.date === todayStr).reduce((s, t) => s + +t.amount, 0)
+    : 0
+  const totalSpent = transactions.reduce((s, t) => s + +t.amount, 0)
+
+  // Hero: daily remaining for current month, monthly remaining for others
+  const heroValue  = isCurrentMonth ? dailyQuota - spentToday : available - totalSpent
+  const heroLabel  = isCurrentMonth
+    ? 'остават за днес'
+    : heroValue >= 0 ? 'остатък за месеца' : 'превишен бюджет'
 
   const byDate = {}
   transactions.forEach(t => {
@@ -419,7 +436,9 @@ export default function Budget() {
     byDate[t.date].push(t)
   })
   const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
-  const monthName   = today.toLocaleString('bg-BG', { month: 'long' })
+  const selMonthName = selDate.toLocaleString('bg-BG', { month: 'long' })
+
+  const defaultAddDate = isCurrentMonth ? todayISO() : selectedMonth
 
   return (
     <div className={styles.page}>
@@ -428,7 +447,6 @@ export default function Budget() {
       <div className={styles.header}>
         <h1 className={styles.title}>БЮДЖЕТ</h1>
         <div className={styles.headerActions}>
-          {/* Currency toggle pill */}
           <button className={styles.currencyToggle} onClick={toggleCurrency} type="button" aria-label="Смяна на валута">
             <span className={currency === 'BGN' ? styles.currActive : styles.currInactive}>лв.</span>
             <span className={styles.currSep}>⇄</span>
@@ -443,13 +461,20 @@ export default function Budget() {
         </div>
       </div>
 
+      {/* Month navigation */}
+      <div className={styles.monthNav}>
+        <button className={styles.monthNavBtn} onClick={() => setSelectedMonth(prevMonthStart(selectedMonth))} type="button">←</button>
+        <span className={styles.monthNavLabel}>{monthLabel(selectedMonth)}</span>
+        <button className={styles.monthNavBtn} onClick={() => setSelectedMonth(nextMonthStart(selectedMonth))} type="button">→</button>
+      </div>
+
       {/* Hero */}
-      <div className={`${styles.hero} ${remaining < 0 ? styles.heroNeg : ''}`}>
+      <div className={`${styles.hero} ${heroValue < 0 ? styles.heroNeg : ''}`}>
         <div className={styles.heroAmt}>
-          {remaining < 0 ? '−' : ''}{fmt(disp(remaining))}
+          {heroValue < 0 ? '−' : ''}{fmt(disp(heroValue))}
           <span className={styles.heroCurrency}> {sym}</span>
         </div>
-        <div className={styles.heroLabel}>остават за днес</div>
+        <div className={styles.heroLabel}>{heroLabel}</div>
       </div>
 
       {/* Stats strip */}
@@ -460,15 +485,31 @@ export default function Budget() {
         </div>
         <div className={styles.statDivider} />
         <div className={styles.stat}>
-          <span className={styles.statAmt}>{fmt(disp(spentToday))}</span>
-          <span className={styles.statLbl}>похарчено</span>
+          <span className={styles.statAmt}>{fmt(disp(isCurrentMonth ? spentToday : totalSpent))}</span>
+          <span className={styles.statLbl}>{isCurrentMonth ? 'похарчено' : 'похарчено общо'}</span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.stat}>
-          <span className={styles.statAmt}>{daysToEnd}</span>
-          <span className={styles.statLbl}>дни до края</span>
+          <span className={styles.statAmt}>{isCurrentMonth ? daysToEnd : totalDays}</span>
+          <span className={styles.statLbl}>{isCurrentMonth ? 'дни до края' : 'дни в месеца'}</span>
         </div>
       </div>
+
+      {/* Planned expenses */}
+      {(config.planned_expenses ?? []).length > 0 && (
+        <div className={styles.plannedWrap}>
+          <div className={styles.plannedHdr}>
+            <span className={styles.plannedTitle}>ПЛАНИРАНИ РАЗХОДИ</span>
+            <span className={styles.plannedTotal}>{fmt(disp(totalPlan))} {sym}</span>
+          </div>
+          {(config.planned_expenses ?? []).map((e, i) => (
+            <div key={i} className={styles.plannedRow}>
+              <span className={styles.plannedName}>{e.name}</span>
+              <span className={styles.plannedAmt}>{fmt(disp(e.amount))} {sym}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Spending chart */}
       <SpendingChart
@@ -476,10 +517,17 @@ export default function Budget() {
         dailyQuota={dailyQuota}
         disp={disp}
         sym={sym}
+        selectedMonth={selectedMonth}
       />
 
       {/* Add transaction */}
-      <AddForm onAdd={addTransaction} sym={sym} toBGN={toBGN} />
+      <AddForm
+        key={selectedMonth}
+        onAdd={addTransaction}
+        sym={sym}
+        toBGN={toBGN}
+        defaultDate={defaultAddDate}
+      />
 
       {/* Monthly plan toggle */}
       <div
@@ -490,7 +538,7 @@ export default function Budget() {
         onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setShowCalendar(v => !v)}
       >
         <span>{showCalendar ? '↑ Скрий плана' : '↓ Месечен план'}</span>
-        <span className={styles.calToggleMonth}>{monthName.toUpperCase()}</span>
+        <span className={styles.calToggleMonth}>{selMonthName.toUpperCase()}</span>
       </div>
 
       {showCalendar && (
@@ -499,6 +547,7 @@ export default function Budget() {
           dailyQuota={dailyQuota}
           disp={disp}
           sym={sym}
+          selectedMonth={selectedMonth}
         />
       )}
 
@@ -534,7 +583,7 @@ export default function Budget() {
           })}
         </div>
       ) : (
-        <p className={styles.empty}>Няма разходи за {monthName}</p>
+        <p className={styles.empty}>Няма разходи за {selMonthName}</p>
       )}
     </div>
   )

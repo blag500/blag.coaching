@@ -99,6 +99,49 @@
 }
 .backBtn:hover { color: var(--text); }
 
+/* ── Month navigation ────────────────────────────────────────── */
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.monthNavBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+.monthNavBtn:hover { color: var(--accent); border-color: var(--accent); }
+.monthNavLabel {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-align: center;
+  flex: 1;
+}
+
+/* Setup view month label */
+.setupMonthLabel {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
 /* ── Hero ────────────────────────────────────────────────────── */
 .hero {
   background: linear-gradient(135deg, #0d2818 0%, #163d22 100%);
@@ -136,6 +179,57 @@
   margin-top: 4px;
 }
 .heroNeg .heroLabel { color: rgba(255, 68, 85, 0.7); }
+
+/* ── Planned expenses (dashboard) ───────────────────────────── */
+.plannedWrap {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.plannedHdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(var(--accent-rgb), 0.06);
+  border-bottom: 1px solid var(--border);
+}
+.plannedTitle {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.plannedTotal {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+.plannedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+.plannedRow:last-child { border-bottom: none; }
+.plannedName {
+  flex: 1;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plannedAmt {
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
 /* ── Stats strip ─────────────────────────────────────────────── */
 .stats {
