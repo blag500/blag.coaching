@@ -172,7 +172,8 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
 
 function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false)
-  const [name,    setName]    = useState(expense.name)
+  const isDefaultName = !expense.name || expense.name === 'Разход'
+  const [name,    setName]    = useState(isDefaultName ? '' : expense.name)
   const [note,    setNote]    = useState(expense.note || '')
   const [amount,  setAmount]  = useState(
     String(Math.round(disp(expense.amount) * 100) / 100)
@@ -220,11 +221,19 @@ function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
   return (
     <div className={styles.plannedRow}>
       <div className={styles.plannedInfo} onClick={() => setEditing(true)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && setEditing(true)}>
-        <span className={styles.plannedName}>{expense.name}</span>
-        {expense.note
-          ? <span className={styles.plannedNote}>{expense.note}</span>
-          : <span className={styles.plannedAddNote}>+ добави описание</span>
-        }
+        {isDefaultName ? (
+          expense.note
+            ? <span className={styles.plannedName}>{expense.note}</span>
+            : <span className={styles.plannedAddNote}>+ добави описание</span>
+        ) : (
+          <>
+            <span className={styles.plannedName}>{expense.name}</span>
+            {expense.note
+              ? <span className={styles.plannedNote}>{expense.note}</span>
+              : <span className={styles.plannedAddNote}>+ добави описание</span>
+            }
+          </>
+        )}
       </div>
       <div className={styles.plannedRowRight}>
         <span className={styles.plannedAmt}>{fmt(disp(expense.amount))} {sym}</span>
