@@ -53,15 +53,25 @@ export function useBudget(month) {
   }
 
   async function upsertConfig(data) {
-    // Always merge with the current config so partial updates don't reset other fields
+    // Separate savings_amount from the rest — only include it in the upsert if it's
+    // explicitly provided or the column already exists in config (migration run).
+    // This prevents inline-edit calls from failing silently when the column is missing.
+    const { savings_amount: incomingSavings, ...restData } = data
+
     const merged = {
       budget_amount:    config?.budget_amount    ?? 0,
       buffer_pct:       config?.buffer_pct       ?? 0.1,
-      savings_amount:   config?.savings_amount   ?? 0,
       planned_expenses: config?.planned_expenses ?? [],
-      ...data,
+      ...restData,
     }
-    const { data: row } = await supabase
+
+    if (incomingSavings !== undefined) {
+      merged.savings_amount = incomingSavings
+    } else if (config?.savings_amount != null) {
+      merged.savings_amount = config.savings_amount
+    }
+
+    const { data: row, error } = await supabase
       .from('budget_config')
       .upsert(
         { user_id: user.id, month, ...merged, updated_at: new Date().toISOString() },
@@ -69,6 +79,7 @@ export function useBudget(month) {
       )
       .select()
       .single()
+    if (error) console.error('[useBudget] upsertConfig error:', error.message)
     if (row) setConfig(row)
   }
 
