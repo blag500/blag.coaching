@@ -172,7 +172,7 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
 
 function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false)
-  const [name,    setName]    = useState(expense.name)
+  const [name,    setName]    = useState(expense.name === 'Разход' ? '' : expense.name)
   const [note,    setNote]    = useState(expense.note || '')
   const [amount,  setAmount]  = useState(
     String(Math.round(disp(expense.amount) * 100) / 100)

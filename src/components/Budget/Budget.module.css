@@ -241,7 +241,9 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+  cursor: pointer;
 }
+.plannedInfo:hover .plannedName { color: var(--accent); }
 .plannedName {
   color: var(--text);
   white-space: nowrap;
@@ -260,10 +262,6 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-.plannedInfo {
-  cursor: pointer;
-}
-.plannedInfo:hover .plannedName { color: var(--accent); }
 .plannedRowRight {
   display: flex;
   align-items: center;
