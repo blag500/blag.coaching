@@ -63,7 +63,7 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
       planned_expenses: expenses
         .filter(e => Number(e.amount) > 0)
         .map(e => ({
-          name:   e.name || 'Разход',
+          name:   e.name.trim(),
           amount: toBGN(parseFloat(e.amount)),
           note:   e.note.trim(),
         })),
@@ -172,7 +172,7 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
 
 function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(false)
-  const [name,    setName]    = useState(expense.name === 'Разход' ? '' : expense.name)
+  const [name,    setName]    = useState(expense.name)
   const [note,    setNote]    = useState(expense.note || '')
   const [amount,  setAmount]  = useState(
     String(Math.round(disp(expense.amount) * 100) / 100)
@@ -181,7 +181,7 @@ function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
   async function handleSave() {
     const parsed = parseFloat(amount)
     if (!parsed || parsed <= 0) return
-    await onUpdate({ name: name.trim() || 'Разход', note: note.trim(), amount: toBGN(parsed) })
+    await onUpdate({ name: name.trim(), note: note.trim(), amount: toBGN(parsed) })
     setEditing(false)
   }
 
