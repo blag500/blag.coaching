@@ -260,6 +260,36 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+.plannedInfo {
+  cursor: pointer;
+}
+.plannedInfo:hover .plannedName { color: var(--accent); }
+.plannedRowRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.plannedAddNote {
+  font-size: 10px;
+  color: rgba(var(--accent-rgb), 0.35);
+  letter-spacing: 0.04em;
+}
+
+/* Inline editing */
+.plannedRowEditing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(var(--accent-rgb), 0.04);
+}
+.plannedEditAmtRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 
 /* ── Savings / emergency reserve ─────────────────────────────── */
 .savingsCard {

@@ -53,10 +53,18 @@ export function useBudget(month) {
   }
 
   async function upsertConfig(data) {
+    // Always merge with the current config so partial updates don't reset other fields
+    const merged = {
+      budget_amount:    config?.budget_amount    ?? 0,
+      buffer_pct:       config?.buffer_pct       ?? 0.1,
+      savings_amount:   config?.savings_amount   ?? 0,
+      planned_expenses: config?.planned_expenses ?? [],
+      ...data,
+    }
     const { data: row } = await supabase
       .from('budget_config')
       .upsert(
-        { user_id: user.id, month, ...data, updated_at: new Date().toISOString() },
+        { user_id: user.id, month, ...merged, updated_at: new Date().toISOString() },
         { onConflict: 'user_id,month' }
       )
       .select()

@@ -168,6 +168,72 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
   )
 }
 
+// ── Planned expense row (inline edit) ────────────────────────────
+
+function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
+  const [editing, setEditing] = useState(false)
+  const [name,    setName]    = useState(expense.name)
+  const [note,    setNote]    = useState(expense.note || '')
+  const [amount,  setAmount]  = useState(
+    String(Math.round(disp(expense.amount) * 100) / 100)
+  )
+
+  async function handleSave() {
+    const parsed = parseFloat(amount)
+    if (!parsed || parsed <= 0) return
+    await onUpdate({ name: name.trim() || 'Разход', note: note.trim(), amount: toBGN(parsed) })
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className={styles.plannedRowEditing}>
+        <input
+          className={styles.input}
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Наименование"
+          autoFocus
+        />
+        <input
+          className={`${styles.input} ${styles.noteInput}`}
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          placeholder="Описание (незадължително)"
+        />
+        <div className={styles.plannedEditAmtRow}>
+          <input
+            className={`${styles.input} ${styles.inputFlex}`}
+            type="number" inputMode="decimal" step="0.01"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSave()}
+            placeholder={`0.00 ${sym}`}
+          />
+          <button className={styles.addBtn} onClick={handleSave} type="button">✓</button>
+          <button className={styles.removeBtn} onClick={() => { onDelete(); setEditing(false) }} type="button">×</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.plannedRow}>
+      <div className={styles.plannedInfo} onClick={() => setEditing(true)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && setEditing(true)}>
+        <span className={styles.plannedName}>{expense.name}</span>
+        {expense.note
+          ? <span className={styles.plannedNote}>{expense.note}</span>
+          : <span className={styles.plannedAddNote}>+ добави описание</span>
+        }
+      </div>
+      <div className={styles.plannedRowRight}>
+        <span className={styles.plannedAmt}>{fmt(disp(expense.amount))} {sym}</span>
+        <button className={styles.txnDel} onClick={onDelete} type="button" aria-label="Изтрий">×</button>
+      </div>
+    </div>
+  )
+}
+
 // ── Add transaction form ──────────────────────────────────────────
 
 function AddForm({ onAdd, sym, toBGN, defaultDate }) {
@@ -520,19 +586,24 @@ export default function Budget() {
         <div className={styles.plannedWrap}>
           <div className={styles.plannedHdr}>
             <span className={styles.plannedTitle}>ПЛАНИРАНИ РАЗХОДИ</span>
-            <div className={styles.plannedHdrRight}>
-              <span className={styles.plannedTotal}>{fmt(disp(totalPlan))} {sym}</span>
-              <button className={styles.plannedEditBtn} onClick={() => setView('setup')} type="button">✎</button>
-            </div>
+            <span className={styles.plannedTotal}>{fmt(disp(totalPlan))} {sym}</span>
           </div>
           {(config.planned_expenses ?? []).map((e, i) => (
-            <div key={i} className={styles.plannedRow}>
-              <div className={styles.plannedInfo}>
-                <span className={styles.plannedName}>{e.name}</span>
-                {e.note && <span className={styles.plannedNote}>{e.note}</span>}
-              </div>
-              <span className={styles.plannedAmt}>{fmt(disp(e.amount))} {sym}</span>
-            </div>
+            <PlannedExpenseRow
+              key={i}
+              expense={e}
+              disp={disp}
+              toBGN={toBGN}
+              sym={sym}
+              onUpdate={async updated => {
+                const next = (config.planned_expenses ?? []).map((x, j) => j === i ? updated : x)
+                await upsertConfig({ planned_expenses: next })
+              }}
+              onDelete={async () => {
+                const next = (config.planned_expenses ?? []).filter((_, j) => j !== i)
+                await upsertConfig({ planned_expenses: next })
+              }}
+            />
           ))}
         </div>
       )}
