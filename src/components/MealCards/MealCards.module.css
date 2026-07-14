@@ -424,7 +424,7 @@
   width: 100%;
   background: var(--surface-1);
   border-radius: 24px 24px 0 0;
-  padding: 12px 16px calc(32px + env(safe-area-inset-bottom));
+  padding: 12px 16px calc(96px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 10px;
