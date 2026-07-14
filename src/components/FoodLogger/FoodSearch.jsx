@@ -5,6 +5,7 @@ import { suggestMacros } from '../../utils/usda'
 import { searchFoods } from '../../utils/openFoodFacts'
 import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
+import BarcodeScanner from './BarcodeScanner'
 import styles from './FoodSearch.module.css'
 
 function CameraIcon() {
@@ -49,6 +50,7 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
         {[
           { id: 'ai',      label: 'AI',      icon: '◈' },
           { id: 'manual',  label: 'РЪЧНО',   icon: '✎' },
+          { id: 'barcode', label: 'БАРКОД',  icon: '▦' },
           { id: 'recent',  label: 'СКОР.',   icon: '↺' },
           { id: 'suggest', label: 'ПРЕПОР.', icon: '★' },
           { id: 'bot',     label: 'БОТ',     icon: '◉' },
@@ -68,6 +70,7 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
 
       {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
+      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
       {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
       {mode === 'suggest' && <SuggestMode totals={totals} targets={targets} onAddRaw={onAddRaw} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
@@ -409,6 +412,104 @@ function MultiAddPanel({ initialItems, onAdd, onCancel }) {
         <button className={styles.addBtn} onClick={() => onAdd(items)} type="button">
           + Добави {items.length === 1 ? '1 храна' : `${items.length} храни`}
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Barcode scan mode ───────────────────────────────────────────────────────
+
+function BarcodeMode({ onAddRaw, onAdded }) {
+  const [scanning, setScanning] = useState(true)
+  const [result, setResult]     = useState(null)
+  const [grams, setGrams]       = useState('100')
+
+  function handleFound(food) {
+    setResult(food)
+    setScanning(false)
+  }
+
+  async function handleAdd() {
+    const g = parseFloat(grams)
+    if (!g || !result) return
+    const ratio = g / 100
+    const name  = result.name + (result.brand ? ` (${result.brand})` : '')
+    await onAddRaw({
+      name,
+      grams:   g,
+      kcal:    Math.round(result.per100g.kcal    * ratio),
+      protein: Math.round(result.per100g.protein * ratio * 10) / 10,
+      carbs:   Math.round(result.per100g.carbs   * ratio * 10) / 10,
+      fat:     Math.round(result.per100g.fat     * ratio * 10) / 10,
+    })
+    setResult(null)
+    setGrams('100')
+    setScanning(true)
+    onAdded?.()
+  }
+
+  if (scanning) {
+    return (
+      <BarcodeScanner
+        onFound={handleFound}
+        onClose={() => setScanning(false)}
+      />
+    )
+  }
+
+  if (!result) {
+    return (
+      <div className={styles.barcodeRetry}>
+        <p className={styles.error}>Продуктът не е намерен.</p>
+        <button className={styles.addBtn} onClick={() => setScanning(true)} type="button">
+          Опитай отново
+        </button>
+      </div>
+    )
+  }
+
+  const g = parseFloat(grams) || 0
+
+  return (
+    <div className={styles.addPanel}>
+      <input
+        className={styles.nameInput}
+        type="text"
+        value={result.name}
+        onChange={e => setResult(prev => ({ ...prev, name: e.target.value }))}
+        aria-label="Наименование"
+      />
+      {result.brand && (
+        <div className={styles.aiPer100g}>{result.brand}</div>
+      )}
+      <div className={styles.aiPer100g}>
+        на 100g: {result.per100g.kcal} ккал · П{result.per100g.protein}g · В{result.per100g.carbs}g · М{result.per100g.fat}g
+      </div>
+      <div className={styles.gramRow}>
+        <label className={styles.gramLabel} htmlFor="bc-grams-input">Грамаж</label>
+        <input
+          id="bc-grams-input"
+          className={styles.gramInput}
+          type="number"
+          min="1"
+          max="2000"
+          value={grams}
+          onChange={e => setGrams(e.target.value)}
+          autoFocus
+        />
+        <span className={styles.gramUnit}>g</span>
+      </div>
+      {g > 0 && (
+        <div className={styles.preview}>
+          {Math.round(result.per100g.kcal    * g / 100)} ккал ·
+          П {Math.round(result.per100g.protein * g / 100 * 10) / 10}g ·
+          В {Math.round(result.per100g.carbs   * g / 100 * 10) / 10}g ·
+          М {Math.round(result.per100g.fat     * g / 100 * 10) / 10}g
+        </div>
+      )}
+      <div className={styles.panelActions}>
+        <button className={styles.cancelBtn} onClick={() => setScanning(true)} type="button">← Сканирай</button>
+        <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
       </div>
     </div>
   )

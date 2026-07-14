@@ -976,3 +976,12 @@
   background: rgba(var(--accent-rgb), 0.18);
 }
 
+
+
+.barcodeRetry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+}
