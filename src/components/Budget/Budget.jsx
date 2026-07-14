@@ -505,7 +505,7 @@ export default function Budget() {
   const endOfMonth     = new Date(selDate.getFullYear(), selDate.getMonth() + 1, 0)
   const totalDays      = endOfMonth.getDate()
   const daysToEnd      = isCurrentMonth
-    ? endOfMonth.getDate() - today.getDate()
+    ? endOfMonth.getDate() - today.getDate() + 1
     : totalDays
 
   const totalPlan  = (config.planned_expenses ?? []).reduce((s, e) => s + +e.amount, 0)
