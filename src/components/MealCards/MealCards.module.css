@@ -318,3 +318,308 @@
   color: rgba(255,255,255,0.45);
 }
 
+/* ── Top badge row with delete ── */
+.topBadgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.deleteBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(239, 83, 80, 0.08);
+  color: #ef5350;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 180ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cardScene:hover .deleteBtn,
+.cardScene:focus-within .deleteBtn {
+  opacity: 1;
+}
+
+/* Always show on touch devices */
+@media (hover: none) {
+  .deleteBtn { opacity: 0.7; }
+}
+
+/* ── No-photo card back ── */
+.cardBackNoPhoto {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.backNoPhotoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.backNotes {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: rgba(242,232,207,0.55);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Library top row ── */
+.libTopRow {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px 10px;
+}
+
+.addMealBtn {
+  padding: 9px 16px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addMealBtn:active {
+  background: rgba(var(--accent-rgb), 0.18);
+}
+
+/* ── Add Meal Modal ── */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: flex;
+  align-items: flex-end;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+}
+
+.sheet {
+  position: relative;
+  width: 100%;
+  background: var(--surface-1);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 16px calc(32px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: sheetUp 0.28s ease;
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  align-self: center;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.modalClose {
+  width: 30px;
+  height: 30px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Field inputs */
+.fieldLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: -4px;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 150ms;
+}
+
+.fieldInput:focus {
+  border-color: var(--accent);
+}
+
+.fieldTextarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  resize: none;
+  transition: border-color 150ms;
+}
+
+.fieldTextarea:focus {
+  border-color: var(--accent);
+}
+
+/* Category pills */
+.catPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.catPill {
+  padding: 6px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.catPillActive {
+  background: rgba(255,255,255,0.04);
+}
+
+/* Macros row */
+.macroRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.macroInput {
+  padding: 10px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 150ms;
+}
+
+.macroInput:focus {
+  border-color: var(--m-color, var(--accent));
+}
+
+.macroInput::placeholder {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Meta row */
+.metaRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.metaField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Form error */
+.formError {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #ef5350;
+  margin: 0;
+}
+
+/* Save button */
+.saveBtn {
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 150ms;
+  margin-top: 4px;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
