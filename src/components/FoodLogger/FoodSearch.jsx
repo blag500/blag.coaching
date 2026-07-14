@@ -50,7 +50,6 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
         {[
           { id: 'ai',      label: 'AI',      icon: '◈' },
           { id: 'manual',  label: 'РЪЧНО',   icon: '✎' },
-          { id: 'barcode', label: 'БАРКОД',  icon: '▦' },
           { id: 'recent',  label: 'СКОР.',   icon: '↺' },
           { id: 'suggest', label: 'ПРЕПОР.', icon: '★' },
           { id: 'bot',     label: 'БОТ',     icon: '◉' },
@@ -70,8 +69,7 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
 
       {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
-      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
-      {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
+{mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
       {mode === 'suggest' && <SuggestMode totals={totals} targets={targets} onAddRaw={onAddRaw} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
