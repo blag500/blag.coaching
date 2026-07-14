@@ -2162,3 +2162,88 @@
   cursor: default;
 }
 
+/* ── Coach task push form ── */
+.coachTaskForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--surface-1);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.coachTaskInput {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 150ms;
+}
+
+.coachTaskInput:focus {
+  border-color: var(--accent);
+}
+
+.coachTaskInput::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.coachTaskSubmit {
+  padding: 10px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+.coachTaskSubmit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.coachTaskMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.coachMetaBtn {
+  padding: 5px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.coachMetaBtnActive {
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.35);
+}
+
+.coachMetaBtnPrio {
+  background: rgba(239, 83, 80, 0.1);
+  color: #ef5350;
+  border-color: rgba(239, 83, 80, 0.3);
+}
+

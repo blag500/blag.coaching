@@ -2,9 +2,41 @@ import { useState } from 'react'
 import EfficientProducts from './EfficientProducts'
 import ShoppingList from '../ShoppingList/ShoppingList'
 import ShowcasePage from './ShowcasePage'
+import CalorieCalculator from '../CalorieCalculator/CalorieCalculator'
+import PWAInstallPage from '../PWAInstall/PWAInstallPage'
 import styles from './Explore.module.css'
 
 const SECTIONS = [
+  {
+    id: 'calculator',
+    title: 'КАЛОРИЕН КАЛКУЛАТОР',
+    desc: 'TDEE · BMR · ИТМ · Макроси — изчисли дневните си нужди',
+    accent: '#FFB74D',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
+        <rect x="4" y="2" width="16" height="20" rx="2" />
+        <line x1="8" y1="6" x2="16" y2="6" />
+        <line x1="8" y1="10" x2="10" y2="10" />
+        <line x1="13" y1="10" x2="15" y2="10" />
+        <line x1="8" y1="14" x2="10" y2="14" />
+        <line x1="13" y1="14" x2="15" y2="14" />
+        <line x1="8" y1="18" x2="15" y2="18" />
+      </svg>
+    ),
+  },
+  {
+    id: 'install',
+    title: 'ИНСТАЛИРАЙ ПРИЛОЖЕНИЕТО',
+    desc: 'Добави Blag на началния екран за бърз достъп без браузър',
+    accent: '#C9A227',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
+        <path d="M12 2v13" />
+        <path d="M8 11l4 4 4-4" />
+        <path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3" />
+      </svg>
+    ),
+  },
   {
     id: 'showcase',
     title: 'ВДЪХНОВЕНИЕ',
@@ -52,15 +84,11 @@ const COMING_SOON = [
 export default function Explore() {
   const [page, setPage] = useState(null)
 
-  if (page === 'showcase') {
-    return <ShowcasePage onBack={() => setPage(null)} />
-  }
-  if (page === 'products') {
-    return <EfficientProducts onBack={() => setPage(null)} />
-  }
-  if (page === 'shopping') {
-    return <ShoppingList onBack={() => setPage(null)} />
-  }
+  if (page === 'calculator') return <CalorieCalculator onBack={() => setPage(null)} />
+  if (page === 'install')    return <PWAInstallPage    onBack={() => setPage(null)} />
+  if (page === 'showcase')   return <ShowcasePage      onBack={() => setPage(null)} />
+  if (page === 'products')   return <EfficientProducts onBack={() => setPage(null)} />
+  if (page === 'shopping')   return <ShoppingList      onBack={() => setPage(null)} />
 
   return (
     <div className={styles.page}>

@@ -94,6 +94,26 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
+  async function completeOnboarding({ name, goal, gender, age, height_cm, weight_kg,
+    target_weight, activity_level, calories, protein, carbs, fat }) {
+    if (!session?.user) return { error: new Error('not logged in') }
+    const updates = {
+      name, goal, gender, age, height_cm, target_weight,
+      activity_level, calories, protein, carbs, fat,
+      onboarding_done: true,
+    }
+    const { data, error } = await supabase
+      .from('profiles').update(updates).eq('id', session.user.id).select().single()
+    if (!error && data) setProfile(prev => ({ ...prev, ...data }))
+    if (!error && weight_kg) {
+      const today = new Date().toISOString().slice(0, 10)
+      await supabase.from('weight_logs')
+        .upsert({ user_id: session.user.id, weight: weight_kg, logged_at: today },
+          { onConflict: 'user_id,logged_at' })
+    }
+    return { error }
+  }
+
   // Coach: delete a client — removes their auth user so they must re-register
   async function deleteClientProfile(clientId) {
     const { error } = await supabase.functions.invoke('delete-user', {
@@ -387,6 +407,7 @@ export function AuthProvider({ children }) {
       signOut,
       refreshProfile,
       updateProfile,
+      completeOnboarding,
       updateClientProfile,
       deleteClientProfile,
       approveClient,

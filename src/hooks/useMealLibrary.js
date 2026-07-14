@@ -12,7 +12,6 @@ export function useMealLibrary() {
     supabase
       .from('meal_library')
       .select('*')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         if (data) setMeals(data)
@@ -20,13 +19,26 @@ export function useMealLibrary() {
       })
   }, [user?.id])
 
+  async function uploadPhoto(file) {
+    if (!user?.id || !file) return null
+    const ext  = file.name.split('.').pop() || 'jpg'
+    const path = `meal-library/${user.id}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage
+      .from('meal-photos')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (error) { console.error('meal photo upload:', error); return null }
+    const { data } = supabase.storage.from('meal-photos').getPublicUrl(path)
+    return data.publicUrl
+  }
+
   async function addMeal(fields) {
-    if (!user?.id) return
+    if (!user?.id) return { error: new Error('not logged in') }
     const { data, error } = await supabase
       .from('meal_library')
       .insert({ user_id: user.id, ...fields })
       .select()
       .single()
+    if (error) console.error('meal_library insert:', error)
     if (!error && data) setMeals(prev => [data, ...prev])
     return { error }
   }
@@ -36,5 +48,5 @@ export function useMealLibrary() {
     await supabase.from('meal_library').delete().eq('id', id)
   }
 
-  return { meals, loading, addMeal, deleteMeal }
+  return { meals, loading, addMeal, deleteMeal, uploadPhoto }
 }

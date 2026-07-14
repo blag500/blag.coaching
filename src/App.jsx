@@ -14,9 +14,7 @@ import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
-import PendingApproval from './components/Auth/PendingApproval'
-import PlanSelector from './components/Auth/PlanSelector'
-import ContactForm from './components/Auth/ContactForm'
+import Onboarding from './components/Onboarding/Onboarding'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
@@ -26,7 +24,9 @@ import RewardsPage from './components/Rewards/RewardsPage'
 import Budget from './components/Budget/Budget'
 import Tasks from './components/Tasks/Tasks'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
+import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
+import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
 function AppShell() {
@@ -38,6 +38,8 @@ function AppShell() {
   const hiddenAtRef = useRef(null)
 
   usePushNotifications()
+
+  useEffect(() => { trackPage(activeTab) }, [activeTab])
 
   useEffect(() => {
     const handler = () => {
@@ -77,11 +79,7 @@ function AppShell() {
 
   const isCoach = profile.role === 'coach'
 
-  if (!isCoach && !profile.plan) return <PlanSelector />
-
-  if (!isCoach && profile.plan && !profile.intake_done) return <ContactForm />
-
-  if (!isCoach && profile.plan_pending) return <PendingApproval />
+  if (!isCoach && !profile.onboarding_done) return <Onboarding />
 
   const pages = {
     today:      <TodayDashboard onNavigate={setActiveTab} />,
@@ -117,6 +115,7 @@ function AppShell() {
         isCoach={isCoach}
       />
 
+      <UpdateBanner />
       <NotificationPrompt />
       <main className={styles.content}>
         <div key={activeTab} className={styles.page}>

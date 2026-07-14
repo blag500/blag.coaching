@@ -9,35 +9,36 @@ function dateStr(offset = 0) {
   return d.toISOString().slice(0, 10)
 }
 
-export function useReadiness() {
+// Pass a `client` object { id, calories, protein } to view a specific user's readiness (coach view).
+// Omit it (or pass null) to view the logged-in user's own readiness.
+export function useReadiness(client = null) {
   const { user, profile } = useAuth()
+  const uid     = client?.id       ?? user?.id
+  const calTgt  = client?.calories ?? profile?.calories
+  const protTgt = client?.protein  ?? profile?.protein
+
   const [state, setState] = useState({ score: null, components: [], loading: true })
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!uid) return
     const today     = dateStr(0)
     const yesterday = dateStr(1)
     const weekAgo   = dateStr(6)
 
     Promise.all([
-      // Recovery: today's sleep log
       supabase.from('sleep_logs').select('quality,energy,stress,soreness,mood')
-        .eq('user_id', user.id).eq('date', today).maybeSingle(),
-      // Nutrition: yesterday's food (fueling for today)
+        .eq('user_id', uid).eq('date', today).maybeSingle(),
       supabase.from('food_logs').select('kcal,protein')
-        .eq('user_id', user.id).eq('date', yesterday),
-      // Habits: today's completions
+        .eq('user_id', uid).eq('date', yesterday),
       supabase.from('habit_completions').select('habit_id,completed')
-        .eq('user_id', user.id).eq('date', today),
-      // Hydration: today's water
+        .eq('user_id', uid).eq('date', today),
       supabase.from('water_logs').select('glasses')
-        .eq('user_id', user.id).eq('log_date', today).maybeSingle(),
-      // Training: distinct workout days in last 7 days
+        .eq('user_id', uid).eq('log_date', today).maybeSingle(),
       Promise.all([
         supabase.from('exercise_logs').select('completed_date')
-          .eq('user_id', user.id).gte('completed_date', weekAgo),
+          .eq('user_id', uid).gte('completed_date', weekAgo),
         supabase.from('workout_completions').select('completed_date')
-          .eq('user_id', user.id).gte('completed_date', weekAgo),
+          .eq('user_id', uid).gte('completed_date', weekAgo),
       ]),
     ]).then(([sleepRes, foodRes, habitsRes, waterRes, [exRes, woRes]]) => {
       const sleepLog = sleepRes.data
@@ -53,8 +54,8 @@ export function useReadiness() {
       const recoveryScore = calcReadiness(sleepLog) // null if not logged
 
       // ── Nutrition (25%) — yesterday's fueling vs targets ───────
-      const kcalTarget    = profile?.calories ?? 0
-      const proteinTarget = profile?.protein  ?? 0
+      const kcalTarget    = calTgt  ?? 0
+      const proteinTarget = protTgt ?? 0
       let nutritionScore  = null
       if (kcalTarget > 0 || proteinTarget > 0) {
         const totalKcal    = foods.reduce((s, f) => s + (f.kcal    || 0), 0)
@@ -93,7 +94,7 @@ export function useReadiness() {
 
       setState({ score, components, loading: false })
     })
-  }, [user?.id, profile?.calories, profile?.protein])
+  }, [uid, calTgt, protTgt])
 
   return state
 }

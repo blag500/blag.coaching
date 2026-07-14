@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
@@ -7,6 +7,8 @@ import TrainingEditor from './TrainingEditor'
 import DatePicker from '../DatePicker/DatePicker'
 import ChatPage from '../Chat/ChatPage'
 import WeightChart from '../Profile/WeightChart'
+import { useClientTasks } from '../../hooks/useTasks'
+import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
@@ -19,6 +21,7 @@ const TABS = [
   { id: 'plan',      label: 'ПЛАН' },
   { id: 'goals',     label: 'ЦЕЛИ' },
   { id: 'notes',     label: 'БЕЛЕЖКИ' },
+  { id: 'tasks',     label: 'ЗАДАЧИ' },
 ]
 
 function TrashIcon() {
@@ -232,6 +235,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
             saved={saved}
           />
         )}
+        {tab === 'tasks' && <ClientTasksTab clientId={client.id} />}
       </div>
     </div>
   )
@@ -264,6 +268,12 @@ function ProgressTab({ stats, client }) {
 
   return (
     <div className={styles.progressTab}>
+      {/* Client readiness */}
+      <section className={styles.chartSection}>
+        <h3 className={styles.chartTitle}>ГОТОВНОСТ ДНЕС</h3>
+        <ReadinessWidget client={{ id: client.id, calories: client.calories, protein: client.protein }} />
+      </section>
+
       {/* Kcal bars */}
       <section className={styles.chartSection}>
         <h3 className={styles.chartTitle}>ККАЛ — ПОСЛЕДНИ 7 ДНИ</h3>
@@ -1585,6 +1595,149 @@ function NotesTab({ notes, setNotes, onSave, saving, saved }) {
       >
         {saving ? '...' : saved ? '✓ Запазено' : 'Запази бележките'}
       </button>
+    </div>
+  )
+}
+
+// ─── Client Tasks Tab (coach view) ───────────────────────────────────────────
+
+const TODAY_STR = () => new Date().toISOString().slice(0, 10)
+const IN7_STR   = () => new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10)
+
+function ClientTasksTab({ clientId }) {
+  const { tasks, loading, pushTask, deleteTask, toggleTask } = useClientTasks(clientId)
+  const [text, setText]       = useState('')
+  const [dueSlot, setDueSlot] = useState('today')
+  const [highPrio, setHighPrio] = useState(false)
+  const [saving, setSaving]   = useState(false)
+  const inputRef = useRef(null)
+
+  function dueDateForSlot(slot) {
+    if (slot === 'today') return TODAY_STR()
+    if (slot === 'week')  return IN7_STR()
+    return null
+  }
+
+  async function handlePush() {
+    if (!text.trim() || saving) return
+    setSaving(true)
+    await pushTask({ text, due_date: dueDateForSlot(dueSlot), priority: highPrio ? 2 : 1 })
+    setText('')
+    setSaving(false)
+    inputRef.current?.focus()
+  }
+
+  const active = tasks.filter(t => !t.done)
+  const done   = tasks.filter(t => t.done)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Push form */}
+      <div className={styles.coachTaskForm}>
+        <input
+          ref={inputRef}
+          className={styles.coachTaskInput}
+          type="text"
+          placeholder="Задача за клиента..."
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handlePush()}
+        />
+        <button
+          className={styles.coachTaskSubmit}
+          onClick={handlePush}
+          disabled={!text.trim() || saving}
+          type="button"
+        >ИЗПРАТИ</button>
+        <div className={styles.coachTaskMeta}>
+          {[
+            { id: 'today', label: 'ДНЕС' },
+            { id: 'week',  label: '+7 ДНИ' },
+            { id: 'later', label: 'БЕЗ ДАТА' },
+          ].map(opt => (
+            <button
+              key={opt.id}
+              className={`${styles.coachMetaBtn} ${dueSlot === opt.id ? styles.coachMetaBtnActive : ''}`}
+              onClick={() => setDueSlot(opt.id)}
+              type="button"
+            >{opt.label}</button>
+          ))}
+          <button
+            className={`${styles.coachMetaBtn} ${highPrio ? styles.coachMetaBtnPrio : ''}`}
+            onClick={() => setHighPrio(v => !v)}
+            type="button"
+          >! ВАЖНО</button>
+        </div>
+      </div>
+
+      {loading && <p className={styles.loading}>Зарежда...</p>}
+
+      {!loading && active.length === 0 && done.length === 0 && (
+        <p className={styles.loading} style={{ color: 'var(--muted)', textAlign: 'center', padding: '24px 0' }}>
+          Няма задачи за клиента.
+        </p>
+      )}
+
+      {active.map(task => (
+        <CoachTaskRow key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />
+      ))}
+
+      {done.length > 0 && (
+        <div style={{ marginTop: 8, opacity: 0.45 }}>
+          <div className={styles.sectionLabel} style={{ marginBottom: 6 }}>ИЗПЪЛНЕНИ</div>
+          {done.map(task => (
+            <CoachTaskRow key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CoachTaskRow({ task, onToggle, onDelete }) {
+  const today     = TODAY_STR()
+  const isOverdue = task.due_date && task.due_date < today && !task.done
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 10,
+      padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)',
+      opacity: task.done ? 0.45 : 1,
+    }}>
+      <button
+        onClick={() => onToggle(task.id)}
+        type="button"
+        style={{
+          flexShrink: 0, width: 20, height: 20, borderRadius: '50%',
+          border: task.done ? 'none' : '1.5px solid var(--border)',
+          background: task.done ? 'var(--accent)' : 'transparent',
+          color: '#0C0A06', cursor: 'pointer', padding: 0, marginTop: 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        {task.done && (
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round" width="10" height="10">
+            <polyline points="1.5 6 4.5 9 10.5 3" />
+          </svg>
+        )}
+      </button>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontFamily: 'var(--font-body)', fontSize: 14,
+          color: isOverdue ? '#ef5350' : 'var(--text)',
+          textDecoration: task.done ? 'line-through' : 'none',
+        }}>{task.text}</div>
+        {task.due_date && (
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: isOverdue ? '#ef5350' : 'var(--muted)', marginTop: 3 }}>
+            {isOverdue ? '⚠ ' : ''}{task.due_date}
+          </div>
+        )}
+      </div>
+      <button
+        onClick={() => onDelete(task.id)}
+        type="button"
+        style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 18, cursor: 'pointer', padding: 0 }}
+      >×</button>
     </div>
   )
 }

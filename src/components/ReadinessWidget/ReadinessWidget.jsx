@@ -67,18 +67,19 @@ function ComponentBar({ label, score, color }) {
   )
 }
 
-export default function ReadinessWidget({ onNavigate }) {
-  const { score, components, loading } = useReadiness()
+export default function ReadinessWidget({ onNavigate, client = null }) {
+  const { score, components, loading } = useReadiness(client)
 
   if (loading) return null
 
   const recoveryLogged = components.find(c => c.id === 'recovery')?.score !== null
+  const Tag = onNavigate ? 'button' : 'div'
 
   return (
-    <button
+    <Tag
       className={styles.card}
-      onClick={() => onNavigate('recovery')}
-      type="button"
+      onClick={onNavigate ? () => onNavigate('recovery') : undefined}
+      type={onNavigate ? 'button' : undefined}
     >
       <div className={styles.topRow}>
         <div className={styles.left}>
@@ -97,6 +98,6 @@ export default function ReadinessWidget({ onNavigate }) {
           Попълни чек-ин за по-точен резултат →
         </div>
       )}
-    </button>
+    </Tag>
   )
 }

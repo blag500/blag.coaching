@@ -1,5 +1,6 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useMealLibrary } from '../../hooks/useMealLibrary'
+import { useAuth } from '../../contexts/AuthContext'
 import styles from './MealCards.module.css'
 
 // ── System meals (hardcoded) ──────────────────────────────────────────────────
@@ -131,32 +132,42 @@ function MacroRing({ value, unit, label, color, max }) {
 
 // ── MealCard ──────────────────────────────────────────────────────────────────
 
-function MealCard({ meal, onDelete }) {
+function MealCard({ meal, onDelete, canDelete }) {
   const [flipped, setFlipped] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(false)
   const cat = CATEGORY_META[meal.category] ?? CATEGORY_META.any
 
   return (
     <div
       className={`${styles.cardScene} ${flipped ? styles.flipped : ''}`}
-      onClick={() => setFlipped(f => !f)}
+      onClick={() => { if (!confirmDel) setFlipped(f => !f) }}
       role="button"
       tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && setFlipped(f => !f)}
+      onKeyDown={e => e.key === 'Enter' && !confirmDel && setFlipped(f => !f)}
       aria-label={`${meal.name} — натисни за детайли`}
     >
       <div className={styles.cardInner}>
 
         {/* FRONT */}
         <div className={styles.cardFront}>
+          {confirmDel && (
+            <div className={styles.deleteOverlay} onClick={e => e.stopPropagation()}>
+              <p className={styles.deleteOverlayText}>Изтрий „{meal.name}"?</p>
+              <div className={styles.deleteOverlayBtns}>
+                <button className={styles.delCancelBtn} onClick={e => { e.stopPropagation(); setConfirmDel(false) }} type="button">ОТКАЗ</button>
+                <button className={styles.delConfirmBtn} onClick={e => { e.stopPropagation(); onDelete(meal.id) }} type="button">ИЗТРИЙ</button>
+              </div>
+            </div>
+          )}
           <div className={styles.cardFrontTop}>
             <div className={styles.topBadgeRow}>
               <span className={styles.badge} style={{ color: cat.color, background: `${cat.color}1a`, borderColor: `${cat.color}40` }}>
                 {cat.label}
               </span>
-              {!meal.isSystem && onDelete && (
+              {canDelete && (
                 <button
                   className={styles.deleteBtn}
-                  onClick={e => { e.stopPropagation(); onDelete(meal.id) }}
+                  onClick={e => { e.stopPropagation(); setConfirmDel(true) }}
                   type="button"
                   aria-label="Изтрий"
                 >
@@ -269,60 +280,66 @@ const EMPTY_FORM = {
   availability: '', tools: '', notes: '',
 }
 
-function AddMealModal({ onSave, onClose }) {
+function AddMealModal({ onSave, onClose, onUploadPhoto }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const sheetRef = useRef(null)
-
-  useEffect(() => {
-    sheetRef.current?.scrollTo({ top: 0 })
-  }, [])
+  const [photoFile, setPhotoFile] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState(null)
+  const photoInputRef = useRef(null)
 
   function set(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  function scrollTop() {
-    sheetRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  function handlePhotoChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { setError('Въведи наименование'); scrollTop(); return }
-    if (!form.kcal)        { setError('Въведи калории');      scrollTop(); return }
+    if (!form.name.trim()) { setError('Въведи наименование'); return }
+    if (!form.kcal)        { setError('Въведи калории');      return }
     setSaving(true)
     const toolsArr = form.tools
       ? form.tools.split(',').map(t => t.trim()).filter(Boolean)
       : []
+    let photo_url = null
+    if (photoFile && onUploadPhoto) {
+      photo_url = await onUploadPhoto(photoFile)
+    }
     const { error: err } = await onSave({
       name:          form.name.trim(),
       category:      form.category,
-      kcal:          parseFloat(form.kcal)    || 0,
-      protein:       parseFloat(form.protein) || 0,
-      carbs:         parseFloat(form.carbs)   || 0,
-      fat:           parseFloat(form.fat)     || 0,
+      kcal:          parseFloat(form.kcal)        || 0,
+      protein:       parseFloat(form.protein)     || 0,
+      carbs:         parseFloat(form.carbs)       || 0,
+      fat:           parseFloat(form.fat)         || 0,
       serving_grams: parseInt(form.serving_grams) || 0,
-      prep_min:      parseInt(form.prep_min)  || 0,
-      price_bgn:     form.price_bgn.trim()   || null,
-      availability:  form.availability.trim() || null,
-      tools:         toolsArr.length ? toolsArr : null,
-      notes:         form.notes.trim() || null,
+      prep_min:      parseInt(form.prep_min)      || 0,
+      price_bgn:     form.price_bgn.trim()        || null,
+      availability:  form.availability.trim()     || null,
+      tools:         toolsArr.length ? toolsArr   : null,
+      notes:         form.notes.trim()            || null,
+      photo_url,
     })
-    if (err) { setError('Грешка при запис'); setSaving(false); return }
+    if (err) { setError(err.message || 'Грешка при запис'); setSaving(false); return }
     onClose()
   }
 
   return (
-    <div className={styles.modal}>
-      <div className={styles.backdrop} onClick={onClose} />
-      <div className={styles.sheet} ref={sheetRef}>
-        <div className={styles.handle} />
-        <div className={styles.modalHeader}>
-          <span className={styles.modalTitle}>НОВО ЯСТИЕ</span>
-          <button className={styles.modalClose} onClick={onClose} type="button">×</button>
-        </div>
+    <div className={styles.fullScreen}>
+      {/* Sticky header */}
+      <div className={styles.fullScreenHeader}>
+        <button className={styles.fullScreenBack} onClick={onClose} type="button">← НАЗАД</button>
+        <span className={styles.fullScreenTitle}>НОВО ЯСТИЕ</span>
+      </div>
 
-        {/* Name */}
+      {/* Scrollable content */}
+      <div className={styles.fullScreenContent}>
+
         <label className={styles.fieldLabel}>Наименование *</label>
         <input
           className={styles.fieldInput}
@@ -332,7 +349,6 @@ function AddMealModal({ onSave, onClose }) {
           onChange={e => set('name', e.target.value)}
         />
 
-        {/* Category */}
         <label className={styles.fieldLabel}>Категория</label>
         <div className={styles.catPills}>
           {Object.entries(CATEGORY_META).map(([id, meta]) => (
@@ -342,26 +358,22 @@ function AddMealModal({ onSave, onClose }) {
               style={form.category === id ? { borderColor: meta.color, color: meta.color } : {}}
               onClick={() => set('category', id)}
               type="button"
-            >
-              {meta.label}
-            </button>
+            >{meta.label}</button>
           ))}
         </div>
 
-        {/* Macros */}
         <label className={styles.fieldLabel}>Макроси (на порция)</label>
         <div className={styles.macroRow}>
           {[
-            { key: 'kcal',    ph: 'Ккал', color: '#F06292' },
-            { key: 'protein', ph: 'Протеин g', color: '#66BB6A' },
-            { key: 'carbs',   ph: 'Въгл. g',  color: '#4FC3F7' },
-            { key: 'fat',     ph: 'Мазн. g',  color: '#FFB74D' },
+            { key: 'kcal',    ph: 'Ккал',       color: '#F06292' },
+            { key: 'protein', ph: 'Протеин g',   color: '#66BB6A' },
+            { key: 'carbs',   ph: 'Въгл. g',     color: '#4FC3F7' },
+            { key: 'fat',     ph: 'Мазн. g',     color: '#FFB74D' },
           ].map(f => (
             <input
               key={f.key}
               className={styles.macroInput}
-              type="number"
-              min="0"
+              type="number" min="0"
               placeholder={f.ph}
               value={form[f.key]}
               onChange={e => set(f.key, e.target.value)}
@@ -370,7 +382,6 @@ function AddMealModal({ onSave, onClose }) {
           ))}
         </div>
 
-        {/* Meta row */}
         <div className={styles.metaRow}>
           <div className={styles.metaField}>
             <label className={styles.fieldLabel}>Порция (g)</label>
@@ -386,7 +397,6 @@ function AddMealModal({ onSave, onClose }) {
           </div>
         </div>
 
-        {/* Price & availability */}
         <div className={styles.metaRow}>
           <div className={styles.metaField}>
             <label className={styles.fieldLabel}>Цена (BGN)</label>
@@ -402,29 +412,53 @@ function AddMealModal({ onSave, onClose }) {
           </div>
         </div>
 
-        {/* Tools */}
         <label className={styles.fieldLabel}>Инструменти (разделени със запетая)</label>
         <input className={styles.fieldInput} type="text"
           placeholder="напр. Котлон, Фурна" value={form.tools}
           onChange={e => set('tools', e.target.value)} />
 
-        {/* Notes */}
         <label className={styles.fieldLabel}>Бележки</label>
-        <textarea className={styles.fieldTextarea} rows={2}
+        <textarea className={styles.fieldTextarea} rows={3}
           placeholder="Допълнителна информация..."
           value={form.notes}
           onChange={e => set('notes', e.target.value)} />
 
-        {error && <p className={styles.formError}>{error}</p>}
+        <label className={styles.fieldLabel}>Снимка</label>
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handlePhotoChange}
+        />
+        {photoPreview ? (
+          <div className={styles.photoPreviewWrap}>
+            <img src={photoPreview} alt="preview" className={styles.photoPreview} />
+            <button
+              type="button"
+              className={styles.photoRemoveBtn}
+              onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+            >✕ ПРЕМАХНИ</button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={styles.photoPickBtn}
+            onClick={() => photoInputRef.current?.click()}
+          >📷 ИЗБЕРИ СНИМКА</button>
+        )}
 
+      </div>
+
+      {/* Sticky save bar */}
+      <div className={styles.saveBar}>
+        {error && <p className={styles.formError}>{error}</p>}
         <button
           className={styles.saveBtn}
           onClick={handleSave}
           disabled={saving}
           type="button"
-        >
-          {saving ? 'ЗАПИСВА...' : 'ЗАПИШИ ЯСТИЕ'}
-        </button>
+        >{saving ? 'ЗАПИСВА...' : 'ЗАПИШИ ЯСТИЕ'}</button>
       </div>
     </div>
   )
@@ -433,7 +467,8 @@ function AddMealModal({ onSave, onClose }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function MealCards() {
-  const { meals: dbMeals, loading, addMeal, deleteMeal } = useMealLibrary()
+  const { user } = useAuth()
+  const { meals: dbMeals, loading, addMeal, deleteMeal, uploadPhoto } = useMealLibrary()
   const [query, setQuery]           = useState('')
   const [activeChips, setActiveChips] = useState(new Set())
   const [showAdd, setShowAdd]       = useState(false)
@@ -499,7 +534,8 @@ export default function MealCards() {
           <MealCard
             key={meal.id}
             meal={meal}
-            onDelete={meal.isSystem ? null : deleteMeal}
+            onDelete={deleteMeal}
+            canDelete={!meal.isSystem && meal.user_id === user?.id}
           />
         ))}
       </div>
@@ -508,6 +544,7 @@ export default function MealCards() {
         <AddMealModal
           onSave={handleAdd}
           onClose={() => setShowAdd(false)}
+          onUploadPhoto={uploadPhoto}
         />
       )}
     </div>
