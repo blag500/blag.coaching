@@ -68,7 +68,6 @@ const ChatIcon = () => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 )
-
 const BudgetIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -76,20 +75,12 @@ const BudgetIcon = () => (
     <line x1="7" y1="15" x2="9" y2="15"/>
   </svg>
 )
-
-const CLIENT_TAB_DEFS = [
-  { id: 'chat',       key: 'nav.chat',         Icon: ChatIcon      },
-  { id: 'nutrition',  key: 'nav.nutrition',    Icon: NutritionIcon },
-  { id: 'compliance', key: 'nav.habits',       Icon: HabitsIcon    },
-  { id: 'training',   key: 'nav.training_long',Icon: TrainingIcon  },
-  { id: 'recovery',   key: 'nav.recovery',     Icon: RecoveryIcon  },
-  { id: 'calendar',   key: 'nav.schedule',     Icon: CalendarIcon  },
-  { id: 'profile',    key: 'nav.profile',      Icon: ProfileIcon   },
-  { id: 'explore',    key: 'nav.explore',      Icon: ExploreIcon   },
-  { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
-  { id: 'budget',     key: 'nav.budget',       Icon: BudgetIcon    },
-]
-
+const TasksIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="9 11 12 14 22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+)
 const MyDayIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
@@ -97,30 +88,103 @@ const MyDayIcon = () => (
   </svg>
 )
 
-const COACH_TAB_DEFS = [
-  { id: 'chat',       key: 'nav.chat',         Icon: ChatIcon      },
-  { id: 'clients',    key: 'nav.clients',      Icon: ClientsIcon   },
-  { id: 'coachday',   key: 'nav.myDay',        Icon: MyDayIcon     },
-  { id: 'nutrition',  key: 'nav.nutrition',    Icon: NutritionIcon },
-  { id: 'compliance', key: 'nav.habits',       Icon: HabitsIcon    },
-  { id: 'training',   key: 'nav.training_long',Icon: TrainingIcon  },
-  { id: 'recovery',   key: 'nav.recovery',     Icon: RecoveryIcon  },
-  { id: 'calendar',   key: 'nav.schedule',     Icon: CalendarIcon  },
-  { id: 'profile',    key: 'nav.profile',      Icon: ProfileIcon   },
-  { id: 'explore',    key: 'nav.explore',      Icon: ExploreIcon   },
-  { id: 'learn',      key: 'nav.learn',        Icon: LearnIcon     },
-  { id: 'budget',     key: 'nav.budget',       Icon: BudgetIcon    },
+// ── Section definitions ───────────────────────────────────────────
+const CLIENT_SECTIONS = [
+  {
+    label: 'ПРОСЛЕДЯВАНЕ',
+    labelEn: 'TRACKING',
+    tabs: [
+      { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
+      { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
+      { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
+      { id: 'recovery',   key: 'nav.recovery',      Icon: RecoveryIcon  },
+    ],
+  },
+  {
+    label: 'ПЛАНИРАНЕ',
+    labelEn: 'PLANNING',
+    tabs: [
+      { id: 'calendar', key: 'nav.schedule', Icon: CalendarIcon },
+      { id: 'tasks',    key: 'nav.tasks',    Icon: TasksIcon    },
+      { id: 'budget',   key: 'nav.budget',   Icon: BudgetIcon   },
+    ],
+  },
+  {
+    label: 'РЕСУРСИ',
+    labelEn: 'RESOURCES',
+    tabs: [
+      { id: 'chat',    key: 'nav.chat',    Icon: ChatIcon    },
+      { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
+      { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
+    ],
+  },
+  {
+    label: 'ЛИЧНО',
+    labelEn: 'PERSONAL',
+    tabs: [
+      { id: 'profile', key: 'nav.profile', Icon: ProfileIcon },
+    ],
+  },
+]
+
+const COACH_SECTIONS = [
+  {
+    label: 'КЛИЕНТИ',
+    labelEn: 'CLIENTS',
+    tabs: [
+      { id: 'clients',  key: 'nav.clients', Icon: ClientsIcon },
+      { id: 'coachday', key: 'nav.myDay',   Icon: MyDayIcon   },
+      { id: 'chat',     key: 'nav.chat',    Icon: ChatIcon    },
+    ],
+  },
+  {
+    label: 'МОЕ ПРОСЛЕДЯВАНЕ',
+    labelEn: 'MY TRACKING',
+    tabs: [
+      { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
+      { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
+      { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
+      { id: 'recovery',   key: 'nav.recovery',      Icon: RecoveryIcon  },
+    ],
+  },
+  {
+    label: 'ПЛАНИРАНЕ',
+    labelEn: 'PLANNING',
+    tabs: [
+      { id: 'calendar', key: 'nav.schedule', Icon: CalendarIcon },
+      { id: 'tasks',    key: 'nav.tasks',    Icon: TasksIcon    },
+      { id: 'budget',   key: 'nav.budget',   Icon: BudgetIcon   },
+    ],
+  },
+  {
+    label: 'РЕСУРСИ',
+    labelEn: 'RESOURCES',
+    tabs: [
+      { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
+      { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
+    ],
+  },
+  {
+    label: 'ЛИЧНО',
+    labelEn: 'PERSONAL',
+    tabs: [
+      { id: 'profile', key: 'nav.profile', Icon: ProfileIcon },
+    ],
+  },
 ]
 
 export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
   const { profile } = useAuth()
-  const { t } = useSettings()
-  const tabDefs = isCoach ? COACH_TAB_DEFS : CLIENT_TAB_DEFS
+  const { t, lang } = useSettings()
+  const sections = isCoach ? COACH_SECTIONS : CLIENT_SECTIONS
 
   function handleNav(id) {
     onTabChange(id)
     onClose()
   }
+
+  // Build flat list for animation index
+  let globalIdx = 0
 
   return (
     <>
@@ -155,7 +219,7 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
             <div className={styles.userInfo}>
               <span className={styles.userName}>{profile.name || profile.email}</span>
               <span className={styles.userRole}>
-                {isCoach ? (t('nav.clients') === 'CLIENTS' ? 'COACH' : 'ТРЕНЬОР') : (profile.plan?.toUpperCase() ?? 'CLIENT')}
+                {isCoach ? (lang === 'en' ? 'COACH' : 'ТРЕНЬОР') : (profile.plan?.toUpperCase() ?? 'CLIENT')}
               </span>
             </div>
             <span className={styles.userArrow}>→</span>
@@ -163,25 +227,33 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
         )}
 
         <div className={styles.nav}>
-          {tabDefs.map((tab, idx) => {
-            const label = t(tab.key)
-            return (
-              <button
-                key={tab.id}
-                className={`${styles.item} ${activeTab === tab.id ? styles.itemActive : ''}`}
-                onClick={() => handleNav(tab.id)}
-                type="button"
-                aria-current={activeTab === tab.id ? 'page' : undefined}
-                style={{ '--i': idx }}
-              >
-                <span className={styles.iconWrap}>
-                  <tab.Icon />
-                </span>
-                <span className={styles.label}>{label}</span>
-                {activeTab === tab.id && <span className={styles.activeDot} aria-hidden="true" />}
-              </button>
-            )
-          })}
+          {sections.map((section) => (
+            <div key={section.label} className={styles.section}>
+              <div className={styles.sectionLabel}>
+                {lang === 'en' ? section.labelEn : section.label}
+              </div>
+              {section.tabs.map((tab) => {
+                const idx = globalIdx++
+                const label = t(tab.key)
+                return (
+                  <button
+                    key={tab.id}
+                    className={`${styles.item} ${activeTab === tab.id ? styles.itemActive : ''}`}
+                    onClick={() => handleNav(tab.id)}
+                    type="button"
+                    aria-current={activeTab === tab.id ? 'page' : undefined}
+                    style={{ '--i': idx }}
+                  >
+                    <span className={styles.iconWrap}>
+                      <tab.Icon />
+                    </span>
+                    <span className={styles.label}>{label}</span>
+                    {activeTab === tab.id && <span className={styles.activeDot} aria-hidden="true" />}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
         </div>
       </div>
     </>

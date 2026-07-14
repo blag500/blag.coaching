@@ -24,6 +24,7 @@ import Recovery from './pages/Recovery'
 import TodayDashboard from './components/TodayDashboard/TodayDashboard'
 import RewardsPage from './components/Rewards/RewardsPage'
 import Budget from './components/Budget/Budget'
+import Tasks from './components/Tasks/Tasks'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import styles from './App.module.css'
@@ -97,6 +98,7 @@ function AppShell() {
     chat:       <ChatPage />,
     rewards:    <RewardsPage onBack={() => setActiveTab('today')} />,
     budget:     <Budget />,
+    tasks:      <Tasks />,
   }
 
   function dismissWelcome() {
