@@ -28,7 +28,7 @@ function greeting() {
   return 'ДОБЪР ВЕЧЕР'
 }
 
-export default function NutritionCards() {
+export default function NutritionCards({ onNavigate }) {
   const { profile } = useAuth()
   const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { distance, refreshing } = usePullToRefresh(refresh)
@@ -120,6 +120,16 @@ export default function NutritionCards() {
           БИБЛИОТЕКА
         </button>
       </div>
+
+      {!targets.kcal && (
+        <button className={styles.setupPrompt} onClick={() => onNavigate?.('explore')} type="button">
+          <span className={styles.setupIcon}>🎯</span>
+          <div className={styles.setupText}>
+            <span className={styles.setupTitle}>Настрой дневните си макроси</span>
+            <span className={styles.setupDesc}>Изчисли TDEE и протеин за твоята цел →</span>
+          </div>
+        </button>
+      )}
 
       {view === 'log' ? (
         <>

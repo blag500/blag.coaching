@@ -61,6 +61,7 @@ export default function CalorieCalculator({ onBack }) {
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [results, setResults] = useState(null)
   const [selectedGoal, setSelectedGoal] = useState('maintain')
 
@@ -92,7 +93,8 @@ export default function CalorieCalculator({ onBack }) {
     const goal = results.goals.find(g => g.id === selectedGoal)
     if (!goal) return
     setSaving(true)
-    await updateProfile({
+    setSaveError('')
+    const { error } = await updateProfile({
       calories:       goal.kcal,
       protein:        goal.macros.protein,
       carbs:          goal.macros.carbs,
@@ -103,7 +105,8 @@ export default function CalorieCalculator({ onBack }) {
       activity_level: form.activity,
     })
     setSaving(false)
-    setSaved(true)
+    if (error) setSaveError(error.message)
+    else setSaved(true)
   }
 
   const canCalc = form.age && form.height && form.weight
@@ -246,6 +249,7 @@ export default function CalorieCalculator({ onBack }) {
                     ))}
                   </div>
 
+                  {saveError && <p className={styles.saveError}>{saveError}</p>}
                   <button
                     className={styles.applyBtn}
                     onClick={applyToProfile}

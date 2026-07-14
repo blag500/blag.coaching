@@ -83,14 +83,17 @@ export function AuthProvider({ children }) {
   }
 
   async function updateProfile(updates) {
-    if (!session?.user) return
+    if (!session?.user) return { error: new Error('not logged in') }
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
       .eq('id', session.user.id)
       .select()
       .single()
-    if (!error && data) setProfile(prev => ({ ...data, coach_id: prev?.coach_id }))
+    if (!error) {
+      // Merge optimistically — use returned data if available, fall back to updates object
+      setProfile(prev => ({ ...(prev || {}), ...(data ?? updates), coach_id: prev?.coach_id }))
+    }
     return { error }
   }
 

@@ -377,6 +377,13 @@
   cursor: default;
 }
 
+.saveError {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #ef5350;
+  margin: 0;
+}
+
 /* Disclaimer */
 .disclaimer {
   font-family: var(--font-body);

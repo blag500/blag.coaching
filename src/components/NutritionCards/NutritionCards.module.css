@@ -110,6 +110,51 @@
   box-shadow: 0 2px 12px rgba(255,183,77,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
+/* Setup prompt (shown when macros not yet configured) */
+.setupPrompt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 150ms;
+}
+
+.setupPrompt:active {
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+.setupIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.setupText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.setupTitle {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.setupDesc {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
 /* Date navigation */
 .dateNav {
   display: flex;

@@ -85,7 +85,7 @@ function AppShell() {
 
   const pages = {
     today:      <TodayDashboard onNavigate={setActiveTab} />,
-    nutrition:  <NutritionCards />,
+    nutrition:  <NutritionCards onNavigate={setActiveTab} />,
     compliance: <Compliance />,
     training:   <Training />,
     recovery:   <Recovery />,
