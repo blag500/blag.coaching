@@ -5,6 +5,7 @@ import { useFoodLog } from '../../hooks/useFoodLog'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { useWaterLog } from '../../hooks/useWaterLog'
 import BadgePopup from './BadgePopup'
+import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import styles from './TodayDashboard.module.css'
 
 const DAYS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -126,6 +127,9 @@ export default function TodayDashboard({ onNavigate }) {
         <p className={styles.greeting}>{greeting}</p>
         <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
       </header>
+
+      {/* ── Readiness widget ── */}
+      <ReadinessWidget onNavigate={onNavigate} />
 
       {/* ── Activity rings card ── */}
       <div className={styles.card}>

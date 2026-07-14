@@ -1,0 +1,104 @@
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 200ms var(--ease-out);
+}
+
+.card:active {
+  border-color: rgba(var(--accent-rgb), 0.3);
+}
+
+.cardLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.topRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ringWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.barLabel {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  white-space: nowrap;
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.barVal {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  width: 22px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cta {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  opacity: 0.7;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
