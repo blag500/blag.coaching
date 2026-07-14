@@ -14,6 +14,18 @@
   );
 }
 
+.backLink {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0 0 8px;
+  align-self: flex-start;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .inner {
   width: 100%;
   max-width: 360px;

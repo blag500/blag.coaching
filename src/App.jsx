@@ -31,12 +31,21 @@ import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
 function AppShell() {
-  const { session, profile, loading } = useAuth()
+  const { session, profile, loading, selectPlan } = useAuth()
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('today')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
+  const [planChosen, setPlanChosen] = useState(() => !!localStorage.getItem('blag_pending_plan'))
   const hiddenAtRef = useRef(null)
+
+  // Once session + profile arrive, apply any plan chosen before registration
+  useEffect(() => {
+    const pending = localStorage.getItem('blag_pending_plan')
+    if (pending && profile && !profile.plan) {
+      selectPlan(pending).then(() => localStorage.removeItem('blag_pending_plan'))
+    }
+  }, [profile?.id])
 
   usePushNotifications()
 
@@ -67,7 +76,26 @@ function AppShell() {
     )
   }
 
-  if (!session) return <AuthScreen />
+  if (!session) {
+    if (!planChosen) {
+      return (
+        <PlanSelector
+          onSelect={planId => {
+            localStorage.setItem('blag_pending_plan', planId)
+            setPlanChosen(true)
+          }}
+        />
+      )
+    }
+    return (
+      <AuthScreen
+        onBack={() => {
+          localStorage.removeItem('blag_pending_plan')
+          setPlanChosen(false)
+        }}
+      />
+    )
+  }
 
   // Session known but profile not yet fetched — keep showing the loader
   if (!profile) {

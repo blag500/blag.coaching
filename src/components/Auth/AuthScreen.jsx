@@ -13,7 +13,7 @@ function GoogleIcon() {
   )
 }
 
-export default function AuthScreen() {
+export default function AuthScreen({ onBack }) {
   const { signIn, signUp, signInWithGoogle, authError } = useAuth()
   const [mode, setMode]       = useState('login') // 'login' | 'register'
   const [email, setEmail]     = useState('')
@@ -40,6 +40,9 @@ export default function AuthScreen() {
   return (
     <div className={styles.screen}>
       <div className={styles.inner}>
+        {onBack && (
+          <button className={styles.backLink} onClick={onBack} type="button">← Смени план</button>
+        )}
         <div className={styles.brand}>
           <span className={styles.brandName}>BLAG</span>
           <div className={styles.brandDivider} aria-hidden="true" />

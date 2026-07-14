@@ -59,14 +59,20 @@ const PLANS = [
   },
 ]
 
-export default function PlanSelector() {
-  const { selectPlan, signOut } = useAuth()
+// onSelect prop = public/unauthenticated mode (caller handles navigation)
+// No onSelect = authenticated mode (saves plan directly to profile)
+export default function PlanSelector({ onSelect }) {
+  const auth = useAuth()
   const [loading, setLoading] = useState(false)
 
   async function handleSelect(planId) {
     if (loading) return
     setLoading(true)
-    await selectPlan(planId)
+    if (onSelect) {
+      onSelect(planId)
+    } else {
+      await auth.selectPlan(planId)
+    }
     setLoading(false)
   }
 
@@ -126,9 +132,11 @@ export default function PlanSelector() {
         ))}
       </div>
 
-      <button className={styles.signOutLink} onClick={signOut} type="button">
-        Изход
-      </button>
+      {!onSelect && (
+        <button className={styles.signOutLink} onClick={auth.signOut} type="button">
+          Изход
+        </button>
+      )}
     </div>
   )
 }
