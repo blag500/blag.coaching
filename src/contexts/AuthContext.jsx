@@ -94,6 +94,14 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
+  async function selectPlan(planId) {
+    if (!session?.user) return { error: new Error('not logged in') }
+    const { data, error } = await supabase
+      .from('profiles').update({ plan: planId }).eq('id', session.user.id).select().single()
+    if (!error && data) setProfile(prev => ({ ...prev, plan: planId }))
+    return { error }
+  }
+
   async function completeOnboarding({ name, goal, gender, age, height_cm, weight_kg,
     target_weight, activity_level, calories, protein, carbs, fat }) {
     if (!session?.user) return { error: new Error('not logged in') }
@@ -407,6 +415,7 @@ export function AuthProvider({ children }) {
       signOut,
       refreshProfile,
       updateProfile,
+      selectPlan,
       completeOnboarding,
       updateClientProfile,
       deleteClientProfile,

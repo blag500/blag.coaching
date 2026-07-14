@@ -15,6 +15,7 @@ import Splash from './components/Splash/Splash'
 import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
 import Onboarding from './components/Onboarding/Onboarding'
+import PlanSelector from './components/PlanSelector/PlanSelector'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
@@ -79,6 +80,7 @@ function AppShell() {
 
   const isCoach = profile.role === 'coach'
 
+  if (!isCoach && !profile.plan)            return <PlanSelector />
   if (!isCoach && !profile.onboarding_done) return <Onboarding />
 
   const pages = {
