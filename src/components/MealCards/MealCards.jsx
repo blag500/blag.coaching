@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useMealLibrary } from '../../hooks/useMealLibrary'
 import styles from './MealCards.module.css'
 
@@ -273,14 +273,23 @@ function AddMealModal({ onSave, onClose }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const sheetRef = useRef(null)
+
+  useEffect(() => {
+    sheetRef.current?.scrollTo({ top: 0 })
+  }, [])
 
   function set(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  function scrollTop() {
+    sheetRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   async function handleSave() {
-    if (!form.name.trim()) { setError('Въведи наименование'); return }
-    if (!form.kcal)        { setError('Въведи калории');     return }
+    if (!form.name.trim()) { setError('Въведи наименование'); scrollTop(); return }
+    if (!form.kcal)        { setError('Въведи калории');      scrollTop(); return }
     setSaving(true)
     const toolsArr = form.tools
       ? form.tools.split(',').map(t => t.trim()).filter(Boolean)
@@ -306,7 +315,7 @@ function AddMealModal({ onSave, onClose }) {
   return (
     <div className={styles.modal}>
       <div className={styles.backdrop} onClick={onClose} />
-      <div className={styles.sheet}>
+      <div className={styles.sheet} ref={sheetRef}>
         <div className={styles.handle} />
         <div className={styles.modalHeader}>
           <span className={styles.modalTitle}>НОВО ЯСТИЕ</span>
