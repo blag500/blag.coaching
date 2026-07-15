@@ -6,12 +6,12 @@ import styles from './PrepProtocol.module.css'
 // ── helpers ──────────────────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().slice(0, 10) }
 
-// Contest prep formula: 2.5g protein/kg (vs 2g in general calc) to preserve muscle during cut
-// Fat: 20% of kcal (lower than general 25% to free calories for protein/carbs)
+// Contest prep formula: 2.5g protein/kg to preserve muscle during cut
+// Fat: 26% of kcal (supports hormonal balance — testosterone production needs dietary fat)
 // Carbs: remainder
 function macrosForKcal(kcal, weightKg) {
   const protein = Math.round(weightKg * 2.5)
-  const fat     = Math.round((kcal * 0.20) / 9)
+  const fat     = Math.round((kcal * 0.26) / 9)
   const carbs   = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
   return { protein, fat, carbs }
 }
