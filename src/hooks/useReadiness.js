@@ -33,7 +33,7 @@ export function useReadiness(client = null) {
       supabase.from('habit_completions').select('habit_id,completed')
         .eq('user_id', uid).eq('date', today),
       supabase.from('water_logs').select('glasses')
-        .eq('user_id', uid).eq('log_date', today).maybeSingle(),
+        .eq('user_id', uid).eq('log_date', yesterday).maybeSingle(),
       Promise.all([
         supabase.from('exercise_logs').select('completed_date')
           .eq('user_id', uid).gte('completed_date', weekAgo),
@@ -81,7 +81,7 @@ export function useReadiness(client = null) {
         { id: 'recovery',  label: 'ВЪЗСТАНОВЯВАНЕ', score: recoveryScore,  weight: 0.35, color: '#81C784' },
         { id: 'nutrition', label: 'ХРАНЕНЕ (ВЧЕРА)', score: nutritionScore, weight: 0.25, color: '#ffb74d' },
         { id: 'habits',    label: 'НАВИЦИ',           score: habitsScore,    weight: 0.20, color: '#AB47BC' },
-        { id: 'hydration', label: 'ХИДРАТАЦИЯ',       score: hydrationScore, weight: 0.15, color: '#42A5F5' },
+        { id: 'hydration', label: 'ХИДРАТАЦИЯ (ВЧЕРА)', score: hydrationScore, weight: 0.15, color: '#42A5F5' },
         { id: 'training',  label: 'ТРЕНИРОВКИ (7д)',  score: trainingScore,  weight: 0.05, color: '#66BB6A' },
       ]
 
