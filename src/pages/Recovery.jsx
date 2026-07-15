@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSleepLogs, calcReadiness } from '../hooks/useSleepLogs'
+import { useWaterLog } from '../hooks/useWaterLog'
 import styles from './Recovery.module.css'
 
 const MONTHS_BG      = ['яну','фев','мар','апр','май','юни','юли','авг','сеп','окт','ное','дек']
@@ -226,10 +227,10 @@ function HistoryRow({ log }) {
 
 export default function Recovery() {
   const { logs, todayLog, loading, logSleep } = useSleepLogs()
+  const { glasses: waterGlasses, set: setWater } = useWaterLog()
 
   const [duration,   setDuration]   = useState('')
   const [quality,    setQuality]    = useState(0)
-  const [hydration,  setHydration]  = useState(0)
   const [energy,     setEnergy]     = useState(0)
   const [stress,     setStress]     = useState(0)
   const [soreness,   setSoreness]   = useState(0)
@@ -242,7 +243,6 @@ export default function Recovery() {
     if (!todayLog) return
     setDuration(todayLog.duration_hours?.toString() ?? '')
     setQuality(todayLog.quality ?? 0)
-    setHydration(todayLog.hydration_glasses ?? 0)
     setEnergy(todayLog.energy ?? 0)
     setStress(todayLog.stress ?? 0)
     setSoreness(todayLog.soreness ?? 0)
@@ -258,7 +258,7 @@ export default function Recovery() {
     mood:     mood     || null,
   })
 
-  const hasAnyValue = duration || quality || hydration || energy || stress || soreness || mood
+  const hasAnyValue = duration || quality || energy || stress || soreness || mood
 
   async function handleSave(e) {
     e.preventDefault()
@@ -267,7 +267,7 @@ export default function Recovery() {
     await logSleep({
       duration_hours:    duration ? parseFloat(duration) : null,
       quality:           quality   || null,
-      hydration_glasses: hydration || null,
+      hydration_glasses: waterGlasses || null,
       energy:            energy    || null,
       stress:            stress    || null,
       soreness:          soreness  || null,
@@ -307,10 +307,10 @@ export default function Recovery() {
           </div>
         </section>
 
-        {/* Hydration */}
+        {/* Hydration — auto-saves via useWaterLog on each click */}
         <section className={styles.card}>
           <h2 className={styles.cardTitle}>💧 ХИДРАТАЦИЯ</h2>
-          <HydrationCounter value={hydration} onChange={setHydration} />
+          <HydrationCounter value={waterGlasses} onChange={setWater} />
         </section>
 
         {/* Energy */}
