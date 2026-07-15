@@ -313,7 +313,7 @@
 /* Goal grid */
 .goalGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
@@ -353,6 +353,13 @@
   font-family: var(--font-body);
   font-size: 8px;
   color: var(--muted);
+}
+
+.goalKgWeek {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: bold;
+  opacity: 0.85;
 }
 
 /* Macros */

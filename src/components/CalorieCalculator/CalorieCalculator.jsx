@@ -11,12 +11,13 @@ const ACTIVITY_OPTIONS = [
 ]
 
 const GOAL_PRESETS = [
-  { id: 'extreme_cut', label: 'Екстремно',  delta: -1000, color: '#ef5350', goal: 'cut'      },
-  { id: 'cut',         label: 'Изгаряне',   delta: -500,  color: '#FF7043', goal: 'cut'      },
-  { id: 'mild_cut',    label: 'Леко -',     delta: -250,  color: '#FFA726', goal: 'cut'      },
-  { id: 'maintain',    label: 'Поддържане', delta: 0,     color: '#66BB6A', goal: 'maintain' },
-  { id: 'mild_bulk',   label: 'Леко +',     delta: 250,   color: '#42A5F5', goal: 'bulk'     },
-  { id: 'bulk',        label: 'Качване',    delta: 500,   color: '#7E57C2', goal: 'bulk'     },
+  { id: 'extreme_cut', label: 'Екст. загуба', delta: -1000, kgPerWeek: -1,    color: '#ef5350', goal: 'cut'      },
+  { id: 'cut',         label: 'Сваляне',      delta: -500,  kgPerWeek: -0.5,  color: '#FF7043', goal: 'cut'      },
+  { id: 'mild_cut',    label: 'Леко сваляне', delta: -250,  kgPerWeek: -0.25, color: '#FFA726', goal: 'cut'      },
+  { id: 'maintain',    label: 'Поддържане',   delta: 0,     kgPerWeek: 0,     color: '#66BB6A', goal: 'maintain' },
+  { id: 'mild_bulk',   label: 'Леко качване', delta: 250,   kgPerWeek: 0.25,  color: '#42A5F5', goal: 'bulk'     },
+  { id: 'bulk',        label: 'Качване',      delta: 500,   kgPerWeek: 0.5,   color: '#7E57C2', goal: 'bulk'     },
+  { id: 'fast_bulk',   label: 'Бързо качване',delta: 1000,  kgPerWeek: 1,     color: '#AB47BC', goal: 'bulk'     },
 ]
 
 const BMI_CATEGORIES = [
@@ -83,7 +84,7 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
     const bmiCat = getBMICategory(bmi)
 
     const goals = GOAL_PRESETS.map(g => {
-      const kcal = Math.max(1200, tdee + g.delta)
+      const kcal = tdee + g.delta
       return { ...g, kcal, macros: macrosForKcal(kcal, weight) }
     })
 
@@ -114,20 +115,28 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
     }
 
     let error
-    if (isOnboarding) {
-      ;({ error } = await completeOnboarding({
-        ...payload,
-        name:          name.trim(),
-        weight_kg:     parseFloat(form.weight) || null,
-        target_weight: null,
-      }))
-    } else {
-      ;({ error } = await updateProfile(payload))
+    try {
+      if (isOnboarding) {
+        ;({ error } = await completeOnboarding({
+          ...payload,
+          name:          name.trim(),
+          weight_kg:     parseFloat(form.weight) || null,
+          target_weight: null,
+        }))
+      } else {
+        ;({ error } = await updateProfile(payload))
+      }
+    } catch (e) {
+      error = e
     }
 
     setSaving(false)
-    if (error) setSaveError(error.message)
-    else setSaved(true)
+    if (error) {
+      console.error('CalorieCalculator save error:', error)
+      setSaveError(error.message || 'Грешка при запис. Опитай пак.')
+    } else {
+      setSaved(true)
+    }
   }
 
   const canCalc    = form.age && form.height && form.weight
@@ -269,6 +278,11 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
                     <span className={styles.goalKcal} style={{ color: g.color }}>{g.kcal}</span>
                     <span className={styles.goalLabel}>{g.label}</span>
                     <span className={styles.goalDelta}>{g.delta > 0 ? '+' : ''}{g.delta} ккал</span>
+                    {g.kgPerWeek !== 0 && (
+                      <span className={styles.goalKgWeek} style={{ color: g.color }}>
+                        {g.kgPerWeek > 0 ? '+' : ''}{g.kgPerWeek} kg/сед
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
