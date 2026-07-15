@@ -334,7 +334,7 @@ export default function Profile() {
 
         {trendLabel && <p className={styles.trend}>{trendLabel}</p>}
 
-        {weights.length >= 2 ? (
+        {weights.length >= 2 && (
           <>
             <div className={styles.sparklineWrap}>
               <WeightChart
@@ -370,59 +370,59 @@ export default function Profile() {
                 )}
               </div>
             )}
-
-            {filteredWeights.length > 0 && (
-              <div className={styles.weightTableWrap}>
-                <table className={styles.weightTable}>
-                  <thead>
-                    <tr>
-                      <th className={styles.weightTh}>Дата</th>
-                      <th className={styles.weightTh}>Тегло</th>
-                      <th className={styles.weightTh}>Промяна</th>
-                      <th className={styles.weightTh} />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...filteredWeights].reverse().map((entry, i, arr) => {
-                      const prev  = arr[i + 1]
-                      const delta = prev ? Math.round((entry.kg - prev.kg) * 10) / 10 : null
-                      const isLatest = i === 0
-                      return (
-                        <tr
-                          key={entry.date}
-                          className={`${isLatest ? styles.weightTrLatest : styles.weightTr}`}
-                        >
-                          <td className={styles.weightTd}>
-                            {new Date(entry.date).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })}
-                          </td>
-                          <td className={styles.weightTd}>{entry.kg} kg</td>
-                          <td className={styles.weightTd}>
-                            {delta === null ? '—' : (
-                              <span className={delta > 0 ? styles.deltaUp : delta < 0 ? styles.deltaDown : styles.deltaNeutral}>
-                                {delta > 0 ? `+${delta}` : delta} kg
-                              </span>
-                            )}
-                          </td>
-                          <td className={styles.weightTd}>
-                            <button
-                              className={styles.weightDeleteBtn}
-                              onClick={() => removeWeight(entry.date)}
-                              type="button"
-                              aria-label="Изтрий"
-                            >
-                              ×
-                            </button>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </>
+        )}
+
+        {filteredWeights.length > 0 ? (
+          <div className={styles.weightTableWrap}>
+            <table className={styles.weightTable}>
+              <thead>
+                <tr>
+                  <th className={styles.weightTh}>Дата</th>
+                  <th className={styles.weightTh}>Тегло</th>
+                  <th className={styles.weightTh}>Промяна</th>
+                  <th className={styles.weightTh} />
+                </tr>
+              </thead>
+              <tbody>
+                {[...filteredWeights].reverse().map((entry, i, arr) => {
+                  const prev  = arr[i + 1]
+                  const delta = prev ? Math.round((entry.kg - prev.kg) * 10) / 10 : null
+                  const isLatest = i === 0
+                  return (
+                    <tr
+                      key={entry.date}
+                      className={isLatest ? styles.weightTrLatest : styles.weightTr}
+                    >
+                      <td className={styles.weightTd}>
+                        {new Date(entry.date).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                      </td>
+                      <td className={styles.weightTd}>{entry.kg} kg</td>
+                      <td className={styles.weightTd}>
+                        {delta === null ? '—' : (
+                          <span className={delta > 0 ? styles.deltaUp : delta < 0 ? styles.deltaDown : styles.deltaNeutral}>
+                            {delta > 0 ? `+${delta}` : delta} kg
+                          </span>
+                        )}
+                      </td>
+                      <td className={styles.weightTd}>
+                        <button
+                          className={styles.weightDeleteBtn}
+                          onClick={() => removeWeight(entry.date)}
+                          type="button"
+                          aria-label="Изтрий"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
-          <p className={styles.emptyHint}>Запиши тегло поне 2 дни, за да видиш графика</p>
+          <p className={styles.emptyHint}>Запиши тегло, за да видиш историята</p>
         )}
       </section>
 

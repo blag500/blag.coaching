@@ -87,6 +87,15 @@ const MyDayIcon = () => (
     <polyline points="12 6 12 12 16 14" />
   </svg>
 )
+const TrophyIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2" />
+    <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2" />
+    <path d="M6 3h12v8a6 6 0 0 1-12 0V3z" />
+    <path d="M12 17v4" />
+    <path d="M8 21h8" />
+  </svg>
+)
 
 // ── Section definitions ───────────────────────────────────────────
 const CLIENT_SECTIONS = [
@@ -116,6 +125,13 @@ const CLIENT_SECTIONS = [
       { id: 'chat',    key: 'nav.chat',    Icon: ChatIcon    },
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
       { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
+    ],
+  },
+  {
+    label: 'БОДИБИЛДИНГ',
+    labelEn: 'BODYBUILDING',
+    tabs: [
+      { id: 'protocol', key: 'nav.protocol', Icon: TrophyIcon },
     ],
   },
   {
@@ -162,6 +178,13 @@ const COACH_SECTIONS = [
     tabs: [
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
       { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
+    ],
+  },
+  {
+    label: 'БОДИБИЛДИНГ',
+    labelEn: 'BODYBUILDING',
+    tabs: [
+      { id: 'protocol', key: 'nav.protocol', Icon: TrophyIcon },
     ],
   },
   {

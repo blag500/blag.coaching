@@ -26,6 +26,7 @@ import TodayDashboard from './components/TodayDashboard/TodayDashboard'
 import RewardsPage from './components/Rewards/RewardsPage'
 import Budget from './components/Budget/Budget'
 import Tasks from './components/Tasks/Tasks'
+import PrepProtocol from './components/PrepProtocol/PrepProtocol'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
@@ -137,6 +138,7 @@ function AppShell() {
     rewards:    <RewardsPage onBack={() => setActiveTab('today')} />,
     budget:     <Budget />,
     tasks:      <Tasks />,
+    protocol:   <PrepProtocol />,
   }
 
   function dismissWelcome() {

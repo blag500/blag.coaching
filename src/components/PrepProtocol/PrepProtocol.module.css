@@ -1,0 +1,672 @@
+.page {
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ── Shared ── */
+.label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.labelHint {
+  font-size: 9px;
+  opacity: 0.7;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 150ms;
+}
+
+.input:focus { border-color: var(--accent); }
+
+.fieldNote {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.errorMsg {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #ef5350;
+  margin: 0;
+}
+
+/* ── Setup header ── */
+.header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.headerBrand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.trophyIcon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  color: var(--text);
+  margin: 0;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+/* ── Setup form ── */
+.setupForm {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.setupSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setupGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.startBtn {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  margin-top: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.startBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Dashboard header ── */
+.dashHeader {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dashHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.compName {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.countdown {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin: 0;
+}
+
+.compDate {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  opacity: 0.7;
+}
+
+.targetRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.targetPill {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.targetLabel {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.targetVal {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.targetArrow {
+  color: var(--muted);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Reforecast banner ── */
+.reforecastBanner {
+  margin: 12px 16px 0;
+  background: rgba(255, 183, 77, 0.1);
+  border: 1.5px solid var(--accent);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reforecastText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reforecastText strong {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.reforecastText span {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.reforecastBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.reforecastYes {
+  flex: 1;
+  padding: 10px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reforecastNo {
+  flex: 1;
+  padding: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Cards ── */
+.card {
+  margin: 12px 16px 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.cardSub {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: -6px;
+  opacity: 0.6;
+}
+
+.cardTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Week metrics ── */
+.weekMetrics {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.metricLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.metricVal {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.metricBehind { color: #ef5350; }
+.metricAhead  { color: #66BB6A; }
+
+/* ── 7-day weigh-in grid ── */
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--surface-2);
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.dayCellToday {
+  border-color: var(--accent);
+}
+
+.dayCellFuture {
+  opacity: 0.35;
+}
+
+.dayLabel {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.dayWeight {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--text);
+}
+
+/* ── Weight log form ── */
+.logForm {
+  display: flex;
+  gap: 8px;
+}
+
+.logInput {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 150ms;
+}
+
+.logInput:focus { border-color: var(--accent); }
+
+.logBtn {
+  padding: 10px 16px;
+  background: var(--surface-1);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logBtnSaved {
+  background: #66BB6A;
+  border-color: #66BB6A;
+  color: #0C0A06;
+}
+
+/* ── Cross-tab stats ── */
+.statsRow {
+  display: flex;
+  gap: 20px;
+  justify-content: space-around;
+}
+
+.statBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statVal {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+}
+
+.statLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── Timeline ── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timelineRow {
+  display: grid;
+  grid-template-columns: 44px 80px 60px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.timelineRowCurrent {
+  background: rgba(255, 183, 77, 0.08);
+  border: 1px solid var(--accent);
+}
+
+.timelineRowPast {
+  opacity: 0.6;
+}
+
+.timelineWeek {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.timelineWeekNum {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.timelineWeeksOut {
+  font-family: var(--font-body);
+  font-size: 8px;
+  color: var(--muted);
+}
+
+.timelineDates {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.timelineTarget {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.timelineActual {
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-align: right;
+}
+
+.behind { color: #ef5350; }
+.ahead  { color: #66BB6A; }
+.onTrack { color: var(--text); }
+.empty  { color: var(--muted); opacity: 0.4; }
+
+/* ── Protocol notes ── */
+.editBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  padding: 4px 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notesEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notesField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 150ms;
+}
+
+.textarea:focus { border-color: var(--accent); }
+
+.saveNotesBtn {
+  padding: 12px;
+  background: var(--surface-1);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notesView {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notesItem {
+  display: flex;
+  gap: 8px;
+}
+
+.notesItemLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.notesItemVal {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.notesEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.5;
+  margin: 0;
+}
+
+/* ── End prep ── */
+.endBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  opacity: 0.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.endConfirmText {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  margin: 0;
+}
+
+.endConfirmBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.endConfirmYes {
+  flex: 1;
+  padding: 10px;
+  background: #ef5350;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.endConfirmNo {
+  flex: 1;
+  padding: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Loading ── */
+.loadingDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin: 40px auto;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
