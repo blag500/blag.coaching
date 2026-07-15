@@ -73,7 +73,16 @@ function PrepSetup({ onSave, profile }) {
       tdee:             parseInt(form.tdee) || suggestedTDEE || null,
     })
     setSaving(false)
-    if (err) setError(err.message || 'Грешка при запис')
+    if (err) {
+      const msg = err.message || ''
+      if (msg.includes('Load failed') || msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        setError('Мрежова грешка — провери връзката и опитай пак')
+      } else if (msg.includes('schema') || msg.includes('relation') || msg.includes('does not exist')) {
+        setError('Таблицата не е готова — презареди schema кеша в Supabase Dashboard')
+      } else {
+        setError(msg || 'Грешка при запис')
+      }
+    }
   }
 
   return (
