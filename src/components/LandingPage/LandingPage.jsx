@@ -16,28 +16,11 @@ export default function LandingPage({ onContinue }) {
         <p className={styles.sub}>Хранене · Тренировки · Прогрес</p>
       </div>
 
-      <div className={styles.chips} role="list">
-        <div className={styles.chip} role="listitem">
-          <span className={styles.chipIcon}>🥗</span>
-          <span className={styles.chipLabel}>ХРАНЕНЕ</span>
-        </div>
-        <div className={styles.chipDot} aria-hidden="true" />
-        <div className={styles.chip} role="listitem">
-          <span className={styles.chipIcon}>💪</span>
-          <span className={styles.chipLabel}>ТРЕНИРОВКИ</span>
-        </div>
-        <div className={styles.chipDot} aria-hidden="true" />
-        <div className={styles.chip} role="listitem">
-          <span className={styles.chipIcon}>📊</span>
-          <span className={styles.chipLabel}>ПРОГРЕС</span>
-        </div>
-      </div>
-
       <div className={styles.bottom}>
         <button className={styles.cta} onClick={onContinue} type="button">
           ЗАПОЧНИ БЕЗПЛАТНО
         </button>
-        <p className={styles.note}>Без кредитна карта · Отнема 2 минути</p>
+        <p className={styles.note}>Започни сега. Плати после.</p>
       </div>
     </div>
   )

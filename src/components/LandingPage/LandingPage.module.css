@@ -38,7 +38,7 @@
 
 .logoName {
   font-family: var(--font-heading);
-  font-size: 56px;
+  font-size: 36px;
   line-height: 0.9;
   letter-spacing: 0.16em;
   color: var(--accent);
