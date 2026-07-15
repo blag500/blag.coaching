@@ -164,7 +164,7 @@ export default function TodayDashboard({ onNavigate }) {
             </div>
             <div className={styles.ringLegendItem}>
               <span className={styles.ringLegendDot} style={{ background: '#66BB6A' }} />
-              <span className={styles.ringLegendLabel}>Тренинг</span>
+              <span className={styles.ringLegendLabel}>Тренировка</span>
               <span className={styles.ringLegendVal}>{trainedToday ? '✓' : '—'}</span>
             </div>
           </div>

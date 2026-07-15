@@ -110,7 +110,7 @@ export default function CoachMyDay() {
           <span className={`${styles.summaryVal} ${trained ? styles.summaryGreen : styles.summaryMuted}`}>
             {trained ? '✓' : '—'}
           </span>
-          <span className={styles.summaryLabel}>ТРЕНИНГ</span>
+          <span className={styles.summaryLabel}>ТРЕНИРОВКА</span>
         </div>
         <div className={styles.summaryBox}>
           <span className={styles.summaryVal}>{habitsDone}/{habitsTotal}</span>

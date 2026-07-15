@@ -528,7 +528,7 @@ export default function CoachPanel() {
 
 // ─── Showcase Manager ─────────────────────────────────────────────────────────
 
-const CAT_LABEL = { training: 'ТРЕНИНГ', nutrition: 'ХРАНЕНЕ' }
+const CAT_LABEL = { training: 'ТРЕНИРОВКА', nutrition: 'ХРАНЕНЕ' }
 const CAT_COLOR = { training: '#FFB74D', nutrition: '#66BB6A' }
 
 const EMPTY_FORM = { category: 'training', title: '', body: '' }

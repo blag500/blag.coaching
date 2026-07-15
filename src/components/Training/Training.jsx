@@ -253,7 +253,7 @@ export default function Training() {
       <div className={styles.page}>
         <header className={styles.header}>
           <div className={styles.headerRow}>
-            <h1 className={styles.title}>ТРЕНИНГ</h1>
+            <h1 className={styles.title}>ТРЕНИРОВКА</h1>
             <button className={styles.editBtn} onClick={() => setEditing(false)} type="button">
               ✕ ОТКАЗ
             </button>
@@ -273,7 +273,7 @@ export default function Training() {
       <div className={styles.page}>
         <header className={styles.header}>
           <div className={styles.headerRow}>
-            <h1 className={styles.title}>ТРЕНИНГ</h1>
+            <h1 className={styles.title}>ТРЕНИРОВКА</h1>
             {isCoach && (
               <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
                 РЕДАКТИРАЙ
@@ -294,7 +294,7 @@ export default function Training() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerRow}>
-          <h1 className={styles.title}>ТРЕНИНГ</h1>
+          <h1 className={styles.title}>ТРЕНИРОВКА</h1>
           {isCoach && (
             <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
               РЕДАКТИРАЙ
