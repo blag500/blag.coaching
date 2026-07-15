@@ -16,6 +16,7 @@ import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
 import CalorieCalculator from './components/CalorieCalculator/CalorieCalculator'
 import PlanSelector from './components/PlanSelector/PlanSelector'
+import LandingPage from './components/LandingPage/LandingPage'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
@@ -36,6 +37,7 @@ function AppShell() {
   const [activeTab, setActiveTab] = useState('today')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
+  const [landingSeen, setLandingSeen] = useState(false)
   const [planChosen, setPlanChosen] = useState(() => !!localStorage.getItem('blag_pending_plan'))
   const hiddenAtRef = useRef(null)
 
@@ -77,6 +79,9 @@ function AppShell() {
   }
 
   if (!session) {
+    if (!landingSeen && !planChosen) {
+      return <LandingPage onContinue={() => setLandingSeen(true)} />
+    }
     if (!planChosen) {
       return (
         <PlanSelector
