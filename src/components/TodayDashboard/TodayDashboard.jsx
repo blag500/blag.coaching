@@ -124,8 +124,18 @@ export default function TodayDashboard({ onNavigate }) {
         <BadgePopup badge={badgeQueue[0]} onDone={() => setBadgeQueue(q => q.slice(1))} />
       )}
       <header className={styles.header}>
-        <p className={styles.greeting}>{greeting}</p>
-        <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
+        <div className={styles.headerTop}>
+          <div>
+            <p className={styles.greeting}>{greeting}</p>
+            <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
+          </div>
+          <button className={styles.avatarBtn} onClick={() => onNavigate('profile')} type="button" aria-label="Профил">
+            {profile?.avatar_url
+              ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
+              : <span className={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</span>
+            }
+          </button>
+        </div>
       </header>
 
       {/* ── Readiness widget ── */}
