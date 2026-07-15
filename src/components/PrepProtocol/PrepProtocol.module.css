@@ -601,6 +601,59 @@
   margin: 0;
 }
 
+/* ── Macro card ── */
+.macroRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.macroPill {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.macroPillVal {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.macroPillLabel {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.applyMacroBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--surface-1);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.applyMacroBtnDone {
+  background: #66BB6A;
+  border-color: #66BB6A;
+  color: #0C0A06;
+}
+
 /* ── End prep ── */
 .endBtn {
   background: none;

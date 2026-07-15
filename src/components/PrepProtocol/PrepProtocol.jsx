@@ -6,6 +6,13 @@ import styles from './PrepProtocol.module.css'
 // ── helpers ──────────────────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().slice(0, 10) }
 
+function macrosForKcal(kcal, weightKg) {
+  const protein = Math.round(weightKg * 2)
+  const fat     = Math.round((kcal * 0.25) / 9)
+  const carbs   = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
+  return { protein, fat, carbs }
+}
+
 function fmtDate(iso) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -154,13 +161,14 @@ function PrepSetup({ onSave, profile }) {
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────
-function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onReforecast }) {
+function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onReforecast, profile, onApplyMacros }) {
   const today = todayStr()
   const [weightInput, setWeightInput]     = useState('')
   const [weightSaved, setWeightSaved]     = useState(false)
   const [showEnd,     setShowEnd]         = useState(false)
   const [reforecastConfirm, setReforecastConfirm] = useState(false)
   const [notesMode,   setNotesMode]       = useState(false)
+  const [macroApplied, setMacroApplied]   = useState(false)
   const [notes, setNotes] = useState({
     cardio_notes:      prep.cardio_notes     ?? '',
     supplement_notes:  prep.supplement_notes ?? '',
@@ -334,6 +342,44 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
         </section>
       )}
 
+      {/* ── Macro targets from prep ── */}
+      {plan?.dailyKcal && profile?.weight_kg && (
+        <section className={styles.card}>
+          <div className={styles.cardTitle}>МАКРОСИ ОТ ПРЕПА</div>
+          {(() => {
+            const m = macrosForKcal(plan.dailyKcal, profile.weight_kg)
+            return (
+              <>
+                <div className={styles.macroRow}>
+                  {[
+                    { label: 'ККАЛ',    val: plan.dailyKcal, color: '#F06292' },
+                    { label: 'ПРОТЕИН', val: `${m.protein}g`, color: '#66BB6A' },
+                    { label: 'ВЪГЛ',    val: `${m.carbs}g`,  color: '#4FC3F7' },
+                    { label: 'МАЗН',    val: `${m.fat}g`,    color: '#FFB74D' },
+                  ].map(({ label, val, color }) => (
+                    <div key={label} className={styles.macroPill}>
+                      <span className={styles.macroPillVal} style={{ color }}>{val}</span>
+                      <span className={styles.macroPillLabel}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  className={`${styles.applyMacroBtn} ${macroApplied ? styles.applyMacroBtnDone : ''}`}
+                  type="button"
+                  onClick={async () => {
+                    await onApplyMacros({ calories: plan.dailyKcal, ...m })
+                    setMacroApplied(true)
+                    setTimeout(() => setMacroApplied(false), 3000)
+                  }}
+                >
+                  {macroApplied ? '✓ ЗАПИСАНО В ХРАНЕНЕ' : 'ПРИЛОЖИ КЪМ ХРАНЕНЕ →'}
+                </button>
+              </>
+            )
+          })()}
+        </section>
+      )}
+
       {/* ── Weekly timeline ── */}
       {plan?.weeks?.length > 0 && (
         <section className={styles.card}>
@@ -442,11 +488,15 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
 
 // ── Main export ───────────────────────────────────────────────────────
 export default function PrepProtocol() {
-  const { profile } = useAuth()
+  const { profile, updateProfile } = useAuth()
   const {
     prep, plan, weightLogs, weekStats, loading,
     createPrep, updatePrep, endPrep, logMorningWeight, applyReforecast,
   } = usePrepProtocol()
+
+  async function handleApplyMacros({ calories, protein, carbs, fat }) {
+    await updateProfile({ calories, protein, carbs, fat })
+  }
 
   if (loading) {
     return (
@@ -469,6 +519,8 @@ export default function PrepProtocol() {
       onUpdate={{ updatePrep, _logWeight: logMorningWeight }}
       onEnd={endPrep}
       onReforecast={applyReforecast}
+      profile={profile}
+      onApplyMacros={handleApplyMacros}
     />
   )
 }
