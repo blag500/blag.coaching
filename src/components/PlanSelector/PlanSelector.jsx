@@ -26,8 +26,8 @@ const PLANS = [
     name: 'PRO',
     price: '9.99 лв',
     period: 'на месец',
-    badge: 'СКОРО',
-    available: false,
+    badge: null,
+    available: true,
     features: [
       'Всичко от Безплатен',
       'Библиотека с ястия',
@@ -44,8 +44,8 @@ const PLANS = [
     name: 'КОУЧИНГ',
     price: '49 лв',
     period: 'на месец',
-    badge: 'СКОРО',
-    available: false,
+    badge: 'ЛИЧЕН ТРЕНЬОР',
+    available: true,
     features: [
       'Всичко от PRO',
       'Личен план от треньор',
@@ -120,13 +120,13 @@ export default function PlanSelector({ onSelect }) {
             </ul>
 
             <button
-              className={`${styles.cta} ${!plan.available ? styles.ctaDisabled : ''}`}
-              style={plan.available ? { background: plan.accent } : {}}
-              onClick={() => plan.available && handleSelect(plan.id)}
-              disabled={!plan.available || loading}
+              className={styles.cta}
+              style={{ background: plan.accent }}
+              onClick={() => handleSelect(plan.id)}
+              disabled={loading}
               type="button"
             >
-              {plan.available ? (loading ? '...' : plan.cta) : 'СКОРО'}
+              {loading ? '...' : plan.cta}
             </button>
           </div>
         ))}

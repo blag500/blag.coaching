@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './Onboarding.module.css'
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS_SELF  = 5
+const TOTAL_STEPS_COACH = 4
 
 const ACTIVITY_OPTIONS = [
   { id: 'sedentary',   label: 'Заседнал',         desc: 'Офис работа, малко или никакво движение', mult: 1.2   },
@@ -31,11 +32,12 @@ function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal })
   return { calories, protein, carbs: Math.max(carbs, 0), fat }
 }
 
-export default function Onboarding() {
+export default function Onboarding({ isCoachingIntake = false }) {
   const { completeOnboarding, signOut } = useAuth()
   const [step, setStep]   = useState(1)
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   const [form, setForm] = useState({
     name: '', goal: 'maintain',
@@ -69,8 +71,30 @@ export default function Onboarding() {
         setError('Попълни всички полета'); return
       }
     }
-    if (step === 4) { computeAndAdvance(); return }
+    if (step === 4) {
+      if (isCoachingIntake) { handleCoachingSubmit(); return }
+      computeAndAdvance(); return
+    }
     setStep(s => s + 1)
+  }
+
+  async function handleCoachingSubmit() {
+    setSaving(true)
+    setError('')
+    const { error: err } = await completeOnboarding({
+      name:           form.name.trim(),
+      goal:           form.goal,
+      gender:         form.gender,
+      age:            parseInt(form.age)         || null,
+      height_cm:      parseFloat(form.height_cm) || null,
+      weight_kg:      parseFloat(form.weight_kg) || null,
+      target_weight:  parseFloat(form.target_weight) || null,
+      activity_level: form.activity_level,
+      calories: 0, protein: 0, carbs: 0, fat: 0,
+    })
+    setSaving(false)
+    if (err) setError(err.message)
+    else setSubmitted(true)
   }
 
   async function handleFinish() {
@@ -93,11 +117,37 @@ export default function Onboarding() {
     if (err) { setError(err.message); setSaving(false) }
   }
 
+  const totalSteps = isCoachingIntake ? TOTAL_STEPS_COACH : TOTAL_STEPS_SELF
+
+  if (submitted) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.content}>
+          <div className={styles.stepWrap} style={{ textAlign: 'center' }}>
+            <div className={styles.emoji}>✅</div>
+            <h1 className={styles.heading}>ЗАЯВКАТА Е ИЗПРАТЕНА</h1>
+            <p className={styles.sub}>
+              Треньорът ще прегледа данните ти и ще настрои индивидуален план в рамките на 24 часа.
+            </p>
+            <p className={styles.sub} style={{ marginTop: 12, opacity: 0.6 }}>
+              Ще получиш известие когато планът е готов.
+            </p>
+          </div>
+        </div>
+        <div className={styles.nav}>
+          <button className={styles.nextBtn} onClick={() => window.location.reload()} type="button">
+            ВЛЕЗ В ПРИЛОЖЕНИЕТО →
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.page}>
       {/* Progress */}
       <div className={styles.progressBar}>
-        {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+        {Array.from({ length: totalSteps }, (_, i) => (
           <div
             key={i}
             className={`${styles.progressDot} ${i < step ? styles.progressDotDone : ''} ${i + 1 === step ? styles.progressDotActive : ''}`}
@@ -260,9 +310,13 @@ export default function Onboarding() {
             ← НАЗАД
           </button>
         )}
-        {step < 5 ? (
+        {step < totalSteps ? (
           <button className={styles.nextBtn} onClick={next} type="button">
             НАПРЕД →
+          </button>
+        ) : isCoachingIntake ? (
+          <button className={styles.nextBtn} onClick={next} disabled={saving} type="button">
+            {saving ? 'ИЗПРАЩА...' : 'ИЗПРАТИ ЗАЯВКАТА →'}
           </button>
         ) : (
           <button className={styles.nextBtn} onClick={handleFinish} disabled={saving} type="button">

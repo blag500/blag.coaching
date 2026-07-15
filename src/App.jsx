@@ -15,6 +15,7 @@ import Splash from './components/Splash/Splash'
 import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
 import CalorieCalculator from './components/CalorieCalculator/CalorieCalculator'
+import Onboarding from './components/Onboarding/Onboarding'
 import PlanSelector from './components/PlanSelector/PlanSelector'
 import LandingPage from './components/LandingPage/LandingPage'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
@@ -114,7 +115,11 @@ function AppShell() {
   const isCoach = profile.role === 'coach'
 
   if (!isCoach && !profile.plan)            return <PlanSelector />
-  if (!isCoach && !profile.onboarding_done) return <CalorieCalculator isOnboarding />
+  if (!isCoach && !profile.onboarding_done) {
+    return profile.plan === 'coaching'
+      ? <Onboarding isCoachingIntake />
+      : <CalorieCalculator isOnboarding />
+  }
 
   const pages = {
     today:      <TodayDashboard onNavigate={setActiveTab} />,
