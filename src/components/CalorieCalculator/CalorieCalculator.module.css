@@ -14,6 +14,47 @@
   gap: 4px;
 }
 
+.onboardingBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.brandName {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+
+.brandDivider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+}
+
+.brandSub {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.signOutLink {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 0 0;
+  opacity: 0.5;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .backBtn {
   background: none;
   border: none;
