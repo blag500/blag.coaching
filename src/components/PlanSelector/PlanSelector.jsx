@@ -6,8 +6,8 @@ const PLANS = [
   {
     id: 'free',
     name: 'БЕЗПЛАТЕН',
-    price: '0 лв',
-    period: 'завинаги',
+    price: null,
+    period: null,
     badge: null,
     available: true,
     features: [
@@ -24,7 +24,7 @@ const PLANS = [
   {
     id: 'pro',
     name: 'PRO',
-    price: '9.99 лв',
+    price: '4.99 €',
     period: 'на месец',
     badge: null,
     available: true,
@@ -42,7 +42,7 @@ const PLANS = [
   {
     id: 'coaching',
     name: 'КОУЧИНГ',
-    price: '49 лв',
+    price: '29 €',
     period: 'на месец',
     badge: 'ЛИЧЕН ТРЕНЬОР',
     available: true,
@@ -104,10 +104,12 @@ export default function PlanSelector({ onSelect }) {
 
             <div className={styles.planHeader}>
               <span className={styles.planName} style={{ color: plan.accent }}>{plan.name}</span>
+              {plan.price && (
               <div className={styles.planPrice}>
                 <span className={styles.priceAmount}>{plan.price}</span>
                 <span className={styles.pricePeriod}>/{plan.period}</span>
               </div>
+            )}
             </div>
 
             <ul className={styles.features}>
