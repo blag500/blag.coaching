@@ -3,7 +3,8 @@
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  padding-top: calc(env(safe-area-inset-top) + 12px);
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 
 /* ── Shared ── */
