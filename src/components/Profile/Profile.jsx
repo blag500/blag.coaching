@@ -45,8 +45,13 @@ export default function Profile() {
   const [nameSaved, setNameSaved] = useState(false)
   const [nameError, setNameError] = useState(null)
 
-  const [weightInput, setWeightInput] = useState(todayEntry ? String(todayEntry.kg) : '')
+  const [weightInput, setWeightInput] = useState('')
   const [weightSaved, setWeightSaved] = useState(false)
+
+  // Pre-fill once today's entry loads from DB (useState runs before fetch completes)
+  useEffect(() => {
+    if (todayEntry) setWeightInput(String(todayEntry.kg))
+  }, [todayEntry?.date])
   const [targetInput, setTargetInput] = useState(String(targetWeight ?? ''))
 
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
