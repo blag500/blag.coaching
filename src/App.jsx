@@ -82,7 +82,12 @@ function AppShell() {
 
   if (!session) {
     if (!landingSeen && !planChosen) {
-      return <LandingPage onContinue={() => setLandingSeen(true)} />
+      return (
+        <LandingPage
+          onContinue={() => setLandingSeen(true)}
+          onLogin={() => { setLandingSeen(true); setPlanChosen(true) }}
+        />
+      )
     }
     if (!planChosen) {
       return (

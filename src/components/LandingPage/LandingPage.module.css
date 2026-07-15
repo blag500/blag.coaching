@@ -65,7 +65,7 @@
 
 .headline {
   font-family: var(--font-heading);
-  font-size: clamp(52px, 16vw, 72px);
+  font-size: clamp(40px, 12vw, 56px);
   line-height: 0.95;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -152,4 +152,22 @@
   margin: 0;
   opacity: 0.5;
   letter-spacing: 0.04em;
+}
+
+.loginLink {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 0;
+  opacity: 0.6;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.loginLinkUnder {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

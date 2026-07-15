@@ -1,6 +1,6 @@
 import styles from './LandingPage.module.css'
 
-export default function LandingPage({ onContinue }) {
+export default function LandingPage({ onContinue, onLogin }) {
   return (
     <div className={styles.page}>
       <div className={styles.glowTop} aria-hidden="true" />
@@ -21,6 +21,9 @@ export default function LandingPage({ onContinue }) {
           ЗАПОЧНИ БЕЗПЛАТНО
         </button>
         <p className={styles.note}>Започни сега. Плати после.</p>
+        <button className={styles.loginLink} onClick={onLogin} type="button">
+          Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
+        </button>
       </div>
     </div>
   )
