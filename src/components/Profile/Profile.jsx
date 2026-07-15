@@ -47,6 +47,8 @@ export default function Profile() {
 
   const [weightInput, setWeightInput] = useState('')
   const [weightSaved, setWeightSaved] = useState(false)
+  const [weightError, setWeightError] = useState('')
+  const [targetSaved, setTargetSaved] = useState(false)
 
   // Pre-fill once today's entry loads from DB (useState runs before fetch completes)
   useEffect(() => {
@@ -122,18 +124,25 @@ export default function Profile() {
     else { setNameSaved(true); setTimeout(() => setNameSaved(false), 2000) }
   }
 
-  function handleWeightSave(e) {
+  async function handleWeightSave(e) {
     e.preventDefault()
     const kg = parseFloat(weightInput)
     if (!kg || kg < 20 || kg > 300) return
-    addWeight(kg)
-    setWeightSaved(true)
-    setTimeout(() => setWeightSaved(false), 2000)
+    setWeightError('')
+    const { error } = await addWeight(kg)
+    if (error) {
+      setWeightError('Грешка при запис. Опитай пак.')
+    } else {
+      setWeightSaved(true)
+      setTimeout(() => setWeightSaved(false), 3000)
+    }
   }
 
   function handleTargetSave() {
     const v = parseFloat(targetInput)
     setTargetWeight(v || '')
+    setTargetSaved(true)
+    setTimeout(() => setTargetSaved(false), 3000)
   }
 
   async function handleSaveCoachPlan(days) {
@@ -284,10 +293,12 @@ export default function Profile() {
               onChange={e => setWeightInput(e.target.value)}
             />
             <span className={styles.unit}>kg</span>
-            <button type="submit" className={styles.saveWeightBtn}>
+            <button type="submit" className={`${styles.saveWeightBtn} ${weightSaved ? styles.saveWeightBtnSaved : ''}`}>
               {weightSaved ? '✓' : 'Запази'}
             </button>
           </div>
+          {weightSaved && <p className={styles.savedMsg}>✓ {weightInput} кг записани успешно</p>}
+          {weightError && <p className={styles.errorMsg}>{weightError}</p>}
         </form>
 
         {/* Target weight */}
@@ -308,6 +319,7 @@ export default function Profile() {
             />
             <span className={styles.unit}>kg</span>
           </div>
+          {targetSaved && <p className={styles.savedMsg}>✓ Целево тегло запазено</p>}
         </div>
 
         {/* Progress bar */}

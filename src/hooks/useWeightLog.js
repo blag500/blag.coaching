@@ -21,9 +21,9 @@ export function useWeightLog() {
   }, [user?.id])
 
   async function addWeight(kg) {
-    if (!user) return
+    if (!user) return { error: new Error('not logged in') }
     const today = todayStr()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('weight_logs')
       .upsert({ user_id: user.id, date: today, kg }, { onConflict: 'user_id,date' })
       .select()
@@ -34,6 +34,7 @@ export function useWeightLog() {
         return [...filtered, data].sort((a, b) => a.date.localeCompare(b.date))
       })
     }
+    return { error }
   }
 
   async function removeWeight(date) {
