@@ -33,6 +33,14 @@
   gap: 8px;
 }
 
+.burnedBadge {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
 .legend {
   display: flex;
   gap: 10px;

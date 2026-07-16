@@ -27,6 +27,7 @@ import RewardsPage from './components/Rewards/RewardsPage'
 import Budget from './components/Budget/Budget'
 import Tasks from './components/Tasks/Tasks'
 import PrepProtocol from './components/PrepProtocol/PrepProtocol'
+import PosingPage from './components/Posing/PosingPage'
 import PaymentWall from './components/PaymentWall/PaymentWall'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
@@ -188,6 +189,7 @@ function AppShell() {
     budget:     <Budget />,
     tasks:      <Tasks />,
     protocol:   <PrepProtocol />,
+    posing:     <PosingPage />,
   }
 
   function dismissWelcome() {

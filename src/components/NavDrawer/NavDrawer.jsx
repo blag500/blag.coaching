@@ -96,6 +96,15 @@ const TrophyIcon = () => (
     <path d="M8 21h8" />
   </svg>
 )
+const PosingIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="4" r="2" />
+    <path d="M8 10h8" />
+    <path d="M10 10v4l-2 6" />
+    <path d="M14 10v4l2 6" />
+    <path d="M10 14h4" />
+  </svg>
+)
 
 // ── Section definitions ───────────────────────────────────────────
 const CLIENT_SECTIONS = [
@@ -132,6 +141,7 @@ const CLIENT_SECTIONS = [
     labelEn: 'BODYBUILDING',
     tabs: [
       { id: 'protocol', key: 'nav.protocol', Icon: TrophyIcon },
+      { id: 'posing',   key: 'nav.posing',   Icon: PosingIcon },
     ],
   },
   {
@@ -185,6 +195,7 @@ const COACH_SECTIONS = [
     labelEn: 'BODYBUILDING',
     tabs: [
       { id: 'protocol', key: 'nav.protocol', Icon: TrophyIcon },
+      { id: 'posing',   key: 'nav.posing',   Icon: PosingIcon },
     ],
   },
   {

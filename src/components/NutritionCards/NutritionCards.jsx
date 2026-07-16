@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
+import { useActivityLog } from '../../hooks/useActivityLog'
 import DatePicker from '../DatePicker/DatePicker'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import NutritionProgress from './NutritionProgress'
+import ActivityLog from './ActivityLog'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
 import MealCards from '../MealCards/MealCards'
@@ -31,6 +33,7 @@ function greeting() {
 export default function NutritionCards({ onNavigate }) {
   const { profile } = useAuth()
   const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
+  const { activities, totalKcalBurned, addActivity, removeActivity } = useActivityLog(selectedDate)
   const { distance, refreshing } = usePullToRefresh(refresh)
   const { foods: customFoods, loading: foodsLoading, saveFood, deleteFood } = useCustomFoods()
   const [view, setView] = useState('log')
@@ -119,6 +122,13 @@ export default function NutritionCards({ onNavigate }) {
         >
           БИБЛИОТЕКА
         </button>
+        <button
+          className={`${styles.toggleBtn} ${view === 'activity' ? styles.toggleActive : ''}`}
+          onClick={() => setView('activity')}
+          type="button"
+        >
+          АКТИВНОСТ
+        </button>
       </div>
 
       {!targets.kcal && (
@@ -134,12 +144,17 @@ export default function NutritionCards({ onNavigate }) {
       {view === 'log' ? (
         <>
           <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
-          <NutritionProgress totals={totals} targets={targets} />
+          <NutritionProgress
+            totals={totals}
+            targets={targets}
+            kcalBurned={totalKcalBurned}
+            eatBack={!!profile?.eat_back_calories}
+          />
           <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} totals={totals} targets={targets} />
           <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} />
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
-      ) : (
+      ) : view === 'meals' ? (
         <LibraryTab
           recipes={recipes}
           products={products}
@@ -149,6 +164,13 @@ export default function NutritionCards({ onNavigate }) {
           onLog={handleLogCustomFood}
           onDelete={deleteFood}
           onNewItem={() => setShowBuilder(true)}
+        />
+      ) : (
+        <ActivityLog
+          activities={activities}
+          totalKcalBurned={totalKcalBurned}
+          onAdd={addActivity}
+          onRemove={removeActivity}
         />
       )}
 

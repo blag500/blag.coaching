@@ -1571,7 +1571,66 @@
   letter-spacing: 0.04em;
 }
 
-/* ─── Shared save button ───────────────────────────────────────────────── */
+/* ─── Toggle switch ─────────────────────────────────────────────────────── */
+
+.toggleSwitch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggleSwitchKnob {
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--border);
+  position: relative;
+  transition: background 180ms;
+}
+
+.toggleSwitchKnob::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 180ms, background 180ms;
+}
+
+.toggleSwitchOn .toggleSwitchKnob {
+  background: rgba(255, 183, 77, 0.25);
+}
+
+.toggleSwitchOn .toggleSwitchKnob::after {
+  transform: translateX(16px);
+  background: var(--accent);
+}
+
+.toggleSwitchLabel {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+.toggleSwitchOn .toggleSwitchLabel {
+  color: var(--text);
+}
+
+/* ─── Shared save button ─────────────────────────────────────────────────── */
 
 .saveBtn {
   width: 100%;

@@ -49,9 +49,10 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   const [macroSaving, setMacroSaving] = useState(false)
   const [macroSaved,  setMacroSaved]  = useState(false)
   const [edits, setEdits] = useState({
-    name:          initialClient.name          ?? '',
-    target_weight: initialClient.target_weight ?? '',
-    habits:        initialClient.habits        ?? null,
+    name:               initialClient.name               ?? '',
+    target_weight:      initialClient.target_weight      ?? '',
+    habits:             initialClient.habits             ?? null,
+    eat_back_calories:  initialClient.eat_back_calories  ?? false,
   })
   const [notes, setNotes] = useState(initialClient.coach_notes ?? '')
   const [saving, setSaving] = useState(false)
@@ -96,9 +97,10 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
   async function saveGoals() {
     setSaving(true)
     const updates = {
-      name:          edits.name,
-      target_weight: parseFloat(edits.target_weight) || null,
-      habits:        edits.habits,
+      name:               edits.name,
+      target_weight:      parseFloat(edits.target_weight) || null,
+      habits:             edits.habits,
+      eat_back_calories:  edits.eat_back_calories,
     }
     await updateClientProfile(client.id, updates)
     setClient(prev => ({ ...prev, ...updates }))
@@ -409,6 +411,20 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
         habits={edits.habits}
         onChange={h => setEdits(prev => ({ ...prev, habits: h }))}
       />
+
+      <div className={styles.fieldGroup}>
+        <label className={styles.fieldLabel}>Калориен баланс</label>
+        <button
+          type="button"
+          className={`${styles.toggleSwitch} ${edits.eat_back_calories ? styles.toggleSwitchOn : ''}`}
+          onClick={() => set('eat_back_calories', !edits.eat_back_calories)}
+        >
+          <span className={styles.toggleSwitchKnob} />
+          <span className={styles.toggleSwitchLabel}>
+            {edits.eat_back_calories ? 'Изгорените ккал добавят към дневната цел' : 'Само информация (не добавя към цел)'}
+          </span>
+        </button>
+      </div>
 
       <button
         className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}

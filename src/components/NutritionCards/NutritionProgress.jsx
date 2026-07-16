@@ -10,9 +10,11 @@ const R  = 46          // ring radius
 const SW = 10          // stroke width
 const C  = 2 * Math.PI * R   // circumference ≈ 289.03
 
-export default function NutritionProgress({ totals, targets }) {
+export default function NutritionProgress({ totals, targets, kcalBurned = 0, eatBack = false }) {
   const kcalLogged = totals.kcal  || 0
-  const kcalTarget = targets.kcal || 1
+  const kcalTarget = (eatBack && kcalBurned > 0)
+    ? (targets.kcal || 0) + kcalBurned
+    : targets.kcal || 1
   const kcalOver   = kcalLogged > kcalTarget
   const kcalPct    = Math.min(kcalLogged / kcalTarget, 1)
 
@@ -113,6 +115,13 @@ export default function NutritionProgress({ totals, targets }) {
               {kcalPctDisplay}%
             </text>
           </svg>
+
+          {/* Burned calories badge */}
+          {kcalBurned > 0 && (
+            <div className={styles.burnedBadge}>
+              <span>−{kcalBurned}</span>
+            </div>
+          )}
 
           {/* Colour legend */}
           <div className={styles.legend}>
