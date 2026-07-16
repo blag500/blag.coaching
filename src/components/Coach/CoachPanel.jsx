@@ -105,6 +105,23 @@ export default function CoachPanel() {
   })
   const [savingSession, setSavingSession]   = useState(false)
 
+  const [notice, setNotice]       = useState(false)
+  const [noticeSaving, setNoticeSaving] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('profiles').select('update_notice').eq('id', user.id).maybeSingle()
+      .then(({ data }) => { if (data) setNotice(data.update_notice ?? false) })
+  }, [user?.id])
+
+  async function toggleNotice() {
+    setNoticeSaving(true)
+    const next = !notice
+    await supabase.from('profiles').update({ update_notice: next }).eq('id', user.id)
+    setNotice(next)
+    setNoticeSaving(false)
+  }
+
   useEffect(() => {
     Promise.all([fetchClients(), fetchCoaches(), fetchTrainingSessions()])
       .then(async ([clientsRes, coachesRes, sessionsRes]) => {
@@ -440,6 +457,24 @@ export default function CoachPanel() {
           onClose={() => setChatCoach(null)}
         />
       )}
+
+      {/* ── Update notice toggle ── */}
+      <div className={styles.noticeRow}>
+        <div>
+          <p className={styles.noticeLabel}>ИЗВЕСТИЕ ЗА АКТУАЛИЗАЦИЯ</p>
+          <p className={styles.noticeDesc}>
+            {notice ? 'Активно — клиентите виждат банер' : 'Неактивно'}
+          </p>
+        </div>
+        <button
+          className={notice ? styles.noticeBtnOff : styles.noticeBtnOn}
+          onClick={toggleNotice}
+          disabled={noticeSaving}
+          type="button"
+        >
+          {noticeSaving ? '...' : notice ? 'ИЗКЛЮЧИ' : 'ПУСНИ'}
+        </button>
+      </div>
 
       {/* ── Showcase manager ── */}
       <ShowcaseManager />

@@ -24,6 +24,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
         </button>
+        <a href="/help" className={styles.helpLink}>Помощен център</a>
       </div>
     </div>
   )

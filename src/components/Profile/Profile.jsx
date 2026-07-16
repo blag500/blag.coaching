@@ -10,6 +10,7 @@ import NotificationSettings from './NotificationSettings'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
+import ProgressPhotos from '../ProgressPhotos/ProgressPhotos'
 import WeeklySnapshot from './WeeklySnapshot'
 import AvatarCropper from './AvatarCropper'
 import styles from './Profile.module.css'
@@ -218,6 +219,12 @@ export default function Profile() {
         <FormCheckin />
       </section>
 
+      {/* Progress photo timeline */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>ПРОГРЕС СНИМКИ</h2>
+        <ProgressPhotos />
+      </section>
+
       {/* Activity calendar */}
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>ДНЕВНА АКТИВНОСТ</h2>
@@ -285,10 +292,10 @@ export default function Profile() {
               id="weight-input"
               className={styles.weightInput}
               type="number"
-              step="0.1"
+              step="0.01"
               min="20"
               max="300"
-              placeholder="85.0"
+              placeholder="85.00"
               value={weightInput}
               onChange={e => setWeightInput(e.target.value)}
             />

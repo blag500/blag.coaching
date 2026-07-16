@@ -27,6 +27,7 @@ import RewardsPage from './components/Rewards/RewardsPage'
 import Budget from './components/Budget/Budget'
 import Tasks from './components/Tasks/Tasks'
 import PrepProtocol from './components/PrepProtocol/PrepProtocol'
+import PaymentWall from './components/PaymentWall/PaymentWall'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
@@ -34,13 +35,16 @@ import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
 function AppShell() {
-  const { session, profile, loading, selectPlan } = useAuth()
+  const { session, profile, loading, selectPlan, refreshProfile } = useAuth()
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('today')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
   const [landingSeen, setLandingSeen] = useState(false)
   const [planChosen, setPlanChosen] = useState(() => !!localStorage.getItem('blag_pending_plan'))
+  const [paymentProcessing, setPaymentProcessing] = useState(() => {
+    return new URLSearchParams(window.location.search).get('payment') === 'success'
+  })
   const hiddenAtRef = useRef(null)
 
   // Once session + profile arrive, apply any plan chosen before registration
@@ -50,6 +54,28 @@ function AppShell() {
       selectPlan(pending).then(() => localStorage.removeItem('blag_pending_plan'))
     }
   }, [profile?.id])
+
+  // Stripe redirect: clean URL then poll until webhook confirms subscription
+  useEffect(() => {
+    if (!paymentProcessing) return
+    const url = new URL(window.location.href)
+    url.searchParams.delete('payment')
+    window.history.replaceState({}, '', url.pathname)
+  }, [])
+
+  useEffect(() => {
+    if (!paymentProcessing || !session) return
+    const timer = setInterval(async () => {
+      await refreshProfile()
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [paymentProcessing, session?.user?.id])
+
+  useEffect(() => {
+    if (paymentProcessing && profile?.stripe_subscription_id) {
+      setPaymentProcessing(false)
+    }
+  }, [profile?.stripe_subscription_id])
 
   usePushNotifications()
 
@@ -125,6 +151,24 @@ function AppShell() {
     return profile.plan === 'coaching'
       ? <Onboarding isCoachingIntake />
       : <CalorieCalculator isOnboarding />
+  }
+
+  // Paid plan chosen but payment not yet confirmed by Stripe webhook
+  const needsPayment = !isCoach && profile.plan !== 'free' && !profile.stripe_subscription_id
+
+  if (paymentProcessing) {
+    return (
+      <div className={styles.loadingScreen}>
+        <span className={styles.loadingDot} />
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 16 }}>
+          Потвърждаваме плащането...
+        </p>
+      </div>
+    )
+  }
+
+  if (needsPayment) {
+    return <PaymentWall onDowngrade={() => {}} />
   }
 
   const pages = {

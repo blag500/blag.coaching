@@ -165,10 +165,16 @@ const KB = {
           },
           {
             id: 'plans',
-            title: 'Разлика между Plus и Pro?',
-            body: `PLUS ПЛАН
+            title: 'Разлика между плановете?',
+            body: `БЕЗПЛАТЕН ПЛАН
 
-Идеален за хора, които искат да проследяват самостоятелно:
+Основен достъп без плащане:
+• Калориен калкулатор
+• Преглед на Blag Coaching
+
+PRO ПЛАН — 4.99 €/месец
+
+Пълен инструментариум за самостоятелно проследяване:
 • AI търсене на храни + баркод скенер
 • Дневник на хранене с пълен контрол на макроси
 • Рецепти с калкулатор на порции
@@ -176,13 +182,16 @@ const KB = {
 • Логване на упражнения и графики за прогресия
 • Дневно проследяване на навици
 • Лог на тегло с визуален прогрес
+• Протокол за подготовка (Prep Protocol)
+• Бюджет & задачи
 
-PRO ПЛАН
+КОУЧИНГ ПЛАН — 29 €/месец
 
-Всичко от Plus, плюс:
+Всичко от PRO, плюс:
 • Директен чат с треньора
 • Изпращане на снимки в чата
 • Персонализирани корекции на плана
+• Седмични прегледи и обратна връзка
 • Пълна треньорска поддръжка`,
           },
         ],
@@ -797,10 +806,16 @@ You'll get full access to all features of your chosen plan. The app will update 
           },
           {
             id: 'plans',
-            title: 'Difference between Plus and Pro?',
-            body: `PLUS PLAN
+            title: 'What are the plan differences?',
+            body: `FREE PLAN
 
-Ideal for independent tracking:
+Basic access at no cost:
+• Calorie calculator
+• Blag Coaching preview
+
+PRO PLAN — €4.99/month
+
+Full toolkit for self-guided tracking:
 • AI food search + barcode scanner
 • Daily food log with full macro control
 • Recipe builder with portion calculator
@@ -808,13 +823,16 @@ Ideal for independent tracking:
 • Exercise logging & progression charts
 • Daily habit tracking
 • Weight log with visual progress
+• Prep Protocol (contest prep tracker)
+• Budget & tasks
 
-PRO PLAN
+COACHING PLAN — €29/month
 
-Everything in Plus, plus:
+Everything in PRO, plus:
 • Direct chat with your coach
-• Photo messages
+• Photo messages in chat
 • Personalised plan adjustments
+• Weekly reviews and feedback
 • Full coaching relationship`,
           },
         ],

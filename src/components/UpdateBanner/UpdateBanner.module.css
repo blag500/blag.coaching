@@ -39,3 +39,15 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+
+.dismissBtn {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #0C0A06;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  opacity: 0.6;
+  -webkit-tap-highlight-color: transparent;
+}

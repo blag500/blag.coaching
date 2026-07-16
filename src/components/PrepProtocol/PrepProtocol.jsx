@@ -172,6 +172,8 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
   const [reforecastConfirm, setReforecastConfirm] = useState(false)
   const [notesMode,   setNotesMode]       = useState(false)
   const [macroApplied, setMacroApplied]   = useState(false)
+  const [tdeeInput,    setTdeeInput]      = useState('')
+  const [tdeeSaved,    setTdeeSaved]      = useState(false)
   const [notes, setNotes] = useState({
     cardio_notes:      prep.cardio_notes     ?? '',
     supplement_notes:  prep.supplement_notes ?? '',
@@ -346,10 +348,10 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       )}
 
       {/* ── Macro targets from prep ── */}
-      {plan?.dailyKcal && profile?.weight_kg && (
-        <section className={styles.card}>
-          <div className={styles.cardTitle}>МАКРОСИ ОТ ПРЕПА</div>
-          {(() => {
+      <section className={styles.card}>
+        <div className={styles.cardTitle}>МАКРОСИ ОТ ПРЕПА</div>
+        {plan?.dailyKcal && profile?.weight_kg ? (
+          (() => {
             const m = macrosForKcal(plan.dailyKcal, profile.weight_kg)
             return (
               <>
@@ -379,9 +381,35 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
                 </button>
               </>
             )
-          })()}
-        </section>
-      )}
+          })()
+        ) : (
+          <div className={styles.tdeeSetup}>
+            <p className={styles.tdeeSetupNote}>Задай поддържащите си калории (TDEE), за да се изчислят макросите.</p>
+            <form className={styles.logForm} onSubmit={async e => {
+              e.preventDefault()
+              const v = parseInt(tdeeInput)
+              if (!v || v < 1200 || v > 6000) return
+              await onUpdate.updatePrep({ tdee: v })
+              setTdeeSaved(true)
+              setTdeeInput('')
+              setTimeout(() => setTdeeSaved(false), 2000)
+            }}>
+              <input
+                className={styles.logInput}
+                type="number"
+                min="1200"
+                max="6000"
+                placeholder="TDEE (напр. 2600)"
+                value={tdeeInput}
+                onChange={e => setTdeeInput(e.target.value)}
+              />
+              <button className={`${styles.logBtn} ${tdeeSaved ? styles.logBtnSaved : ''}`} type="submit">
+                {tdeeSaved ? '✓' : 'ЗАПАЗИ'}
+              </button>
+            </form>
+          </div>
+        )}
+      </section>
 
       {/* ── Weekly timeline ── */}
       {plan?.weeks?.length > 0 && (
