@@ -1,0 +1,215 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(env(safe-area-inset-top) + 24px) 20px calc(env(safe-area-inset-bottom) + 24px);
+  gap: 20px;
+  background: var(--bg);
+}
+
+/* ── Brand ─────────────────────────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.brandName {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.brandDivider {
+  width: 1px;
+  height: 22px;
+  background: var(--accent);
+  opacity: 0.4;
+}
+
+.brandSub {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  color: var(--text);
+  opacity: 0.65;
+}
+
+/* ── Plan card ──────────────────────────────────────────── */
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface-1);
+  border: 1px solid var(--plan-accent, var(--accent));
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.planHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.planName {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.price {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.period {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--muted, #888);
+}
+
+/* ── Features ───────────────────────────────────────────── */
+.features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feature {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.check {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Pay button ─────────────────────────────────────────── */
+.payBtn {
+  all: unset;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: #0C0A06;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.payBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secureNote {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--muted, #888);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: #ef5350;
+  text-align: center;
+}
+
+/* ── Downgrade link ──────────────────────────────────────── */
+.downgradeLink {
+  all: unset;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--muted, #888);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Confirm downgrade ───────────────────────────────────── */
+.confirmBox {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface-1);
+  border: 1px solid #ef5350;
+  border-radius: 14px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  text-align: center;
+}
+
+.confirmTitle {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--text);
+  margin: 0;
+}
+
+.confirmText {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--muted, #888);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.downgradeConfirmBtn {
+  all: unset;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: #ef5350;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: #fff;
+  cursor: pointer;
+}
+
+.downgradeConfirmBtn:disabled {
+  opacity: 0.6;
+}
+
+.backLink {
+  all: unset;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--muted, #888);
+  text-decoration: underline;
+  cursor: pointer;
+}
