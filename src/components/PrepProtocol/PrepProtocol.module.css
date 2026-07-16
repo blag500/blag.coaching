@@ -65,9 +65,11 @@
   gap: 14px;
 }
 
-.trophyIcon {
-  font-size: 32px;
-  line-height: 1;
+.accentBar {
+  width: 3px;
+  height: 34px;
+  background: var(--accent);
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
@@ -134,10 +136,26 @@
   gap: 10px;
 }
 
-.dashHeaderTop {
+.countdownBlock {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.countdownNum {
+  font-family: var(--font-heading);
+  font-size: 68px;
+  line-height: 0.88;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.countdownSub {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
 }
 
 .compName {
@@ -352,11 +370,16 @@
 }
 
 .dayCellToday {
-  border-color: var(--accent);
+  background: var(--accent);
+  border-color: transparent;
 }
 
 .dayCellFuture {
   opacity: 0.35;
+}
+
+.dayCellDark {
+  color: #0C0A06;
 }
 
 .dayLabel {
@@ -410,22 +433,21 @@
 
 .logBtn {
   padding: 10px 16px;
-  background: var(--surface-1);
-  border: 1.5px solid var(--accent);
+  background: var(--accent);
+  border: none;
   border-radius: 10px;
-  color: var(--accent);
+  color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 12px;
   letter-spacing: 0.08em;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 150ms;
+  transition: opacity 150ms;
   -webkit-tap-highlight-color: transparent;
 }
 
 .logBtnSaved {
   background: #66BB6A;
-  border-color: #66BB6A;
   color: #0C0A06;
 }
 
@@ -447,6 +469,7 @@
   font-family: var(--font-heading);
   font-size: 28px;
   letter-spacing: 0.04em;
+  color: var(--accent);
 }
 
 .statLabel {
@@ -571,14 +594,15 @@
 
 .saveNotesBtn {
   padding: 12px;
-  background: var(--surface-1);
-  border: 1.5px solid var(--accent);
+  background: var(--accent);
+  border: none;
   border-radius: 10px;
-  color: var(--accent);
+  color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.08em;
   cursor: pointer;
+  transition: opacity 150ms;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -638,6 +662,11 @@
   font-size: 18px;
   letter-spacing: 0.04em;
   line-height: 1;
+  color: var(--text);
+}
+
+.macroPillValAccent {
+  color: var(--accent);
 }
 
 .macroPillLabel {
@@ -651,15 +680,15 @@
 .applyMacroBtn {
   width: 100%;
   padding: 12px;
-  background: var(--surface-1);
-  border: 1.5px solid var(--accent);
+  background: var(--accent);
+  border: none;
   border-radius: 10px;
-  color: var(--accent);
+  color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: background 150ms, color 150ms;
+  transition: opacity 150ms;
   -webkit-tap-highlight-color: transparent;
 }
 

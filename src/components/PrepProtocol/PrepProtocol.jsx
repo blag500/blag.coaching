@@ -99,7 +99,7 @@ function PrepSetup({ onSave, profile }) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerBrand}>
-          <span className={styles.trophyIcon}>🏆</span>
+          <div className={styles.accentBar} />
           <div>
             <h1 className={styles.title}>БОДИБИЛДИНГ ПРОТОКОЛ</h1>
             <p className={styles.subtitle}>Задай целта. Следи прогреса.</p>
@@ -182,9 +182,6 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
   const [notesSaved, setNotesSaved] = useState(false)
 
   const cw      = plan?.currentWeek
-  const daysOut = plan?.weeksOut != null
-    ? `${plan.weeksOut} ${plan.weeksOut === 1 ? 'СЕДМИЦА' : 'СЕДМИЦИ'} ДО СЦЕНАТА`
-    : null
 
   // Today's weight already logged?
   const todayWeight = weightLogs.find(w => w.date === today)
@@ -212,13 +209,15 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
     <div className={styles.page}>
       {/* ── Header countdown ── */}
       <header className={styles.dashHeader}>
-        <div className={styles.dashHeaderTop}>
-          <span className={styles.trophyIcon}>🏆</span>
-          <div>
-            {prep.competition_name && <p className={styles.compName}>{prep.competition_name}</p>}
-            <p className={styles.countdown}>{daysOut ?? '—'}</p>
+        {prep.competition_name && <p className={styles.compName}>{prep.competition_name}</p>}
+        {plan?.weeksOut != null ? (
+          <div className={styles.countdownBlock}>
+            <span className={styles.countdownNum}>{plan.weeksOut}</span>
+            <span className={styles.countdownSub}>{plan.weeksOut === 1 ? 'СЕДМИЦА' : 'СЕДМИЦИ'} ДО СЦЕНАТА</span>
           </div>
-        </div>
+        ) : (
+          <p className={styles.countdown}>—</p>
+        )}
         <p className={styles.compDate}>{fmtDate(prep.competition_date)}</p>
 
         <div className={styles.targetRow}>
@@ -299,8 +298,8 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
               const isToday = d === today
               return (
                 <div key={d} className={`${styles.dayCell} ${isToday ? styles.dayCellToday : ''} ${!isPast ? styles.dayCellFuture : ''}`}>
-                  <span className={styles.dayLabel}>{DAY_LABELS[i]}</span>
-                  <span className={styles.dayWeight}>{entry ? entry.kg : '·'}</span>
+                  <span className={`${styles.dayLabel} ${isToday ? styles.dayCellDark : ''}`}>{DAY_LABELS[i]}</span>
+                  <span className={`${styles.dayWeight} ${isToday ? styles.dayCellDark : ''}`}>{entry ? entry.kg : '·'}</span>
                 </div>
               )
             })}
@@ -329,17 +328,17 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
           <div className={styles.statsRow}>
             {weekStats.nutritionPct != null && (
               <div className={styles.statBlock}>
-                <span className={styles.statVal} style={{ color: '#ffb74d' }}>{weekStats.nutritionPct}%</span>
+                <span className={styles.statVal}>{weekStats.nutritionPct}%</span>
                 <span className={styles.statLabel}>хранене</span>
               </div>
             )}
             <div className={styles.statBlock}>
-              <span className={styles.statVal} style={{ color: '#66BB6A' }}>{weekStats.trainDays}</span>
+              <span className={styles.statVal}>{weekStats.trainDays}</span>
               <span className={styles.statLabel}>тренировки</span>
             </div>
             {weekStats.habitPct != null && (
               <div className={styles.statBlock}>
-                <span className={styles.statVal} style={{ color: '#AB47BC' }}>{weekStats.habitPct}%</span>
+                <span className={styles.statVal}>{weekStats.habitPct}%</span>
                 <span className={styles.statLabel}>навици</span>
               </div>
             )}
@@ -387,13 +386,13 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
               <>
                 <div className={styles.macroRow}>
                   {[
-                    { label: 'ККАЛ',    val: plan.dailyKcal, color: '#F06292' },
-                    { label: 'ПРОТЕИН', val: `${m.protein}g`, color: '#66BB6A' },
-                    { label: 'ВЪГЛ',    val: `${m.carbs}g`,  color: '#4FC3F7' },
-                    { label: 'МАЗН',    val: `${m.fat}g`,    color: '#FFB74D' },
-                  ].map(({ label, val, color }) => (
+                    { label: 'ККАЛ',    val: plan.dailyKcal, accent: true },
+                    { label: 'ПРОТЕИН', val: `${m.protein}г` },
+                    { label: 'ВЪГЛ',    val: `${m.carbs}г`  },
+                    { label: 'МАЗН',    val: `${m.fat}г`    },
+                  ].map(({ label, val, accent }) => (
                     <div key={label} className={styles.macroPill}>
-                      <span className={styles.macroPillVal} style={{ color }}>{val}</span>
+                      <span className={accent ? `${styles.macroPillVal} ${styles.macroPillValAccent}` : styles.macroPillVal}>{val}</span>
                       <span className={styles.macroPillLabel}>{label}</span>
                     </div>
                   ))}
