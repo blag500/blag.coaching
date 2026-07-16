@@ -350,7 +350,37 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {/* ── Macro targets from prep ── */}
       <section className={styles.card}>
         <div className={styles.cardTitle}>МАКРОСИ ОТ ПРЕПА</div>
-        {plan?.dailyKcal && profile?.weight_kg ? (
+        {!plan?.dailyKcal ? (
+          <div className={styles.tdeeSetup}>
+            <p className={styles.tdeeSetupNote}>Задай поддържащите си калории (TDEE), за да се изчислят макросите.</p>
+            <form className={styles.logForm} onSubmit={async e => {
+              e.preventDefault()
+              const v = parseInt(tdeeInput)
+              if (!v || v < 1200 || v > 6000) return
+              const { error } = await onUpdate.updatePrep({ tdee: v })
+              if (!error) {
+                setTdeeSaved(true)
+                setTdeeInput('')
+                setTimeout(() => setTdeeSaved(false), 2000)
+              }
+            }}>
+              <input
+                className={styles.logInput}
+                type="number"
+                min="1200"
+                max="6000"
+                placeholder="TDEE (напр. 2600)"
+                value={tdeeInput}
+                onChange={e => setTdeeInput(e.target.value)}
+              />
+              <button className={`${styles.logBtn} ${tdeeSaved ? styles.logBtnSaved : ''}`} type="submit">
+                {tdeeSaved ? '✓' : 'ЗАПАЗИ'}
+              </button>
+            </form>
+          </div>
+        ) : !profile?.weight_kg ? (
+          <p className={styles.tdeeSetupNote}>Въведи текущото си тегло в Профил, за да се изчислят макросите.</p>
+        ) : (
           (() => {
             const m = macrosForKcal(plan.dailyKcal, profile.weight_kg)
             return (
@@ -382,32 +412,6 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
               </>
             )
           })()
-        ) : (
-          <div className={styles.tdeeSetup}>
-            <p className={styles.tdeeSetupNote}>Задай поддържащите си калории (TDEE), за да се изчислят макросите.</p>
-            <form className={styles.logForm} onSubmit={async e => {
-              e.preventDefault()
-              const v = parseInt(tdeeInput)
-              if (!v || v < 1200 || v > 6000) return
-              await onUpdate.updatePrep({ tdee: v })
-              setTdeeSaved(true)
-              setTdeeInput('')
-              setTimeout(() => setTdeeSaved(false), 2000)
-            }}>
-              <input
-                className={styles.logInput}
-                type="number"
-                min="1200"
-                max="6000"
-                placeholder="TDEE (напр. 2600)"
-                value={tdeeInput}
-                onChange={e => setTdeeInput(e.target.value)}
-              />
-              <button className={`${styles.logBtn} ${tdeeSaved ? styles.logBtnSaved : ''}`} type="submit">
-                {tdeeSaved ? '✓' : 'ЗАПАЗИ'}
-              </button>
-            </form>
-          </div>
         )}
       </section>
 
