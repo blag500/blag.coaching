@@ -130,10 +130,9 @@
 /* ── Dashboard header ── */
 .dashHeader {
   padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .countdownBlock {
@@ -183,42 +182,12 @@
   opacity: 0.7;
 }
 
-.targetRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.targetPill {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.targetLabel {
+.targetLine {
   font-family: var(--font-body);
-  font-size: 8px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.05em;
   color: var(--muted);
-}
-
-.targetVal {
-  font-family: var(--font-heading);
-  font-size: 15px;
-  letter-spacing: 0.06em;
-  color: var(--text);
-}
-
-.targetArrow {
-  color: var(--muted);
-  font-size: 14px;
-  flex-shrink: 0;
+  margin: 4px 0 0;
 }
 
 /* ── Reforecast banner ── */
@@ -288,11 +257,12 @@
 
 /* ── Cards ── */
 .card {
-  margin: 12px 16px 0;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -300,8 +270,8 @@
 
 .cardTitle {
   font-family: var(--font-body);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   color: var(--muted);
   text-transform: uppercase;
 }
@@ -335,8 +305,8 @@
 
 .metricLabel {
   font-family: var(--font-body);
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   color: var(--muted);
   text-transform: uppercase;
 }
@@ -384,14 +354,14 @@
 
 .dayLabel {
   font-family: var(--font-body);
-  font-size: 8px;
-  letter-spacing: 0.08em;
+  font-size: 9px;
+  letter-spacing: 0.06em;
   color: var(--muted);
 }
 
 .dayWeight {
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text);
 }
 
@@ -474,8 +444,8 @@
 
 .statLabel {
   font-family: var(--font-body);
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   color: var(--muted);
   text-transform: uppercase;
 }

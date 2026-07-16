@@ -220,26 +220,9 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
         )}
         <p className={styles.compDate}>{fmtDate(prep.competition_date)}</p>
 
-        <div className={styles.targetRow}>
-          <div className={styles.targetPill}>
-            <span className={styles.targetLabel}>СТАРТ</span>
-            <span className={styles.targetVal}>{prep.start_weight} кг</span>
-          </div>
-          <div className={styles.targetArrow}>→</div>
-          <div className={styles.targetPill}>
-            <span className={styles.targetLabel}>СЦЕНА</span>
-            <span className={styles.targetVal}>{prep.target_weight} кг</span>
-          </div>
-          {plan?.dailyKcal && (
-            <>
-              <div className={styles.targetArrow}>·</div>
-              <div className={styles.targetPill}>
-                <span className={styles.targetLabel}>ККАЛ/ДЕН</span>
-                <span className={styles.targetVal}>{plan.dailyKcal}</span>
-              </div>
-            </>
-          )}
-        </div>
+        <p className={styles.targetLine}>
+          {prep.start_weight} → {prep.target_weight} кг{plan?.dailyKcal ? ` · ${plan.dailyKcal} ккал/ден` : ''}
+        </p>
       </header>
 
       {/* ── Reforecast banner ── */}
@@ -266,8 +249,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {/* ── This week card ── */}
       {cw && (
         <section className={styles.card}>
-          <div className={styles.cardTitle}>СЕДМИЦА {cw.number} — {cw.weeksOut} СЕДМ. ДО СЦЕНАТА</div>
-          <div className={styles.cardSub}>{fmtShort(cw.weekStart)} – {fmtShort(cw.weekEnd)}</div>
+          <div className={styles.cardTitle}>С{cw.number} · {fmtShort(cw.weekStart)}–{fmtShort(cw.weekEnd)}</div>
 
           <div className={styles.weekMetrics}>
             <div className={styles.metric}>
@@ -324,8 +306,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {/* ── Cross-tab stats ── */}
       {weekStats && (
         <section className={styles.card}>
-          <div className={styles.cardTitle}>ТАЗИ СЕДМИЦА — ОТ ДРУГИТЕ ТАБОВЕ</div>
-          <div className={styles.statsRow}>
+            <div className={styles.statsRow}>
             {weekStats.nutritionPct != null && (
               <div className={styles.statBlock}>
                 <span className={styles.statVal}>{weekStats.nutritionPct}%</span>
@@ -348,7 +329,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
 
       {/* ── Macro targets from prep ── */}
       <section className={styles.card}>
-        <div className={styles.cardTitle}>МАКРОСИ ОТ ПРЕПА</div>
+        <div className={styles.cardTitle}>МАКРОСИ</div>
         {!plan?.dailyKcal ? (
           <div className={styles.tdeeSetup}>
             <p className={styles.tdeeSetupNote}>Задай поддържащите си калории (TDEE), за да се изчислят макросите.</p>
