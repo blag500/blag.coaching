@@ -84,6 +84,7 @@
 
 .poseList {
   flex: 1;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
 }
 
 .poseRow {
@@ -232,6 +233,17 @@
   font-size: 10px;
   color: var(--muted);
   letter-spacing: 0.1em;
+}
+
+.poseDesc {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  margin: 4px 0 8px;
+  text-align: center;
+  opacity: 0.8;
 }
 
 .cueList {
