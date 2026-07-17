@@ -271,7 +271,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  padding: 16px 20px calc(80px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--border);
 }
 
