@@ -279,23 +279,30 @@ export default function TodayDashboard({ onNavigate }) {
       </button>
 
       {/* ── Supplements shortcut ── */}
-      {suppTotal > 0 && (
-        <button className={styles.suppCard} onClick={() => onNavigate('supplements')} type="button">
-          <div className={styles.suppLeft}>
-            <span className={styles.suppIcon}>💊</span>
-            <div className={styles.suppText}>
-              <span className={styles.cardLabel}>{t('nav.supplements')}</span>
-              <span className={styles.suppSub}>{suppTaken}/{suppTotal} {t('today.suppTaken')}</span>
-            </div>
+      <button className={styles.suppCard} onClick={() => onNavigate('supplements')} type="button">
+        <div className={styles.suppLeft}>
+          <span className={styles.suppIcon}>💊</span>
+          <div className={styles.suppText}>
+            <span className={styles.cardLabel}>{t('nav.supplements')}</span>
+            <span className={styles.suppSub}>
+              {suppTotal === 0
+                ? t('today.suppEmpty')
+                : `${suppTaken}/${suppTotal} ${t('today.suppTaken')}`
+              }
+            </span>
           </div>
+        </div>
+        {suppTotal > 0 ? (
           <div className={styles.suppRight}>
             <div className={styles.suppBarTrack}>
               <div className={styles.suppBarFill} style={{ width: `${Math.round((suppTaken / suppTotal) * 100)}%` }} />
             </div>
             <span className={styles.checkinArrow}>→</span>
           </div>
-        </button>
-      )}
+        ) : (
+          <span className={styles.checkinArrow}>→</span>
+        )}
+      </button>
     </div>
   )
 }

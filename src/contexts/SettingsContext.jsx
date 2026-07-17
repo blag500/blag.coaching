@@ -61,6 +61,7 @@ const TRANSLATIONS = {
     'today.ago.yesterday':      'вчера',
     'today.ago.days':           'преди {n} дни',
     'today.suppTaken':          'взети',
+    'today.suppEmpty':          'Настрой стека →',
 
     // BadgePopup
     'badge.calories.label': 'КАЛОРИИ',
@@ -145,6 +146,7 @@ const TRANSLATIONS = {
     'today.ago.yesterday':      'yesterday',
     'today.ago.days':           '{n} days ago',
     'today.suppTaken':          'taken',
+    'today.suppEmpty':          'Set up stack →',
 
     // BadgePopup
     'badge.calories.label': 'CALORIES',

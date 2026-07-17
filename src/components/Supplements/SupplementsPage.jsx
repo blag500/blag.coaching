@@ -8,7 +8,7 @@ const TIMING_OPTIONS = [
 ]
 
 export default function SupplementsPage() {
-  const { supplements, taken, loading, toggle, addSupplement, removeSupplement, takenCount, totalCount } = useSupplements()
+  const { supplements, taken, loading, toggle, addSupplement, removeSupplement, takenCount, totalCount, streak, getSupplementStreak } = useSupplements()
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDose, setNewDose] = useState('')
@@ -28,6 +28,8 @@ export default function SupplementsPage() {
 
   if (loading) return null
 
+  const allDone = totalCount > 0 && takenCount === totalCount
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -35,12 +37,20 @@ export default function SupplementsPage() {
           <h1 className={styles.title}>СУПЛЕМЕНТИ</h1>
           <p className={styles.subtitle}>ДНЕВЕН СТЕК</p>
         </div>
-        {totalCount > 0 && (
-          <div className={`${styles.badge} ${takenCount === totalCount ? styles.badgeDone : ''}`}>
-            <span className={styles.badgeNum}>{takenCount}</span>
-            <span className={styles.badgeOf}>/{totalCount}</span>
-          </div>
-        )}
+        <div className={styles.headerRight}>
+          {streak > 1 && (
+            <div className={styles.streakBadge}>
+              <span className={styles.streakFire}>🔥</span>
+              <span className={styles.streakNum}>{streak}</span>
+            </div>
+          )}
+          {totalCount > 0 && (
+            <div className={`${styles.badge} ${allDone ? styles.badgeDone : ''}`}>
+              <span className={styles.badgeNum}>{takenCount}</span>
+              <span className={styles.badgeOf}>/{totalCount}</span>
+            </div>
+          )}
+        </div>
       </header>
 
       <div className={styles.list}>
@@ -50,27 +60,35 @@ export default function SupplementsPage() {
             <p className={styles.emptyHint}>Добави суплементи с бутона долу.</p>
           </div>
         ) : (
-          supplements.map(s => (
-            <div key={s.id} className={styles.row}>
-              <button
-                className={`${styles.check} ${taken[s.id] ? styles.checkDone : ''}`}
-                onClick={() => toggle(s.id)}
-                type="button"
-                aria-label={taken[s.id] ? 'Отмени' : 'Маркирай като взет'}
-              >
-                {taken[s.id] && <span>✓</span>}
-              </button>
-              <div className={styles.info}>
-                <span className={`${styles.name} ${taken[s.id] ? styles.nameDone : ''}`}>{s.name}</span>
-                {(s.dose || s.timing) && (
-                  <span className={styles.meta}>{[s.dose, s.timing].filter(Boolean).join(' · ')}</span>
-                )}
+          supplements.map(s => {
+            const suppStreak = getSupplementStreak(s.id)
+            return (
+              <div key={s.id} className={`${styles.row} ${taken[s.id] ? styles.rowDone : ''}`}>
+                <button
+                  className={`${styles.check} ${taken[s.id] ? styles.checkDone : ''}`}
+                  onClick={() => toggle(s.id)}
+                  type="button"
+                  aria-label={taken[s.id] ? 'Отмени' : 'Маркирай като взет'}
+                >
+                  {taken[s.id] && <span>✓</span>}
+                </button>
+                <div className={styles.info}>
+                  <span className={`${styles.name} ${taken[s.id] ? styles.nameDone : ''}`}>{s.name}</span>
+                  <div className={styles.metaRow}>
+                    {(s.dose || s.timing) && (
+                      <span className={styles.meta}>{[s.dose, s.timing].filter(Boolean).join(' · ')}</span>
+                    )}
+                    {suppStreak > 1 && (
+                      <span className={styles.suppStreak}>🔥 {suppStreak}</span>
+                    )}
+                  </div>
+                </div>
+                <button className={styles.del} onClick={() => removeSupplement(s.id)} type="button" aria-label="Изтрий">
+                  ×
+                </button>
               </div>
-              <button className={styles.del} onClick={() => removeSupplement(s.id)} type="button" aria-label="Изтрий">
-                ×
-              </button>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 

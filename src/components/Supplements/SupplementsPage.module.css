@@ -33,6 +33,34 @@
   margin: 4px 0 0;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.streakBadge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 183, 77, 0.1);
+  border: 1px solid rgba(255, 183, 77, 0.25);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.streakFire {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.streakNum {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent);
+}
+
 .badge {
   display: flex;
   align-items: baseline;
@@ -91,7 +119,11 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px 14px 14px 12px;
-  transition: border-color 150ms;
+  transition: border-color 150ms, background 150ms;
+}
+
+.rowDone {
+  border-color: rgba(var(--accent-rgb), 0.2);
 }
 
 .check {
@@ -138,11 +170,25 @@
   text-decoration-color: var(--accent);
 }
 
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .meta {
   font-family: var(--font-body);
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.04em;
+}
+
+.suppStreak {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.02em;
 }
 
 .del {
