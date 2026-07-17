@@ -43,8 +43,14 @@ function getBMICategory(bmi) {
   return BMI_CATEGORIES.find(c => bmi < c.max) || BMI_CATEGORIES.at(-1)
 }
 
-function macrosForKcal(kcal, weight) {
-  const protein = Math.round(weight * 2)
+const PROTEIN_COEFFS = [
+  { value: 2.0, label: '2.0', desc: 'Стандарт' },
+  { value: 2.5, label: '2.5', desc: 'Атлет'    },
+  { value: 3.0, label: '3.0', desc: 'Prep'      },
+]
+
+function macrosForKcal(kcal, weight, proteinCoeff = 2.0) {
+  const protein = Math.round(weight * proteinCoeff)
   const fat     = Math.round((kcal * 0.25) / 9)
   const carbs   = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
   return { protein, fat, carbs }
@@ -63,11 +69,12 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
     weight:   '',
     activity: profile?.activity_level || 'moderate',
   })
-  const [saving, setSaving]     = useState(false)
-  const [saved, setSaved]       = useState(false)
+  const [saving, setSaving]       = useState(false)
+  const [saved, setSaved]         = useState(false)
   const [saveError, setSaveError] = useState('')
-  const [results, setResults]   = useState(null)
-  const [selectedGoal, setSelectedGoal] = useState('maintain')
+  const [results, setResults]     = useState(null)
+  const [selectedGoal, setSelectedGoal]   = useState('maintain')
+  const [proteinCoeff, setProteinCoeff]   = useState(2.0)
 
   function set(field, val) { setForm(prev => ({ ...prev, [field]: val })) }
 
@@ -85,10 +92,21 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
 
     const goals = GOAL_PRESETS.map(g => {
       const kcal = tdee + g.delta
-      return { ...g, kcal, macros: macrosForKcal(kcal, weight) }
+      return { ...g, kcal, macros: macrosForKcal(kcal, weight, proteinCoeff) }
     })
 
     setResults({ bmr: Math.round(bmr), tdee, bmi: bmi.toFixed(1), bmiCat, goals, weight })
+    setSaved(false)
+  }
+
+  function changeCoeff(coeff) {
+    setProteinCoeff(coeff)
+    if (!results) return
+    const goals = GOAL_PRESETS.map(g => {
+      const kcal = results.tdee + g.delta
+      return { ...g, kcal, macros: macrosForKcal(kcal, results.weight, coeff) }
+    })
+    setResults(prev => ({ ...prev, goals }))
     setSaved(false)
   }
 
@@ -229,6 +247,24 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
                 <span className={styles.activityLabel}>{a.label}</span>
                 <span className={styles.activityDesc}>{a.desc}</span>
                 {form.activity === a.id && <span className={styles.check}>✓</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Protein coefficient */}
+        <div className={styles.section}>
+          <label className={styles.label}>ПРОТЕИН (g/кг)</label>
+          <div className={styles.toggle}>
+            {PROTEIN_COEFFS.map(c => (
+              <button
+                key={c.value}
+                className={`${styles.toggleBtn} ${proteinCoeff === c.value ? styles.toggleBtnActive : ''}`}
+                onClick={() => changeCoeff(c.value)}
+                type="button"
+              >
+                <span>{c.label}</span>
+                <span className={styles.coeffDesc}>{c.desc}</span>
               </button>
             ))}
           </div>
