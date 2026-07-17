@@ -95,9 +95,9 @@
   border: none;
   border-radius: 8px;
   background: none;
-  font-family: var(--font-heading);
-  font-size: 13px;
-  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted);
   cursor: pointer;
   transition: background 180ms var(--ease-out), color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);

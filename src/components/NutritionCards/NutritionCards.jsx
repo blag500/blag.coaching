@@ -112,22 +112,32 @@ export default function NutritionCards({ onNavigate }) {
           className={`${styles.toggleBtn} ${view === 'log' ? styles.toggleActive : ''}`}
           onClick={() => setView('log')}
           type="button"
+          aria-label="Хранене"
         >
-          ХРАНЕНЕ
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
+            <path d="M3 11l19-9-9 19-2-8-8-2z" />
+          </svg>
         </button>
         <button
           className={`${styles.toggleBtn} ${view === 'meals' ? styles.toggleActive : ''}`}
           onClick={() => setView('meals')}
           type="button"
+          aria-label="Библиотека"
         >
-          БИБЛИОТЕКА
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
         </button>
         <button
           className={`${styles.toggleBtn} ${view === 'activity' ? styles.toggleActive : ''}`}
           onClick={() => setView('activity')}
           type="button"
+          aria-label="Активност"
         >
-          АКТИВНОСТ
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
         </button>
       </div>
 
