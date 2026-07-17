@@ -1,4 +1,5 @@
 import { useReadiness } from '../../hooks/useReadiness'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ReadinessWidget.module.css'
 
 function scoreColor(score) {
@@ -9,15 +10,7 @@ function scoreColor(score) {
   return '#ef5350'
 }
 
-function scoreLabel(score) {
-  if (score === null) return '—'
-  if (score >= 80) return 'ОТЛИЧНО'
-  if (score >= 60) return 'ДОБРО'
-  if (score >= 40) return 'УМЕРЕНО'
-  return 'НИСКО'
-}
-
-function ReadinessRing({ score }) {
+function ReadinessRing({ score, label }) {
   const r    = 46
   const circ = 2 * Math.PI * r
   const pct  = score !== null ? score / 100 : 0
@@ -42,7 +35,7 @@ function ReadinessRing({ score }) {
         </text>
         <text x="50" y="59" textAnchor="middle" fill="rgba(242,232,207,0.35)"
           fontSize="7" fontFamily="'JetBrains Mono', monospace">
-          {scoreLabel(score)}
+          {label}
         </text>
       </svg>
     </div>
@@ -69,8 +62,17 @@ function ComponentBar({ label, score, color }) {
 
 export default function ReadinessWidget({ onNavigate, client = null }) {
   const { score, components, loading } = useReadiness(client)
+  const { t } = useSettings()
 
   if (loading) return null
+
+  function scoreLabel(s) {
+    if (s === null) return '—'
+    if (s >= 80) return t('readiness.excellent')
+    if (s >= 60) return t('readiness.good')
+    if (s >= 40) return t('readiness.moderate')
+    return t('readiness.low')
+  }
 
   const recoveryLogged = components.find(c => c.id === 'recovery')?.score !== null
   const Tag = onNavigate ? 'button' : 'div'
@@ -83,19 +85,24 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
     >
       <div className={styles.topRow}>
         <div className={styles.left}>
-          <span className={styles.cardLabel}>ГОТОВНОСТ</span>
-          <ReadinessRing score={score} />
+          <span className={styles.cardLabel}>{t('readiness.title')}</span>
+          <ReadinessRing score={score} label={scoreLabel(score)} />
         </div>
         <div className={styles.bars}>
           {components.map(c => (
-            <ComponentBar key={c.id} label={c.label} score={c.score} color={c.color} />
+            <ComponentBar
+              key={c.id}
+              label={t(`readiness.component.${c.id}`)}
+              score={c.score}
+              color={c.color}
+            />
           ))}
         </div>
       </div>
 
       {!recoveryLogged && (
         <div className={styles.cta}>
-          Попълни чек-ин за по-точен резултат →
+          {t('readiness.cta')}
         </div>
       )}
     </Tag>

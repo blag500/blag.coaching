@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './BadgePopup.module.css'
 
-const DEFS = {
-  calories: { emoji: '🥗', label: 'КАЛОРИИ',       sub: 'Дневната калорийна цел е постигната!' },
-  habits:   { emoji: '✅', label: 'НАВИЦИ',         sub: 'Всички навици за днес са изпълнени!' },
-  training: { emoji: '💪', label: 'ТРЕНИРОВКА',     sub: 'Тренировката е отчетена за днес!' },
-  perfect:  { emoji: '⭐', label: 'ПЕРФЕКТЕН ДЕН',  sub: 'Постигна всички цели за деня!' },
-}
+const EMOJIS = { calories: '🥗', habits: '✅', training: '💪', perfect: '⭐' }
 
 export default function BadgePopup({ badge, onDone }) {
+  const { t } = useSettings()
   const [phase, setPhase] = useState('in')
-  const def = DEFS[badge]
+  const def = badge ? {
+    emoji: EMOJIS[badge],
+    label: t(`badge.${badge}.label`),
+    sub:   t(`badge.${badge}.sub`),
+  } : null
 
   useEffect(() => {
     const hide = setTimeout(() => setPhase('out'), 2600)

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { useWaterLog } from '../../hooks/useWaterLog'
@@ -8,25 +9,15 @@ import BadgePopup from './BadgePopup'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import styles from './TodayDashboard.module.css'
 
-const DAYS_SHORT = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-
 function dateStr(offset = 0) {
   const d = new Date()
   d.setDate(d.getDate() - offset)
   return d.toISOString().slice(0, 10)
 }
 
-function daysAgoLabel(date) {
-  const today = dateStr(0)
-  const yesterday = dateStr(1)
-  if (date === today)     return 'днес'
-  if (date === yesterday) return 'вчера'
-  const diff = Math.round((new Date(today) - new Date(date)) / 86400000)
-  return `преди ${diff} дни`
-}
-
 export default function TodayDashboard({ onNavigate }) {
   const { profile, user } = useAuth()
+  const { t } = useSettings()
   const { log, totals } = useFoodLog()
   const { habits, checked } = useHabitsToday()
   const { glasses, target: waterTarget, add: addWater } = useWaterLog()
@@ -39,9 +30,20 @@ export default function TodayDashboard({ onNavigate }) {
     fat:     profile?.fat      ?? 0,
   }
 
+  const DAYS_SHORT = Array.from({ length: 7 }, (_, i) => t(`days.${i}`))
+
+  function daysAgoLabel(date) {
+    const today = dateStr(0)
+    const yesterday = dateStr(1)
+    if (date === today)     return t('today.ago.today')
+    if (date === yesterday) return t('today.ago.yesterday')
+    const diff = Math.round((new Date(today) - new Date(date)) / 86400000)
+    return t('today.ago.days').replace('{n}', diff)
+  }
+
   const recentFood = [...(log || [])].reverse().slice(0, 3)
   const hour       = new Date().getHours()
-  const greeting   = hour < 12 ? 'ДОБРО УТРО' : hour < 18 ? 'ДОБЪР ДЕН' : 'ДОБЪР ВЕЧЕР'
+  const greeting   = hour < 12 ? t('today.greeting.morning') : hour < 18 ? t('today.greeting.afternoon') : t('today.greeting.evening')
 
   useEffect(() => {
     if (!user?.id) return
@@ -143,28 +145,29 @@ export default function TodayDashboard({ onNavigate }) {
 
       {/* ── Activity rings card ── */}
       <div className={styles.card}>
-        <span className={styles.cardLabel}>АКТИВНОСТ ДНЕС</span>
+        <span className={styles.cardLabel}>{t('today.activity')}</span>
         <div className={styles.ringsRow}>
           <ActivityRings
             kcalPct={kcalPct}
             habitsPct={completedHabits / totalHabits}
             trained={trainedToday}
             kcalVal={Math.round(totals.kcal || 0)}
+            kcalUnit={t('today.kcal')}
           />
           <div className={styles.ringsLegend}>
             <div className={styles.ringLegendItem}>
               <span className={styles.ringLegendDot} style={{ background: '#ffb74d' }} />
-              <span className={styles.ringLegendLabel}>Калории</span>
+              <span className={styles.ringLegendLabel}>{t('today.calories')}</span>
               <span className={styles.ringLegendVal}>{Math.round(totals.kcal || 0)} / {targets.kcal}</span>
             </div>
             <div className={styles.ringLegendItem}>
               <span className={styles.ringLegendDot} style={{ background: '#AB47BC' }} />
-              <span className={styles.ringLegendLabel}>Навици</span>
+              <span className={styles.ringLegendLabel}>{t('today.habits')}</span>
               <span className={styles.ringLegendVal}>{completedHabits} / {habits.length}</span>
             </div>
             <div className={styles.ringLegendItem}>
               <span className={styles.ringLegendDot} style={{ background: '#66BB6A' }} />
-              <span className={styles.ringLegendLabel}>Тренировка</span>
+              <span className={styles.ringLegendLabel}>{t('today.training')}</span>
               <span className={styles.ringLegendVal}>{trainedToday ? '✓' : '—'}</span>
             </div>
           </div>
@@ -172,15 +175,15 @@ export default function TodayDashboard({ onNavigate }) {
 
         {/* ── Macro mini grid ── */}
         <div className={styles.macroGrid}>
-          <MacroCell label="ПРОТЕИН" value={Math.round(totals.protein || 0)} target={targets.protein} color="#42A5F5" unit="g" />
-          <MacroCell label="ВЪГЛЕХИДРАТИ" value={Math.round(totals.carbs || 0)} target={targets.carbs} color="#66BB6A" unit="g" />
-          <MacroCell label="МАЗНИНИ" value={Math.round(totals.fat || 0)} target={targets.fat} color="#ffb74d" unit="g" />
-          <MacroCell label="ОСТАВАЩИ" value={Math.max(0, targets.kcal - Math.round(totals.kcal || 0))} target={targets.kcal} color="var(--muted)" unit="ккал" noOver />
+          <MacroCell label={t('today.protein')} value={Math.round(totals.protein || 0)} target={targets.protein} color="#42A5F5" unit="g" />
+          <MacroCell label={t('today.carbs')} value={Math.round(totals.carbs || 0)} target={targets.carbs} color="#66BB6A" unit="g" />
+          <MacroCell label={t('today.fats')} value={Math.round(totals.fat || 0)} target={targets.fat} color="#ffb74d" unit="g" />
+          <MacroCell label={t('today.remaining')} value={Math.max(0, targets.kcal - Math.round(totals.kcal || 0))} target={targets.kcal} color="var(--muted)" unit={t('today.kcal')} noOver />
         </div>
 
         {/* ── Water row ── */}
         <div className={styles.waterRow}>
-          <span className={styles.waterLabel}>💧 ВОДА</span>
+          <span className={styles.waterLabel}>{t('today.water')}</span>
           <div className={styles.waterGlasses}>
             {Array.from({ length: waterTarget }, (_, i) => (
               <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
@@ -195,23 +198,23 @@ export default function TodayDashboard({ onNavigate }) {
 
       {/* ── Quick log button ── */}
       <button className={styles.logBtn} onClick={() => onNavigate('nutrition')} type="button">
-        + ЛОГНИ ХРАНА
+        {t('today.logFood')}
       </button>
 
       {/* ── Recent food ── */}
       {recentFood.length > 0 && (
         <div className={styles.card}>
-          <span className={styles.cardLabel}>ПОСЛЕДНО ДОБАВЕНО</span>
+          <span className={styles.cardLabel}>{t('today.recentAdded')}</span>
           <div className={styles.recentList}>
             {recentFood.map((f, i) => (
               <div key={i} className={styles.recentRow}>
                 <span className={styles.recentName}>{f.name}</span>
-                <span className={styles.recentKcal}>{f.kcal} ккал</span>
+                <span className={styles.recentKcal}>{f.kcal} {t('today.kcal')}</span>
               </div>
             ))}
           </div>
           <button className={styles.seeAll} onClick={() => onNavigate('nutrition')} type="button">
-            Виж всичко →
+            {t('today.seeAll')}
           </button>
         </div>
       )}
@@ -219,9 +222,9 @@ export default function TodayDashboard({ onNavigate }) {
       {/* ── Training card ── */}
       <button className={styles.trainingCard} onClick={() => onNavigate('training')} type="button">
         <div className={styles.trainingHeader}>
-          <span className={styles.cardLabel}>ТРЕНИРОВКА</span>
+          <span className={styles.cardLabel}>{t('today.workoutCard')}</span>
           {streak > 1 && (
-            <span className={styles.streak}>🔥 {streak} поред</span>
+            <span className={styles.streak}>🔥 {streak} {t('today.streakUnit')}</span>
           )}
         </div>
 
@@ -245,12 +248,12 @@ export default function TodayDashboard({ onNavigate }) {
           <div className={styles.trainingCta}>
             <div className={styles.trainingCtaText}>
               {lastWorkout ? (
-                <span className={styles.trainingLast}>Последно: {lastWorkout.block_label} · {daysAgoLabel(lastWorkout.completed_date)}</span>
+                <span className={styles.trainingLast}>{t('today.lastWorkout')} {lastWorkout.block_label} · {daysAgoLabel(lastWorkout.completed_date)}</span>
               ) : (
-                <span className={styles.trainingLast}>Все още няма тренировки този месец</span>
+                <span className={styles.trainingLast}>{t('today.noWorkouts')}</span>
               )}
             </div>
-            <span className={styles.trainingCtaBtn}>ЛОГНИ →</span>
+            <span className={styles.trainingCtaBtn}>{t('today.logBtn')}</span>
           </div>
         )}
       </button>
@@ -258,8 +261,8 @@ export default function TodayDashboard({ onNavigate }) {
       {/* ── Check-in shortcut ── */}
       <button className={styles.checkinCard} onClick={() => onNavigate('profile')} type="button">
         <div className={styles.checkinText}>
-          <span className={styles.cardLabel}>СЕДМИЧЕН ЧЕК-ИН</span>
-          <span className={styles.checkinSub}>Снимки · Сън · Прогрес</span>
+          <span className={styles.cardLabel}>{t('today.checkin')}</span>
+          <span className={styles.checkinSub}>{t('today.checkinSub')}</span>
         </div>
         <span className={styles.checkinArrow}>→</span>
       </button>
@@ -268,7 +271,7 @@ export default function TodayDashboard({ onNavigate }) {
       <button className={styles.rewardsBtn} onClick={() => onNavigate('rewards')} type="button">
         <span className={styles.rewardsBtnInner}>
           <span className={styles.rewardsBtnEmojis}>⭐ 🥗 ✅ 💪</span>
-          <span className={styles.rewardsBtnLabel}>НАГРАДИ И ЗНАЧКИ</span>
+          <span className={styles.rewardsBtnLabel}>{t('today.rewards')}</span>
         </span>
         <span className={styles.checkinArrow}>→</span>
       </button>
@@ -276,7 +279,7 @@ export default function TodayDashboard({ onNavigate }) {
   )
 }
 
-function ActivityRings({ kcalPct, habitsPct, trained, kcalVal }) {
+function ActivityRings({ kcalPct, habitsPct, trained, kcalVal, kcalUnit }) {
   const cx = 60, cy = 60
   const ringDefs = [
     { r: 50, sw: 9, pct: kcalPct,          color: '#ffb74d', bg: 'rgba(255,183,77,0.12)',   delay: '0ms'   },
@@ -327,7 +330,7 @@ function ActivityRings({ kcalPct, habitsPct, trained, kcalVal }) {
       )}
       <text x={cx} y={kcalVal > 0 ? cy + 8 : cy + 3} textAnchor="middle"
         fill="var(--muted)" fontSize="7" fontFamily="'JetBrains Mono', monospace">
-        ккал
+        {kcalUnit}
       </text>
     </svg>
   )
