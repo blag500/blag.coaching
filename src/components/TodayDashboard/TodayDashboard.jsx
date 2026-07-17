@@ -5,6 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { useWaterLog } from '../../hooks/useWaterLog'
+import { useSupplements } from '../../hooks/useSupplements'
 import BadgePopup from './BadgePopup'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import styles from './TodayDashboard.module.css'
@@ -21,6 +22,7 @@ export default function TodayDashboard({ onNavigate }) {
   const { log, totals } = useFoodLog()
   const { habits, checked } = useHabitsToday()
   const { glasses, target: waterTarget, add: addWater } = useWaterLog()
+  const { takenCount: suppTaken, totalCount: suppTotal } = useSupplements()
   const [workouts, setWorkouts] = useState([])
 
   const targets = {
@@ -275,6 +277,25 @@ export default function TodayDashboard({ onNavigate }) {
         </span>
         <span className={styles.checkinArrow}>→</span>
       </button>
+
+      {/* ── Supplements shortcut ── */}
+      {suppTotal > 0 && (
+        <button className={styles.suppCard} onClick={() => onNavigate('supplements')} type="button">
+          <div className={styles.suppLeft}>
+            <span className={styles.suppIcon}>💊</span>
+            <div className={styles.suppText}>
+              <span className={styles.cardLabel}>{t('nav.supplements')}</span>
+              <span className={styles.suppSub}>{suppTaken}/{suppTotal} {t('today.suppTaken')}</span>
+            </div>
+          </div>
+          <div className={styles.suppRight}>
+            <div className={styles.suppBarTrack}>
+              <div className={styles.suppBarFill} style={{ width: `${Math.round((suppTaken / suppTotal) * 100)}%` }} />
+            </div>
+            <span className={styles.checkinArrow}>→</span>
+          </div>
+        </button>
+      )}
     </div>
   )
 }

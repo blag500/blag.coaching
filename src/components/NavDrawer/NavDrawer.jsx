@@ -105,6 +105,12 @@ const PosingIcon = () => (
     <path d="M10 14h4" />
   </svg>
 )
+const SupplementIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 3L3 9a6 6 0 0 0 8.49 8.49L20 9a6 6 0 0 0-8.49-8.49z" />
+    <line x1="9" y1="9" x2="15" y2="15" />
+  </svg>
+)
 
 // ── Section definitions ───────────────────────────────────────────
 const CLIENT_SECTIONS = [
@@ -115,7 +121,8 @@ const CLIENT_SECTIONS = [
       { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
       { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
-      { id: 'recovery',   key: 'nav.recovery',      Icon: RecoveryIcon  },
+      { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
+      { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
     ],
   },
   {
@@ -170,7 +177,8 @@ const COACH_SECTIONS = [
       { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
       { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
-      { id: 'recovery',   key: 'nav.recovery',      Icon: RecoveryIcon  },
+      { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
+      { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
     ],
   },
   {

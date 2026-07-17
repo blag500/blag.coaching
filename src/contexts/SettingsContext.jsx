@@ -20,6 +20,7 @@ const TRANSLATIONS = {
     'nav.myDay':        'МОЙ ДЕН',
     'nav.protocol':     'ПРОТОКОЛ',
     'nav.posing':       'ПОУЗИНГ',
+    'nav.supplements':  'СУПЛЕМЕНТИ',
     'settings.appearance': 'ИЗГЛЕД',
     'settings.theme':      'Тема',
     'settings.theme.dark':  'ТЪМЕН',
@@ -59,6 +60,7 @@ const TRANSLATIONS = {
     'today.ago.today':          'днес',
     'today.ago.yesterday':      'вчера',
     'today.ago.days':           'преди {n} дни',
+    'today.suppTaken':          'взети',
 
     // BadgePopup
     'badge.calories.label': 'КАЛОРИИ',
@@ -102,6 +104,7 @@ const TRANSLATIONS = {
     'nav.myDay':        'MY DAY',
     'nav.protocol':     'PROTOCOL',
     'nav.posing':       'POSING',
+    'nav.supplements':  'SUPPLEMENTS',
     'settings.appearance': 'APPEARANCE',
     'settings.theme':      'Theme',
     'settings.theme.dark':  'DARK',
@@ -141,6 +144,7 @@ const TRANSLATIONS = {
     'today.ago.today':          'today',
     'today.ago.yesterday':      'yesterday',
     'today.ago.days':           '{n} days ago',
+    'today.suppTaken':          'taken',
 
     // BadgePopup
     'badge.calories.label': 'CALORIES',
