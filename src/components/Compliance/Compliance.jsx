@@ -5,7 +5,6 @@ import HabitCheckbox from './HabitCheckbox'
 import RingProgress from './RingProgress'
 import StreakBar from './StreakBar'
 import HabitCalendar from './HabitCalendar'
-import SupplementSection from './SupplementSection'
 import StreakCelebration from './StreakCelebration'
 import WaterTracker from './WaterTracker'
 import styles from './Compliance.module.css'
@@ -80,7 +79,6 @@ export default function Compliance() {
       <WaterTracker />
       <StreakBar />
       <HabitCalendar />
-      <SupplementSection />
     </div>
   )
 }
