@@ -32,6 +32,33 @@
   margin: 4px 0 0;
 }
 
+.headerBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manageBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface-1);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 150ms;
+  color: var(--muted);
+}
+
+.manageBtn:active {
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
 .cartBtn {
   position: relative;
   width: 46px;

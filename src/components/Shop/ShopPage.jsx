@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useShop } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
+import { useAuth } from '../../contexts/AuthContext'
 import CartDrawer from './CartDrawer'
+import CatalogManager from './CatalogManager'
 import styles from './ShopPage.module.css'
 
 const CATEGORIES = [
@@ -19,8 +21,11 @@ function formatPrice(stotinki) {
 export default function ShopPage({ initialOrderSuccess }) {
   const { products, loading } = useShop()
   const cart = useCart()
+  const { profile } = useAuth()
+  const isCoach = profile?.role === 'coach'
   const [category, setCategory] = useState('all')
-  const [cartOpen, setCartOpen] = useState(false)
+  const [cartOpen,     setCartOpen]     = useState(false)
+  const [managerOpen,  setManagerOpen]  = useState(false)
   const [orderSuccess, setOrderSuccess] = useState(initialOrderSuccess ?? false)
 
   const visible = category === 'all'
@@ -36,17 +41,24 @@ export default function ShopPage({ initialOrderSuccess }) {
           <h1 className={styles.title}>МАГАЗИН</h1>
           <p className={styles.subtitle}>БЪРЗА ДОСТАВКА · ПРОСЛЕДЕНИ МАКРОСИ</p>
         </div>
-        <button
-          className={`${styles.cartBtn} ${cart.itemCount > 0 ? styles.cartBtnActive : ''}`}
-          onClick={() => setCartOpen(true)}
-          type="button"
-          aria-label="Количка"
-        >
-          🛒
-          {cart.itemCount > 0 && (
-            <span className={styles.cartBadge}>{cart.itemCount}</span>
+        <div className={styles.headerBtns}>
+          {isCoach && (
+            <button className={styles.manageBtn} onClick={() => setManagerOpen(true)} type="button" aria-label="Управление на каталога">
+              ⚙
+            </button>
           )}
-        </button>
+          <button
+            className={`${styles.cartBtn} ${cart.itemCount > 0 ? styles.cartBtnActive : ''}`}
+            onClick={() => setCartOpen(true)}
+            type="button"
+            aria-label="Количка"
+          >
+            🛒
+            {cart.itemCount > 0 && (
+              <span className={styles.cartBadge}>{cart.itemCount}</span>
+            )}
+          </button>
+        </div>
       </header>
 
       {orderSuccess && (
@@ -120,6 +132,10 @@ export default function ShopPage({ initialOrderSuccess }) {
 
       {cartOpen && (
         <CartDrawer cart={cart} onClose={() => setCartOpen(false)} onOrderSuccess={() => { setOrderSuccess(true); setCartOpen(false) }} />
+      )}
+
+      {managerOpen && (
+        <CatalogManager onClose={() => setManagerOpen(false)} />
       )}
     </div>
   )

@@ -13,15 +13,39 @@ export function useShop() {
     if (user?.id) loadOrders()
   }, [user?.id])
 
-  async function loadProducts() {
-    const { data } = await supabase
-      .from('catalog_products')
-      .select('*')
-      .eq('available', true)
-      .order('sort_order')
-      .order('name')
+  async function loadProducts(includeUnavailable = false) {
+    let q = supabase.from('catalog_products').select('*').order('sort_order').order('name')
+    if (!includeUnavailable) q = q.eq('available', true)
+    const { data } = await q
     setProducts(data || [])
     setLoading(false)
+  }
+
+  async function addProduct(fields) {
+    const { data, error } = await supabase
+      .from('catalog_products')
+      .insert(fields)
+      .select()
+      .single()
+    if (!error && data) setProducts(prev => [...prev, data].sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name)))
+    return { data, error }
+  }
+
+  async function updateProduct(id, fields) {
+    const { data, error } = await supabase
+      .from('catalog_products')
+      .update(fields)
+      .eq('id', id)
+      .select()
+      .single()
+    if (!error && data) setProducts(prev => prev.map(p => p.id === id ? data : p))
+    return { data, error }
+  }
+
+  async function deleteProduct(id) {
+    const { error } = await supabase.from('catalog_products').delete().eq('id', id)
+    if (!error) setProducts(prev => prev.filter(p => p.id !== id))
+    return { error }
   }
 
   async function loadOrders() {
@@ -62,7 +86,7 @@ export function useShop() {
     return json // { url, order_id }
   }
 
-  return { products, orders, loading, checkout, reload: loadOrders }
+  return { products, orders, loading, checkout, reload: loadOrders, loadProducts, addProduct, updateProduct, deleteProduct }
 }
 
 // ── Coach: all orders ─────────────────────────────────────────────────────
