@@ -56,14 +56,6 @@ export default function AuthScreen({ onBack }) {
             <span className={styles.pitchTag}>💪 Тренировки</span>
             <span className={styles.pitchTag}>📊 Прогрес</span>
           </div>
-          <a
-            className={styles.pitchLink}
-            href="https://blag-coaching.com/help"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Разбери как работи →
-          </a>
         </div>
 
         <div className={styles.toggle}>
@@ -147,6 +139,15 @@ export default function AuthScreen({ onBack }) {
           <GoogleIcon />
           Продължи с Google
         </button>
+
+        <a
+          className={styles.helpNote}
+          href="https://blag-coaching.com/help"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Помощен център
+        </a>
       </div>
     </div>
   )

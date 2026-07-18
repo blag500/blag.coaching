@@ -165,16 +165,26 @@ export default function NutritionCards({ onNavigate }) {
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : view === 'meals' ? (
-        <LibraryTab
-          recipes={recipes}
-          products={products}
-          loading={foodsLoading}
-          logServings={logServings}
-          setLogServings={setLogServings}
-          onLog={handleLogCustomFood}
-          onDelete={deleteFood}
-          onNewItem={() => setShowBuilder(true)}
-        />
+        <>
+          <LibraryTab
+            recipes={recipes}
+            products={products}
+            loading={foodsLoading}
+            logServings={logServings}
+            setLogServings={setLogServings}
+            onLog={handleLogCustomFood}
+            onDelete={deleteFood}
+            onNewItem={() => setShowBuilder(true)}
+          />
+          <button
+            className={styles.fab}
+            onClick={() => setShowBuilder(true)}
+            type="button"
+            aria-label="Добави рецепта"
+          >
+            +
+          </button>
+        </>
       ) : (
         <ActivityLog
           activities={activities}

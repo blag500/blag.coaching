@@ -100,7 +100,7 @@ const KB = {
             id: 'what',
             title: 'Какво е Blag Coaching?',
             popular: true,
-            body: `Blag Coaching е персонализирано фитнес приложение, създадено от треньор Благой за неговите клиенти. Работи като PWA (Progressive Web App) — инсталираш го на телефона си като обикновено приложение, без App Store или Google Play.
+            body: `Blag Coaching е персонализирано фитнес приложение, създадено за клиенти, които искат реален прогрес в храненето, тренировките и тялото. Работи като PWA (Progressive Web App) — инсталираш го на телефона си като обикновено приложение, без App Store или Google Play.
 
 ЧЕТИРИТЕ СТЪЛБА НА ПРИЛОЖЕНИЕТО
 
@@ -741,7 +741,7 @@ PUSH ИЗВЕСТИЯ НА IPHONE
             id: 'what',
             title: 'What is Blag Coaching?',
             popular: true,
-            body: `Blag Coaching is a personalised fitness app built by coach Blag for his clients. It runs as a PWA (Progressive Web App) — you install it on your phone like a normal app, without the App Store or Google Play.
+            body: `Blag Coaching is a personalised fitness app built for clients who want real progress in nutrition, training, and body composition. It runs as a PWA (Progressive Web App) — you install it on your phone like a normal app, without the App Store or Google Play.
 
 THE FOUR PILLARS
 

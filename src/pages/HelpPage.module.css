@@ -16,6 +16,7 @@
   background: rgba(12, 10, 6, 0.95);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 183, 77, 0.15);
+  padding-top: env(safe-area-inset-top);
 }
 
 .headerInner {

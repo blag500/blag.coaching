@@ -24,12 +24,13 @@ function toNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n }
 function toInt(v) { const n = parseInt(v);   return isNaN(n) ? 0 : n }
 
 export default function CatalogManager({ onClose }) {
-  const [products, setProducts] = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [editing,  setEditing]  = useState(null) // null | 'new' | product.id
-  const [form,     setForm]     = useState(EMPTY_FORM)
-  const [saving,   setSaving]   = useState(false)
-  const [error,    setError]    = useState('')
+  const [products,    setProducts]    = useState([])
+  const [loading,     setLoading]     = useState(true)
+  const [editing,     setEditing]     = useState(null) // null | 'new' | product.id
+  const [form,        setForm]        = useState(EMPTY_FORM)
+  const [saving,      setSaving]      = useState(false)
+  const [error,       setError]       = useState('')
+  const [uploadingImg, setUploadingImg] = useState(false)
 
   useEffect(() => { load() }, [])
 
@@ -70,6 +71,20 @@ export default function CatalogManager({ onClose }) {
   }
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })) }
+
+  async function uploadImage(file) {
+    setUploadingImg(true)
+    setError('')
+    const ext = file.name.split('.').pop().toLowerCase()
+    const path = `products/${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage
+      .from('catalog-images')
+      .upload(path, file, { upsert: true })
+    if (upErr) { setError('Грешка при качване: ' + upErr.message); setUploadingImg(false); return }
+    const { data } = supabase.storage.from('catalog-images').getPublicUrl(path)
+    set('image_url', data.publicUrl)
+    setUploadingImg(false)
+  }
 
   async function save() {
     if (!form.name.trim()) { setError('Въведи наименование'); return }
@@ -166,74 +181,94 @@ export default function CatalogManager({ onClose }) {
           </div>
         )}
 
-        {editing !== null && (
-          <div className={styles.formOverlay}>
-            <div className={styles.form}>
-              <div className={styles.formTitle}>{editing === 'new' ? 'НОВ ПРОДУКТ' : 'РЕДАКТИРАЙ'}</div>
+      </div>
 
-              <input className={styles.input} placeholder="Наименование *" value={form.name} onChange={e => set('name', e.target.value)} autoFocus />
-              <input className={styles.input} placeholder="Описание" value={form.description} onChange={e => set('description', e.target.value)} />
+      {editing !== null && (
+        <div className={styles.formOverlay}>
+          <div className={styles.form}>
+            <div className={styles.formTitle}>{editing === 'new' ? 'НОВ ПРОДУКТ' : 'РЕДАКТИРАЙ'}</div>
 
-              <div className={styles.row2}>
-                <select className={styles.select} value={form.category} onChange={e => set('category', e.target.value)}>
-                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                </select>
-                <input className={styles.input} placeholder="Цена (стотинки)" type="number" value={form.price_stotinki}
-                  onChange={e => set('price_stotinki', e.target.value)} />
+            <input className={styles.input} placeholder="Наименование *" value={form.name} onChange={e => set('name', e.target.value)} autoFocus />
+            <input className={styles.input} placeholder="Описание" value={form.description} onChange={e => set('description', e.target.value)} />
+
+            <div className={styles.row2}>
+              <select className={styles.select} value={form.category} onChange={e => set('category', e.target.value)}>
+                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+              <input className={styles.input} placeholder="Цена (стотинки)" type="number" value={form.price_stotinki}
+                onChange={e => set('price_stotinki', e.target.value)} />
+            </div>
+
+            <div className={styles.priceHint}>
+              {form.price_stotinki ? `= ${(toInt(form.price_stotinki) / 100).toFixed(2)} лв.` : ''}
+            </div>
+
+            <div className={styles.macroGrid}>
+              <div className={styles.macroField}>
+                <label className={styles.macroLabel}>Kcal</label>
+                <input className={styles.input} type="number" value={form.kcal_per_serving} onChange={e => set('kcal_per_serving', e.target.value)} />
               </div>
-
-              <div className={styles.priceHint}>
-                {form.price_stotinki ? `= ${(toInt(form.price_stotinki) / 100).toFixed(2)} лв.` : ''}
+              <div className={styles.macroField}>
+                <label className={styles.macroLabel} style={{ color: '#42A5F5' }}>Протеин g</label>
+                <input className={styles.input} type="number" value={form.protein_per_serving} onChange={e => set('protein_per_serving', e.target.value)} />
               </div>
-
-              <div className={styles.macroGrid}>
-                <div className={styles.macroField}>
-                  <label className={styles.macroLabel}>Kcal</label>
-                  <input className={styles.input} type="number" value={form.kcal_per_serving} onChange={e => set('kcal_per_serving', e.target.value)} />
-                </div>
-                <div className={styles.macroField}>
-                  <label className={styles.macroLabel} style={{ color: '#42A5F5' }}>Протеин g</label>
-                  <input className={styles.input} type="number" value={form.protein_per_serving} onChange={e => set('protein_per_serving', e.target.value)} />
-                </div>
-                <div className={styles.macroField}>
-                  <label className={styles.macroLabel} style={{ color: '#66BB6A' }}>Въглехид. g</label>
-                  <input className={styles.input} type="number" value={form.carbs_per_serving} onChange={e => set('carbs_per_serving', e.target.value)} />
-                </div>
-                <div className={styles.macroField}>
-                  <label className={styles.macroLabel} style={{ color: '#ffb74d' }}>Мазнини g</label>
-                  <input className={styles.input} type="number" value={form.fat_per_serving} onChange={e => set('fat_per_serving', e.target.value)} />
-                </div>
+              <div className={styles.macroField}>
+                <label className={styles.macroLabel} style={{ color: '#66BB6A' }}>Въглехид. g</label>
+                <input className={styles.input} type="number" value={form.carbs_per_serving} onChange={e => set('carbs_per_serving', e.target.value)} />
               </div>
-
-              <div className={styles.row2}>
-                <input className={styles.input} placeholder="Порция" type="number" value={form.serving_size} onChange={e => set('serving_size', e.target.value)} />
-                <select className={styles.select} value={form.serving_unit} onChange={e => set('serving_unit', e.target.value)}>
-                  {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                </select>
-              </div>
-
-              <div className={styles.row2}>
-                <input className={styles.input} placeholder="Ред (sort_order)" type="number" value={form.sort_order} onChange={e => set('sort_order', e.target.value)} />
-                <label className={styles.availToggle}>
-                  <input type="checkbox" checked={form.available} onChange={e => set('available', e.target.checked)} />
-                  <span>Активен</span>
-                </label>
-              </div>
-
-              <input className={styles.input} placeholder="Image URL (незадължително)" value={form.image_url} onChange={e => set('image_url', e.target.value)} />
-
-              {error && <div className={styles.error}>{error}</div>}
-
-              <div className={styles.formActions}>
-                <button type="button" className={styles.cancelBtn} onClick={() => setEditing(null)}>ОТКАЗ</button>
-                <button type="button" className={styles.saveBtn} onClick={save} disabled={saving}>
-                  {saving ? '...' : 'ЗАПАЗИ'}
-                </button>
+              <div className={styles.macroField}>
+                <label className={styles.macroLabel} style={{ color: '#ffb74d' }}>Мазнини g</label>
+                <input className={styles.input} type="number" value={form.fat_per_serving} onChange={e => set('fat_per_serving', e.target.value)} />
               </div>
             </div>
+
+            <div className={styles.row2}>
+              <input className={styles.input} placeholder="Порция" type="number" value={form.serving_size} onChange={e => set('serving_size', e.target.value)} />
+              <select className={styles.select} value={form.serving_unit} onChange={e => set('serving_unit', e.target.value)}>
+                {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
+            </div>
+
+            <div className={styles.row2}>
+              <input className={styles.input} placeholder="Ред (sort_order)" type="number" value={form.sort_order} onChange={e => set('sort_order', e.target.value)} />
+              <label className={styles.availToggle}>
+                <input type="checkbox" checked={form.available} onChange={e => set('available', e.target.checked)} />
+                <span>Активен</span>
+              </label>
+            </div>
+
+            <div className={styles.imageField}>
+              {form.image_url && (
+                <img src={form.image_url} className={styles.imagePreview} alt="" />
+              )}
+              <div className={styles.imageActions}>
+                <label className={styles.imageUploadBtn}>
+                  {uploadingImg ? 'Качва...' : form.image_url ? 'Смени снимка' : '+ Добави снимка'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => e.target.files[0] && uploadImage(e.target.files[0])}
+                    disabled={uploadingImg}
+                  />
+                </label>
+                {form.image_url && (
+                  <button type="button" className={styles.imageClearBtn} onClick={() => set('image_url', '')}>Премахни</button>
+                )}
+              </div>
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            <div className={styles.formActions}>
+              <button type="button" className={styles.cancelBtn} onClick={() => setEditing(null)}>ОТКАЗ</button>
+              <button type="button" className={styles.saveBtn} onClick={save} disabled={saving}>
+                {saving ? '...' : 'ЗАПАЗИ'}
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

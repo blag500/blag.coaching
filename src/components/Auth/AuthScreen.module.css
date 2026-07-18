@@ -276,4 +276,17 @@
   border-color: rgba(201, 162, 39, 0.3);
 }
 
+.helpNote {
+  display: block;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+  padding: 4px 0;
+}
+
+.helpNote:hover { opacity: 0.85; }
 
