@@ -105,6 +105,21 @@ const PosingIcon = () => (
     <path d="M10 14h4" />
   </svg>
 )
+const ShopIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </svg>
+)
+const OrdersIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="9" y1="13" x2="15" y2="13" />
+    <line x1="9" y1="17" x2="13" y2="17" />
+  </svg>
+)
 const SupplementIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M9 3L3 9a6 6 0 0 0 8.49 8.49L20 9a6 6 0 0 0-8.49-8.49z" />
@@ -123,6 +138,7 @@ const CLIENT_SECTIONS = [
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
+      { id: 'shop',        key: 'nav.shop',        Icon: ShopIcon       },
     ],
   },
   {
@@ -166,6 +182,7 @@ const COACH_SECTIONS = [
     labelEn: 'CLIENTS',
     tabs: [
       { id: 'clients',  key: 'nav.clients', Icon: ClientsIcon },
+      { id: 'orders',   key: 'nav.orders',  Icon: OrdersIcon  },
       { id: 'coachday', key: 'nav.myDay',   Icon: MyDayIcon   },
       { id: 'chat',     key: 'nav.chat',    Icon: ChatIcon    },
     ],
@@ -179,6 +196,7 @@ const COACH_SECTIONS = [
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
+      { id: 'shop',        key: 'nav.shop',        Icon: ShopIcon       },
     ],
   },
   {

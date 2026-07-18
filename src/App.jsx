@@ -29,6 +29,8 @@ import Tasks from './components/Tasks/Tasks'
 import PrepProtocol from './components/PrepProtocol/PrepProtocol'
 import PosingPage from './components/Posing/PosingPage'
 import SupplementsPage from './components/Supplements/SupplementsPage'
+import ShopPage from './components/Shop/ShopPage'
+import OrdersPanel from './components/Coach/OrdersPanel'
 import PaymentWall from './components/PaymentWall/PaymentWall'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
@@ -47,6 +49,9 @@ function AppShell() {
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
     return new URLSearchParams(window.location.search).get('payment') === 'success'
   })
+  const [orderSuccessId] = useState(() =>
+    new URLSearchParams(window.location.search).get('order_success') ?? null
+  )
   const hiddenAtRef = useRef(null)
 
   // Once session + profile arrive, apply any plan chosen before registration
@@ -59,10 +64,12 @@ function AppShell() {
 
   // Stripe redirect: clean URL then poll until webhook confirms subscription
   useEffect(() => {
-    if (!paymentProcessing) return
+    if (!paymentProcessing && !orderSuccessId) return
     const url = new URL(window.location.href)
     url.searchParams.delete('payment')
+    url.searchParams.delete('order_success')
     window.history.replaceState({}, '', url.pathname)
+    if (orderSuccessId) setActiveTab('shop')
   }, [])
 
   useEffect(() => {
@@ -192,6 +199,8 @@ function AppShell() {
     protocol:   <PrepProtocol />,
     posing:       <PosingPage />,
     supplements:  <SupplementsPage />,
+    shop:         <ShopPage initialOrderSuccess={!!orderSuccessId} />,
+    orders:       <OrdersPanel />,
   }
 
   function dismissWelcome() {

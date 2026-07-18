@@ -6,6 +6,8 @@ import { useFoodLog } from '../../hooks/useFoodLog'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { useWaterLog } from '../../hooks/useWaterLog'
 import { useSupplements } from '../../hooks/useSupplements'
+import { useShop, recommendProducts } from '../../hooks/useShop'
+import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import styles from './TodayDashboard.module.css'
@@ -23,6 +25,8 @@ export default function TodayDashboard({ onNavigate }) {
   const { habits, checked } = useHabitsToday()
   const { glasses, target: waterTarget, add: addWater } = useWaterLog()
   const { takenCount: suppTaken, totalCount: suppTotal } = useSupplements()
+  const { products: shopProducts } = useShop()
+  const cart = useCart()
   const [workouts, setWorkouts] = useState([])
 
   const targets = {
@@ -81,6 +85,8 @@ export default function TodayDashboard({ onNavigate }) {
 
   const lastWorkout   = workouts[0] ?? null
   const todayWorkouts = workouts.filter(w => w.completed_date === dateStr(0))
+
+  const recommendations = recommendProducts(shopProducts, targets, totals)
 
   const completedHabits = habits.filter(h => checked[h.id]).length
   const totalHabits     = habits.length || 1
@@ -277,6 +283,53 @@ export default function TodayDashboard({ onNavigate }) {
         </span>
         <span className={styles.checkinArrow}>→</span>
       </button>
+
+      {/* ── Shop shortcut ── */}
+      <button className={styles.shopCard} onClick={() => onNavigate('shop')} type="button">
+        <div className={styles.suppLeft}>
+          <span className={styles.suppIcon}>🛒</span>
+          <div className={styles.suppText}>
+            <span className={styles.cardLabel}>{t('today.shop')}</span>
+            <span className={styles.suppSub}>{t('today.shopSub')}</span>
+          </div>
+        </div>
+        <span className={styles.checkinArrow}>→</span>
+      </button>
+
+      {/* ── Recommendation widget ── */}
+      {recommendations.length > 0 && (
+        <div className={styles.recCard}>
+          <div className={styles.recHeader}>
+            <span className={styles.cardLabel}>{t('today.shopRec')}</span>
+            <span className={styles.recDeficit}>
+              {t('today.shopRecSub')} {Math.round(Math.max(0, targets.protein - (totals.protein || 0)))}g П
+              {targets.kcal > 0 && Math.max(0, targets.kcal - (totals.kcal || 0)) > 100
+                ? ` · ${Math.round(Math.max(0, targets.kcal - (totals.kcal || 0)))} kcal`
+                : ''}
+            </span>
+          </div>
+          <div className={styles.recList}>
+            {recommendations.map(p => {
+              const inCart = cart.items.find(i => i.product_id === p.id)
+              return (
+                <div key={p.id} className={styles.recRow}>
+                  <div className={styles.recInfo}>
+                    <span className={styles.recName}>{p.name}</span>
+                    <span className={styles.recMacros}>{p.protein_per_serving}g П · {p.kcal_per_serving} kcal · {(p.price_stotinki / 100).toFixed(2)} лв.</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${styles.recOrderBtn} ${inCart ? styles.recOrderBtnDone : ''}`}
+                    onClick={() => { if (!inCart) { cart.addItem(p); onNavigate('shop') } }}
+                  >
+                    {inCart ? '✓' : t('today.shopOrder')}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Supplements shortcut ── */}
       <button className={styles.suppCard} onClick={() => onNavigate('supplements')} type="button">

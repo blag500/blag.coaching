@@ -622,6 +622,109 @@
   color: var(--muted);
 }
 
+/* ── Shop shortcut ── */
+.shopCard {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--accent-rgb), 0.03));
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s;
+  width: 100%;
+  text-align: left;
+}
+
+.shopCard:active {
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+/* ── Recommendation widget ── */
+.recCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recDeficit {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.recList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+
+.recInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recName {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recMacros {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.recOrderBtn {
+  padding: 7px 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--bg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  transition: background 150ms, opacity 150ms;
+}
+
+.recOrderBtnDone {
+  background: #66BB6A;
+}
+
 /* ── Supplements shortcut ── */
 .suppCard {
   background: var(--surface-1);
