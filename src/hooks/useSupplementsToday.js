@@ -13,7 +13,8 @@ export function useSupplementsToday() {
     if (!user) return
     const [supsRes, logsRes] = await Promise.all([
       supabase.from('supplements').select('*')
-        .eq('user_id', user.id).order('sort_order').order('created_at'),
+        .eq('user_id', user.id).eq('active', true)
+        .order('sort_order').order('created_at'),
       supabase.from('supplement_logs').select('supplement_id')
         .eq('user_id', user.id).eq('date', today),
     ])
@@ -41,25 +42,30 @@ export function useSupplementsToday() {
 
   async function addSupplement({ name, dose, reminders }) {
     if (!user) return { error: new Error('not logged in') }
-    // Map reminders array to timing string for storage
-    const timing = reminders && reminders.length > 0
-      ? reminders.map(r => ({ morning: 'Сутринта', afternoon: 'Обед', evening: 'Вечерта' }[r] || r)).join(', ')
-      : null
+    const timingLabel = (reminders || []).map(r =>
+      ({ morning: 'Сутринта', afternoon: 'Обед', evening: 'Вечерта' }[r] || r)
+    ).join(', ') || null
+
     const { data, error } = await supabase.from('supplements').insert({
-      user_id: user.id,
-      name:    name.trim(),
-      dose:    dose.trim() || null,
-      timing,
+      user_id:          user.id,
+      name:             name.trim(),
+      dose:             dose.trim() || null,
+      timing:           timingLabel,
+      remind_morning:   (reminders || []).includes('morning'),
+      remind_afternoon: (reminders || []).includes('afternoon'),
+      remind_evening:   (reminders || []).includes('evening'),
     }).select().single()
     if (!error && data) setSupplements(prev => [...prev, data])
     return { error }
   }
 
   async function removeSupplement(id) {
-    await supabase.from('supplements').delete().eq('id', id)
+    await supabase.from('supplements').update({ active: false }).eq('id', id)
     setSupplements(prev => prev.filter(s => s.id !== id))
     setTakenIds(prev => { const s = new Set(prev); s.delete(id); return s })
   }
 
-  return { supplements, takenIds, loading, toggle, addSupplement, removeSupplement }
+  const pendingCount = supplements.length - takenIds.size
+
+  return { supplements, takenIds, loading, toggle, addSupplement, removeSupplement, pendingCount }
 }

@@ -233,7 +233,7 @@ const COACH_SECTIONS = [
   },
 ]
 
-export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach }) {
+export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach, supplementPending = 0 }) {
   const { profile } = useAuth()
   const { t, lang } = useSettings()
   const sections = isCoach ? COACH_SECTIONS : CLIENT_SECTIONS
@@ -308,7 +308,10 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
                       <tab.Icon />
                     </span>
                     <span className={styles.label}>{label}</span>
-                    {activeTab === tab.id && <span className={styles.activeDot} aria-hidden="true" />}
+                    {tab.id === 'supplements' && supplementPending > 0 && (
+                      <span className={styles.badge}>{supplementPending}</span>
+                    )}
+                    {activeTab === tab.id && tab.id !== 'supplements' && <span className={styles.activeDot} aria-hidden="true" />}
                   </button>
                 )
               })}

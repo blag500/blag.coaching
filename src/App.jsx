@@ -35,6 +35,8 @@ import PaymentWall from './components/PaymentWall/PaymentWall'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
+import { useSupplementsToday } from './hooks/useSupplementsToday'
+import SupplementBanner from './components/Supplements/SupplementBanner'
 import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
@@ -43,6 +45,7 @@ function AppShell() {
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('today')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [showSupplementBanner, setShowSupplementBanner] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
   const [landingSeen, setLandingSeen] = useState(false)
   const [planChosen, setPlanChosen] = useState(() => !!localStorage.getItem('blag_pending_plan'))
@@ -87,6 +90,7 @@ function AppShell() {
   }, [profile?.stripe_subscription_id])
 
   usePushNotifications()
+  const { pendingCount: supplementPending } = useSupplementsToday()
 
   useEffect(() => { trackPage(activeTab) }, [activeTab])
 
@@ -95,17 +99,27 @@ function AppShell() {
       if (document.visibilityState === 'hidden') {
         hiddenAtRef.current = Date.now()
       } else if (document.visibilityState === 'visible' && hiddenAtRef.current) {
-        if (Date.now() - hiddenAtRef.current > 30000) {
-          setSplash(true)
-        }
+        const away = Date.now() - hiddenAtRef.current
         hiddenAtRef.current = null
+        if (away > 30000) {
+          setSplash(true)
+        } else if (away > 5000 && supplementPending > 0) {
+          setShowSupplementBanner(true)
+        }
       }
     }
     document.addEventListener('visibilitychange', handler)
     return () => document.removeEventListener('visibilitychange', handler)
-  }, [])
+  }, [supplementPending])
 
-  if (splash) return <Splash onDone={() => setSplash(false)} />
+  if (splash) return (
+    <Splash onDone={() => {
+      setSplash(false)
+      if (supplementPending > 0) {
+        setTimeout(() => setShowSupplementBanner(true), 1500)
+      }
+    }} />
+  )
 
   if (loading) {
     return (
@@ -211,12 +225,20 @@ function AppShell() {
   return (
     <div className={styles.shell}>
       {!isCoach && showWelcome && <WelcomeOverlay onDone={dismissWelcome} />}
+      {!isCoach && showSupplementBanner && supplementPending > 0 && (
+        <SupplementBanner
+          count={supplementPending}
+          onNavigate={() => { setActiveTab('supplements'); setShowSupplementBanner(false) }}
+          onDismiss={() => setShowSupplementBanner(false)}
+        />
+      )}
       <NavDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isCoach={isCoach}
+        supplementPending={!isCoach ? supplementPending : 0}
       />
 
       <UpdateBanner />
