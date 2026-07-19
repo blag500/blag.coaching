@@ -82,12 +82,14 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
   const [query, setQuery]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [labelLoading, setLabelLoading] = useState(false)
+  const [foodPhotoLoading, setFoodPhotoLoading] = useState(false)
   const [error, setError]           = useState(null)
   const [result, setResult]         = useState(null)      // single food
   const [multiItems, setMultiItems] = useState(null)      // multi-food array
   const [grams, setGrams]           = useState('100')
-  const addPanelRef  = useRef(null)
-  const photoInputRef = useRef(null)
+  const addPanelRef     = useRef(null)
+  const photoInputRef   = useRef(null)
+  const foodPhotoInputRef = useRef(null)
 
   useEffect(() => {
     if ((result || multiItems) && addPanelRef.current) {
@@ -191,6 +193,47 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
     onAdded?.()
   }
 
+  async function handleFoodPhoto(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setFoodPhotoLoading(true)
+    setError(null)
+    setResult(null)
+    setMultiItems(null)
+    try {
+      const { base64, mediaType } = await resizeImage(file)
+      const { data, error: fnError } = await supabase.functions.invoke('food-photo', {
+        body: { image: base64, mediaType },
+      })
+      if (fnError) {
+        let detail = fnError.message
+        try {
+          const body = await fnError.context?.json()
+          detail = JSON.stringify(body)
+        } catch { try { detail = await fnError.context?.text() } catch {} }
+        throw new Error(detail)
+      }
+      if (data?.type === 'multi' && Array.isArray(data.items)) {
+        setMultiItems(data.items.map(item => ({
+          ...item,
+          _pgKcal:    item.kcal    / item.grams,
+          _pgProtein: item.protein / item.grams,
+          _pgCarbs:   item.carbs   / item.grams,
+          _pgFat:     item.fat     / item.grams,
+        })))
+        return
+      }
+      if (!data?.per100g) throw new Error(`invalid response: ${JSON.stringify(data)}`)
+      setResult(data)
+      setGrams(String(data.typical_grams || 100))
+    } catch (err) {
+      setError(`Грешка: ${err.message}`)
+    } finally {
+      setFoodPhotoLoading(false)
+    }
+  }
+
   const g = parseFloat(grams)
 
   return (
@@ -225,6 +268,19 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
 
         <button
           className={styles.labelScanBtn}
+          onClick={() => foodPhotoInputRef.current?.click()}
+          disabled={foodPhotoLoading}
+          type="button"
+          title="Снимай ястие — Gemini разпознава храните"
+        >
+          <CameraIcon />
+          {foodPhotoLoading
+            ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />Анализира...</>
+            : 'Снимка на ястие'}
+        </button>
+
+        <button
+          className={styles.labelScanBtn}
           onClick={() => photoInputRef.current?.click()}
           disabled={labelLoading}
           type="button"
@@ -237,6 +293,15 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         </button>
       </div>
 
+      <input
+        className={styles.photoFileInput}
+        type="file"
+        accept="image/*"
+        ref={foodPhotoInputRef}
+        onChange={handleFoodPhoto}
+        tabIndex={-1}
+        aria-hidden="true"
+      />
       <input
         className={styles.photoFileInput}
         type="file"
