@@ -384,12 +384,13 @@
 /* AI search + label scan row */
 .aiActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
 }
 
 .aiSearchBtn {
-  flex: 1;
+  flex: 1 1 100%;
   padding: 11px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.3);
