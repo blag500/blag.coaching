@@ -2,11 +2,13 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst } from 'workbox-strategies'
 
-// Skip waiting only after precache install is complete (via autoUpdate message)
+// Always skip waiting — take control immediately on new install
+self.addEventListener('install', () => self.skipWaiting())
+self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
+
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
 })
-self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
 
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
