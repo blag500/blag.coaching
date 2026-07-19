@@ -49,15 +49,6 @@ export default function AuthScreen({ onBack }) {
           <span className={styles.brandSub}>COACHING</span>
         </div>
 
-        <div className={styles.pitch}>
-          <p className={styles.pitchTagline}>Личен треньор в джоба ти</p>
-          <div className={styles.pitchTags}>
-            <span className={styles.pitchTag}>🥗 Хранене</span>
-            <span className={styles.pitchTag}>💪 Тренировки</span>
-            <span className={styles.pitchTag}>📊 Прогрес</span>
-          </div>
-        </div>
-
         <div className={styles.toggle}>
           <button
             className={`${styles.toggleBtn} ${mode === 'login' ? styles.toggleActive : ''}`}
@@ -140,14 +131,7 @@ export default function AuthScreen({ onBack }) {
           Продължи с Google
         </button>
 
-        <a
-          className={styles.helpNote}
-          href="https://blag-coaching.com/help"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Помощен център
-        </a>
+
       </div>
     </div>
   )
