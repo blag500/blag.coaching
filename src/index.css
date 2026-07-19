@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -17,8 +17,8 @@
   --border:    #2B2215;
   --red:       #FF4455;
 
-  --font-heading: 'Bebas Neue', sans-serif;
-  --font-body:    'JetBrains Mono', monospace;
+  --font-heading: 'Cinzel', Georgia, serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
 
   --nav-height:  60px;
   --radius:      16px;

@@ -89,7 +89,7 @@ export default function NutritionProgress({ totals, targets, kcalBurned = 0, eat
               textAnchor="middle"
               fill={kcalOver ? '#ef4444' : 'var(--text)'}
               fontSize="22"
-              fontFamily="'Bebas Neue', cursive"
+              fontFamily="'Cinzel', Georgia, serif"
               letterSpacing="1">
               {kcalLogged}
             </text>
@@ -97,21 +97,21 @@ export default function NutritionProgress({ totals, targets, kcalBurned = 0, eat
               textAnchor="middle"
               fill="var(--muted)"
               fontSize="10"
-              fontFamily="'JetBrains Mono', monospace">
+              fontFamily="'Inter', system-ui, sans-serif">
               ккал
             </text>
             <text x="60" y="75"
               textAnchor="middle"
               fill="var(--muted)"
               fontSize="9"
-              fontFamily="'JetBrains Mono', monospace">
+              fontFamily="'Inter', system-ui, sans-serif">
               / {kcalTarget}
             </text>
             <text x="60" y="88"
               textAnchor="middle"
               fill={kcalOver ? '#ef4444' : 'var(--muted)'}
               fontSize="9"
-              fontFamily="'JetBrains Mono', monospace">
+              fontFamily="'Inter', system-ui, sans-serif">
               {kcalPctDisplay}%
             </text>
           </svg>

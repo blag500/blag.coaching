@@ -12,7 +12,7 @@
 .title {
   font-family: var(--font-heading);
   font-size: 36px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.03em;
   color: var(--text);
   line-height: 1;
   margin: 0 0 4px;

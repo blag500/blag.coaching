@@ -41,8 +41,8 @@ function ReadinessRing({ score }) {
           transform="rotate(-90 50 50)"
           style={{ transition: 'stroke-dasharray 0.4s ease' }}
         />
-        <text x="50" y="46" textAnchor="middle" fill={color} fontSize="22" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">{score}</text>
-        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="'JetBrains Mono', monospace">ГОТОВНОСТ</text>
+        <text x="50" y="46" textAnchor="middle" fill={color} fontSize="20" fontFamily="'Cinzel', Georgia, serif" letterSpacing="1">{score}</text>
+        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="'Inter', system-ui, sans-serif">ГОТОВНОСТ</text>
       </svg>
     </div>
   )

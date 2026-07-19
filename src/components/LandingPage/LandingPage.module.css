@@ -40,7 +40,7 @@
   font-family: var(--font-heading);
   font-size: 36px;
   line-height: 0.9;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.04em;
   color: var(--accent);
 }
 
