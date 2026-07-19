@@ -405,12 +405,12 @@ function ActivityRings({ kcalPct, habitsPct, trained, kcalVal, kcalUnit }) {
       })}
       {kcalVal > 0 && (
         <text x={cx} y={cy - 2} textAnchor="middle"
-          fill="var(--text)" fontSize="13" fontFamily="'Cinzel', Georgia, serif" letterSpacing="0.5">
+          fill="var(--text)" fontSize="13" fontFamily="'Bebas Neue', sans-serif" letterSpacing="0.5">
           {kcalVal}
         </text>
       )}
       <text x={cx} y={kcalVal > 0 ? cy + 8 : cy + 3} textAnchor="middle"
-        fill="var(--muted)" fontSize="7" fontFamily="'Inter', system-ui, sans-serif">
+        fill="var(--muted)" fontSize="7" fontFamily="'JetBrains Mono', monospace">
         {kcalUnit}
       </text>
     </svg>

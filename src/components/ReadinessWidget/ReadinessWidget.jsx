@@ -30,11 +30,11 @@ function ReadinessRing({ score, label }) {
           style={{ transition: 'stroke-dasharray 0.5s ease' }}
         />
         <text x="50" y="46" textAnchor="middle" fill={color}
-          fontSize="22" fontFamily="'Cinzel', Georgia, serif" letterSpacing="1">
+          fontSize="24" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">
           {score ?? '?'}
         </text>
         <text x="50" y="59" textAnchor="middle" fill="rgba(242,232,207,0.35)"
-          fontSize="7" fontFamily="'Inter', system-ui, sans-serif">
+          fontSize="7" fontFamily="'JetBrains Mono', monospace">
           {label}
         </text>
       </svg>
