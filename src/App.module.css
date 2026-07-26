@@ -46,18 +46,34 @@
 }
 
 .page {
-  animation: pageIn 260ms var(--ease-out) both;
+  animation: pageInUp 220ms var(--ease-out) both;
 }
 
-@keyframes pageIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-    filter: blur(3px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: none;
+.page[data-dir="right"] {
+  animation: pageInRight 240ms var(--ease-out) both;
+}
+
+.page[data-dir="left"] {
+  animation: pageInLeft 240ms var(--ease-out) both;
+}
+
+@keyframes pageInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes pageInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes pageInLeft {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page, .page[data-dir="right"], .page[data-dir="left"] {
+    animation: none;
   }
 }

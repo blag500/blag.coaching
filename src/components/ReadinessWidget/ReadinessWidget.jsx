@@ -1,5 +1,6 @@
 import { useReadiness } from '../../hooks/useReadiness'
 import { useSettings } from '../../contexts/SettingsContext'
+import Skeleton from '../Skeleton/Skeleton'
 import styles from './ReadinessWidget.module.css'
 
 function scoreColor(score) {
@@ -64,7 +65,24 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
   const { score, components, loading } = useReadiness(client)
   const { t } = useSettings()
 
-  if (loading) return null
+  if (loading) return (
+    <div className={styles.card} style={{ pointerEvents: 'none' }}>
+      <div className={styles.topRow}>
+        <div className={styles.left}>
+          <Skeleton circle width={110} />
+        </div>
+        <div className={styles.bars}>
+          {[80, 100, 70, 90, 60].map((w, i) => (
+            <div key={i} className={styles.barRow}>
+              <Skeleton width={90} height={8} style={{ borderRadius: 4 }} />
+              <Skeleton height={4} style={{ flex: 1, borderRadius: 2 }} />
+              <Skeleton width={22} height={8} style={{ borderRadius: 4 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 
   function scoreLabel(s) {
     if (s === null) return '—'

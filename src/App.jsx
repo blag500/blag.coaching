@@ -41,10 +41,13 @@ import FAB from './components/FAB/FAB'
 import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
+const NAV_ORDER = ['today', 'nutrition', 'training', 'profile']
+
 function AppShell() {
   const { session, profile, loading, selectPlan, refreshProfile } = useAuth()
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('today')
+  const [slideDir, setSlideDir] = useState('up')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showSupplementBanner, setShowSupplementBanner] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
@@ -89,6 +92,17 @@ function AppShell() {
       setPaymentProcessing(false)
     }
   }, [profile?.stripe_subscription_id])
+
+  function navigate(newTab) {
+    const prevIdx = NAV_ORDER.indexOf(activeTab)
+    const newIdx  = NAV_ORDER.indexOf(newTab)
+    if (prevIdx !== -1 && newIdx !== -1 && prevIdx !== newIdx) {
+      setSlideDir(newIdx > prevIdx ? 'right' : 'left')
+    } else {
+      setSlideDir('up')
+    }
+    setActiveTab(newTab)
+  }
 
   usePushNotifications()
   const { pendingCount: supplementPending } = useSupplementsToday()
@@ -196,8 +210,8 @@ function AppShell() {
   }
 
   const pages = {
-    today:      <TodayDashboard onNavigate={setActiveTab} />,
-    nutrition:  <NutritionCards onNavigate={setActiveTab} />,
+    today:      <TodayDashboard onNavigate={navigate} />,
+    nutrition:  <NutritionCards onNavigate={navigate} />,
     compliance: <Compliance />,
     training:   <Training />,
     recovery:   <Recovery />,
@@ -237,7 +251,7 @@ function AppShell() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={navigate}
         isCoach={isCoach}
         supplementPending={!isCoach ? supplementPending : 0}
       />
@@ -245,14 +259,14 @@ function AppShell() {
       <UpdateBanner />
       <NotificationPrompt />
       <main className={styles.content}>
-        <div key={activeTab} className={styles.page}>
+        <div key={activeTab} className={styles.page} data-dir={slideDir}>
           {pages[activeTab] ?? null}
         </div>
       </main>
-      <FAB onNavigate={setActiveTab} activeTab={activeTab} />
+      <FAB onNavigate={navigate} activeTab={activeTab} />
       <BottomNav
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={navigate}
         onMenuOpen={() => setDrawerOpen(true)}
       />
     </div>
