@@ -58,10 +58,10 @@ export function useActivityLog(date) {
 
   async function addActivity(activityId, durationMin) {
     const act = MET_ACTIVITIES.find(a => a.id === activityId)
-    if (!act || !session) return
+    if (!act || !session) return { error: new Error('Няма избрана активност') }
     const weightKg = profile?.weight_kg ?? 75
     const kcalBurned = calcKcal(act.met, weightKg, durationMin)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('activity_logs')
       .insert({
         user_id:      session.user.id,
@@ -72,7 +72,9 @@ export function useActivityLog(date) {
       })
       .select()
       .single()
+    if (error) console.error('activity_logs insert:', error)
     if (data) setActivities(prev => [...prev, data])
+    return { error }
   }
 
   async function removeActivity(id) {

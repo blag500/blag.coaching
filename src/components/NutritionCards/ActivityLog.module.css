@@ -13,34 +13,111 @@
   gap: 12px;
 }
 
-.chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-.chips::-webkit-scrollbar { display: none; }
+/* ── Searchable activity dropdown ─────────────── */
 
-.chip {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  background: var(--surface-1);
+.selectWrap {
+  position: relative;
+}
+
+.selectBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 8px;
   font-family: var(--font-body);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--muted);
+  font-size: 14px;
+  color: var(--text);
   cursor: pointer;
-  transition: background 140ms, color 140ms, border-color 140ms;
   -webkit-tap-highlight-color: transparent;
 }
 
-.chipActive {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--bg);
+.selectValue {
+  text-align: left;
+}
+
+.selectChevron {
+  color: var(--muted);
+  transform: rotate(90deg);
+  transition: transform 160ms ease;
+  font-size: 18px;
+  line-height: 1;
+}
+.selectChevronOpen {
+  transform: rotate(-90deg);
+}
+
+.selectPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--surface-2);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.optionList {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.option {
+  width: 100%;
+  text-align: left;
+  padding: 11px 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.option:hover {
+  background: var(--surface-2);
+}
+.optionActive {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+.optionEmpty {
+  padding: 14px 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.errorMsg {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #ef5350;
+  margin: 0;
 }
 
 .row {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import styles from './RecipeBuilder.module.css'
 
 function emptyIngredient() {
@@ -11,6 +11,7 @@ export default function RecipeBuilder({ onSave, onClose }) {
   const [servingGrams, setServingGrams] = useState('')
   const [ingredients, setIngredients] = useState([emptyIngredient()])
   const [saving, setSaving]           = useState(false)
+  const savingRef                     = useRef(false)
 
   // For standalone product (not recipe): store per-100g macros in dedicated fields
   const [prodKcal,    setProdKcal]    = useState('')
@@ -41,35 +42,40 @@ export default function RecipeBuilder({ onSave, onClose }) {
 
   async function handleSave() {
     if (!name.trim()) return
+    if (savingRef.current) return   // guard against double-tap duplicating the entry
+    savingRef.current = true
     setSaving(true)
 
-    if (isRecipe) {
-      const validIngredients = ingredients.filter(i => i.name.trim())
-      await onSave({
-        name:          name.trim(),
-        is_recipe:     true,
-        serving_grams: parseFloat(servingGrams) || totalGrams || 100,
-        kcal:          Math.round(totals.kcal),
-        protein:       Math.round(totals.protein * 10) / 10,
-        carbs:         Math.round(totals.carbs   * 10) / 10,
-        fat:           Math.round(totals.fat     * 10) / 10,
-        ingredients:   validIngredients.length > 0 ? validIngredients : null,
-      })
-    } else {
-      await onSave({
-        name:          name.trim(),
-        is_recipe:     false,
-        serving_grams: parseFloat(servingGrams) || 100,
-        kcal:          parseFloat(prodKcal)    || 0,
-        protein:       parseFloat(prodProtein) || 0,
-        carbs:         parseFloat(prodCarbs)   || 0,
-        fat:           parseFloat(prodFat)     || 0,
-        ingredients:   null,
-      })
+    try {
+      if (isRecipe) {
+        const validIngredients = ingredients.filter(i => i.name.trim())
+        await onSave({
+          name:          name.trim(),
+          is_recipe:     true,
+          serving_grams: parseFloat(servingGrams) || totalGrams || 100,
+          kcal:          Math.round(totals.kcal),
+          protein:       Math.round(totals.protein * 10) / 10,
+          carbs:         Math.round(totals.carbs   * 10) / 10,
+          fat:           Math.round(totals.fat     * 10) / 10,
+          ingredients:   validIngredients.length > 0 ? validIngredients : null,
+        })
+      } else {
+        await onSave({
+          name:          name.trim(),
+          is_recipe:     false,
+          serving_grams: parseFloat(servingGrams) || 100,
+          kcal:          parseFloat(prodKcal)    || 0,
+          protein:       parseFloat(prodProtein) || 0,
+          carbs:         parseFloat(prodCarbs)   || 0,
+          fat:           parseFloat(prodFat)     || 0,
+          ingredients:   null,
+        })
+      }
+      onClose()
+    } finally {
+      savingRef.current = false
+      setSaving(false)
     }
-
-    setSaving(false)
-    onClose()
   }
 
   const canSave = name.trim() && (

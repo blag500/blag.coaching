@@ -18,9 +18,9 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       <div className={styles.bottom}>
         <button className={styles.cta} onClick={onContinue} type="button">
-          ЗАПОЧНИ БЕЗПЛАТНО
+          ВЛЕЗ В ПРИЛОЖЕНИЕТО
         </button>
-        <p className={styles.note}>Започни сега. Плати после.</p>
+        <p className={styles.note}>Безплатно завинаги. Без карта.</p>
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
         </button>

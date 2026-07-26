@@ -656,6 +656,7 @@ function RecentMode({ onAddRaw }) {
   const [loading, setLoading] = useState(true)
   const [selectedName, setSelectedName] = useState(null)
   const [newGrams, setNewGrams] = useState('100')
+  const [editedName, setEditedName] = useState('')
   const [query, setQuery] = useState('')
 
   useEffect(() => {
@@ -684,6 +685,7 @@ function RecentMode({ onAddRaw }) {
 
   function handleSelect(item) {
     setSelectedName(item.name)
+    setEditedName(item.name)
     setNewGrams(String(item.grams > 0 ? item.grams : 100))
   }
 
@@ -692,8 +694,9 @@ function RecentMode({ onAddRaw }) {
     if (!g || g <= 0) return
     const base = item.grams > 0 ? item.grams : 100
     const ratio = g / base
+    const nameToUse = editedName.trim() || item.name
     onAddRaw({
-      name:    item.name,
+      name:    nameToUse,
       grams:   g,
       kcal:    Math.round(item.kcal    * ratio),
       protein: Math.round(item.protein * ratio * 10) / 10,
@@ -701,6 +704,7 @@ function RecentMode({ onAddRaw }) {
       fat:     Math.round(item.fat     * ratio * 10) / 10,
     })
     setSelectedName(null)
+    setEditedName('')
     setQuery('')
   }
 
@@ -740,7 +744,14 @@ function RecentMode({ onAddRaw }) {
           <li key={i} className={`${styles.recentItem} ${isExpanded ? styles.recentItemExpanded : ''}`}>
             {isExpanded ? (
               <>
-                <span className={styles.recentName}>{item.name}</span>
+                <input
+                  className={styles.recentNameInput}
+                  type="text"
+                  value={editedName}
+                  onChange={e => setEditedName(e.target.value)}
+                  placeholder={item.name}
+                  aria-label="Име на храна (може да се редактира)"
+                />
                 <div className={styles.gramRow}>
                   <label className={styles.gramLabel}>Грамаж</label>
                   <input
@@ -763,7 +774,7 @@ function RecentMode({ onAddRaw }) {
                   </div>
                 )}
                 <div className={styles.panelActions}>
-                  <button className={styles.cancelBtn} onClick={() => setSelectedName(null)} type="button">Назад</button>
+                  <button className={styles.cancelBtn} onClick={() => { setSelectedName(null); setEditedName('') }} type="button">Назад</button>
                   <button className={styles.addBtn} onClick={() => handleConfirm(item)} type="button">+ Добави</button>
                 </div>
               </>

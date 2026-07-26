@@ -203,6 +203,22 @@
   gap: 2px;
 }
 
+.recentNameInput {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 140ms;
+}
+.recentNameInput:focus {
+  border-color: var(--accent);
+}
+
 .recentName {
   font-family: var(--font-body);
   font-size: 13px;

@@ -18,7 +18,7 @@ const PLANS = [
       'Навици & съответствие',
       'Калориен калкулатор',
     ],
-    cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
+    cta: 'ИЗПОЛЗВАЙ БЕЗПЛАТНО',
     accent: 'var(--accent)',
   },
   {
@@ -85,7 +85,7 @@ export default function PlanSelector({ onSelect }) {
           <span className={styles.brandSub}>COACHING</span>
         </div>
         <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
-        <p className={styles.subtitle}>Започни безплатно. Надстрой когато си готов.</p>
+        <p className={styles.subtitle}>Безплатно завинаги. Надстрой само ако искаш повече.</p>
       </div>
 
       <div className={styles.plans}>

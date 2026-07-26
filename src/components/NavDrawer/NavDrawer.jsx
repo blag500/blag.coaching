@@ -138,7 +138,7 @@ const CLIENT_SECTIONS = [
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
-      { id: 'shop',        key: 'nav.shop',        Icon: ShopIcon       },
+      // { id: 'shop', ... } — магазинът е скрит за клиенти до пускането му (само треньор го вижда)
     ],
   },
   {

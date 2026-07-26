@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useLocalStorage } from '../../hooks/useLocalStorage'
 import styles from './DayCard.module.css'
 
 function labelBg(label) {
@@ -25,7 +25,8 @@ export default function DayCard({ dayData, onLogLift }) {
   const { label, muscles = [], exercises = [], isRest: isRestFlag } = dayData
   const isRest  = isRestFlag || (label || '').toUpperCase() === 'REST'
   const isCoach = profile?.role === 'coach'
-  const [open, setOpen] = useState(true)
+  // Persist collapsed/expanded state across navigation & remounts
+  const [open, setOpen] = useLocalStorage('blag_exlist_open', true)
 
   return (
     <div className={styles.card}>

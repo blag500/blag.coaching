@@ -10,6 +10,7 @@ import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
+import MacroDonut from './MacroDonut'
 import styles from './TodayDashboard.module.css'
 
 function dateStr(offset = 0) {
@@ -150,6 +151,9 @@ export default function TodayDashboard({ onNavigate }) {
 
       {/* ── Readiness widget ── */}
       <ReadinessWidget onNavigate={onNavigate} />
+
+      {/* ── Macro balance donut (Apple Health style) ── */}
+      <MacroDonut totals={totals} targets={targets} />
 
       {/* ── Activity rings card ── */}
       <div className={styles.card}>
