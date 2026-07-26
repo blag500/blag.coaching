@@ -9,7 +9,7 @@ const KCAL_PER_G = { protein: 4, carbs: 4, fat: 9 }
  * пропорционални на каларичния им принос към общото прието днес.
  * В центъра — общ ккал; отдясно — статусен етикет спрямо целта.
  */
-export default function MacroDonut({ totals, targets }) {
+export default function MacroDonut({ totals, targets, onClick }) {
   const p = Math.max(0, totals?.protein || 0)
   const c = Math.max(0, totals?.carbs   || 0)
   const f = Math.max(0, totals?.fat     || 0)
@@ -71,8 +71,10 @@ export default function MacroDonut({ totals, targets }) {
   const startC = startP + (available * shareP / circ) * 360 + (GAP / circ) * 360
   const startF = startC + (available * shareC / circ) * 360 + (GAP / circ) * 360
 
+  const Tag = onClick ? 'button' : 'div'
+
   return (
-    <div className={styles.card}>
+    <Tag className={styles.card} onClick={onClick} type={onClick ? 'button' : undefined}>
       <div className={styles.header}>
         <span className={styles.title}>МАКРО БАЛАНС</span>
         <span className={styles.subtitle}>днес</span>
@@ -128,7 +130,7 @@ export default function MacroDonut({ totals, targets }) {
         <LegendRow color="#4FC3F7" label="Въглехидрати" g={Math.round(c)} kcal={Math.round(kcalC)} target={targets?.carbs} unit="g" />
         <LegendRow color="#ffb74d" label="Мазнини" g={Math.round(f)} kcal={Math.round(kcalF)} target={targets?.fat} unit="g" />
       </ul>
-    </div>
+    </Tag>
   )
 }
 

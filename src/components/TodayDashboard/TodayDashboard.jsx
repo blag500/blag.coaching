@@ -153,7 +153,7 @@ export default function TodayDashboard({ onNavigate }) {
       <ReadinessWidget onNavigate={onNavigate} />
 
       {/* ── Macro balance donut (Apple Health style) ── */}
-      <MacroDonut totals={totals} targets={targets} />
+      <MacroDonut totals={totals} targets={targets} onClick={() => onNavigate('nutrition')} />
 
       {/* ── Activity rings card ── */}
       <div className={styles.card}>

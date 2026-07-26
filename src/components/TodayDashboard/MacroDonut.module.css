@@ -6,6 +6,15 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s;
+}
+
+.card:active {
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 /* ── Header ────────────────────────────────── */
