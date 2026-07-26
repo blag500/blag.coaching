@@ -10,7 +10,6 @@ import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
-import MacroDonut from './MacroDonut'
 import styles from './TodayDashboard.module.css'
 
 function dateStr(offset = 0) {
@@ -152,8 +151,31 @@ export default function TodayDashboard({ onNavigate }) {
       {/* ── Readiness widget ── */}
       <ReadinessWidget onNavigate={onNavigate} />
 
-      {/* ── Macro balance donut (Apple Health style) ── */}
-      <MacroDonut totals={totals} targets={targets} onClick={() => onNavigate('nutrition')} />
+      {/* ── Nutrition 2×2 grid ── */}
+      <div className={styles.nutritionGrid}>
+        {[
+          { key: 'kcal',    label: t('today.kcal'),    val: Math.round(totals.kcal    || 0), target: targets.kcal,    unit: 'kcal', color: '#ffb74d' },
+          { key: 'protein', label: t('today.protein'), val: Math.round(totals.protein || 0), target: targets.protein, unit: 'g',    color: '#42A5F5' },
+          { key: 'carbs',   label: t('today.carbs'),   val: Math.round(totals.carbs   || 0), target: targets.carbs,   unit: 'g',    color: '#66BB6A' },
+          { key: 'fat',     label: t('today.fats'),    val: Math.round(totals.fat     || 0), target: targets.fat,     unit: 'g',    color: '#CE93D8' },
+        ].map(m => {
+          const pct  = m.target > 0 ? Math.min(m.val / m.target, 1) : 0
+          const over = m.target > 0 && m.val > m.target
+          return (
+            <button key={m.key} className={styles.metricCard} onClick={() => onNavigate('nutrition')} type="button">
+              <span className={styles.metricLabel}>{m.label}</span>
+              <span className={styles.metricVal} style={{ color: over ? '#ef5350' : m.color }}>
+                {m.val}
+                <span className={styles.metricUnit}> {m.unit}</span>
+              </span>
+              <div className={styles.metricBarTrack}>
+                <div className={styles.metricBarFill} style={{ width: `${pct * 100}%`, background: over ? '#ef5350' : m.color }} />
+              </div>
+              <span className={styles.metricTarget}>/{m.target} {m.unit}</span>
+            </button>
+          )
+        })}
+      </div>
 
       {/* ── Water card ── */}
       <div className={styles.waterCard}>

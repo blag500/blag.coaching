@@ -636,4 +636,73 @@
   background: #66BB6A;
 }
 
+/* ── Nutrition 2×2 metric grid ── */
+.nutritionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metricCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-align: left;
+  transition: border-color 0.15s;
+  animation: cardIn 400ms var(--ease-out) both;
+}
+
+.metricCard:active {
+  border-color: rgba(var(--accent-rgb), 0.35);
+}
+
+.metricLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.metricVal {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  line-height: 1;
+  margin: 4px 0 2px;
+  letter-spacing: 0.02em;
+}
+
+.metricUnit {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+.metricBarTrack {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 6px 0 4px;
+}
+
+.metricBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metricTarget {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1;
+}
 
