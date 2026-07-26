@@ -185,14 +185,6 @@ export default function TodayDashboard({ onNavigate }) {
           </div>
         </div>
 
-        {/* ── Macro mini grid ── */}
-        <div className={styles.macroGrid}>
-          <MacroCell label={t('today.protein')} value={Math.round(totals.protein || 0)} target={targets.protein} color="#42A5F5" unit="g" />
-          <MacroCell label={t('today.carbs')} value={Math.round(totals.carbs || 0)} target={targets.carbs} color="#66BB6A" unit="g" />
-          <MacroCell label={t('today.fats')} value={Math.round(totals.fat || 0)} target={targets.fat} color="#ffb74d" unit="g" />
-          <MacroCell label={t('today.remaining')} value={Math.max(0, targets.kcal - Math.round(totals.kcal || 0))} target={targets.kcal} color="var(--muted)" unit={t('today.kcal')} noOver />
-        </div>
-
         {/* ── Water row ── */}
         <div className={styles.waterRow}>
           <span className={styles.waterLabel}>{t('today.water')}</span>
@@ -387,17 +379,3 @@ function ActivityRings({ kcalPct, habitsPct, trained, kcalVal, kcalUnit }) {
   )
 }
 
-function MacroCell({ label, value, target, color, unit, noOver }) {
-  const over = !noOver && target > 0 && value > target
-  return (
-    <div className={styles.macroCell}>
-      <span className={styles.macroCellLabel} style={{ color }}>{label}</span>
-      <span className={`${styles.macroCellVal} ${over ? styles.macroCellOver : ''}`}>
-        {value}<span className={styles.macroCellUnit}>{unit}</span>
-      </span>
-      {target > 0 && !noOver && (
-        <span className={styles.macroCellTarget}>/ {target}{unit}</span>
-      )}
-    </div>
-  )
-}

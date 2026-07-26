@@ -140,50 +140,6 @@
   white-space: nowrap;
 }
 
-/* ── Macro mini grid ── */
-.macroGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
-  padding-top: 4px;
-  border-top: 1px solid var(--border);
-}
-
-.macroCell {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.macroCellLabel {
-  font-family: var(--font-heading);
-  font-size: 8px;
-  letter-spacing: 0.1em;
-}
-
-.macroCellVal {
-  font-family: var(--font-heading);
-  font-size: 17px;
-  color: var(--text);
-  line-height: 1.1;
-}
-
-.macroCellUnit {
-  font-size: 11px;
-  color: var(--muted);
-  font-family: var(--font-body);
-  margin-left: 1px;
-}
-
-.macroCellTarget {
-  font-family: var(--font-body);
-  font-size: 10px;
-  color: var(--muted);
-}
-
-.macroCellOver {
-  color: #ef5350;
-}
 
 /* ── Water row (inside activity card) ── */
 .waterRow {
