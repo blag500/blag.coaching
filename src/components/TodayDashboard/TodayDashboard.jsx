@@ -155,48 +155,17 @@ export default function TodayDashboard({ onNavigate }) {
       {/* ── Macro balance donut (Apple Health style) ── */}
       <MacroDonut totals={totals} targets={targets} onClick={() => onNavigate('nutrition')} />
 
-      {/* ── Activity rings card ── */}
-      <div className={styles.card}>
-        <span className={styles.cardLabel}>{t('today.activity')}</span>
-        <div className={styles.ringsRow}>
-          <ActivityRings
-            kcalPct={kcalPct}
-            habitsPct={completedHabits / totalHabits}
-            trained={trainedToday}
-            kcalVal={Math.round(totals.kcal || 0)}
-            kcalUnit={t('today.kcal')}
-          />
-          <div className={styles.ringsLegend}>
-            <div className={styles.ringLegendItem}>
-              <span className={styles.ringLegendDot} style={{ background: '#ffb74d' }} />
-              <span className={styles.ringLegendLabel}>{t('today.calories')}</span>
-              <span className={styles.ringLegendVal}>{Math.round(totals.kcal || 0)} / {targets.kcal}</span>
-            </div>
-            <div className={styles.ringLegendItem}>
-              <span className={styles.ringLegendDot} style={{ background: '#AB47BC' }} />
-              <span className={styles.ringLegendLabel}>{t('today.habits')}</span>
-              <span className={styles.ringLegendVal}>{completedHabits} / {habits.length}</span>
-            </div>
-            <div className={styles.ringLegendItem}>
-              <span className={styles.ringLegendDot} style={{ background: '#66BB6A' }} />
-              <span className={styles.ringLegendLabel}>{t('today.training')}</span>
-              <span className={styles.ringLegendVal}>{trainedToday ? '✓' : '—'}</span>
-            </div>
-          </div>
+      {/* ── Water card ── */}
+      <div className={styles.waterCard}>
+        <span className={styles.waterLabel}>{t('today.water')}</span>
+        <div className={styles.waterGlasses}>
+          {Array.from({ length: waterTarget }, (_, i) => (
+            <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
+          ))}
         </div>
-
-        {/* ── Water row ── */}
-        <div className={styles.waterRow}>
-          <span className={styles.waterLabel}>{t('today.water')}</span>
-          <div className={styles.waterGlasses}>
-            {Array.from({ length: waterTarget }, (_, i) => (
-              <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
-            ))}
-          </div>
-          <div className={styles.waterActions}>
-            <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
-            <button type="button" className={styles.waterBtn} onClick={() => addWater(1)} aria-label="Добави чаша">+</button>
-          </div>
+        <div className={styles.waterActions}>
+          <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
+          <button type="button" className={styles.waterBtn} onClick={() => addWater(1)} aria-label="Добави чаша">+</button>
         </div>
       </div>
 
@@ -322,60 +291,4 @@ export default function TodayDashboard({ onNavigate }) {
   )
 }
 
-function ActivityRings({ kcalPct, habitsPct, trained, kcalVal, kcalUnit }) {
-  const cx = 60, cy = 60
-  const ringDefs = [
-    { r: 50, sw: 9, pct: kcalPct,          color: '#ffb74d', bg: 'rgba(255,183,77,0.12)',   delay: '0ms'   },
-    { r: 37, sw: 9, pct: habitsPct,         color: '#AB47BC', bg: 'rgba(171,71,188,0.12)',   delay: '80ms'  },
-    { r: 24, sw: 9, pct: trained ? 1 : 0,  color: '#66BB6A', bg: 'rgba(102,187,106,0.12)',  delay: '160ms' },
-  ]
-
-  // Animate each ring from 0 to its target on mount
-  const [animPcts, setAnimPcts] = useState([0, 0, 0])
-  const mounted = useRef(false)
-
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true
-      const raf = requestAnimationFrame(() =>
-        setAnimPcts([kcalPct, habitsPct, trained ? 1 : 0])
-      )
-      return () => cancelAnimationFrame(raf)
-    }
-    setAnimPcts([kcalPct, habitsPct, trained ? 1 : 0])
-  }, [kcalPct, habitsPct, trained])
-
-  return (
-    <svg width="134" height="134" viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
-      {ringDefs.map((ring, idx) => {
-        const circ   = 2 * Math.PI * ring.r
-        const offset = circ - animPcts[idx] * circ
-        return (
-          <g key={idx}>
-            <circle cx={cx} cy={cy} r={ring.r} fill="none" stroke={ring.bg} strokeWidth={ring.sw} />
-            <circle
-              cx={cx} cy={cy} r={ring.r} fill="none"
-              stroke={ring.color} strokeWidth={ring.sw}
-              strokeDasharray={circ}
-              strokeDashoffset={offset}
-              transform={`rotate(-90 ${cx} ${cy})`}
-              strokeLinecap="round"
-              style={{ transition: `stroke-dashoffset 0.9s cubic-bezier(0.4,0,0.2,1) ${ring.delay}` }}
-            />
-          </g>
-        )
-      })}
-      {kcalVal > 0 && (
-        <text x={cx} y={cy - 2} textAnchor="middle"
-          fill="var(--text)" fontSize="13" fontFamily="'Bebas Neue', sans-serif" letterSpacing="0.5">
-          {kcalVal}
-        </text>
-      )}
-      <text x={cx} y={kcalVal > 0 ? cy + 8 : cy + 3} textAnchor="middle"
-        fill="var(--muted)" fontSize="7" fontFamily="'JetBrains Mono', monospace">
-        {kcalUnit}
-      </text>
-    </svg>
-  )
-}
 

@@ -53,13 +53,22 @@ const TodayIcon = () => (
   </svg>
 )
 
-const TAB_IDS = [
+const LEFT_TABS = [
   { id: 'today',     key: 'nav.today',    Icon: TodayIcon     },
   { id: 'nutrition', key: 'nav.nutrition', Icon: NutritionIcon },
+]
+
+const RIGHT_TABS = [
   { id: 'training',  key: 'nav.training',  Icon: TrainingIcon  },
-  { id: 'profile',   key: 'nav.profile',   Icon: ProfileIcon   },
   { id: 'menu',      key: 'nav.menu',      Icon: MenuIcon      },
 ]
+
+const PlusIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" aria-hidden="true">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5"  y1="12" x2="19" y2="12" />
+  </svg>
+)
 
 export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
   const { t } = useSettings()
@@ -71,23 +80,42 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
 
   return (
     <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
-      {TAB_IDS.map(tab => {
-        const label = t(tab.key)
-        return (
-          <button
-            key={tab.id}
-            className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => handleClick(tab.id)}
-            aria-label={label}
-            type="button"
-          >
-            <span className={styles.iconWrap}>
-              <tab.Icon />
-            </span>
-            <span className={styles.label}>{label}</span>
-          </button>
-        )
-      })}
+      {LEFT_TABS.map(tab => (
+        <button
+          key={tab.id}
+          className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+          onClick={() => handleClick(tab.id)}
+          aria-label={t(tab.key)}
+          type="button"
+        >
+          <span className={styles.iconWrap}><tab.Icon /></span>
+          <span className={styles.label}>{t(tab.key)}</span>
+        </button>
+      ))}
+
+      <div className={styles.fabSlot}>
+        <button
+          className={styles.fabCenter}
+          onClick={() => onTabChange('nutrition')}
+          type="button"
+          aria-label="Добави"
+        >
+          <PlusIcon />
+        </button>
+      </div>
+
+      {RIGHT_TABS.map(tab => (
+        <button
+          key={tab.id}
+          className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+          onClick={() => handleClick(tab.id)}
+          aria-label={t(tab.key)}
+          type="button"
+        >
+          <span className={styles.iconWrap}><tab.Icon /></span>
+          <span className={styles.label}>{t(tab.key)}</span>
+        </button>
+      ))}
     </nav>
   )
 }

@@ -141,13 +141,22 @@
 }
 
 
-/* ── Water row (inside activity card) ── */
+/* ── Standalone water card ── */
+.waterCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* kept for reference, no longer used */
 .waterRow {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
 }
 
 .waterLabel {

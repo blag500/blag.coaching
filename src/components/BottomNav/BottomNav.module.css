@@ -1,22 +1,20 @@
 .nav {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 16px);
-  left: 16px;
-  right: 16px;
-  height: 64px;
-  background: rgba(12, 10, 6, 0.88);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  border-radius: 32px;
-  border: 1px solid rgba(var(--accent-rgb),0.15);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.7),
-    0 6px 20px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  left: 12px;
+  right: 12px;
+  height: 68px;
+  background: rgba(12, 10, 6, 0.52);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.38);
   display: flex;
+  align-items: center;
   z-index: 100;
-  padding: 0 6px;
-  /* Force GPU compositing — prevents Safari fixed-position flicker during scroll momentum */
+  padding: 0 4px;
+  overflow: visible;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: transform;
@@ -31,7 +29,7 @@
   gap: 3px;
   background: none;
   border: none;
-  color: var(--muted);
+  color: rgba(242, 232, 207, 0.45);
   transition: color 200ms var(--ease-out);
   padding: 8px 4px;
   position: relative;
@@ -46,17 +44,16 @@
 }
 
 .tab.active {
-  color: var(--accent);
+  color: var(--text);
 }
 
-/* Glowing pill background for active tab */
+/* Pill background for active tab */
 .tab::before {
   content: '';
   position: absolute;
   inset: 5px 3px;
-  background: rgba(var(--accent-rgb), 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.18);
   opacity: 0;
   transform: scale(0.88);
   transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
@@ -67,25 +64,23 @@
   transform: scale(1);
 }
 
-/* Top indicator line for active tab */
+/* Accent dot above active icon */
 .tab::after {
   content: '';
   position: absolute;
-  top: 6px;
+  top: 8px;
   left: 50%;
-  transform: translateX(-50%) scaleX(0);
-  width: 20px;
-  height: 2px;
+  transform: translateX(-50%) scale(0);
+  width: 4px;
+  height: 4px;
   background: var(--accent);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
-  transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
-  opacity: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.7);
+  transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tab.active::after {
-  transform: translateX(-50%) scaleX(1);
-  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }
 
 .iconWrap {
@@ -96,7 +91,6 @@
   justify-content: center;
   position: relative;
   z-index: 1;
-  transition: transform 200ms var(--ease-out);
 }
 
 .iconWrap svg {
@@ -111,7 +105,7 @@
 @keyframes iconPop {
   0%   { transform: scale(1);    }
   45%  { transform: scale(1.32); }
-  100% { transform: scale(1.12); }
+  100% { transform: scale(1.1);  }
 }
 
 .label {
@@ -123,4 +117,40 @@
   position: relative;
   z-index: 1;
   line-height: 1;
+}
+
+/* ── Center FAB ── */
+.fabSlot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+}
+
+.fabCenter {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -24px;
+  box-shadow:
+    0 4px 18px rgba(255, 183, 77, 0.50),
+    0 0 0 3px rgba(12, 10, 6, 0.80);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  flex-shrink: 0;
+}
+
+.fabCenter:active {
+  transform: scale(0.88) translateY(2px);
+  box-shadow:
+    0 2px 8px rgba(255, 183, 77, 0.30),
+    0 0 0 3px rgba(12, 10, 6, 0.80);
 }
