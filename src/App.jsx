@@ -37,6 +37,7 @@ import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import { useSupplementsToday } from './hooks/useSupplementsToday'
 import SupplementBanner from './components/Supplements/SupplementBanner'
+import FAB from './components/FAB/FAB'
 import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
@@ -248,7 +249,8 @@ function AppShell() {
           {pages[activeTab] ?? null}
         </div>
       </main>
-<BottomNav
+      <FAB onNavigate={setActiveTab} activeTab={activeTab} />
+      <BottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onMenuOpen={() => setDrawerOpen(true)}

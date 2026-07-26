@@ -270,35 +270,27 @@ export default function TodayDashboard({ onNavigate }) {
         )}
       </button>
 
-      {/* ── Check-in shortcut ── */}
-      <button className={styles.checkinCard} onClick={() => onNavigate('profile')} type="button">
-        <div className={styles.checkinText}>
-          <span className={styles.cardLabel}>{t('today.checkin')}</span>
-          <span className={styles.checkinSub}>{t('today.checkinSub')}</span>
-        </div>
-        <span className={styles.checkinArrow}>→</span>
-      </button>
-
-      {/* ── Rewards shortcut ── */}
-      <button className={styles.rewardsBtn} onClick={() => onNavigate('rewards')} type="button">
-        <span className={styles.rewardsBtnInner}>
-          <span className={styles.rewardsBtnEmojis}>⭐ 🥗 ✅ 💪</span>
-          <span className={styles.rewardsBtnLabel}>{t('today.rewards')}</span>
-        </span>
-        <span className={styles.checkinArrow}>→</span>
-      </button>
-
-      {/* ── Shop shortcut ── */}
-      <button className={styles.shopCard} onClick={() => onNavigate('shop')} type="button">
-        <div className={styles.suppLeft}>
-          <span className={styles.suppIcon}>🛒</span>
-          <div className={styles.suppText}>
-            <span className={styles.cardLabel}>{t('today.shop')}</span>
-            <span className={styles.suppSub}>{t('today.shopSub')}</span>
-          </div>
-        </div>
-        <span className={styles.checkinArrow}>→</span>
-      </button>
+      {/* ── Quick shortcuts 2×2 grid ── */}
+      <div className={styles.shortcutGrid}>
+        <button className={styles.shortcutBtn} onClick={() => onNavigate('profile')} type="button">
+          <span className={styles.shortcutIcon}>📋</span>
+          <span className={styles.shortcutLabel}>{t('today.checkin')}</span>
+        </button>
+        <button className={styles.shortcutBtn} onClick={() => onNavigate('rewards')} type="button">
+          <span className={styles.shortcutIcon}>⭐</span>
+          <span className={styles.shortcutLabel}>{t('today.rewards')}</span>
+        </button>
+        <button className={styles.shortcutBtn} onClick={() => onNavigate('supplements')} type="button">
+          <span className={styles.shortcutIcon}>💊</span>
+          <span className={styles.shortcutLabel}>
+            {suppTotal > 0 ? `${suppTaken}/${suppTotal}` : t('nav.supplements')}
+          </span>
+        </button>
+        <button className={styles.shortcutBtn} onClick={() => onNavigate('shop')} type="button">
+          <span className={styles.shortcutIcon}>🛒</span>
+          <span className={styles.shortcutLabel}>{t('today.shop')}</span>
+        </button>
+      </div>
 
       {/* ── Recommendation widget ── */}
       {recommendations.length > 0 && (
@@ -334,32 +326,6 @@ export default function TodayDashboard({ onNavigate }) {
           </div>
         </div>
       )}
-
-      {/* ── Supplements shortcut ── */}
-      <button className={styles.suppCard} onClick={() => onNavigate('supplements')} type="button">
-        <div className={styles.suppLeft}>
-          <span className={styles.suppIcon}>💊</span>
-          <div className={styles.suppText}>
-            <span className={styles.cardLabel}>{t('nav.supplements')}</span>
-            <span className={styles.suppSub}>
-              {suppTotal === 0
-                ? t('today.suppEmpty')
-                : `${suppTaken}/${suppTotal} ${t('today.suppTaken')}`
-              }
-            </span>
-          </div>
-        </div>
-        {suppTotal > 0 ? (
-          <div className={styles.suppRight}>
-            <div className={styles.suppBarTrack}>
-              <div className={styles.suppBarFill} style={{ width: `${Math.round((suppTaken / suppTotal) * 100)}%` }} />
-            </div>
-            <span className={styles.checkinArrow}>→</span>
-          </div>
-        ) : (
-          <span className={styles.checkinArrow}>→</span>
-        )}
-      </button>
     </div>
   )
 }
