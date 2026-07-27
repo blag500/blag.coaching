@@ -9,6 +9,18 @@ function dateStr(offset = 0) {
   return d.toISOString().slice(0, 10)
 }
 
+const RECOVERY_H   = { upper: 48, lower: 72, pull: 48 }
+const GROUP_LABELS = { upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ПУЛ' }
+const GROUP_COLORS = { upper: '#ffb74d', lower: '#66BB6A', pull: '#42A5F5' }
+
+function classifyMuscle(label = '') {
+  const l = label.toLowerCase()
+  if (/горн|upper|гърди|chest|пуш|push|рам|shoulder|трицеп|tricep/.test(l)) return 'upper'
+  if (/долн|lower|крак|leg|бедр|глутеу|quad|ham/.test(l)) return 'lower'
+  if (/пул|pull|гръб|back|бицеп|bicep/.test(l)) return 'pull'
+  return null
+}
+
 // Pass a `client` object { id, calories, protein } to view a specific user's readiness (coach view).
 // Omit it (or pass null) to view the logged-in user's own readiness.
 export function useReadiness(client = null) {
@@ -17,7 +29,7 @@ export function useReadiness(client = null) {
   const calTgt  = client?.calories ?? profile?.calories
   const protTgt = client?.protein  ?? profile?.protein
 
-  const [state, setState] = useState({ score: null, components: [], loading: true })
+  const [state, setState] = useState({ score: null, components: [], muscleGroups: [], loading: true })
 
   useEffect(() => {
     if (!uid) return
@@ -35,20 +47,49 @@ export function useReadiness(client = null) {
       supabase.from('water_logs').select('glasses')
         .eq('user_id', uid).eq('log_date', yesterday).maybeSingle(),
       Promise.all([
-        supabase.from('exercise_logs').select('completed_date')
+        supabase.from('exercise_logs').select('block_label,completed_date')
           .eq('user_id', uid).gte('completed_date', weekAgo),
-        supabase.from('workout_completions').select('completed_date')
+        supabase.from('workout_completions').select('block_label,completed_date')
           .eq('user_id', uid).gte('completed_date', weekAgo),
       ]),
     ]).then(([sleepRes, foodRes, habitsRes, waterRes, [exRes, woRes]]) => {
       const sleepLog = sleepRes.data
-      const foods    = foodRes.data  || []
+      const foods    = foodRes.data   || []
       const habits   = habitsRes.data || []
       const water    = waterRes.data?.glasses ?? 0
-      const workoutDays = new Set([
-        ...(exRes.data  || []).map(r => r.completed_date),
-        ...(woRes.data  || []).map(r => r.completed_date),
-      ]).size
+
+      const allWorkouts = [
+        ...(exRes.data || []),
+        ...(woRes.data || []),
+      ]
+      const workoutDays = new Set(allWorkouts.map(r => r.completed_date)).size
+
+      // ── Muscle group readiness ──────────────────────────────────────
+      // Find the most recent training date per muscle group
+      const groupLastMs = {}
+      allWorkouts.forEach(w => {
+        const g  = classifyMuscle(w.block_label)
+        if (!g) return
+        const ms = new Date(w.completed_date).getTime()
+        if (!groupLastMs[g] || ms > groupLastMs[g]) groupLastMs[g] = ms
+      })
+
+      const now = Date.now()
+      const muscleGroups = Object.keys(GROUP_LABELS)
+        .filter(g => groupLastMs[g])
+        .map(g => {
+          const hours = (now - groupLastMs[g]) / 3_600_000
+          const pct   = Math.min(100, Math.round((hours / RECOVERY_H[g]) * 100))
+          const color = pct >= 80 ? '#81C784' : pct >= 55 ? '#ffb74d' : '#ef5350'
+          return {
+            group: g,
+            label: GROUP_LABELS[g],
+            accentColor: GROUP_COLORS[g],
+            pct,
+            hours: Math.round(hours),
+            color,
+          }
+        })
 
       // ── Recovery (35%) ─────────────────────────────────────────
       const recoveryScore = calcReadiness(sleepLog) // null if not logged
@@ -78,11 +119,11 @@ export function useReadiness(client = null) {
       const trainingScore = Math.min(100, Math.round((workoutDays / 4) * 100))
 
       const components = [
-        { id: 'recovery',  label: 'ВЪЗСТАНОВЯВАНЕ', score: recoveryScore,  weight: 0.35, color: '#81C784' },
-        { id: 'nutrition', label: 'ХРАНЕНЕ (ВЧЕРА)', score: nutritionScore, weight: 0.25, color: '#ffb74d' },
-        { id: 'habits',    label: 'НАВИЦИ',           score: habitsScore,    weight: 0.20, color: '#AB47BC' },
-        { id: 'hydration', label: 'ХИДРАТАЦИЯ (ВЧЕРА)', score: hydrationScore, weight: 0.15, color: '#42A5F5' },
-        { id: 'training',  label: 'ТРЕНИРОВКИ (7д)',  score: trainingScore,  weight: 0.05, color: '#66BB6A' },
+        { id: 'recovery',  label: 'ВЪЗСТАНОВЯВАНЕ',      score: recoveryScore,  weight: 0.35, color: '#81C784' },
+        { id: 'nutrition', label: 'ХРАНЕНЕ (ВЧЕРА)',      score: nutritionScore, weight: 0.25, color: '#ffb74d' },
+        { id: 'habits',    label: 'НАВИЦИ',               score: habitsScore,    weight: 0.20, color: '#AB47BC' },
+        { id: 'hydration', label: 'ХИДРАТАЦИЯ (ВЧЕРА)',   score: hydrationScore, weight: 0.15, color: '#42A5F5' },
+        { id: 'training',  label: 'ТРЕНИРОВКИ (7д)',      score: trainingScore,  weight: 0.05, color: '#66BB6A' },
       ]
 
       // Weighted average — null scores are excluded, weights renormalized
@@ -92,7 +133,7 @@ export function useReadiness(client = null) {
         ? Math.round(available.reduce((s, c) => s + c.score * c.weight, 0) / totalWeight)
         : null
 
-      setState({ score, components, loading: false })
+      setState({ score, components, muscleGroups, loading: false })
     })
   }, [uid, calTgt, protTgt])
 

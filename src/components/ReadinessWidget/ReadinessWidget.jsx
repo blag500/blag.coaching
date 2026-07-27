@@ -61,8 +61,14 @@ function ComponentBar({ label, score, color }) {
   )
 }
 
+function HoursLabel(hours) {
+  if (hours < 24) return `${hours}ч`
+  const d = Math.floor(hours / 24)
+  return `${d}д`
+}
+
 export default function ReadinessWidget({ onNavigate, client = null }) {
-  const { score, components, loading } = useReadiness(client)
+  const { score, components, muscleGroups, loading } = useReadiness(client)
   const { t } = useSettings()
 
   if (loading) return (
@@ -117,6 +123,25 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
           ))}
         </div>
       </div>
+
+      {muscleGroups.length > 0 && (
+        <div className={styles.muscleSection}>
+          <span className={styles.muscleSectionLabel}>МУСКУЛНА ГОТОВНОСТ</span>
+          {muscleGroups.map(g => (
+            <div key={g.group} className={styles.muscleRow}>
+              <span className={styles.muscleLabel}>{g.label}</span>
+              <div className={styles.muscleTrack}>
+                <div
+                  className={styles.muscleFill}
+                  style={{ width: `${g.pct}%`, background: g.color }}
+                />
+              </div>
+              <span className={styles.musclePct} style={{ color: g.color }}>{g.pct}%</span>
+              <span className={styles.muscleHours}>{HoursLabel(g.hours)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!recoveryLogged && (
         <div className={styles.cta}>
