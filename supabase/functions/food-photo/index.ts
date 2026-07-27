@@ -34,9 +34,9 @@ Deno.serve(async (req) => {
     })
   }
 
-  const apiKey = Deno.env.get('GEMINI_API_KEY')
+  const apiKey = Deno.env.get('food recognition')
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY not configured' }), {
+    return new Response(JSON.stringify({ error: 'food recognition secret not configured' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
