@@ -433,13 +433,43 @@
   cursor: default;
 }
 
+/* Ястие button — amber accent */
+.foodPhotoBtn {
+  flex: 1;
+  padding: 11px 8px;
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.foodPhotoBtn:active {
+  background: rgba(var(--accent-rgb), 0.22);
+}
+
+.foodPhotoBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Етикет button — blue/OCR tone */
 .labelScanBtn {
   flex: 1;
   padding: 11px 8px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: rgba(66, 165, 245, 0.08);
+  border: 1px solid rgba(66, 165, 245, 0.28);
   border-radius: var(--radius);
-  color: var(--text);
+  color: #64B5F6;
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.06em;
@@ -453,8 +483,7 @@
 }
 
 .labelScanBtn:active {
-  background: var(--surface-2);
-  border-color: var(--accent);
+  background: rgba(66, 165, 245, 0.16);
 }
 
 .labelScanBtn:disabled {

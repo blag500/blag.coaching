@@ -7,11 +7,29 @@ import MealBot from '../MealBot/MealBot'
 import BarcodeScanner from './BarcodeScanner'
 import styles from './FoodSearch.module.css'
 
-function CameraIcon() {
+function PlateIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="16" height="16" aria-hidden="true">
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-      <circle cx="12" cy="13" r="4"/>
+      <path d="M3 11a9 9 0 1 0 18 0"/>
+      <path d="M12 2v4"/>
+      <path d="M3 11h18"/>
+      <path d="M9 7c0-2 1-3.5 3-4"/>
+    </svg>
+  )
+}
+
+function ScanLabelIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" width="16" height="16" aria-hidden="true">
+      <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+      <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+      <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+      <line x1="7"  y1="8" x2="7"  y2="16"/>
+      <line x1="10" y1="8" x2="10" y2="16"/>
+      <line x1="13" y1="8" x2="13" y2="16"/>
+      <line x1="16.5" y1="8" x2="16.5" y2="11"/>
+      <line x1="16.5" y1="13" x2="16.5" y2="16"/>
     </svg>
   )
 }
@@ -267,16 +285,16 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         </button>
 
         <button
-          className={styles.labelScanBtn}
+          className={styles.foodPhotoBtn}
           onClick={() => foodPhotoInputRef.current?.click()}
           disabled={foodPhotoLoading}
           type="button"
           title="Снимай ястие — Gemini разпознава храните"
         >
-          <CameraIcon />
+          <PlateIcon />
           {foodPhotoLoading
             ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />Анализира...</>
-            : 'Снимка на ястие'}
+            : 'Ястие'}
         </button>
 
         <button
@@ -286,10 +304,10 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
           type="button"
           title="Снимай хранителна стойност от етикет"
         >
-          <CameraIcon />
+          <ScanLabelIcon />
           {labelLoading
             ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />Разчита...</>
-            : 'Снимка на етикет'}
+            : 'Етикет'}
         </button>
       </div>
 
