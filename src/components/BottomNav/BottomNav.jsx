@@ -12,20 +12,19 @@ const NutritionIcon = () => (
 const TrainingIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="8" y1="12" x2="16" y2="12" />
-    <line x1="5" y1="9" x2="5" y2="15" />
+    <line x1="5" y1="9"  x2="5"  y2="15" />
     <line x1="19" y1="9" x2="19" y2="15" />
-    <line x1="3" y1="10" x2="3" y2="14" />
+    <line x1="3" y1="10" x2="3"  y2="14" />
     <line x1="21" y1="10" x2="21" y2="14" />
-    <line x1="3" y1="12" x2="5" y2="12" />
+    <line x1="3" y1="12" x2="5"  y2="12" />
     <line x1="19" y1="12" x2="21" y2="12" />
   </svg>
 )
 
-const MenuIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-    <line x1="3" y1="6"  x2="21" y2="6"  />
-    <line x1="3" y1="12" x2="21" y2="12" />
-    <line x1="3" y1="18" x2="21" y2="18" />
+const ProfileIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
   </svg>
 )
 
@@ -47,14 +46,14 @@ const LEFT_TABS = [
 ]
 
 const RIGHT_TABS = [
-  { id: 'training',  key: 'nav.training',  Icon: TrainingIcon  },
-  { id: 'menu',      key: 'nav.menu',      Icon: MenuIcon      },
+  { id: 'training', key: 'nav.training', Icon: TrainingIcon },
+  { id: 'profile',  key: 'nav.profile',  Icon: ProfileIcon  },
 ]
 
 const ACTIONS = [
-  { id: 'food',     emoji: '🍽',  label: 'Ядене',      tab: 'nutrition'  },
-  { id: 'water',    emoji: '💧',  label: 'Вода +1',    tab: null         },
-  { id: 'training', emoji: '💪',  label: 'Тренировка', tab: 'training'   },
+  { id: 'food',     emoji: '🍽',  label: 'Ядене',      tab: 'nutrition' },
+  { id: 'water',    emoji: '💧',  label: 'Вода +1',    tab: null        },
+  { id: 'training', emoji: '💪',  label: 'Тренировка', tab: 'training'  },
 ]
 
 export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
@@ -63,13 +62,7 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
   const [open, setOpen] = useState(false)
   const [waterFlash, setWaterFlash] = useState(false)
 
-  // Close sheet when tab changes
   useEffect(() => { setOpen(false) }, [activeTab])
-
-  function handleClick(id) {
-    if (id === 'menu') onMenuOpen()
-    else onTabChange(id)
-  }
 
   function handleAction(action) {
     setOpen(false)
@@ -85,17 +78,34 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
 
   return (
     <>
-      {/* Backdrop */}
       {open && (
         <div className={styles.backdrop} onClick={() => setOpen(false)} aria-hidden="true" />
       )}
 
       <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
+
+        {/* ── Drawer trigger (left, distinct) ── */}
+        <button
+          className={styles.hamburger}
+          onClick={onMenuOpen}
+          type="button"
+          aria-label="Странично меню"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
+            <line x1="3" y1="6"  x2="21" y2="6"  />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        <div className={styles.divider} />
+
+        {/* ── Left tabs ── */}
         {LEFT_TABS.map(tab => (
           <button
             key={tab.id}
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => handleClick(tab.id)}
+            onClick={() => onTabChange(tab.id)}
             aria-label={t(tab.key)}
             type="button"
           >
@@ -104,9 +114,8 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
           </button>
         ))}
 
-        {/* Center FAB + action sheet */}
+        {/* ── Center FAB ── */}
         <div className={styles.fabSlot}>
-          {/* Action sheet — pops up above FAB */}
           {open && (
             <div className={styles.actionSheet}>
               {ACTIONS.map((action, i) => (
@@ -138,11 +147,12 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
           </button>
         </div>
 
+        {/* ── Right tabs ── */}
         {RIGHT_TABS.map(tab => (
           <button
             key={tab.id}
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => handleClick(tab.id)}
+            onClick={() => onTabChange(tab.id)}
             aria-label={t(tab.key)}
             type="button"
           >
