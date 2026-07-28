@@ -1,8 +1,39 @@
+/* ── Hamburger — standalone capsule to the RIGHT of nav pill ── */
+.hamburger {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  right: 12px;
+  width: 44px;
+  height: 68px;
+  border-radius: 34px;
+  background: rgba(12, 10, 6, 0.52);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(242, 232, 207, 0.50);
+  cursor: pointer;
+  z-index: 100;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 180ms var(--ease-out), background 180ms var(--ease-out);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.hamburger:active {
+  color: var(--text);
+  background: rgba(20, 17, 10, 0.70);
+}
+
+/* ── Main nav pill ── */
 .nav {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 12px);
   left: 12px;
-  right: 12px;
+  right: 64px;  /* 12 + 44 + 8 gap */
   height: 68px;
   background: rgba(12, 10, 6, 0.52);
   backdrop-filter: blur(28px) saturate(160%);
@@ -20,35 +51,6 @@
   will-change: transform;
 }
 
-/* ── Hamburger drawer trigger (left, inside pill) ── */
-.hamburger {
-  flex-shrink: 0;
-  width: 38px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: rgba(242, 232, 207, 0.38);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: color 180ms var(--ease-out);
-  padding: 0;
-}
-
-.hamburger:active {
-  color: var(--text);
-}
-
-.divider {
-  width: 1px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.07);
-  flex-shrink: 0;
-  margin: 0 2px;
-}
-
 .tab {
   flex: 1;
   display: flex;
@@ -60,7 +62,7 @@
   border: none;
   color: rgba(242, 232, 207, 0.45);
   transition: color 200ms var(--ease-out);
-  padding: 8px 4px;
+  padding: 8px 2px;
   position: relative;
   border-radius: 26px;
   cursor: pointer;
@@ -93,7 +95,6 @@
   transform: scale(1);
 }
 
-/* No after pseudo-element needed */
 .tab::after { display: none; }
 
 .iconWrap {
@@ -138,7 +139,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
+  width: 60px;
   position: relative;
 }
 

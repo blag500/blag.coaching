@@ -40,11 +40,10 @@ const TodayIcon = () => (
   </svg>
 )
 
-const LEFT_TABS = [
+const LEFT_TABS  = [
   { id: 'today',     key: 'nav.today',    Icon: TodayIcon     },
   { id: 'nutrition', key: 'nav.nutrition', Icon: NutritionIcon },
 ]
-
 const RIGHT_TABS = [
   { id: 'training', key: 'nav.training', Icon: TrainingIcon },
   { id: 'profile',  key: 'nav.profile',  Icon: ProfileIcon  },
@@ -78,29 +77,24 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
 
   return (
     <>
-      {open && (
-        <div className={styles.backdrop} onClick={() => setOpen(false)} aria-hidden="true" />
-      )}
+      {open && <div className={styles.backdrop} onClick={() => setOpen(false)} aria-hidden="true" />}
 
+      {/* ── Hamburger capsule — separate from nav pill ── */}
+      <button
+        className={styles.hamburger}
+        onClick={onMenuOpen}
+        type="button"
+        aria-label="Странично меню"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
+          <line x1="3" y1="6"  x2="21" y2="6"  />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      {/* ── Main nav pill ── */}
       <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
-
-        {/* ── Drawer trigger (left, distinct) ── */}
-        <button
-          className={styles.hamburger}
-          onClick={onMenuOpen}
-          type="button"
-          aria-label="Странично меню"
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
-            <line x1="3" y1="6"  x2="21" y2="6"  />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
-
-        <div className={styles.divider} />
-
-        {/* ── Left tabs ── */}
         {LEFT_TABS.map(tab => (
           <button
             key={tab.id}
@@ -114,7 +108,7 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
           </button>
         ))}
 
-        {/* ── Center FAB ── */}
+        {/* Center FAB */}
         <div className={styles.fabSlot}>
           {open && (
             <div className={styles.actionSheet}>
@@ -132,7 +126,6 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
               ))}
             </div>
           )}
-
           <button
             className={`${styles.fabCenter} ${open ? styles.fabOpen : ''}`}
             onClick={() => setOpen(o => !o)}
@@ -147,7 +140,6 @@ export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
           </button>
         </div>
 
-        {/* ── Right tabs ── */}
         {RIGHT_TABS.map(tab => (
           <button
             key={tab.id}
