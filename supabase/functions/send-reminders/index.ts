@@ -95,8 +95,10 @@ Deno.serve(async (req) => {
     water: 'water_email', food: 'food_email', training: 'training_email',
   }
   function isEnabled(client: { reminder_settings: Record<string, boolean> | null }, slotName: string) {
-    const key = SLOT_KEY[slotName]
-    return client.reminder_settings ? client.reminder_settings[key] !== false : true
+    const rs = client.reminder_settings
+    if (!rs) return true                      // no row yet → defaults all on
+    if (rs['email_enabled'] === false) return false  // master switch off
+    return rs[SLOT_KEY[slotName]] !== false
   }
 
   let sent = 0

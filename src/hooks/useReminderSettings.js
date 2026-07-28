@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
 const DEFAULTS = {
+  email_enabled:     true,
   weight_email:      true,
   habits_email:      true,
   supplements_email: true,
@@ -11,38 +12,57 @@ const DEFAULTS = {
   training_email:    true,
 }
 
-export function useReminderSettings() {
+// Pass targetUserId to manage another user's settings (coach use case)
+export function useReminderSettings(targetUserId = null) {
   const { user } = useAuth()
+  const uid = targetUserId || user?.id
   const [settings, setSettings] = useState(DEFAULTS)
   const [loading, setLoading]   = useState(true)
   const [saving, setSaving]     = useState(false)
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!uid) return
     supabase
       .from('reminder_settings')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .maybeSingle()
       .then(({ data }) => {
         if (data) setSettings({ ...DEFAULTS, ...data })
         setLoading(false)
       })
-  }, [user?.id])
+  }, [uid])
 
-  const toggle = useCallback(async (key) => {
-    if (!user?.id) return
-    const next = { ...settings, [key]: !settings[key] }
+  const save = useCallback(async (next) => {
+    if (!uid) return
     setSettings(next)
     setSaving(true)
     await supabase
       .from('reminder_settings')
       .upsert(
-        { user_id: user.id, ...next, updated_at: new Date().toISOString() },
+        { user_id: uid, ...next, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       )
     setSaving(false)
-  }, [user?.id, settings])
+  }, [uid])
 
-  return { settings, toggle, loading, saving }
+  const toggle = useCallback((key) => {
+    save({ ...settings, [key]: !settings[key] })
+  }, [save, settings])
+
+  // Master switch — turns all email reminders on or off at once
+  const toggleAll = useCallback((enabled) => {
+    save({
+      ...settings,
+      email_enabled:     enabled,
+      weight_email:      enabled,
+      habits_email:      enabled,
+      supplements_email: enabled,
+      water_email:       enabled,
+      food_email:        enabled,
+      training_email:    enabled,
+    })
+  }, [save, settings])
+
+  return { settings, toggle, toggleAll, loading, saving }
 }

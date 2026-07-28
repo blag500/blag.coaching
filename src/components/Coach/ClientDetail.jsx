@@ -9,19 +9,21 @@ import ChatPage from '../Chat/ChatPage'
 import WeightChart from '../Profile/WeightChart'
 import { useClientTasks } from '../../hooks/useTasks'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
+import ClientReminderSettings from './ClientReminderSettings'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
-  { id: 'progress',  label: 'ПРОГРЕС' },
-  { id: 'chat',      label: 'ЧАТ' },
-  { id: 'checkin',   label: 'CHECK-IN' },
-  { id: 'sessions',  label: 'ГРАФИК' },
-  { id: 'nutrition', label: 'ХРАНЕНЕ' },
-  { id: 'lifts',     label: 'УПРАЖНЕНИЯ' },
-  { id: 'plan',      label: 'ПЛАН' },
-  { id: 'goals',     label: 'ЦЕЛИ' },
-  { id: 'notes',     label: 'БЕЛЕЖКИ' },
-  { id: 'tasks',     label: 'ЗАДАЧИ' },
+  { id: 'progress',   label: 'ПРОГРЕС' },
+  { id: 'chat',       label: 'ЧАТ' },
+  { id: 'checkin',    label: 'CHECK-IN' },
+  { id: 'sessions',   label: 'ГРАФИК' },
+  { id: 'nutrition',  label: 'ХРАНЕНЕ' },
+  { id: 'lifts',      label: 'УПРАЖНЕНИЯ' },
+  { id: 'plan',       label: 'ПЛАН' },
+  { id: 'goals',      label: 'ЦЕЛИ' },
+  { id: 'notes',      label: 'БЕЛЕЖКИ' },
+  { id: 'tasks',      label: 'ЗАДАЧИ' },
+  { id: 'reminders',  label: 'НАПОМНЯНИЯ' },
 ]
 
 function TrashIcon() {
@@ -238,6 +240,9 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
           />
         )}
         {tab === 'tasks' && <ClientTasksTab clientId={client.id} />}
+        {tab === 'reminders' && (
+          <ClientReminderSettings clientId={client.id} clientName={client.name || client.email} />
+        )}
       </div>
     </div>
   )

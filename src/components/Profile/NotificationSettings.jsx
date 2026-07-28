@@ -25,13 +25,13 @@ function scheduleNotifications(settings) {
   }, msUntil(settings.eveningTime))
 }
 
-const EMAIL_REMINDERS = [
-  { key: 'weight_email',      emoji: '⚖️', label: 'Тегло',          time: '07:30' },
-  { key: 'habits_email',      emoji: '✅', label: 'Навици',         time: '08:00' },
-  { key: 'supplements_email', emoji: '💊', label: 'Суплементи',     time: '08:30' },
-  { key: 'water_email',       emoji: '💧', label: 'Вода',           time: '14:00' },
-  { key: 'food_email',        emoji: '🍽', label: 'Храна',          time: '16:00' },
-  { key: 'training_email',    emoji: '💪', label: 'Тренировка',     time: '19:00' },
+export const EMAIL_REMINDERS = [
+  { key: 'weight_email',      emoji: '⚖️', label: 'Тегло',      time: '07:30' },
+  { key: 'habits_email',      emoji: '✅', label: 'Навици',     time: '08:00' },
+  { key: 'supplements_email', emoji: '💊', label: 'Суплементи', time: '08:30' },
+  { key: 'water_email',       emoji: '💧', label: 'Вода',       time: '14:00' },
+  { key: 'food_email',        emoji: '🍽', label: 'Храна',      time: '16:00' },
+  { key: 'training_email',    emoji: '💪', label: 'Тренировка', time: '19:00' },
 ]
 
 export default function NotificationSettings() {
@@ -41,13 +41,13 @@ export default function NotificationSettings() {
     'Notification' in window ? Notification.permission : 'unsupported'
   )
   const [feedback, setFeedback] = useState('')
-  const { settings: emailSettings, toggle, loading: emailLoading, saving } = useReminderSettings()
+  const { settings: email, toggle, toggleAll, loading, saving } = useReminderSettings()
 
   useEffect(() => {
     if (settings.enabled && permission === 'granted') scheduleNotifications(settings)
   }, [])
 
-  async function handleToggle() {
+  async function handlePushToggle() {
     if (!('Notification' in window)) return
     if (!settings.enabled) {
       const result = await Notification.requestPermission()
@@ -81,46 +81,30 @@ export default function NotificationSettings() {
         <section className={styles.card}>
           <h2 className={styles.sectionTitle}>PUSH НАПОМНЯНИЯ</h2>
           <div className={styles.toggleRow}>
-            <span className={styles.toggleLabel}>
-              {settings.enabled ? 'Включени' : 'Изключени'}
-            </span>
+            <span className={styles.toggleLabel}>{settings.enabled ? 'Включени' : 'Изключени'}</span>
             <button
               className={`${styles.toggle} ${settings.enabled ? styles.on : ''}`}
-              onClick={handleToggle}
+              onClick={handlePushToggle}
               aria-pressed={settings.enabled}
-              aria-label="Включи push напомняния"
             >
               <span className={styles.thumb} />
             </button>
           </div>
-
           {settings.enabled && (
             <div className={styles.times}>
               <div className={styles.timeField}>
                 <label className={styles.timeLabel} htmlFor="morning-time">☀️ Сутрин</label>
-                <input
-                  id="morning-time"
-                  type="time"
-                  className={styles.timeInput}
-                  value={settings.morningTime}
-                  onChange={e => handleTimeChange('morningTime', e.target.value)}
-                />
+                <input id="morning-time" type="time" className={styles.timeInput}
+                  value={settings.morningTime} onChange={e => handleTimeChange('morningTime', e.target.value)} />
               </div>
               <div className={styles.timeField}>
                 <label className={styles.timeLabel} htmlFor="evening-time">🌙 Вечер</label>
-                <input
-                  id="evening-time"
-                  type="time"
-                  className={styles.timeInput}
-                  value={settings.eveningTime}
-                  onChange={e => handleTimeChange('eveningTime', e.target.value)}
-                />
+                <input id="evening-time" type="time" className={styles.timeInput}
+                  value={settings.eveningTime} onChange={e => handleTimeChange('eveningTime', e.target.value)} />
               </div>
             </div>
           )}
-
           {feedback && <p className={styles.feedback}>{feedback}</p>}
-
           <p className={styles.note}>
             {permission === 'denied'
               ? 'Нотификациите са блокирани. Позволи ги в настройките на браузъра.'
@@ -130,39 +114,57 @@ export default function NotificationSettings() {
       )}
 
       {/* ── Email reminders ── */}
-      <section className={styles.card}>
+      <EmailRemindersCard email={email} toggle={toggle} toggleAll={toggleAll} loading={loading} saving={saving} />
+    </>
+  )
+}
+
+export function EmailRemindersCard({ email, toggle, toggleAll, loading, saving }) {
+  return (
+    <section className={styles.card}>
+      <div className={styles.emailHeader}>
         <h2 className={styles.sectionTitle}>
           ИМЕЙЛ НАПОМНЯНИЯ
           {saving && <span className={styles.savingDot} />}
         </h2>
-        <p className={styles.note} style={{ marginBottom: 14 }}>
-          Изпращат се само ако нещото не е логнато за деня.
-        </p>
+        <button
+          className={`${styles.toggle} ${email.email_enabled ? styles.on : ''}`}
+          onClick={() => toggleAll(!email.email_enabled)}
+          aria-pressed={email.email_enabled}
+          aria-label="Всички имейл напомняния"
+        >
+          <span className={styles.thumb} />
+        </button>
+      </div>
 
-        {emailLoading ? (
-          <div className={styles.skeletonList}>
-            {EMAIL_REMINDERS.map(r => <div key={r.key} className={styles.skeletonRow} />)}
-          </div>
-        ) : (
-          <div className={styles.emailList}>
-            {EMAIL_REMINDERS.map(r => (
-              <div key={r.key} className={styles.emailRow}>
-                <span className={styles.emailEmoji}>{r.emoji}</span>
-                <span className={styles.emailLabel}>{r.label}</span>
-                <span className={styles.emailTime}>{r.time}</span>
-                <button
-                  className={`${styles.toggle} ${emailSettings[r.key] ? styles.on : ''}`}
-                  onClick={() => toggle(r.key)}
-                  aria-pressed={emailSettings[r.key]}
-                  aria-label={`Имейл за ${r.label}`}
-                >
-                  <span className={styles.thumb} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    </>
+      <p className={styles.note} style={{ marginBottom: 14 }}>
+        Изпращат се само ако нещото не е логнато за деня.
+      </p>
+
+      {loading ? (
+        <div className={styles.skeletonList}>
+          {EMAIL_REMINDERS.map(r => <div key={r.key} className={styles.skeletonRow} />)}
+        </div>
+      ) : (
+        <div className={`${styles.emailList} ${!email.email_enabled ? styles.emailListDisabled : ''}`}>
+          {EMAIL_REMINDERS.map(r => (
+            <div key={r.key} className={styles.emailRow}>
+              <span className={styles.emailEmoji}>{r.emoji}</span>
+              <span className={styles.emailLabel}>{r.label}</span>
+              <span className={styles.emailTime}>{r.time}</span>
+              <button
+                className={`${styles.toggle} ${email[r.key] && email.email_enabled ? styles.on : ''}`}
+                onClick={() => toggle(r.key)}
+                disabled={!email.email_enabled}
+                aria-pressed={email[r.key]}
+                aria-label={`Имейл за ${r.label}`}
+              >
+                <span className={styles.thumb} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }

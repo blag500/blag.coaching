@@ -105,6 +105,22 @@
 }
 
 /* ── Email reminders ── */
+.emailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.emailHeader .sectionTitle {
+  margin-bottom: 0;
+}
+
+.emailListDisabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .emailList {
   display: flex;
   flex-direction: column;
