@@ -8,8 +8,9 @@
 --   3. Run in Supabase SQL Editor
 
 -- Store project config (avoids repeating URL in every cron job)
+-- Fill these in manually in the Supabase SQL Editor — do NOT commit real values
 alter database postgres set app.supabase_url = 'https://eiltoadzaqbuqdilsfpi.supabase.co';
-alter database postgres set app.reminder_secret = 'blag2026secret';
+alter database postgres set app.reminder_secret = '<YOUR_REMINDER_SECRET>';
 
 -- Helper: builds the Edge Function URL for a given slot
 create or replace function private.reminder_url(slot text)
