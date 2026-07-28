@@ -61,13 +61,26 @@
   margin-bottom: 20px;
 }
 
-.title {
-  font-family: var(--font-heading);
-  font-size: 30px;
-  letter-spacing: 0.06em;
-  color: var(--text);
-  line-height: 1.1;
+.greetingBlock {
   flex: 1;
+}
+
+.greeting {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0 0 2px;
+  text-transform: uppercase;
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin: 0;
+  line-height: 1;
 }
 
 .avatar {

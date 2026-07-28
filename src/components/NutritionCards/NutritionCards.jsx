@@ -96,9 +96,10 @@ export default function NutritionCards({ onNavigate }) {
         </div>
       )}
       <header className={styles.header}>
-        <h1 className={styles.title}>
-          {greeting()}{firstName ? `, ${firstName}` : ''}
-        </h1>
+        <div className={styles.greetingBlock}>
+          <p className={styles.greeting}>{greeting()}</p>
+          <h1 className={styles.name}>{firstName || 'BLAG'}</h1>
+        </div>
         <div className={styles.avatar}>
           {profile?.avatar_url
             ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
