@@ -534,6 +534,52 @@
   border-color: var(--accent);
 }
 
+/* Raw / cooked cooking toggle */
+.cookingToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.cookingBtn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.cookingBtnActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0C0A06;
+  font-weight: 700;
+}
+
+.cookingNote {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.cookingWarn {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #f5c842;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: rgba(245, 200, 66, 0.08);
+  border-radius: 6px;
+  border-left: 2px solid #f5c842;
+}
+
 .gramRow {
   display: flex;
   align-items: center;

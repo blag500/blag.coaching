@@ -16,53 +16,48 @@ Rules:
 - If a value is not visible, use 0`
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: CORS })
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
   const { image, mediaType } = await req.json()
   if (!image) {
     return new Response(JSON.stringify({ error: 'missing image' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json', ...CORS },
+      status: 400, headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
-  const apiKey = Deno.env.get('food recognition')
+  const apiKey = Deno.env.get('GROQ_API_KEY')
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'food recognition secret not configured' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...CORS },
+    return new Response(JSON.stringify({ error: 'GROQ_API_KEY not configured' }), {
+      status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
-  const aiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: mediaType || 'image/jpeg', data: image } },
-            { text: PROMPT },
-          ],
-        }],
-        generationConfig: { temperature: 0, maxOutputTokens: 300 },
-      }),
-    }
-  )
+  const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: `data:${mediaType || 'image/jpeg'};base64,${image}` } },
+          { type: 'text', text: PROMPT },
+        ],
+      }],
+      max_tokens: 300,
+      temperature: 0,
+    }),
+  })
 
   if (!aiRes.ok) {
     const detail = await aiRes.text()
-    return new Response(JSON.stringify({ error: 'Gemini request failed', detail }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json', ...CORS },
+    return new Response(JSON.stringify({ error: 'Groq request failed', detail }), {
+      status: 502, headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
   const aiData = await aiRes.json()
-  const text = aiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  const text = aiData.choices?.[0]?.message?.content ?? ''
 
   let result
   try {
@@ -70,8 +65,7 @@ Deno.serve(async (req) => {
     result = JSON.parse(match ? match[0] : text)
   } catch {
     return new Response(JSON.stringify({ error: 'Could not parse response', raw: text }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json', ...CORS },
+      status: 502, headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 

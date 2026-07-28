@@ -34,6 +34,27 @@ function ScanLabelIcon() {
   )
 }
 
+// ─── Raw/Cooked classification ────────────────────────────────────────────────
+// level 2 = warning + correction toggle
+// level 1 = warning only
+// factor: multiply user's cooked grams by this to get raw/dry equivalent
+const FOOD_CLASSES = [
+  { re: /пиле|пилеш|пуй|пуеш|chicken|turkey/i,          level: 2, label: 'птиче месо',  factor: 1.35, dryCooked: false },
+  { re: /говеж|телеш|beef|стек|steak/i,                   level: 2, label: 'говеждо',     factor: 1.25, dryCooked: false },
+  { re: /свинск|pork/i,                                   level: 2, label: 'свинско',     factor: 1.20, dryCooked: false },
+  { re: /риба|сьомга|тон|скумрия|треска|salmon|tuna|fish/i, level: 2, label: 'риба',     factor: 1.15, dryCooked: false },
+  { re: /\bориз\b|rice/i,                                 level: 2, label: 'ориз',        factor: 0.37, dryCooked: true  },
+  { re: /паст[аи]|спагет|макарон|pasta|spaghetti|noodle/i, level: 2, label: 'тестени',   factor: 0.43, dryCooked: true  },
+  { re: /леща|lentil/i,                                   level: 2, label: 'леща',        factor: 0.40, dryCooked: true  },
+  { re: /нахут|chickpea/i,                                level: 2, label: 'нахут',       factor: 0.38, dryCooked: true  },
+  { re: /боб|bean/i,                                      level: 2, label: 'боб',         factor: 0.40, dryCooked: true  },
+  { re: /яйц|egg|кайма|колбас|наденица|sausage/i,        level: 1, label: null,           factor: 1,    dryCooked: false },
+]
+
+function classifyFood(name = '') {
+  return FOOD_CLASSES.find(c => c.re.test(name)) ?? null
+}
+
 function resizeImage(file, maxDim = 1024) {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -105,6 +126,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
   const [result, setResult]         = useState(null)      // single food
   const [multiItems, setMultiItems] = useState(null)      // multi-food array
   const [grams, setGrams]           = useState('100')
+  const [isCooked, setIsCooked]     = useState(false)
   const addPanelRef     = useRef(null)
   const photoInputRef   = useRef(null)
   const foodPhotoInputRef = useRef(null)
@@ -119,6 +141,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
     setResult(null)
     setMultiItems(null)
     setError(null)
+    setIsCooked(false)
   }
 
   async function handleSearch() {
@@ -196,7 +219,9 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
   async function handleAdd() {
     const g = parseFloat(grams)
     if (!g || g <= 0 || !result) return
-    const ratio = g / 100
+    const fc = classifyFood(result.name)
+    const effG = (isCooked && fc?.level === 2) ? g * fc.factor : g
+    const ratio = effG / 100
     await onAddRaw({
       name:    result.name,
       grams:   g,
@@ -208,6 +233,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
     setResult(null)
     setQuery('')
     setGrams('100')
+    setIsCooked(false)
     onAdded?.()
   }
 
@@ -332,18 +358,53 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
 
       {error && <div className={styles.error}>{error}</div>}
 
-      {result && (
+      {result && (() => {
+        const fc = classifyFood(result.name)
+        const g = parseFloat(grams)
+        const effG = (isCooked && fc?.level === 2) ? g * fc.factor : g
+        const ratio = effG / 100
+        return (
         <div ref={addPanelRef} className={styles.addPanel}>
           <input
             className={styles.nameInput}
             type="text"
             value={result.name}
-            onChange={e => setResult(prev => ({ ...prev, name: e.target.value }))}
+            onChange={e => { setResult(prev => ({ ...prev, name: e.target.value })); setIsCooked(false) }}
             aria-label="Наименование"
           />
           <div className={styles.aiPer100g}>
             на 100g: {result.per100g.kcal} ккал · П{result.per100g.protein}g · В{result.per100g.carbs}g · М{result.per100g.fat}g
           </div>
+
+          {fc?.level === 2 && (
+            <div className={styles.cookingToggle}>
+              <button
+                className={`${styles.cookingBtn} ${!isCooked ? styles.cookingBtnActive : ''}`}
+                onClick={() => setIsCooked(false)}
+                type="button"
+              >
+                {fc.dryCooked ? 'Сухо' : 'Сурово'}
+              </button>
+              <button
+                className={`${styles.cookingBtn} ${isCooked ? styles.cookingBtnActive : ''}`}
+                onClick={() => setIsCooked(true)}
+                type="button"
+              >
+                Сготвено
+              </button>
+              {isCooked && (
+                <span className={styles.cookingNote}>
+                  ≈ {Math.round(effG)}g {fc.dryCooked ? 'сухо' : 'сурово'}
+                </span>
+              )}
+            </div>
+          )}
+          {fc?.level === 1 && (
+            <div className={styles.cookingWarn}>
+              ⚠ Провери дали стойностите са за суров или обработен продукт
+            </div>
+          )}
+
           <div className={styles.gramRow}>
             <label className={styles.gramLabel} htmlFor="ai-grams-input">Грамаж</label>
             <input
@@ -360,10 +421,10 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
           </div>
           {g > 0 && (
             <div className={styles.preview}>
-              {Math.round(result.per100g.kcal    * g / 100)} ккал ·
-              П {Math.round(result.per100g.protein * g / 100 * 10) / 10}g ·
-              В {Math.round(result.per100g.carbs   * g / 100 * 10) / 10}g ·
-              М {Math.round(result.per100g.fat     * g / 100 * 10) / 10}g
+              {Math.round(result.per100g.kcal    * effG / 100)} ккал ·
+              П {Math.round(result.per100g.protein * effG / 100 * 10) / 10}g ·
+              В {Math.round(result.per100g.carbs   * effG / 100 * 10) / 10}g ·
+              М {Math.round(result.per100g.fat     * effG / 100 * 10) / 10}g
             </div>
           )}
           <div className={styles.panelActions}>
@@ -371,7 +432,8 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
             <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {multiItems && (
         <div ref={addPanelRef}>

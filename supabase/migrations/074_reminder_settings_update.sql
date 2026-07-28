@@ -21,6 +21,7 @@ where role = 'client'
 on conflict (user_id) do nothing;
 
 -- Coach can manage any client's reminder settings
+drop policy if exists "reminder_settings_coach_write" on public.reminder_settings;
 create policy "reminder_settings_coach_write" on public.reminder_settings
   for all using (
     (select role from public.profiles where id = auth.uid()) = 'coach'
