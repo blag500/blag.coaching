@@ -96,9 +96,9 @@ Deno.serve(async (req) => {
   }
   function isEnabled(client: { reminder_settings: Record<string, boolean> | null }, slotName: string) {
     const rs = client.reminder_settings
-    if (!rs) return true                      // no row yet → defaults all on
-    if (rs['email_enabled'] === false) return false  // master switch off
-    return rs[SLOT_KEY[slotName]] !== false
+    if (!rs) return false                     // no row → opt-in not done yet
+    if (!rs['email_enabled']) return false    // master switch off
+    return rs[SLOT_KEY[slotName]] === true
   }
 
   let sent = 0

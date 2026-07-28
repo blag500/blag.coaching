@@ -3,13 +3,13 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
 const DEFAULTS = {
-  email_enabled:     true,
-  weight_email:      true,
-  habits_email:      true,
-  supplements_email: true,
-  water_email:       true,
-  food_email:        true,
-  training_email:    true,
+  email_enabled:     false,
+  weight_email:      false,
+  habits_email:      false,
+  supplements_email: false,
+  water_email:       false,
+  food_email:        false,
+  training_email:    false,
 }
 
 // Pass targetUserId to manage another user's settings (coach use case)
