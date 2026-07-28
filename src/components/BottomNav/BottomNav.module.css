@@ -1,11 +1,11 @@
-/* ── Hamburger — standalone capsule to the RIGHT of nav pill ── */
+/* ── Hamburger — round circle to the RIGHT of nav pill ── */
 .hamburger {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  bottom: calc(env(safe-area-inset-bottom) + 20px);
   right: 12px;
-  width: 44px;
-  height: 68px;
-  border-radius: 34px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
   background: rgba(12, 10, 6, 0.52);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -33,7 +33,7 @@
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 12px);
   left: 12px;
-  right: 64px;  /* 12 + 44 + 8 gap */
+  right: 72px;  /* 12 + 52 + 8 gap */
   height: 68px;
   background: rgba(12, 10, 6, 0.52);
   backdrop-filter: blur(28px) saturate(160%);
