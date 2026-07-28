@@ -1,8 +1,8 @@
-/* ── Hamburger — round circle to the RIGHT of nav pill ── */
+/* ── Hamburger — round circle at TOP-LEFT ── */
 .hamburger {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 20px);
-  right: 12px;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: 12px;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -33,7 +33,7 @@
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 12px);
   left: 12px;
-  right: 72px;  /* 12 + 52 + 8 gap */
+  right: 12px;
   height: 68px;
   background: rgba(12, 10, 6, 0.52);
   backdrop-filter: blur(28px) saturate(160%);
