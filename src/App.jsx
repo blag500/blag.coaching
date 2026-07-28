@@ -209,7 +209,7 @@ function AppShell() {
   }
 
   const pages = {
-    today:      <TodayDashboard onNavigate={navigate} />,
+    today:      <TodayDashboard onNavigate={navigate} onMenuOpen={() => setDrawerOpen(true)} />,
     nutrition:  <NutritionCards onNavigate={navigate} />,
     compliance: <Compliance />,
     training:   <Training />,

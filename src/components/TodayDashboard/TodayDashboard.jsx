@@ -18,7 +18,7 @@ function dateStr(offset = 0) {
   return d.toISOString().slice(0, 10)
 }
 
-export default function TodayDashboard({ onNavigate }) {
+export default function TodayDashboard({ onNavigate, onMenuOpen }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const { log, totals } = useFoodLog()
@@ -135,7 +135,14 @@ export default function TodayDashboard({ onNavigate }) {
       )}
       <header className={styles.header}>
         <div className={styles.headerTop}>
-          <div>
+          <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label="Меню">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
+              <line x1="3" y1="6"  x2="21" y2="6"  />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <div className={styles.greetingBlock}>
             <p className={styles.greeting}>{greeting}</p>
             <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
           </div>
