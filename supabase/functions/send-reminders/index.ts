@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     .from('profiles')
     .select(`
       id, email, name, calories,
-      reminder_settings ( weight_email, habits_email, supplements_email, water_email, food_email, training_email )
+      reminder_settings ( email_enabled, weight_email, habits_email, supplements_email, water_email, food_email, training_email )
     `)
     .eq('role', 'client')
     .not('email', 'is', null)
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
     }
 
     for (const c of clients) {
-      if (!missing.has(c.id) || !c.email) continue
+      if (!isEnabled(c, slot) || !missing.has(c.id) || !c.email) continue
       const ok = await sendEmail(
         c.email,
         '💊 Суплементацията за днес',
@@ -201,9 +201,9 @@ Deno.serve(async (req) => {
     const waterMap = new Map(logs?.map(r => [r.user_id, r.glasses]) ?? [])
 
     for (const c of clients) {
-      if (!c.email) continue
+      if (!isEnabled(c, slot) || !c.email) continue
       const glasses = waterMap.get(c.id) ?? 0
-      if (glasses >= 4) continue
+      if ((glasses as number) >= 4) continue
       const ok = await sendEmail(
         c.email,
         `💧 Само ${glasses} чаши вода днес`,
@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
     }
 
     for (const c of clients) {
-      if (!c.email) continue
+      if (!isEnabled(c, slot) || !c.email) continue
       const kcal = kcalMap.get(c.id) ?? 0
       const target = c.calories ?? 2000
       if (kcal >= target * 0.5) continue
