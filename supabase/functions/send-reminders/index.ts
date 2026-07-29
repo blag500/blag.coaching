@@ -73,31 +73,29 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // Fetch all clients + their email reminder preferences
-  const { data: clients, error: clientsErr } = await supabase
-    .from('profiles')
-    .select(`
-      id, email, name, calories,
-      reminder_settings ( email_enabled, weight_email, habits_email, supplements_email, water_email, food_email, training_email )
-    `)
-    .eq('role', 'client')
-    .not('email', 'is', null)
+  // Fetch clients and reminder settings as two separate queries (avoids PostgREST schema-cache join issues)
+  const [{ data: clients, error: clientsErr }, { data: allSettings }] = await Promise.all([
+    supabase.from('profiles').select('id, email, name, calories').not('email', 'is', null),
+    supabase.from('reminder_settings').select('user_id, email_enabled, weight_email, habits_email, supplements_email, water_email, food_email, training_email'),
+  ])
 
   if (clientsErr || !clients?.length) {
-    return new Response(JSON.stringify({ slot, sent: 0, clients: 0 }), {
+    return new Response(JSON.stringify({ slot, sent: 0, clients: clients?.length ?? 0, error: clientsErr?.message ?? 'no clients' }), {
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
 
-  // Helper: is this slot enabled for a client? (default true if no settings row yet)
+  const settingsMap = new Map((allSettings ?? []).map((r: Record<string, unknown>) => [r.user_id, r]))
+
+  // Helper: is this slot enabled for a client?
   const SLOT_KEY: Record<string, string> = {
     weight: 'weight_email', habits: 'habits_email', supplements: 'supplements_email',
     water: 'water_email', food: 'food_email', training: 'training_email',
   }
-  function isEnabled(client: { reminder_settings: Record<string, boolean> | null }, slotName: string) {
-    const rs = client.reminder_settings
-    if (!rs) return false                     // no row → opt-in not done yet
-    if (!rs['email_enabled']) return false    // master switch off
+  function isEnabled(clientId: string, slotName: string) {
+    const rs = settingsMap.get(clientId) as Record<string, unknown> | undefined
+    if (!rs) return false
+    if (!rs['email_enabled']) return false
     return rs[SLOT_KEY[slotName]] === true
   }
 
@@ -114,7 +112,7 @@ Deno.serve(async (req) => {
     console.log(`weight: today=${today} logged=${done.size}/${clients.length}`)
 
     for (const c of clients) {
-      if (!isEnabled(c, slot) || done.has(c.id) || !c.email) continue
+      if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
       const ok = await sendEmail(
         c.email,
         '⚖️ Качи се на кантара',
@@ -141,7 +139,7 @@ Deno.serve(async (req) => {
     const done = new Set(logged?.map(r => r.user_id) ?? [])
 
     for (const c of clients) {
-      if (!isEnabled(c, slot) || done.has(c.id) || !c.email) continue
+      if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
       const ok = await sendEmail(
         c.email,
         '✅ Сутрешните навици чакат',
@@ -175,7 +173,7 @@ Deno.serve(async (req) => {
     }
 
     for (const c of clients) {
-      if (!isEnabled(c, slot) || !missing.has(c.id) || !c.email) continue
+      if (!isEnabled(c.id, slot) || !missing.has(c.id) || !c.email) continue
       const ok = await sendEmail(
         c.email,
         '💊 Суплементацията за днес',
@@ -201,7 +199,7 @@ Deno.serve(async (req) => {
     const waterMap = new Map(logs?.map(r => [r.user_id, r.glasses]) ?? [])
 
     for (const c of clients) {
-      if (!isEnabled(c, slot) || !c.email) continue
+      if (!isEnabled(c.id, slot) || !c.email) continue
       const glasses = waterMap.get(c.id) ?? 0
       if ((glasses as number) >= 4) continue
       const ok = await sendEmail(
@@ -232,7 +230,7 @@ Deno.serve(async (req) => {
     }
 
     for (const c of clients) {
-      if (!isEnabled(c, slot) || !c.email) continue
+      if (!isEnabled(c.id, slot) || !c.email) continue
       const kcal = kcalMap.get(c.id) ?? 0
       const target = c.calories ?? 2000
       if (kcal >= target * 0.5) continue
@@ -261,7 +259,7 @@ Deno.serve(async (req) => {
     const done = new Set(logs?.map(r => r.user_id) ?? [])
 
     for (const c of clients) {
-      if (!isEnabled(c, slot) || done.has(c.id) || !c.email) continue
+      if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
       const ok = await sendEmail(
         c.email,
         '💪 Тренировката чака',
