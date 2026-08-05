@@ -13,6 +13,7 @@ import FormCheckin from './FormCheckin'
 import ProgressPhotos from '../ProgressPhotos/ProgressPhotos'
 import WeeklySnapshot from './WeeklySnapshot'
 import AvatarCropper from './AvatarCropper'
+import AppHeader from '../AppHeader/AppHeader'
 import styles from './Profile.module.css'
 
   function calcStreak(history) {
@@ -35,7 +36,7 @@ const MACRO_COLORS = {
   fat:      '#FFB74D',
 }
 
-export default function Profile() {
+export default function Profile({ onMenuOpen }) {
   const { profile, user, updateProfile, signOut } = useAuth()
   const { theme, setTheme, lang, setLang, t } = useSettings()
   const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
@@ -211,20 +212,17 @@ export default function Profile() {
           onCancel={() => setCropFile(null)}
         />
       )}
-      <header className={styles.header}>
-        <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
-        <button className={styles.avatarBtn} onClick={() => avatarInputRef.current?.click()} type="button" aria-label="Смени снимка">
-          {profile?.avatar_url
-            ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
-            : <span className={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</span>
-          }
-          <span className={styles.avatarOverlay}>{avatarUploading ? '…' : '✎'}</span>
-        </button>
-        <div className={styles.headerInfo}>
-          <h1 className={styles.title}>{profile?.name || 'ПРОФИЛ'}</h1>
-          {profile?.plan && <p className={styles.subtitle}>{profile.plan.toUpperCase()}</p>}
-        </div>
-      </header>
+      <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        eyebrow={profile?.plan ? profile.plan.toUpperCase() : undefined}
+        title={profile?.name || 'ПРОФИЛ'}
+        avatarUrl={profile?.avatar_url}
+        avatarInitial={(profile?.name || '?')[0].toUpperCase()}
+        onAvatarClick={() => avatarInputRef.current?.click()}
+        avatarEditable
+        avatarBusy={avatarUploading}
+      />
 
       {/* Form check-in — daily action, lives at the top */}
       <section className={styles.card}>

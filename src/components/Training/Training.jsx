@@ -8,6 +8,7 @@ import LiftLogger from './LiftLogger'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
+import AppHeader from '../AppHeader/AppHeader'
 import styles from './Training.module.css'
 
 // Detect old 7-day format
@@ -157,7 +158,7 @@ function WorkoutCalendar({ completions, blocks }) {
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export default function Training() {
+export default function Training({ onMenuOpen }) {
   const { user, profile, updateProfile, removeExerciseLog } = useAuth()
   const isCoach = profile?.role === 'coach'
   const blocks  = getBlocks(profile?.training_plan)
@@ -251,14 +252,15 @@ export default function Training() {
   if (editing && isCoach) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.headerRow}>
-            <h1 className={styles.title}>ТРЕНИРОВКА</h1>
+        <AppHeader
+          onMenuOpen={onMenuOpen}
+          title="ТРЕНИРОВКА"
+          action={
             <button className={styles.editBtn} onClick={() => setEditing(false)} type="button">
               ✕ ОТКАЗ
             </button>
-          </div>
-        </header>
+          }
+        />
         <TrainingEditor
           initialPlan={isOldFormat(profile?.training_plan) ? null : profile?.training_plan}
           onSave={handleSavePlan}
@@ -271,16 +273,15 @@ export default function Training() {
   if (!blocks) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.headerRow}>
-            <h1 className={styles.title}>ТРЕНИРОВКА</h1>
-            {isCoach && (
-              <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
-                РЕДАКТИРАЙ
-              </button>
-            )}
-          </div>
-        </header>
+        <AppHeader
+          onMenuOpen={onMenuOpen}
+          title="ТРЕНИРОВКА"
+          action={isCoach && (
+            <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
+              РЕДАКТИРАЙ
+            </button>
+          )}
+        />
         <div className={styles.noPlanWrap}>
           <p className={styles.noPlanIcon}>🏋️</p>
           <p className={styles.noPlanTitle}>ПРОГРАМАТА СЕ ПОДГОТВЯ</p>
@@ -292,16 +293,15 @@ export default function Training() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerRow}>
-          <h1 className={styles.title}>ТРЕНИРОВКА</h1>
-          {isCoach && (
-            <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
-              РЕДАКТИРАЙ
-            </button>
-          )}
-        </div>
-      </header>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        title="ТРЕНИРОВКА"
+        action={isCoach && (
+          <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
+            РЕДАКТИРАЙ
+          </button>
+        )}
+      />
 
       {/* Block selector */}
       <div className={styles.pillBar} role="tablist">

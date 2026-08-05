@@ -208,16 +208,18 @@ function AppShell() {
     return <PaymentWall onDowngrade={() => {}} />
   }
 
+  const openMenu = () => setDrawerOpen(true)
+
   const pages = {
-    today:      <TodayDashboard onNavigate={navigate} onMenuOpen={() => setDrawerOpen(true)} />,
-    nutrition:  <NutritionCards onNavigate={navigate} />,
+    today:      <TodayDashboard onNavigate={navigate} onMenuOpen={openMenu} />,
+    nutrition:  <NutritionCards onNavigate={navigate} onMenuOpen={openMenu} />,
     compliance: <Compliance />,
-    training:   <Training />,
+    training:   <Training onMenuOpen={openMenu} />,
     recovery:   <Recovery />,
-    profile:    <Profile />,
+    profile:    <Profile onMenuOpen={openMenu} />,
     clients:    <CoachPanel />,
     coachday:   <CoachMyDay />,
-    explore:    <Explore />,
+    explore:    <Explore onMenuOpen={openMenu} />,
     calendar:   <TrainingCalendar />,
     learn:      <LearnPage />,
     chat:       <ChatPage />,
@@ -265,7 +267,6 @@ function AppShell() {
       <BottomNav
         activeTab={activeTab}
         onTabChange={navigate}
-        onMenuOpen={() => setDrawerOpen(true)}
       />
     </div>
   )

@@ -10,6 +10,7 @@ import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
+import AppHeader from '../AppHeader/AppHeader'
 import styles from './TodayDashboard.module.css'
 
 function dateStr(offset = 0) {
@@ -133,27 +134,14 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
       {badgeQueue[0] && (
         <BadgePopup badge={badgeQueue[0]} onDone={() => setBadgeQueue(q => q.slice(1))} />
       )}
-      <header className={styles.header}>
-        <div className={styles.headerTop}>
-          <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label="Меню">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
-              <line x1="3" y1="6"  x2="21" y2="6"  />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <div className={styles.greetingBlock}>
-            <p className={styles.greeting}>{greeting}</p>
-            <h1 className={styles.name}>{profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}</h1>
-          </div>
-          <button className={styles.avatarBtn} onClick={() => onNavigate('profile')} type="button" aria-label="Профил">
-            {profile?.avatar_url
-              ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
-              : <span className={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</span>
-            }
-          </button>
-        </div>
-      </header>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        eyebrow={greeting}
+        title={profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}
+        avatarUrl={profile?.avatar_url}
+        avatarInitial={(profile?.name || '?')[0].toUpperCase()}
+        onAvatarClick={() => onNavigate('profile')}
+      />
 
       {/* ── Readiness widget ── */}
       <ReadinessWidget onNavigate={onNavigate} />

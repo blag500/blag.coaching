@@ -11,6 +11,7 @@ import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
 import MealCards from '../MealCards/MealCards'
 import RecipeBuilder from '../FoodLogger/RecipeBuilder'
+import AppHeader from '../AppHeader/AppHeader'
 import styles from './NutritionCards.module.css'
 
 const QUOTES = [
@@ -30,7 +31,7 @@ function greeting() {
   return 'ДОБЪР ВЕЧЕР'
 }
 
-export default function NutritionCards({ onNavigate }) {
+export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { profile } = useAuth()
   const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { activities, totalKcalBurned, addActivity, removeActivity } = useActivityLog(selectedDate)
@@ -95,18 +96,14 @@ export default function NutritionCards({ onNavigate }) {
           </svg>
         </div>
       )}
-      <header className={styles.header}>
-        <div className={styles.greetingBlock}>
-          <p className={styles.greeting}>{greeting()}</p>
-          <h1 className={styles.name}>{firstName || 'BLAG'}</h1>
-        </div>
-        <div className={styles.avatar}>
-          {profile?.avatar_url
-            ? <img src={profile.avatar_url} className={styles.avatarImg} alt="" />
-            : <span className={styles.avatarInitial}>{(profile?.name || '?')[0].toUpperCase()}</span>
-          }
-        </div>
-      </header>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        eyebrow={greeting()}
+        title={firstName || 'BLAG'}
+        avatarUrl={profile?.avatar_url}
+        avatarInitial={(profile?.name || '?')[0].toUpperCase()}
+        onAvatarClick={() => onNavigate('profile')}
+      />
 
       <div className={styles.toggle}>
         <button

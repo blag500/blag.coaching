@@ -55,7 +55,7 @@ const ACTIONS = [
   { id: 'training', emoji: '💪',  label: 'Тренировка', tab: 'training'  },
 ]
 
-export default function BottomNav({ activeTab, onTabChange, onMenuOpen }) {
+export default function BottomNav({ activeTab, onTabChange }) {
   const { t } = useSettings()
   const { add: addWater } = useWaterLog()
   const [open, setOpen] = useState(false)

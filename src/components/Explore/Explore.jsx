@@ -4,6 +4,7 @@ import ShoppingList from '../ShoppingList/ShoppingList'
 import ShowcasePage from './ShowcasePage'
 import CalorieCalculator from '../CalorieCalculator/CalorieCalculator'
 import PWAInstallPage from '../PWAInstall/PWAInstallPage'
+import AppHeader from '../AppHeader/AppHeader'
 import styles from './Explore.module.css'
 
 const SECTIONS = [
@@ -81,7 +82,7 @@ const COMING_SOON = [
   { title: 'ВИДЕО ТЕХНИКИ', desc: 'Правилна техника за основните упражнения' },
 ]
 
-export default function Explore() {
+export default function Explore({ onMenuOpen }) {
   const [page, setPage] = useState(null)
 
   if (page === 'calculator') return <CalorieCalculator onBack={() => setPage(null)} />
@@ -92,10 +93,7 @@ export default function Explore() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>ОТКРИЙ</h1>
-        <p className={styles.subtitle}>Ресурси, продукти и програми</p>
-      </header>
+      <AppHeader onMenuOpen={onMenuOpen} title="ОТКРИЙ" />
 
       <div className={styles.grid}>
         {SECTIONS.map(s => (

@@ -1,14 +1,9 @@
 ﻿.page {
   min-height: 100vh;
-  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(100px + env(safe-area-inset-bottom));
+  padding: 0 16px calc(100px + env(safe-area-inset-bottom));
   max-width: 480px;
   margin: 0 auto;
 }
-
-.header {
-  margin-bottom: 20px;
-}
-
 .noPlanWrap {
   display: flex;
   flex-direction: column;
@@ -41,21 +36,6 @@
   line-height: 1.5;
   max-width: 260px;
 }
-
-.headerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title {
-  font-family: var(--font-heading);
-  font-size: 36px;
-  letter-spacing: 0.08em;
-  color: var(--text);
-  line-height: 1;
-}
-
 .editBtn {
   padding: 8px 12px;
   background: var(--accent-dim);
