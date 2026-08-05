@@ -59,6 +59,7 @@ export default function Profile() {
 
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
+  const [showAllWeights, setShowAllWeights] = useState(false)
   const isCoach = profile?.role === 'coach'
 
   // Editable macro targets (coach sets their own; clients read-only via profile)
@@ -96,12 +97,24 @@ export default function Profile() {
     : 'Без промяна тази седмица'
 
   const RANGE_DAYS = { '2W': 14, '1M': 30, '3M': 90, 'ALL': null }
+  const WEIGHT_ROWS_SHOWN = 7
   const filteredWeights = useMemo(() => {
     const days = RANGE_DAYS[weightRange]
     if (!days) return weights
     const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10)
     return weights.filter(w => w.date >= cutoff)
   }, [weights, weightRange])
+
+  useEffect(() => { setShowAllWeights(false) }, [weightRange])
+
+  // Newest first, each row carrying its delta against the previous entry
+  const weightRows = useMemo(() => {
+    const rows = [...filteredWeights].reverse()
+    return rows.map((entry, i) => {
+      const prev = rows[i + 1]
+      return { ...entry, delta: prev ? Math.round((entry.kg - prev.kg) * 10) / 10 : null }
+    })
+  }, [filteredWeights])
 
   const weightStats = useMemo(() => {
     if (filteredWeights.length === 0) return null
@@ -380,35 +393,32 @@ export default function Profile() {
           </>
         )}
 
-        {filteredWeights.length > 0 ? (
-          <div className={styles.weightTableWrap}>
-            <table className={styles.weightTable}>
-              <thead>
-                <tr>
-                  <th className={styles.weightTh}>Дата</th>
-                  <th className={styles.weightTh}>Тегло</th>
-                  <th className={styles.weightTh}>Промяна</th>
-                  <th className={styles.weightTh} />
-                </tr>
-              </thead>
-              <tbody>
-                {[...filteredWeights].reverse().map((entry, i, arr) => {
-                  const prev  = arr[i + 1]
-                  const delta = prev ? Math.round((entry.kg - prev.kg) * 10) / 10 : null
-                  const isLatest = i === 0
-                  return (
+        {weightRows.length > 0 ? (
+          <>
+            <div className={styles.weightTableWrap}>
+              <table className={styles.weightTable}>
+                <thead>
+                  <tr>
+                    <th className={styles.weightTh}>Дата</th>
+                    <th className={styles.weightTh}>Тегло</th>
+                    <th className={styles.weightTh}>Промяна</th>
+                    <th className={styles.weightTh} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {(showAllWeights ? weightRows : weightRows.slice(0, WEIGHT_ROWS_SHOWN)).map((entry, i) => (
                     <tr
                       key={entry.date}
-                      className={isLatest ? styles.weightTrLatest : styles.weightTr}
+                      className={i === 0 ? styles.weightTrLatest : styles.weightTr}
                     >
                       <td className={styles.weightTd}>
                         {new Date(entry.date).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                       </td>
                       <td className={styles.weightTd}>{entry.kg} kg</td>
                       <td className={styles.weightTd}>
-                        {delta === null ? '—' : (
-                          <span className={delta > 0 ? styles.deltaUp : delta < 0 ? styles.deltaDown : styles.deltaNeutral}>
-                            {delta > 0 ? `+${delta}` : delta} kg
+                        {entry.delta === null ? '—' : (
+                          <span className={entry.delta > 0 ? styles.deltaUp : entry.delta < 0 ? styles.deltaDown : styles.deltaNeutral}>
+                            {entry.delta > 0 ? `+${entry.delta}` : entry.delta} kg
                           </span>
                         )}
                       </td>
@@ -423,11 +433,23 @@ export default function Profile() {
                         </button>
                       </td>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {weightRows.length > WEIGHT_ROWS_SHOWN && (
+              <button
+                className={styles.weightMoreBtn}
+                onClick={() => setShowAllWeights(v => !v)}
+                type="button"
+              >
+                {showAllWeights
+                  ? 'Покажи по-малко'
+                  : `Всички ${weightRows.length} записа`}
+              </button>
+            )}
+          </>
         ) : (
           <p className={styles.emptyHint}>Запиши тегло, за да видиш историята</p>
         )}
