@@ -32,22 +32,41 @@ function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal })
   return { calories, protein, carbs: Math.max(carbs, 0), fat }
 }
 
+// Typical starting values. Pre-filling turns "fill this in from scratch" into
+// "check and adjust", which is a far easier task — and the numbers stay visible
+// on the macros step, so nothing is decided behind the user's back.
+const DEFAULTS = { age: '28', height_cm: '178', weight_kg: '80' }
+
 export default function Onboarding({ isCoachingIntake = false }) {
-  const { completeOnboarding, signOut } = useAuth()
-  const [step, setStep]   = useState(1)
+  const { profile, completeOnboarding, signOut } = useAuth()
+  const knownName = (profile?.name ?? '').trim()
+
+  // The name was already given at signup, so don't ask for it twice.
+  const [step, setStep]   = useState(knownName ? 2 : 1)
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
   const [submitted, setSubmitted] = useState(false)
 
   const [form, setForm] = useState({
-    name: '', goal: 'maintain',
-    gender: 'male', age: '', height_cm: '', weight_kg: '', target_weight: '',
+    name: knownName, goal: 'maintain',
+    gender: 'male', ...DEFAULTS, target_weight: DEFAULTS.weight_kg,
     activity_level: 'moderate',
     calories: '', protein: '', carbs: '', fat: '',
   })
 
   function set(field, val) {
     setForm(prev => ({ ...prev, [field]: val }))
+  }
+
+  // Choosing a goal implies a direction for the target weight, so move it with
+  // them instead of making them work it out.
+  function setGoal(goal) {
+    setForm(prev => {
+      const w = parseFloat(prev.weight_kg)
+      if (!w) return { ...prev, goal }
+      const shift = goal === 'cut' ? -5 : goal === 'bulk' ? 4 : 0
+      return { ...prev, goal, target_weight: String(Math.round(w + shift)) }
+    })
   }
 
   function computeAndAdvance() {
@@ -145,12 +164,13 @@ export default function Onboarding({ isCoachingIntake = false }) {
 
   return (
     <div className={styles.page}>
-      {/* Progress */}
+      {/* Progress. The first mark is the account they already created — nobody
+          should be looking at an empty bar before they have even started. */}
       <div className={styles.progressBar}>
-        {Array.from({ length: totalSteps }, (_, i) => (
+        {Array.from({ length: totalSteps + 1 }, (_, i) => (
           <div
             key={i}
-            className={`${styles.progressDot} ${i < step ? styles.progressDotDone : ''} ${i + 1 === step ? styles.progressDotActive : ''}`}
+            className={`${styles.progressDot} ${i < step ? styles.progressDotDone : ''} ${i === step ? styles.progressDotActive : ''}`}
           />
         ))}
       </div>
@@ -185,7 +205,7 @@ export default function Onboarding({ isCoachingIntake = false }) {
                 <button
                   key={g.id}
                   className={`${styles.goalCard} ${form.goal === g.id ? styles.goalCardActive : ''}`}
-                  onClick={() => set('goal', g.id)}
+                  onClick={() => setGoal(g.id)}
                   type="button"
                 >
                   <span className={styles.goalIcon}>{g.icon}</span>
@@ -296,6 +316,20 @@ export default function Onboarding({ isCoachingIntake = false }) {
               {GOAL_OPTIONS.find(g => g.id === form.goal)?.desc}
               {' · '}
               {ACTIVITY_OPTIONS.find(a => a.id === form.activity_level)?.label}
+            </p>
+            {/* The figures behind the numbers, so a pre-filled default is never
+                something the user only discovers later. */}
+            <p className={styles.macroNote} style={{ opacity: 0.65, marginTop: 6 }}>
+              Сметнато за {form.age} г. · {form.height_cm} см · {form.weight_kg} кг
+              {' · '}
+              <button
+                type="button"
+                onClick={() => setStep(3)}
+                style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer',
+                         color: 'var(--accent)', font: 'inherit', textDecoration: 'underline' }}
+              >
+                поправи
+              </button>
             </p>
           </div>
         )}
