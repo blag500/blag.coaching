@@ -51,7 +51,6 @@ function AppShell() {
   const [showSupplementBanner, setShowSupplementBanner] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
   const [landingSeen, setLandingSeen] = useState(false)
-  const [planChosen, setPlanChosen] = useState(() => !!localStorage.getItem('blag_pending_plan'))
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
     return new URLSearchParams(window.location.search).get('payment') === 'success'
   })
@@ -143,33 +142,18 @@ function AppShell() {
     )
   }
 
+  // Nobody is asked to pick a plan before they have seen the product — the
+  // choice happens after signup, where the free tier is the obvious default.
   if (!session) {
-    if (!landingSeen && !planChosen) {
+    if (!landingSeen) {
       return (
         <LandingPage
           onContinue={() => setLandingSeen(true)}
-          onLogin={() => { setLandingSeen(true); setPlanChosen(true) }}
+          onLogin={() => setLandingSeen(true)}
         />
       )
     }
-    if (!planChosen) {
-      return (
-        <PlanSelector
-          onSelect={planId => {
-            localStorage.setItem('blag_pending_plan', planId)
-            setPlanChosen(true)
-          }}
-        />
-      )
-    }
-    return (
-      <AuthScreen
-        onBack={() => {
-          localStorage.removeItem('blag_pending_plan')
-          setPlanChosen(false)
-        }}
-      />
-    )
+    return <AuthScreen onBack={() => setLandingSeen(false)} />
   }
 
   // Session known but profile not yet fetched — keep showing the loader
@@ -190,8 +174,9 @@ function AppShell() {
       : <CalorieCalculator isOnboarding />
   }
 
-  // Paid plan chosen but payment not yet confirmed by Stripe webhook
-  const needsPayment = !isCoach && profile.plan !== 'free' && !profile.stripe_subscription_id
+  // Only PRO is paid. Everything else — free, and the legacy 'plus' clients —
+  // goes straight through, so nobody who already had access loses it.
+  const needsPayment = !isCoach && profile.plan === 'pro' && !profile.stripe_subscription_id
 
   if (paymentProcessing) {
     return (

@@ -129,8 +129,16 @@
 .planTagline {
   font-size: 0.75rem;
   color: var(--muted);
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   line-height: 1.4;
+}
+
+.planPrice {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 14px;
 }
 
 .divider {

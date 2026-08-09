@@ -5,9 +5,10 @@ import styles from './PlanSelector.module.css'
 
 const PLANS = [
   {
-    id: 'plus',
-    name: 'PLUS',
-    tagline: 'Самостоятелно проследяване',
+    id: 'free',
+    name: 'БЕЗПЛАТЕН',
+    tagline: 'Всичко за самостоятелно проследяване',
+    price: 'Безплатно, без карта',
     features: [
       'AI търсене на храни + баркод скенер',
       'Дневник на хранене с макроси',
@@ -22,9 +23,10 @@ const PLANS = [
     id: 'pro',
     name: 'PRO',
     tagline: 'Пълна треньорска подкрепа',
+    price: 'С треньор',
     highlight: true,
     features: [
-      'Всичко от Plus',
+      'Всичко от безплатния',
       'Директен чат с личния ти треньор',
       'Насрочване на тренировъчни сесии',
       'Персонализирани корекции на плана',
@@ -66,7 +68,7 @@ export default function PlanSelector() {
 
     const coachId = check?.coach_id || profile?.coach_id
     if (coachId) {
-      const planLabel = planId === 'pro' ? 'Pro' : 'Plus'
+      const planLabel = planId === 'pro' ? 'Pro' : 'Безплатен'
       const clientName = profile?.name || profile?.email || 'Нов клиент'
       supabase.functions.invoke('send-push', {
         body: {
@@ -82,9 +84,8 @@ export default function PlanSelector() {
     <div className={styles.page}>
       <div className={styles.inner}>
         <div className={styles.brand}>BLAG COACHING</div>
-        <p className={styles.eyebrow}>СТЪПКА 1 ОТ 3</p>
-        <h1 className={styles.title}>ИЗБЕРИ СВОЯ ПЛАН</h1>
-        <p className={styles.sub}>Треньорът ще се свърже с теб лично след избора.</p>
+        <h1 className={styles.title}>ЗАПОЧНИ БЕЗПЛАТНО</h1>
+        <p className={styles.sub}>Проследяването е безплатно завинаги. Плаща се само за работа с треньор.</p>
 
         <div className={styles.grid}>
           {PLANS.map(plan => (
@@ -98,6 +99,7 @@ export default function PlanSelector() {
               {plan.highlight && <div className={styles.popular}>ПРЕПОРЪЧАН</div>}
               <div className={styles.planName}>{plan.name}</div>
               <div className={styles.planTagline}>{plan.tagline}</div>
+              {plan.price && <div className={styles.planPrice}>{plan.price}</div>}
               <div className={styles.divider} />
               <ul className={styles.features}>
                 {plan.features.map((f, i) => (
