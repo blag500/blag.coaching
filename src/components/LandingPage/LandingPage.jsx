@@ -6,7 +6,7 @@ export default function LandingPage({ onContinue, onLogin }) {
       <div className={styles.glowTop} aria-hidden="true" />
 
       <div className={styles.logo}>
-        <span className={styles.logoName}>БЛАГ</span>
+        <span className={styles.logoName}>BLAG</span>
       </div>
 
       <div className={styles.hero}>

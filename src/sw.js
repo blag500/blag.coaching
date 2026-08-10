@@ -30,7 +30,7 @@ self.addEventListener('push', event => {
   const notifType = data.data?.type || notifTag
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Благ', {
+    self.registration.showNotification(data.title || 'Blag', {
       body:           data.body || 'Ново съобщение',
       icon:           '/icon-192.png',
       badge:          '/icon-192.png',

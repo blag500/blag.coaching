@@ -6,7 +6,7 @@ import styles from './PlanSelector.module.css'
 const PLANS = [
   {
     id: 'free',
-    name: 'БЛАГ',
+    name: 'BLAG',
     tagline: 'Пълното приложение',
     price: 'Безплатно, без карта',
     features: [
@@ -21,12 +21,12 @@ const PLANS = [
   },
   {
     id: 'pro',
-    name: 'БЛАГ ПРО',
+    name: 'BLAG PRO',
     tagline: 'Протоколи от треньора',
     price: 'С треньор',
     highlight: true,
     features: [
-      'Всичко от Благ',
+      'Всичко от Blag',
       'Оценка на формата за начало',
       'Какво ядеш преди и след тренировка',
       'Протокол за суплементация',
@@ -85,7 +85,7 @@ export default function PlanSelector() {
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
-        <div className={styles.brand}>БЛАГ</div>
+        <div className={styles.brand}>BLAG</div>
         <h1 className={styles.title}>ЗАПОЧНИ БЕЗПЛАТНО</h1>
         <p className={styles.sub}>Проследяването е безплатно завинаги. Плаща се само за работа с треньор.</p>
 

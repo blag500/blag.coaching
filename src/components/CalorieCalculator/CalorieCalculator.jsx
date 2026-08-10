@@ -167,7 +167,7 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
         {isOnboarding ? (
           <>
             <div className={styles.onboardingBrand}>
-              <span className={styles.brandName}>БЛАГ</span>
+              <span className={styles.brandName}>BLAG</span>
             </div>
             <h1 className={styles.title}>НАСТРОЙКА НА ПРОФИЛА</h1>
             <p className={styles.subtitle}>Изчисли нуждите си и започни</p>

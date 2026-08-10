@@ -44,7 +44,7 @@ export default function Welcome({ onEnter }) {
     <div className={`${styles.screen} ${leaving ? styles.leaving : ''}`}>
       <div className={styles.inner}>
         <div className={styles.logoWrap}>
-          <span className={styles.logo}>БЛАГ</span>
+          <span className={styles.logo}>BLAG</span>
         </div>
 
         <p className={styles.tagline}>Твоят персонален фитнес коуч</p>

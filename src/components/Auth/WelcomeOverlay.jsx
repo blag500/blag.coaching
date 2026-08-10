@@ -14,7 +14,7 @@ export default function WelcomeOverlay({ onDone }) {
     <div className={styles.backdrop}>
       <div className={styles.card}>
         <p className={styles.eyebrow}>ДОБРЕ ДОШЪЛ В</p>
-        <h1 className={styles.logo}>БЛАГ</h1>
+        <h1 className={styles.logo}>BLAG</h1>
         <p className={styles.sub}>Ето какво можеш да правиш в приложението:</p>
         <ul className={styles.steps}>
           {STEPS.map(s => (
