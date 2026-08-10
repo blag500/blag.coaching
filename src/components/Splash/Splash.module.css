@@ -46,7 +46,8 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  mix-blend-mode: screen;
+  /* No screen blend: it lifts the dark tones, and those are exactly what makes
+     the brushed gold read as metal rather than a flat amber shape. */
 }
 
 .armLeft {
@@ -67,19 +68,33 @@
   padding: 0 8px;
 }
 
+/* Brushed gold, sampled off the arm artwork: a dark-to-highlight-to-dark ramp
+   is what separates metal from a flat yellow fill. */
 .title {
   font-family: var(--font-heading);
   font-size: 42px;
   letter-spacing: 0.2em;
-  color: #ffb74d;
   line-height: 1;
+  color: #C8A05A;
+  background-image: linear-gradient(
+    177deg,
+    #6B4A1E 0%,
+    #C8A05A 22%,
+    #F8E8B8 44%,
+    #B08A45 58%,
+    #E4CE94 74%,
+    #7A5726 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: titleReveal 1s var(--ease-out) 0.6s both;
 }
 
 .divider {
   width: 56px;
   height: 1px;
-  background: linear-gradient(to right, transparent, #ffb74d, transparent);
+  background: linear-gradient(to right, transparent, #C8A05A, transparent);
   animation: dividerExpand 0.7s var(--ease-out) 1.2s both;
 }
 
