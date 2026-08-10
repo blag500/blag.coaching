@@ -22,7 +22,9 @@ export default function Splash({ onDone }) {
         <div className={styles.brandCenter}>
           <h1 className={styles.title}>BLAG</h1>
           <div className={styles.divider} aria-hidden="true" />
-          <p className={styles.tagline}>Be blag, Be better</p>
+          {/* Broken deliberately after the comma — the centre column is narrow
+              between the two arms, and left to wrap it splits as "BE BLAG, BE". */}
+          <p className={styles.tagline}>Be blag,<br />Be better</p>
         </div>
         <div className={styles.armRight} aria-hidden="true" />
       </div>

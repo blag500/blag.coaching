@@ -103,6 +103,8 @@
   color: var(--muted);
   letter-spacing: 0.26em;
   text-transform: uppercase;
+  line-height: 1.9;
+  margin: 0;
   animation: taglineIn 0.65s var(--ease-out) 1.5s both;
 }
 
