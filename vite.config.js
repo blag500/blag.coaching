@@ -15,8 +15,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Blag Coaching',
-        short_name: 'Blag',
+        name: 'Благ',
+        short_name: 'Благ',
         description: 'Твоят персонален фитнес коуч',
         theme_color: '#0A0A0F',
         background_color: '#0A0A0F',

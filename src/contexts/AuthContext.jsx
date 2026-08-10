@@ -325,7 +325,7 @@ export function AuthProvider({ children }) {
       supabase.functions.invoke('send-push', {
         body: {
           toUserId,
-          title: profile?.name || 'Blag Coaching',
+          title: profile?.name || 'Благ',
           body:  pushBody,
           tag:   'message',
         },

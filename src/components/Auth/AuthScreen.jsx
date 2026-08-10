@@ -44,9 +44,7 @@ export default function AuthScreen({ onBack }) {
           <button className={styles.backLink} onClick={onBack} type="button">← Смени план</button>
         )}
         <div className={styles.brand}>
-          <span className={styles.brandName}>BLAG</span>
-          <div className={styles.brandDivider} aria-hidden="true" />
-          <span className={styles.brandSub}>COACHING</span>
+          <span className={styles.brandName}>БЛАГ</span>
         </div>
 
         <div className={styles.toggle}>

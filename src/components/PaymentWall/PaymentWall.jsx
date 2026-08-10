@@ -119,9 +119,7 @@ export default function PaymentWall({ onDowngrade }) {
   return (
     <div className={styles.page}>
       <div className={styles.brand}>
-        <span className={styles.brandName}>BLAG</span>
-        <div className={styles.brandDivider} />
-        <span className={styles.brandSub}>COACHING</span>
+        <span className={styles.brandName}>БЛАГ</span>
       </div>
 
       <div className={styles.card} style={{ '--plan-accent': info.accent }}>

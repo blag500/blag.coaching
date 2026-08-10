@@ -6,8 +6,8 @@ import styles from './PlanSelector.module.css'
 const PLANS = [
   {
     id: 'free',
-    name: 'БЕЗПЛАТЕН',
-    tagline: 'Всичко за самостоятелно проследяване',
+    name: 'БЛАГ',
+    tagline: 'Пълното приложение',
     price: 'Безплатно, без карта',
     features: [
       'AI търсене на храни + баркод скенер',
@@ -21,15 +21,17 @@ const PLANS = [
   },
   {
     id: 'pro',
-    name: 'PRO',
-    tagline: 'Пълна треньорска подкрепа',
+    name: 'БЛАГ ПРО',
+    tagline: 'Протоколи от треньора',
     price: 'С треньор',
     highlight: true,
     features: [
-      'Всичко от безплатния',
-      'Директен чат с личния ти треньор',
-      'Насрочване на тренировъчни сесии',
-      'Персонализирани корекции на плана',
+      'Всичко от Благ',
+      'Оценка на формата за начало',
+      'Какво ядеш преди и след тренировка',
+      'Протокол за суплементация',
+      'Тренировъчен план и цели',
+      'Директен чат с треньора',
       'Седмичен преглед на напредъка',
     ],
   },
@@ -83,7 +85,7 @@ export default function PlanSelector() {
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
-        <div className={styles.brand}>BLAG COACHING</div>
+        <div className={styles.brand}>БЛАГ</div>
         <h1 className={styles.title}>ЗАПОЧНИ БЕЗПЛАТНО</h1>
         <p className={styles.sub}>Проследяването е безплатно завинаги. Плаща се само за работа с треньор.</p>
 

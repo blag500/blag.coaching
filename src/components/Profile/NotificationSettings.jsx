@@ -18,10 +18,10 @@ function scheduleNotifications(settings) {
     return target - now
   }
   setTimeout(() => {
-    new Notification('Blag Coaching ☀️', { body: 'Не забравяй да маркираш навиците си за днес!', icon: '/icon-192.png' })
+    new Notification('Благ ☀️', { body: 'Не забравяй да маркираш навиците си за днес!', icon: '/icon-192.png' })
   }, msUntil(settings.morningTime))
   setTimeout(() => {
-    new Notification('Blag Coaching 🌙', { body: 'Логна ли храната за днес?', icon: '/icon-192.png' })
+    new Notification('Благ 🌙', { body: 'Логна ли храната за днес?', icon: '/icon-192.png' })
   }, msUntil(settings.eveningTime))
 }
 

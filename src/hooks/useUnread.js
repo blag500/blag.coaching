@@ -45,7 +45,7 @@ export function useUnread() {
           'Notification' in window &&
           Notification.permission === 'granted'
         ) {
-          new Notification('Blag Coaching', {
+          new Notification('Благ', {
             body: 'Получихте ново съобщение',
             icon: '/icon-192.png',
             tag: 'blag-message',

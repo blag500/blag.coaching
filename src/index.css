@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+/* Oswald, not Bebas Neue: Bebas ships no Cyrillic, so every Bulgarian heading
+   silently fell back to a system font and looked different on each device. */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap&subset=cyrillic,latin');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -17,7 +19,7 @@
   --border:    #2B2215;
   --red:       #FF4455;
 
-  --font-heading: 'Bebas Neue', sans-serif;
+  --font-heading: 'Oswald', 'Arial Narrow', sans-serif;
   --font-body:    'JetBrains Mono', monospace;
 
   --nav-height:  60px;

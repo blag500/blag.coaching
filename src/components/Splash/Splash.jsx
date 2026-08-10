@@ -20,7 +20,7 @@ export default function Splash({ onDone }) {
       <div className={styles.armsRow}>
         <div className={styles.armLeft} aria-hidden="true" />
         <div className={styles.brandCenter}>
-          <h1 className={styles.title}>BLAG COACHING</h1>
+          <h1 className={styles.title}>БЛАГ</h1>
           <div className={styles.divider} aria-hidden="true" />
           <p className={styles.tagline}>Be blag, Be better</p>
         </div>

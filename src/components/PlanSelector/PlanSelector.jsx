@@ -80,9 +80,7 @@ export default function PlanSelector({ onSelect }) {
     <div className={styles.page}>
       <div className={styles.header}>
         <div className={styles.brand}>
-          <span className={styles.brandName}>BLAG</span>
-          <div className={styles.brandDivider} />
-          <span className={styles.brandSub}>COACHING</span>
+          <span className={styles.brandName}>БЛАГ</span>
         </div>
         <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
         <p className={styles.subtitle}>Безплатно завинаги. Надстрой само ако искаш повече.</p>
