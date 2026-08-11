@@ -1,0 +1,287 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.intro {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── Entry form ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.rowTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nameInput,
+.gramsInput,
+.macroField input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: var(--font-body);
+  padding: 10px;
+  outline: none;
+  min-width: 0;
+}
+
+.nameInput { flex: 1; }
+.nameInput:focus,
+.gramsInput:focus,
+.macroField input:focus { border-color: var(--accent); }
+
+.gramsInput { width: 68px; text-align: center; }
+
+.gUnit {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.macroRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.macroField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.macroTag {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.macroField input {
+  width: 100%;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.addBtn {
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.addBtn:active { background: rgba(var(--accent-rgb), 0.2); }
+
+.empty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 18px 0;
+  margin: 0;
+}
+
+/* ── Draft list ── */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 10px 12px;
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.itemName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMacros {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.removeBtn:active { color: #ef5350; }
+
+/* ── Donut + legend ── */
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.legendVal {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ── Projection onto the day ── */
+.projection {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.projLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.projBars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.projRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.projName {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  width: 26px;
+  flex-shrink: 0;
+}
+
+.projTrack {
+  flex: 1;
+  height: 5px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+}
+
+/* Solid = already eaten, translucent = what the draft would add */
+.projNow { height: 100%; }
+.projAdd { height: 100%; opacity: 0.42; }
+
+.projVal {
+  font-family: var(--font-body);
+  font-size: 10px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.pushBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.pushBtn:active { opacity: 0.85; }
+
+.pushed {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #66BB6A;
+  text-align: center;
+  margin: 0;
+}

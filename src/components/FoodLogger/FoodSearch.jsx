@@ -5,6 +5,7 @@ import { searchFoods } from '../../utils/openFoodFacts'
 import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
 import BarcodeScanner from './BarcodeScanner'
+import DraftMode from './DraftMode'
 import styles from './FoodSearch.module.css'
 
 function PlateIcon() {
@@ -87,9 +88,10 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
       <div className={styles.modeBar}>
         {[
           { id: 'ai',      label: 'AI',      icon: '◈' },
+          { id: 'barcode', label: 'БАРКОД',  icon: '▥' },
           { id: 'manual',  label: 'РЪЧНО',   icon: '✎' },
           { id: 'recent',  label: 'СКОР.',   icon: '↺' },
-          { id: 'suggest', label: 'ПРЕПОР.', icon: '★' },
+          { id: 'draft',   label: 'ЧЕРНОВА', icon: '✎' },
           { id: 'bot',     label: 'БОТ',     icon: '◉' },
           { id: 'recipes', label: 'РЕЦЕПТИ', icon: '≡' },
         ].map(m => (
@@ -108,7 +110,8 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
       {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
 {mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
-      {mode === 'suggest' && <SuggestMode totals={totals} targets={targets} onAddRaw={onAddRaw} />}
+      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
+      {mode === 'draft'   && <DraftMode onAddRaw={onAddRaw} totals={totals} targets={targets} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
     </div>
