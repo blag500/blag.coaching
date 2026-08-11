@@ -56,6 +56,9 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
   const [pushed, setPushed] = useState(false)
   const [hits, setHits] = useState([])       // history matches for the typed name
   const [picked, setPicked] = useState(null) // the history row the macros came from
+  // Reference portion behind the current macros. Present only while the figures
+  // came from history, which is what makes rescaling by grams meaningful.
+  const [base, setBase] = useState(null)
   const searchTimer = useRef(null)
 
   // Look the typed name up in the food history so the macros do not have to be
@@ -72,13 +75,21 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
   }, [form.name, picked])
 
   function useHit(h) {
+    const g = Math.round(h.grams) || 100
     setForm({
       name:    h.name,
-      grams:   String(Math.round(h.grams) || 100),
+      grams:   String(g),
       kcal:    String(h.kcal),
       protein: String(h.protein),
       carbs:   String(h.carbs),
       fat:     String(h.fat),
+    })
+    setBase({
+      grams: g,
+      kcal:    +h.kcal    || 0,
+      protein: +h.protein || 0,
+      carbs:   +h.carbs   || 0,
+      fat:     +h.fat     || 0,
     })
     setPicked(h.name.toLowerCase())
     setHits([])
@@ -101,6 +112,31 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
 
   function set(k, v) { setForm(p => ({ ...p, [k]: v })) }
 
+  /** Changing the portion rescales macros taken from history. */
+  function setGrams(v) {
+    const g = parseFloat(v)
+    setForm(p => {
+      if (!base?.grams || !g || g <= 0) return { ...p, grams: v }
+      const r = g / base.grams
+      return {
+        ...p,
+        grams:   v,
+        kcal:    String(Math.round(base.kcal * r)),
+        protein: String(Math.round(base.protein * r * 10) / 10),
+        carbs:   String(Math.round(base.carbs   * r * 10) / 10),
+        fat:     String(Math.round(base.fat     * r * 10) / 10),
+      }
+    })
+  }
+
+  /** A hand-corrected macro becomes the new reference for the current portion,
+   *  so later changes of grams scale from the corrected figure. */
+  function setMacro(k, v) {
+    setForm(p => ({ ...p, [k]: v }))
+    const g = parseFloat(form.grams)
+    if (base && g > 0) setBase(b => ({ ...b, grams: g, [k]: parseFloat(v) || 0 }))
+  }
+
   function add(e) {
     e.preventDefault()
     if (!form.name.trim()) return
@@ -114,6 +150,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
       fat:     Math.round((+form.fat     || 0) * 10) / 10,
     }])
     setForm({ name: '', grams: '100', kcal: '', protein: '', carbs: '', fat: '' })
+    setBase(null)
     setPicked(null)
     setHits([])
     setPushed(false)
@@ -153,7 +190,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
             className={styles.gramsInput}
             type="number" min="1" inputMode="numeric"
             value={form.grams}
-            onChange={e => set('grams', e.target.value)}
+            onChange={e => setGrams(e.target.value)}
             aria-label="Грамаж"
           />
           <span className={styles.gUnit}>g</span>
@@ -178,13 +215,13 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           <label className={styles.macroField}>
             <span className={styles.macroTag} style={{ color: '#ffb74d' }}>ККАЛ</span>
             <input type="number" min="0" inputMode="numeric" value={form.kcal}
-                   onChange={e => set('kcal', e.target.value)} placeholder="0" />
+                   onChange={e => setMacro('kcal', e.target.value)} placeholder="0" />
           </label>
           {MACROS.map(m => (
             <label className={styles.macroField} key={m.key}>
               <span className={styles.macroTag} style={{ color: m.color }}>{m.short}</span>
               <input type="number" min="0" step="0.1" inputMode="decimal" value={form[m.key]}
-                     onChange={e => set(m.key, e.target.value)} placeholder="0" />
+                     onChange={e => setMacro(m.key, e.target.value)} placeholder="0" />
             </label>
           ))}
         </div>
