@@ -2,83 +2,125 @@ import { useEffect, useRef, useState } from 'react'
 import { lookupBarcode } from '../../utils/openFoodFacts'
 import styles from './BarcodeScanner.module.css'
 
-const SUPPORTED = typeof BarcodeDetector !== 'undefined'
+// Chrome and Android ship a native decoder; Safari does not. Camera access
+// itself works everywhere, so where the native one is missing we load ZXing
+// and decode the same video stream in JavaScript. It is ~200 KB, so it is
+// only fetched when actually needed.
+const HAS_NATIVE = typeof BarcodeDetector !== 'undefined'
 
 export default function BarcodeScanner({ onFound, onClose }) {
-  const videoRef = useRef(null)
+  const videoRef  = useRef(null)
   const streamRef = useRef(null)
-  const rafRef = useRef(null)
-  const detectorRef = useRef(null)
-  const [status, setStatus] = useState('opening') // opening | scanning | found | error | manual
+  const rafRef    = useRef(null)
+  const readerRef = useRef(null)
+  const [status, setStatus] = useState('opening') // opening | scanning | found | manual
   const [manualCode, setManualCode] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
-    if (!SUPPORTED) {
-      setStatus('manual')
-      return
-    }
-
-    detectorRef.current = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] })
-
     let cancelled = false
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream => {
-        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
-        streamRef.current = stream
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.play()
-        }
-        setStatus('scanning')
-        scan()
-      })
-      .catch(() => {
-        if (!cancelled) setStatus('manual')
-      })
 
-    function scan() {
-      if (cancelled || !videoRef.current || videoRef.current.readyState < 2) {
-        rafRef.current = requestAnimationFrame(scan)
+    async function start() {
+      let stream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+        })
+      } catch {
+        // Denied, or no camera — typing the number still works.
+        if (!cancelled) setStatus('manual')
         return
       }
-      detectorRef.current.detect(videoRef.current)
-        .then(codes => {
-          if (cancelled) return
-          if (codes.length > 0) {
-            const code = codes[0].rawValue
-            stopStream()
-            setStatus('found')
-            return lookupBarcode(code)
-              .then(food => { if (!cancelled) onFound(food) })
-              .catch(() => { if (!cancelled) { setErrorMsg('Продуктът не е намерен. Опитай ръчно.'); setStatus('manual') } })
-          }
-          rafRef.current = requestAnimationFrame(scan)
-        })
-        .catch(() => { rafRef.current = requestAnimationFrame(scan) })
+
+      if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        // iOS refuses to autoplay unless both of these are set on the element.
+        videoRef.current.setAttribute('playsinline', 'true')
+        try { await videoRef.current.play() } catch { /* ignore */ }
+      }
+      if (cancelled) return
+      setStatus('scanning')
+
+      if (HAS_NATIVE) {
+        runNative()
+      } else {
+        await runZXing()
+      }
     }
 
-    return () => {
-      cancelled = true
+    function handleCode(code) {
+      if (cancelled) return
       stopStream()
+      setStatus('found')
+      lookupBarcode(code)
+        .then(food => { if (!cancelled) onFound(food) })
+        .catch(() => {
+          if (cancelled) return
+          setErrorMsg('Продуктът не е намерен. Провери номера.')
+          setManualCode(code)
+          setStatus('manual')
+        })
     }
+
+    function runNative() {
+      const detector = new BarcodeDetector({
+        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'],
+      })
+      const tick = () => {
+        if (cancelled) return
+        const v = videoRef.current
+        if (!v || v.readyState < 2) { rafRef.current = requestAnimationFrame(tick); return }
+        detector.detect(v)
+          .then(codes => {
+            if (cancelled) return
+            if (codes.length) handleCode(codes[0].rawValue)
+            else rafRef.current = requestAnimationFrame(tick)
+          })
+          .catch(() => { rafRef.current = requestAnimationFrame(tick) })
+      }
+      tick()
+    }
+
+    async function runZXing() {
+      try {
+        const { BrowserMultiFormatReader } = await import('@zxing/browser')
+        if (cancelled) return
+        const reader = new BrowserMultiFormatReader()
+        readerRef.current = reader
+        reader.decodeFromVideoElement(videoRef.current, (result) => {
+          if (result && !cancelled) handleCode(result.getText())
+        })
+      } catch {
+        if (!cancelled) {
+          setErrorMsg('Разпознаването не тръгна. Въведи номера ръчно.')
+          setStatus('manual')
+        }
+      }
+    }
+
+    start()
+    return () => { cancelled = true; stopStream() }
   }, [])
 
   function stopStream() {
     cancelAnimationFrame(rafRef.current)
+    try { readerRef.current?.reset?.() } catch { /* ignore */ }
+    readerRef.current = null
     streamRef.current?.getTracks().forEach(t => t.stop())
     streamRef.current = null
   }
 
   async function handleManual(e) {
     e.preventDefault()
-    if (!manualCode.trim()) return
+    const code = manualCode.trim()
+    if (!code) return
     setStatus('found')
     try {
-      const food = await lookupBarcode(manualCode.trim())
-      onFound(food)
+      onFound(await lookupBarcode(code))
     } catch {
-      setErrorMsg('Продуктът не е намерен.')
+      setErrorMsg('Продуктът не е намерен в базата.')
       setStatus('manual')
     }
   }
@@ -95,7 +137,9 @@ export default function BarcodeScanner({ onFound, onClose }) {
           <div className={styles.cameraWrap}>
             <video ref={videoRef} className={styles.video} playsInline muted autoPlay />
             <div className={styles.crosshair} />
-            <p className={styles.hint}>Насочи камерата към баркода</p>
+            <p className={styles.hint}>
+              {status === 'opening' ? 'Отваря камерата…' : 'Насочи камерата към баркода'}
+            </p>
           </div>
         )}
 
@@ -106,11 +150,8 @@ export default function BarcodeScanner({ onFound, onClose }) {
           </div>
         )}
 
-        {(status === 'manual') && (
+        {status === 'manual' && (
           <div className={styles.manualWrap}>
-            {!SUPPORTED && (
-              <p className={styles.unsupported}>Камерата не се поддържа в този браузър.</p>
-            )}
             {errorMsg && <p className={styles.errorMsg}>{errorMsg}</p>}
             <p className={styles.manualLabel}>Въведи EAN / баркод:</p>
             <form onSubmit={handleManual} className={styles.manualForm}>
