@@ -15,6 +15,15 @@ Rules:
 - All values must be plain numbers, not strings
 - If a value is not visible, use 0`
 
+// Groq retires vision models without much notice — llama-4-scout vanished and
+// took label scanning and meal photos with it. Try each in turn so one
+// deprecation degrades instead of breaking the feature.
+const VISION_MODELS = [
+  'qwen/qwen3.6-27b',
+  'meta-llama/llama-4-maverick-17b-128e-instruct',
+  'meta-llama/llama-4-scout-17b-16e-instruct',
+]
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
@@ -32,25 +41,32 @@ Deno.serve(async (req) => {
     })
   }
 
-  const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image_url', image_url: { url: `data:${mediaType || 'image/jpeg'};base64,${image}` } },
-          { type: 'text', text: PROMPT },
-        ],
-      }],
-      max_tokens: 300,
-      temperature: 0,
-    }),
-  })
+  const content = [
+    { type: 'image_url', image_url: { url: `data:${mediaType || 'image/jpeg'};base64,${image}` } },
+    { type: 'text', text: PROMPT },
+  ]
 
-  if (!aiRes.ok) {
-    const detail = await aiRes.text()
+  let aiRes: Response | null = null
+  let detail = ''
+  for (const model of VISION_MODELS) {
+    aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content }],
+        max_tokens: 300,
+        temperature: 0,
+      }),
+    })
+    if (aiRes.ok) break
+    detail = await aiRes.text()
+    // Only a missing/decommissioned model is worth retrying on — a bad image or
+    // an expired key will fail the same way on every model.
+    if (!detail.includes('model_not_found') && !detail.includes('does not exist')) break
+  }
+
+  if (!aiRes || !aiRes.ok) {
     return new Response(JSON.stringify({ error: 'Groq request failed', detail }), {
       status: 502, headers: { 'Content-Type': 'application/json', ...CORS },
     })

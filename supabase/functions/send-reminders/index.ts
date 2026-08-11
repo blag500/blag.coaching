@@ -42,6 +42,28 @@ async function sendEmail(
   return res.ok
 }
 
+/**
+ * Push the same reminder to the phone. Reuses the send-push function so VAPID
+ * keys and subscription handling stay in one place. Failure is deliberately
+ * silent — a missing push must never stop the email from going out.
+ */
+async function sendPush(userId: string, title: string, body: string, tag: string) {
+  try {
+    const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      },
+      body: JSON.stringify({ toUserId: userId, title, body, tag }),
+    })
+    return res.ok
+  } catch (e) {
+    console.error('push failed for', userId, e)
+    return false
+  }
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -113,6 +135,7 @@ Deno.serve(async (req) => {
 
     for (const c of clients) {
       if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
+      await sendPush(c.id, 'Претегли се', 'Сутринта, преди закуска.', 'weight')
       const ok = await sendEmail(
         c.email,
         '⚖️ Качи се на кантара',
@@ -140,6 +163,7 @@ Deno.serve(async (req) => {
 
     for (const c of clients) {
       if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
+      await sendPush(c.id, 'Навици', 'Отбележи сутрешните си навици.', 'habits')
       const ok = await sendEmail(
         c.email,
         '✅ Сутрешните навици чакат',
@@ -174,6 +198,7 @@ Deno.serve(async (req) => {
 
     for (const c of clients) {
       if (!isEnabled(c.id, slot) || !missing.has(c.id) || !c.email) continue
+      await sendPush(c.id, 'Суплементи', 'Има неотбелязани за днес.', 'supplements')
       const ok = await sendEmail(
         c.email,
         '💊 Суплементацията за днес',
@@ -202,6 +227,7 @@ Deno.serve(async (req) => {
       if (!isEnabled(c.id, slot) || !c.email) continue
       const glasses = waterMap.get(c.id) ?? 0
       if ((glasses as number) >= 4) continue
+      await sendPush(c.id, 'Хидратация', `Имаш ${glasses} чаши до момента.`, 'water')
       const ok = await sendEmail(
         c.email,
         `💧 Само ${glasses} чаши вода днес`,
@@ -234,6 +260,7 @@ Deno.serve(async (req) => {
       const kcal = kcalMap.get(c.id) ?? 0
       const target = c.calories ?? 2000
       if (kcal >= target * 0.5) continue
+      await sendPush(c.id, 'Хранене', `${kcal} от ${target} ккал за днес.`, 'food')
       const ok = await sendEmail(
         c.email,
         `🍽 Само ${kcal} ккал логнати`,
@@ -260,6 +287,7 @@ Deno.serve(async (req) => {
 
     for (const c of clients) {
       if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
+      await sendPush(c.id, 'Тренировка', 'Още няма логната тренировка за днес.', 'training')
       const ok = await sendEmail(
         c.email,
         '💪 Тренировката чака',
