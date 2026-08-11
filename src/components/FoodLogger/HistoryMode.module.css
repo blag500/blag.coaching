@@ -185,3 +185,37 @@
 .addBtn:disabled,
 .renameBtn:disabled,
 .forgetBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* Editable macros for the stored portion */
+.macroGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.macroCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.macroTag {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.macroInput {
+  width: 100%;
+  padding: 8px 6px;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  outline: none;
+}
+
+.macroInput:focus { border-color: var(--accent); }

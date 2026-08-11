@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { lookupBarcode } from '../../utils/openFoodFacts'
 import styles from './BarcodeScanner.module.css'
 
@@ -125,7 +126,10 @@ export default function BarcodeScanner({ onFound, onClose }) {
     }
   }
 
-  return (
+  // Rendered into body: the page wrapper animates with a transform, and a
+  // transformed ancestor makes position:fixed resolve against it instead of the
+  // viewport — the sheet ended up below the fold rather than over the screen.
+  return createPortal(
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Баркод скенер">
       <div className={styles.modal}>
         <div className={styles.top}>
@@ -169,6 +173,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

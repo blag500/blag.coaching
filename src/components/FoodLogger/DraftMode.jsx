@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { supabase } from '../../lib/supabase'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import styles from './DraftMode.module.css'
 
@@ -53,6 +54,35 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
   const [items, setItems] = useLocalStorage('blag_draft_v1', [])
   const [form, setForm] = useState({ name: '', grams: '100', kcal: '', protein: '', carbs: '', fat: '' })
   const [pushed, setPushed] = useState(false)
+  const [hits, setHits] = useState([])       // history matches for the typed name
+  const [picked, setPicked] = useState(null) // the history row the macros came from
+  const searchTimer = useRef(null)
+
+  // Look the typed name up in the food history so the macros do not have to be
+  // typed again for anything eaten before.
+  useEffect(() => {
+    const q = form.name.trim()
+    clearTimeout(searchTimer.current)
+    if (q.length < 2 || picked === q.toLowerCase()) { setHits([]); return }
+    searchTimer.current = setTimeout(async () => {
+      const { data } = await supabase.rpc('food_history', { search: q })
+      setHits((data ?? []).slice(0, 5))
+    }, 240)
+    return () => clearTimeout(searchTimer.current)
+  }, [form.name, picked])
+
+  function useHit(h) {
+    setForm({
+      name:    h.name,
+      grams:   String(Math.round(h.grams) || 100),
+      kcal:    String(h.kcal),
+      protein: String(h.protein),
+      carbs:   String(h.carbs),
+      fat:     String(h.fat),
+    })
+    setPicked(h.name.toLowerCase())
+    setHits([])
+  }
 
   const draft = useMemo(() => items.reduce((a, i) => ({
     kcal:    a.kcal    + (+i.kcal    || 0),
@@ -84,6 +114,8 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
       fat:     Math.round((+form.fat     || 0) * 10) / 10,
     }])
     setForm({ name: '', grams: '100', kcal: '', protein: '', carbs: '', fat: '' })
+    setPicked(null)
+    setHits([])
     setPushed(false)
   }
 
@@ -127,6 +159,21 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           <span className={styles.gUnit}>g</span>
         </div>
 
+        {hits.length > 0 && (
+          <ul className={styles.hits}>
+            {hits.map(h => (
+              <li key={h.name}>
+                <button className={styles.hit} onClick={() => useHit(h)} type="button">
+                  <span className={styles.hitName}>{h.name}</span>
+                  <span className={styles.hitMacros}>
+                    {Math.round(h.grams)}g · {h.kcal} ккал
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <div className={styles.macroRow}>
           <label className={styles.macroField}>
             <span className={styles.macroTag} style={{ color: '#ffb74d' }}>ККАЛ</span>
@@ -144,6 +191,51 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
 
         <button className={styles.addBtn} type="submit">+ Добави в черновата</button>
       </form>
+
+      <div className={styles.summary}>
+        <MacroDonut totals={draft} />
+        <div className={styles.legend}>
+          {MACROS.map(m => (
+            <div className={styles.legendRow} key={m.key}>
+              <span className={styles.legendDot} style={{ background: m.color }} />
+              <span className={styles.legendLabel}>{m.label}</span>
+              <span className={styles.legendVal}>{Math.round(draft[m.key] * 10) / 10}g</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {targets.kcal > 0 && (
+        <div className={styles.projection}>
+          <span className={styles.projLabel}>С тази чернова за деня</span>
+          <div className={styles.projBars}>
+            {[
+              { k: 'kcal',    label: 'Ккал', color: '#ffb74d' },
+              { k: 'protein', label: 'П',    color: '#42A5F5' },
+              { k: 'carbs',   label: 'В',    color: '#66BB6A' },
+              { k: 'fat',     label: 'М',    color: '#CE93D8' },
+            ].map(({ k, label, color }) => {
+              const t = targets[k] || 0
+              const now = totals[k] || 0
+              const pctNow = t ? Math.min(now / t, 1) * 100 : 0
+              const pctAdd = t ? Math.min(draft[k] / t, Math.max(0, 1 - now / t)) * 100 : 0
+              const over = t && projected[k] > t
+              return (
+                <div className={styles.projRow} key={k}>
+                  <span className={styles.projName}>{label}</span>
+                  <div className={styles.projTrack}>
+                    <div className={styles.projNow} style={{ width: `${pctNow}%`, background: color }} />
+                    <div className={styles.projAdd} style={{ width: `${pctAdd}%`, background: color }} />
+                  </div>
+                  <span className={styles.projVal} style={{ color: over ? '#ef5350' : 'var(--muted)' }}>
+                    {Math.round(projected[k])}/{Math.round(t)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {items.length === 0 ? (
         <p className={styles.empty}>Черновата е празна.</p>
@@ -163,51 +255,6 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
               </li>
             ))}
           </ul>
-
-          <div className={styles.summary}>
-            <MacroDonut totals={draft} />
-            <div className={styles.legend}>
-              {MACROS.map(m => (
-                <div className={styles.legendRow} key={m.key}>
-                  <span className={styles.legendDot} style={{ background: m.color }} />
-                  <span className={styles.legendLabel}>{m.label}</span>
-                  <span className={styles.legendVal}>{Math.round(draft[m.key] * 10) / 10}g</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {targets.kcal > 0 && (
-            <div className={styles.projection}>
-              <span className={styles.projLabel}>С тази чернова за деня</span>
-              <div className={styles.projBars}>
-                {[
-                  { k: 'kcal',    label: 'Ккал', color: '#ffb74d' },
-                  { k: 'protein', label: 'П',    color: '#42A5F5' },
-                  { k: 'carbs',   label: 'В',    color: '#66BB6A' },
-                  { k: 'fat',     label: 'М',    color: '#CE93D8' },
-                ].map(({ k, label, color }) => {
-                  const t = targets[k] || 0
-                  const now = totals[k] || 0
-                  const pctNow = t ? Math.min(now / t, 1) * 100 : 0
-                  const pctAdd = t ? Math.min(draft[k] / t, Math.max(0, 1 - now / t)) * 100 : 0
-                  const over = t && projected[k] > t
-                  return (
-                    <div className={styles.projRow} key={k}>
-                      <span className={styles.projName}>{label}</span>
-                      <div className={styles.projTrack}>
-                        <div className={styles.projNow} style={{ width: `${pctNow}%`, background: color }} />
-                        <div className={styles.projAdd} style={{ width: `${pctAdd}%`, background: color }} />
-                      </div>
-                      <span className={styles.projVal} style={{ color: over ? '#ef5350' : 'var(--muted)' }}>
-                        {Math.round(projected[k])}/{Math.round(t)}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
 
           <button className={styles.pushBtn} onClick={pushToLog} type="button">
             Пренеси в дневника →

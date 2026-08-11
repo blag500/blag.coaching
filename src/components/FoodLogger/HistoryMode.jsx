@@ -14,6 +14,9 @@ export default function HistoryMode({ onAddRaw }) {
   const [openName, setOpen]   = useState(null)
   const [grams, setGrams]     = useState('100')
   const [draftName, setDraft] = useState('')
+  // Editable per-portion macros — a wrong figure should be correctable here
+  // rather than forcing a fresh entry every time it is used.
+  const [macros, setMacros]   = useState({ kcal: '', protein: '', carbs: '', fat: '' })
   const [busy, setBusy]       = useState(false)
   const [note, setNote]       = useState('')
   const timer = useRef(null)
@@ -37,20 +40,37 @@ export default function HistoryMode({ onAddRaw }) {
     setOpen(item.name)
     setDraft(item.name)
     setGrams(String(item.grams > 0 ? Math.round(item.grams) : 100))
+    setMacros({
+      kcal:    String(item.kcal),
+      protein: String(item.protein),
+      carbs:   String(item.carbs),
+      fat:     String(item.fat),
+    })
     setNote('')
+  }
+
+  // Macros are stored against the reference portion, so scale to whatever
+  // portion is being logged now.
+  function scaled(item) {
+    const g = parseFloat(grams) || 0
+    const base = parseFloat(item.grams) || g || 100
+    const r = base > 0 ? g / base : 1
+    const num = (v) => parseFloat(v) || 0
+    return {
+      kcal:    Math.round(num(macros.kcal) * r),
+      protein: Math.round(num(macros.protein) * r * 10) / 10,
+      carbs:   Math.round(num(macros.carbs)   * r * 10) / 10,
+      fat:     Math.round(num(macros.fat)     * r * 10) / 10,
+    }
   }
 
   function add(item) {
     const g = parseFloat(grams)
     if (!g || g <= 0) return
-    const ratio = item.grams > 0 ? g / item.grams : 1
     onAddRaw({
-      name:    draftName.trim() || item.name,
-      grams:   Math.round(g),
-      kcal:    Math.round(item.kcal * ratio),
-      protein: Math.round(item.protein * ratio * 10) / 10,
-      carbs:   Math.round(item.carbs   * ratio * 10) / 10,
-      fat:     Math.round(item.fat     * ratio * 10) / 10,
+      name:  draftName.trim() || item.name,
+      grams: Math.round(g),
+      ...scaled(item),
     })
     setOpen(null)
   }
@@ -138,11 +158,30 @@ export default function HistoryMode({ onAddRaw }) {
                       />
                     </label>
 
+                    <div className={styles.macroGrid}>
+                      {[
+                        { k: 'kcal',    label: 'ККАЛ', color: '#ffb74d' },
+                        { k: 'protein', label: 'П',    color: '#42A5F5' },
+                        { k: 'carbs',   label: 'В',    color: '#66BB6A' },
+                        { k: 'fat',     label: 'М',    color: '#CE93D8' },
+                      ].map(({ k, label, color }) => (
+                        <label className={styles.macroCell} key={k}>
+                          <span className={styles.macroTag} style={{ color }}>{label}</span>
+                          <input
+                            className={styles.macroInput}
+                            type="number" min="0" step="0.1" inputMode="decimal"
+                            value={macros[k]}
+                            onChange={e => setMacros(m => ({ ...m, [k]: e.target.value }))}
+                            aria-label={label}
+                          />
+                        </label>
+                      ))}
+                    </div>
+
                     <p className={styles.preview}>
                       {(() => {
-                        const g = parseFloat(grams) || 0
-                        const r = item.grams > 0 ? g / item.grams : 1
-                        return `${Math.round(item.kcal * r)} ккал · П ${Math.round(item.protein * r * 10) / 10}g · В ${Math.round(item.carbs * r * 10) / 10}g · М ${Math.round(item.fat * r * 10) / 10}g`
+                        const s = scaled(item)
+                        return `За ${Math.round(parseFloat(grams) || 0)}g → ${s.kcal} ккал · П ${s.protein}g · В ${s.carbs}g · М ${s.fat}g`
                       })()}
                     </p>
 
