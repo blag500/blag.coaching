@@ -57,20 +57,12 @@
   font-family: var(--font-heading);
   font-size: 36px;
   letter-spacing: 0.04em;
+  color: var(--text);
   margin: 0;
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  /* Brushed gold. The colour is the fallback for anything that cannot clip a
-     background to text; text-fill-color only wins where it is supported. */
-  color: #C8A05A;
-  background-image: var(--gold-metal);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  padding-bottom: 0.06em;
 }
 
 /* Pages with no eyebrow read better a touch smaller */
