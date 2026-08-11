@@ -62,7 +62,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model,
         messages: [{ role: 'user', content }],
-        max_tokens: 400,
+        reasoning_effort: 'none',
+        max_tokens: 1400,
         temperature: 0.1,
       }),
     })
@@ -84,8 +85,16 @@ Deno.serve(async (req) => {
 
   let result
   try {
-    const match = text.match(/\{[\s\S]*\}/)
-    result = JSON.parse(match ? match[0] : text)
+    // Reasoning models emit their working before the answer, sometimes in a
+    // <think> block and sometimes as bare prose, so strip that first and then
+    // take the LAST balanced object — the earlier ones are worked examples.
+    const cleaned = text
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/<think>[\s\S]*$/i, '')
+      .replace(/```(?:json)?/gi, '')
+    const matches = cleaned.match(/\{[\s\S]*\}/g) ?? []
+    const candidate = matches.length ? matches[matches.length - 1] : cleaned
+    result = JSON.parse(candidate)
   } catch {
     return new Response(JSON.stringify({ error: 'Could not parse response', raw: text }), {
       status: 502, headers: { 'Content-Type': 'application/json', ...CORS },

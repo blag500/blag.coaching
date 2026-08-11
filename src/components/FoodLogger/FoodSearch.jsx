@@ -6,6 +6,7 @@ import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
 import BarcodeScanner from './BarcodeScanner'
 import DraftMode from './DraftMode'
+import HistoryMode from './HistoryMode'
 import styles from './FoodSearch.module.css'
 
 function PlateIcon() {
@@ -56,26 +57,45 @@ function classifyFood(name = '') {
   return FOOD_CLASSES.find(c => c.re.test(name)) ?? null
 }
 
-function resizeImage(file, maxDim = 1024) {
+/**
+ * Downscale to something an Edge Function will actually accept.
+ *
+ * Gallery photos are far larger than camera captures — a 12 MP HEIC becomes
+ * megabytes of base64 and the request dies as "Failed to send a request".
+ * So this shrinks by dimension first, then steps quality down until the
+ * encoded payload fits comfortably under the limit.
+ */
+function resizeImage(file, maxDim = 900, maxBytes = 700_000) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     const url = URL.createObjectURL(file)
+
     img.onload = () => {
       URL.revokeObjectURL(url)
       const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight))
       const canvas = document.createElement('canvas')
       canvas.width  = Math.round(img.naturalWidth  * scale)
       canvas.height = Math.round(img.naturalHeight * scale)
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
-      canvas.toBlob(blob => {
-        if (!blob) { reject(new Error('resize failed')); return }
-        const reader = new FileReader()
-        reader.onload = () => resolve({ base64: reader.result.split(',')[1], mediaType: 'image/jpeg' })
-        reader.onerror = reject
-        reader.readAsDataURL(blob)
-      }, 'image/jpeg', 0.85)
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+      const encode = (quality) => {
+        const dataUrl = canvas.toDataURL('image/jpeg', quality)
+        const base64  = dataUrl.split(',')[1]
+        if (base64.length <= maxBytes || quality <= 0.45) {
+          resolve({ base64, mediaType: 'image/jpeg' })
+        } else {
+          encode(quality - 0.12)
+        }
+      }
+      encode(0.82)
     }
-    img.onerror = reject
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      // Safari can decode HEIC in an <img>, most other browsers cannot.
+      reject(new Error('Този формат снимка не се поддържа. Опитай с JPG или снимай направо.'))
+    }
     img.src = url
   })
 }
@@ -89,8 +109,7 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
         {[
           { id: 'ai',      label: 'AI',      icon: '◈' },
           { id: 'barcode', label: 'БАРКОД',  icon: '▥' },
-          { id: 'manual',  label: 'РЪЧНО',   icon: '✎' },
-          { id: 'recent',  label: 'СКОР.',   icon: '↺' },
+          { id: 'history', label: 'ИСТОРИЯ', icon: '↺' },
           { id: 'draft',   label: 'ЧЕРНОВА', icon: '✎' },
           { id: 'bot',     label: 'БОТ',     icon: '◉' },
           { id: 'recipes', label: 'РЕЦЕПТИ', icon: '≡' },
@@ -107,10 +126,9 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
         ))}
       </div>
 
-      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
-      {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} />}
-{mode === 'recent'  && <RecentMode onAddRaw={onAddRaw} />}
-      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} onAdded={() => setMode('recent')} />}
+      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('history')} />}
+      {mode === 'history' && <HistoryMode onAddRaw={onAddRaw} />}
+      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} onAdded={() => setMode('history')} />}
       {mode === 'draft'   && <DraftMode onAddRaw={onAddRaw} totals={totals} targets={targets} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
