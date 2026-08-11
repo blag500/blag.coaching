@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { lookupBarcode } from '../../utils/openFoodFacts'
+import { supabase } from '../../lib/supabase'
 import styles from './BarcodeScanner.module.css'
 
 // Chrome and Android ship a native decoder; Safari does not. Camera access
@@ -14,9 +15,16 @@ export default function BarcodeScanner({ onFound, onClose }) {
   const streamRef = useRef(null)
   const rafRef    = useRef(null)
   const readerRef = useRef(null)
-  const [status, setStatus] = useState('opening') // opening | scanning | found | manual
+  const [status, setStatus] = useState('opening') // opening | scanning | found | manual | unknown
   const [manualCode, setManualCode] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  // Details typed in for a barcode nobody has catalogued yet.
+  const [newProduct, setNewProduct] = useState({ name: '', grams: '100', kcal: '', protein: '', carbs: '', fat: '' })
+  const [saving, setSaving] = useState(false)
+  // Torch is a camera-track capability, not a browser API — absent on iOS and
+  // on any device without a rear lamp, so the button only shows when supported.
+  const [hasTorch, setHasTorch] = useState(false)
+  const [torchOn, setTorchOn] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -44,6 +52,9 @@ export default function BarcodeScanner({ onFound, onClose }) {
       if (cancelled) return
       setStatus('scanning')
 
+      const track = stream.getVideoTracks()[0]
+      if (track?.getCapabilities?.().torch) setHasTorch(true)
+
       if (HAS_NATIVE) {
         runNative()
       } else {
@@ -59,9 +70,8 @@ export default function BarcodeScanner({ onFound, onClose }) {
         .then(food => { if (!cancelled) onFound(food) })
         .catch(() => {
           if (cancelled) return
-          setErrorMsg('Продуктът не е намерен. Провери номера.')
           setManualCode(code)
-          setStatus('manual')
+          setStatus('unknown')
         })
     }
 
@@ -105,7 +115,18 @@ export default function BarcodeScanner({ onFound, onClose }) {
     return () => { cancelled = true; stopStream() }
   }, [])
 
+  async function toggleTorch() {
+    const track = streamRef.current?.getVideoTracks()[0]
+    if (!track) return
+    const next = !torchOn
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next }] })
+      setTorchOn(next)
+    } catch { /* lamp refused — leave the button as it was */ }
+  }
+
   function stopStream() {
+    setTorchOn(false)
     cancelAnimationFrame(rafRef.current)
     try { readerRef.current?.reset?.() } catch { /* ignore */ }
     readerRef.current = null
@@ -121,9 +142,40 @@ export default function BarcodeScanner({ onFound, onClose }) {
     try {
       onFound(await lookupBarcode(code))
     } catch {
-      setErrorMsg('Продуктът не е намерен в базата.')
-      setStatus('manual')
+      setStatus('unknown')
     }
+  }
+
+  /** Catalogue an unknown barcode. Written to the shared table, so the next
+   *  person to scan it gets the product straight away. */
+  async function saveProduct(e) {
+    e.preventDefault()
+    const name = newProduct.name.trim()
+    if (!name || saving) return
+    setSaving(true)
+
+    const per100 = {
+      kcal:    Math.round(+newProduct.kcal    || 0),
+      protein: +newProduct.protein || 0,
+      carbs:   +newProduct.carbs   || 0,
+      fat:     +newProduct.fat     || 0,
+    }
+    const { error } = await supabase.from('barcode_products').insert({
+      barcode: manualCode.trim(),
+      name,
+      typical_grams: Math.round(+newProduct.grams || 100),
+      ...per100,
+    })
+    setSaving(false)
+    if (error) { setErrorMsg('Неуспешен запис. Опитай пак.'); return }
+
+    onFound({
+      id: crypto.randomUUID(),
+      name,
+      brand: '',
+      servingSize: `${Math.round(+newProduct.grams || 100)}g`,
+      per100g: per100,
+    })
   }
 
   // Rendered into body: the page wrapper animates with a transform, and a
@@ -141,6 +193,15 @@ export default function BarcodeScanner({ onFound, onClose }) {
           <div className={styles.cameraWrap}>
             <video ref={videoRef} className={styles.video} playsInline muted autoPlay />
             <div className={styles.crosshair} />
+            {hasTorch && (
+              <button
+                className={`${styles.torchBtn} ${torchOn ? styles.torchOn : ''}`}
+                onClick={toggleTorch}
+                type="button"
+                aria-pressed={torchOn}
+                aria-label={torchOn ? 'Изгаси светкавицата' : 'Светкавица'}
+              >⚡</button>
+            )}
             <p className={styles.hint}>
               {status === 'opening' ? 'Отваря камерата…' : 'Насочи камерата към баркода'}
             </p>
@@ -170,6 +231,60 @@ export default function BarcodeScanner({ onFound, onClose }) {
               />
               <button type="submit" className={styles.manualBtn}>Търси</button>
             </form>
+          </div>
+        )}
+
+        {status === 'unknown' && (
+          <div className={styles.unknownWrap}>
+            <p className={styles.unknownLead}>
+              Този баркод още го няма в базата. Въведи го веднъж и следващия път ще се разпознава сам.
+            </p>
+            <p className={styles.unknownCode}>{manualCode}</p>
+            {errorMsg && <p className={styles.errorMsg}>{errorMsg}</p>}
+
+            <form onSubmit={saveProduct} className={styles.unknownForm}>
+              <input
+                className={styles.manualInput}
+                placeholder="Име на продукта"
+                value={newProduct.name}
+                onChange={e => setNewProduct(p => ({ ...p, name: e.target.value }))}
+                autoFocus
+                aria-label="Име на продукта"
+              />
+
+              <p className={styles.unknownHint}>Стойности на 100 г от етикета:</p>
+              <div className={styles.unknownGrid}>
+                {[
+                  { k: 'kcal',    label: 'ККАЛ', color: '#ffb74d' },
+                  { k: 'protein', label: 'П',    color: '#42A5F5' },
+                  { k: 'carbs',   label: 'В',    color: '#66BB6A' },
+                  { k: 'fat',     label: 'М',    color: '#CE93D8' },
+                ].map(({ k, label, color }) => (
+                  <label className={styles.unknownCell} key={k}>
+                    <span className={styles.unknownTag} style={{ color }}>{label}</span>
+                    <input
+                      type="number" min="0" step="0.1" inputMode="decimal"
+                      value={newProduct[k]}
+                      onChange={e => setNewProduct(p => ({ ...p, [k]: e.target.value }))}
+                      placeholder="0"
+                      aria-label={label}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <button type="submit" className={styles.manualBtn} disabled={saving}>
+                {saving ? 'Записва…' : 'Запази и добави'}
+              </button>
+            </form>
+
+            <button
+              className={styles.retryBtn}
+              onClick={() => { setErrorMsg(''); setStatus('manual') }}
+              type="button"
+            >
+              ← Друг баркод
+            </button>
           </div>
         )}
       </div>

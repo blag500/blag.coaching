@@ -160,3 +160,112 @@
   cursor: pointer;
   white-space: nowrap;
 }
+
+/* ── Unknown barcode: catalogue it rather than dead-end ── */
+.unknownWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unknownLead {
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+}
+
+.unknownCode {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  text-align: center;
+}
+
+.unknownForm {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.unknownHint {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
+.unknownGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.unknownCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.unknownTag {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.unknownCell input {
+  width: 100%;
+  padding: 9px 6px;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  outline: none;
+}
+
+.unknownCell input:focus { border-color: var(--accent); }
+
+.retryBtn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  padding: 4px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+/* Torch — only rendered where the camera track reports the capability */
+.torchBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.torchOn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}

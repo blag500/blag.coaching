@@ -23,6 +23,14 @@ function emailHtml(emoji: string, heading: string, body: string, name: string) {
 </body></html>`
 }
 
+/**
+ * Reminders now arrive as push, so the duplicate email is off. Kept behind a
+ * flag rather than deleted: the templates and per-slot settings still work, and
+ * push is useless to anyone who has not installed the app or granted
+ * permission — set REMINDER_EMAILS=on to bring them back.
+ */
+const EMAILS_ON = Deno.env.get('REMINDER_EMAILS') === 'on'
+
 async function sendEmail(
   to: string,
   subject: string,
@@ -30,6 +38,8 @@ async function sendEmail(
   key: string,
   from: string,
 ) {
+  if (!EMAILS_ON) return true   // treated as delivered: push already went out
+
   const res = await fetch(RESEND_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
@@ -122,6 +132,40 @@ Deno.serve(async (req) => {
   }
 
   let sent = 0
+
+  // ── test: fire one reminder at a single address, ignoring schedule and
+  //    per-slot settings, so delivery can be verified without waiting for cron.
+  //    Reports what it found, since "sent 0" is otherwise indistinguishable
+  //    from "no push subscription registered".
+  if (slot === 'test') {
+    const target = url.searchParams.get('email')
+    const c = clients.find(x => x.email?.toLowerCase() === target?.toLowerCase())
+    if (!c) {
+      return new Response(JSON.stringify({ slot, error: 'no profile with that email', target }), {
+        status: 404, headers: { 'Content-Type': 'application/json', ...CORS },
+      })
+    }
+
+    const { data: subs } = await supabase
+      .from('push_subscriptions')
+      .select('endpoint')
+      .eq('user_id', c.id)
+
+    const pushOk = await sendPush(c.id, 'Тест', 'Известията работят. 💪', 'test')
+    const mailOk = EMAILS_ON ? await sendEmail(
+      c.email,
+      '🔔 Тестово напомняне',
+      emailHtml('🔔', 'Тест', 'Ако виждаш това, имейлите работят. Утре сутринта ще получиш и истинските напомняния.', c.name ?? ''),
+      resendKey, fromEmail,
+    ) : 'disabled'
+
+    return new Response(JSON.stringify({
+      slot, email: c.email,
+      push_subscriptions: subs?.length ?? 0,
+      push_sent: pushOk, email_sent: mailOk,
+      reminder_settings: settingsMap.has(c.id) ? settingsMap.get(c.id) : 'none — turn reminders on in Профил',
+    }), { headers: { 'Content-Type': 'application/json', ...CORS } })
+  }
 
   // ── weight (07:30) ────────────────────────────────────────────────────────
   if (slot === 'weight') {
