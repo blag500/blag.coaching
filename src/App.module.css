@@ -57,6 +57,12 @@
   animation: pageInLeft 240ms var(--ease-out) both;
 }
 
+/* A page that arrived by swipe has already travelled the whole way under the
+   finger; animating it in again would play the same move twice. */
+.page[data-dir="none"] {
+  animation: none;
+}
+
 @keyframes pageInUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }

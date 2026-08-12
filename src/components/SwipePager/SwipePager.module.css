@@ -1,0 +1,22 @@
+.host {
+  position: relative;
+  /* The pages move sideways; nothing about that should make the document
+     scrollable across. */
+  overflow-x: clip;
+}
+
+/* Stays in normal flow so the document keeps its height and its scroll.
+   The transform and will-change are applied inline, and only while the page is
+   actually moving — see the note in the component. */
+
+/* The incoming page is pinned to the viewport rather than the document: the
+   page underneath may be scrolled a long way down, and the neighbour has to
+   arrive at the edge of the screen, not at the top of the document. */
+.incoming {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  will-change: transform;
+  z-index: 5;
+}

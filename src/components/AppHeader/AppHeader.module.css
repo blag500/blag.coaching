@@ -27,15 +27,17 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 14px 34px -20px rgba(0, 0, 0, 0.9);
 
-  /* Leaving on a scroll down is unhurried; coming back is quick, because the
-     return is a request and a request should feel answered. */
-  transition: transform 190ms var(--ease-out);
+  /* Long and soft in both directions — the drawer curve, which decelerates for
+     almost its whole length, so the bar arrives rather than stops. Coming back
+     is still the shorter of the two: the return is a request, and a request
+     should feel answered. */
+  transition: transform 380ms var(--ease-drawer);
   will-change: transform;
 }
 
 :global(html[data-header="hidden"]) .header {
   transform: translateY(-100%);
-  transition-duration: 340ms;
+  transition-duration: 520ms;
 }
 
 @media (prefers-reduced-motion: reduce) {

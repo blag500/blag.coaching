@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import HelpPage from './pages/HelpPage'
@@ -35,7 +35,7 @@ import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import { useHideOnScroll } from './hooks/useHideOnScroll'
-import { useSwipeNav } from './hooks/useSwipeNav'
+import SwipePager from './components/SwipePager/SwipePager'
 import { useSupplementsToday } from './hooks/useSupplementsToday'
 import SupplementBanner from './components/Supplements/SupplementBanner'
 import { trackPage } from './lib/analytics'
@@ -92,7 +92,11 @@ function AppShell() {
     }
   }, [profile?.stripe_subscription_id])
 
-  function navigate(newTab) {
+  function navigate(newTab, { instant = false } = {}) {
+    // A swipe has already carried the page across, so replaying the entrance
+    // animation would show the same move twice.
+    if (instant) { setSlideDir('none'); setActiveTab(newTab); return }
+
     const prevIdx = NAV_ORDER.indexOf(activeTab)
     const newIdx  = NAV_ORDER.indexOf(newTab)
     if (prevIdx !== -1 && newIdx !== -1 && prevIdx !== newIdx) {
@@ -106,19 +110,15 @@ function AppShell() {
   usePushNotifications()
   useHideOnScroll(!drawerOpen)
 
-  // Swiping only moves between the four main tabs. From a sub-page such as the
-  // chat there is no "tab to the right" to go to, so the gesture stays inert
-  // rather than teleporting somewhere unrelated.
-  const tabIdx = NAV_ORDER.indexOf(activeTab)
-  useSwipeNav({
-    enabled: tabIdx !== -1 && !drawerOpen,
-    onNext: () => { if (tabIdx < NAV_ORDER.length - 1) navigate(NAV_ORDER[tabIdx + 1]) },
-    onPrev: () => { if (tabIdx > 0)                    navigate(NAV_ORDER[tabIdx - 1]) },
-  })
-
   const { pendingCount: supplementPending } = useSupplementsToday()
 
   useEffect(() => { trackPage(activeTab) }, [activeTab])
+
+  // A new tab starts at its top. During a swipe the incoming page is shown from
+  // the top, so landing halfway down it after the finger lifts would contradict
+  // what was on screen a moment earlier. Layout effect, so the jump happens
+  // before the frame is painted rather than as a visible flick.
+  useLayoutEffect(() => { window.scrollTo(0, 0) }, [activeTab])
 
   useEffect(() => {
     const handler = () => {
@@ -256,9 +256,17 @@ function AppShell() {
       <UpdateBanner />
       <NotificationPrompt />
       <main className={styles.content}>
-        <div key={activeTab} className={styles.page} data-dir={slideDir}>
-          {pages[activeTab] ?? null}
-        </div>
+        <SwipePager
+          order={NAV_ORDER}
+          active={activeTab}
+          onChange={navigate}
+          enabled={!drawerOpen && NAV_ORDER.includes(activeTab)}
+          render={tab => (
+            <div key={tab} className={styles.page} data-dir={tab === activeTab ? slideDir : 'none'}>
+              {pages[tab] ?? null}
+            </div>
+          )}
+        />
       </main>
       <BottomNav
         activeTab={activeTab}
