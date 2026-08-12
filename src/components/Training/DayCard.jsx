@@ -20,7 +20,16 @@ function labelFg(label) {
   return '#0A0A0F'
 }
 
-export default function DayCard({ dayData, onLogLift }) {
+/** "преди 5 дни", or the date once it stops being recent enough to count in days. */
+function agoLabel(dateStr) {
+  const days = Math.round((Date.now() - new Date(dateStr + 'T12:00:00')) / 86400000)
+  if (days <= 0)  return 'днес'
+  if (days === 1) return 'вчера'
+  if (days < 14)  return `преди ${days} дни`
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
+}
+
+export default function DayCard({ dayData, onLogLift, lifts = {} }) {
   const { profile } = useAuth()
   const { label, muscles = [], exercises = [], isRest: isRestFlag } = dayData
   const isRest  = isRestFlag || (label || '').toUpperCase() === 'REST'
@@ -62,24 +71,45 @@ export default function DayCard({ dayData, onLogLift }) {
             </div>
           ) : (
             <ul className={styles.exList}>
-              {exercises.map((ex, i) => (
-                <li key={i} className={styles.exRow}>
-                  <span className={styles.exName}>{ex.name}</span>
-                  <div className={styles.exRight}>
-                    <span className={styles.exBadge}>{ex.sets} × {ex.reps}</span>
-                    {!isCoach && (
-                      <button
-                        className={styles.logBtn}
-                        onClick={e => { e.stopPropagation(); onLogLift?.(ex) }}
-                        type="button"
-                        aria-label={`Логирай ${ex.name}`}
-                      >
-                        +
-                      </button>
-                    )}
-                  </div>
-                </li>
-              ))}
+              {exercises.map((ex, i) => {
+                const rec   = lifts[ex.name] ?? {}
+                const done  = rec.today
+                const last  = rec.last
+                return (
+                  <li key={i} className={`${styles.exRow} ${done ? styles.exRowDone : ''}`}>
+                    <div className={styles.exMain}>
+                      <span className={styles.exName}>{ex.name}</span>
+                      {/* What you actually moved, which is the line a lifter
+                          reads. The prescription is the quiet one. */}
+                      {done ? (
+                        <span className={styles.exDone}>
+                          ✓ {done.weight}кг × {done.reps}
+                          {done.sets ? ` × ${done.sets}` : ''}
+                        </span>
+                      ) : last ? (
+                        <span className={styles.exLast}>
+                          {last.weight}кг × {last.reps} · {agoLabel(last.date)}
+                        </span>
+                      ) : (
+                        <span className={styles.exNever}>първи път</span>
+                      )}
+                    </div>
+                    <div className={styles.exRight}>
+                      <span className={styles.exBadge}>{ex.sets} × {ex.reps}</span>
+                      {!isCoach && (
+                        <button
+                          className={styles.logBtn}
+                          onClick={e => { e.stopPropagation(); onLogLift?.(ex) }}
+                          type="button"
+                          aria-label={`Логирай ${ex.name}`}
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>

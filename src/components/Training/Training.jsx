@@ -9,6 +9,7 @@ import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
+import { useLastLifts } from '../../hooks/useLastLifts'
 import styles from './Training.module.css'
 
 // Detect old 7-day format
@@ -174,6 +175,7 @@ export default function Training({ onMenuOpen }) {
   const [undoEntry, setUndoEntry]       = useState(null) // { id, exerciseName, weight }
   const undoTimerRef                    = useRef(null)
   const [logDate, setLogDate]           = useState(() => new Date().toISOString().slice(0, 10))
+  const { byName: lifts, refresh: refreshLifts } = useLastLifts(logDate)
 
   useEffect(() => {
     if (!user) return
@@ -199,6 +201,8 @@ export default function Training({ onMenuOpen }) {
   }
 
   function handleSaved(entry) {
+    // The row shows what was just logged, so it has to hear about it.
+    refreshLifts()
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
     setUndoEntry(entry)
     undoTimerRef.current = setTimeout(() => setUndoEntry(null), 8000)
@@ -208,6 +212,8 @@ export default function Training({ onMenuOpen }) {
     if (!undoEntry) return
     clearTimeout(undoTimerRef.current)
     await removeExerciseLog(undoEntry.id)
+    // Undo takes the entry back out, so the row must stop claiming it is done.
+    refreshLifts()
     setUndoEntry(null)
   }
 
@@ -341,7 +347,7 @@ export default function Training({ onMenuOpen }) {
         <div className={styles.blockContent}>
           <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
 
-          <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} />
+          <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} lifts={lifts} />
 
           <button
             className={`${styles.markDoneBtn} ${alreadyMarked || justMarked ? styles.markDoneDone : ''}`}

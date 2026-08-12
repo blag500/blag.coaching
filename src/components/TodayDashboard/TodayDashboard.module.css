@@ -165,13 +165,18 @@
   gap: 10px;
 }
 
+/* Drawn, like everything else. The emoji lived inside the translation string,
+   which is why it survived the sweep. */
 .waterLabel {
   font-family: var(--font-heading);
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: var(--muted);
+  color: #42A5F5;
   flex-shrink: 0;
-  width: 52px;
+  width: 62px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .waterGlasses {

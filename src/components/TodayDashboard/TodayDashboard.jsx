@@ -209,7 +209,10 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         } : undefined}
       >
         {waterBurst > 0 && <Confetti burst={`w${waterBurst}`} />}
-        <span className={styles.waterLabel}>{t('today.water')}</span>
+        <span className={styles.waterLabel}>
+          <Pictogram name="water" size={14} />
+          {t('today.water')}
+        </span>
         <div className={styles.waterGlasses}>
           {Array.from({ length: waterTarget }, (_, i) => (
             <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />

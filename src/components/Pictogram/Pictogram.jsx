@@ -17,14 +17,14 @@ const SHAPES = {
       <path d="M12 12.6s1.9 1.5 1.9 3.1a1.9 1.9 0 0 1-3.8 0c0-1.2.8-2.1 1.9-3.1z" />
     </>
   ),
-  /* A drumstick. The first attempt — a cut of meat with the bone as a dot in
-     the middle — came out reading as an eye. */
+  /* A fish. The drumstick before it kept reading as a lollipop once it was
+     shrunk to 18px — too much of it depended on two small knobs staying apart.
+     A silhouette survives being made small; an assembly of parts does not. */
   protein: (
     <>
-      <path d="M14 10a4.2 4.2 0 1 1 5.9-5.9A4.2 4.2 0 0 1 14 10z" />
-      <path d="M14 10 9.6 14.4" />
-      <circle cx="7.9" cy="15.3" r="2.2" />
-      <circle cx="6.7" cy="17.7" r="2.2" />
+      <path d="M21 12c-1.5 3.2-4.1 4.9-7.4 4.9-3.4 0-6.5-1.6-9.2-4.9 2.7-3.3 5.8-4.9 9.2-4.9 3.3 0 5.9 1.7 7.4 4.9z" />
+      <path d="M4.4 12 1.7 8.6v6.8z" />
+      <circle cx="16.9" cy="10.7" r="0.8" />
     </>
   ),
   carbs: (

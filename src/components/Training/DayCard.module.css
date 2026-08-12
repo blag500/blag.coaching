@@ -183,3 +183,41 @@
 .logBtn:active {
   opacity: 0.8;
 }
+
+
+/* ── The row as a training log rather than a spec sheet ─────────────────── */
+
+.exMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Last time's number. This is the line the set is actually planned against,
+   so it is legible rather than a footnote. */
+.exLast {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.exDone {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #81C784;
+}
+
+.exNever {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Logged today — marked on the row itself, so a session shows its progress as
+   you go instead of only when the whole block is ticked off at the end. */
+.exRowDone .exName {
+  opacity: 0.75;
+}
