@@ -781,18 +781,14 @@
   color: var(--accent);
 }
 
-.habitEmoji {
-  font-size: 13px;
-  line-height: 1;
-  /* Grey while undone, full colour once ticked — the row reads as progress at a
-     glance instead of as six identical stickers. */
-  filter: grayscale(1);
-  opacity: 0.6;
-  transition: filter 160ms var(--ease-out), opacity 160ms var(--ease-out);
+/* Drawn, and inheriting the chip's colour, so a ticked habit lights icon and
+   label together instead of leaving a full-colour sticker on a grey chip. */
+.habitIcon {
+  opacity: 0.55;
+  transition: opacity 160ms var(--ease-out);
 }
 
-.habitChipOn .habitEmoji {
-  filter: none;
+.habitChipOn .habitIcon {
   opacity: 1;
 }
 

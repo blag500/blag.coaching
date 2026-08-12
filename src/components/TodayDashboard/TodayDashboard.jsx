@@ -10,6 +10,7 @@ import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
 import Confetti from './Confetti'
+import Pictogram from '../Pictogram/Pictogram'
 import MacroScale from './MacroScale'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
@@ -254,7 +255,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
                    the row reads as a run being completed instead of a flash. */
                 style={habitsCheer ? { animationDelay: `${i * 55}ms` } : undefined}
               >
-                <span className={styles.habitEmoji}>{h.emoji}</span>
+                <Pictogram name={h.id} size={16} className={styles.habitIcon} />
                 <span className={styles.habitLabel}>{h.label}</span>
               </button>
             ))}

@@ -1,0 +1,6 @@
+/* Inherits the colour of whatever row it sits in, so an icon, a bar and a
+   number can all be one thing. */
+.icon {
+  flex-shrink: 0;
+  display: block;
+}
