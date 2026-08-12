@@ -329,8 +329,8 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
                 <div className={styles.macroGrid}>
                   {[
                     { key: 'kcal',    label: 'ККАЛ',    val: selectedPreset.kcal,                color: '#F06292', unit: ''  },
-                    { key: 'protein', label: 'ПРОТЕИН', val: selectedPreset.macros.protein,      color: '#66BB6A', unit: 'g' },
-                    { key: 'carbs',   label: 'ВЪГЛ',    val: selectedPreset.macros.carbs,        color: '#4FC3F7', unit: 'g' },
+                    { key: 'protein', label: 'ПРОТЕИН', val: selectedPreset.macros.protein,      color: 'var(--macro-protein)', unit: 'g' },
+                    { key: 'carbs',   label: 'ВЪГЛ',    val: selectedPreset.macros.carbs,        color: 'var(--macro-carbs)', unit: 'g' },
                     { key: 'fat',     label: 'МАЗН',    val: selectedPreset.macros.fat,          color: 'var(--accent)', unit: 'g' },
                   ].map(m => (
                     <div key={m.key} className={styles.macroCard} style={{ borderColor: m.color + '40' }}>

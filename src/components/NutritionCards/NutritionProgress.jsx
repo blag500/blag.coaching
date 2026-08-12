@@ -1,9 +1,14 @@
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './NutritionProgress.module.css'
 
+// Protein was green here and blue on every other screen, carbs the reverse.
+// Colour is the whole point of these three — if the same macro is a different
+// colour depending on which tab you are standing on, it has stopped meaning
+// anything and become decoration.
 const MACROS = [
-  { key: 'protein', label: 'ПРОТЕИН', short: 'П', unit: 'g',   color: '#66BB6A' },
-  { key: 'carbs',   label: 'ВЪГЛ.',   short: 'В', unit: 'g',   color: '#4FC3F7' },
-  { key: 'fat',     label: 'МАЗНИНИ', short: 'М', unit: 'g',   color: 'var(--accent)' },
+  { key: 'protein', label: 'ПРОТЕИН', short: 'П', unit: 'g', color: 'var(--macro-protein)' },
+  { key: 'carbs',   label: 'ВЪГЛ.',   short: 'В', unit: 'g', color: 'var(--macro-carbs)' },
+  { key: 'fat',     label: 'МАЗНИНИ', short: 'М', unit: 'g', color: 'var(--macro-fat)' },
 ]
 
 const R  = 46          // ring radius
@@ -36,9 +41,9 @@ export default function NutritionProgress({
 
   // stroke-dashoffset formula: C – startPosition
   const segments = [
-    { key: 'protein', color: '#66BB6A', arc: pArc, offset: C },
-    { key: 'carbs',   color: '#4FC3F7', arc: cArc, offset: C - pArc },
-    { key: 'fat',     color: 'var(--accent)', arc: fArc, offset: C - pArc - cArc },
+    { key: 'protein', color: 'var(--macro-protein)', arc: pArc, offset: C },
+    { key: 'carbs',   color: 'var(--macro-carbs)', arc: cArc, offset: C - pArc },
+    { key: 'fat',     color: 'var(--macro-fat)', arc: fArc, offset: C - pArc - cArc },
   ]
 
   const kcalPctDisplay = Math.round(kcalPct * 100)
@@ -188,12 +193,13 @@ export default function NutritionProgress({
             </div>
           )}
 
-          {/* Colour legend */}
+          {/* The same drawings as everywhere else, in the colour of their own
+              arc — a legend that says what the segment is rather than which
+              letter it was assigned. */}
           <div className={styles.legend}>
             {MACROS.map(m => (
-              <span key={m.key} className={styles.legendItem}>
-                <span className={styles.legendDot} style={{ background: m.color }} />
-                <span className={styles.legendLetter}>{m.short}</span>
+              <span key={m.key} className={styles.legendItem} style={{ color: m.color }}>
+                <Pictogram name={m.key} size={16} />
               </span>
             ))}
           </div>

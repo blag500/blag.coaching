@@ -50,8 +50,8 @@ const CATEGORY_META = {
 
 const MACRO_META = [
   { key: 'kcal',    label: 'ККАЛ',         unit: '',  color: '#F06292', max: 550 },
-  { key: 'protein', label: 'ПРОТЕИН',       unit: 'g', color: '#66BB6A', max: 50  },
-  { key: 'carbs',   label: 'ВЪГЛЕХИДРАТИ', unit: 'g', color: '#4FC3F7', max: 100 },
+  { key: 'protein', label: 'ПРОТЕИН',       unit: 'g', color: 'var(--macro-protein)', max: 50  },
+  { key: 'carbs',   label: 'ВЪГЛЕХИДРАТИ', unit: 'g', color: 'var(--macro-carbs)', max: 100 },
   { key: 'fat',     label: 'МАЗНИНИ',      unit: 'g', color: 'var(--accent)', max: 20  },
 ]
 
@@ -366,8 +366,8 @@ function AddMealModal({ onSave, onClose, onUploadPhoto }) {
         <div className={styles.macroRow}>
           {[
             { key: 'kcal',    ph: 'Ккал',       color: '#F06292' },
-            { key: 'protein', ph: 'Протеин g',   color: '#66BB6A' },
-            { key: 'carbs',   ph: 'Въгл. g',     color: '#4FC3F7' },
+            { key: 'protein', ph: 'Протеин g',   color: 'var(--macro-protein)' },
+            { key: 'carbs',   ph: 'Въгл. g',     color: 'var(--macro-carbs)' },
             { key: 'fat',     ph: 'Мазн. g',     color: 'var(--accent)' },
           ].map(f => (
             <input

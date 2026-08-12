@@ -31,8 +31,8 @@ import styles from './Profile.module.css'
 
 const MACRO_COLORS = {
   calories: '#F06292',
-  protein:  '#66BB6A',
-  carbs:    '#4FC3F7',
+  protein:  'var(--macro-protein)',
+  carbs:    'var(--macro-carbs)',
   fat:      'var(--accent)',
 }
 

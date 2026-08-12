@@ -4,9 +4,9 @@ import { useLocalStorage } from '../../hooks/useLocalStorage'
 import styles from './DraftMode.module.css'
 
 const MACROS = [
-  { key: 'protein', label: 'Протеин', short: 'П', color: '#42A5F5', kcalPerG: 4 },
-  { key: 'carbs',   label: 'Въглехидрати', short: 'В', color: '#66BB6A', kcalPerG: 4 },
-  { key: 'fat',     label: 'Мазнини', short: 'М', color: '#CE93D8', kcalPerG: 9 },
+  { key: 'protein', label: 'Протеин', short: 'П', color: 'var(--macro-protein)', kcalPerG: 4 },
+  { key: 'carbs',   label: 'Въглехидрати', short: 'В', color: 'var(--macro-carbs)', kcalPerG: 4 },
+  { key: 'fat',     label: 'Мазнини', short: 'М', color: 'var(--macro-fat)', kcalPerG: 9 },
 ]
 
 /** Donut of where the planned calories come from. */
@@ -248,9 +248,9 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           <div className={styles.projBars}>
             {[
               { k: 'kcal',    label: 'Ккал', color: 'var(--accent)' },
-              { k: 'protein', label: 'П',    color: '#42A5F5' },
-              { k: 'carbs',   label: 'В',    color: '#66BB6A' },
-              { k: 'fat',     label: 'М',    color: '#CE93D8' },
+              { k: 'protein', label: 'П',    color: 'var(--macro-protein)' },
+              { k: 'carbs',   label: 'В',    color: 'var(--macro-carbs)' },
+              { k: 'fat',     label: 'М',    color: 'var(--macro-fat)' },
             ].map(({ k, label, color }) => {
               const t = targets[k] || 0
               const now = totals[k] || 0

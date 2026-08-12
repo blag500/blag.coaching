@@ -256,9 +256,9 @@ export default function BarcodeScanner({ onFound, onClose }) {
               <div className={styles.unknownGrid}>
                 {[
                   { k: 'kcal',    label: 'ККАЛ', color: 'var(--accent)' },
-                  { k: 'protein', label: 'П',    color: '#42A5F5' },
-                  { k: 'carbs',   label: 'В',    color: '#66BB6A' },
-                  { k: 'fat',     label: 'М',    color: '#CE93D8' },
+                  { k: 'protein', label: 'П',    color: 'var(--macro-protein)' },
+                  { k: 'carbs',   label: 'В',    color: 'var(--macro-carbs)' },
+                  { k: 'fat',     label: 'М',    color: 'var(--macro-fat)' },
                 ].map(({ k, label, color }) => (
                   <label className={styles.unknownCell} key={k}>
                     <span className={styles.unknownTag} style={{ color }}>{label}</span>

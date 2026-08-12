@@ -53,6 +53,16 @@
 
   --accent-rgb: 200, 160, 90;
 
+  /* The three macros, defined once. They were hardcoded in a dozen components
+     and had drifted into two conflicting schemes: protein was blue on Today
+     and green on Nutrition, carbs the other way round. Colour is the whole
+     point of these three — the same macro being a different colour depending
+     on which tab you are standing on means it has stopped carrying meaning and
+     become decoration. */
+  --macro-protein: #42A5F5;
+  --macro-carbs:   #66BB6A;
+  --macro-fat:     #CE93D8;
+
   /* Flat gold is paint; gold with a gradient across it is metal. Reserved for
      large filled surfaces — the action button, the active tab — where there is
      enough area for the sheen to travel and be seen. On small marks it just

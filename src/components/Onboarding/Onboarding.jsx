@@ -305,8 +305,8 @@ export default function Onboarding({ isCoachingIntake = false }) {
             <div className={styles.macroGrid}>
               {[
                 { key: 'calories', label: 'ККАЛ',    color: '#F06292' },
-                { key: 'protein',  label: 'ПРОТЕИН', color: '#66BB6A' },
-                { key: 'carbs',    label: 'ВЪГЛ',    color: '#4FC3F7' },
+                { key: 'protein',  label: 'ПРОТЕИН', color: 'var(--macro-protein)' },
+                { key: 'carbs',    label: 'ВЪГЛ',    color: 'var(--macro-carbs)' },
                 { key: 'fat',      label: 'МАЗН',    color: 'var(--accent)' },
               ].map(m => (
                 <div key={m.key} className={styles.macroCard} style={{ borderColor: `${m.color}40` }}>

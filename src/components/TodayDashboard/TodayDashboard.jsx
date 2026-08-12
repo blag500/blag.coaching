@@ -188,9 +188,9 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         label={t('today.macros')}
         macros={[
           { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
-          { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: '#42A5F5' },
-          { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: '#66BB6A' },
-          { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: '#CE93D8' },
+          { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
+          { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: 'var(--macro-carbs)' },
+          { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: 'var(--macro-fat)' },
         ]}
       />
 
