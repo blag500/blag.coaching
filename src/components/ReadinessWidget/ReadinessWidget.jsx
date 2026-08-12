@@ -76,7 +76,31 @@ function HoursLabel(hours) {
   return d === 1 ? '1 ден' : `${d} дни`
 }
 
-export default function ReadinessWidget({ onNavigate, client = null }) {
+/**
+ * The one thing worth saying about today, chosen from whatever is weakest.
+ *
+ * The five bars and the muscle rows are a diagnosis, and a diagnosis is for
+ * when you have gone looking. On the morning dashboard the card gets a glance,
+ * so it has to answer "am I ready" and "what do I do" in a single line, and
+ * leave the working out to the screen behind the tap.
+ */
+function verdictFor({ provisional, components, muscleGroups }) {
+  if (provisional) return { key: 'readiness.verdict.checkin' }
+
+  const weakest = components
+    .filter(c => c.score !== null && c.score < 60)
+    .sort((a, b) => a.score - b.score)[0]
+  if (weakest) return { key: `readiness.verdict.${weakest.id}` }
+
+  // Nothing is wrong, so the useful thing left to say is which muscle group is
+  // still short of recovered — the only line here that decides today's session.
+  const sore = muscleGroups.filter(g => g.pct < 80).sort((a, b) => a.pct - b.pct)[0]
+  if (sore) return { key: 'readiness.verdict.muscle', vars: { g: sore.label, p: sore.pct } }
+
+  return { key: 'readiness.verdict.ok' }
+}
+
+export default function ReadinessWidget({ onNavigate, client = null, detailed = false }) {
   const { score, components, muscleGroups, provisional, covered,
           personalised, checkins, loading } = useReadiness(client)
   const { t } = useSettings()
@@ -113,6 +137,43 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
 
   const Tag = onNavigate ? 'button' : 'div'
 
+  const basis = personalised
+    ? t('readiness.personal')
+    : checkins > 0
+      ? t('readiness.building').replace('{n}', Math.min(checkins, 5))
+      : t('readiness.coverage').replace('{n}', covered)
+
+  // ── The glance version ──────────────────────────────────────────────
+  if (!detailed) {
+    const v = verdictFor({ provisional, components, muscleGroups })
+    let verdict = t(v.key)
+    if (v.vars) for (const [k, val] of Object.entries(v.vars)) {
+      verdict = verdict.replace(`{${k}}`, val)
+    }
+
+    return (
+      <Tag
+        className={`${styles.card} ${styles.compact}`}
+        onClick={onNavigate ? () => onNavigate('recovery') : undefined}
+        type={onNavigate ? 'button' : undefined}
+      >
+        <div className={styles.compactRow}>
+          <ReadinessRing score={score} label={scoreLabel(score)} provisional={provisional} />
+          <div className={styles.compactText}>
+            <span className={styles.cardLabel}>{t('readiness.title')}</span>
+            <p className={styles.verdict}>{verdict}</p>
+            <span className={styles.basis}>{basis}</span>
+          </div>
+        </div>
+
+        {provisional && (
+          <span className={styles.checkinBtn}>{t('readiness.checkinBtn')}</span>
+        )}
+      </Tag>
+    )
+  }
+
+  // ── The full breakdown, for the recovery screen and the coach ────────
   return (
     <Tag
       className={styles.card}
@@ -126,13 +187,7 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
           {/* What the number is measured against. A score that means "compared
               with your own normal" is a different claim from one measured on a
               fixed table, and the card should not hide which it is. */}
-          <span className={styles.coverage}>
-            {personalised
-              ? t('readiness.personal')
-              : checkins > 0
-                ? t('readiness.building').replace('{n}', Math.min(checkins, 5))
-                : t('readiness.coverage').replace('{n}', covered)}
-          </span>
+          <span className={styles.coverage}>{basis}</span>
         </div>
         <div className={styles.bars}>
           {components.map(c => (

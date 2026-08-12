@@ -278,7 +278,8 @@ function ProgressTab({ stats, client }) {
       {/* Client readiness */}
       <section className={styles.chartSection}>
         <h3 className={styles.chartTitle}>ГОТОВНОСТ ДНЕС</h3>
-        <ReadinessWidget client={{ id: client.id, calories: client.calories, protein: client.protein }} />
+        {/* The coach came here to look, so the coach gets the breakdown. */}
+        <ReadinessWidget detailed client={{ id: client.id, calories: client.calories, protein: client.protein }} />
       </section>
 
       {/* Kcal bars */}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSleepLogs, calcReadiness } from '../hooks/useSleepLogs'
 import { useWaterLog } from '../hooks/useWaterLog'
+import ReadinessWidget from '../components/ReadinessWidget/ReadinessWidget'
 import styles from './Recovery.module.css'
 
 const MONTHS_BG      = ['яну','фев','мар','апр','май','юни','юли','авг','сеп','окт','ное','дек']
@@ -288,8 +289,14 @@ export default function Recovery() {
         <p className={styles.date}>{today}</p>
       </header>
 
-      {/* Readiness ring */}
+      {/* Readiness ring — live, following the sliders as they move. */}
       <ReadinessRing score={liveScore} />
+
+      {/* The breakdown the dashboard card deliberately leaves out. This is the
+          screen you arrive at after asking why, so this is where "why" belongs. */}
+      <div className={styles.breakdown}>
+        <ReadinessWidget detailed />
+      </div>
 
       <form className={styles.form} onSubmit={handleSave}>
 

@@ -408,3 +408,8 @@
   font-size: 0.62rem;
   color: var(--muted);
 }
+
+/* Wrapper for the readiness breakdown, so it lines up with the cards below. */
+.breakdown {
+  margin-bottom: 16px;
+}
