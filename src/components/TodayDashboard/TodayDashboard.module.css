@@ -714,6 +714,9 @@
    screen; wrapped chips carry the same six targets in two lines, and a filled
    one reads as done from across the room without needing its label read. */
 .habitsCard {
+  /* The burst is positioned against this. Deliberately not clipped: the pieces
+     are meant to leave the card. */
+  position: relative;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);

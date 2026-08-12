@@ -9,6 +9,7 @@ import { useSupplements } from '../../hooks/useSupplements'
 import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
+import Confetti from './Confetti'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './TodayDashboard.module.css'
@@ -98,6 +99,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
   // already finished — a celebration that replays every time you open the app
   // stops meaning anything by the third time.
   const [habitsCheer, setHabitsCheer] = useState(false)
+  const [burst, setBurst] = useState(0)
   const prevAllHabits = useRef(null)
 
   useEffect(() => {
@@ -107,7 +109,8 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     if (was === null || !all || was) return
 
     setHabitsCheer(true)
-    const timer = setTimeout(() => setHabitsCheer(false), 900)
+    setBurst(b => b + 1)
+    const timer = setTimeout(() => setHabitsCheer(false), 1000)
     return () => clearTimeout(timer)
   }, [completedHabits, habits.length])
 
@@ -211,6 +214,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
           empty precisely because it lived somewhere else. */}
       {habits.length > 0 && (
         <div className={`${styles.habitsCard} ${habitsCheer ? styles.habitsCheer : ''}`}>
+          {habitsCheer && <Confetti burst={burst} />}
           <div className={styles.habitsHead}>
             <span className={styles.cardLabel}>{t('today.habits')}</span>
             <span className={styles.habitsCount}>
