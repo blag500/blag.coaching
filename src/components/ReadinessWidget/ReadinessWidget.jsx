@@ -84,13 +84,22 @@ function HoursLabel(hours) {
  * so it has to answer "am I ready" and "what do I do" in a single line, and
  * leave the working out to the screen behind the tap.
  */
-function verdictFor({ provisional, components, muscleGroups }) {
+function verdictFor({ provisional, components, muscleGroups, weakFactors, t }) {
   if (provisional) return { key: 'readiness.verdict.checkin' }
 
   const weakest = components
     .filter(c => c.score !== null && c.score < 60)
     .sort((a, b) => a.score - b.score)[0]
-  if (weakest) return { key: `readiness.verdict.${weakest.id}` }
+
+  if (weakest) {
+    // For recovery the app already knows which of the five answers was low, and
+    // a cause you can act on beats a verdict you cannot.
+    if (weakest.id === 'recovery' && weakFactors.length) {
+      const why = weakFactors.map(f => t(`readiness.factor.${f}`)).join(' и ')
+      return { key: 'readiness.verdict.recoveryWhy', vars: { why } }
+    }
+    return { key: `readiness.verdict.${weakest.id}` }
+  }
 
   // Nothing is wrong, so the useful thing left to say is which muscle group is
   // still short of recovered — the only line here that decides today's session.
@@ -100,9 +109,11 @@ function verdictFor({ provisional, components, muscleGroups }) {
   return { key: 'readiness.verdict.ok' }
 }
 
-export default function ReadinessWidget({ onNavigate, client = null, detailed = false }) {
+export default function ReadinessWidget({
+  onNavigate, client = null, detailed = false, ring = true,
+}) {
   const { score, components, muscleGroups, provisional, covered,
-          personalised, checkins, loading } = useReadiness(client)
+          personalised, checkins, weakFactors, loading } = useReadiness(client)
   const { t } = useSettings()
 
   if (loading) return (
@@ -145,7 +156,7 @@ export default function ReadinessWidget({ onNavigate, client = null, detailed = 
 
   // ── The glance version ──────────────────────────────────────────────
   if (!detailed) {
-    const v = verdictFor({ provisional, components, muscleGroups })
+    const v = verdictFor({ provisional, components, muscleGroups, weakFactors, t })
     let verdict = t(v.key)
     if (v.vars) for (const [k, val] of Object.entries(v.vars)) {
       verdict = verdict.replace(`{${k}}`, val)
@@ -181,15 +192,18 @@ export default function ReadinessWidget({ onNavigate, client = null, detailed = 
       type={onNavigate ? 'button' : undefined}
     >
       <div className={styles.topRow}>
-        <div className={styles.left}>
-          <span className={styles.cardLabel}>{t('readiness.title')}</span>
-          <ReadinessRing score={score} label={scoreLabel(score)} provisional={provisional} />
-          {/* What the number is measured against. A score that means "compared
-              with your own normal" is a different claim from one measured on a
-              fixed table, and the card should not hide which it is. */}
-          <span className={styles.coverage}>{basis}</span>
-        </div>
+        {ring && (
+          <div className={styles.left}>
+            <span className={styles.cardLabel}>{t('readiness.title')}</span>
+            <ReadinessRing score={score} label={scoreLabel(score)} provisional={provisional} />
+            {/* What the number is measured against. A score that means "compared
+                with your own normal" is a different claim from one measured on a
+                fixed table, and the card should not hide which it is. */}
+            <span className={styles.coverage}>{basis}</span>
+          </div>
+        )}
         <div className={styles.bars}>
+          {!ring && <span className={styles.cardLabel}>{t('readiness.title')}</span>}
           {components.map(c => (
             <ComponentBar
               key={c.id}
@@ -198,6 +212,7 @@ export default function ReadinessWidget({ onNavigate, client = null, detailed = 
               color={c.color}
             />
           ))}
+          <span className={styles.footnote}>{t('readiness.footnote')}</span>
         </div>
       </div>
 

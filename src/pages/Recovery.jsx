@@ -43,7 +43,11 @@ function ReadinessRing({ score }) {
           style={{ transition: 'stroke-dasharray 0.4s ease' }}
         />
         <text x="50" y="46" textAnchor="middle" fill={color} fontSize="22" fontFamily="var(--font-heading)" letterSpacing="1">{score}</text>
-        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="var(--font-body)">ГОТОВНОСТ</text>
+        {/* Not "readiness": this follows the sliders below and is only the
+            check-in, while readiness weighs it together with food, habits,
+            water and training. Two rings labelled the same thing, showing two
+            different numbers, is how the screen was reading before. */}
+        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="var(--font-body)">ЧЕК-ИН</text>
       </svg>
     </div>
   )
@@ -293,9 +297,13 @@ export default function Recovery() {
       <ReadinessRing score={liveScore} />
 
       {/* The breakdown the dashboard card deliberately leaves out. This is the
-          screen you arrive at after asking why, so this is where "why" belongs. */}
+          screen you arrive at after asking why, so this is where "why" belongs.
+
+          Without its own ring: the one above is live and follows the sliders as
+          you fill the form, and two rings showing two different numbers for the
+          same thing is worse than showing neither. */}
       <div className={styles.breakdown}>
-        <ReadinessWidget detailed />
+        <ReadinessWidget detailed ring={false} />
       </div>
 
       <form className={styles.form} onSubmit={handleSave}>

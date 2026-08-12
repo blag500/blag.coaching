@@ -259,3 +259,13 @@
   font-size: 13px;
   letter-spacing: 0.08em;
 }
+
+/* Said once, under the bars, instead of "(вчера)" repeated on three labels and
+   truncated on all of them. */
+.footnote {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--muted);
+  opacity: 0.75;
+  margin-top: 2px;
+}

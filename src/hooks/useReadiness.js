@@ -39,6 +39,37 @@ function relativeToBaseline(todayRaw, history) {
   return Math.max(0, Math.min(100, Math.round(50 + 20 * (todayRaw - mean) / spread)))
 }
 
+/**
+ * Which of the five answers pulled the check-in down.
+ *
+ * "Recovery is below your normal" is a result, not a reason, and a result you
+ * cannot act on is just a worse mood. The five inputs are already there — this
+ * names the ones that are actually low, so the card can say what happened
+ * rather than only that something did.
+ */
+const RECOVERY_FACTORS = [
+  { id: 'quality',  invert: false },
+  { id: 'energy',   invert: false },
+  { id: 'stress',   invert: true  },  // high stress is bad
+  { id: 'soreness', invert: true  },
+  { id: 'mood',     invert: false },
+]
+
+function weakFactors(log) {
+  if (!log) return []
+  return RECOVERY_FACTORS
+    .map(f => {
+      const raw = log[f.id]
+      if (!raw) return null
+      const v = f.invert ? 6 - raw : raw     // onto the same 1..5 "good" scale
+      return { id: f.id, value: v }
+    })
+    .filter(f => f && f.value <= 2)          // 1 or 2 out of 5 is a real complaint
+    .sort((a, b) => a.value - b.value)
+    .slice(0, 2)
+    .map(f => f.id)
+}
+
 function classifyMuscle(label = '') {
   const l = label.toLowerCase()
   if (/горн|upper|гърди|chest|пуш|push|рам|shoulder|трицеп|tricep/.test(l)) return 'upper'
@@ -57,7 +88,8 @@ export function useReadiness(client = null) {
 
   const [state, setState] = useState({
     score: null, components: [], muscleGroups: [],
-    provisional: true, covered: 0, personalised: false, checkins: 0, loading: true,
+    provisional: true, covered: 0, personalised: false, checkins: 0,
+    weakFactors: [], loading: true,
   })
 
   useEffect(() => {
@@ -190,6 +222,7 @@ export function useReadiness(client = null) {
       setState({
         score, components, muscleGroups, provisional, covered,
         personalised, checkins: history.length + (rawToday !== null ? 1 : 0),
+        weakFactors: weakFactors(sleepLog),
         loading: false,
       })
     })

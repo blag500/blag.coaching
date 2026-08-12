@@ -202,6 +202,14 @@ html, body, #root {
      face does not, so ask for the tabular figures it ships with — otherwise
      every changing number makes the row beside it twitch. */
   font-variant-numeric: tabular-nums;
+
+  /* Off: the Bulgarian localised lowercase.
+     With lang="bg" the system font swaps in the cursive Bulgarian forms, where
+     д is drawn like a g and т like an m. That is correct Bulgarian typography
+     and it is lovely in print — but here "1 ден" renders as "1 ген", and in an
+     app where g means grams, "2д" beside a percentage reads as two grams.
+     Correct letterforms that produce misread words are not worth keeping. */
+  font-feature-settings: 'locl' 0;
 }
 
 button {
