@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import BlockCompare from './BlockCompare'
 import styles from './ProgressionView.module.css'
 
 // ── Chart ────────────────────────────────────────────────────────────────────
@@ -11,10 +12,12 @@ const CW = W - PL - PR
 const CH = H - PT - PB
 const GRAD_ID = 'progGrad'
 
+// Eight weeks is the block, so it is a range in its own right rather than
+// something to approximate with "1 month" or "3 months".
 const RANGES = [
-  { key: '1M',  label: '1 МЕС', days: 30  },
-  { key: '3M',  label: '3 МЕС', days: 90  },
-  { key: 'ALL', label: 'ВСЕ',   days: null },
+  { key: '8W',  label: '8 СЕДМ', days: 56  },
+  { key: '3M',  label: '3 МЕС',  days: 90  },
+  { key: 'ALL', label: 'ВСЕ',    days: null },
 ]
 
 const PALETTE = ['var(--accent)', '#4FC3F7', '#ff8a65', '#81C784', '#CE93D8', '#80DEEA', '#FFAB91']
@@ -254,6 +257,12 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack }) {
         <button className={styles.backBtn} onClick={onBack} type="button">← БЛОКОВЕ</button>
       </div>
       <h3 className={styles.blockTitle}>{block.label}</h3>
+
+      {/* The block's own answer, before the per-exercise charts: is week eight
+          heavier than week one. The charts are for asking why. */}
+      {!block.isRest && block.exercises.length > 0 && (
+        <BlockCompare block={block} allLogs={allLogs} />
+      )}
 
       {block.isRest || block.exercises.length === 0 ? (
         <p className={styles.noData}>Почивен ден — няма упражнения.</p>

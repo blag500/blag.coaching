@@ -210,3 +210,38 @@
   margin: 0 0 12px;
 }
 
+
+
+/* Progression, as a place on the page rather than a link in the header. */
+.progressionEntry {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--panel-bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.progressionMain {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.progressionSub {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.historyTitleSecond {
+  margin-top: 24px;
+}

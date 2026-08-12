@@ -11,6 +11,7 @@ import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
 import MuscleStatus from './MuscleStatus'
+import SessionLog from './SessionLog'
 import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
 import styles from './Training.module.css'
 
@@ -243,17 +244,11 @@ export default function Training({ onMenuOpen }) {
           <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
             РЕДАКТИРАЙ
           </button>
-        ) : (
-          /* Up here with the other actions rather than as a full-width bar of
-             its own: it is a place to go, not a step in the session. */
-          <button
-            className={`${styles.editBtn} ${showProgression ? styles.editBtnOn : ''}`}
-            onClick={() => setShowProgression(p => !p)}
-            type="button"
-          >
-            {showProgression ? 'НАЗАД' : 'ПРОГРЕСИЯ'}
+        ) : showProgression ? (
+          <button className={styles.editBtn} onClick={() => setShowProgression(false)} type="button">
+            НАЗАД
           </button>
-        )}
+        ) : null}
       />
 
       {/* Block selector */}
@@ -335,11 +330,31 @@ export default function Training({ onMenuOpen }) {
         </div>
       )}
 
-      {/* History calendar */}
+      {/* Progression — on the page, not behind the menu. Eight weeks of logging
+          the same lifts and comparing the end against the start is the method
+          this screen exists to serve, so it does not get to be a header link. */}
+      {!showProgression && (
+        <button
+          className={styles.progressionEntry}
+          onClick={() => setShowProgression(true)}
+          type="button"
+        >
+          <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
+          <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
+        </button>
+      )}
+
+      {/* History */}
       {!showProgression && (
         <section className={styles.historySection}>
           <h2 className={styles.historyTitle}>МУСКУЛНИ ГРУПИ</h2>
           <MuscleStatus completions={completions} recovery={recovery} />
+
+          {/* Readiness says what to do next; this says what was actually done.
+              A training page owes both, and the second went out with the
+              calendar by mistake. */}
+          <h2 className={`${styles.historyTitle} ${styles.historyTitleSecond}`}>ПОСЛЕДНИ ТРЕНИРОВКИ</h2>
+          <SessionLog completions={completions} />
         </section>
       )}
 
