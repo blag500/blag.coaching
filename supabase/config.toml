@@ -1,0 +1,12 @@
+project_id = "eiltoadzaqbuqdilsfpi"
+
+# send-reminders is called by pg_cron through net.http_post, which sends no
+# Authorization header — so the platform's JWT check rejects it before the
+# function ever runs. It guards itself instead, with REMINDER_SECRET in the
+# query string, which is the only credential cron can carry.
+#
+# This is written down rather than passed as a deploy flag because a plain
+# `supabase functions deploy send-reminders` silently restores the default and
+# takes every morning reminder down with it. It has happened once.
+[functions.send-reminders]
+verify_jwt = false
