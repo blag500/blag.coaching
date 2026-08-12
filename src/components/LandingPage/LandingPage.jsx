@@ -3,6 +3,11 @@ import styles from './LandingPage.module.css'
 export default function LandingPage({ onContinue, onLogin }) {
   return (
     <div className={styles.page}>
+      {/* The splash arms, held far back and drifting. Your own artwork, so
+          there is no borrowed likeness in it — and a real physique behind the
+          words does more for an old-school gym than any amount of gradient. */}
+      <div className={styles.backdrop} aria-hidden="true" />
+      <div className={styles.grain} aria-hidden="true" />
       <div className={styles.glowTop} aria-hidden="true" />
 
       <div className={styles.logo}>

@@ -12,6 +12,46 @@
   box-sizing: border-box;
 }
 
+/* ── Moving backdrop ──────────────────────────────────────────────────────
+   One element, one transform, sixty-five seconds a cycle. Slow enough that it
+   is never caught moving — you notice it only by looking away and back — and
+   cheap enough to leave running, because it is the compositor moving a layer
+   rather than the browser redrawing anything. */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  /* Contained, not covered. Cover crops into the artwork at phone proportions
+     and leaves a dark mass that reads as a smudge rather than as a body. */
+  background: url('/arms.webp') center 30% / auto 82% no-repeat;
+  opacity: 0.16;
+  /* Warm, and fading out before it reaches the text: the headline has to stay
+     the brightest thing on the screen. */
+  -webkit-mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
+  mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
+  animation: drift 65s ease-in-out infinite alternate;
+  will-change: transform;
+  pointer-events: none;
+}
+
+@keyframes drift {
+  from { transform: scale(1.00) translate3d(-1%, 0.6%, 0); }
+  to   { transform: scale(1.07) translate3d(1%, -0.8%, 0); }
+}
+
+/* Film grain, static. Animated grain is the single most expensive thing a
+   landing page can do for the least anyone notices. */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop { animation: none; transform: scale(1.03); }
+}
+
 .glowTop {
   position: absolute;
   top: -80px;
