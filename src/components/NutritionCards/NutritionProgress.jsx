@@ -3,7 +3,7 @@ import styles from './NutritionProgress.module.css'
 const MACROS = [
   { key: 'protein', label: 'ПРОТЕИН', short: 'П', unit: 'g',   color: '#66BB6A' },
   { key: 'carbs',   label: 'ВЪГЛ.',   short: 'В', unit: 'g',   color: '#4FC3F7' },
-  { key: 'fat',     label: 'МАЗНИНИ', short: 'М', unit: 'g',   color: '#FFB74D' },
+  { key: 'fat',     label: 'МАЗНИНИ', short: 'М', unit: 'g',   color: 'var(--accent)' },
 ]
 
 const R  = 46          // ring radius
@@ -34,7 +34,7 @@ export default function NutritionProgress({ totals, targets, kcalBurned = 0, eat
   const segments = [
     { key: 'protein', color: '#66BB6A', arc: pArc, offset: C },
     { key: 'carbs',   color: '#4FC3F7', arc: cArc, offset: C - pArc },
-    { key: 'fat',     color: '#FFB74D', arc: fArc, offset: C - pArc - cArc },
+    { key: 'fat',     color: 'var(--accent)', arc: fArc, offset: C - pArc - cArc },
   ]
 
   const kcalPctDisplay = Math.round(kcalPct * 100)

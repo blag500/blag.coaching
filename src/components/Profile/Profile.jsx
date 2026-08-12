@@ -33,7 +33,7 @@ const MACRO_COLORS = {
   calories: '#F06292',
   protein:  '#66BB6A',
   carbs:    '#4FC3F7',
-  fat:      '#FFB74D',
+  fat:      'var(--accent)',
 }
 
 export default function Profile({ onMenuOpen }) {

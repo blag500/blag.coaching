@@ -22,7 +22,7 @@ function getBlocks(plan) {
 }
 
 // Color per block index
-const PALETTE = ['#ffb74d', '#4FC3F7', '#ff8a65', '#81C784', '#CE93D8', '#80DEEA', '#FFAB91']
+const PALETTE = ['var(--accent)', '#4FC3F7', '#ff8a65', '#81C784', '#CE93D8', '#80DEEA', '#FFAB91']
 function blockColor(idx) { return PALETTE[idx % PALETTE.length] }
 
 // ── Calendar ────────────────────────────────────────────────────────────────

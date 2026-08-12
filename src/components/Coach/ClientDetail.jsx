@@ -1204,7 +1204,7 @@ function LiftProgressChart({ data }) {
 // ─── Check-in Tab ────────────────────────────────────────────────────────────
 
 const GYM_PERF_LABEL = ['↓ СПАД', '= ЗАДРЖ', '↑ РЪСТ']
-const GYM_PERF_COLOR = ['#EF5350', '#FFB74D', '#66BB6A']
+const GYM_PERF_COLOR = ['#EF5350', 'var(--accent)', '#66BB6A']
 
 // ─── Sessions Tab ────────────────────────────────────────────────────────────
 
@@ -1490,7 +1490,7 @@ function CheckinTrends({ checkins }) {
           <div className={styles.trendsStat}>
             <span className={styles.trendsStatVal}>
               {gymCounts[2] > 0 && <span style={{ color: '#66BB6A' }}>↑{gymCounts[2]} </span>}
-              {gymCounts[1] > 0 && <span style={{ color: '#FFB74D' }}>={gymCounts[1]} </span>}
+              {gymCounts[1] > 0 && <span style={{ color: 'var(--accent)' }}>={gymCounts[1]} </span>}
               {gymCounts[0] > 0 && <span style={{ color: '#EF5350' }}>↓{gymCounts[0]}</span>}
             </span>
             <span className={styles.trendsStatLabel}>зала</span>

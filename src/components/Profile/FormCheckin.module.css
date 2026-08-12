@@ -115,7 +115,7 @@
 }
 
 .tapBtnRed   { border-color: #EF5350; color: #EF5350; background: rgba(239,83,80,0.08); }
-.tapBtnAmber { border-color: #FFB74D; color: #FFB74D; background: rgba(255,183,77,0.08); }
+.tapBtnAmber { border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb),0.08); }
 .tapBtnGreen { border-color: #66BB6A; color: #66BB6A; background: rgba(102,187,106,0.08); }
 
 /* ── Desire scale ── */
@@ -161,7 +161,7 @@
 }
 
 .desireBtnActive {
-  background: rgba(255,183,77,0.12);
+  background: rgba(var(--accent-rgb),0.12);
   border-color: var(--accent);
   color: var(--accent);
 }

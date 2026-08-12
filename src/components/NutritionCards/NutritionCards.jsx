@@ -274,7 +274,7 @@ function LibraryTab({ recipes, products, loading, logServings, setLogServings, o
 
 function macroColor(remaining, target) {
   if (remaining < 0) return '#ef5350'
-  if (target > 0 && remaining / target < 0.15) return '#ffb74d'
+  if (target > 0 && remaining / target < 0.15) return 'var(--accent)'
   return '#66BB6A'
 }
 

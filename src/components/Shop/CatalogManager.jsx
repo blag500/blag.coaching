@@ -217,7 +217,7 @@ export default function CatalogManager({ onClose }) {
                 <input className={styles.input} type="number" value={form.carbs_per_serving} onChange={e => set('carbs_per_serving', e.target.value)} />
               </div>
               <div className={styles.macroField}>
-                <label className={styles.macroLabel} style={{ color: '#ffb74d' }}>Мазнини g</label>
+                <label className={styles.macroLabel} style={{ color: 'var(--accent)' }}>Мазнини g</label>
                 <input className={styles.input} type="number" value={form.fat_per_serving} onChange={e => set('fat_per_serving', e.target.value)} />
               </div>
             </div>

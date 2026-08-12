@@ -12,7 +12,7 @@ const HYDRATION_TARGET = 8
 
 function readinessColor(score) {
   if (score >= 80) return '#81C784'
-  if (score >= 60) return '#ffb74d'
+  if (score >= 60) return 'var(--accent)'
   if (score >= 40) return '#ff8a65'
   return '#ef5350'
 }
@@ -192,7 +192,7 @@ function RecoveryCalendar({ logs }) {
         })}
       </div>
       <div className={styles.calLegend}>
-        {[['#81C784','Отлично (80+)'],['#ffb74d','Добре (60–79)'],['#ff8a65','Умерено (40–59)'],['#ef5350','Ниско (<40)']].map(([color, label]) => (
+        {[['#81C784','Отлично (80+)'],['var(--accent)','Добре (60–79)'],['#ff8a65','Умерено (40–59)'],['#ef5350','Ниско (<40)']].map(([color, label]) => (
           <span key={color} className={styles.calLegendItem}>
             <span className={styles.calDot} style={{ background: color }} />
             {label}

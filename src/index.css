@@ -12,8 +12,12 @@
   --bg:        #0C0A06;
   --surface-1: #131009;
   --surface-2: #1A1710;
-  --accent:    #ffb74d;
-  --accent-dim: rgba(255, 183, 77, 0.12);
+  /* Bone, not amber. Colour now means something — it is reserved for the
+     macros and the charts — so the accent itself carries no hue and the
+     interface reads as one material instead of a warning label. Gold stays
+     where it is rare and therefore expensive: the splash and the mark. */
+  --accent:    #F7EEDC;
+  --accent-dim: rgba(247, 238, 220, 0.10);
   --text:      #F2E8CF;
   --muted:     #907860;
   --border:    #2B2215;
@@ -27,11 +31,11 @@
   --radius-lg:   24px;
   --radius-xl:   32px;
 
-  --accent-rgb: 255, 183, 77;
+  --accent-rgb: 247, 238, 220;
 
   --shadow-card: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-glow: 0 0 28px rgba(255, 183, 77, 0.22);
-  --accent-glow: 0 0 0 3px rgba(255,183,77,0.10), 0 0 20px rgba(255,183,77,0.07);
+  --shadow-glow: 0 0 28px rgba(247, 238, 220, 0.14);
+  --accent-glow: 0 0 0 3px rgba(247,238,220,0.08), 0 0 20px rgba(247,238,220,0.05);
   --card-highlight: inset 0 1px 0 rgba(255,255,255,0.04);
 
   --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
@@ -39,47 +43,80 @@
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
   --surface-glass: rgba(12, 10, 6, 0.82);
+
+  /* Glass. Not a flat translucent panel — a pane has a lit edge where it
+     catches the light and a body that stays dark, and it is the darkness in
+     between that makes the lit edge read as glass rather than as grey. */
+  --glass-bg:
+    linear-gradient(160deg,
+      rgba(255, 255, 255, 0.055) 0%,
+      rgba(255, 255, 255, 0.018) 26%,
+      rgba(255, 255, 255, 0.004) 52%,
+      rgba(0, 0, 0, 0.10) 100%),
+    var(--surface-1);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 10px 30px rgba(0, 0, 0, 0.50);
+  --glass-blur: 18px;
 }
 
+/* The mirror of the dark palette: bone on ink becomes ink on bone. The accent
+   is still hueless, so colour keeps meaning the same thing in both themes. */
+/* Glass over a light ground: the pane is tinted by what is behind it, so the
+   highlight goes white and the shading goes to warm ink instead of black. */
 html[data-theme="light"] {
-  --accent-rgb: 192, 120, 0;
+  --glass-bg:
+    linear-gradient(160deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.72) 40%,
+      rgba(26, 19, 0, 0.03) 100%),
+    var(--surface-1);
+  --glass-border: rgba(26, 19, 0, 0.10);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(26, 19, 0, 0.06),
+    0 10px 30px rgba(26, 19, 0, 0.08);
+
+  --accent-rgb: 36, 28, 16;
   --bg:        #F5F0E8;
   --surface-1: #FFFFFF;
   --surface-2: #EDE8DE;
-  --accent:    #C07800;
-  --accent-dim: rgba(192, 120, 0, 0.1);
+  --accent:    #241C10;
+  --accent-dim: rgba(36, 28, 16, 0.07);
   --text:      #1A1300;
   --muted:     #7A6840;
   --border:    #D4C8A8;
   --red:       #D32F2F;
   --surface-glass: rgba(245, 240, 232, 0.92);
   --shadow-card: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
-  --shadow-glow: 0 0 28px rgba(192, 120, 0, 0.15);
-  --accent-glow: 0 0 0 3px rgba(192,120,0,0.08), 0 0 20px rgba(192,120,0,0.05);
+  --shadow-glow: 0 0 28px rgba(36, 28, 16, 0.12);
+  --accent-glow: 0 0 0 3px rgba(36,28,16,0.06), 0 0 20px rgba(36,28,16,0.04);
   --card-highlight: inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
 html[data-theme="glass"] {
-  --accent-rgb: 255, 183, 77;
+  --accent-rgb: 247, 238, 220;
   --bg:        #0A0A0F;
   --surface-1: rgba(16, 18, 28, 0.72);
   --surface-2: rgba(22, 24, 38, 0.82);
-  --accent:    #ffb74d;
-  --accent-dim: rgba(255, 183, 77, 0.12);
+  --accent:    #F7EEDC;
+  --accent-dim: rgba(247, 238, 220, 0.10);
   --text:      #E8E0D0;
   --muted:     #5A5870;
-  --border:    rgba(255, 183, 77, 0.10);
+  --border:    rgba(247, 238, 220, 0.10);
   --red:       #FF4455;
   --surface-glass: rgba(10, 10, 15, 0.80);
   --shadow-card: 0 8px 32px rgba(0, 0, 8, 0.70), 0 2px 8px rgba(0, 0, 8, 0.40);
-  --shadow-glow: 0 0 28px rgba(255, 183, 77, 0.18);
-  --accent-glow: 0 0 0 3px rgba(255,183,77,0.10), 0 0 20px rgba(255,183,77,0.07);
-  --card-highlight: inset 0 1px 0 rgba(255, 183, 77, 0.06);
+  --shadow-glow: 0 0 28px rgba(247, 238, 220, 0.12);
+  --accent-glow: 0 0 0 3px rgba(247,238,220,0.08), 0 0 20px rgba(247,238,220,0.05);
+  --card-highlight: inset 0 1px 0 rgba(247, 238, 220, 0.06);
 }
 
 html[data-theme="glass"] #root {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(255, 183, 77, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(247, 238, 220, 0.04) 0%, transparent 60%),
     radial-gradient(ellipse 70% 50% at 25% 20%, rgba(20, 16, 30, 0.90) 0%, transparent 65%),
     radial-gradient(ellipse 60% 40% at 75% 75%, rgba(12, 10, 20, 0.80) 0%, transparent 65%),
     #0A0A0F;

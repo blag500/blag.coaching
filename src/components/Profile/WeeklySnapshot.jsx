@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import styles from './WeeklySnapshot.module.css'
 
 const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
-const GYM_COLORS = ['#EF5350', '#FFB74D', '#66BB6A']
+const GYM_COLORS = ['#EF5350', 'var(--accent)', '#66BB6A']
 const GYM_ICONS  = ['↓', '=', '↑']
 
 function getWeekDays(offset) {
@@ -22,7 +22,7 @@ function getWeekDays(offset) {
 
 function barColor(pct) {
   if (pct >= 0.9) return { from: '#66BB6A', to: '#81C784' }
-  if (pct >= 0.6) return { from: '#FFB74D', to: '#FFCA28' }
+  if (pct >= 0.6) return { from: 'var(--accent)', to: '#FFCA28' }
   return { from: '#EF5350', to: '#EF9A9A' }
 }
 
@@ -314,7 +314,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
               )}
               {latestImprove && (
                 <div className={styles.weeklyRow}>
-                  <div className={styles.weeklyAccent} style={{ background: '#FFB74D' }} />
+                  <div className={styles.weeklyAccent} style={{ background: 'var(--accent)' }} />
                   <div className={styles.weeklyBody}>
                     <span className={styles.weeklyTag}>ПОДОБРЕНИЕ</span>
                     <span className={styles.weeklyVal}>{checkinByDay[latestImprove].weekly_improve}</span>

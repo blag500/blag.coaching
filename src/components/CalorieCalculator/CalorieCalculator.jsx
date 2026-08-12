@@ -331,7 +331,7 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
                     { key: 'kcal',    label: 'ККАЛ',    val: selectedPreset.kcal,                color: '#F06292', unit: ''  },
                     { key: 'protein', label: 'ПРОТЕИН', val: selectedPreset.macros.protein,      color: '#66BB6A', unit: 'g' },
                     { key: 'carbs',   label: 'ВЪГЛ',    val: selectedPreset.macros.carbs,        color: '#4FC3F7', unit: 'g' },
-                    { key: 'fat',     label: 'МАЗН',    val: selectedPreset.macros.fat,          color: '#FFB74D', unit: 'g' },
+                    { key: 'fat',     label: 'МАЗН',    val: selectedPreset.macros.fat,          color: 'var(--accent)', unit: 'g' },
                   ].map(m => (
                     <div key={m.key} className={styles.macroCard} style={{ borderColor: m.color + '40' }}>
                       <span className={styles.macroLabel} style={{ color: m.color }}>{m.label}</span>

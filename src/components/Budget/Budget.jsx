@@ -406,11 +406,11 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
         <line
           x1={PAD.left} y1={quotaY}
           x2={PAD.left + cW} y2={quotaY}
-          stroke="rgba(255,183,77,0.4)" strokeWidth="1" strokeDasharray="4,3"
+          stroke="rgba(var(--accent-rgb),0.4)" strokeWidth="1" strokeDasharray="4,3"
         />
         <text
           x={PAD.left - 4} y={quotaY + 3}
-          textAnchor="end" fontSize="7" fill="rgba(255,183,77,0.6)"
+          textAnchor="end" fontSize="7" fill="rgba(var(--accent-rgb),0.6)"
           fontFamily="monospace"
         >
           {fmt(disp(dailyQuota))}

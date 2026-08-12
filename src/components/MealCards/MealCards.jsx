@@ -41,7 +41,7 @@ const SYSTEM_MEALS = [
 const CATEGORY_META = {
   pre:       { label: 'ПРЕДИ ТРЕНИРОВКА', color: '#4FC3F7' },
   post:      { label: 'СЛЕД ТРЕНИРОВКА',  color: '#66BB6A' },
-  breakfast: { label: 'ЗАКУСКА',          color: '#FFB74D' },
+  breakfast: { label: 'ЗАКУСКА',          color: 'var(--accent)' },
   lunch:     { label: 'ОБЯД',             color: '#AB47BC' },
   dinner:    { label: 'ВЕЧЕРЯ',           color: '#FF8A65' },
   snack:     { label: 'СНАК',             color: '#42A5F5' },
@@ -52,7 +52,7 @@ const MACRO_META = [
   { key: 'kcal',    label: 'ККАЛ',         unit: '',  color: '#F06292', max: 550 },
   { key: 'protein', label: 'ПРОТЕИН',       unit: 'g', color: '#66BB6A', max: 50  },
   { key: 'carbs',   label: 'ВЪГЛЕХИДРАТИ', unit: 'g', color: '#4FC3F7', max: 100 },
-  { key: 'fat',     label: 'МАЗНИНИ',      unit: 'g', color: '#FFB74D', max: 20  },
+  { key: 'fat',     label: 'МАЗНИНИ',      unit: 'g', color: 'var(--accent)', max: 20  },
 ]
 
 const CHIPS = [
@@ -368,7 +368,7 @@ function AddMealModal({ onSave, onClose, onUploadPhoto }) {
             { key: 'kcal',    ph: 'Ккал',       color: '#F06292' },
             { key: 'protein', ph: 'Протеин g',   color: '#66BB6A' },
             { key: 'carbs',   ph: 'Въгл. g',     color: '#4FC3F7' },
-            { key: 'fat',     ph: 'Мазн. g',     color: '#FFB74D' },
+            { key: 'fat',     ph: 'Мазн. g',     color: 'var(--accent)' },
           ].map(f => (
             <input
               key={f.key}

@@ -31,7 +31,7 @@ function formatDate(ts) {
 const STATUS_COLOR = {
   pending_payment: 'var(--muted)',
   confirmed:       '#42A5F5',
-  preparing:       '#ffb74d',
+  preparing:       'var(--accent)',
   delivered:       '#66BB6A',
   cancelled:       '#ef5350',
 }

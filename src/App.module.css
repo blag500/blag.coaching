@@ -35,7 +35,7 @@
   width: 100%;
   max-width: 560px;
   height: 360px;
-  background: radial-gradient(ellipse 80% 60% at 50% -5%, rgba(255,183,77,0.055) 0%, transparent 70%);
+  background: radial-gradient(ellipse 80% 60% at 50% -5%, rgba(var(--accent-rgb),0.055) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }

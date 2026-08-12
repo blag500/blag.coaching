@@ -4,9 +4,9 @@ import styles from './DayCard.module.css'
 
 function labelBg(label) {
   const l = (label || '').toUpperCase()
-  if (l.startsWith('UPPER')) return l.endsWith('B') ? '#ff8a65' : '#ffb74d'
+  if (l.startsWith('UPPER')) return l.endsWith('B') ? '#ff8a65' : 'var(--accent)'
   if (l.startsWith('LOWER')) return l.endsWith('B') ? '#81C784' : '#4FC3F7'
-  if (l.startsWith('PUSH'))  return '#ffb74d'
+  if (l.startsWith('PUSH'))  return 'var(--accent)'
   if (l.startsWith('PULL'))  return '#4FC3F7'
   if (l.startsWith('LEG'))   return '#81C784'
   if (l.startsWith('CARDIO') || l.includes('КАРДИО')) return '#CE93D8'

@@ -300,7 +300,7 @@
   border-radius: 99px;
   font-family: var(--font-body);
   font-size: 11px;
-  color: #ffb74d;
+  color: var(--accent);
 }
 
 .sourceTag {

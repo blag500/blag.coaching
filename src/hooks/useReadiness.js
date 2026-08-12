@@ -11,7 +11,7 @@ function dateStr(offset = 0) {
 
 const RECOVERY_H   = { upper: 48, lower: 72, pull: 48 }
 const GROUP_LABELS = { upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ПУЛ' }
-const GROUP_COLORS = { upper: '#ffb74d', lower: '#66BB6A', pull: '#42A5F5' }
+const GROUP_COLORS = { upper: 'var(--accent)', lower: '#66BB6A', pull: '#42A5F5' }
 
 function classifyMuscle(label = '') {
   const l = label.toLowerCase()
@@ -80,7 +80,7 @@ export function useReadiness(client = null) {
         .map(g => {
           const hours = (now - groupLastMs[g]) / 3_600_000
           const pct   = Math.min(100, Math.round((hours / RECOVERY_H[g]) * 100))
-          const color = pct >= 80 ? '#81C784' : pct >= 55 ? '#ffb74d' : '#ef5350'
+          const color = pct >= 80 ? '#81C784' : pct >= 55 ? 'var(--accent)' : '#ef5350'
           return {
             group: g,
             label: GROUP_LABELS[g],
@@ -120,7 +120,7 @@ export function useReadiness(client = null) {
 
       const components = [
         { id: 'recovery',  label: 'ВЪЗСТАНОВЯВАНЕ',      score: recoveryScore,  weight: 0.35, color: '#81C784' },
-        { id: 'nutrition', label: 'ХРАНЕНЕ (ВЧЕРА)',      score: nutritionScore, weight: 0.25, color: '#ffb74d' },
+        { id: 'nutrition', label: 'ХРАНЕНЕ (ВЧЕРА)',      score: nutritionScore, weight: 0.25, color: 'var(--accent)' },
         { id: 'habits',    label: 'НАВИЦИ',               score: habitsScore,    weight: 0.20, color: '#AB47BC' },
         { id: 'hydration', label: 'ХИДРАТАЦИЯ (ВЧЕРА)',   score: hydrationScore, weight: 0.15, color: '#42A5F5' },
         { id: 'training',  label: 'ТРЕНИРОВКИ (7д)',      score: trainingScore,  weight: 0.05, color: '#66BB6A' },

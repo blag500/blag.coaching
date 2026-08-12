@@ -96,7 +96,7 @@ export default function MacroDonut({ totals, targets, onClick }) {
                 length={lenP} circ={circ} rotate={startP} />
               <Arc cx={cx} cy={cy} r={r} sw={sw} color="#4FC3F7"
                 length={lenC} circ={circ} rotate={startC} />
-              <Arc cx={cx} cy={cy} r={r} sw={sw} color="#ffb74d"
+              <Arc cx={cx} cy={cy} r={r} sw={sw} color="var(--accent)"
                 length={lenF} circ={circ} rotate={startF} />
             </>
           )}
@@ -128,7 +128,7 @@ export default function MacroDonut({ totals, targets, onClick }) {
       <ul className={styles.legend}>
         <LegendRow color="#66BB6A" label="Протеин" g={Math.round(p)} kcal={Math.round(kcalP)} target={targets?.protein} unit="g" />
         <LegendRow color="#4FC3F7" label="Въглехидрати" g={Math.round(c)} kcal={Math.round(kcalC)} target={targets?.carbs} unit="g" />
-        <LegendRow color="#ffb74d" label="Мазнини" g={Math.round(f)} kcal={Math.round(kcalF)} target={targets?.fat} unit="g" />
+        <LegendRow color="var(--accent)" label="Мазнини" g={Math.round(f)} kcal={Math.round(kcalF)} target={targets?.fat} unit="g" />
       </ul>
     </Tag>
   )

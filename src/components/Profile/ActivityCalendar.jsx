@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import styles from './ActivityCalendar.module.css'
 
 const CATEGORIES = [
-  { key: 'training', color: '#FFB74D', label: 'Тренировка', emoji: '💪' },
+  { key: 'training', color: 'var(--accent)', label: 'Тренировка', emoji: '💪' },
   { key: 'food',     color: '#66BB6A', label: 'Хранене',    emoji: '🥗' },
   { key: 'habits',   color: '#4FC3F7', label: 'Навици',     emoji: '✅' },
   { key: 'weight',   color: '#F06292', label: 'Тегло',      emoji: '⚖️' },
@@ -15,10 +15,10 @@ const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
 function heatColor(count) {
   if (count === 0) return 'transparent'
-  if (count === 1) return 'rgba(255,183,77,0.22)'
-  if (count === 2) return 'rgba(255,183,77,0.42)'
-  if (count === 3) return 'rgba(255,183,77,0.62)'
-  if (count === 4) return 'rgba(255,183,77,0.82)'
+  if (count === 1) return 'rgba(var(--accent-rgb),0.22)'
+  if (count === 2) return 'rgba(var(--accent-rgb),0.42)'
+  if (count === 3) return 'rgba(var(--accent-rgb),0.62)'
+  if (count === 4) return 'rgba(var(--accent-rgb),0.82)'
   return 'var(--accent)'
 }
 

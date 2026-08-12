@@ -1610,7 +1610,7 @@
 }
 
 .toggleSwitchOn .toggleSwitchKnob {
-  background: rgba(255, 183, 77, 0.25);
+  background: rgba(var(--accent-rgb), 0.25);
 }
 
 .toggleSwitchOn .toggleSwitchKnob::after {
@@ -2050,7 +2050,7 @@
   white-space: nowrap;
 }
 
-.sStatus_pending   { background: rgba(255,183,77,0.1);   color: var(--accent); }
+.sStatus_pending   { background: rgba(var(--accent-rgb),0.1);   color: var(--accent); }
 .sStatus_confirmed { background: rgba(102,187,106,0.1);  color: #66BB6A; }
 .sStatus_completed { background: rgba(255,255,255,0.05); color: var(--muted); }
 .sStatus_declined  { background: rgba(239,83,80,0.1);    color: #EF5350; }
@@ -2065,13 +2065,13 @@
   white-space: nowrap;
 }
 
-.sPay_invoiced { background: rgba(255,183,77,0.1);   color: var(--accent); }
+.sPay_invoiced { background: rgba(var(--accent-rgb),0.1);   color: var(--accent); }
 .sPay_paid     { background: rgba(102,187,106,0.15); color: #66BB6A; }
 
 .invoiceBtn {
   padding: 5px 11px;
   background: var(--accent-dim);
-  border: 1px solid rgba(255,183,77,0.3);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
   border-radius: 7px;
   color: var(--accent);
   font-family: var(--font-heading);
@@ -2083,7 +2083,7 @@
   white-space: nowrap;
 }
 
-.invoiceBtn:active { background: rgba(255,183,77,0.18); }
+.invoiceBtn:active { background: rgba(var(--accent-rgb),0.18); }
 
 /* Invoice modal */
 .invoiceOverlay {

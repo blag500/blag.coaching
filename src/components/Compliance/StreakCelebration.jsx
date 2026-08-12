@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import styles from './StreakCelebration.module.css'
 
-const COLORS = ['#ffb74d', '#ffd54f', '#fff9c4', '#ffe082', '#fff176', '#ffcc02']
+const COLORS = ['var(--accent)', '#ffd54f', '#fff9c4', '#ffe082', '#fff176', '#ffcc02']
 
 function makeConfetti(count) {
   return Array.from({ length: count }, (_, i) => ({

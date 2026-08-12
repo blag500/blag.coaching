@@ -10,7 +10,7 @@ const CATEGORIES = [
   { id: 'nutrition', label: 'ХРАНЕНЕ' },
 ]
 const CAT_LABEL = { training: 'ТРЕНИРОВКА', nutrition: 'ХРАНЕНЕ' }
-const CAT_COLOR = { training: '#FFB74D', nutrition: '#66BB6A' }
+const CAT_COLOR = { training: 'var(--accent)', nutrition: '#66BB6A' }
 
 const DAYS_BG = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 

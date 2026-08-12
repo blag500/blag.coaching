@@ -21,7 +21,7 @@ export const NUTRITION_CARDS = [
   },
   {
     id: 'fat',
-    front: { label: 'FAT', value: '70g', unit: 'на ден', color: '#FFB74D' },
+    front: { label: 'FAT', value: '70g', unit: 'на ден', color: 'var(--accent)' },
     back: {
       headline: 'Защо мазнини?',
       body: 'Хормонална продукция, ставно здраве, мастноразтворими витамини.',

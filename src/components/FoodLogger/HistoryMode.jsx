@@ -160,7 +160,7 @@ export default function HistoryMode({ onAddRaw }) {
 
                     <div className={styles.macroGrid}>
                       {[
-                        { k: 'kcal',    label: 'ККАЛ', color: '#ffb74d' },
+                        { k: 'kcal',    label: 'ККАЛ', color: 'var(--accent)' },
                         { k: 'protein', label: 'П',    color: '#42A5F5' },
                         { k: 'carbs',   label: 'В',    color: '#66BB6A' },
                         { k: 'fat',     label: 'М',    color: '#CE93D8' },

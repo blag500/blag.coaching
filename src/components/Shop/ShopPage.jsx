@@ -103,7 +103,7 @@ export default function ShopPage({ initialOrderSuccess }) {
                   <div className={styles.cardMacros}>
                     <span className={styles.macroChip} style={{ color: '#42A5F5' }}>{p.protein_per_serving}g П</span>
                     <span className={styles.macroChip} style={{ color: '#66BB6A' }}>{p.carbs_per_serving}g В</span>
-                    <span className={styles.macroChip} style={{ color: '#ffb74d' }}>{p.fat_per_serving}g М</span>
+                    <span className={styles.macroChip} style={{ color: 'var(--accent)' }}>{p.fat_per_serving}g М</span>
                     <span className={styles.macroChip} style={{ color: 'var(--muted)' }}>{p.kcal_per_serving} kcal</span>
                   </div>
                   <div className={styles.cardServing}>

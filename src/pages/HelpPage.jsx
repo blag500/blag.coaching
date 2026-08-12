@@ -92,7 +92,7 @@ const KB = {
       {
         id: 'start',
         icon: '🚀',
-        color: '#FFB74D',
+        color: 'var(--accent)',
         title: 'Начало',
         desc: 'Регистрация, инсталиране, активиране',
         articles: [
@@ -500,7 +500,7 @@ MealBot дава приблизителни стойности. За макси�
       {
         id: 'chat',
         icon: '💬',
-        color: '#FFB74D',
+        color: 'var(--accent)',
         title: 'Чат',
         desc: 'Съобщения, снимки, известия',
         articles: [
@@ -733,7 +733,7 @@ PUSH ИЗВЕСТИЯ НА IPHONE
       {
         id: 'start',
         icon: '🚀',
-        color: '#FFB74D',
+        color: 'var(--accent)',
         title: 'Getting Started',
         desc: 'Registration, installation, activation',
         articles: [
@@ -1141,7 +1141,7 @@ Progress photos are visible to your coach under the "CHECK-IN" tab. Only your co
       {
         id: 'chat',
         icon: '💬',
-        color: '#FFB74D',
+        color: 'var(--accent)',
         title: 'Chat',
         desc: 'Messages, photos, notifications',
         articles: [

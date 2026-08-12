@@ -255,7 +255,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
               <p className={styles.unknownHint}>Стойности на 100 г от етикета:</p>
               <div className={styles.unknownGrid}>
                 {[
-                  { k: 'kcal',    label: 'ККАЛ', color: '#ffb74d' },
+                  { k: 'kcal',    label: 'ККАЛ', color: 'var(--accent)' },
                   { k: 'protein', label: 'П',    color: '#42A5F5' },
                   { k: 'carbs',   label: 'В',    color: '#66BB6A' },
                   { k: 'fat',     label: 'М',    color: '#CE93D8' },

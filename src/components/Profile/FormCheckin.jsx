@@ -13,7 +13,7 @@ const GYM_PERF = [
   { label: 'РЪСТ',  icon: '↑', activeClass: 'tapBtnGreen'  },
 ]
 
-const GYM_PERF_COLORS = ['#EF5350', '#FFB74D', '#66BB6A']
+const GYM_PERF_COLORS = ['#EF5350', 'var(--accent)', '#66BB6A']
 
 export default function FormCheckin() {
   const { user } = useAuth()

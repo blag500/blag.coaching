@@ -149,7 +149,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
       {/* ── Nutrition 2×2 grid ── */}
       <div className={styles.nutritionGrid}>
         {[
-          { key: 'kcal',    label: t('today.kcal'),    val: Math.round(totals.kcal    || 0), target: targets.kcal,    unit: 'kcal', color: '#ffb74d' },
+          { key: 'kcal',    label: t('today.kcal'),    val: Math.round(totals.kcal    || 0), target: targets.kcal,    unit: 'kcal', color: 'var(--accent)' },
           { key: 'protein', label: t('today.protein'), val: Math.round(totals.protein || 0), target: targets.protein, unit: 'g',    color: '#42A5F5' },
           { key: 'carbs',   label: t('today.carbs'),   val: Math.round(totals.carbs   || 0), target: targets.carbs,   unit: 'g',    color: '#66BB6A' },
           { key: 'fat',     label: t('today.fats'),    val: Math.round(totals.fat     || 0), target: targets.fat,     unit: 'g',    color: '#CE93D8' },

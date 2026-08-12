@@ -1,6 +1,11 @@
 .card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -11,6 +16,22 @@
   text-align: left;
   -webkit-tap-highlight-color: transparent;
   transition: border-color 200ms var(--ease-out);
+}
+
+/* Specular highlight — see TodayDashboard for the reasoning. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -40% 45% 60% -30%;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    transparent 72%);
+  pointer-events: none;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card { background: var(--surface-1); }
 }
 
 .card:active {

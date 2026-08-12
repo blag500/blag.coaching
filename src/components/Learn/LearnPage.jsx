@@ -223,7 +223,7 @@ function LearnDeck({ savedProgress, onComplete }) {
 
   if (!card) return null  // safety: onComplete will transition parent
 
-  const color       = CATEGORY_COLORS[card.category] ?? '#ffb74d'
+  const color       = CATEGORY_COLORS[card.category] ?? 'var(--accent)'
   const rotate      = dragX * 0.04
   const dragOpacity = Math.max(0.3, 1 - Math.abs(dragX) / 280)
   const isCorrect   = answered === card.correct

@@ -193,7 +193,7 @@
 /* ── Reforecast banner ── */
 .reforecastBanner {
   margin: 12px 16px 0;
-  background: rgba(255, 183, 77, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   border: 1.5px solid var(--accent);
   border-radius: 12px;
   padding: 14px 16px;
@@ -468,7 +468,7 @@
 }
 
 .timelineRowCurrent {
-  background: rgba(255, 183, 77, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   border: 1px solid var(--accent);
 }
 

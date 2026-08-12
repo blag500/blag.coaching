@@ -41,7 +41,7 @@ const PLANS = [
       'Директен чат с треньора',
     ],
     cta: 'КАНДИДАТСТВАЙ ЗА PRO',
-    accent: '#FFB74D',
+    accent: 'var(--accent)',
   },
 ]
 

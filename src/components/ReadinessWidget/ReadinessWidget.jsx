@@ -6,7 +6,7 @@ import styles from './ReadinessWidget.module.css'
 function scoreColor(score) {
   if (score === null) return 'rgba(242,232,207,0.2)'
   if (score >= 80) return '#81C784'
-  if (score >= 60) return '#ffb74d'
+  if (score >= 60) return 'var(--accent)'
   if (score >= 40) return '#ff8a65'
   return '#ef5350'
 }

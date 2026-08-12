@@ -21,7 +21,7 @@ const PLAN_INFO = {
     name: 'КОУЧИНГ',
     price: '29 €',
     period: 'на месец',
-    accent: '#FFB74D',
+    accent: 'var(--accent)',
     features: [
       'Личен план от треньор',
       'Директна комуникация',

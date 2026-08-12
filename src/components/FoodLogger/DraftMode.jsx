@@ -213,7 +213,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
 
         <div className={styles.macroRow}>
           <label className={styles.macroField}>
-            <span className={styles.macroTag} style={{ color: '#ffb74d' }}>ККАЛ</span>
+            <span className={styles.macroTag} style={{ color: 'var(--accent)' }}>ККАЛ</span>
             <input type="number" min="0" inputMode="numeric" value={form.kcal}
                    onChange={e => setMacro('kcal', e.target.value)} placeholder="0" />
           </label>
@@ -247,7 +247,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           <span className={styles.projLabel}>С тази чернова за деня</span>
           <div className={styles.projBars}>
             {[
-              { k: 'kcal',    label: 'Ккал', color: '#ffb74d' },
+              { k: 'kcal',    label: 'Ккал', color: 'var(--accent)' },
               { k: 'protein', label: 'П',    color: '#42A5F5' },
               { k: 'carbs',   label: 'В',    color: '#66BB6A' },
               { k: 'fat',     label: 'М',    color: '#CE93D8' },

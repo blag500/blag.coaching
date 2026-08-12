@@ -18,7 +18,7 @@
   font-size: 28px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(255, 183, 77, 0.4);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,7 +91,7 @@
 .toggleActive {
   background: var(--accent);
   color: var(--bg);
-  box-shadow: 0 2px 12px rgba(255,183,77,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  box-shadow: 0 2px 12px rgba(var(--accent-rgb),0.25), inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
 /* Setup prompt (shown when macros not yet configured) */

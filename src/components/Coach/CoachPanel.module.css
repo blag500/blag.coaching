@@ -80,7 +80,7 @@
 .card:active {
   background: var(--surface-2);
   border-color: rgba(var(--accent-rgb), 0.35);
-  box-shadow: var(--card-highlight), 0 0 0 1px rgba(255,183,77,0.1);
+  box-shadow: var(--card-highlight), 0 0 0 1px rgba(var(--accent-rgb),0.1);
 }
 
 .clientInfo {
@@ -402,7 +402,7 @@
   flex-shrink: 0;
 }
 
-.ubadge_pending   { background: rgba(255,183,77,0.12);  color: var(--accent); }
+.ubadge_pending   { background: rgba(var(--accent-rgb),0.12);  color: var(--accent); }
 .ubadge_confirmed { background: rgba(102,187,106,0.12); color: #66BB6A; }
 .ucard_completed  { border-left-color: var(--muted); opacity: 0.75; }
 .ubadge_completed { background: rgba(255,255,255,0.05); color: var(--muted); }
