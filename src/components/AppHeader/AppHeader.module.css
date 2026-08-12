@@ -3,20 +3,20 @@
   top: 0;
   z-index: 50;
   margin: 0 -16px;
-  padding: calc(env(safe-area-inset-top) + 12px) 16px 18px;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 12px;
 
   /* A plate, not a strip. The rounded bottom gives the bar an edge the page
      scrolls under, which is what separates a designed header from a rectangle
      that happens to sit at the top. */
-  border-radius: 0 0 22px 22px;
+  border-radius: 0 0 18px 18px;
 
   /* Smoked glass: a heavy blur, a slight warm tint rather than a flat panel,
      and a bloom of warm light behind the title — the name should look lit
      rather than printed. */
   background:
     radial-gradient(120% 150% at 50% 0%,
-      rgba(200, 160, 90, 0.10) 0%,
-      rgba(200, 160, 90, 0.03) 38%,
+      rgba(200, 160, 90, 0.055) 0%,
+      rgba(200, 160, 90, 0.018) 38%,
       transparent 68%),
     linear-gradient(to bottom,
       rgba(20, 17, 11, 0.74) 0%,
@@ -57,7 +57,7 @@
   background: linear-gradient(to right,
     transparent 0%,
     rgba(var(--accent-rgb), 0.06) 18%,
-    rgba(var(--accent-rgb), 0.42) 50%,
+    rgba(var(--accent-rgb), 0.26) 50%,
     rgba(var(--accent-rgb), 0.06) 82%,
     transparent 100%);
   pointer-events: none;
@@ -88,8 +88,8 @@
 /* Same construction as the cards, so the round controls read as small panes of
    the same glass rather than as grey circles. */
 .menuBtn {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -110,18 +110,18 @@
    a label — the same words, but they stop competing with the name below. */
 .eyebrow {
   font-family: var(--font-body);
-  font-size: 9.5px;
-  letter-spacing: 0.34em;
+  font-size: 9px;
+  letter-spacing: 0.30em;
   text-indent: 0.34em;      /* tracking pads the right side only; recentre it */
   color: var(--muted);
-  margin: 0 0 5px;
+  margin: 0 0 3px;
   text-transform: uppercase;
 }
 
 .title {
   font-family: var(--font-heading);
-  font-size: 36px;
-  letter-spacing: 0.04em;
+  font-size: 23px;
+  letter-spacing: 0.06em;
   color: var(--text);
   margin: 0;
   line-height: 1;
@@ -131,12 +131,12 @@
 }
 
 /* Pages with no eyebrow read better a touch smaller */
-.centerSolo .title { font-size: 30px; }
+.centerSolo .title { font-size: 20px; }
 
 .avatarBtn {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
@@ -159,7 +159,7 @@
 
 .avatarInitial {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 15px;
   letter-spacing: 0.04em;
   color: var(--accent);
 }
