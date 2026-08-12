@@ -140,6 +140,8 @@
 
 /* ── Standalone water card ── */
 .waterCard {
+  /* The burst is positioned against this. */
+  position: relative;
   background: var(--panel-bg);
   box-shadow: var(--panel-shadow);
   border: 1px solid var(--panel-border);
@@ -148,6 +150,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Target reached — edged, and tappable so the burst can be replayed. */
+.waterCardDone {
+  border-color: rgba(66, 165, 245, 0.45);
+  cursor: pointer;
 }
 
 /* kept for reference, no longer used */

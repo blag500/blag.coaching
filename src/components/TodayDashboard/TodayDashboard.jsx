@@ -115,6 +115,20 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     return () => clearTimeout(timer)
   }, [completedHabits, habits.length])
 
+  // ── Water hitting its target ──
+  // Same rule as the habits wave: it fires on the transition, not on arriving at
+  // an already-finished day.
+  const waterFull = waterTarget > 0 && glasses >= waterTarget
+  const [waterBurst, setWaterBurst] = useState(0)
+  const prevWaterFull = useRef(null)
+
+  useEffect(() => {
+    const was = prevWaterFull.current
+    prevWaterFull.current = waterFull
+    if (was === null || !waterFull || was) return
+    setWaterBurst(b => b + 1)
+  }, [waterFull])
+
   // ── Badge detection ──
   const [badgeQueue, setBadgeQueue] = useState([])
   const prevCal   = useRef(false)
@@ -179,8 +193,21 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         ]}
       />
 
-      {/* ── Water card ── */}
-      <div className={styles.waterCard}>
+      {/* ── Water card ──
+          Full is a small win and it gets the same treatment as the other two:
+          it fires once when the last glass lands, and stays tappable afterwards
+          so the burst can be replayed. A div rather than a button because it
+          already contains one, and a button inside a button is invalid. */}
+      <div
+        className={`${styles.waterCard} ${waterFull ? styles.waterCardDone : ''}`}
+        onClick={waterFull ? () => setWaterBurst(b => b + 1) : undefined}
+        role={waterFull ? 'button' : undefined}
+        tabIndex={waterFull ? 0 : undefined}
+        onKeyDown={waterFull ? e => {
+          if (e.key === 'Enter' || e.key === ' ') setWaterBurst(b => b + 1)
+        } : undefined}
+      >
+        {waterBurst > 0 && <Confetti burst={`w${waterBurst}`} />}
         <span className={styles.waterLabel}>{t('today.water')}</span>
         <div className={styles.waterGlasses}>
           {Array.from({ length: waterTarget }, (_, i) => (
@@ -189,7 +216,14 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         </div>
         <div className={styles.waterActions}>
           <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
-          <button type="button" className={styles.waterBtn} onClick={() => addWater(1)} aria-label="Добави чаша">+</button>
+          <button
+            type="button"
+            className={styles.waterBtn}
+            /* Stops the tap reaching the card, so adding a glass never doubles
+               as a celebration. */
+            onClick={e => { e.stopPropagation(); addWater(1) }}
+            aria-label="Добави чаша"
+          >+</button>
         </div>
       </div>
 
