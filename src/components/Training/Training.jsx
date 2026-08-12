@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -10,6 +10,7 @@ import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
+import MuscleTimeline from './MuscleTimeline'
 import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
 import styles from './Training.module.css'
 
@@ -32,134 +33,6 @@ function getBlocks(plan) {
 // the legend swatches are large enough to judge rather than merely notice.
 const PALETTE = ['var(--accent)', '#42A5F5', '#EF5350', '#66BB6A', '#AB47BC', '#26C6DA', '#F06292']
 function blockColor(idx) { return PALETTE[idx % PALETTE.length] }
-
-// ── Calendar ────────────────────────────────────────────────────────────────
-
-const MONTHS_BG = [
-  'Януари','Февруари','Март','Април','Май','Юни',
-  'Юли','Август','Септември','Октомври','Ноември','Декември',
-]
-const DAYS_SHORT = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
-
-// "UPPER A" → "UA", "LOWER B" → "LB", "PUSH" → "PU"
-function abbrev(label) {
-  const parts = (label || '').trim().split(/\s+/)
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-  return label.slice(0, 2).toUpperCase()
-}
-
-function buildCalendar(year, month, completionMap) {
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const rawFirstDay = new Date(year, month, 1).getDay()
-  const firstDow    = (rawFirstDay + 6) % 7 // Monday = 0
-
-  const cells = []
-  for (let i = 0; i < firstDow; i++) cells.push(null)
-  for (let d = 1; d <= daysInMonth; d++) {
-    const mm      = String(month + 1).padStart(2, '0')
-    const dd      = String(d).padStart(2, '0')
-    const dateStr = `${year}-${mm}-${dd}`
-    cells.push({ day: d, dateStr, labels: completionMap[dateStr] || [] })
-  }
-  return cells
-}
-
-function WorkoutCalendar({ completions, blocks }) {
-  const today = new Date()
-  const [year, setYear]   = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth())
-  const todayStr = today.toISOString().slice(0, 10)
-
-  const completionMap = useMemo(() => {
-    const m = {}
-    for (const c of completions) {
-      if (!m[c.completed_date]) m[c.completed_date] = []
-      if (!m[c.completed_date].includes(c.block_label))
-        m[c.completed_date].push(c.block_label)
-    }
-    return m
-  }, [completions])
-
-  const cells = buildCalendar(year, month, completionMap)
-
-  // Count workouts in current view month
-  const monthCount = useMemo(() => {
-    const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`
-    return completions.filter(c => c.completed_date.startsWith(prefix)).length
-  }, [completions, year, month])
-
-  function prev() {
-    if (month === 0) { setYear(y => y - 1); setMonth(11) }
-    else setMonth(m => m - 1)
-  }
-  function next() {
-    if (month === 11) { setYear(y => y + 1); setMonth(0) }
-    else setMonth(m => m + 1)
-  }
-
-  const colorMap = {}
-  blocks.forEach((b, i) => { colorMap[b.label] = blockColor(i) })
-
-  const isPast = (dateStr) => dateStr < todayStr
-
-  return (
-    <div className={styles.calendar}>
-      <div className={styles.calHeader}>
-        <button className={styles.calNav} onClick={prev} type="button">‹</button>
-        <div className={styles.calTitleGroup}>
-          <span className={styles.calTitle}>{MONTHS_BG[month]} {year}</span>
-          {monthCount > 0 && (
-            <span className={styles.calMonthCount}>{monthCount} тренировки</span>
-          )}
-        </div>
-        <button className={styles.calNav} onClick={next} type="button">›</button>
-      </div>
-
-      <div className={styles.calDow}>
-        {DAYS_SHORT.map(d => <span key={d} className={styles.calDowCell}>{d}</span>)}
-      </div>
-
-      <div className={styles.calGrid}>
-        {cells.map((cell, i) =>
-          !cell
-            ? <div key={`e-${i}`} />
-            : (
-              <div
-                key={cell.dateStr}
-                className={[
-                  styles.calDay,
-                  cell.dateStr === todayStr ? styles.calToday : '',
-                  cell.labels.length > 0 ? styles.calDone : '',
-                  isPast(cell.dateStr) && cell.labels.length === 0 ? styles.calMissed : '',
-                ].join(' ')}
-              >
-                <span className={styles.calNum}>{cell.day}</span>
-                <div className={styles.calChips}>
-                  {cell.labels.slice(0, 2).map((label, li) => (
-                    <span
-                      key={li}
-                      className={styles.calDot}
-                      style={{ background: colorMap[label] || '#8888AA' }}
-                      title={label}
-                    />
-                  ))}
-                </div>
-              </div>
-            )
-        )}
-      </div>
-
-      <div className={styles.calLegend}>
-        {blocks.map((b, i) => (
-          <span key={b.id} className={styles.calLegendItem}>
-            <span className={styles.calDot} style={{ background: blockColor(i) }} />
-            {b.label}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 // ── Main component ───────────────────────────────────────────────────────────
 
@@ -466,7 +339,7 @@ export default function Training({ onMenuOpen }) {
       {!showProgression && (
         <section className={styles.historySection}>
           <h2 className={styles.historyTitle}>ИСТОРИЯ</h2>
-          <WorkoutCalendar completions={completions} blocks={blocks} />
+          <MuscleTimeline completions={completions} recovery={recovery} />
         </section>
       )}
 
