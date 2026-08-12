@@ -24,6 +24,7 @@ const PLANS = [
     ],
     cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
     accent: 'var(--accent)',
+    fill: 'var(--accent-metal)',
   },
   {
     id: 'pro',
@@ -42,6 +43,7 @@ const PLANS = [
     ],
     cta: 'КАНДИДАТСТВАЙ ЗА PRO',
     accent: 'var(--accent)',
+    fill: 'var(--accent-metal)',
   },
 ]
 
@@ -133,7 +135,7 @@ export default function PlanSelector({ onSelect }) {
 
             <button
               className={styles.cta}
-              style={{ background: plan.accent }}
+              style={{ background: plan.fill }}
               onClick={() => handleSelect(plan.id)}
               disabled={loading}
               type="button"

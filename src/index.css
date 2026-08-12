@@ -12,12 +12,12 @@
   --bg:        #0C0A06;
   --surface-1: #131009;
   --surface-2: #1A1710;
-  /* Bone, not amber. Colour now means something — it is reserved for the
-     macros and the charts — so the accent itself carries no hue and the
-     interface reads as one material instead of a warning label. Gold stays
-     where it is rare and therefore expensive: the splash and the mark. */
-  --accent:    #F7EEDC;
-  --accent-dim: rgba(247, 238, 220, 0.10);
+  /* Antique gold — the core tone of the splash animation held flat, without
+     the blown highlight that makes the animated version shout. Amber before it
+     was a saturated orange and read as a warning; bone had no material at all
+     and read as a ghost. This has a metal's weight and stays quiet. */
+  --accent:    #C8A05A;
+  --accent-dim: rgba(200, 160, 90, 0.12);
   --text:      #F2E8CF;
   --muted:     #907860;
   --border:    #2B2215;
@@ -31,11 +31,23 @@
   --radius-lg:   24px;
   --radius-xl:   32px;
 
-  --accent-rgb: 247, 238, 220;
+  --accent-rgb: 200, 160, 90;
+
+  /* Flat gold is paint; gold with a gradient across it is metal. Reserved for
+     large filled surfaces — the action button, the active tab — where there is
+     enough area for the sheen to travel and be seen. On small marks it just
+     turns to mud, so those stay flat --accent. */
+  --accent-metal: linear-gradient(155deg,
+    #8A6A2E 0%, #C8A05A 26%, #E8D19B 48%, #B98F45 66%, #D9BE83 82%, #8F6C31 100%);
+  /* The same metal on a small round face. The six-stop version compresses into
+     mud at 56px, so this is three stops with the highlight sitting where the
+     eye lands — it reads as a struck coin rather than a brown disc. */
+  --accent-metal-coin: linear-gradient(150deg,
+    #EBD6A4 0%, #C8A05A 46%, #9A7838 100%);
 
   --shadow-card: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-glow: 0 0 28px rgba(247, 238, 220, 0.14);
-  --accent-glow: 0 0 0 3px rgba(247,238,220,0.08), 0 0 20px rgba(247,238,220,0.05);
+  --shadow-glow: 0 0 28px rgba(200, 160, 90, 0.20);
+  --accent-glow: 0 0 0 3px rgba(200,160,90,0.10), 0 0 20px rgba(200,160,90,0.07);
   --card-highlight: inset 0 1px 0 rgba(255,255,255,0.04);
 
   --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
@@ -62,8 +74,6 @@
   --glass-blur: 18px;
 }
 
-/* The mirror of the dark palette: bone on ink becomes ink on bone. The accent
-   is still hueless, so colour keeps meaning the same thing in both themes. */
 /* Glass over a light ground: the pane is tinted by what is behind it, so the
    highlight goes white and the shading goes to warm ink instead of black. */
 html[data-theme="light"] {
@@ -79,44 +89,48 @@ html[data-theme="light"] {
     inset 0 -1px 0 rgba(26, 19, 0, 0.06),
     0 10px 30px rgba(26, 19, 0, 0.08);
 
-  --accent-rgb: 36, 28, 16;
+  /* Gold has to go darker to survive a pale ground — the same metal, deepened
+     to bronze so it still reads as gold and not as yellow highlighter. */
+  --accent-rgb: 138, 106, 46;
+  --accent-metal: linear-gradient(155deg,
+    #6B5220 0%, #8A6A2E 30%, #B99553 52%, #7E6028 72%, #A5813C 88%, #6B5220 100%);
   --bg:        #F5F0E8;
   --surface-1: #FFFFFF;
   --surface-2: #EDE8DE;
-  --accent:    #241C10;
-  --accent-dim: rgba(36, 28, 16, 0.07);
+  --accent:    #8A6A2E;
+  --accent-dim: rgba(138, 106, 46, 0.09);
   --text:      #1A1300;
   --muted:     #7A6840;
   --border:    #D4C8A8;
   --red:       #D32F2F;
   --surface-glass: rgba(245, 240, 232, 0.92);
   --shadow-card: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
-  --shadow-glow: 0 0 28px rgba(36, 28, 16, 0.12);
-  --accent-glow: 0 0 0 3px rgba(36,28,16,0.06), 0 0 20px rgba(36,28,16,0.04);
+  --shadow-glow: 0 0 28px rgba(138, 106, 46, 0.14);
+  --accent-glow: 0 0 0 3px rgba(138,106,46,0.08), 0 0 20px rgba(138,106,46,0.05);
   --card-highlight: inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
 html[data-theme="glass"] {
-  --accent-rgb: 247, 238, 220;
+  --accent-rgb: 200, 160, 90;
   --bg:        #0A0A0F;
   --surface-1: rgba(16, 18, 28, 0.72);
   --surface-2: rgba(22, 24, 38, 0.82);
-  --accent:    #F7EEDC;
-  --accent-dim: rgba(247, 238, 220, 0.10);
+  --accent:    #C8A05A;
+  --accent-dim: rgba(200, 160, 90, 0.12);
   --text:      #E8E0D0;
   --muted:     #5A5870;
-  --border:    rgba(247, 238, 220, 0.10);
+  --border:    rgba(200, 160, 90, 0.12);
   --red:       #FF4455;
   --surface-glass: rgba(10, 10, 15, 0.80);
   --shadow-card: 0 8px 32px rgba(0, 0, 8, 0.70), 0 2px 8px rgba(0, 0, 8, 0.40);
-  --shadow-glow: 0 0 28px rgba(247, 238, 220, 0.12);
-  --accent-glow: 0 0 0 3px rgba(247,238,220,0.08), 0 0 20px rgba(247,238,220,0.05);
-  --card-highlight: inset 0 1px 0 rgba(247, 238, 220, 0.06);
+  --shadow-glow: 0 0 28px rgba(200, 160, 90, 0.18);
+  --accent-glow: 0 0 0 3px rgba(200,160,90,0.10), 0 0 20px rgba(200,160,90,0.07);
+  --card-highlight: inset 0 1px 0 rgba(200, 160, 90, 0.08);
 }
 
 html[data-theme="glass"] #root {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(247, 238, 220, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(200, 160, 90, 0.05) 0%, transparent 60%),
     radial-gradient(ellipse 70% 50% at 25% 20%, rgba(20, 16, 30, 0.90) 0%, transparent 65%),
     radial-gradient(ellipse 60% 40% at 75% 75%, rgba(12, 10, 20, 0.80) 0%, transparent 65%),
     #0A0A0F;
@@ -175,7 +189,7 @@ a:focus-visible {
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid rgba(255, 183, 77, 0.45);
+  outline: 2px solid rgba(var(--accent-rgb), 0.45);
   outline-offset: 1px;
 }
 

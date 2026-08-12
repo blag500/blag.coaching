@@ -313,10 +313,10 @@
 
 .nextBtn {
   padding: 14px 28px;
-  background: var(--accent);
+  background: var(--accent-metal);
   border: none;
   border-radius: 12px;
-  color: #0C0A06;
+  color: #241B0C;
   font-family: var(--font-heading);
   font-size: 15px;
   letter-spacing: 0.1em;

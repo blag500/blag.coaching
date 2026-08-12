@@ -79,9 +79,11 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--accent);
+  /* Struck metal, not a painted disc — the gradient runs across the face so
+     the light has somewhere to sit. */
+  background: var(--accent-metal-coin);
   border: none;
-  color: var(--bg);
+  color: #241B0C;
   display: flex;
   align-items: center;
   justify-content: center;
