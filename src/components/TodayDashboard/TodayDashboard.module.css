@@ -708,3 +708,78 @@
   line-height: 1;
 }
 
+
+/* ── Habits ───────────────────────────────────────────────────────────────
+   Chips rather than a checklist. A vertical list of six rows would own the
+   screen; wrapped chips carry the same six targets in two lines, and a filled
+   one reads as done from across the room without needing its label read. */
+.habitsCard {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.habitsHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.habitsCount {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.habitsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.habitChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out),
+              color 160ms var(--ease-out);
+}
+
+.habitChipOn {
+  background: var(--accent-dim);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+}
+
+.habitEmoji {
+  font-size: 13px;
+  line-height: 1;
+  /* Grey while undone, full colour once ticked — the row reads as progress at a
+     glance instead of as six identical stickers. */
+  filter: grayscale(1);
+  opacity: 0.6;
+  transition: filter 160ms var(--ease-out), opacity 160ms var(--ease-out);
+}
+
+.habitChipOn .habitEmoji {
+  filter: none;
+  opacity: 1;
+}
+
+.habitLabel {
+  white-space: nowrap;
+}

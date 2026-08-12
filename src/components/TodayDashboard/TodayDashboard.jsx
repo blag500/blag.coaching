@@ -23,7 +23,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const { log, totals } = useFoodLog()
-  const { habits, checked } = useHabitsToday()
+  const { habits, checked, toggle: toggleHabit } = useHabitsToday()
   const { glasses, target: waterTarget, add: addWater } = useWaterLog()
   const { takenCount: suppTaken, totalCount: suppTotal } = useSupplements()
   const { products: shopProducts } = useShop()
@@ -185,6 +185,37 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
           <button type="button" className={styles.waterBtn} onClick={() => addWater(1)} aria-label="Добави чаша">+</button>
         </div>
       </div>
+
+      {/* ── Habits ──
+          Ticked here rather than prompted from here. A nudge that sends you to
+          another tab to spend four seconds is a nudge most people decline, and
+          habits are 20% of the readiness score — the component most often left
+          empty precisely because it lived somewhere else. */}
+      {habits.length > 0 && (
+        <div className={styles.habitsCard}>
+          <div className={styles.habitsHead}>
+            <span className={styles.cardLabel}>{t('today.habits')}</span>
+            <span className={styles.habitsCount}>
+              {completedHabits}/{habits.length}
+            </span>
+          </div>
+          <div className={styles.habitsRow}>
+            {habits.map(h => (
+              <button
+                key={h.id}
+                type="button"
+                className={`${styles.habitChip} ${checked[h.id] ? styles.habitChipOn : ''}`}
+                onClick={() => toggleHabit(h.id)}
+                aria-pressed={!!checked[h.id]}
+                title={h.label}
+              >
+                <span className={styles.habitEmoji}>{h.emoji}</span>
+                <span className={styles.habitLabel}>{h.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Quick log button ── */}
       <button className={styles.logBtn} onClick={() => onNavigate('nutrition')} type="button">
