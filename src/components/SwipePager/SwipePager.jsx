@@ -1,7 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { isProtected } from '../../utils/gestures'
 import { PaneProvider } from './PaneContext'
 import styles from './SwipePager.module.css'
+
+/** A window-sized layer that travels with a pane; see PaneContext. */
+function makeChromeLayer(z) {
+  const el = document.createElement('div')
+  el.style.cssText =
+    `position:fixed;inset:0;pointer-events:none;z-index:${z};`
+  return el
+}
 
 // Before either axis is committed to, this much travel decides which one wins.
 const AXIS_LOCK   = 8
@@ -34,6 +42,16 @@ export default function SwipePager({
   const hostRef = useRef(null)
   const curRef  = useRef(null)
   const incRef  = useRef(null)
+
+  // Below the incoming pane (95) for the page being left, above it for the page
+  // arriving, and both under the tab bar (100), which never moves.
+  const [curChrome] = useState(() => makeChromeLayer(90))
+  const [incChrome] = useState(() => makeChromeLayer(96))
+
+  useEffect(() => {
+    document.body.append(curChrome, incChrome)
+    return () => { curChrome.remove(); incChrome.remove() }
+  }, [curChrome, incChrome])
   // Which neighbour is mounted: -1 for the tab on the left, +1 for the right.
   const [reveal, setReveal] = useState(0)
 
@@ -53,17 +71,28 @@ export default function SwipePager({
     const w = window.innerWidth
     const ease = animate ? `transform ${GLIDE}ms var(--ease-drawer)` : 'none'
 
+    const resting = dx === 0 && !animate
+
     if (curRef.current) {
-      const resting = dx === 0 && !animate
       curRef.current.style.transition = ease
       // At rest both the transform and the promotion are removed. Either one
       // would leave the page as the containing block for its fixed children.
       curRef.current.style.willChange = resting ? '' : 'transform'
       curRef.current.style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
     }
-    if (incRef.current && dir !== 0) {
-      incRef.current.style.transition = ease
-      incRef.current.style.transform  = `translate3d(${dx + dir * w}px,0,0)`
+    // The chrome layer rides along, so a bar pinned to the bottom of the window
+    // leaves with the page it belongs to instead of hanging behind.
+    curChrome.style.transition = ease
+    curChrome.style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
+
+    if (dir !== 0) {
+      const off = `translate3d(${dx + dir * w}px,0,0)`
+      if (incRef.current) {
+        incRef.current.style.transition = ease
+        incRef.current.style.transform  = off
+      }
+      incChrome.style.transition = ease
+      incChrome.style.transform  = off
     }
   }
 
@@ -85,6 +114,11 @@ export default function SwipePager({
       curRef.current.style.transition = 'none'
       curRef.current.style.transform  = ''
       curRef.current.style.willChange = ''
+    }
+    for (const el of [curChrome, incChrome]) {
+      el.style.transition = 'none'
+      el.style.transform  = ''
+      el.style.willChange = ''
     }
     setReveal(0)
     // Instant, because the page has already travelled — animating it in again
@@ -118,6 +152,13 @@ export default function SwipePager({
       startY = t.clientY
       startedAt = lastT = performance.now()
       settling.current = false
+      // The chrome layers are promoted now, while the finger is still, so a
+      // layer is not being created on the first frame of movement. The page
+      // itself waits until the gesture is known to be horizontal: promoting it
+      // would make it the containing block for its fixed children, and doing
+      // that on every tap would jolt them for as long as a finger is down.
+      curChrome.style.willChange = 'transform'
+      incChrome.style.willChange = 'transform'
     }
 
     function onMove(e) {
@@ -167,7 +208,12 @@ export default function SwipePager({
     }
 
     function onEnd() {
-      if (axis !== 'x') { reset(); return }
+      if (axis !== 'x') {
+        curChrome.style.willChange = ''
+        incChrome.style.willChange = ''
+        reset()
+        return
+      }
       const l = live.current
       const travelled = lastX - startX
       const elapsed   = performance.now() - startedAt
@@ -218,6 +264,10 @@ export default function SwipePager({
   }
 
   const neighbour = reveal !== 0 ? order[idx + reveal] : null
+  // Stable objects, so a page's chrome is not torn down and rebuilt on every
+  // render of the pager.
+  const curPane = useMemo(() => ({ chrome: curChrome, live: true  }), [curChrome])
+  const incPane = useMemo(() => ({ chrome: incChrome, live: false }), [incChrome])
 
   return (
     <div className={styles.host} ref={hostRef}>
@@ -225,12 +275,12 @@ export default function SwipePager({
           makes an element the containing block for its fixed descendants, and
           the app pins things to the screen from inside pages. */}
       <div className={styles.current} ref={curRef} onTransitionEnd={onTransitionEnd}>
-        <PaneProvider value={true}>{render(active)}</PaneProvider>
+        <PaneProvider value={curPane}>{render(active)}</PaneProvider>
       </div>
 
       {neighbour && (
         <div className={styles.incoming} ref={incRef} aria-hidden="true">
-          <PaneProvider value={false}>{render(neighbour)}</PaneProvider>
+          <PaneProvider value={incPane}>{render(neighbour)}</PaneProvider>
         </div>
       )}
     </div>

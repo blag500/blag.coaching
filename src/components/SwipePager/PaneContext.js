@@ -1,15 +1,19 @@
 import { createContext, useContext } from 'react'
 
 /**
- * Whether the page reading this is the one the user is on, or the preview of a
- * neighbour arriving under the finger.
+ * Where a page should put the things it pins to the screen, and whether it is
+ * the page the user is on.
  *
- * Anything a page pins to the screen has to be rendered outside the sliding
- * pane, which means it cannot slide with it — so a neighbour's bottom bar would
- * otherwise appear at the foot of the display before the page it belongs to had
- * arrived. Chrome like that waits until its page is actually the live one.
+ * A bar pinned to the bottom of the window cannot simply live inside the page:
+ * a sliding ancestor becomes its containing block and it gets measured against
+ * the page instead of the window. But hoisting it to the document leaves it
+ * nailed in place while its own page slides away, which looks just as wrong.
+ *
+ * So each pane owns a chrome layer — fixed, the size of the window, and carried
+ * by the same transform as the pane. Anything portalled into it is positioned
+ * against the window, and still travels with the page it belongs to.
  */
-const PaneContext = createContext(true)
+const PaneContext = createContext({ chrome: null, live: true })
 
 export const PaneProvider = PaneContext.Provider
-export function useIsLivePane() { return useContext(PaneContext) }
+export function usePane() { return useContext(PaneContext) }

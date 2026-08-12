@@ -7,6 +7,7 @@
 
 .fab {
   position: fixed;
+  pointer-events: auto;
   right: 20px;
   bottom: calc(88px + env(safe-area-inset-bottom));
   width: 52px;
@@ -430,6 +431,9 @@
 /* ── Macro Remaining Bar ── */
 .remainBar {
   position: fixed;
+  /* The chrome layer it sits in ignores touches, so take them back. */
+  pointer-events: auto;
+
   bottom: calc(env(safe-area-inset-bottom) + 88px);
   left: 0;
   right: 0;
