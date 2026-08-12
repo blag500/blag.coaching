@@ -93,12 +93,17 @@
   letter-spacing: 0.08em;
   color: var(--muted);
   white-space: nowrap;
-  width: 90px;
+  /* Wide enough for the longest label, and clipped rather than allowed to run
+     under the bar if a translation or a font ever outgrows it. */
+  width: 104px;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .barTrack {
   flex: 1;
+  min-width: 0;
   height: 4px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--r-xs);
@@ -115,9 +120,10 @@
   font-family: var(--font-body);
   font-size: 9px;
   letter-spacing: 0.04em;
-  width: 22px;
+  width: 26px;
   text-align: right;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .cta {
@@ -159,12 +165,16 @@
   font-size: 8px;
   letter-spacing: 0.08em;
   color: var(--muted);
-  width: 54px;
+  width: 58px;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .muscleTrack {
   flex: 1;
+  min-width: 0;
   height: 5px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--r-xs);
@@ -189,7 +199,8 @@
   font-family: var(--font-body);
   font-size: 9px;
   color: var(--muted);
-  width: 22px;
+  width: 44px;
   text-align: right;
   flex-shrink: 0;
+  white-space: nowrap;
 }

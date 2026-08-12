@@ -67,10 +67,13 @@ function ComponentBar({ label, score, color }) {
   )
 }
 
+// Written out rather than abbreviated. "2д" set in Bulgarian lowercase looks
+// close enough to "2g" to be read as grams, which in a food-tracking app is the
+// one misreading worth spending four characters to avoid.
 function HoursLabel(hours) {
-  if (hours < 24) return `${hours}ч`
+  if (hours < 24) return `${hours} ч`
   const d = Math.floor(hours / 24)
-  return `${d}д`
+  return d === 1 ? '1 ден' : `${d} дни`
 }
 
 export default function ReadinessWidget({ onNavigate, client = null }) {
