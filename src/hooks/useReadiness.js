@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { calcReadiness } from './useSleepLogs'
-import { RECOVERY_H, GROUP_LABELS, GROUP_COLORS, classifyMuscle } from '../utils/recovery'
+import { GROUP_LABELS, GROUP_COLORS, muscleRecovery } from '../utils/recovery'
 
 function dateStr(offset = 0) {
   const d = new Date()
@@ -101,28 +101,21 @@ export function useReadiness(client = null) {
       const workoutDays = new Set(allWorkouts.map(r => r.completed_date)).size
 
       // ── Muscle group readiness ──────────────────────────────────────
-      // Find the most recent training date per muscle group
-      const groupLastMs = {}
-      allWorkouts.forEach(w => {
-        const g  = classifyMuscle(w.block_label)
-        if (!g) return
-        const ms = new Date(w.completed_date).getTime()
-        if (!groupLastMs[g] || ms > groupLastMs[g]) groupLastMs[g] = ms
-      })
-
-      const now = Date.now()
+      // The same figures the training screen picks a session with, including
+      // the hold-back from today's soreness — two screens showing different
+      // percentages for the same muscle is worse than showing none.
+      const recovery = muscleRecovery(allWorkouts, Date.now(), sleepLog?.soreness ?? null)
       const muscleGroups = Object.keys(GROUP_LABELS)
-        .filter(g => groupLastMs[g])
+        .filter(g => recovery[g]?.trained)
         .map(g => {
-          const hours = (now - groupLastMs[g]) / 3_600_000
-          const pct   = Math.min(100, Math.round((hours / RECOVERY_H[g]) * 100))
+          const { pct, hours } = recovery[g]
           const color = pct >= 80 ? '#81C784' : pct >= 55 ? 'var(--accent)' : '#ef5350'
           return {
             group: g,
             label: GROUP_LABELS[g],
             accentColor: GROUP_COLORS[g],
             pct,
-            hours: Math.round(hours),
+            hours,
             color,
           }
         })

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import CopyPreviousDay from './CopyPreviousDay'
 import styles from './FoodLog.module.css'
 
 function UndoIcon() {
@@ -19,7 +20,7 @@ function CameraIcon() {
   )
 }
 
-export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove }) {
+export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove, date }) {
   const [editingId,    setEditingId]    = useState(null)
   const [draft,        setDraft]        = useState({})
   const [lastRemoved,  setLastRemoved]  = useState(null)
@@ -119,6 +120,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         >
           + ДОБАВИ ХРАНА
         </button>
+
+        {onAddRaw && date && (
+          <CopyPreviousDay date={date} onAddRaw={onAddRaw} />
+        )}
       </div>
     )
   }

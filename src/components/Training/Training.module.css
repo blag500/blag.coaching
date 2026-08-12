@@ -348,9 +348,9 @@
 
 /* Legend */
 .calLegend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
@@ -359,16 +359,10 @@
 .calLegendItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: var(--font-body);
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.calLegendItem .calChip {
-  width: 22px;
-  padding: 2px 0;
-  font-size: 8px;
+  font-size: 12px;
+  color: var(--text);
 }
 
 
@@ -377,10 +371,18 @@
    underneath already says which block each colour is — spelling it out in the
    cells as well turned the month into a wall of abbreviations nobody reads. */
 .calDot {
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* Bigger in the legend than in the grid. The grid only has to say "something
+   happened here"; the legend is where the colour is actually identified, and a
+   7px dot is too little of a colour to judge. */
+.calLegendItem .calDot {
+  width: 14px;
+  height: 14px;
 }
 
 /* Progression sits in the header now; this is its pressed state. */

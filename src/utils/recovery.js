@@ -28,10 +28,29 @@ export function classifyMuscle(label = '') {
 }
 
 /**
+ * How much the day's soreness holds everything back.
+ *
+ * Soreness is reported for the body, not per muscle, so it cannot slow one
+ * group and not another — but it can say the whole body is not ready. Hours
+ * since training is a clock; this is the person. A clock that ignores someone
+ * saying they are wrecked is the reason people stop trusting these numbers.
+ *
+ * 1 and 2 out of 5 change nothing: mild stiffness is training, not damage.
+ */
+export function sorenessDamping(soreness) {
+  if (!soreness || soreness <= 2) return 1
+  if (soreness === 3) return 0.9
+  if (soreness === 4) return 0.75
+  return 0.6
+}
+
+/**
  * Recovery per group from a list of { block_label, completed_date }.
  * A group never trained counts as fully recovered — there is nothing to wait for.
+ *
+ * `soreness` is today's check-in answer, if there is one.
  */
-export function muscleRecovery(workouts = [], now = Date.now()) {
+export function muscleRecovery(workouts = [], now = Date.now(), soreness = null) {
   const lastMs = {}
   for (const w of workouts) {
     const g = classifyMuscle(w.block_label)
@@ -40,14 +59,22 @@ export function muscleRecovery(workouts = [], now = Date.now()) {
     if (!lastMs[g] || ms > lastMs[g]) lastMs[g] = ms
   }
 
+  const damp = sorenessDamping(soreness)
+
   const out = {}
   for (const g of Object.keys(RECOVERY_H)) {
-    if (!lastMs[g]) { out[g] = { pct: 100, hours: null, trained: false }; continue }
+    if (!lastMs[g]) {
+      // Nothing to recover from, but a wrecked body is still a wrecked body.
+      out[g] = { pct: Math.round(100 * damp), hours: null, trained: false, damped: damp < 1 }
+      continue
+    }
     const hours = (now - lastMs[g]) / 3_600_000
+    const clock = Math.min(100, (hours / RECOVERY_H[g]) * 100)
     out[g] = {
-      pct: Math.min(100, Math.round((hours / RECOVERY_H[g]) * 100)),
+      pct: Math.round(clock * damp),
       hours: Math.round(hours),
       trained: true,
+      damped: damp < 1,
     }
   }
   return out

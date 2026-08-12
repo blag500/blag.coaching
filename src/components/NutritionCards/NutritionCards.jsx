@@ -154,7 +154,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             eatBack={!!profile?.eat_back_calories}
           />
           <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} totals={totals} targets={targets} />
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} />
+          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} date={selectedDate} />
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : view === 'meals' ? (

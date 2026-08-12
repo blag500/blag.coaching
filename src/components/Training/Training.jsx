@@ -23,8 +23,14 @@ function getBlocks(plan) {
   return plan
 }
 
-// Color per block index
-const PALETTE = ['var(--accent)', '#4FC3F7', '#ff8a65', '#81C784', '#CE93D8', '#80DEEA', '#FFAB91']
+// Colour per block index.
+//
+// The old set had two entries at the same hue and two more twelve degrees
+// apart — telling them apart in a 7px dot was not a matter of looking harder,
+// it was impossible. These are as far apart as seven categorical colours get,
+// and seven is honestly the limit of what colour alone can carry, which is why
+// the legend swatches are large enough to judge rather than merely notice.
+const PALETTE = ['var(--accent)', '#42A5F5', '#EF5350', '#66BB6A', '#AB47BC', '#26C6DA', '#F06292']
 function blockColor(idx) { return PALETTE[idx % PALETTE.length] }
 
 // ── Calendar ────────────────────────────────────────────────────────────────
@@ -168,6 +174,7 @@ export default function Training({ onMenuOpen }) {
   const [editing, setEditing]           = useState(false)
   const [savingPlan, setSavingPlan]     = useState(false)
   const [completions, setCompletions]   = useState([])
+  const [soreness, setSoreness]         = useState(null)
   const [marking, setMarking]           = useState(false)
   const [justMarked, setJustMarked]     = useState(false)
   const [undoEntry, setUndoEntry]       = useState(null) // { id, exerciseName, weight }
@@ -185,6 +192,15 @@ export default function Training({ onMenuOpen }) {
       .eq('user_id', user.id)
       .order('completed_date', { ascending: false })
       .then(({ data }) => { if (data) setCompletions(data) })
+
+    // Today's check-in, for the one answer that belongs in this decision.
+    supabase
+      .from('sleep_logs')
+      .select('soreness')
+      .eq('user_id', user.id)
+      .eq('date', new Date().toISOString().slice(0, 10))
+      .maybeSingle()
+      .then(({ data }) => setSoreness(data?.soreness ?? null))
   }, [user?.id])
 
   // ── Which session is due ──
@@ -210,7 +226,7 @@ export default function Training({ onMenuOpen }) {
   // had their hours — 48 for upper and back, 72 for legs. Ties go to whichever
   // has been left alone longer, which restores sensible rotation between two
   // equally rested blocks.
-  const recovery = muscleRecovery(completions)
+  const recovery = muscleRecovery(completions, Date.now(), soreness)
   const ranked = trainable
     .map(b => ({ block: b, ...blockReadiness(b, recovery) }))
     .sort((a, b) =>
@@ -408,7 +424,11 @@ export default function Training({ onMenuOpen }) {
               <span className={styles.recoveryDot} />
               {selRec.pct >= 80
                 ? 'Възстановена и готова'
-                : `Още ${Math.max(1, Math.round((RECOVERY_H[selRec.group] - (selHours ?? 0))))} ч до пълно възстановяване · ${selRec.pct}%`}
+                : recovery[selRec.group]?.damped && (selHours ?? 0) >= RECOVERY_H[selRec.group]
+                  /* The clock says rested, the check-in says otherwise. Saying
+                     which of the two is talking matters more than the number. */
+                  ? `Часовете са изкарани, но си отчел крепатура · ${selRec.pct}%`
+                  : `Още ${Math.max(1, Math.round(RECOVERY_H[selRec.group] - (selHours ?? 0)))} ч до пълно възстановяване · ${selRec.pct}%`}
             </div>
           )}
 
