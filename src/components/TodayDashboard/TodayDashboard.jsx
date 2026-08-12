@@ -171,12 +171,11 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
       {/* ── Macros ── */}
       <MacroScale
         label={t('today.macros')}
-        onOpen={() => onNavigate('nutrition')}
         macros={[
-          { key: 'kcal',    short: t('today.short.kcal'),    val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
-          { key: 'protein', short: t('today.short.protein'), val: Math.round(totals.protein || 0), target: targets.protein, color: '#42A5F5' },
-          { key: 'carbs',   short: t('today.short.carbs'),   val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: '#66BB6A' },
-          { key: 'fat',     short: t('today.short.fat'),     val: Math.round(totals.fat     || 0), target: targets.fat,     color: '#CE93D8' },
+          { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
+          { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: '#42A5F5' },
+          { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: '#66BB6A' },
+          { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: '#CE93D8' },
         ]}
       />
 

@@ -1,5 +1,8 @@
 .card {
   position: relative;
+  width: 100%;
+  text-align: left;
+  font: inherit;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
@@ -8,15 +11,16 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: border-color 300ms var(--ease-out);
 }
 
-/* All four inside their bands. The card is edged rather than filled — a whole
-   panel going gold would shout over everything else on the screen. */
+/* All four inside their bands: edged rather than filled — a whole panel going
+   gold would shout over everything else on the screen — and only now clickable,
+   because only now is there something to celebrate. */
 .cardDone {
   border-color: rgba(var(--accent-rgb), 0.45);
+  cursor: pointer;
 }
 
 .head {
@@ -45,9 +49,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
   animation: doneIn 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -68,13 +70,13 @@
   gap: 10px;
 }
 
-.name {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  width: 30px;
+/* Fixed width, so the four tracks start on the same line whatever the icon. */
+.icon {
+  width: 20px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .track {
