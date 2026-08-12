@@ -70,6 +70,14 @@
   max-width: 420px;
 }
 
+.saveError {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: #ef5350;
+  margin: 14px 0 0;
+  text-align: center;
+}
+
 /* Plan card */
 .planCard {
   position: relative;

@@ -31,7 +31,6 @@ import PosingPage from './components/Posing/PosingPage'
 import SupplementsPage from './components/Supplements/SupplementsPage'
 import ShopPage from './components/Shop/ShopPage'
 import OrdersPanel from './components/Coach/OrdersPanel'
-import PaymentWall from './components/PaymentWall/PaymentWall'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
@@ -169,14 +168,16 @@ function AppShell() {
 
   if (!isCoach && !profile.plan)            return <PlanSelector />
   if (!isCoach && !profile.onboarding_done) {
-    return profile.plan === 'coaching'
+    // PRO is the coached tier, so it gets the full intake. 'coaching' is the
+    // old id for the same thing — still honoured for clients who chose it then.
+    const coached = profile.plan === 'pro' || profile.plan === 'coaching'
+    return coached
       ? <Onboarding isCoachingIntake />
       : <CalorieCalculator isOnboarding />
   }
 
-  // Only PRO is paid. Everything else — free, and the legacy 'plus' clients —
-  // goes straight through, so nobody who already had access loses it.
-  const needsPayment = !isCoach && profile.plan === 'pro' && !profile.stripe_subscription_id
+  // Nothing is sold by card here. PRO is arranged with the coach, who approves
+  // the application himself — so no payment wall stands in anybody's way.
 
   if (paymentProcessing) {
     return (
@@ -187,10 +188,6 @@ function AppShell() {
         </p>
       </div>
     )
-  }
-
-  if (needsPayment) {
-    return <PaymentWall onDowngrade={() => {}} />
   }
 
   const openMenu = () => setDrawerOpen(true)

@@ -1,60 +1,46 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../lib/supabase'
 import styles from './PlanSelector.module.css'
 
+// Two tiers, not three. The whole product is free; the paid layer is the coach
+// himself — protocols, assessment, plan. Everything that used to sit behind
+// "PRO 4.99" is in the free app now.
 const PLANS = [
   {
     id: 'free',
-    name: 'БЕЗПЛАТЕН',
+    name: 'BLAG',
     price: null,
     period: null,
     badge: null,
     available: true,
     features: [
-      'Проследяване на калории & макроси',
-      'Дневник на храненето',
-      'Тегло & прогрес',
-      'Тренировъчен дневник',
-      'Навици & съответствие',
-      'Калориен калкулатор',
+      'AI търсене на храни + баркод скенер',
+      'Дневник на храненето с макроси',
+      'Рецепти с калкулатор на порции',
+      'Тренировъчен дневник и прогресия',
+      'Навици, тегло и прогрес',
+      'Известия и напомняния',
     ],
-    cta: 'ИЗПОЛЗВАЙ БЕЗПЛАТНО',
+    cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
     accent: 'var(--accent)',
   },
   {
     id: 'pro',
-    name: 'PRO',
-    price: '4.99 €',
-    period: 'на месец',
-    badge: null,
+    name: 'BLAG PRO',
+    price: null,
+    period: null,
+    badge: 'С ТРЕНЬОР',
     available: true,
     features: [
-      'Всичко от Безплатен',
-      'Библиотека с ястия',
-      'Умни задачи & известия',
-      'Разширени анализи & графики',
-      'Планиране на хранения',
-      'Приоритетна поддръжка',
+      'Всичко от BLAG',
+      'Оценка на формата за начало',
+      'Какво ядеш преди и след тренировка',
+      'Протокол за суплементация',
+      'Личен тренировъчен план и цели',
+      'Директен чат с треньора',
     ],
-    cta: 'ИЗБЕРИ PRO',
-    accent: '#7E57C2',
-  },
-  {
-    id: 'coaching',
-    name: 'КОУЧИНГ',
-    price: '29 €',
-    period: 'на месец',
-    badge: 'ЛИЧЕН ТРЕНЬОР',
-    available: true,
-    features: [
-      'Всичко от PRO',
-      'Личен план от треньор',
-      'Директна комуникация',
-      'Седмичен преглед & корекции',
-      'Индивидуални тренировъчни програми',
-      'Неограничени консултации',
-    ],
-    cta: 'ИЗБЕРИ КОУЧИНГ',
+    cta: 'КАНДИДАТСТВАЙ ЗА PRO',
     accent: '#FFB74D',
   },
 ]
@@ -64,16 +50,42 @@ const PLANS = [
 export default function PlanSelector({ onSelect }) {
   const auth = useAuth()
   const [loading, setLoading] = useState(false)
+  const [saveError, setSaveError] = useState(null)
 
   async function handleSelect(planId) {
     if (loading) return
     setLoading(true)
     if (onSelect) {
       onSelect(planId)
-    } else {
-      await auth.selectPlan(planId)
+      setLoading(false)
+      return
     }
+
+    // The RPC, not a plain update — it also raises plan_pending, which is what
+    // puts a PRO applicant in the coach's pending list.
+    const { error } = await supabase.rpc('select_plan', { plan_choice: planId })
+    if (error) {
+      setLoading(false)
+      setSaveError('Грешка при запазване — опитай отново.')
+      return
+    }
+
+    if (planId === 'pro') notifyCoach()
+    await auth.refreshProfile()
     setLoading(false)
+  }
+
+  /** Tell the coach someone applied. Best effort — never block the signup on it. */
+  function notifyCoach() {
+    const coachId = auth.profile?.coach_id
+    if (!coachId) return
+    supabase.functions.invoke('send-push', {
+      body: {
+        toUserId: coachId,
+        title: 'Нова заявка за PRO',
+        body: `${auth.profile?.name || auth.profile?.email || 'Нов клиент'} кандидатства за PRO`,
+      },
+    }).catch(() => {})
   }
 
   return (
@@ -83,7 +95,7 @@ export default function PlanSelector({ onSelect }) {
           <span className={styles.brandName}>BLAG</span>
         </div>
         <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
-        <p className={styles.subtitle}>Безплатно завинаги. Надстрой само ако искаш повече.</p>
+        <p className={styles.subtitle}>Приложението е безплатно завинаги. Плаща се само за работа с треньор.</p>
       </div>
 
       <div className={styles.plans}>
@@ -97,7 +109,7 @@ export default function PlanSelector({ onSelect }) {
               <span className={styles.badge}>{plan.badge}</span>
             )}
             {plan.id === 'free' && (
-              <span className={styles.popularBadge}>ПРЕПОРЪЧАН СТАРТ</span>
+              <span className={styles.popularBadge}>ЗАПОЧНИ ОТ ТУК</span>
             )}
 
             <div className={styles.planHeader}>
@@ -131,6 +143,8 @@ export default function PlanSelector({ onSelect }) {
           </div>
         ))}
       </div>
+
+      {saveError && <p className={styles.saveError}>{saveError}</p>}
 
       {!onSelect && (
         <button className={styles.signOutLink} onClick={auth.signOut} type="button">

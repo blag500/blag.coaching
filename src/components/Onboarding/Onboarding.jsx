@@ -100,6 +100,17 @@ export default function Onboarding({ isCoachingIntake = false }) {
   async function handleCoachingSubmit() {
     setSaving(true)
     setError('')
+    // Calculated targets, not zeroes. The application waits for the coach, but
+    // the app does not — an empty day with 0 kcal targets is unusable, and the
+    // coach overwrites these the moment he sets the real plan.
+    const macros = calcMacros({
+      gender:         form.gender,
+      age:            parseInt(form.age),
+      height_cm:      parseFloat(form.height_cm),
+      weight_kg:      parseFloat(form.weight_kg),
+      activity_level: form.activity_level,
+      goal:           form.goal,
+    })
     const { error: err } = await completeOnboarding({
       name:           form.name.trim(),
       goal:           form.goal,
@@ -109,7 +120,7 @@ export default function Onboarding({ isCoachingIntake = false }) {
       weight_kg:      parseFloat(form.weight_kg) || null,
       target_weight:  parseFloat(form.target_weight) || null,
       activity_level: form.activity_level,
-      calories: 0, protein: 0, carbs: 0, fat: 0,
+      ...macros,
     })
     setSaving(false)
     if (err) setError(err.message)
