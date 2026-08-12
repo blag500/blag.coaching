@@ -18,12 +18,24 @@ export const GROUP_COLORS = {
   pull:  'var(--macro-protein)',
 }
 
+// Nothing here is exhaustive and it cannot be. A label is free text a coach
+// typed, so the honest position is that some will not be recognised — see
+// blockReadiness for what happens then.
+const PATTERNS = {
+  upper: /горн|upper|гърди|гръден|chest|пуш|push|бутан|рам|shoulder|делт|трицеп|tricep/,
+  lower: /долн|lower|крак|leg|бедр|глутеу|седалищ|прасец|quad|ham|клек|squat/,
+  pull:  /пул|pull|дърпан|гръб|back|бицеп|bicep|ръц|arm|лат/,
+}
+
 /** Which group a block label belongs to, or null if it names nothing known. */
 export function classifyMuscle(label = '') {
   const l = label.toLowerCase()
-  if (/горн|upper|гърди|chest|пуш|push|рам|shoulder|трицеп|tricep/.test(l)) return 'upper'
-  if (/долн|lower|крак|leg|бедр|глутеу|quad|ham/.test(l)) return 'lower'
-  if (/пул|pull|гръб|back|бицеп|bicep/.test(l)) return 'pull'
+  // Full body is every group at once, which is not a group — the caller has to
+  // decide what to do with that, and pretending it is "upper" would be worse.
+  if (/цяло тяло|full ?body|фул ?боди/.test(l)) return 'full'
+  for (const [group, re] of Object.entries(PATTERNS)) {
+    if (re.test(l)) return group
+  }
   return null
 }
 
@@ -80,25 +92,51 @@ export function muscleRecovery(workouts = [], now = Date.now(), soreness = null)
   return out
 }
 
+// When a label names no group the app knows, the block is still judged — just
+// on itself rather than on muscles. Two days is a defensible default for any
+// session, and it is the same figure upper and back already use.
+const UNKNOWN_H = 48
+
 /**
- * How ready a block is to be trained: the state of its own muscle group. A
- * block covering more than one group is held back by the least recovered of
- * them, since that is the one that will give out first.
+ * How ready a block is to be trained.
+ *
+ * Normally: the state of its own muscle group, and a block covering several is
+ * held back by the least recovered of them, since that is the one that gives
+ * out first.
+ *
+ * When nothing in the label is recognised — a bro split with "Ръце", a full
+ * body day, a coach writing "Бутане" — it falls back to how long since this
+ * exact block was last done. That is always knowable and never wrong; the
+ * alternative was returning 100%, which quietly told everyone on a split the
+ * app does not understand that they were fully recovered, every single day.
  */
-export function blockReadiness(block, recovery) {
+export function blockReadiness(block, recovery, lastDoneByLabel = {}, now = Date.now()) {
   const groups = new Set()
   const fromLabel = classifyMuscle(block.label)
-  if (fromLabel) groups.add(fromLabel)
+  if (fromLabel && fromLabel !== 'full') groups.add(fromLabel)
   for (const m of block.muscles ?? []) {
     const g = classifyMuscle(m)
-    if (g) groups.add(g)
+    if (g && g !== 'full') groups.add(g)
   }
-  if (!groups.size) return { pct: 100, group: null }
+  // A full-body day is held back by whichever group is furthest from ready.
+  if (fromLabel === 'full') for (const g of Object.keys(RECOVERY_H)) groups.add(g)
 
-  let worst = { pct: 101, group: null }
-  for (const g of groups) {
-    const pct = recovery[g]?.pct ?? 100
-    if (pct < worst.pct) worst = { pct, group: g }
+  if (groups.size) {
+    let worst = { pct: 101, group: null }
+    for (const g of groups) {
+      const pct = recovery[g]?.pct ?? 100
+      if (pct < worst.pct) worst = { pct, group: g, basis: 'muscle' }
+    }
+    return worst
   }
-  return worst
+
+  const last = lastDoneByLabel[block.label]
+  if (!last) return { pct: 100, group: null, basis: 'never' }
+  const hours = (now - new Date(last).getTime()) / 3_600_000
+  return {
+    pct: Math.min(100, Math.round((hours / UNKNOWN_H) * 100)),
+    group: null,
+    basis: 'block',
+    hours: Math.round(hours),
+  }
 }

@@ -102,7 +102,7 @@ export default function Training({ onMenuOpen }) {
   // equally rested blocks.
   const recovery = muscleRecovery(completions, Date.now(), soreness)
   const ranked = trainable
-    .map(b => ({ block: b, ...blockReadiness(b, recovery) }))
+    .map(b => ({ block: b, ...blockReadiness(b, recovery, lastDone) }))
     .sort((a, b) =>
       b.pct - a.pct ||
       (lastDone[a.block.label] ?? '').localeCompare(lastDone[b.block.label] ?? ''))
@@ -119,8 +119,11 @@ export default function Training({ onMenuOpen }) {
   const selectedBlock = blocks ? (blocks.find(b => b.id === selectedId) ?? blocks[0]) : null
   // Where the block on screen stands, so the page can justify its suggestion —
   // and say so plainly when you have picked something that has not rested.
-  const selRec = selectedBlock ? blockReadiness(selectedBlock, recovery) : null
+  const selRec = selectedBlock ? blockReadiness(selectedBlock, recovery, lastDone) : null
   const selHours = selRec?.group ? recovery[selRec.group]?.hours : null
+
+  // lastDone keys off the label, and blockReadiness needs it for splits whose
+  // muscle groups it cannot name.
   // Every exercise in the block logged today. Until then the finish button is
   // an outline: it is a claim about work done, and it should not look like the
   // loudest thing on a screen where the work has not been done yet.
@@ -284,7 +287,7 @@ export default function Training({ onMenuOpen }) {
           {/* One line of reasoning. The muscle percentages have existed on the
               Today card for a while without ever being connected to anything;
               this is the decision they were always describing. */}
-          {selRec?.group && !selectedBlock.isRest && (
+          {selRec && selRec.basis !== 'never' && !selectedBlock.isRest && (
             <div className={[
               styles.recoveryNote,
               selRec.pct >= 80 ? styles.recoveryReady : styles.recoveryWait,
@@ -292,11 +295,16 @@ export default function Training({ onMenuOpen }) {
               <span className={styles.recoveryDot} />
               {selRec.pct >= 80
                 ? 'Възстановена и готова'
-                : recovery[selRec.group]?.damped && (selHours ?? 0) >= RECOVERY_H[selRec.group]
-                  /* The clock says rested, the check-in says otherwise. Saying
-                     which of the two is talking matters more than the number. */
-                  ? `Часовете са изкарани, но си отчел крепатура · ${selRec.pct}%`
-                  : `Още ${Math.max(1, Math.round(RECOVERY_H[selRec.group] - (selHours ?? 0)))} ч до пълно възстановяване · ${selRec.pct}%`}
+                : selRec.basis === 'block'
+                  /* No muscle group was recognised in the label, so the claim is
+                     narrowed to what is actually known: when this block itself
+                     was last trained. */
+                  ? `Тренира я преди ${selRec.hours} ч · ${selRec.pct}%`
+                  : recovery[selRec.group]?.damped && (selHours ?? 0) >= RECOVERY_H[selRec.group]
+                    /* The clock says rested, the check-in says otherwise. Saying
+                       which of the two is talking matters more than the number. */
+                    ? `Часовете са изкарани, но си отчел крепатура · ${selRec.pct}%`
+                    : `Още ${Math.max(1, Math.round(RECOVERY_H[selRec.group] - (selHours ?? 0)))} ч до пълно възстановяване · ${selRec.pct}%`}
             </div>
           )}
 
