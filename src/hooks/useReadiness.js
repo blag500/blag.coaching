@@ -9,9 +9,35 @@ function dateStr(offset = 0) {
   return d.toISOString().slice(0, 10)
 }
 
+// How far back the personal baseline looks, and how many check-ins it needs
+// before it is trusted. Short enough to follow a training block rather than
+// average a whole season, long enough not to swing on two bad nights.
+const BASELINE_DAYS = 14
+const BASELINE_MIN  = 5
+
 const RECOVERY_H   = { upper: 48, lower: 72, pull: 48 }
 const GROUP_LABELS = { upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ПУЛ' }
 const GROUP_COLORS = { upper: 'var(--accent)', lower: '#66BB6A', pull: '#42A5F5' }
+
+/**
+ * Today's check-in as a position within this person's own recent range.
+ *
+ * An absolute scale says a 3-out-of-5 night is mediocre for everybody, which is
+ * not true of anybody: someone who always sleeps badly would sit at 40 forever
+ * and learn to ignore the number, while someone who normally feels excellent
+ * would never see the one bad day that matters. Measured against their own
+ * spread, 50 means "your usual", 70 means a clearly better day than usual, 30 a
+ * clearly worse one — and that is the same statement for both people.
+ */
+function relativeToBaseline(todayRaw, history) {
+  if (todayRaw === null || history.length < BASELINE_MIN) return null
+  const mean = history.reduce((s, v) => s + v, 0) / history.length
+  const variance = history.reduce((s, v) => s + (v - mean) ** 2, 0) / history.length
+  // A floor on the spread: someone who answers identically every day would
+  // otherwise divide by nothing and swing to the extremes on a single point.
+  const spread = Math.max(Math.sqrt(variance), 6)
+  return Math.max(0, Math.min(100, Math.round(50 + 20 * (todayRaw - mean) / spread)))
+}
 
 function classifyMuscle(label = '') {
   const l = label.toLowerCase()
@@ -31,7 +57,7 @@ export function useReadiness(client = null) {
 
   const [state, setState] = useState({
     score: null, components: [], muscleGroups: [],
-    provisional: true, covered: 0, loading: true,
+    provisional: true, covered: 0, personalised: false, checkins: 0, loading: true,
   })
 
   useEffect(() => {
@@ -41,8 +67,10 @@ export function useReadiness(client = null) {
     const weekAgo   = dateStr(6)
 
     Promise.all([
-      supabase.from('sleep_logs').select('quality,energy,stress,soreness,mood')
-        .eq('user_id', uid).eq('date', today).maybeSingle(),
+      // Today's check-in plus the fortnight behind it, in one query — the tail
+      // is what today gets compared against.
+      supabase.from('sleep_logs').select('date,quality,energy,stress,soreness,mood')
+        .eq('user_id', uid).gte('date', dateStr(BASELINE_DAYS)).order('date', { ascending: false }),
       supabase.from('food_logs').select('kcal,protein')
         .eq('user_id', uid).eq('date', yesterday),
       // Yesterday, like nutrition and hydration. Measured on today, habits read
@@ -59,7 +87,8 @@ export function useReadiness(client = null) {
           .eq('user_id', uid).gte('completed_date', weekAgo),
       ]),
     ]).then(([sleepRes, foodRes, habitsRes, waterRes, [exRes, woRes]]) => {
-      const sleepLog = sleepRes.data
+      const sleepRows = sleepRes.data || []
+      const sleepLog  = sleepRows.find(r => r.date === today) ?? null
       const foods    = foodRes.data   || []
       const habits   = habitsRes.data || []
       const water    = waterRes.data?.glasses ?? 0
@@ -98,7 +127,17 @@ export function useReadiness(client = null) {
         })
 
       // ── Recovery (35%) ─────────────────────────────────────────
-      const recoveryScore = calcReadiness(sleepLog) // null if not logged
+      const rawToday = calcReadiness(sleepLog)      // null if not logged
+      const history  = sleepRows
+        .filter(r => r.date !== today)
+        .map(calcReadiness)
+        .filter(v => v !== null)
+
+      const relative      = relativeToBaseline(rawToday, history)
+      const personalised  = relative !== null
+      // Until there is enough history the absolute reading stands in, and the
+      // widget says which of the two it is rather than quietly switching.
+      const recoveryScore = personalised ? relative : rawToday
 
       // ── Nutrition (25%) — yesterday's fueling vs targets ───────
       const kcalTarget    = calTgt  ?? 0
@@ -148,7 +187,11 @@ export function useReadiness(client = null) {
       const provisional = recoveryScore === null
       const covered     = available.length
 
-      setState({ score, components, muscleGroups, provisional, covered, loading: false })
+      setState({
+        score, components, muscleGroups, provisional, covered,
+        personalised, checkins: history.length + (rawToday !== null ? 1 : 0),
+        loading: false,
+      })
     })
   }, [uid, calTgt, protTgt])
 

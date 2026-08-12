@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
   const SLOT_KEY: Record<string, string> = {
     weight: 'weight_email', habits: 'habits_email', supplements: 'supplements_email',
     water: 'water_email', food: 'food_email', training: 'training_email',
+    checkin: 'checkin_email',
   }
   function isEnabled(clientId: string, slotName: string) {
     const rs = settingsMap.get(clientId) as Record<string, unknown> | undefined
@@ -167,8 +168,39 @@ Deno.serve(async (req) => {
     }), { headers: { 'Content-Type': 'application/json', ...CORS } })
   }
 
+  // ── checkin (07:00) ───────────────────────────────────────────────────────
+  //    First of the day, and the one the rest depends on. Readiness is measured
+  //    against the person's own fortnight, so a missed morning is not just a
+  //    blank row — it is a hole in the baseline every later day is judged by.
+  if (slot === 'checkin') {
+    const { data: logged } = await supabase
+      .from('sleep_logs')
+      .select('user_id')
+      .eq('date', today)
+
+    const done = new Set(logged?.map(r => r.user_id) ?? [])
+    console.log(`checkin: today=${today} logged=${done.size}/${clients.length}`)
+
+    for (const c of clients) {
+      if (!isEnabled(c.id, slot) || done.has(c.id) || !c.email) continue
+      await sendPush(c.id, 'Как се събуди?', '30 секунди — сън, енергия, стрес, крепатура.', 'checkin')
+      const ok = await sendEmail(
+        c.email,
+        '🌅 Чек-ин за деня',
+        emailHtml(
+          '🌅',
+          'Как се събуди?',
+          'Тридесет секунди сутрин: сън, енергия, стрес и крепатура. Готовността ти се смята спрямо твоята собствена норма, така че всеки попълнен ден прави следващия по-точен.',
+          c.name ?? '',
+        ),
+        resendKey, fromEmail,
+      )
+      if (ok) sent++
+    }
+  }
+
   // ── weight (07:30) ────────────────────────────────────────────────────────
-  if (slot === 'weight') {
+  else if (slot === 'weight') {
     const { data: logged } = await supabase
       .from('weight_logs')
       .select('user_id')

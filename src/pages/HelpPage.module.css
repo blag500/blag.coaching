@@ -4,7 +4,7 @@
   min-height: 100vh;
   background: #0C0A06;
   color: #F2E8CF;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
 }
 
 /* ── Header ─────────────────────────────────────────────────────────────────── */
@@ -47,7 +47,7 @@
 }
 
 .logoText {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 1.1rem;
   color: var(--accent);
   letter-spacing: 0.08em;
@@ -72,7 +72,7 @@
   background: none;
   border: none;
   color: rgba(242, 232, 207, 0.45);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 6px 10px;
@@ -90,7 +90,7 @@
   align-items: center;
   background: var(--accent);
   color: #0C0A06;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.82rem;
   letter-spacing: 0.06em;
   padding: 8px 14px;
@@ -117,7 +117,7 @@
 }
 
 .kbHeroTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(2.2rem, 7vw, 4rem);
   letter-spacing: 0.06em;
   color: var(--accent);
@@ -130,7 +130,7 @@
   color: rgba(242, 232, 207, 0.35);
   letter-spacing: 0.12em;
   margin: 0 0 28px;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
 }
 
 .searchWrap {
@@ -156,7 +156,7 @@
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: var(--r-md);
   color: #F2E8CF;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 0.9rem;
   outline: none;
   box-sizing: border-box;
@@ -201,7 +201,7 @@
 }
 
 .sectionLabel {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.75rem;
   letter-spacing: 0.18em;
   color: rgba(var(--accent-rgb), 0.55);
@@ -238,7 +238,7 @@
 }
 
 .popularTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.95rem;
   letter-spacing: 0.04em;
   color: #F2E8CF;
@@ -248,7 +248,7 @@
 .popularCat {
   font-size: 0.72rem;
   letter-spacing: 0.06em;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
 }
 
 /* ── Category grid ──────────────────────────────────────────────────────────── */
@@ -295,7 +295,7 @@
 }
 
 .catTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 1.05rem;
   letter-spacing: 0.06em;
   line-height: 1;
@@ -308,7 +308,7 @@
 }
 
 .catCount {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 0.72rem;
   color: rgba(242, 232, 207, 0.25);
   flex-shrink: 0;
@@ -332,7 +332,7 @@
 }
 
 .contactTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 1.2rem;
   letter-spacing: 0.06em;
   color: var(--accent);
@@ -394,7 +394,7 @@
   border: none;
   background: none;
   color: rgba(242, 232, 207, 0.45);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 11px;
   cursor: pointer;
   transition: background 150ms, color 150ms;
@@ -437,7 +437,7 @@
 .pwaUrl {
   font-size: 9px;
   color: rgba(242, 232, 207, 0.4);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
 }
 
 .pwaScreen {
@@ -454,7 +454,7 @@
 .pwaCounter {
   font-size: 9px;
   color: rgba(var(--accent-rgb), 0.45);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   letter-spacing: 0.06em;
 }
 
@@ -464,7 +464,7 @@
 }
 
 .pwaMain {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 11px;
   color: #F2E8CF;
   line-height: 1.45;
@@ -472,7 +472,7 @@
 }
 
 .pwaSub {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 10px;
   color: rgba(242, 232, 207, 0.4);
   line-height: 1.35;
@@ -552,11 +552,11 @@
 .resultCat {
   font-size: 0.68rem;
   letter-spacing: 0.1em;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
 }
 
 .resultTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.95rem;
   letter-spacing: 0.04em;
   color: #F2E8CF;
@@ -579,7 +579,7 @@
 }
 
 .catHeaderTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 2rem;
   letter-spacing: 0.06em;
   margin: 0 0 4px;
@@ -620,7 +620,7 @@
 
 .articleRowTitle {
   flex: 1;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 1rem;
   letter-spacing: 0.04em;
   color: #F2E8CF;
@@ -645,7 +645,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   padding: 4px 10px;
@@ -654,7 +654,7 @@
 }
 
 .articleDetailTitle {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.5rem, 5vw, 2.4rem);
   letter-spacing: 0.04em;
   color: #F2E8CF;
@@ -671,7 +671,7 @@
 }
 
 .articleH3 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.85rem;
   letter-spacing: 0.16em;
   color: rgba(var(--accent-rgb), 0.7);
@@ -716,7 +716,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.78rem;
   color: var(--accent);
   margin-top: 2px;
@@ -735,7 +735,7 @@
   background: none;
   border: none;
   color: rgba(var(--accent-rgb), 0.65);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0;
@@ -750,7 +750,7 @@
 }
 
 .breadCurrent {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 0.75rem;
   color: rgba(242, 232, 207, 0.45);
 }
@@ -763,7 +763,7 @@
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: var(--r-sm);
   color: rgba(var(--accent-rgb), 0.7);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-body);
   font-size: 0.78rem;
   padding: 9px 14px;
   cursor: pointer;
@@ -794,7 +794,7 @@
 }
 
 .footerBrand {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.95rem;
   letter-spacing: 0.08em;
   color: var(--accent);

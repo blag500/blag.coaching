@@ -26,6 +26,7 @@ function scheduleNotifications(settings) {
 }
 
 export const EMAIL_REMINDERS = [
+  { key: 'checkin_email',     emoji: '🌅', label: 'Чек-ин',     time: '07:00' },
   { key: 'weight_email',      emoji: '⚖️', label: 'Тегло',      time: '07:30' },
   { key: 'habits_email',      emoji: '✅', label: 'Навици',     time: '08:00' },
   { key: 'supplements_email', emoji: '💊', label: 'Суплементи', time: '08:30' },

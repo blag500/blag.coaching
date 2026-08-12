@@ -74,7 +74,8 @@ function HoursLabel(hours) {
 }
 
 export default function ReadinessWidget({ onNavigate, client = null }) {
-  const { score, components, muscleGroups, provisional, covered, loading } = useReadiness(client)
+  const { score, components, muscleGroups, provisional, covered,
+          personalised, checkins, loading } = useReadiness(client)
   const { t } = useSettings()
 
   if (loading) return (
@@ -119,11 +120,16 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
         <div className={styles.left}>
           <span className={styles.cardLabel}>{t('readiness.title')}</span>
           <ReadinessRing score={score} label={scoreLabel(score)} provisional={provisional} />
-          {covered < 5 && (
-            <span className={styles.coverage}>
-              {t('readiness.coverage').replace('{n}', covered)}
-            </span>
-          )}
+          {/* What the number is measured against. A score that means "compared
+              with your own normal" is a different claim from one measured on a
+              fixed table, and the card should not hide which it is. */}
+          <span className={styles.coverage}>
+            {personalised
+              ? t('readiness.personal')
+              : checkins > 0
+                ? t('readiness.building').replace('{n}', Math.min(checkins, 5))
+                : t('readiness.coverage').replace('{n}', covered)}
+          </span>
         </div>
         <div className={styles.bars}>
           {components.map(c => (
