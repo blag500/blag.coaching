@@ -233,7 +233,15 @@ const COACH_SECTIONS = [
   },
 ]
 
-export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoach, supplementPending = 0 }) {
+/** Matches the width in the stylesheet — needed to turn a drag into progress. */
+function drawerWidth() {
+  return Math.min(window.innerWidth * 0.72, 280)
+}
+
+export default function NavDrawer({
+  open, onClose, activeTab, onTabChange, isCoach, supplementPending = 0,
+  dragPx = null,
+}) {
   const { profile } = useAuth()
   const { t, lang } = useSettings()
   const sections = isCoach ? COACH_SECTIONS : CLIENT_SECTIONS
@@ -243,6 +251,19 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
     onClose()
   }
 
+  // While a finger is pulling the drawer out, its position is dictated by the
+  // drag and the transition is off — a transition here would fight the finger.
+  // On release the inline styles fall away and the stylesheet eases it home.
+  const dragging = dragPx !== null
+  const progress = dragging ? Math.max(0, Math.min(dragPx / drawerWidth(), 1)) : null
+
+  const drawerStyle = dragging
+    ? { transform: `translateX(${-drawerWidth() + progress * drawerWidth()}px)`, transition: 'none' }
+    : undefined
+  const backdropStyle = dragging
+    ? { background: `rgba(0, 0, 0, ${0.65 * progress})`, pointerEvents: 'none', transition: 'none' }
+    : undefined
+
   // Build flat list for animation index
   let globalIdx = 0
 
@@ -250,11 +271,13 @@ export default function NavDrawer({ open, onClose, activeTab, onTabChange, isCoa
     <>
       <div
         className={`${styles.backdrop} ${open ? styles.backdropVisible : ''}`}
+        style={backdropStyle}
         onClick={onClose}
         aria-hidden="true"
       />
       <div
         className={`${styles.drawer} ${open ? styles.drawerOpen : ''}`}
+        style={drawerStyle}
         role="navigation"
         aria-label="Меню"
       >

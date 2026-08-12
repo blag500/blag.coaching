@@ -1,22 +1,24 @@
 .host {
   position: relative;
-  /* The pages move sideways; nothing about that should make the document
-     scrollable across. */
-  overflow-x: clip;
 }
 
-/* Stays in normal flow so the document keeps its height and its scroll.
-   The transform and will-change are applied inline, and only while the page is
-   actually moving — see the note in the component. */
+/* Pinned to the viewport, not the document: the page underneath may be scrolled
+   a long way down, and the arriving page has to come in at the edge of the
+   screen. Being fixed also makes this pane the containing block for its own
+   fixed children, so the chrome inside the incoming page lands correctly.
 
-/* The incoming page is pinned to the viewport rather than the document: the
-   page underneath may be scrolled a long way down, and the neighbour has to
-   arrive at the edge of the screen, not at the top of the document. */
+   It sits below the bottom navigation, which stays put throughout — the tab bar
+   is the one thing that should not move while you are moving between tabs. */
 .incoming {
   position: fixed;
   inset: 0;
   overflow: hidden;
   background: var(--bg);
+  z-index: 95;
   will-change: transform;
-  z-index: 5;
+  /* A shadow on both leading edges, so whichever way it arrives from, the page
+     reads as sitting above the one it is covering. */
+  box-shadow:
+     18px 0 40px -12px rgba(0, 0, 0, 0.75),
+    -18px 0 40px -12px rgba(0, 0, 0, 0.75);
 }

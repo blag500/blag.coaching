@@ -51,6 +51,9 @@ function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showSupplementBanner, setShowSupplementBanner] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
+  // How far the side navigation has been pulled out by a finger, or null when
+  // no drag is in progress and the stylesheet is in charge of its position.
+  const [drawerDrag, setDrawerDrag] = useState(null)
   const [landingSeen, setLandingSeen] = useState(false)
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
     return new URLSearchParams(window.location.search).get('payment') === 'success'
@@ -246,6 +249,7 @@ function AppShell() {
       )}
       <NavDrawer
         open={drawerOpen}
+        dragPx={drawerDrag}
         onClose={() => setDrawerOpen(false)}
         activeTab={activeTab}
         onTabChange={navigate}
@@ -261,6 +265,8 @@ function AppShell() {
           active={activeTab}
           onChange={navigate}
           enabled={!drawerOpen && NAV_ORDER.includes(activeTab)}
+          onEdgePull={setDrawerDrag}
+          onEdgeEnd={shouldOpen => { setDrawerDrag(null); setDrawerOpen(shouldOpen) }}
           render={tab => (
             <div key={tab} className={styles.page} data-dir={tab === activeTab ? slideDir : 'none'}>
               {pages[tab] ?? null}
