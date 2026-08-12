@@ -270,3 +270,23 @@
   border-color: var(--accent);
   color: var(--bg);
 }
+
+
+.reviewName {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: var(--text);
+  text-align: center;
+  margin: 6px 0 2px;
+}
+
+/* Said plainly, because the correction is shared: it fixes the barcode for
+   everyone who scans it next, not just for this log entry. */
+.reviewNote {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 8px;
+  line-height: 1.4;
+}

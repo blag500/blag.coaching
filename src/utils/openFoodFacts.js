@@ -18,6 +18,41 @@ function normalizeProduct(p) {
   }
 }
 
+/**
+ * Whether a product's numbers disagree with themselves.
+ *
+ * Protein and carbs carry 4 kcal a gram, fat 9. A label that says 250 kcal
+ * while its macros add up to 90 has been entered wrong by somebody, and the
+ * arithmetic catches it without anyone having to notice. This is the only
+ * check worth making automatically: it needs no reference data, just the row
+ * against itself.
+ */
+export function looksInconsistent(per100g) {
+  const { kcal = 0, protein = 0, carbs = 0, fat = 0 } = per100g ?? {}
+  if (!kcal && !protein && !carbs && !fat) return true   // nothing at all
+  if (!kcal) return true                                  // macros but no energy
+  const fromMacros = protein * 4 + carbs * 4 + fat * 9
+  if (!fromMacros) return true                            // energy but no macros
+  const off = Math.abs(kcal - fromMacros) / Math.max(kcal, fromMacros)
+  return off > 0.25
+}
+
+/** Overwrite a barcode's macros for everyone, and note that it was corrected. */
+export async function correctBarcode(code, { name, per100g, typicalGrams }) {
+  const { data: auth } = await supabase.auth.getUser()
+  return supabase.from('barcode_products').upsert({
+    barcode:       code,
+    name,
+    kcal:          Math.round(per100g.kcal || 0),
+    protein:       per100g.protein || 0,
+    carbs:         per100g.carbs   || 0,
+    fat:           per100g.fat     || 0,
+    typical_grams: typicalGrams || 100,
+    corrected_at:  new Date().toISOString(),
+    corrected_by:  auth?.user?.id ?? null,
+  }, { onConflict: 'barcode' })
+}
+
 export async function lookupBarcode(code) {
   // Check local cache first — instant result for previously scanned barcodes
   const { data: cached } = await supabase

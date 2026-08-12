@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { lookupBarcode } from '../../utils/openFoodFacts'
+import { lookupBarcode, looksInconsistent, correctBarcode } from '../../utils/openFoodFacts'
 import { supabase } from '../../lib/supabase'
 import styles from './BarcodeScanner.module.css'
 
@@ -15,7 +15,9 @@ export default function BarcodeScanner({ onFound, onClose }) {
   const streamRef = useRef(null)
   const rafRef    = useRef(null)
   const readerRef = useRef(null)
-  const [status, setStatus] = useState('opening') // opening | scanning | found | manual | unknown
+  const [status, setStatus] = useState('opening') // opening | scanning | found | manual | unknown | review
+  // A product whose own numbers do not add up, held back for a look.
+  const [review, setReview] = useState(null)
   const [manualCode, setManualCode] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   // Details typed in for a barcode nobody has catalogued yet.
@@ -67,7 +69,19 @@ export default function BarcodeScanner({ onFound, onClose }) {
       stopStream()
       setStatus('found')
       lookupBarcode(code)
-        .then(food => { if (!cancelled) onFound(food) })
+        .then(food => {
+          if (cancelled) return
+          // The fast path stays fast. A scan only stops for a look when the
+          // product's own arithmetic is wrong — which is exactly the case where
+          // adding it silently would put a bad number in the day.
+          if (looksInconsistent(food.per100g)) {
+            setManualCode(code)
+            setReview(food)
+            setStatus('review')
+            return
+          }
+          onFound(food)
+        })
         .catch(() => {
           if (cancelled) return
           setManualCode(code)
@@ -140,10 +154,34 @@ export default function BarcodeScanner({ onFound, onClose }) {
     if (!code) return
     setStatus('found')
     try {
-      onFound(await lookupBarcode(code))
+      const food = await lookupBarcode(code)
+      if (looksInconsistent(food.per100g)) { setReview(food); setStatus('review'); return }
+      onFound(food)
     } catch {
       setStatus('unknown')
     }
+  }
+
+  /** Accept the reviewed product, saving the numbers if they were changed. */
+  async function acceptReview(e) {
+    e.preventDefault()
+    if (saving) return
+    const per100g = {
+      kcal:    Math.round(+review.per100g.kcal    || 0),
+      protein: +review.per100g.protein || 0,
+      carbs:   +review.per100g.carbs   || 0,
+      fat:     +review.per100g.fat     || 0,
+    }
+    setSaving(true)
+    // Written back to the shared row, so the next person to scan this gets the
+    // corrected figures rather than repeating the same discovery.
+    await correctBarcode(manualCode.trim(), {
+      name: review.name,
+      per100g,
+      typicalGrams: parseInt(review.servingSize) || 100,
+    })
+    setSaving(false)
+    onFound({ ...review, per100g })
   }
 
   /** Catalogue an unknown barcode. Written to the shared table, so the next
@@ -230,6 +268,47 @@ export default function BarcodeScanner({ onFound, onClose }) {
                 autoFocus
               />
               <button type="submit" className={styles.manualBtn}>Търси</button>
+            </form>
+          </div>
+        )}
+
+        {status === 'review' && review && (
+          <div className={styles.unknownWrap}>
+            <p className={styles.unknownLead}>
+              Числата на този продукт не се връзват — калориите не отговарят на
+              макросите. Провери ги по етикета.
+            </p>
+            <p className={styles.reviewName}>{review.name}</p>
+
+            <form onSubmit={acceptReview} className={styles.unknownForm}>
+              <p className={styles.unknownHint}>Стойности на 100 г:</p>
+              <div className={styles.unknownGrid}>
+                {[
+                  { k: 'kcal',    label: 'ККАЛ', color: 'var(--accent)' },
+                  { k: 'protein', label: 'П',    color: 'var(--macro-protein)' },
+                  { k: 'carbs',   label: 'В',    color: 'var(--macro-carbs)' },
+                  { k: 'fat',     label: 'М',    color: 'var(--macro-fat)' },
+                ].map(({ k, label, color }) => (
+                  <label className={styles.unknownCell} key={k}>
+                    <span className={styles.unknownTag} style={{ color }}>{label}</span>
+                    <input
+                      type="number" min="0" step="0.1" inputMode="decimal"
+                      value={review.per100g[k] ?? ''}
+                      onChange={e => setReview(r => ({
+                        ...r, per100g: { ...r.per100g, [k]: e.target.value },
+                      }))}
+                      aria-label={label}
+                    />
+                  </label>
+                ))}
+              </div>
+
+              <button type="submit" className={styles.manualBtn} disabled={saving}>
+                {saving ? 'Записва…' : 'Добави'}
+              </button>
+              <p className={styles.reviewNote}>
+                Поправката се запазва за баркода — следващия път ще е вярна.
+              </p>
             </form>
           </div>
         )}
