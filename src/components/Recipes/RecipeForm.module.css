@@ -69,7 +69,7 @@
 .nameInput {
   width: 100%;
   padding: 12px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
@@ -90,8 +90,9 @@
 
 /* Section */
 .section {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 14px;
   display: flex;
@@ -115,7 +116,7 @@
 .addIngBtn {
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 12px;
@@ -129,7 +130,7 @@
 .picker {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -145,9 +146,10 @@
 
 .pickerTabs {
   display: flex;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   padding: 2px;
   gap: 2px;
   flex: 1;
@@ -157,7 +159,7 @@
   flex: 1;
   padding: 6px 4px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   background: none;
   font-family: var(--font-heading);
   font-size: 11px;
@@ -195,9 +197,9 @@
 
 .manualInput {
   padding: 8px 8px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -220,9 +222,9 @@
 .pickerInput {
   flex: 1;
   padding: 9px 10px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -242,7 +244,7 @@
   padding: 9px 12px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-size: 14px;
   cursor: pointer;
@@ -256,9 +258,10 @@
 
 .pickerBarcodeBtn {
   padding: 9px 10px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   font-size: 14px;
   cursor: pointer;
   flex-shrink: 0;
@@ -285,9 +288,10 @@
 
 .pickerResult {
   padding: 10px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -315,7 +319,7 @@
   padding: 9px 10px;
   background: var(--surface-1);
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -345,9 +349,9 @@
 .gramInput {
   width: 80px;
   padding: 8px 10px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 16px;
   text-align: center;
@@ -375,7 +379,7 @@
   padding: 9px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 13px;
@@ -387,7 +391,7 @@
   padding: 9px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 14px;
@@ -434,7 +438,7 @@
   padding: 6px 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-size: 14px;
   text-align: center;
@@ -494,7 +498,7 @@
   padding: 8px 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 16px;
   text-align: center;
@@ -530,7 +534,7 @@
   height: 24px;
   background: var(--border);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   position: relative;
   cursor: pointer;
   transition: background 0.2s;

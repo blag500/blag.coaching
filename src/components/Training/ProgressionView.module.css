@@ -21,9 +21,10 @@
 
 .closeBtn {
   padding: 7px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-heading);
   font-size: 10px;
@@ -56,9 +57,10 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
@@ -116,9 +118,10 @@
   align-items: center;
   gap: 10px;
   padding: 13px 14px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   cursor: pointer;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
@@ -151,7 +154,7 @@
 .exBtnCount {
   padding: 2px 7px;
   background: var(--accent-dim);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-size: 10px;
 }
@@ -180,7 +183,7 @@
 
 .rangeBtn {
   padding: 6px 13px;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   border: 1px solid var(--border);
   background: none;
   color: var(--muted);
@@ -200,9 +203,10 @@
 
 /* Chart */
 .chartWrap {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 12px 8px 8px;
 }
 
@@ -216,9 +220,10 @@
 /* Stats row */
 .statsRow {
   display: flex;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -254,7 +259,7 @@
 .tableWrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   border: 1px solid var(--border);
 }
 
@@ -322,7 +327,7 @@
 
 .editRowBtn, .deleteRowBtn, .saveRowBtn, .cancelRowBtn {
   padding: 3px 7px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   font-family: var(--font-body);
   font-size: 12px;
   cursor: pointer;
@@ -372,7 +377,7 @@
   padding: 4px 6px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 11px;

@@ -7,7 +7,7 @@
   align-items: center;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
-  border-radius: 24px;
+  border-radius: var(--r-xl);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(var(--accent-rgb),0.08);
   z-index: 50;
   overflow: hidden;
@@ -67,7 +67,7 @@
   height: 18px;
   background: #ef4444;
   color: #fff;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   font-size: 10px;
   font-family: var(--font-body);
   font-weight: 700;
@@ -107,7 +107,7 @@
   height: 16px;
   background: #ef4444;
   color: #fff;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font-size: 9px;
   font-family: var(--font-body);
   font-weight: 700;

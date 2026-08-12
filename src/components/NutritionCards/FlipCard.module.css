@@ -50,8 +50,9 @@
 }
 
 .front {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-left: 3px solid var(--card-color, var(--accent));
   box-shadow: var(--shadow-card);
 }

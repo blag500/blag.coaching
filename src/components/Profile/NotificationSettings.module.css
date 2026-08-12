@@ -1,7 +1,8 @@
 .card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   padding: 20px;
   margin-bottom: 16px;
 }
@@ -29,7 +30,7 @@
 .toggle {
   width: 48px;
   height: 28px;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   background: var(--surface-2);
   border: 1px solid var(--border);
   position: relative;
@@ -80,7 +81,7 @@
   padding: 8px 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -184,7 +185,7 @@
 
 .skeletonRow {
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
   animation: shimmer 1.4s ease-in-out infinite;
 }

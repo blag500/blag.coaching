@@ -51,9 +51,10 @@
 }
 
 .chip {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 10px 6px 8px;
   display: flex;
   flex-direction: column;
@@ -101,7 +102,7 @@
 .monthBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 20px;
   width: 36px;
@@ -143,9 +144,10 @@
 }
 
 .cell {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   min-height: 52px;
   display: flex;
   flex-direction: column;
@@ -188,9 +190,10 @@
 
 /* ── Legend ── */
 .legend {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;

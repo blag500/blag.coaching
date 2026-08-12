@@ -33,7 +33,7 @@
   background: var(--accent);
   color: #0C0A06;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.1em;
@@ -105,7 +105,7 @@
   justify-content: center;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   cursor: pointer;
   padding: 0;
@@ -134,7 +134,7 @@
 .clearBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   font-size: 11px;
   padding: 4px 10px;
@@ -155,8 +155,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   gap: 8px;
   animation: itemIn 250ms var(--ease-out) both;
@@ -214,7 +215,7 @@
 .editBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   font-size: 14px;
   line-height: 1;
@@ -234,7 +235,7 @@
 .removeBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   font-size: 16px;
   line-height: 1;
@@ -285,9 +286,9 @@
 .editInput {
   width: 100%;
   padding: 8px 10px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -338,7 +339,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font-family: var(--font-body);
   font-size: 11px;
   cursor: pointer;
@@ -374,7 +375,7 @@
   padding: 9px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 13px;
@@ -385,7 +386,7 @@
   padding: 9px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 14px;
@@ -401,7 +402,7 @@
   padding: 0;
   flex-shrink: 0;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
@@ -410,7 +411,7 @@
   width: 40px;
   height: 40px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   display: block;
 }
 
@@ -418,7 +419,7 @@
 .cameraBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   width: 30px;
   height: 30px;
@@ -491,7 +492,7 @@
 .lightboxImg {
   max-width: 100%;
   max-height: 88vh;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   object-fit: contain;
   cursor: default;
   opacity: 1;

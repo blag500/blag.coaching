@@ -45,7 +45,7 @@
   padding: 14px 16px;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.18);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   text-align: center;
 }
 
@@ -70,7 +70,7 @@
   color: var(--muted);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 3px 10px;
 }
 
@@ -120,9 +120,10 @@
 /* Mode toggle */
 .toggle {
   display: flex;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 4px;
   gap: 4px;
 }
@@ -131,7 +132,7 @@
   flex: 1;
   padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: none;
   font-family: var(--font-heading);
   font-size: 13px;
@@ -168,9 +169,9 @@
 
 .input {
   padding: 13px 16px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -194,7 +195,7 @@
   text-align: center;
   padding: 8px 12px;
   background: rgba(255, 68, 85, 0.08);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   border: 1px solid rgba(255, 68, 85, 0.2);
 }
 
@@ -204,7 +205,7 @@
   text-align: center;
   padding: 8px 12px;
   background: rgba(var(--accent-rgb), 0.08);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
 }
 
@@ -214,7 +215,7 @@
   background: var(--accent-metal);
   color: #241B0C;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-family: var(--font-heading);
   font-size: 17px;
   letter-spacing: 0.12em;
@@ -260,9 +261,10 @@
   justify-content: center;
   gap: 10px;
   padding: 14px 16px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;

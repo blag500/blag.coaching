@@ -1,12 +1,10 @@
 .card {
   position: relative;
   overflow: hidden;
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -30,9 +28,6 @@
   pointer-events: none;
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .card { background: var(--surface-1); }
-}
 
 .card:active {
   border-color: rgba(var(--accent-rgb), 0.3);
@@ -95,13 +90,13 @@
   flex: 1;
   height: 4px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   overflow: hidden;
 }
 
 .barFill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   transition: width 0.5s ease;
 }
 
@@ -161,13 +156,13 @@
   flex: 1;
   height: 5px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   overflow: hidden;
 }
 
 .muscleFill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

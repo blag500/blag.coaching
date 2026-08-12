@@ -19,7 +19,7 @@
 .progressDot {
   width: 24px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: rgba(255,255,255,0.1);
   transition: background 300ms, width 300ms;
 }
@@ -86,9 +86,9 @@
 .input {
   width: 100%;
   padding: 14px 16px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -115,7 +115,7 @@
   padding: 16px 18px;
   background: var(--surface-1);
   border: 1.5px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
   transition: border-color 150ms, background 150ms;
@@ -154,7 +154,7 @@
 .toggleBtn {
   flex: 1;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   border: 1.5px solid var(--border);
   background: var(--surface-1);
   color: var(--muted);
@@ -198,7 +198,7 @@
   padding: 14px 16px;
   background: var(--surface-1);
   border: 1.5px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
   position: relative;
@@ -242,7 +242,7 @@
 .macroCard {
   background: var(--surface-1);
   border: 1.5px solid;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 14px 12px 10px;
   display: flex;
   flex-direction: column;
@@ -315,7 +315,7 @@
   padding: 14px 28px;
   background: var(--accent-metal);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: #241B0C;
   font-family: var(--font-heading);
   font-size: 15px;

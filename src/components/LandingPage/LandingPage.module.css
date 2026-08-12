@@ -130,7 +130,7 @@
   padding: 18px;
   background: var(--accent);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 17px;
@@ -180,7 +180,7 @@
   text-decoration: none;
   letter-spacing: 0.08em;
   border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 6px 16px;
   transition: opacity 120ms;
   -webkit-tap-highlight-color: transparent;

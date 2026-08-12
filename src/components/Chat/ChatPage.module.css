@@ -191,7 +191,7 @@
 }
 
 .bubble {
-  border-radius: 18px;
+  border-radius: var(--r-lg);
   padding: 10px 14px;
   max-width: 100%;
 }
@@ -206,8 +206,9 @@
 }
 
 .bubbleReceived {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-bottom-left-radius: 4px;
 }
 
@@ -234,7 +235,7 @@
 .photoMsg {
   max-width: 220px;
   max-height: 240px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   object-fit: cover;
   display: block;
   cursor: zoom-in;
@@ -269,7 +270,7 @@
   flex-shrink: 0;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--muted);
   cursor: pointer;
   display: flex;
@@ -292,9 +293,9 @@
   flex: 1;
   height: 42px;
   padding: 0 14px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 21px;
+  border-radius: var(--r-xl);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
@@ -351,7 +352,7 @@
 .lightboxImg {
   max-width: 92vw;
   max-height: 92vh;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   object-fit: contain;
 }
 

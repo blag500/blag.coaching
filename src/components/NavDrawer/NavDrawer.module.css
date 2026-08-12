@@ -57,7 +57,7 @@
   height: 32px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -186,7 +186,7 @@
   font-size: 13px;
   letter-spacing: 0.1em;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   text-align: left;
   width: 100%;
   position: relative;
@@ -239,7 +239,7 @@
 .badge {
   min-width: 18px;
   height: 18px;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   background: #ef5350;
   color: #fff;
   font-family: var(--font-body);

@@ -15,8 +15,9 @@
 }
 
 .sheet {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-bottom: none;
   border-radius: 24px 24px 0 0;
   padding: 16px 20px calc(env(safe-area-inset-bottom) + 100px);
@@ -81,7 +82,7 @@
   padding: 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-family: var(--font-heading);
   font-size: 15px;
   letter-spacing: 0.06em;
@@ -98,7 +99,7 @@
   padding: 14px;
   background: var(--accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-family: var(--font-heading);
   font-size: 15px;
   letter-spacing: 0.06em;

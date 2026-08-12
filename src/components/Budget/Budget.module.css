@@ -50,9 +50,10 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   padding: 5px 11px;
   cursor: pointer;
   font-family: var(--font-body);
@@ -80,8 +81,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  background: var(--panel-bg);
   color: var(--muted);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
@@ -111,8 +113,9 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  background: var(--panel-bg);
   color: var(--muted);
   font-size: 16px;
   cursor: pointer;
@@ -182,8 +185,9 @@
 
 /* ── Planned expenses (dashboard) ───────────────────────────── */
 .plannedWrap {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 12px;
@@ -294,8 +298,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 10px 14px;
   margin-bottom: 12px;
@@ -335,8 +340,9 @@
 .stats {
   display: flex;
   align-items: center;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 12px 8px;
   margin-bottom: 12px;
@@ -371,8 +377,9 @@
 
 /* ── Add form ────────────────────────────────────────────────── */
 .addForm {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 12px;
   margin-bottom: 12px;
@@ -416,7 +423,7 @@
   color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 9px 12px;
   outline: none;
   transition: border-color 0.15s;
@@ -427,8 +434,9 @@
 
 /* ── Spending chart ──────────────────────────────────────────── */
 .chartWrap {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 14px 14px 8px;
   margin-bottom: 12px;
@@ -447,8 +455,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 10px 14px;
   font-family: var(--font-body);
@@ -469,8 +478,9 @@
 
 /* ── Monthly calendar ────────────────────────────────────────── */
 .calendar {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 12px;
@@ -528,8 +538,9 @@
 .txnList { display: flex; flex-direction: column; gap: 12px; }
 
 .txnGroup {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -605,8 +616,9 @@
 
 /* ── Setup-specific ──────────────────────────────────────────── */
 .card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   padding: 16px;
   margin-bottom: 12px;
@@ -673,7 +685,7 @@
   color: var(--accent);
   background: none;
   border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 4px 10px;
   cursor: pointer;
   transition: background 0.15s;

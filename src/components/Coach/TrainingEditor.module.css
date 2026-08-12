@@ -7,9 +7,10 @@
 
 /* Block card */
 .blockCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   overflow: hidden;
   transition: border-color 0.2s;
 }
@@ -74,7 +75,7 @@
   padding: 7px 12px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font-family: var(--font-heading);
   font-size: 10px;
   letter-spacing: 0.12em;
@@ -97,7 +98,7 @@
   height: 28px;
   background: rgba(220, 60, 60, 0.08);
   border: 1px solid rgba(220, 60, 60, 0.18);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: rgba(220, 100, 100, 0.75);
   font-size: 18px;
   line-height: 1;
@@ -136,7 +137,7 @@
   padding: 10px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -176,7 +177,7 @@
   padding: 9px 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -197,7 +198,7 @@
   flex-shrink: 0;
   background: rgba(220, 60, 60, 0.08);
   border: 1px solid rgba(220, 60, 60, 0.18);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: rgba(220, 100, 100, 0.75);
   font-size: 18px;
   line-height: 1;
@@ -212,7 +213,7 @@
   padding: 10px 14px;
   background: transparent;
   border: 1px dashed rgba(var(--accent-rgb), 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-body);
   font-size: 13px;
@@ -229,7 +230,7 @@
   padding: 13px;
   background: transparent;
   border: 1px dashed rgba(var(--accent-rgb), 0.3);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -249,7 +250,7 @@
   background: var(--accent);
   color: var(--bg);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-family: var(--font-heading);
   font-size: 15px;
   letter-spacing: 0.12em;

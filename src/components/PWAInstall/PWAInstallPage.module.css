@@ -72,9 +72,10 @@
 }
 
 .safariNote {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   padding: 10px 14px;
   font-family: var(--font-body);
   font-size: 12px;
@@ -96,9 +97,10 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 16px;
 }
 
@@ -147,7 +149,7 @@
   padding: 16px;
   background: var(--accent);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 16px;
@@ -163,9 +165,10 @@
 
 /* Done state */
 .doneCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   padding: 28px 24px;
   display: flex;
   flex-direction: column;

@@ -1,8 +1,9 @@
 .wrap {
   margin-top: 28px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   padding: 16px;
 }
 
@@ -23,7 +24,7 @@
 .arrow {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   padding: 4px 10px;
   font-size: 12px;
@@ -69,7 +70,7 @@
 .cell {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -42,7 +42,7 @@
 .logoIcon {
   width: 30px;
   height: 30px;
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   flex-shrink: 0;
 }
 
@@ -64,7 +64,7 @@
 .langToggle {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   overflow: hidden;
 }
 
@@ -94,7 +94,7 @@
   font-size: 0.82rem;
   letter-spacing: 0.06em;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   text-decoration: none;
   white-space: nowrap;
   transition: opacity 0.15s;
@@ -154,7 +154,7 @@
   padding: 0 44px 0 48px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   color: #F2E8CF;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem;
@@ -223,7 +223,7 @@
   padding: 18px 16px 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
@@ -266,7 +266,7 @@
   padding: 16px 18px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   cursor: pointer;
   text-align: left;
   transition: background 0.15s, border-color 0.15s;
@@ -326,7 +326,7 @@
 .contactBox {
   background: rgba(var(--accent-rgb), 0.05);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 24px 20px;
   text-align: center;
 }
@@ -371,7 +371,7 @@
 .pwaDemo {
   background: rgba(var(--accent-rgb), 0.04);
   border: 1px solid rgba(var(--accent-rgb), 0.14);
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   padding: 20px 16px;
   margin: 4px 0 20px;
   display: flex;
@@ -384,13 +384,13 @@
   display: flex;
   gap: 6px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 4px;
 }
 
 .pwaTab {
   padding: 6px 14px;
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   border: none;
   background: none;
   color: rgba(242, 232, 207, 0.45);
@@ -409,7 +409,7 @@
   width: 156px;
   background: #0e0b07;
   border: 2px solid rgba(var(--accent-rgb), 0.22);
-  border-radius: 26px;
+  border-radius: var(--r-xl);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -427,7 +427,7 @@
 .pwaAddressBar {
   background: rgba(255, 255, 255, 0.05);
   margin: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   padding: 4px 8px;
   display: flex;
   align-items: center;
@@ -483,7 +483,7 @@
   width: 52px;
   height: 4px;
   background: rgba(var(--accent-rgb), 0.28);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   margin: 6px auto 10px;
 }
 
@@ -537,7 +537,7 @@
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   text-align: left;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
@@ -606,7 +606,7 @@
   padding: 16px 18px;
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   cursor: pointer;
   text-align: left;
   transition: background 0.12s, border-color 0.12s;
@@ -649,7 +649,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   align-self: flex-start;
 }
 
@@ -761,7 +761,7 @@
   align-self: flex-start;
   background: none;
   border: 1px solid rgba(var(--accent-rgb), 0.2);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: rgba(var(--accent-rgb), 0.7);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.78rem;
@@ -829,7 +829,7 @@
   .openAppBtn {
     font-size: 0.72rem;
     padding: 7px 11px;
-    border-radius: 7px;
+    border-radius: var(--r-sm);
   }
 
   .langBtn {

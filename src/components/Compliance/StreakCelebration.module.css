@@ -48,7 +48,7 @@
   padding: 40px 48px;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
-  border-radius: 24px;
+  border-radius: var(--r-xl);
   animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 

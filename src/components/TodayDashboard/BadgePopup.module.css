@@ -30,7 +30,7 @@
   gap: 12px;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.45);
-  border-radius: 18px;
+  border-radius: var(--r-lg);
   padding: 14px 20px 14px 16px;
   min-width: 220px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(var(--accent-rgb),0.08);

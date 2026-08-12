@@ -37,15 +37,16 @@
 .bubble {
   max-width: 82%;
   padding: 10px 13px;
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   font-family: var(--font-body);
   font-size: 13px;
   line-height: 1.55;
 }
 
 .botBubble {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-bottom-left-radius: 4px;
   color: var(--text);
 }
@@ -143,8 +144,9 @@
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   color: var(--text);
   font-family: var(--font-body);
@@ -192,8 +194,9 @@
 .nextBtn {
   flex: 1;
   padding: 11px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-radius: var(--radius);
   color: var(--text);
   font-family: var(--font-body);
@@ -233,10 +236,11 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   border-left: 3px solid var(--accent);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   transition: opacity 0.2s;
 }
 
@@ -276,7 +280,7 @@
   padding: 7px 12px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 12px;

@@ -20,9 +20,10 @@
 .backBtn {
   flex-shrink: 0;
   padding: 8px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 11px;
@@ -54,7 +55,7 @@
   height: 36px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -76,7 +77,7 @@
   height: 36px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   cursor: pointer;
   display: flex;
@@ -131,7 +132,7 @@
   padding: 9px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 13px;
@@ -144,7 +145,7 @@
   padding: 9px;
   background: #ef4444;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: #fff;
   font-family: var(--font-heading);
   font-size: 13px;
@@ -194,7 +195,7 @@
   padding: 6px 6px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 13px;
@@ -220,7 +221,7 @@
   height: 32px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 12px;
@@ -422,14 +423,14 @@
   flex: 1;
   height: 6px;
   background: var(--surface-2);
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   overflow: hidden;
 }
 
 .habitBar {
   height: 100%;
   background: var(--accent);
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   transition: width 0.3s ease;
 }
 
@@ -447,7 +448,7 @@
   flex-direction: column;
   gap: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -488,7 +489,7 @@
 .intakeSection {
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -594,9 +595,9 @@
 .habitEmojiInput {
   width: 36px;
   text-align: center;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-size: 16px;
   padding: 6px 4px;
@@ -605,9 +606,9 @@
 
 .habitLabelInput {
   flex: 1;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 12px;
@@ -642,7 +643,7 @@
   height: 32px;
   background: rgba(var(--accent-rgb), 0.12);
   border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--accent);
   font-size: 18px;
   line-height: 1;
@@ -677,7 +678,7 @@
   padding: 11px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -717,9 +718,10 @@
 .notesArea {
   width: 100%;
   padding: 14px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -779,7 +781,7 @@
   flex-shrink: 0;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 0;
   cursor: pointer;
   overflow: hidden;
@@ -817,7 +819,7 @@
   height: 32px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 20px;
   line-height: 1;
@@ -855,7 +857,7 @@
   padding: 6px 10px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 10px;
@@ -896,7 +898,7 @@
   flex-direction: column;
   gap: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -906,7 +908,7 @@
   padding: 11px;
   background: var(--accent-dim);
   border: 1px dashed rgba(var(--accent-rgb), 0.35);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 12px;
@@ -924,7 +926,7 @@
 .addFoodForm {
   background: var(--surface-1);
   border: 1px solid var(--accent);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -936,7 +938,7 @@
   padding: 10px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
@@ -976,7 +978,7 @@
   padding: 8px 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -1007,7 +1009,7 @@
   padding: 10px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 13px;
@@ -1020,7 +1022,7 @@
   padding: 10px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -1051,7 +1053,7 @@
   padding: 0;
   flex-shrink: 0;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1060,7 +1062,7 @@
   width: 52px;
   height: 52px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   display: block;
 }
 
@@ -1111,7 +1113,7 @@
   height: 30px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   font-size: 13px;
   display: flex;
@@ -1134,7 +1136,7 @@
   height: 30px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   font-size: 16px;
   line-height: 1;
@@ -1166,9 +1168,10 @@
 .logEditName {
   width: 100%;
   padding: 8px 10px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -1202,9 +1205,9 @@
 
 .logEditInput {
   padding: 7px 8px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -1234,7 +1237,7 @@
   padding: 9px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 12px;
@@ -1247,7 +1250,7 @@
   padding: 9px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -1262,7 +1265,7 @@
   color: var(--accent);
   padding: 8px 10px;
   background: var(--accent-dim);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   text-align: center;
 }
 
@@ -1279,7 +1282,7 @@
 .liftsSubTabs {
   display: flex;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -1316,7 +1319,7 @@
   flex-direction: column;
   gap: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -1414,9 +1417,10 @@
 
 .exPickerChip {
   padding: 6px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 12px;
@@ -1441,15 +1445,16 @@
   width: 100%;
   height: auto;
   display: block;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   padding: 8px 0;
 }
 
 .exHistoryTable {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   overflow: hidden;
 }
 
@@ -1496,7 +1501,7 @@
 
 .progEditBtn, .progDeleteBtn, .progSaveBtn, .progCancelBtn {
   padding: 3px 7px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   font-family: var(--font-body);
   font-size: 12px;
   cursor: pointer;
@@ -1535,7 +1540,7 @@
   padding: 4px 6px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 11px;
@@ -1580,7 +1585,7 @@
   width: 100%;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   padding: 12px;
   cursor: pointer;
   text-align: left;
@@ -1591,7 +1596,7 @@
   width: 36px;
   height: 20px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   background: var(--border);
   position: relative;
   transition: background 180ms;
@@ -1638,7 +1643,7 @@
   background: var(--accent-dim);
   color: var(--accent);
   border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-family: var(--font-heading);
   font-size: 14px;
   letter-spacing: 0.1em;
@@ -1672,9 +1677,10 @@
 .checkinCard {
   display: flex;
   gap: 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 12px;
 }
 
@@ -1684,7 +1690,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   align-self: flex-start;
@@ -1695,7 +1701,7 @@
   height: 64px;
   object-fit: cover;
   display: block;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
 }
 
 .checkinBody {
@@ -1739,7 +1745,7 @@
   color: var(--muted);
   background: var(--surface-2);
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   border: 1px solid var(--border);
   line-height: 1.5;
 }
@@ -1817,7 +1823,7 @@
   width: 88px;
   height: 118px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   display: block;
   border: 2px solid transparent;
   transition: border-color 0.15s;
@@ -1844,9 +1850,10 @@
 /* ─── Checkin Trends ────────────────────────────────────────────────────── */
 
 .checkinTrends {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 14px 16px;
   margin-bottom: 4px;
 }
@@ -1874,7 +1881,7 @@
   font-family: var(--font-body);
   font-size: 10px;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   border: 1px solid var(--border);
   background: transparent;
   color: var(--muted);
@@ -1898,7 +1905,7 @@
   flex: 1;
   min-width: 60px;
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 10px 8px 8px;
   display: flex;
   flex-direction: column;
@@ -1940,9 +1947,10 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   margin-bottom: 4px;
 }
 
@@ -1959,7 +1967,7 @@
   padding: 6px 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-heading);
   font-size: 16px;
@@ -1989,9 +1997,10 @@
 }
 
 .sessionCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 12px 14px;
   display: flex;
   align-items: center;
@@ -2046,7 +2055,7 @@
   font-size: 9px;
   letter-spacing: 0.08em;
   padding: 2px 7px;
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   white-space: nowrap;
 }
 
@@ -2061,7 +2070,7 @@
   font-size: 9px;
   letter-spacing: 0.08em;
   padding: 2px 7px;
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   white-space: nowrap;
 }
 
@@ -2072,7 +2081,7 @@
   padding: 5px 11px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb),0.3);
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 10px;
@@ -2115,7 +2124,7 @@
   width: 36px;
   height: 4px;
   background: var(--border);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   align-self: center;
   margin-bottom: 4px;
 }
@@ -2147,7 +2156,7 @@
   padding: 14px 16px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-heading);
   font-size: 28px;
@@ -2191,7 +2200,7 @@
   padding: 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -2207,7 +2216,7 @@
   padding: 14px;
   background: var(--accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 14px;
@@ -2227,9 +2236,10 @@
   flex-direction: column;
   gap: 8px;
   padding: 14px;
-  background: var(--surface-1);
-  border-radius: 14px;
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border-radius: var(--r-md);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
   margin-bottom: 4px;
 }
 
@@ -2238,7 +2248,7 @@
   padding: 11px 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -2260,7 +2270,7 @@
   padding: 10px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
@@ -2282,7 +2292,7 @@
 
 .coachMetaBtn {
   padding: 5px 10px;
-  border-radius: 99px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--muted);

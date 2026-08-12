@@ -66,9 +66,10 @@
 
 .toggle {
   display: flex;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 4px;
   gap: 4px;
   margin-bottom: 16px;
@@ -78,7 +79,7 @@
   flex: 1;
   padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: none;
   display: flex;
   align-items: center;
@@ -103,7 +104,7 @@
   width: 100%;
   background: rgba(var(--accent-rgb), 0.06);
   border: 1.5px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 14px 16px;
   margin-bottom: 14px;
   text-align: left;
@@ -151,9 +152,10 @@
 .dateNavBtn {
   width: 32px;
   height: 32px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 20px;
   line-height: 1;
@@ -191,7 +193,7 @@
   padding: 6px 10px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 10px;
@@ -228,7 +230,7 @@
   padding: 8px 14px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 11px;
@@ -272,9 +274,10 @@
 
 /* Custom food card */
 .foodCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -340,7 +343,7 @@
   padding: 4px 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   font-family: var(--font-body);
   font-size: 11px;
   color: var(--muted);
@@ -372,7 +375,7 @@
   padding: 8px 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -391,7 +394,7 @@
   padding: 9px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 12px;
@@ -409,7 +412,7 @@
   height: 36px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   font-size: 16px;
   cursor: pointer;
   display: flex;

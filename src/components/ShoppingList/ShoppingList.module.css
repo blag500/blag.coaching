@@ -60,9 +60,10 @@
 /* Tabs */
 .tabs {
   display: flex;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   padding: 3px;
   gap: 3px;
   margin-bottom: 18px;
@@ -72,7 +73,7 @@
   flex: 1;
   padding: 9px 4px;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   background: none;
   font-family: var(--font-heading);
   font-size: 11px;
@@ -113,9 +114,10 @@
   align-items: center;
   gap: 12px;
   padding: 13px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   transition: opacity 0.2s;
 }
 
@@ -127,7 +129,7 @@
   flex-shrink: 0;
   width: 22px;
   height: 22px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   border: 2px solid var(--border);
   background: none;
   display: flex;
@@ -163,7 +165,7 @@
   color: var(--muted);
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   padding: 2px 7px;
 }
 
@@ -202,9 +204,9 @@
 .addInput {
   flex: 1;
   padding: 12px 12px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -225,9 +227,9 @@
   width: 60px;
   flex-shrink: 0;
   padding: 12px 8px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -250,7 +252,7 @@
   height: 44px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-size: 24px;
   line-height: 1;
@@ -277,7 +279,7 @@
   padding: 14px;
   background: none;
   border: 1px solid var(--accent);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -305,9 +307,10 @@
   justify-content: space-between;
   margin-bottom: 20px;
   padding: 14px 12px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
 }
 
 .stripDay {
@@ -358,9 +361,10 @@
 }
 
 .histCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 

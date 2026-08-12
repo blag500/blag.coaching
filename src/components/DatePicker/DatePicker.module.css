@@ -12,9 +12,10 @@
 .arrowBtn {
   width: 36px;
   height: 36px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 22px;
   line-height: 1;
@@ -45,9 +46,10 @@
   font-size: 13px;
   color: var(--text);
   letter-spacing: 0.03em;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   padding: 8px 10px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -71,7 +73,7 @@
   padding: 7px 10px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 10px;
@@ -92,9 +94,10 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 14px;
   z-index: 50;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -112,7 +115,7 @@
   height: 28px;
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-size: 18px;
   line-height: 1;
@@ -162,7 +165,7 @@
   aspect-ratio: 1;
   background: none;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 12px;

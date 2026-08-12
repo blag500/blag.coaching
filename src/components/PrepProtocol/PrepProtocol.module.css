@@ -26,9 +26,9 @@
 .input {
   width: 100%;
   padding: 12px 14px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
@@ -69,7 +69,7 @@
   width: 3px;
   height: 34px;
   background: var(--accent);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   flex-shrink: 0;
 }
 
@@ -115,7 +115,7 @@
   padding: 16px;
   background: var(--accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 15px;
@@ -195,7 +195,7 @@
   margin: 12px 16px 0;
   background: rgba(var(--accent-rgb), 0.1);
   border: 1.5px solid var(--accent);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -232,7 +232,7 @@
   padding: 10px;
   background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
@@ -244,9 +244,10 @@
 .reforecastNo {
   flex: 1;
   padding: 10px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -335,7 +336,7 @@
   gap: 4px;
   padding: 8px 4px;
   background: var(--surface-2);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   border: 1px solid transparent;
 }
 
@@ -391,7 +392,7 @@
   padding: 10px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -405,7 +406,7 @@
   padding: 10px 16px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 12px;
@@ -463,7 +464,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--surface-2);
 }
 
@@ -523,7 +524,7 @@
 .editBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 10px;
@@ -550,7 +551,7 @@
   padding: 10px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 13px;
@@ -566,7 +567,7 @@
   padding: 12px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
@@ -619,7 +620,7 @@
 
 .macroPill {
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 10px 6px;
   display: flex;
   flex-direction: column;
@@ -652,7 +653,7 @@
   padding: 12px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
@@ -672,7 +673,7 @@
 .endBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 11px;
@@ -701,7 +702,7 @@
   padding: 10px;
   background: #ef5350;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: #fff;
   font-family: var(--font-heading);
   font-size: 12px;
@@ -715,7 +716,7 @@
   padding: 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-heading);
   font-size: 12px;

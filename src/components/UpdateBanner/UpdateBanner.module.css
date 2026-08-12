@@ -30,7 +30,7 @@
   flex-shrink: 0;
   background: #0C0A06;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 13px;

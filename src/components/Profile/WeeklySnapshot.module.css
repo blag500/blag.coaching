@@ -9,9 +9,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 4px;
 }
 
@@ -26,7 +27,7 @@
   border: none;
   color: var(--muted);
   cursor: pointer;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   -webkit-tap-highlight-color: transparent;
   transition: background 150ms var(--ease-out), color 150ms var(--ease-out);
   flex-shrink: 0;
@@ -66,7 +67,7 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
 }
 
 .skeletonWrap {
@@ -101,7 +102,7 @@
 .skeletonBar {
   composes: shimmerBase;
   width: 100%;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
 }
 
 .skeletonBarLabel {
@@ -119,7 +120,7 @@
   composes: shimmerBase;
   flex: 1;
   height: 58px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
 }
 
 /* ── Content fade-in ──────────────────────────────────── */
@@ -184,9 +185,10 @@
 .barTrack {
   flex: 1;
   width: 100%;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 5px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-xs);
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -230,8 +232,9 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  background: var(--panel-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,9 +260,10 @@
 
 .statBox {
   flex: 1;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 12px 8px;
   display: flex;
   flex-direction: column;
@@ -301,9 +305,10 @@
 .weeklyRow {
   display: flex;
   gap: 0;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 

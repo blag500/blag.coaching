@@ -31,6 +31,16 @@
   --radius-lg:   24px;
   --radius-xl:   32px;
 
+  /* Five steps, and nothing between them. The app had fifteen distinct radii in
+     one tab — 6, 7, 8, 9, 10, 11 and 12 all inside six pixels. None of those
+     differences is visible on its own; together they mean nothing lines up. */
+  --r-xs:   4px;    /* hairlines: progress tracks, tiny chips */
+  --r-sm:   8px;    /* dense controls */
+  --r-md:  12px;    /* buttons, inputs, list rows */
+  --r-lg:  16px;    /* cards */
+  --r-xl:  24px;    /* full-width blocks and sheets */
+  --r-pill: 999px;
+
   --accent-rgb: 200, 160, 90;
 
   /* Flat gold is paint; gold with a gradient across it is metal. Reserved for
@@ -72,6 +82,24 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.35),
     0 10px 30px rgba(0, 0, 0, 0.50);
   --glass-blur: 18px;
+
+  /* The panel is the glass look without the blur, and it is what every card in
+     the app is drawn with. The look comes from the gradient and the lit top
+     edge; the blur only earns its cost when there is something behind the pane
+     worth blurring. A card sitting on the page background has nothing behind
+     it, so paying for backdrop-filter on fifty of them would spend the GPU on
+     an effect nobody can see. Blur stays where things genuinely overlap: the
+     header, the tab bar, sheets. */
+  --panel-bg:
+    linear-gradient(160deg,
+      rgba(255, 255, 255, 0.045) 0%,
+      rgba(255, 255, 255, 0.014) 30%,
+      rgba(0, 0, 0, 0.08) 100%),
+    var(--surface-1);
+  --panel-border: rgba(255, 255, 255, 0.075);
+  --panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 6px 18px -10px rgba(0, 0, 0, 0.7);
 }
 
 /* Glass over a light ground: the pane is tinted by what is behind it, so the
@@ -88,6 +116,15 @@ html[data-theme="light"] {
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 -1px 0 rgba(26, 19, 0, 0.06),
     0 10px 30px rgba(26, 19, 0, 0.08);
+  --panel-bg:
+    linear-gradient(160deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(26, 19, 0, 0.018) 100%),
+    var(--surface-1);
+  --panel-border: rgba(26, 19, 0, 0.09);
+  --panel-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 18px -10px rgba(26, 19, 0, 0.16);
 
   /* Gold has to go darker to survive a pale ground — the same metal, deepened
      to bronze so it still reads as gold and not as yellow highlighter. */

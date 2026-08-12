@@ -9,7 +9,7 @@
 .statChip {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 8px 4px;
   display: flex;
   flex-direction: column;
@@ -55,7 +55,7 @@
 .navBtn {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-size: 20px;
   width: 32px;
@@ -100,7 +100,7 @@
 .cell {
   background: none;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   padding: 4px 2px;
   cursor: pointer;
   display: flex;
@@ -138,7 +138,7 @@
 .heatDot {
   width: 22px;
   height: 22px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   border: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
   transition: background 0.2s;
@@ -170,7 +170,7 @@
 .heatSwatch {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   border: 1px solid rgba(255, 255, 255, 0.06);
   display: inline-block;
 }
@@ -180,7 +180,7 @@
   margin-top: 12px;
   padding: 14px;
   background: var(--surface-2);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   border: 1px solid var(--border);
   animation: slideIn 150ms var(--ease-out) both;
 }
@@ -217,7 +217,7 @@
   align-items: center;
   gap: 5px;
   padding: 5px 10px;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   border: 1px solid;
   font-family: var(--font-body);
   font-size: 11px;

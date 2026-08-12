@@ -35,7 +35,7 @@
   width: 36px;
   height: 4px;
   background: var(--border);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   align-self: center;
   margin-bottom: 4px;
 }
@@ -44,7 +44,7 @@
 .typeToggle {
   display: flex;
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 3px;
   gap: 3px;
 }
@@ -53,7 +53,7 @@
   flex: 1;
   padding: 9px;
   border: none;
-  border-radius: 7px;
+  border-radius: var(--r-sm);
   background: none;
   font-family: var(--font-heading);
   font-size: 12px;
@@ -79,7 +79,7 @@
   padding: 12px 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -140,7 +140,7 @@
   padding: 9px 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -167,7 +167,7 @@
   padding: 8px 4px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 12px;
@@ -194,7 +194,7 @@
   flex-shrink: 0;
   background: rgba(220, 60, 60, 0.08);
   border: 1px solid rgba(220, 60, 60, 0.18);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: rgba(220, 100, 100, 0.75);
   font-size: 18px;
   display: flex;
@@ -209,7 +209,7 @@
   padding: 10px 14px;
   background: transparent;
   border: 1px dashed rgba(var(--accent-rgb), 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-body);
   font-size: 13px;
@@ -225,7 +225,7 @@
   gap: 10px;
   padding: 12px 14px;
   background: var(--surface-2);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   flex-wrap: wrap;
 }
 
@@ -280,7 +280,7 @@
   padding: 10px 10px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
@@ -312,7 +312,7 @@
   padding: 13px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-heading);
   font-size: 13px;
@@ -325,7 +325,7 @@
   padding: 13px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 14px;

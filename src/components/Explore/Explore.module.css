@@ -16,9 +16,10 @@
   align-items: center;
   gap: 14px;
   padding: 18px 16px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -79,7 +80,7 @@
   padding: 4px 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   font-family: var(--font-body);
   font-size: 10px;
   color: var(--muted);

@@ -117,7 +117,7 @@
 .toggleBtn {
   flex: 1;
   padding: 12px 8px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   border: 1.5px solid var(--border);
   background: var(--surface-1);
   color: var(--muted);
@@ -162,9 +162,9 @@
 .input {
   width: 100%;
   padding: 12px 10px;
-  background: var(--surface-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
@@ -191,7 +191,7 @@
   padding: 12px 14px;
   background: var(--surface-1);
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   text-align: left;
   cursor: pointer;
   position: relative;
@@ -231,7 +231,7 @@
   padding: 15px;
   background: var(--accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 15px;
@@ -254,9 +254,10 @@
 }
 
 .resultCard {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -289,7 +290,7 @@
 .bmiCard {
   background: var(--surface-1);
   border: 1.5px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -337,7 +338,7 @@
   padding: 12px 6px;
   background: var(--surface-1);
   border: 1.5px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   cursor: pointer;
   transition: border-color 150ms, background 150ms;
   -webkit-tap-highlight-color: transparent;
@@ -390,7 +391,7 @@
 .macroCard {
   background: var(--surface-1);
   border: 1.5px solid;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -422,7 +423,7 @@
   padding: 14px;
   background: var(--surface-1);
   border: 1.5px solid var(--accent);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--accent);
   font-family: var(--font-heading);
   font-size: 13px;

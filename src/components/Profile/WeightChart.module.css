@@ -50,7 +50,7 @@
 
 .pill {
   padding: 5px 11px;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   border: 1px solid var(--border);
   background: none;
   font-family: var(--font-heading);

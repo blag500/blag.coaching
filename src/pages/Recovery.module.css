@@ -60,9 +60,10 @@
 }
 
 .card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 16px;
 }
 
@@ -91,7 +92,7 @@
 .input {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -132,7 +133,7 @@
   height: 40px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -163,7 +164,7 @@
   height: 48px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   font-size: 1.4rem;
   cursor: pointer;
   transition: all 0.15s;
@@ -214,7 +215,7 @@
   height: 36px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   color: var(--text);
   font-size: 1.2rem;
   cursor: pointer;
@@ -239,7 +240,7 @@
   background: var(--accent);
   color: var(--bg);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-family: var(--font-heading);
   font-size: 1.1rem;
   letter-spacing: 0.06em;
@@ -255,9 +256,10 @@
 
 .histSection {
   margin-top: 24px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 16px;
 }
 
@@ -311,9 +313,10 @@
 }
 
 .cal {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
   padding: 16px;
 }
 
@@ -367,7 +370,7 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
 }
 
 .calToday {

@@ -52,14 +52,14 @@
   flex: 1;
   height: 4px;
   background: var(--surface-2);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
   background: var(--accent);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   transition: width 0.35s ease;
 }
 
@@ -90,7 +90,7 @@
   bottom: -6px;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.08);
-  border-radius: 18px;
+  border-radius: var(--r-lg);
   transform: scale(0.97);
   opacity: 0.5;
 }
@@ -101,7 +101,7 @@
   width: 100%;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
-  border-radius: 18px;
+  border-radius: var(--r-lg);
   padding: 1.25rem;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   transition: transform 0.3s ease, opacity 0.3s ease;
@@ -127,7 +127,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 3px 9px;
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   border: 1px solid;
   margin-bottom: 0.9rem;
 }
@@ -155,7 +155,7 @@
   padding: 11px 13px;
   background: var(--surface-2);
   border: 1px solid rgba(var(--accent-rgb), 0.1);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 13px;
@@ -212,7 +212,7 @@
 
 .explain {
   margin-top: 1rem;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 0.95rem 1rem;
   animation: explainIn 0.25s ease;
   border: 1px solid;
@@ -253,7 +253,7 @@
   padding: 10px;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 15px;
@@ -282,7 +282,7 @@
   margin: 1.5rem 1rem 0;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 2rem 1.5rem;
   text-align: center;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
@@ -319,7 +319,7 @@
 .summaryBar {
   height: 6px;
   background: var(--surface-2);
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   overflow: hidden;
   margin-bottom: 1.5rem;
 }
@@ -327,7 +327,7 @@
 .summaryFill {
   height: 100%;
   background: linear-gradient(90deg, var(--accent), #81C784);
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   transition: width 0.6s ease;
 }
 
@@ -364,7 +364,7 @@
   padding: 0.9rem;
   background: var(--accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 18px;
@@ -404,7 +404,7 @@
   color: var(--accent);
   background: rgba(var(--accent-rgb), 0.1);
   border: 1px solid rgba(var(--accent-rgb), 0.25);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 4px 10px;
   white-space: nowrap;
 }
@@ -414,7 +414,7 @@
   margin: 0 1rem 1.25rem;
   background: var(--surface-1);
   border: 1px solid rgba(var(--accent-rgb), 0.18);
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   padding: 1.2rem 1.4rem;
   display: flex;
   align-items: center;
@@ -525,7 +525,7 @@
 .calCell,
 .calCellEmpty {
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
   background: var(--surface-2);
   display: flex;
   align-items: center;
@@ -591,7 +591,7 @@
   padding: 0.85rem;
   background: var(--accent);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   color: var(--bg);
   font-family: var(--font-heading);
   font-size: 18px;
