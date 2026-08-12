@@ -736,17 +736,22 @@
   color: var(--accent);
 }
 
-.habitsRow {
-  display: flex;
-  flex-wrap: wrap;
+/* An even grid, not a wrapped row. Sized to their labels the chips came out
+   ragged, and a ragged block of six reads as clutter; three equal columns give
+   the same six targets a shape. */
+.habitsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 7px;
 }
 
 .habitChip {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 7px 11px;
+  min-width: 0;
+  padding: 8px 6px;
   border-radius: var(--r-pill);
   border: 1px solid var(--panel-border);
   background: rgba(255, 255, 255, 0.03);
@@ -782,4 +787,33 @@
 
 .habitLabel {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── All six done ──
+   A wave across the chips, once, on the transition into a finished day. */
+.habitsCheer .habitChip {
+  animation: habitPop 520ms var(--ease-out) both;
+}
+
+@keyframes habitPop {
+  0%   { transform: scale(1);    }
+  35%  { transform: scale(1.07); }
+  100% { transform: scale(1);    }
+}
+
+.habitsCheer {
+  animation: habitsGlow 900ms var(--ease-out) both;
+}
+
+@keyframes habitsGlow {
+  0%   { border-color: var(--panel-border); }
+  40%  { border-color: rgba(var(--accent-rgb), 0.55); }
+  100% { border-color: var(--panel-border); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habitsCheer,
+  .habitsCheer .habitChip { animation: none; }
 }

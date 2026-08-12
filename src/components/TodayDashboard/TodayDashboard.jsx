@@ -93,6 +93,24 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
   const totalHabits     = habits.length || 1
   const trainedToday    = todayWorkouts.length > 0
 
+  // ── The habits wave ──
+  // Fires on the transition into "all done", never on arriving at a day that is
+  // already finished — a celebration that replays every time you open the app
+  // stops meaning anything by the third time.
+  const [habitsCheer, setHabitsCheer] = useState(false)
+  const prevAllHabits = useRef(null)
+
+  useEffect(() => {
+    const all = habits.length > 0 && completedHabits === habits.length
+    const was = prevAllHabits.current
+    prevAllHabits.current = all
+    if (was === null || !all || was) return
+
+    setHabitsCheer(true)
+    const timer = setTimeout(() => setHabitsCheer(false), 900)
+    return () => clearTimeout(timer)
+  }, [completedHabits, habits.length])
+
   // ── Badge detection ──
   const [badgeQueue, setBadgeQueue] = useState([])
   const prevCal   = useRef(false)
@@ -192,15 +210,15 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
           habits are 20% of the readiness score — the component most often left
           empty precisely because it lived somewhere else. */}
       {habits.length > 0 && (
-        <div className={styles.habitsCard}>
+        <div className={`${styles.habitsCard} ${habitsCheer ? styles.habitsCheer : ''}`}>
           <div className={styles.habitsHead}>
             <span className={styles.cardLabel}>{t('today.habits')}</span>
             <span className={styles.habitsCount}>
               {completedHabits}/{habits.length}
             </span>
           </div>
-          <div className={styles.habitsRow}>
-            {habits.map(h => (
+          <div className={styles.habitsGrid}>
+            {habits.map((h, i) => (
               <button
                 key={h.id}
                 type="button"
@@ -208,6 +226,9 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
                 onClick={() => toggleHabit(h.id)}
                 aria-pressed={!!checked[h.id]}
                 title={h.label}
+                /* The wave runs left to right rather than firing at once, so
+                   the row reads as a run being completed instead of a flash. */
+                style={habitsCheer ? { animationDelay: `${i * 55}ms` } : undefined}
               >
                 <span className={styles.habitEmoji}>{h.emoji}</span>
                 <span className={styles.habitLabel}>{h.label}</span>
