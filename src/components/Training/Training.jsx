@@ -195,8 +195,14 @@ export default function Training({ onMenuOpen }) {
   for (const c of completions) {
     if (!lastDone[c.block_label]) lastDone[c.block_label] = c.completed_date
   }
-  const dueBlock = blocks?.length
-    ? [...blocks].sort((a, b) =>
+  // Rest is excluded, and it is not a detail: nobody ticks a rest day off, so
+  // by "longest since done" it is permanently the most overdue thing in the
+  // plan — the screen would have opened on Почивка every single time.
+  const trainable = (blocks ?? []).filter(
+    b => !b.isRest && !(b.label || '').toUpperCase().includes('ПОЧИВК')
+  )
+  const dueBlock = trainable.length
+    ? [...trainable].sort((a, b) =>
         (lastDone[a.label] ?? '').localeCompare(lastDone[b.label] ?? ''))[0]
     : null
 
