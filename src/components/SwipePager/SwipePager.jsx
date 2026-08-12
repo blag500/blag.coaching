@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { isProtected } from '../../utils/gestures'
+import { PaneProvider } from './PaneContext'
 import styles from './SwipePager.module.css'
 
 // Before either axis is committed to, this much travel decides which one wins.
@@ -10,22 +11,18 @@ const COMMIT_PART = 0.28
 // the finger has crossed a quarter of the screen.
 const FLICK_SPEED = 0.45   // px per ms
 const FLICK_MIN   = 40     // but never on a twitch
+const GLIDE       = 420    // ms to finish or undo the journey
 
 /**
- * Tabs that follow the finger.
+ * Tabs that follow the finger — both pages moving together, the way a strip of
+ * paper slides past a window rather than one sheet being laid over another.
  *
- * The incoming page is mounted and slides in over the one you are leaving, and
- * the change is committed only when the finger lifts — so a gesture can be
- * abandoned halfway and nothing moves. A swipe you cannot take back is a button
- * with extra steps.
- *
- * The page being left behind deliberately does not move. Translating it would
- * make it the containing block for every `position: fixed` element inside it,
- * and those are all over the app — the remaining-macros bar, the chat composer,
- * the SOS button. A fixed child of a transformed ancestor is positioned against
- * that ancestor's box rather than the screen, so each one would jump to the
- * bottom of the page the instant the drag began. The incoming pane is fixed and
- * viewport-sized, which makes it a correct frame for its own fixed children.
+ * While the finger is down the panes are moved by writing to their style
+ * directly instead of through React state. A drag produces a touchmove on every
+ * frame, and re-rendering the whole page tree sixty times a second to change one
+ * number is what makes a gesture feel heavy. React is told only about things
+ * that actually change the markup: which neighbour is mounted, and whether the
+ * slide is settling.
  *
  * At the first tab there is no page to the left, so dragging that way pulls the
  * side navigation out instead.
@@ -35,31 +32,60 @@ export default function SwipePager({
   onEdgePull, onEdgeEnd,
 }) {
   const hostRef = useRef(null)
-  const [dx, setDxState]      = useState(0)
-  const [settling, setSettle] = useState(false)
-  // Which neighbour is being revealed: -1 for the tab on the left, +1 right.
-  const [reveal, setReveal]   = useState(0)
+  const curRef  = useRef(null)
+  const incRef  = useRef(null)
+  // Which neighbour is mounted: -1 for the tab on the left, +1 for the right.
+  const [reveal, setReveal] = useState(0)
 
   const idx = order.indexOf(active)
 
   // Mirrors for the listeners, which are bound once: a re-render in the middle
   // of a drag must not tear them down, and they must not read stale values.
-  const dxRef     = useRef(0)
+  const offset    = useRef(0)     // where the panes are right now, in px
   const commitRef = useRef(null)
-  const settleRef = useRef(false)
+  const settling  = useRef(false)
   const live      = useRef({})
   live.current = { order, active, idx, onChange, enabled, onEdgePull, onEdgeEnd }
 
-  function setDx(v) { dxRef.current = v; setDxState(v) }
+  /** Put both panes where the finger says, without going through React. */
+  function place(dx, dir, animate) {
+    offset.current = dx
+    const w = window.innerWidth
+    const ease = animate ? `transform ${GLIDE}ms var(--ease-drawer)` : 'none'
+
+    if (curRef.current) {
+      const resting = dx === 0 && !animate
+      curRef.current.style.transition = ease
+      // At rest both the transform and the promotion are removed. Either one
+      // would leave the page as the containing block for its fixed children.
+      curRef.current.style.willChange = resting ? '' : 'transform'
+      curRef.current.style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
+    }
+    if (incRef.current && dir !== 0) {
+      incRef.current.style.transition = ease
+      incRef.current.style.transform  = `translate3d(${dx + dir * w}px,0,0)`
+    }
+  }
+
+  // The incoming pane is mounted by React, so it starts with no transform of
+  // its own. Placing it in a layout effect puts it off-screen before the frame
+  // is painted, instead of letting it flash across the middle of the display.
+  useLayoutEffect(() => {
+    if (reveal !== 0) place(offset.current, reveal, false)
+  }, [reveal])
 
   /** The slide has landed; adopt the new tab in the same paint. */
   function finish() {
-    if (!settleRef.current) return
+    if (!settling.current) return
     const target = commitRef.current
     commitRef.current = null
-    settleRef.current = false
-    setSettle(false)
-    setDx(0)
+    settling.current = false
+    offset.current = 0
+    if (curRef.current) {
+      curRef.current.style.transition = 'none'
+      curRef.current.style.transform  = ''
+      curRef.current.style.willChange = ''
+    }
     setReveal(0)
     // Instant, because the page has already travelled — animating it in again
     // would be the same move played twice.
@@ -81,7 +107,7 @@ export default function SwipePager({
 
     function onStart(e) {
       // A settle on its way to a new tab owns the screen until it lands.
-      if (settleRef.current && commitRef.current) { axis = 'y'; return }
+      if (settling.current && commitRef.current) { axis = 'y'; return }
       reset()
       const l = live.current
       if (!l.enabled || e.touches.length !== 1) { axis = 'y'; return }
@@ -91,8 +117,7 @@ export default function SwipePager({
       startX = lastX = t.clientX
       startY = t.clientY
       startedAt = lastT = performance.now()
-      settleRef.current = false
-      setSettle(false)
+      settling.current = false
     }
 
     function onMove(e) {
@@ -126,19 +151,19 @@ export default function SwipePager({
       if (has) {
         if (edge) { edge = false; l.onEdgePull?.(null) }
         if (wants !== dir) { dir = wants; setReveal(wants) }
-        setDx(mx)
+        place(mx, dir, false)
         return
       }
 
       // Nothing to the left of the first tab — that pull opens the drawer.
       if (wants < 0 && l.onEdgePull) {
-        if (!edge) { edge = true; if (dir !== 0) { dir = 0; setReveal(0) }; setDx(0) }
+        if (!edge) { edge = true; if (dir !== 0) { dir = 0; setReveal(0) }; place(0, 0, false) }
         l.onEdgePull(mx)
         return
       }
 
       if (dir !== 0) { dir = 0; setReveal(0) }
-      setDx(0)
+      place(0, 0, false)
     }
 
     function onEnd() {
@@ -161,17 +186,17 @@ export default function SwipePager({
       const exists = dir !== 0 && target >= 0 && target < l.order.length
       const farEnough = Math.abs(travelled) > width * COMMIT_PART
 
-      const go     = exists && (farEnough || fastEnough)
-      const nextDx = go ? -dir * width : 0
+      const go       = exists && (farEnough || fastEnough)
+      const nextDx   = go ? -dir * width : 0
       commitRef.current = go ? l.order[target] : null
+      const settledDir  = dir
       reset()
 
+      settling.current = true
       // A drag that ended exactly where it started animates nothing, so no
       // transitionend would ever arrive to finish the job.
-      settleRef.current = true
-      if (nextDx === dxRef.current) { finish(); return }
-      setSettle(true)
-      setDx(nextDx)
+      if (nextDx === offset.current) { finish(); return }
+      place(nextDx, settledDir, true)
     }
 
     host.addEventListener('touchstart',  onStart, { passive: true })
@@ -193,22 +218,19 @@ export default function SwipePager({
   }
 
   const neighbour = reveal !== 0 ? order[idx + reveal] : null
-  const glide = settling ? 'transform 460ms var(--ease-drawer)' : 'none'
 
   return (
     <div className={styles.host} ref={hostRef}>
-      {render(active)}
+      {/* No transform is set here at rest. Any transform, even an identity one,
+          makes an element the containing block for its fixed descendants, and
+          the app pins things to the screen from inside pages. */}
+      <div className={styles.current} ref={curRef} onTransitionEnd={onTransitionEnd}>
+        <PaneProvider value={true}>{render(active)}</PaneProvider>
+      </div>
 
       {neighbour && (
-        <div
-          className={styles.incoming}
-          style={{
-            transform: `translate3d(${dx + reveal * window.innerWidth}px,0,0)`,
-            transition: glide,
-          }}
-          onTransitionEnd={onTransitionEnd}
-        >
-          {render(neighbour)}
+        <div className={styles.incoming} ref={incRef} aria-hidden="true">
+          <PaneProvider value={false}>{render(neighbour)}</PaneProvider>
         </div>
       )}
     </div>

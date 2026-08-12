@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useIsLivePane } from '../SwipePager/PaneContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useActivityLog } from '../../hooks/useActivityLog'
@@ -32,6 +34,7 @@ function greeting() {
 }
 
 export default function NutritionCards({ onNavigate, onMenuOpen }) {
+  const livePane = useIsLivePane()
   const { profile } = useAuth()
   const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { activities, totalKcalBurned, addActivity, removeActivity } = useActivityLog(selectedDate)
@@ -174,14 +177,18 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             onDelete={deleteFood}
             onNewItem={() => setShowBuilder(true)}
           />
-          <button
-            className={styles.fab}
-            onClick={() => setShowBuilder(true)}
-            type="button"
-            aria-label="Добави рецепта"
-          >
-            +
-          </button>
+          {/* Pinned to the screen, so it lives outside the sliding page too. */}
+          {livePane && createPortal(
+            <button
+              className={styles.fab}
+              onClick={() => setShowBuilder(true)}
+              type="button"
+              aria-label="Добави рецепта"
+            >
+              +
+            </button>,
+            document.body,
+          )}
         </>
       ) : (
         <ActivityLog
@@ -279,6 +286,7 @@ function macroColor(remaining, target) {
 }
 
 function MacroRemainingBar({ remaining, targets }) {
+  const live = useIsLivePane()
   const items = [
     { label: 'Ккал',  val: remaining.kcal,    target: targets.kcal,    unit: '' },
     { label: 'П',     val: remaining.protein,  target: targets.protein,  unit: 'g' },
@@ -286,7 +294,12 @@ function MacroRemainingBar({ remaining, targets }) {
     { label: 'М',     val: remaining.fat,      target: targets.fat,      unit: 'g' },
   ]
 
-  return (
+  // Rendered outside the page. It is pinned to the bottom of the screen, and
+  // anything pinned to the screen has to live outside anything that can slide,
+  // or it gets measured against the sliding page instead of the window. Which
+  // also means it must not show for a page that is still on its way in.
+  if (!live) return null
+  return createPortal(
     <div className={styles.remainBar}>
       <span className={styles.remainTitle}>ОСТАВАЩО</span>
       <div className={styles.remainItems}>
@@ -302,7 +315,8 @@ function MacroRemainingBar({ remaining, targets }) {
           </div>
         ))}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

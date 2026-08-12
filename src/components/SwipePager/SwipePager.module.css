@@ -1,14 +1,24 @@
 .host {
   position: relative;
+  /* The panes travel sideways; none of that should make the document scroll
+     across. `clip` rather than `hidden`, which would turn this into a scroll
+     container and break the sticky header inside the page. */
+  overflow-x: clip;
 }
 
-/* Pinned to the viewport, not the document: the page underneath may be scrolled
-   a long way down, and the arriving page has to come in at the edge of the
-   screen. Being fixed also makes this pane the containing block for its own
-   fixed children, so the chrome inside the incoming page lands correctly.
+/* Stays in normal flow, so the document keeps its height and its scrolling.
+   Deliberately has no transform and no will-change here: either one would make
+   it the containing block for the things this app pins to the screen from
+   inside pages. Both are written directly by the component, and only while the
+   page is actually moving. */
+.current { }
+
+/* Pinned to the viewport rather than the document: the page underneath may be
+   scrolled a long way down, and the arriving page has to come in at the edge of
+   the screen, not at the top of the document.
 
    It sits below the bottom navigation, which stays put throughout — the tab bar
-   is the one thing that should not move while you are moving between tabs. */
+   is the one thing that should not move while you move between tabs. */
 .incoming {
   position: fixed;
   inset: 0;
@@ -16,9 +26,4 @@
   background: var(--bg);
   z-index: 95;
   will-change: transform;
-  /* A shadow on both leading edges, so whichever way it arrives from, the page
-     reads as sitting above the one it is covering. */
-  box-shadow:
-     18px 0 40px -12px rgba(0, 0, 0, 0.75),
-    -18px 0 40px -12px rgba(0, 0, 0, 0.75);
 }
