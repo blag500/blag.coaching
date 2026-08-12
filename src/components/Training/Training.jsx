@@ -10,7 +10,7 @@ import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
-import MuscleTimeline from './MuscleTimeline'
+import MuscleStatus from './MuscleStatus'
 import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
 import styles from './Training.module.css'
 
@@ -338,8 +338,8 @@ export default function Training({ onMenuOpen }) {
       {/* History calendar */}
       {!showProgression && (
         <section className={styles.historySection}>
-          <h2 className={styles.historyTitle}>ИСТОРИЯ</h2>
-          <MuscleTimeline completions={completions} recovery={recovery} />
+          <h2 className={styles.historyTitle}>МУСКУЛНИ ГРУПИ</h2>
+          <MuscleStatus completions={completions} recovery={recovery} />
         </section>
       )}
 
