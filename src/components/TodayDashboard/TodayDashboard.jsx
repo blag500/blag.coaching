@@ -10,6 +10,7 @@ import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import BadgePopup from './BadgePopup'
 import Confetti from './Confetti'
+import MacroScale from './MacroScale'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './TodayDashboard.module.css'
@@ -167,31 +168,17 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
       {/* ── Readiness widget ── */}
       <ReadinessWidget onNavigate={onNavigate} />
 
-      {/* ── Nutrition 2×2 grid ── */}
-      <div className={styles.nutritionGrid}>
-        {[
-          { key: 'kcal',    label: t('today.kcal'),    val: Math.round(totals.kcal    || 0), target: targets.kcal,    unit: 'kcal', color: 'var(--accent)' },
-          { key: 'protein', label: t('today.protein'), val: Math.round(totals.protein || 0), target: targets.protein, unit: 'g',    color: '#42A5F5' },
-          { key: 'carbs',   label: t('today.carbs'),   val: Math.round(totals.carbs   || 0), target: targets.carbs,   unit: 'g',    color: '#66BB6A' },
-          { key: 'fat',     label: t('today.fats'),    val: Math.round(totals.fat     || 0), target: targets.fat,     unit: 'g',    color: '#CE93D8' },
-        ].map(m => {
-          const pct  = m.target > 0 ? Math.min(m.val / m.target, 1) : 0
-          const over = m.target > 0 && m.val > m.target
-          return (
-            <button key={m.key} className={styles.metricCard} onClick={() => onNavigate('nutrition')} type="button">
-              <span className={styles.metricLabel}>{m.label}</span>
-              <span className={styles.metricVal} style={{ color: over ? '#ef5350' : m.color }}>
-                {m.val}
-                <span className={styles.metricUnit}> {m.unit}</span>
-              </span>
-              <div className={styles.metricBarTrack}>
-                <div className={styles.metricBarFill} style={{ width: `${pct * 100}%`, background: over ? '#ef5350' : m.color }} />
-              </div>
-              <span className={styles.metricTarget}>/{m.target} {m.unit}</span>
-            </button>
-          )
-        })}
-      </div>
+      {/* ── Macros ── */}
+      <MacroScale
+        label={t('today.macros')}
+        onOpen={() => onNavigate('nutrition')}
+        macros={[
+          { key: 'kcal',    short: t('today.short.kcal'),    val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
+          { key: 'protein', short: t('today.short.protein'), val: Math.round(totals.protein || 0), target: targets.protein, color: '#42A5F5' },
+          { key: 'carbs',   short: t('today.short.carbs'),   val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: '#66BB6A' },
+          { key: 'fat',     short: t('today.short.fat'),     val: Math.round(totals.fat     || 0), target: targets.fat,     color: '#CE93D8' },
+        ]}
+      />
 
       {/* ── Water card ── */}
       <div className={styles.waterCard}>

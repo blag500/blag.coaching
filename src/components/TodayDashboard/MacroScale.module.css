@@ -1,0 +1,124 @@
+.card {
+  position: relative;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 300ms var(--ease-out);
+}
+
+/* All four inside their bands. The card is edged rather than filled — a whole
+   panel going gold would shout over everything else on the screen. */
+.cardDone {
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.done {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  animation: doneIn 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes doneIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--r-xs);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: var(--r-xs);
+  transition: width 500ms var(--ease-out);
+}
+
+/* Lit once it is inside the band — the bar stops being a measurement and
+   becomes a result. */
+.fillHit {
+  box-shadow: 0 0 8px var(--glow);
+}
+
+/* The line the fill is trying to reach. */
+.mark {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.val {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  width: 78px;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.target {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
