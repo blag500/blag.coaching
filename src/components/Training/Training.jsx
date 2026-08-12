@@ -131,11 +131,10 @@ function WorkoutCalendar({ completions, blocks }) {
                   {cell.labels.slice(0, 2).map((label, li) => (
                     <span
                       key={li}
-                      className={styles.calChip}
+                      className={styles.calDot}
                       style={{ background: colorMap[label] || '#8888AA' }}
-                    >
-                      {abbrev(label)}
-                    </span>
+                      title={label}
+                    />
                   ))}
                 </div>
               </div>
@@ -146,9 +145,7 @@ function WorkoutCalendar({ completions, blocks }) {
       <div className={styles.calLegend}>
         {blocks.map((b, i) => (
           <span key={b.id} className={styles.calLegendItem}>
-            <span className={styles.calChip} style={{ background: blockColor(i) }}>
-              {abbrev(b.label)}
-            </span>
+            <span className={styles.calDot} style={{ background: blockColor(i) }} />
             {b.label}
           </span>
         ))}
@@ -176,6 +173,8 @@ export default function Training({ onMenuOpen }) {
   const undoTimerRef                    = useRef(null)
   const [logDate, setLogDate]           = useState(() => new Date().toISOString().slice(0, 10))
   const { byName: lifts, refresh: refreshLifts } = useLastLifts(logDate)
+  // Whether the block on screen was chosen or merely offered.
+  const userPicked = useRef(false)
 
   useEffect(() => {
     if (!user) return
@@ -187,7 +186,31 @@ export default function Training({ onMenuOpen }) {
       .then(({ data }) => { if (data) setCompletions(data) })
   }, [user?.id])
 
+  // ── Which session is due ──
+  // The screen used to open on whichever block happened to be first and wait to
+  // be told. It knows: the one gone longest without being done is the one you
+  // owe. Never-trained blocks sort to the front, so a new plan starts at its
+  // beginning rather than wherever the list does.
+  const lastDone = {}
+  for (const c of completions) {
+    if (!lastDone[c.block_label]) lastDone[c.block_label] = c.completed_date
+  }
+  const dueBlock = blocks?.length
+    ? [...blocks].sort((a, b) =>
+        (lastDone[a.label] ?? '').localeCompare(lastDone[b.label] ?? ''))[0]
+    : null
+
+  useEffect(() => {
+    if (userPicked.current || !dueBlock) return
+    setSelectedId(dueBlock.id)
+  }, [dueBlock?.id])
+
   const selectedBlock = blocks ? (blocks.find(b => b.id === selectedId) ?? blocks[0]) : null
+  // Every exercise in the block logged today. Until then the finish button is
+  // an outline: it is a claim about work done, and it should not look like the
+  // loudest thing on a screen where the work has not been done yet.
+  const allLogged = (selectedBlock?.exercises?.length ?? 0) > 0 &&
+    selectedBlock.exercises.every(e => lifts[e.name]?.today)
   const todayStr = new Date().toISOString().slice(0, 10)
   const alreadyMarked = completions.some(
     c => c.completed_date === logDate && c.block_label === selectedBlock?.label
@@ -302,9 +325,19 @@ export default function Training({ onMenuOpen }) {
       <AppHeader
         onMenuOpen={onMenuOpen}
         title="ТРЕНИРОВКА"
-        action={isCoach && (
+        action={isCoach ? (
           <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
             РЕДАКТИРАЙ
+          </button>
+        ) : (
+          /* Up here with the other actions rather than as a full-width bar of
+             its own: it is a place to go, not a step in the session. */
+          <button
+            className={`${styles.editBtn} ${showProgression ? styles.editBtnOn : ''}`}
+            onClick={() => setShowProgression(p => !p)}
+            type="button"
+          >
+            {showProgression ? 'НАЗАД' : 'ПРОГРЕСИЯ'}
           </button>
         )}
       />
@@ -316,7 +349,10 @@ export default function Training({ onMenuOpen }) {
             key={block.id}
             className={`${styles.pill} ${selectedId === block.id && !showProgression ? styles.activePill : ''}`}
             style={selectedId === block.id && !showProgression ? { background: blockColor(idx), borderColor: blockColor(idx) } : {}}
-            onClick={() => { setSelectedId(block.id); setJustMarked(false); setShowProgression(false) }}
+            onClick={() => {
+              userPicked.current = true
+              setSelectedId(block.id); setJustMarked(false); setShowProgression(false)
+            }}
             role="tab"
             aria-selected={selectedId === block.id && !showProgression}
             type="button"
@@ -325,15 +361,6 @@ export default function Training({ onMenuOpen }) {
           </button>
         ))}
       </div>
-
-      {/* Progression toggle button */}
-      <button
-        className={`${styles.progressionBtn} ${showProgression ? styles.progressionBtnActive : ''}`}
-        onClick={() => setShowProgression(p => !p)}
-        type="button"
-      >
-        ПРОГРЕСИЯ
-      </button>
 
       {/* Progression view */}
       {showProgression && (
@@ -350,7 +377,11 @@ export default function Training({ onMenuOpen }) {
           <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} lifts={lifts} />
 
           <button
-            className={`${styles.markDoneBtn} ${alreadyMarked || justMarked ? styles.markDoneDone : ''}`}
+            className={[
+              styles.markDoneBtn,
+              allLogged ? styles.markDoneReady : '',
+              alreadyMarked || justMarked ? styles.markDoneDone : '',
+            ].join(' ')}
             onClick={handleMarkDone}
             disabled={marking || alreadyMarked}
             type="button"

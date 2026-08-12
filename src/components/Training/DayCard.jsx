@@ -46,12 +46,10 @@ export default function DayCard({ dayData, onLogLift, lifts = {} }) {
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
       >
-        <span
-          className={styles.blockLabel}
-          style={{ background: labelBg(label), color: labelFg(label) }}
-        >
-          {label}
-        </span>
+        {/* The block's name is on the selected pill directly above this, in the
+            same colour. Printing it twice in two different shapes was half the
+            reason the screen read as a form. */}
+        <span className={styles.blockDot} style={{ background: labelBg(label) }} />
         {muscles.length > 0 && (
           <div className={styles.muscles}>
             {muscles.map(m => <span key={m} className={styles.muscle}>{m}</span>)}
