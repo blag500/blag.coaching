@@ -6,6 +6,12 @@
   min-height: 100%;
 }
 
+/* This page spaces its children with a gap, so the header's own bottom margin
+   would be added on top of it and open a hole the other pages do not have. */
+.page > header {
+  margin-bottom: 0;
+}
+
 
 /* ── Cards ── */
 .card {

@@ -2,7 +2,11 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  margin: 0 -16px;
+  /* Room below it. Pages put their first element straight after the header, and
+     with none of this the content sits on the bar's bottom edge — the gold
+     hairline that is meant to close the header runs into the first row of the
+     page instead, and the two read as one crowded block. */
+  margin: 0 -16px 14px;
   padding: calc(env(safe-area-inset-top) + 8px) 16px 12px;
 
   /* A plate, not a strip. The rounded bottom gives the bar an edge the page
