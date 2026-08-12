@@ -34,6 +34,8 @@ import OrdersPanel from './components/Coach/OrdersPanel'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
+import { useHideOnScroll } from './hooks/useHideOnScroll'
+import { useSwipeNav } from './hooks/useSwipeNav'
 import { useSupplementsToday } from './hooks/useSupplementsToday'
 import SupplementBanner from './components/Supplements/SupplementBanner'
 import { trackPage } from './lib/analytics'
@@ -102,6 +104,18 @@ function AppShell() {
   }
 
   usePushNotifications()
+  useHideOnScroll(!drawerOpen)
+
+  // Swiping only moves between the four main tabs. From a sub-page such as the
+  // chat there is no "tab to the right" to go to, so the gesture stays inert
+  // rather than teleporting somewhere unrelated.
+  const tabIdx = NAV_ORDER.indexOf(activeTab)
+  useSwipeNav({
+    enabled: tabIdx !== -1 && !drawerOpen,
+    onNext: () => { if (tabIdx < NAV_ORDER.length - 1) navigate(NAV_ORDER[tabIdx + 1]) },
+    onPrev: () => { if (tabIdx > 0)                    navigate(NAV_ORDER[tabIdx - 1]) },
+  })
+
   const { pendingCount: supplementPending } = useSupplementsToday()
 
   useEffect(() => { trackPage(activeTab) }, [activeTab])
