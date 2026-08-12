@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { calcReadiness } from './useSleepLogs'
+import { RECOVERY_H, GROUP_LABELS, GROUP_COLORS, classifyMuscle } from '../utils/recovery'
 
 function dateStr(offset = 0) {
   const d = new Date()
@@ -14,30 +15,6 @@ function dateStr(offset = 0) {
 // average a whole season, long enough not to swing on two bad nights.
 const BASELINE_DAYS = 14
 const BASELINE_MIN  = 5
-
-const RECOVERY_H   = { upper: 48, lower: 72, pull: 48 }
-const GROUP_LABELS = { upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ПУЛ' }
-const GROUP_COLORS = { upper: 'var(--accent)', lower: '#66BB6A', pull: '#42A5F5' }
-
-/**
- * Today's check-in as a position within this person's own recent range.
- *
- * An absolute scale says a 3-out-of-5 night is mediocre for everybody, which is
- * not true of anybody: someone who always sleeps badly would sit at 40 forever
- * and learn to ignore the number, while someone who normally feels excellent
- * would never see the one bad day that matters. Measured against their own
- * spread, 50 means "your usual", 70 means a clearly better day than usual, 30 a
- * clearly worse one — and that is the same statement for both people.
- */
-function relativeToBaseline(todayRaw, history) {
-  if (todayRaw === null || history.length < BASELINE_MIN) return null
-  const mean = history.reduce((s, v) => s + v, 0) / history.length
-  const variance = history.reduce((s, v) => s + (v - mean) ** 2, 0) / history.length
-  // A floor on the spread: someone who answers identically every day would
-  // otherwise divide by nothing and swing to the extremes on a single point.
-  const spread = Math.max(Math.sqrt(variance), 6)
-  return Math.max(0, Math.min(100, Math.round(50 + 20 * (todayRaw - mean) / spread)))
-}
 
 /**
  * Which of the five answers pulled the check-in down.
@@ -68,14 +45,6 @@ function weakFactors(log) {
     .sort((a, b) => a.value - b.value)
     .slice(0, 2)
     .map(f => f.id)
-}
-
-function classifyMuscle(label = '') {
-  const l = label.toLowerCase()
-  if (/горн|upper|гърди|chest|пуш|push|рам|shoulder|трицеп|tricep/.test(l)) return 'upper'
-  if (/долн|lower|крак|leg|бедр|глутеу|quad|ham/.test(l)) return 'lower'
-  if (/пул|pull|гръб|back|бицеп|bicep/.test(l)) return 'pull'
-  return null
 }
 
 // Pass a `client` object { id, calories, protein } to view a specific user's readiness (coach view).

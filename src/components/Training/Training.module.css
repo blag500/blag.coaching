@@ -137,30 +137,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Progression toggle button */
-.progressionBtn {
-  width: 100%;
-  padding: 12px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  border-radius: var(--radius);
-  color: var(--muted);
-  font-family: var(--font-heading);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  margin-bottom: 16px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.progressionBtnActive {
-  background: var(--accent-dim);
-  border-color: rgba(var(--accent-rgb), 0.4);
-  color: var(--accent);
-}
-
 .progressionWrap {
   margin-bottom: 24px;
 }
@@ -418,4 +394,39 @@
 .markDoneReady {
   background: var(--accent-metal);
   color: #241B0C;
+}
+
+
+/* Why this block, in one line. */
+.recoveryNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.recoveryDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.recoveryReady {
+  background: rgba(129, 199, 132, 0.10);
+  border: 1px solid rgba(129, 199, 132, 0.28);
+  color: #81C784;
+}
+
+/* Not a warning, a fact. Training a group early is a choice, and the screen's
+   job is to make sure it is a choice rather than an accident. */
+.recoveryWait {
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  color: var(--accent);
 }

@@ -10,6 +10,7 @@ import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
+import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
 import styles from './Training.module.css'
 
 // Detect old 7-day format
@@ -196,22 +197,40 @@ export default function Training({ onMenuOpen }) {
     if (!lastDone[c.block_label]) lastDone[c.block_label] = c.completed_date
   }
   // Rest is excluded, and it is not a detail: nobody ticks a rest day off, so
-  // by "longest since done" it is permanently the most overdue thing in the
-  // plan — the screen would have opened on Почивка every single time.
+  // by any "longest since done" measure it is permanently the most overdue
+  // thing in the plan — the screen would have opened on Почивка every time.
   const trainable = (blocks ?? []).filter(
     b => !b.isRest && !(b.label || '').toUpperCase().includes('ПОЧИВК')
   )
-  const dueBlock = trainable.length
-    ? [...trainable].sort((a, b) =>
-        (lastDone[a.label] ?? '').localeCompare(lastDone[b.label] ?? ''))[0]
-    : null
+
+  // Which one is ready, not which one is next.
+  //
+  // Rotation order is a guess about how someone trains. Recovery is the thing
+  // they are actually waiting on: a block is due when the muscles it hits have
+  // had their hours — 48 for upper and back, 72 for legs. Ties go to whichever
+  // has been left alone longer, which restores sensible rotation between two
+  // equally rested blocks.
+  const recovery = muscleRecovery(completions)
+  const ranked = trainable
+    .map(b => ({ block: b, ...blockReadiness(b, recovery) }))
+    .sort((a, b) =>
+      b.pct - a.pct ||
+      (lastDone[a.block.label] ?? '').localeCompare(lastDone[b.block.label] ?? ''))
+
+  const dueEntry = ranked[0] ?? null
+  const dueBlock = dueEntry?.block ?? null
 
   useEffect(() => {
     if (userPicked.current || !dueBlock) return
     setSelectedId(dueBlock.id)
   }, [dueBlock?.id])
 
+
   const selectedBlock = blocks ? (blocks.find(b => b.id === selectedId) ?? blocks[0]) : null
+  // Where the block on screen stands, so the page can justify its suggestion —
+  // and say so plainly when you have picked something that has not rested.
+  const selRec = selectedBlock ? blockReadiness(selectedBlock, recovery) : null
+  const selHours = selRec?.group ? recovery[selRec.group]?.hours : null
   // Every exercise in the block logged today. Until then the finish button is
   // an outline: it is a claim about work done, and it should not look like the
   // loudest thing on a screen where the work has not been done yet.
@@ -378,6 +397,21 @@ export default function Training({ onMenuOpen }) {
       {/* Exercise list */}
       {!showProgression && selectedBlock && (
         <div className={styles.blockContent}>
+          {/* One line of reasoning. The muscle percentages have existed on the
+              Today card for a while without ever being connected to anything;
+              this is the decision they were always describing. */}
+          {selRec?.group && !selectedBlock.isRest && (
+            <div className={[
+              styles.recoveryNote,
+              selRec.pct >= 80 ? styles.recoveryReady : styles.recoveryWait,
+            ].join(' ')}>
+              <span className={styles.recoveryDot} />
+              {selRec.pct >= 80
+                ? 'Възстановена и готова'
+                : `Още ${Math.max(1, Math.round((RECOVERY_H[selRec.group] - (selHours ?? 0))))} ч до пълно възстановяване · ${selRec.pct}%`}
+            </div>
+          )}
+
           <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
 
           <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} lifts={lifts} />
