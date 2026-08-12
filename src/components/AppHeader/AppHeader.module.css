@@ -3,22 +3,48 @@
   top: 0;
   z-index: 50;
   margin: 0 -16px;
-  padding: calc(env(safe-area-inset-top) + 12px) 16px 14px;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px 18px;
 
-  /* Smoked glass: a heavier blur than before, a slight warm tint rather than a
-     flat panel, and a hairline that catches light along the bottom edge — that
-     hairline is what reads as an edge of glass instead of a colour change. */
+  /* A plate, not a strip. The rounded bottom gives the bar an edge the page
+     scrolls under, which is what separates a designed header from a rectangle
+     that happens to sit at the top. */
+  border-radius: 0 0 22px 22px;
+
+  /* Smoked glass: a heavy blur, a slight warm tint rather than a flat panel,
+     and a bloom of warm light behind the title — the name should look lit
+     rather than printed. */
   background:
+    radial-gradient(120% 150% at 50% 0%,
+      rgba(200, 160, 90, 0.10) 0%,
+      rgba(200, 160, 90, 0.03) 38%,
+      transparent 68%),
     linear-gradient(to bottom,
-      rgba(20, 17, 11, 0.72) 0%,
+      rgba(20, 17, 11, 0.74) 0%,
       rgba(12, 10, 6, 0.58) 100%);
   backdrop-filter: blur(30px) saturate(170%);
   -webkit-backdrop-filter: blur(30px) saturate(170%);
-  border-bottom: 1px solid transparent;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.055),
-    inset 0 -1px 0 rgba(var(--accent-rgb), 0.055),
-    0 10px 30px -18px rgba(0, 0, 0, 0.85);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 34px -20px rgba(0, 0, 0, 0.9);
+}
+
+/* The bottom edge, weighted to the centre. A uniform hairline draws the eye to
+   the corners, where there is nothing; a rule that peaks under the title and
+   dies at the edges points at the one thing on the bar that matters. */
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent 0%,
+    rgba(var(--accent-rgb), 0.06) 18%,
+    rgba(var(--accent-rgb), 0.42) 50%,
+    rgba(var(--accent-rgb), 0.06) 82%,
+    transparent 100%);
+  pointer-events: none;
 }
 
 /* Without backdrop-filter the panel would be see-through, so fall back to a
@@ -43,12 +69,15 @@
   text-align: center;
 }
 
+/* Same construction as the cards, so the round controls read as small panes of
+   the same glass rather than as grey circles. */
 .menuBtn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,12 +90,15 @@
 
 .menuBtn:active { background: rgba(255, 255, 255, 0.13); }
 
+/* Wider tracking and a smaller size turn the greeting from a line of text into
+   a label — the same words, but they stop competing with the name below. */
 .eyebrow {
   font-family: var(--font-body);
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  font-size: 9.5px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;      /* tracking pads the right side only; recentre it */
   color: var(--muted);
-  margin: 0 0 2px;
+  margin: 0 0 5px;
   text-transform: uppercase;
 }
 
@@ -90,8 +122,9 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1.5px solid var(--border);
-  background: var(--surface-1);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
   overflow: hidden;
   cursor: pointer;
   display: flex;
@@ -128,11 +161,14 @@
 
 /* Light theme: same construction, inverted so the glass stays pale. */
 :global(html[data-theme="light"]) .header {
-  background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0.80) 0%,
-    rgba(245, 240, 232, 0.62) 100%);
+  background:
+    radial-gradient(120% 150% at 50% 0%,
+      rgba(138, 106, 46, 0.07) 0%,
+      transparent 66%),
+    linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.84) 0%,
+      rgba(245, 240, 232, 0.62) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 0 rgba(192, 120, 0, 0.10),
-    0 10px 30px -20px rgba(0, 0, 0, 0.25);
+    0 14px 34px -22px rgba(26, 19, 0, 0.35);
 }
