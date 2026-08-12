@@ -56,6 +56,17 @@
   flex-shrink: 0;
 }
 
+/* How much of the model the number is actually built from. Small and quiet —
+   it qualifies the reading without arguing with it. */
+.coverage {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: -2px;
+  text-align: center;
+}
+
 .ringWrap {
   display: flex;
   align-items: center;

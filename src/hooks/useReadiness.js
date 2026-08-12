@@ -29,7 +29,10 @@ export function useReadiness(client = null) {
   const calTgt  = client?.calories ?? profile?.calories
   const protTgt = client?.protein  ?? profile?.protein
 
-  const [state, setState] = useState({ score: null, components: [], muscleGroups: [], loading: true })
+  const [state, setState] = useState({
+    score: null, components: [], muscleGroups: [],
+    provisional: true, covered: 0, loading: true,
+  })
 
   useEffect(() => {
     if (!uid) return
@@ -42,8 +45,11 @@ export function useReadiness(client = null) {
         .eq('user_id', uid).eq('date', today).maybeSingle(),
       supabase.from('food_logs').select('kcal,protein')
         .eq('user_id', uid).eq('date', yesterday),
+      // Yesterday, like nutrition and hydration. Measured on today, habits read
+      // 0% at breakfast and 100% by bedtime, so the score climbed through the
+      // day for reasons that have nothing to do with how ready you are.
       supabase.from('habit_completions').select('habit_id,completed')
-        .eq('user_id', uid).eq('date', today),
+        .eq('user_id', uid).eq('date', yesterday),
       supabase.from('water_logs').select('glasses')
         .eq('user_id', uid).eq('log_date', yesterday).maybeSingle(),
       Promise.all([
@@ -107,12 +113,12 @@ export function useReadiness(client = null) {
         nutritionScore = Math.round(parts.reduce((s, v) => s + v, 0) / parts.length * 100)
       }
 
-      // ── Habits (20%) — today's progress ────────────────────────
+      // ── Habits (20%) — yesterday's completion ──────────────────
       const totalHabits = habits.length
       const doneHabits  = habits.filter(h => h.completed).length
       const habitsScore = totalHabits > 0 ? Math.round(doneHabits / totalHabits * 100) : null
 
-      // ── Hydration (15%) — today vs 8-glass target ──────────────
+      // ── Hydration (15%) — yesterday vs 8-glass target ──────────
       const hydrationScore = Math.round(Math.min(1, water / 8) * 100)
 
       // ── Training (5%) — consistency: target 4 days/week ────────
@@ -133,7 +139,16 @@ export function useReadiness(client = null) {
         ? Math.round(available.reduce((s, c) => s + c.score * c.weight, 0) / totalWeight)
         : null
 
-      setState({ score, components, muscleGroups, loading: false })
+      // Renormalising keeps the arithmetic sound but hides how much of the
+      // model is missing. Recovery is the only component that asks how you
+      // actually feel — sleep, energy, stress, soreness — and it is 35% of the
+      // weight. Without it the rest is a summary of what you logged, not a
+      // reading of how ready you are, so the number is reported as provisional
+      // rather than dressed up as a verdict.
+      const provisional = recoveryScore === null
+      const covered     = available.length
+
+      setState({ score, components, muscleGroups, provisional, covered, loading: false })
     })
   }, [uid, calTgt, protTgt])
 

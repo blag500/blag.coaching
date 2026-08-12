@@ -11,7 +11,7 @@ function scoreColor(score) {
   return '#ef5350'
 }
 
-function ReadinessRing({ score, label }) {
+function ReadinessRing({ score, label, provisional }) {
   const r    = 46
   const circ = 2 * Math.PI * r
   const pct  = score !== null ? score / 100 : 0
@@ -22,20 +22,26 @@ function ReadinessRing({ score, label }) {
     <div className={styles.ringWrap}>
       <svg viewBox="0 0 100 100" width="110" height="110" aria-hidden="true">
         <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+        {/* A provisional reading is drawn at reduced strength, so the ring says
+            "not the whole picture" before any label has been read. */}
         <circle
           cx="50" cy="50" r={r} fill="none"
           stroke={color} strokeWidth="7"
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
           transform="rotate(-90 50 50)"
+          opacity={provisional ? 0.4 : 1}
           style={{ transition: 'stroke-dasharray 0.5s ease' }}
         />
+        {/* Oswald, not Bebas — Bebas ships no Cyrillic and this sat on a
+            fallback font ever since the heading face was swapped. */}
         <text x="50" y="46" textAnchor="middle" fill={color}
-          fontSize="24" fontFamily="'Bebas Neue', sans-serif" letterSpacing="1">
-          {score ?? '?'}
+          fontSize="24" fontFamily="var(--font-heading)" letterSpacing="1"
+          opacity={provisional ? 0.75 : 1}>
+          {score === null ? '?' : provisional ? `≈${score}` : score}
         </text>
         <text x="50" y="59" textAnchor="middle" fill="rgba(242,232,207,0.35)"
-          fontSize="7" fontFamily="'JetBrains Mono', monospace">
+          fontSize="7" fontFamily="var(--font-body)">
           {label}
         </text>
       </svg>
@@ -68,7 +74,7 @@ function HoursLabel(hours) {
 }
 
 export default function ReadinessWidget({ onNavigate, client = null }) {
-  const { score, components, muscleGroups, loading } = useReadiness(client)
+  const { score, components, muscleGroups, provisional, covered, loading } = useReadiness(client)
   const { t } = useSettings()
 
   if (loading) return (
@@ -92,13 +98,15 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
 
   function scoreLabel(s) {
     if (s === null) return '—'
+    // Without the check-in the widget knows nothing about sleep, energy, stress
+    // or soreness, so it does not get to call the day excellent.
+    if (provisional) return t('readiness.partial')
     if (s >= 80) return t('readiness.excellent')
     if (s >= 60) return t('readiness.good')
     if (s >= 40) return t('readiness.moderate')
     return t('readiness.low')
   }
 
-  const recoveryLogged = components.find(c => c.id === 'recovery')?.score !== null
   const Tag = onNavigate ? 'button' : 'div'
 
   return (
@@ -110,7 +118,12 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
       <div className={styles.topRow}>
         <div className={styles.left}>
           <span className={styles.cardLabel}>{t('readiness.title')}</span>
-          <ReadinessRing score={score} label={scoreLabel(score)} />
+          <ReadinessRing score={score} label={scoreLabel(score)} provisional={provisional} />
+          {covered < 5 && (
+            <span className={styles.coverage}>
+              {t('readiness.coverage').replace('{n}', covered)}
+            </span>
+          )}
         </div>
         <div className={styles.bars}>
           {components.map(c => (
@@ -143,7 +156,7 @@ export default function ReadinessWidget({ onNavigate, client = null }) {
         </div>
       )}
 
-      {!recoveryLogged && (
+      {provisional && (
         <div className={styles.cta}>
           {t('readiness.cta')}
         </div>
