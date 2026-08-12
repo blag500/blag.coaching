@@ -108,7 +108,10 @@ Deno.serve(async (req) => {
   // Fetch clients and reminder settings as two separate queries (avoids PostgREST schema-cache join issues)
   const [{ data: clients, error: clientsErr }, { data: allSettings }] = await Promise.all([
     supabase.from('profiles').select('id, email, name, calories').not('email', 'is', null),
-    supabase.from('reminder_settings').select('user_id, email_enabled, weight_email, habits_email, supplements_email, water_email, food_email, training_email'),
+    // Every slot's column has to be named here. An explicit list means a new
+    // slot fails silently: the flag comes back undefined, isEnabled() reads it
+    // as "off", and the reminder goes to nobody without any error to notice.
+    supabase.from('reminder_settings').select('user_id, email_enabled, checkin_email, weight_email, habits_email, supplements_email, water_email, food_email, training_email'),
   ])
 
   if (clientsErr || !clients?.length) {
