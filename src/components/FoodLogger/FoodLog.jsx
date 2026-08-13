@@ -252,7 +252,20 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
               )}
 
               <div className={styles.entryLeft}>
-                <span className={styles.entryName}>{entry.name}</span>
+                <span className={styles.entryName}>
+                  {entry.name}
+                  {/* Small and beside the name, not a banner: the estimate is
+                      usually close, and a row of warnings down the day would
+                      teach everyone to stop reading them. */}
+                  {entry.estimated && (
+                    <svg viewBox="0 0 20 20" width="11" height="11" className={styles.estMark}
+                         aria-label="изчислено приблизително" role="img">
+                      <path d="M5 8.2c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0M5 12.4c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0"
+                            fill="none" stroke="currentColor" strokeWidth="1.7"
+                            strokeLinecap="round" transform="translate(1,0)" />
+                    </svg>
+                  )}
+                </span>
                 <span className={styles.entryMacros}>
                   {entry.grams > 0 && <><span className={styles.entryGrams}>{entry.grams}g</span> · </>}
                   {entry.kcal} ккал · П{entry.protein}g · В{entry.carbs}g · М{entry.fat}g

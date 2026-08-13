@@ -525,3 +525,13 @@
 }
 
 
+
+/* The approximate sign beside a name whose numbers a model guessed. Muted, and
+   riding just above the baseline so it reads as a mark on the name rather than
+   as part of it. */
+.estMark {
+  margin-left: 5px;
+  vertical-align: -1px;
+  color: var(--accent);
+  opacity: 0.75;
+}

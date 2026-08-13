@@ -279,3 +279,28 @@
 .helpLink:active {
   opacity: 1;
 }
+
+/* One sentence for someone who has never heard of this. Smaller than the
+   headline, larger than the fine print: it is the only thing on the screen
+   that explains what the button leads to. */
+.pitch {
+  margin: 14px auto 0;
+  max-width: 30ch;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Last and quietest. A second invitation with the weight of the first would
+   make the visitor choose rather than act, and fewer would do either. */
+.contact {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.35);
+  padding-bottom: 1px;
+}

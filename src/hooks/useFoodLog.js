@@ -29,6 +29,8 @@ export function useFoodLog() {
 
   useEffect(() => { fetchLog() }, [fetchLog])
 
+  /** `food.estimated` is set by whichever route produced it — a model's reading
+   *  is carried into the row so the day can still be read honestly later. */
   async function addEntry(food, grams) {
     if (!user) return
     const ratio = grams / 100
@@ -41,6 +43,7 @@ export function useFoodLog() {
       protein: Math.round(food.per100g.protein * ratio * 10) / 10,
       carbs:   Math.round(food.per100g.carbs   * ratio * 10) / 10,
       fat:     Math.round(food.per100g.fat     * ratio * 10) / 10,
+      estimated: food.estimated ?? null,
     }
     const tempId = `temp-${Date.now()}`
     setLog(prev => [...prev, { ...entry, id: tempId }])
@@ -53,7 +56,7 @@ export function useFoodLog() {
     }
   }
 
-  async function addRawEntry({ name, grams, kcal, protein, carbs, fat }) {
+  async function addRawEntry({ name, grams, kcal, protein, carbs, fat, estimated }) {
     if (!user) return
     const entry = {
       user_id: user.id,
@@ -64,6 +67,7 @@ export function useFoodLog() {
       protein: Math.round(protein * 10) / 10,
       carbs:   Math.round(carbs   * 10) / 10,
       fat:     Math.round(fat     * 10) / 10,
+      estimated: estimated ?? null,
     }
     const tempId = `temp-${Date.now()}`
     setLog(prev => [...prev, { ...entry, id: tempId }])

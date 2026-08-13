@@ -64,6 +64,14 @@ export default function LandingPage({ onContinue, onLogin }) {
       <div className={styles.hero}>
         <h1 className={styles.headline}>ПОСТИГНИ<br />ЦЕЛТА СИ</h1>
         <p className={styles.sub}>Хранене · Тренировки · Прогрес</p>
+        {/* Someone arriving from a video has never heard of this and cannot
+            tell it from any other tracker. One sentence, saying the thing that
+            is actually different: a person reads the numbers, not only an app
+            that collects them. */}
+        <p className={styles.pitch}>
+          Приложение, което следи храненето и тренировките ти — и треньор,
+          който ги гледа.
+        </p>
       </div>
 
       <div className={styles.bottom}>
@@ -74,6 +82,19 @@ export default function LandingPage({ onContinue, onLogin }) {
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
         </button>
+
+        {/* Deliberately quiet and last. Two equal invitations on one screen get
+            fewer of both — the visitor stops to choose instead of acting. This
+            is here for the one who wants to talk before signing up, not to
+            compete with the button above it. */}
+        <a
+          className={styles.contact}
+          href="https://instagram.com/blag.coaching"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Или ми пиши в Instagram
+        </a>
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import EstimateFlag from '../EstimateFlag/EstimateFlag'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { searchFoods } from '../../utils/openFoodFacts'
@@ -187,6 +188,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
       if (data?.type === 'multi' && Array.isArray(data.items)) {
         setMultiItems(data.items.map(item => ({
           ...item,
+          estimated: true,
           // store per-gram ratios so we can recalculate when grams change
           _pgKcal:    item.kcal    / item.grams,
           _pgProtein: item.protein / item.grams,
@@ -197,7 +199,8 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
       }
       // Single food response
       if (!data?.per100g) throw new Error('invalid response')
-      setResult(data)
+      // Stamped at the source, so the row remembers what the panel warned about.
+      setResult({ ...data, estimated: true })
       setGrams(String(data.typical_grams || 100))
     } catch {
       setError('Неуспешно търсене. Провери връзката и опитай отново.')
@@ -228,7 +231,8 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         throw new Error(detail)
       }
       if (!data?.per100g) throw new Error(`invalid response: ${JSON.stringify(data)}`)
-      setResult(data)
+      // Stamped at the source, so the row remembers what the panel warned about.
+      setResult({ ...data, estimated: true })
       setGrams(String(data.typical_grams || 100))
     } catch (err) {
       setError(`Грешка: ${err.message}`)
@@ -282,6 +286,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
       if (data?.type === 'multi' && Array.isArray(data.items)) {
         setMultiItems(data.items.map(item => ({
           ...item,
+          estimated: true,
           _pgKcal:    item.kcal    / item.grams,
           _pgProtein: item.protein / item.grams,
           _pgCarbs:   item.carbs   / item.grams,
@@ -290,7 +295,8 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         return
       }
       if (!data?.per100g) throw new Error(`invalid response: ${JSON.stringify(data)}`)
-      setResult(data)
+      // Stamped at the source, so the row remembers what the panel warned about.
+      setResult({ ...data, estimated: true })
       setGrams(String(data.typical_grams || 100))
     } catch (err) {
       setError(`Грешка: ${err.message}`)
@@ -386,6 +392,9 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         const ratio = effG / 100
         return (
         <div ref={addPanelRef} className={styles.addPanel}>
+          {/* Every route into this panel — a typed description, a photographed
+              label, a photographed plate — ends in a machine's reading. */}
+          <EstimateFlag />
           <input
             className={styles.nameInput}
             type="text"
@@ -456,6 +465,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         )
       })()}
 
+      {multiItems && <EstimateFlag />}
       {multiItems && (
         <div ref={addPanelRef}>
           <MultiAddPanel

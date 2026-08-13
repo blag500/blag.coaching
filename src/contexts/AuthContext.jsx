@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { readSource } from '../utils/source'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
@@ -60,7 +61,11 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) { setAuthError(error.message); return false }
     if (data.user) {
-      await supabase.from('profiles').update({ name }).eq('id', data.user.id)
+      // The one moment there is an account to hang it on. Null for everyone who
+      // arrived by knowing the address, which is most people.
+      await supabase.from('profiles')
+        .update({ name, source: readSource() })
+        .eq('id', data.user.id)
       // Fire-and-forget: notify coach of new registration
       supabase.functions.invoke('notify-new-registration', {
         body: { userId: data.user.id, email, name },

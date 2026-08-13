@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import EstimateFlag from '../EstimateFlag/EstimateFlag'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import BarcodeScanner from '../FoodLogger/BarcodeScanner'
@@ -310,6 +311,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     >📷</button>
                   </div>
                   {pickerError && <p className={styles.pickerError}>{pickerError}</p>}
+                  {pickerResults.length > 0 && <EstimateFlag />}
                   {pickerResults.map((item, i) => (
                     <div key={i} className={styles.pickerResult} onClick={() => selectPickerResult(item)}>
                       <div className={styles.pickerResultName}>{item.name}</div>

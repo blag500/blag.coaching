@@ -1,0 +1,25 @@
+/* Loud enough to be read before the numbers are trusted, quiet enough not to
+   look like an error — the estimate is usually close, it just is not a label. */
+.flag {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 8px;
+  padding: 7px 9px;
+  border-radius: var(--r-sm);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.mark {
+  flex-shrink: 0;
+}
+
+.flag b {
+  font-weight: 600;
+  color: var(--text);
+}
