@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { classifyMuscle, GROUP_LABELS, GROUP_COLORS } from '../../utils/recovery'
+import Pictogram from '../Pictogram/Pictogram'
+import DayLog from './DayLog'
 import styles from './WorkoutCalendar.module.css'
 
 const MONTHS = [
@@ -23,7 +25,7 @@ const GROUPS = ['upper', 'lower', 'pull']
  * A day still never tries to name the block inside the cell. That is one tap
  * away, in words, underneath — and words never need a legend.
  */
-export default function WorkoutCalendar({ completions }) {
+export default function WorkoutCalendar({ completions, blocks = [], lifts = {}, onLogged }) {
   const today = new Date()
   const todayStr = today.toISOString().slice(0, 10)
 
@@ -79,6 +81,12 @@ export default function WorkoutCalendar({ completions }) {
 
   const chosen = selected ? byDate[selected] : null
 
+  const usedGroups = useMemo(() => {
+    const seen = new Set()
+    for (const e of Object.values(byDate)) for (const g of e.groups) seen.add(g)
+    return GROUPS.filter(g => seen.has(g))
+  }, [byDate])
+
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
@@ -132,18 +140,22 @@ export default function WorkoutCalendar({ completions }) {
         })}
       </div>
 
-      {/* Three entries, one line. This is the legend the seven-colour version
-          could never have had. */}
-      <div className={styles.legend}>
-        {GROUPS.map(g => (
-          <span key={g} className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: GROUP_COLORS[g] }} />
-            {GROUP_LABELS[g]}
-          </span>
-        ))}
-      </div>
+      {/* Only the groups this person actually trains. A fixed list of three put
+          ГРЪБ in the legend of someone on an upper/lower split, where it never
+          appears — a key to a colour that is not on the page. */}
+      {usedGroups.length > 0 && (
+        <div className={styles.legend}>
+          {usedGroups.map(g => (
+            <span key={g} className={styles.legendItem} style={{ color: GROUP_COLORS[g] }}>
+              <Pictogram name={g} size={15} />
+              <span className={styles.legendLabel}>{GROUP_LABELS[g]}</span>
+            </span>
+          ))}
+        </div>
+      )}
 
-      {/* What was done, in words. The grid never tries to say this. */}
+      {/* The day opens here: what was done, then its exercises, editable. The
+          calendar is the log book, so the log book is where logging happens. */}
       <div className={styles.detail}>
         {chosen ? (
           <>
@@ -158,6 +170,15 @@ export default function WorkoutCalendar({ completions }) {
           <span className={styles.detailEmpty}>Избери ден с тренировка</span>
         )}
       </div>
+
+      {chosen && (
+        <DayLog
+          date={selected}
+          blockLabels={chosen.blocks}
+          blocks={blocks}
+          onLogged={onLogged}
+        />
+      )}
     </div>
   )
 }

@@ -95,6 +95,44 @@ const SHAPES = {
     solid: <rect x="8.8" y="10" width="6.4" height="4" rx="0.8" />,
   },
 
+  // ── Muscle groups ──
+  // A torso seen from the front, a pair of legs, and a back with its wings. At
+  // this size the body has to be read from its silhouette, so each one keeps
+  // only the outline that no other could be mistaken for.
+  upper: {
+    line: (
+      <>
+        <path d="M8.4 4.2 12 6l3.6-1.8 3.2 1.6-1 4.2-1.6-.5v8.3a1 1 0 0 1-1 1H7.8a1 1 0 0 1-1-1V9.5l-1.6.5-1-4.2z" />
+        <path d="M12 6v5" />
+      </>
+    ),
+    solid: <path d="M9.3 12.4h5.4v6.4H9.3z" />,
+  },
+  lower: {
+    line: (
+      <>
+        <path d="M7.6 3.4h8.8l-.7 5.4-1 5.1-.5 6.7h-3l-.6-6.6-.5-3-.5 3-.6 6.6h-3l-.5-6.7-1-5.1z" />
+      </>
+    ),
+    solid: <path d="M7.6 3.4h8.8l-.5 4H8.1z" />,
+  },
+  pull: {
+    line: (
+      <>
+        <path d="M12 4.4c-1.2 0-2.1.9-2.1 2s.9 2 2.1 2 2.1-.9 2.1-2-.9-2-2.1-2z" />
+        <path d="M12 8.8v10.8" />
+        <path d="M12 9.6 5.2 12l1.4 4.6L12 14.2z" />
+        <path d="M12 9.6 18.8 12l-1.4 4.6L12 14.2z" />
+      </>
+    ),
+    solid: (
+      <>
+        <path d="M12 9.6 5.2 12l1.4 4.6L12 14.2z" />
+        <path d="M12 9.6 18.8 12l-1.4 4.6L12 14.2z" />
+      </>
+    ),
+  },
+
   // Anything a coach invents: still drawn, still the same construction.
   generic: {
     line: <circle cx="12" cy="12" r="7.4" />,

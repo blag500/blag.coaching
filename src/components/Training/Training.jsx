@@ -363,7 +363,11 @@ export default function Training({ onMenuOpen }) {
               one, and every previous version failed by making one replace the
               other. */}
           <h2 className={`${styles.historyTitle} ${styles.historyTitleSecond}`}>ДНЕВНИК</h2>
-          <WorkoutCalendar completions={completions} />
+          <WorkoutCalendar
+            completions={completions}
+            blocks={blocks ?? []}
+            onLogged={refreshLifts}
+          />
         </section>
       )}
 
