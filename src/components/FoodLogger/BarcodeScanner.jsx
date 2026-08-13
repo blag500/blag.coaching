@@ -25,6 +25,8 @@ export default function BarcodeScanner({ onFound, onClose }) {
   const [saving, setSaving] = useState(false)
   // Torch is a camera-track capability, not a browser API — absent on iOS and
   // on any device without a rear lamp, so the button only shows when supported.
+  // Whether a code has already been acted on this session.
+  const handledRef = useRef(false)
   const [hasTorch, setHasTorch] = useState(false)
   const [torchOn, setTorchOn] = useState(false)
 
@@ -66,6 +68,12 @@ export default function BarcodeScanner({ onFound, onClose }) {
 
     function handleCode(code) {
       if (cancelled) return
+      // One scan, one answer. The decoder keeps firing on every frame it can
+      // read, so without this the second detection reopens a lookup while the
+      // first one's result is already on screen — which is what made the sheet
+      // flip between "searching" and the form, forever, with no way to type.
+      if (handledRef.current) return
+      handledRef.current = true
       stopStream()
       setStatus('found')
       lookupBarcode(code)
@@ -113,10 +121,15 @@ export default function BarcodeScanner({ onFound, onClose }) {
         const { BrowserMultiFormatReader } = await import('@zxing/browser')
         if (cancelled) return
         const reader = new BrowserMultiFormatReader()
-        readerRef.current = reader
-        reader.decodeFromVideoElement(videoRef.current, (result) => {
-          if (result && !cancelled) handleCode(result.getText())
-        })
+        // decodeFromVideoElement resolves to a controls object, and stopping is
+        // controls.stop(). The reader itself has no reset() — the call that was
+        // here did nothing at all, silently, which is why the decoder ran on.
+        const controls = await reader.decodeFromVideoElement(
+          videoRef.current,
+          (result) => { if (result && !cancelled) handleCode(result.getText()) },
+        )
+        if (cancelled) { controls.stop(); return }
+        readerRef.current = controls
       } catch {
         if (!cancelled) {
           setErrorMsg('Разпознаването не тръгна. Въведи номера ръчно.')
@@ -142,7 +155,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
   function stopStream() {
     setTorchOn(false)
     cancelAnimationFrame(rafRef.current)
-    try { readerRef.current?.reset?.() } catch { /* ignore */ }
+    try { readerRef.current?.stop?.() } catch { /* already stopped */ }
     readerRef.current = null
     streamRef.current?.getTracks().forEach(t => t.stop())
     streamRef.current = null
@@ -359,7 +372,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
 
             <button
               className={styles.retryBtn}
-              onClick={() => { setErrorMsg(''); setStatus('manual') }}
+              onClick={() => { setErrorMsg(''); handledRef.current = false; setStatus('manual') }}
               type="button"
             >
               ← Друг баркод
