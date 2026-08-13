@@ -193,3 +193,19 @@
   }
   .divider { width: 56px; }
 }
+
+/* Temporary, for a recording. Plain gold rather than the metal gradient: the
+   sheen is what makes BLAG the wordmark, and a second metal line beneath it
+   would compete with the thing it is meant to be labelling. */
+.kicker {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.42em;
+  /* The tracking adds a trailing gap that pushes the word off centre. */
+  text-indent: 0.42em;
+  text-transform: lowercase;
+  color: rgba(var(--accent-rgb), 0.72);
+  animation: titleReveal 1s var(--ease-out) 0.85s both;
+}

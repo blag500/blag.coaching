@@ -21,6 +21,8 @@ export default function Splash({ onDone }) {
         <div className={styles.armLeft} aria-hidden="true" />
         <div className={styles.brandCenter}>
           <h1 className={styles.title}>BLAG</h1>
+          {/* Temporary: back for a recording, to be taken off again after. */}
+          <span className={styles.kicker}>coaching</span>
           <div className={styles.divider} aria-hidden="true" />
           {/* Broken deliberately after the comma — the centre column is narrow
               between the two arms, and left to wrap it splits as "BE BLAG, BE". */}
