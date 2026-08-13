@@ -20,15 +20,7 @@ export default function Splash({ onDone }) {
       <div className={styles.armsRow}>
         <div className={styles.armLeft} aria-hidden="true" />
         <div className={styles.brandCenter}>
-          {/* One wordmark, not two lines that resemble each other. The metal
-              runs across the whole block: given to each line separately, each
-              gets the full gradient inside its own box and the sheen restarts
-              on the second line, which reads as two things stacked. */}
-          <h1 className={styles.title}>
-            BLAG
-            {/* Temporary: back for a recording, to be taken off again after. */}
-            <span className={styles.kicker}>coaching</span>
-          </h1>
+          <h1 className={styles.title}>BLAG</h1>
           <div className={styles.divider} aria-hidden="true" />
           {/* Broken deliberately after the comma — the centre column is narrow
               between the two arms, and left to wrap it splits as "BE BLAG, BE". */}

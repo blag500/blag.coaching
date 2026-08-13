@@ -198,19 +198,3 @@
   .divider { width: 56px; }
 }
 
-/* Temporary, for a recording.
-
-   Same face, same case, same tracking as BLAG — one wordmark, not a caption
-   under a logo. Sized at half, because COACHING is eight characters to BLAG's
-   four and equal size would make the second line twice as wide as the first.
-   The metal is inherited from .title rather than repeated, so a single sheen
-   crosses both lines. */
-.kicker {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.5em;
-  letter-spacing: 0.2em;
-  /* Tracking adds a gap after the last letter; matching indent re-centres it. */
-  text-indent: 0.2em;
-  text-transform: uppercase;
-}
