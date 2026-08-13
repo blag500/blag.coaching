@@ -822,7 +822,7 @@ function LiftsTab({ clientId }) {
     if (subTab !== 'progression') return
     if (allLogs !== null) return
     supabase.from('exercise_logs')
-      .select('id, exercise_name, date, weight, reps, sets, notes')
+      .select('id, exercise_name, date, weight, reps, sets, notes, set_index, replaces')
       .eq('user_id', clientId)
       .order('date', { ascending: true })
       .then(({ data }) => {
@@ -1083,11 +1083,68 @@ function LiftsTab({ clientId }) {
   )
 }
 
+/**
+ * One entry per session, not per set.
+ *
+ * A workout used to be a single row carrying "sets: 4". Since one row per set
+ * it is four rows, so the table listed the same date four times and the chart
+ * drew four points inside one day — 80×10, 9, 7, 6 came out as a descent, as
+ * though the client had weakened over the course of an hour. The more sets
+ * someone logs, the worse it reads.
+ */
+function toSessions(rows) {
+  const byDate = {}
+  for (const r of rows) (byDate[r.date] ??= []).push(r)
+
+  return Object.entries(byDate)
+    .map(([date, sets]) => {
+      const ordered = [...sets].sort((a, b) => (a.set_index ?? 0) - (b.set_index ?? 0))
+      const withWeight = ordered.filter(r => r.weight != null)
+      // Judged on the best set by what it was worth, so a heavier set for fewer
+      // reps does not read as a better day than a lighter one for many more.
+      const top = withWeight.reduce(
+        (best, r) => (!best || e1RM(r) > e1RM(best) ? r : best), null)
+      return {
+        date,
+        sets: ordered,
+        top,
+        // Legacy rows are a whole exercise carrying its own count; rows since
+        // are one set each. Counting the column is right for both.
+        setCount: ordered.reduce((n, r) => n + (r.sets || 1), 0),
+        // What this stood in for, if the client swapped a machine that day —
+        // otherwise a substitute shows up as an unexplained new exercise.
+        replaces: ordered.find(r => r.replaces)?.replaces ?? null,
+        volume: ordered.reduce((v, r) => v + (r.weight || 0) * (r.reps || 0) * (r.sets || 1), 0),
+      }
+    })
+    .sort((a, b) => a.date.localeCompare(b.date))
+}
+
+/** Epley: folds weight and reps into one comparable number. */
+function e1RM(r) {
+  if (!r?.weight) return 0
+  return r.weight * (1 + (r.reps || 1) / 30)
+}
+
+/** "4 × 10, 9, 7, 6" when the sets differ, "4 × 8" when they do not. */
+function setsLabel(s) {
+  const reps = s.sets.filter(r => r.weight != null).map(r => r.reps).filter(Boolean)
+  if (!reps.length) return '—'
+  // Four eights are "4 × 8", not "4 × 8, 8, 8, 8" — repeating a number four
+  // times says the same thing four times.
+  const same = new Set(reps).size === 1
+  return same ? `${s.setCount} × ${reps[0]}` : `${s.setCount} × ${reps.join(', ')}`
+}
+
 // Editable progression history table for the coach view
 function ProgHistoryTable({ rows, onDelete, onUpdate }) {
   const [editId, setEditId] = useState(null)
   const [draft,  setDraft]  = useState({})
   const [saving, setSaving] = useState(false)
+  const [open,   setOpen]   = useState(null)   // which session shows its sets
+
+  // Newest first, as the table has always read.
+  const sessions = toSessions(rows).reverse()
 
   function startEdit(row) {
     setEditId(row.id)
@@ -1112,6 +1169,48 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
     setEditId(null)
   }
 
+  /** One set: the same editable row the table has always had. */
+  function renderSetRow(row) {
+    return editId === row.id ? (
+            <div key={row.id} className={`${styles.exHistoryRow} ${styles.exHistoryRowEdit}`}>
+              <span className={styles.exHistoryDate}>
+                {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+              </span>
+              <input
+                className={styles.progEditInput}
+                type="number" min="0" step="0.5" placeholder="кг"
+                value={draft.weight}
+                onChange={e => setDraft(p => ({ ...p, weight: e.target.value }))}
+              />
+              <div className={styles.progEditPair}>
+                <input className={styles.progEditInput} type="number" min="0" placeholder="сер."
+                  value={draft.sets} onChange={e => setDraft(p => ({ ...p, sets: e.target.value }))} />
+                <span className={styles.progEditSep}>×</span>
+                <input className={styles.progEditInput} type="number" min="0" placeholder="повт."
+                  value={draft.reps} onChange={e => setDraft(p => ({ ...p, reps: e.target.value }))} />
+              </div>
+              <div className={styles.progEditActions}>
+                <button className={styles.progSaveBtn} onClick={saveEdit} disabled={saving} type="button">✓</button>
+                <button className={styles.progCancelBtn} onClick={() => setEditId(null)} type="button">✕</button>
+              </div>
+            </div>
+    ) : (
+            <div key={row.id} className={styles.exHistoryRow}>
+              <span className={styles.exHistoryDate}>
+                {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+              </span>
+              <span className={styles.exHistoryKg}>
+                {row.weight != null ? `${row.weight} кг` : '—'}
+              </span>
+              <span>{row.sets && row.reps ? `${row.sets} × ${row.reps}` : '—'}</span>
+              <div className={styles.progEditActions}>
+                <button className={styles.progEditBtn} onClick={() => startEdit(row)} type="button" aria-label="Редактирай">✎</button>
+                <button className={styles.progDeleteBtn} onClick={() => onDelete(row.id)} type="button" aria-label="Изтрий">✕</button>
+              </div>
+            </div>
+    )
+  }
+
   return (
     <div className={styles.exHistoryTable}>
       <div className={styles.exHistoryHeader}>
@@ -1120,55 +1219,60 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
         <span>Серии × Повт.</span>
         <span />
       </div>
-      {rows.map((row) =>
-        editId === row.id ? (
-          <div key={row.id} className={`${styles.exHistoryRow} ${styles.exHistoryRowEdit}`}>
-            <span className={styles.exHistoryDate}>
-              {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
-            </span>
-            <input
-              className={styles.progEditInput}
-              type="number" min="0" step="0.5" placeholder="кг"
-              value={draft.weight}
-              onChange={e => setDraft(p => ({ ...p, weight: e.target.value }))}
-            />
-            <div className={styles.progEditPair}>
-              <input className={styles.progEditInput} type="number" min="0" placeholder="сер."
-                value={draft.sets} onChange={e => setDraft(p => ({ ...p, sets: e.target.value }))} />
-              <span className={styles.progEditSep}>×</span>
-              <input className={styles.progEditInput} type="number" min="0" placeholder="повт."
-                value={draft.reps} onChange={e => setDraft(p => ({ ...p, reps: e.target.value }))} />
+      {sessions.map(s => {
+        const isOpen = open === s.date
+        const multi  = s.sets.length > 1
+        return (
+          <div key={s.date} className={styles.progSession}>
+            <div
+              className={styles.exHistoryRow}
+              onClick={multi ? () => setOpen(isOpen ? null : s.date) : undefined}
+              style={multi ? { cursor: 'pointer' } : undefined}
+            >
+              <span className={styles.exHistoryDate}>
+                {new Date(s.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+              </span>
+              <span className={styles.exHistoryKg}>
+                {s.top?.weight != null ? `${s.top.weight} кг` : '—'}
+              </span>
+              <span>{setsLabel(s)}</span>
+              <div className={styles.progEditActions}>
+                {/* Sets open for editing; a single legacy row edits in place,
+                    so nothing that worked before stops working. */}
+                {multi
+                  ? <button className={styles.progEditBtn} type="button" aria-label="Серии">{isOpen ? '▴' : '▾'}</button>
+                  : <button className={styles.progEditBtn} onClick={() => startEdit(s.sets[0])} type="button" aria-label="Редактирай">✎</button>}
+                {!multi && (
+                  <button className={styles.progDeleteBtn} onClick={() => onDelete(s.sets[0].id)} type="button" aria-label="Изтрий">✕</button>
+                )}
+              </div>
             </div>
-            <div className={styles.progEditActions}>
-              <button className={styles.progSaveBtn} onClick={saveEdit} disabled={saving} type="button">✓</button>
-              <button className={styles.progCancelBtn} onClick={() => setEditId(null)} type="button">✕</button>
-            </div>
-          </div>
-        ) : (
-          <div key={row.id} className={styles.exHistoryRow}>
-            <span className={styles.exHistoryDate}>
-              {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
-            </span>
-            <span className={styles.exHistoryKg}>
-              {row.weight != null ? `${row.weight} кг` : '—'}
-            </span>
-            <span>{row.sets && row.reps ? `${row.sets} × ${row.reps}` : '—'}</span>
-            <div className={styles.progEditActions}>
-              <button className={styles.progEditBtn} onClick={() => startEdit(row)} type="button" aria-label="Редактирай">✎</button>
-              <button className={styles.progDeleteBtn} onClick={() => onDelete(row.id)} type="button" aria-label="Изтрий">✕</button>
-            </div>
+
+            {/* Total moved, where the top set alone hides a harder session. */}
+            {(s.volume > 0 || s.replaces) && (
+              <span className={styles.progVolume}>
+                {s.volume > 0 && `обем ${Math.round(s.volume).toLocaleString('bg-BG')} кг`}
+                {s.volume > 0 && s.replaces && ' · '}
+                {s.replaces && `вместо ${s.replaces}`}
+              </span>
+            )}
+
+            {isOpen && s.sets.map(row => renderSetRow(row))}
           </div>
         )
-      )}
+      })}
     </div>
   )
 }
 
 // Simple weight-over-time sparkline for the progression view
 function LiftProgressChart({ data }) {
-  const pts = data
-    .filter(r => r.weight != null)
-    .map(r => ({ w: parseFloat(r.weight) }))
+  // One point per session, on the best set of the day by what it was worth.
+  // Plotting every row drew four points inside a single workout, so a normal
+  // set of 10, 9, 7, 6 came out as a week-long decline.
+  const pts = toSessions(data)
+    .filter(s => s.top?.weight != null)
+    .map(s => ({ w: parseFloat(s.top.weight) }))
   if (pts.length < 2) return null
 
   const W = 280, H = 72

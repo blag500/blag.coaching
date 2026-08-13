@@ -2316,3 +2316,18 @@
   border-color: rgba(239, 83, 80, 0.3);
 }
 
+
+/* A session and, when it is opened, the sets under it. */
+.progSession {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Total moved that day — where the top set alone hides a harder session. */
+.progVolume {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  padding: 0 0 6px 2px;
+  font-variant-numeric: tabular-nums;
+}
