@@ -21,7 +21,7 @@ const sig = r => `${r.weight}|${r.reps}`
  * A small square beside the exercise: the photo if there is one, a camera if
  * there is not. Tapping a photo opens it; tapping the empty square adds one.
  */
-function ExerciseThumb({ name, url, busy, onPick, onZoom }) {
+function ExerciseThumb({ name, url, busy, onPick, onZoom, hint }) {
   const id = `ph-${name.replace(/\W+/g, '')}`
   if (url) {
     return (
@@ -32,6 +32,9 @@ function ExerciseThumb({ name, url, busy, onPick, onZoom }) {
         aria-label={`Виж ${name}`}
       >
         <img src={url} alt="" className={styles.thumbImg} />
+        {/* On a folded exercise the row reads as one closed thing, so the
+            picture needs to say it is still worth pressing. */}
+        {hint && <span className={styles.thumbHint} aria-hidden="true">⤢</span>}
       </button>
     )
   }
@@ -281,16 +284,33 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
         if (!isOpen) {
           return (
-            <button
-              key={`${ex.block}-${ex.name}`}
-              type="button"
-              className={styles.folded}
-              onClick={() => setOpen(p => ({ ...p, [ex.name]: true }))}
-            >
-              <span className={styles.foldedTick}>✓</span>
-              <span className={styles.foldedName}>{shown}</span>
-              <span className={styles.foldedSum}>{summarise(sets)}</span>
-            </button>
+            /* Two targets, not one: the picture opens the picture, the rest
+               opens the exercise. A container div rather than a button around
+               them, because a button inside a button is not valid markup and
+               browsers take it apart — the taps would land unpredictably. */
+            <div key={`${ex.block}-${ex.name}`} className={styles.folded}>
+              <ExerciseThumb
+                name={shown}
+                url={photos[shown]}
+                busy={uploading === ex.name}
+                hint
+                onPick={async file => {
+                  setUploading(ex.name)
+                  await upload(shown, file)
+                  setUploading(null)
+                }}
+                onZoom={setZoom}
+              />
+              <button
+                type="button"
+                className={styles.foldedMain}
+                onClick={() => setOpen(p => ({ ...p, [ex.name]: true }))}
+              >
+                <span className={styles.foldedTick}>✓</span>
+                <span className={styles.foldedName}>{shown}</span>
+                <span className={styles.foldedSum}>{summarise(sets)}</span>
+              </button>
+            </div>
           )
         }
 
