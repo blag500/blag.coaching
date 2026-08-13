@@ -227,3 +227,78 @@
   border-color: rgba(var(--accent-rgb), 0.4);
   color: var(--accent);
 }
+
+/* ── Exercise photo ───────────────────────────────────────────────────── */
+
+.thumb {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Empty and quiet: adding a photo is optional, and an empty slot shouting on
+   every row would be worse than no photos at all. */
+.thumbEmpty {
+  color: var(--muted);
+  font-size: 13px;
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.head {
+  align-items: center;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.94);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px;
+  cursor: zoom-out;
+}
+
+.lightboxImg {
+  max-width: 100%;
+  max-height: 78vh;
+  border-radius: var(--r-md);
+  object-fit: contain;
+}
+
+.lightboxName {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-align: center;
+}

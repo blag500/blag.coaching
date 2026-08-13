@@ -1,10 +1,45 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import styles from './DayLog.module.css'
 
 /** Blank row for a set that has not been entered yet. */
 const EMPTY = { id: null, weight: '', reps: '' }
+
+/**
+ * A small square beside the exercise: the photo if there is one, a camera if
+ * there is not. Tapping a photo opens it; tapping the empty square adds one.
+ */
+function ExerciseThumb({ name, url, busy, onPick, onZoom }) {
+  const id = `ph-${name.replace(/\W+/g, '')}`
+  if (url) {
+    return (
+      <button
+        type="button"
+        className={styles.thumb}
+        onClick={() => onZoom({ url, name })}
+        aria-label={`Виж ${name}`}
+      >
+        <img src={url} alt="" className={styles.thumbImg} />
+      </button>
+    )
+  }
+  return (
+    <>
+      <input
+        id={id}
+        type="file"
+        accept="image/*"
+        className={styles.fileInput}
+        onChange={e => { const f = e.target.files?.[0]; if (f) onPick(f); e.target.value = '' }}
+      />
+      <label htmlFor={id} className={`${styles.thumb} ${styles.thumbEmpty}`} title={`Снимка на ${name}`}>
+        {busy ? '…' : '▢'}
+      </label>
+    </>
+  )
+}
 
 /**
  * A day's exercises, opened from the calendar and written to in place.
@@ -26,6 +61,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   // planned name → what was actually done instead, for this day only.
   const [swap, setSwap] = useState({})
   const [editing, setEditing] = useState(null)
+  const { byName: photos, upload } = useExercisePhotos()
+  const [uploading, setUploading] = useState(null)
+  const [zoom, setZoom] = useState(null)
 
   const exercises = (blocks ?? [])
     .filter(b => blockLabels.includes(b.label))
@@ -138,12 +176,35 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
   return (
     <div className={styles.wrap}>
+      {/* Full size, over everything, dismissed by tapping anywhere — the point
+          is recognition, and recognition wants the picture big. */}
+      {zoom && (
+        <div className={styles.lightbox} onClick={() => setZoom(null)} role="dialog" aria-modal="true">
+          <img src={zoom.url} alt={zoom.name} className={styles.lightboxImg} />
+          <span className={styles.lightboxName}>{zoom.name}</span>
+        </div>
+      )}
+
       {exercises.map(ex => {
         const sets = rows[ex.name] ?? []
         const doneCount = sets.filter(s => s.id).length
         return (
           <div key={`${ex.block}-${ex.name}`} className={styles.exercise}>
             <div className={styles.head}>
+              {/* The picture, where the name alone is not enough. "Тяга в
+                  наклон" is four different movements depending on who wrote
+                  it, and the person reading it in the gym is the one guessing. */}
+              <ExerciseThumb
+                name={swap[ex.name] || ex.name}
+                url={photos[swap[ex.name] || ex.name]}
+                busy={uploading === ex.name}
+                onPick={async file => {
+                  setUploading(ex.name)
+                  await upload(swap[ex.name] || ex.name, file)
+                  setUploading(null)
+                }}
+                onZoom={setZoom}
+              />
               <span className={styles.nameWrap}>
                 <span className={styles.name}>{swap[ex.name] || ex.name}</span>
                 <button
