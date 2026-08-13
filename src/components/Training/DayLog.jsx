@@ -20,9 +20,12 @@ const EMPTY = { id: null, weight: '', reps: '' }
  */
 export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const { user } = useAuth()
-  const [rows, setRows] = useState({})   // "name" → [{ id, weight, reps }]
+  const [rows, setRows] = useState({})   // planned name → [{ id, weight, reps }]
   const [busy, setBusy] = useState(null)
   const [saved, setSaved] = useState(null)
+  // planned name → what was actually done instead, for this day only.
+  const [swap, setSwap] = useState({})
+  const [editing, setEditing] = useState(null)
 
   const exercises = (blocks ?? [])
     .filter(b => blockLabels.includes(b.label))
@@ -32,16 +35,22 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     if (!user?.id) return
     supabase
       .from('exercise_logs')
-      .select('id, exercise_name, weight, reps, sets, set_index')
+      .select('id, exercise_name, weight, reps, sets, set_index, replaces')
       .eq('user_id', user.id)
       .eq('date', date)
       .then(({ data }) => {
         const m = {}
+        const sw = {}
         for (const ex of exercises) {
           const planned = Math.max(1, parseInt(ex.sets) || 1)
+          // Rows logged under the planned name, or under whatever stood in for
+          // it that day — otherwise a substituted session reads as a skipped one.
           const mine = (data ?? [])
-            .filter(r => r.exercise_name === ex.name)
+            .filter(r => r.exercise_name === ex.name || r.replaces === ex.name)
             .sort((a, b) => (a.set_index ?? 0) - (b.set_index ?? 0))
+
+          const stood = mine.find(r => r.replaces === ex.name)
+          if (stood) sw[ex.name] = stood.exercise_name
 
           // Enough rows for the programme, or for what was actually logged if
           // more sets were done than asked for.
@@ -54,6 +63,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
           })
         }
         setRows(m)
+        setSwap(sw)
       })
   }, [user?.id, date, JSON.stringify(exercises.map(e => e.name + e.sets))])
 
@@ -72,14 +82,19 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     const key = `${name}-${i}`
     setBusy(key)
 
+    // Logged under whatever was actually done, with a note of what it replaced —
+    // so the substitute builds its own history and the planned lift knows why
+    // it has a gap that week.
+    const done = swap[name] || name
     const payload = {
       user_id: user.id,
       date,
-      exercise_name: name,
+      exercise_name: done,
       weight: parseFloat(r.weight) || 0,
       reps:   parseInt(r.reps) || null,
       sets:   1,
       set_index: i,
+      replaces: done === name ? null : name,
     }
 
     // Updated in place when the row exists, so correcting a set does not leave
@@ -129,11 +144,50 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
         return (
           <div key={`${ex.block}-${ex.name}`} className={styles.exercise}>
             <div className={styles.head}>
-              <span className={styles.name}>{ex.name}</span>
+              <span className={styles.nameWrap}>
+                <span className={styles.name}>{swap[ex.name] || ex.name}</span>
+                <button
+                  type="button"
+                  className={styles.swapBtn}
+                  onClick={() => setEditing(editing === ex.name ? null : ex.name)}
+                  aria-label={`Смени ${ex.name} за този ден`}
+                >✎</button>
+              </span>
               <span className={styles.target}>
                 {doneCount}/{sets.length} × {ex.reps}
               </span>
             </div>
+
+            {/* Today only. The programme is untouched, so next session comes
+                back to it on its own. */}
+            {swap[ex.name] && (
+              <span className={styles.swapNote}>вместо {ex.name} · само за днес</span>
+            )}
+
+            {editing === ex.name && (
+              <div className={styles.swapRow}>
+                <input
+                  className={styles.swapInput}
+                  value={swap[ex.name] ?? ''}
+                  placeholder={ex.name}
+                  onChange={e => setSwap(p => ({ ...p, [ex.name]: e.target.value }))}
+                  aria-label="Какво направи вместо него"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className={styles.swapDone}
+                  onClick={() => setEditing(null)}
+                >Готово</button>
+                {swap[ex.name] && (
+                  <button
+                    type="button"
+                    className={styles.swapReset}
+                    onClick={() => { setSwap(p => ({ ...p, [ex.name]: '' })); setEditing(null) }}
+                  >Върни</button>
+                )}
+              </div>
+            )}
 
             {sets.map((r, i) => {
               const key = `${ex.name}-${i}`
