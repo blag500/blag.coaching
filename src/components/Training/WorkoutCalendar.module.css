@@ -63,6 +63,7 @@
 }
 
 .day {
+  position: relative;
   aspect-ratio: 1;
   border: none;
   background: rgba(255, 255, 255, 0.02);
@@ -72,17 +73,35 @@
   color: var(--muted);
   cursor: default;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   -webkit-tap-highlight-color: transparent;
   transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
 }
 
-/* One mark for every session, the same every time. Nothing to identify, which
-   is the whole reason the coloured version had to go. */
+/* A trained day carries its muscle group's colour, tinted from one variable so
+   the cell and its bar can never disagree. */
 .done {
-  background: var(--accent-dim);
-  border: 1px solid rgba(var(--accent-rgb), 0.40);
-  color: var(--accent);
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  color: var(--text);
   cursor: pointer;
+}
+
+/* The bar, not the whole cell. A fully filled square in six different tints
+   makes a month look like a quilt; a stripe along the bottom reads as a record
+   and leaves the date legible. */
+.mark {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 5px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+@supports not (background: color-mix(in srgb, red 10%, transparent)) {
+  .done { background: var(--accent-dim); }
 }
 
 /* A day that has been and gone without a session — visible, but quietly. */
@@ -101,13 +120,37 @@
   color: var(--text);
 }
 
+/* Three groups, one line — the legend the seven-colour version could not have. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.legendDot {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
 .detail {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  margin-top: 10px;
   min-height: 40px;
 }
 

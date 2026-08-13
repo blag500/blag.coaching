@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { classifyMuscle, GROUP_LABELS, GROUP_COLORS } from '../../utils/recovery'
 import styles from './WorkoutCalendar.module.css'
 
 const MONTHS = [
@@ -7,19 +8,20 @@ const MONTHS = [
 ]
 const DOW = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
+const GROUPS = ['upper', 'lower', 'pull']
+
 /**
  * The month, as a record of what was trained.
  *
- * Two earlier attempts failed for the same reason: both tried to say *which*
- * block was done inside the cell — first as coloured dots, then as two-letter
- * codes. Seven blocks means seven colours, two of which shared a hue, and no
- * amount of squinting fixes that; abbreviations turned the month into a wall
- * of letters.
+ * Colour is back, but by muscle group rather than by block — and that is the
+ * whole difference between this and the two versions that failed. Seven blocks
+ * meant seven colours, two of them sharing a hue, and no amount of squinting
+ * fixed it. Three groups is a distinction the eye makes without effort, the
+ * legend fits on one line, and it is the same vocabulary the readiness rows
+ * above already use.
  *
- * So the grid answers only what a grid is good at: which days, and where the
- * gaps are. There is one mark and it is the same for every session, which
- * means nothing to identify. Which block was done is one tap away, in words,
- * underneath — and words never need a legend.
+ * A day still never tries to name the block inside the cell. That is one tap
+ * away, in words, underneath — and words never need a legend.
  */
 export default function WorkoutCalendar({ completions }) {
   const today = new Date()
@@ -31,16 +33,26 @@ export default function WorkoutCalendar({ completions }) {
   const byDate = useMemo(() => {
     const m = {}
     for (const c of completions) {
-      (m[c.completed_date] ??= []).push(c.block_label)
+      const e = (m[c.completed_date] ??= { blocks: [], groups: new Set() })
+      e.blocks.push(c.block_label)
+      const g = classifyMuscle(c.block_label)
+      if (g && g !== 'full') e.groups.add(g)
+      else if (g === 'full') GROUPS.forEach(x => e.groups.add(x))
     }
     return m
   }, [completions])
 
-  // Opens on the most recent session, so the card already says something.
-  const [selected, setSelected] = useState(() => {
+  const [selected, setSelected] = useState(null)
+
+  // Opens on the most recent session. Set in an effect rather than as initial
+  // state, because completions arrive from the network after the first render —
+  // reading them at mount gave an empty map and the card sat there asking to be
+  // told what to show.
+  useEffect(() => {
+    if (selected) return
     const dates = Object.keys(byDate).sort()
-    return dates[dates.length - 1] ?? null
-  })
+    if (dates.length) setSelected(dates[dates.length - 1])
+  }, [byDate, selected])
 
   const cells = useMemo(() => {
     const daysIn = new Date(year, month + 1, 0).getDate()
@@ -48,7 +60,8 @@ export default function WorkoutCalendar({ completions }) {
     const out = Array.from({ length: firstDow }, () => null)
     for (let d = 1; d <= daysIn; d++) {
       const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-      out.push({ day: d, date: ds, blocks: byDate[ds] ?? [] })
+      const hit = byDate[ds]
+      out.push({ day: d, date: ds, blocks: hit?.blocks ?? [], groups: [...(hit?.groups ?? [])] })
     }
     return out
   }, [year, month, byDate])
@@ -88,12 +101,19 @@ export default function WorkoutCalendar({ completions }) {
           if (!cell) return <span key={`pad-${i}`} />
           const done   = cell.blocks.length > 0
           const isPast = cell.date < todayStr
+          // A day that hit two groups is striped in both rather than picking a
+          // winner — it happened, so it is drawn.
+          const cols = cell.groups.map(g => GROUP_COLORS[g])
+          const tint = cols.length === 0 ? 'var(--accent)'
+            : cols.length === 1 ? cols[0]
+            : `linear-gradient(135deg, ${cols[0]} 50%, ${cols[1]} 50%)`
           return (
             <button
               key={cell.date}
               type="button"
               disabled={!done}
               onClick={() => setSelected(cell.date)}
+              style={done ? { '--tint': cols[0] ?? 'var(--accent)' } : undefined}
               className={[
                 styles.day,
                 done ? styles.done : '',
@@ -104,9 +124,23 @@ export default function WorkoutCalendar({ completions }) {
               aria-label={done ? `${cell.day} — ${cell.blocks.join(', ')}` : `${cell.day}`}
             >
               {cell.day}
+              {done && (
+                <span className={styles.mark} style={{ background: tint }} />
+              )}
             </button>
           )
         })}
+      </div>
+
+      {/* Three entries, one line. This is the legend the seven-colour version
+          could never have had. */}
+      <div className={styles.legend}>
+        {GROUPS.map(g => (
+          <span key={g} className={styles.legendItem}>
+            <span className={styles.legendDot} style={{ background: GROUP_COLORS[g] }} />
+            {GROUP_LABELS[g]}
+          </span>
+        ))}
       </div>
 
       {/* What was done, in words. The grid never tries to say this. */}
@@ -118,7 +152,7 @@ export default function WorkoutCalendar({ completions }) {
                 day: 'numeric', month: 'long',
               })}
             </span>
-            <span className={styles.detailBlocks}>{chosen.join(' · ')}</span>
+            <span className={styles.detailBlocks}>{chosen.blocks.join(' · ')}</span>
           </>
         ) : (
           <span className={styles.detailEmpty}>Избери ден с тренировка</span>
