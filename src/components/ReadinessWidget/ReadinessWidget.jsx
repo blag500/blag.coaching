@@ -84,14 +84,20 @@ function HoursLabel(hours) {
  * so it has to answer "am I ready" and "what do I do" in a single line, and
  * leave the working out to the screen behind the tap.
  */
-function verdictFor({ provisional, components, muscleGroups, weakFactors, t }) {
+function verdictFor({ score, provisional, components, muscleGroups, weakFactors, t }) {
   if (provisional) return { key: 'readiness.verdict.checkin' }
 
   const weakest = components
     .filter(c => c.score !== null && c.score < 60)
     .sort((a, b) => a.score - b.score)[0]
 
-  if (weakest) {
+  // A caution must not contradict the headline. At 85 the ring says ОТЛИЧНО,
+  // and "днес по-леко" underneath it asks the reader to believe both — one
+  // component can be under par while the day as a whole is plainly good, and
+  // when it is, the day is what the card should be reporting.
+  const headlineIsGood = score !== null && score >= 80
+
+  if (weakest && !headlineIsGood) {
     // For recovery the app already knows which of the five answers was low, and
     // a cause you can act on beats a verdict you cannot.
     if (weakest.id === 'recovery' && weakFactors.length) {
@@ -105,6 +111,11 @@ function verdictFor({ provisional, components, muscleGroups, weakFactors, t }) {
   // still short of recovered — the only line here that decides today's session.
   const sore = muscleGroups.filter(g => g.pct < 80).sort((a, b) => a.pct - b.pct)[0]
   if (sore) return { key: 'readiness.verdict.muscle', vars: { g: sore.label, p: sore.pct } }
+
+  // Good day, one soft number: worth mentioning, not worth a warning.
+  if (weakest) {
+    return { key: 'readiness.verdict.goodBut', vars: { what: t(`readiness.soft.${weakest.id}`) } }
+  }
 
   return { key: 'readiness.verdict.ok' }
 }
@@ -156,7 +167,7 @@ export default function ReadinessWidget({
 
   // ── The glance version ──────────────────────────────────────────────
   if (!detailed) {
-    const v = verdictFor({ provisional, components, muscleGroups, weakFactors, t })
+    const v = verdictFor({ score, provisional, components, muscleGroups, weakFactors, t })
     let verdict = t(v.key)
     if (v.vars) for (const [k, val] of Object.entries(v.vars)) {
       verdict = verdict.replace(`{${k}}`, val)
