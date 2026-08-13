@@ -4,7 +4,7 @@
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   animation: openDown 220ms var(--ease-out) both;
 }
 
@@ -15,10 +15,23 @@
   to   { opacity: 1; transform: none; }
 }
 
+/* One pane per exercise. Run together, six exercises read as one long column
+   of identical fields and it stops being obvious which set belongs to which
+   lift — which is the wrong thing to have to work out between sets.
+
+   Same recipe as every other card in the app: the --panel-* tokens carry the
+   slanted highlight and the white inner top edge, and they already answer both
+   themes. No blur — nothing sits behind these, so backdrop-filter on six of
+   them would spend the GPU on an effect nobody can see. */
 .exercise {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  padding: 12px 12px 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--panel-shadow);
 }
 
 .head {
@@ -353,10 +366,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
-  background: var(--surface-2);
-  border: 1px solid rgba(var(--accent-rgb), 0.18);
-  border-radius: var(--r-sm);
+  padding: 8px 10px;
+  background: var(--panel-bg);
+  /* Gold rather than the plain panel edge: closed means finished, and that is
+     worth seeing without reading the row. */
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: var(--r-md);
+  box-shadow: var(--panel-shadow);
 }
 
 /* Everything except the picture: pressing it opens the exercise back up. */
