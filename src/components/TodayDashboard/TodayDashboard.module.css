@@ -781,9 +781,20 @@
 }
 
 .habitChipOn {
-  background: var(--accent-dim);
-  border-color: rgba(var(--accent-rgb), 0.45);
-  color: var(--accent);
+  /* colour-mix rather than a second hardcoded rgba per habit: one variable
+     carries the hue and the tint is derived from it. */
+  background: color-mix(in srgb, var(--habit) 14%, transparent);
+  border-color: color-mix(in srgb, var(--habit) 50%, transparent);
+  color: var(--habit);
+}
+
+/* Anywhere colour-mix is missing, the chip still clearly reads as done. */
+@supports not (background: color-mix(in srgb, red 10%, transparent)) {
+  .habitChipOn {
+    background: var(--accent-dim);
+    border-color: rgba(var(--accent-rgb), 0.45);
+    color: var(--accent);
+  }
 }
 
 /* Drawn, and inheriting the chip's colour, so a ticked habit lights icon and

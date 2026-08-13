@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useReadiness } from '../../hooks/useReadiness'
 import { useSettings } from '../../contexts/SettingsContext'
 import Skeleton from '../Skeleton/Skeleton'
@@ -13,26 +14,68 @@ function scoreColor(score) {
 
 function ReadinessRing({ score, label, provisional }) {
   const r    = 46
+  const sw   = 7
   const circ = 2 * Math.PI * r
   const pct  = score !== null ? score / 100 : 0
   const dash = pct * circ
   const color = scoreColor(score)
+  // Ids are global to the document and this widget can appear more than once —
+  // on Today, on the recovery screen, and once per client for the coach.
+  const uid = useId().replace(/:/g, '')
 
   return (
     <div className={styles.ringWrap}>
       <svg viewBox="0 0 100 100" width="110" height="110" aria-hidden="true">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+        <defs>
+          {/* Lit from the top left, like every card on the screen. */}
+          <linearGradient id={`${uid}-sheen`} x1="0.1" y1="0" x2="0.8" y2="1">
+            <stop offset="0%"   stopColor="#fff" stopOpacity="0.34" />
+            <stop offset="38%"  stopColor="#fff" stopOpacity="0.09" />
+            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+          <filter id={`${uid}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3.4" />
+          </filter>
+        </defs>
+
+        {/* The arc again, blurred, underneath — so the colour spills onto the
+            card the way a lit edge does instead of stopping at the stroke. */}
+        {score !== null && (
+          <circle
+            cx="50" cy="50" r={r} fill="none"
+            stroke={color} strokeWidth={sw}
+            strokeDasharray={`${dash} ${circ}`}
+            strokeLinecap="round"
+            transform="rotate(-90 50 50)"
+            opacity={provisional ? 0.2 : 0.42}
+            filter={`url(#${uid}-bloom)`}
+          />
+        )}
+
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={sw} />
+        {/* Darkened where the ring is empty, so it reads as a channel the
+            colour is filling rather than as two shades of paint. */}
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#000" strokeOpacity="0.28" strokeWidth={sw} />
+
         {/* A provisional reading is drawn at reduced strength, so the ring says
             "not the whole picture" before any label has been read. */}
         <circle
           cx="50" cy="50" r={r} fill="none"
-          stroke={color} strokeWidth="7"
+          stroke={color} strokeWidth={sw}
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
           transform="rotate(-90 50 50)"
           opacity={provisional ? 0.4 : 1}
           style={{ transition: 'stroke-dasharray 0.5s ease' }}
         />
+
+        {/* The bevel: a half-width arc outside catching light, another inside
+            falling into shadow. Outside the rotation, so the highlight stays
+            where the light is rather than turning with the score. */}
+        <circle cx="50" cy="50" r={r + sw / 4} fill="none"
+          stroke={`url(#${uid}-sheen)`} strokeWidth={sw / 2} />
+        <circle cx="50" cy="50" r={r - sw / 4} fill="none"
+          stroke="#000" strokeOpacity="0.22" strokeWidth={sw / 2} />
         {/* Oswald, not Bebas — Bebas ships no Cyrillic and this sat on a
             fallback font ever since the heading face was swapped. */}
         <text x="50" y="46" textAnchor="middle" fill={color}

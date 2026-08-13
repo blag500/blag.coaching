@@ -16,6 +16,22 @@ import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './TodayDashboard.module.css'
 
+// A colour per habit, for when it is done.
+//
+// Safe to use freely here in a way it was not on the training calendar: every
+// chip carries its own name and its own drawing, so the colour is never what
+// tells them apart — it only marks the difference between done and not. Chosen
+// to fit what each one is rather than to be maximally separated.
+const HABIT_COLORS = {
+  water:    '#42A5F5',
+  protein:  '#EF5350',
+  training: 'var(--accent)',
+  sleep:    '#AB47BC',
+  steps:    '#66BB6A',
+  nosugar:  '#FF8A65',
+}
+function habitColor(id) { return HABIT_COLORS[id] ?? 'var(--accent)' }
+
 function dateStr(offset = 0) {
   const d = new Date()
   d.setDate(d.getDate() - offset)
@@ -254,9 +270,15 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
                 onClick={() => toggleHabit(h.id)}
                 aria-pressed={!!checked[h.id]}
                 title={h.label}
-                /* The wave runs left to right rather than firing at once, so
-                   the row reads as a run being completed instead of a flash. */
-                style={habitsCheer ? { animationDelay: `${i * 55}ms` } : undefined}
+                style={{
+                  // The chip takes its colour only once it is ticked; undone it
+                  // stays neutral, so the row reads as progress rather than as
+                  // six coloured buttons waiting to be pressed.
+                  ...(checked[h.id] ? { '--habit': habitColor(h.id) } : null),
+                  // The wave runs left to right rather than firing at once, so
+                  // the row reads as a run being completed instead of a flash.
+                  ...(habitsCheer ? { animationDelay: `${i * 55}ms` } : null),
+                }}
               >
                 <Pictogram name={h.id} size={16} className={styles.habitIcon} />
                 <span className={styles.habitLabel}>{h.label}</span>
