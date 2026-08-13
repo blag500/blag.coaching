@@ -2,6 +2,15 @@ import { useMemo } from 'react'
 import { classifyMuscle, GROUP_LABELS, RECOVERY_H } from '../../utils/recovery'
 import styles from './MuscleStatus.module.css'
 
+// Green, amber, red — the same three steps and the same thresholds the
+// readiness ring uses, so a percentage means the same thing wherever it is
+// shown. A fourth scale invented here would be a fourth thing to learn.
+function recoveryColor(pct) {
+  if (pct >= 80) return '#81C784'
+  if (pct >= 50) return 'var(--accent)'
+  return '#ef5350'
+}
+
 /** "вчера", "преди 3 дни", or a date once it stops meaning anything in days. */
 function agoLabel(dateStr) {
   const days = Math.round((Date.now() - new Date(dateStr + 'T12:00:00')) / 86400000)
@@ -44,6 +53,7 @@ export default function MuscleStatus({ completions, recovery }) {
           date: last[g],
           pct,
           ready: pct >= 80,
+          color: recoveryColor(pct),
           left,
         }
       })
@@ -71,10 +81,7 @@ export default function MuscleStatus({ completions, recovery }) {
         <div key={r.group} className={styles.row}>
           <div className={styles.top}>
             <span className={styles.name}>{r.label}</span>
-            <span
-              className={styles.state}
-              style={{ color: r.ready ? '#81C784' : 'var(--accent)' }}
-            >
+            <span className={styles.state} style={{ color: r.color }}>
               {r.ready ? 'готова' : `още ${r.left} ч`}
             </span>
           </div>
@@ -82,10 +89,7 @@ export default function MuscleStatus({ completions, recovery }) {
           <div className={styles.track}>
             <div
               className={styles.fill}
-              style={{
-                width: `${r.pct}%`,
-                background: r.ready ? '#81C784' : 'var(--accent)',
-              }}
+              style={{ width: `${r.pct}%`, background: r.color }}
             />
           </div>
 
