@@ -1,12 +1,41 @@
+import { useState, useEffect } from 'react'
 import styles from './LandingPage.module.css'
 
 export default function LandingPage({ onContinue, onLogin }) {
+  // Respect the setting, and follow it if it changes while the page is open.
+  const [stillOnly, setStillOnly] = useState(
+    () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+    if (!mq) return
+    const on = e => setStillOnly(e.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
+
   return (
     <div className={styles.page}>
-      {/* The splash arms, held far back and drifting. Your own artwork, so
-          there is no borrowed likeness in it — and a real physique behind the
-          words does more for an old-school gym than any amount of gradient. */}
-      <div className={styles.backdrop} aria-hidden="true" />
+      {/* Held far back, dimmed and masked: a real gym behind the words does
+          more for this than any amount of gradient, but the headline has to
+          stay the brightest thing on the screen.
+
+          Decided in JS rather than hidden in CSS, so that someone who has asked
+          for less movement does not download five seconds of video in order to
+          not watch it. */}
+      {stillOnly ? (
+        <div className={styles.backdropStill} aria-hidden="true" />
+      ) : (
+        <video
+          className={styles.backdrop}
+          autoPlay muted loop playsInline
+          preload="auto"
+          poster="/hero-poster.jpg"
+          aria-hidden="true"
+        >
+          <source src="/hero.webm" type="video/webm" />
+          <source src="/hero.mp4" type="video/mp4" />
+        </video>
+      )}
       <div className={styles.grain} aria-hidden="true" />
       <div className={styles.glowTop} aria-hidden="true" />
 

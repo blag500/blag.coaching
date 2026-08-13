@@ -17,20 +17,33 @@
    is never caught moving — you notice it only by looking away and back — and
    cheap enough to leave running, because it is the compositor moving a layer
    rather than the browser redrawing anything. */
-.backdrop {
+.backdrop,
+.backdropStill {
   position: absolute;
   inset: 0;
-  /* Contained, not covered. Cover crops into the artwork at phone proportions
-     and leaves a dark mass that reads as a smudge rather than as a body. */
-  background: url('/arms.webp') center 30% / auto 82% no-repeat;
+  width: 100%;
+  height: 100%;
+  /* Cover, unlike the artwork it replaces: this is a photographed room, and a
+     letterboxed room reads as a mistake where a letterboxed drawing did not.
+     Held slightly left of centre, which is where he stands in the frame. */
+  object-fit: cover;
+  object-position: 42% 40%;
   opacity: 0.16;
-  /* Warm, and fading out before it reaches the text: the headline has to stay
-     the brightest thing on the screen. */
+  /* Fading out before it reaches the text: the headline has to stay the
+     brightest thing on the screen. */
   -webkit-mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
   mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
   animation: drift 65s ease-in-out infinite alternate;
   will-change: transform;
   pointer-events: none;
+}
+
+/* What someone who asked for less movement gets: the same frame, standing
+   still. Not the video paused — the video is never fetched at all. */
+.backdropStill {
+  background: url('/hero-poster.jpg') 42% 40% / cover no-repeat;
+  animation: none;
+  transform: scale(1.03);
 }
 
 @keyframes drift {
@@ -49,7 +62,34 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .backdrop { animation: none; transform: scale(1.03); }
+  .backdrop,
+.backdropStill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Cover, unlike the artwork it replaces: this is a photographed room, and a
+     letterboxed room reads as a mistake where a letterboxed drawing did not.
+     Held slightly left of centre, which is where he stands in the frame. */
+  object-fit: cover;
+  object-position: 42% 40%;
+  opacity: 0.16;
+  /* Fading out before it reaches the text: the headline has to stay the
+     brightest thing on the screen. */
+  -webkit-mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
+  mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
+  animation: drift 65s ease-in-out infinite alternate;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* What someone who asked for less movement gets: the same frame, standing
+   still. Not the video paused — the video is never fetched at all. */
+.backdropStill {
+  background: url('/hero-poster.jpg') 42% 40% / cover no-repeat;
+  animation: none;
+  transform: scale(1.03);
+}
 }
 
 .glowTop {
