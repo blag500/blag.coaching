@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './LandingPage.module.css'
 
 export default function LandingPage({ onContinue, onLogin }) {
@@ -13,6 +13,23 @@ export default function LandingPage({ onContinue, onLogin }) {
     return () => mq.removeEventListener('change', on)
   }, [])
 
+  /* Autoplay is refused more often than it looks: iOS in Low Power Mode blocks
+     it outright, and a page that then sits on its poster forever looks broken
+     rather than restrained. So the play is asked for, and if it is refused, it
+     is asked for again at the first touch — by which point the browser counts
+     it as something the visitor started. */
+  const videoRef = useRef(null)
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    const start = () => v.play().catch(() => {})
+    start()
+    const once = () => { start(); window.removeEventListener('touchstart', once); window.removeEventListener('click', once) }
+    window.addEventListener('touchstart', once, { passive: true })
+    window.addEventListener('click', once)
+    return () => { window.removeEventListener('touchstart', once); window.removeEventListener('click', once) }
+  }, [stillOnly])
+
   return (
     <div className={styles.page}>
       {/* Held far back, dimmed and masked: a real gym behind the words does
@@ -26,6 +43,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.backdropStill} aria-hidden="true" />
       ) : (
         <video
+          ref={videoRef}
           className={styles.backdrop}
           autoPlay muted loop playsInline
           preload="auto"
