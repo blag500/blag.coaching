@@ -17,6 +17,29 @@ const BASELINE_DAYS = 14
 const BASELINE_MIN  = 5
 
 /**
+ * Today's check-in as a position within this person's own recent range.
+ *
+ * An absolute scale says a 3-out-of-5 night is mediocre for everybody, which is
+ * not true of anybody: someone who always sleeps badly would sit at 40 forever
+ * and learn to ignore the number, while someone who normally feels excellent
+ * would never see the one bad day that matters. Measured against their own
+ * spread, 50 means "your usual", 70 a clearly better day, 30 a clearly worse
+ * one — and that is the same statement for both people.
+ *
+ * Lives here rather than in utils/recovery: that module is about muscles and
+ * hours, this is about the check-in.
+ */
+function relativeToBaseline(todayRaw, history) {
+  if (todayRaw === null || history.length < BASELINE_MIN) return null
+  const mean = history.reduce((s, v) => s + v, 0) / history.length
+  const variance = history.reduce((s, v) => s + (v - mean) ** 2, 0) / history.length
+  // A floor on the spread: someone who answers identically every day would
+  // otherwise divide by nothing and swing to the extremes on a single point.
+  const spread = Math.max(Math.sqrt(variance), 6)
+  return Math.max(0, Math.min(100, Math.round(50 + 20 * (todayRaw - mean) / spread)))
+}
+
+/**
  * Which of the five answers pulled the check-in down.
  *
  * "Recovery is below your normal" is a result, not a reason, and a result you
