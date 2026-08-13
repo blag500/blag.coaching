@@ -1,0 +1,132 @@
+.wrap {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
+  padding: 14px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.nav {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+  padding: 4px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.month {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.count {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.dowRow,
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dow {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+.day {
+  aspect-ratio: 1;
+  border: none;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: default;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+
+/* One mark for every session, the same every time. Nothing to identify, which
+   is the whole reason the coloured version had to go. */
+.done {
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.40);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+/* A day that has been and gone without a session — visible, but quietly. */
+.missed {
+  opacity: 0.35;
+}
+
+.today {
+  outline: 1.5px solid var(--accent);
+  outline-offset: -1px;
+  color: var(--text);
+}
+
+.selected {
+  background: rgba(var(--accent-rgb), 0.30);
+  color: var(--text);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  min-height: 40px;
+}
+
+.detailDate {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.detailBlocks {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.detailEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.7;
+}

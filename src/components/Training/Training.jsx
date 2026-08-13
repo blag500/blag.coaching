@@ -11,7 +11,7 @@ import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
 import MuscleStatus from './MuscleStatus'
-import SessionLog from './SessionLog'
+import WorkoutCalendar from './WorkoutCalendar'
 import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
 import styles from './Training.module.css'
 
@@ -358,11 +358,12 @@ export default function Training({ onMenuOpen }) {
           <h2 className={styles.historyTitle}>МУСКУЛНИ ГРУПИ</h2>
           <MuscleStatus completions={completions} recovery={recovery} />
 
-          {/* Readiness says what to do next; this says what was actually done.
-              A training page owes both, and the second went out with the
-              calendar by mistake. */}
-          <h2 className={`${styles.historyTitle} ${styles.historyTitleSecond}`}>ПОСЛЕДНИ ТРЕНИРОВКИ</h2>
-          <SessionLog completions={completions} />
+          {/* Readiness says what to do next; the calendar says what was done.
+              The page owes both — they are two features, not two attempts at
+              one, and every previous version failed by making one replace the
+              other. */}
+          <h2 className={`${styles.historyTitle} ${styles.historyTitleSecond}`}>ДНЕВНИК</h2>
+          <WorkoutCalendar completions={completions} />
         </section>
       )}
 
