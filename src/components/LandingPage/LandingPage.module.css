@@ -29,11 +29,13 @@
      its faded edge — the ellipse sits at 32% down the screen. */
   object-fit: cover;
   object-position: 50% 30%;
-  opacity: 0.16;
-  /* Fading out before it reaches the text: the headline has to stay the
-     brightest thing on the screen. */
-  -webkit-mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
-  mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
+  opacity: 0.34;
+  /* Still fading out before the edges, but far wider and held solid through
+     the middle third: masked as tightly as the artwork was, a photographed room
+     reads as a smudge rather than as a gym. The headline keeps its contrast
+     from its own weight, not from starving the picture behind it. */
+  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
+  mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
   animation: drift 65s ease-in-out infinite alternate;
   will-change: transform;
   pointer-events: none;
@@ -75,11 +77,13 @@
      its faded edge — the ellipse sits at 32% down the screen. */
   object-fit: cover;
   object-position: 50% 30%;
-  opacity: 0.16;
-  /* Fading out before it reaches the text: the headline has to stay the
-     brightest thing on the screen. */
-  -webkit-mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
-  mask-image: radial-gradient(ellipse 70% 52% at 50% 32%, #000 0%, transparent 74%);
+  opacity: 0.34;
+  /* Still fading out before the edges, but far wider and held solid through
+     the middle third: masked as tightly as the artwork was, a photographed room
+     reads as a smudge rather than as a gym. The headline keeps its contrast
+     from its own weight, not from starving the picture behind it. */
+  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
+  mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
   animation: drift 65s ease-in-out infinite alternate;
   will-change: transform;
   pointer-events: none;
