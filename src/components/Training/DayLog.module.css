@@ -279,7 +279,9 @@
 .lightbox {
   position: fixed;
   inset: 0;
-  z-index: 300;
+  /* Above the bottom nav, which sits at 999 — otherwise the tab bar floats on
+     top of the picture, as it did. */
+  z-index: 9000;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(10px) saturate(0.9);
   -webkit-backdrop-filter: blur(10px) saturate(0.9);

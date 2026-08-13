@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
@@ -178,14 +179,21 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     <div className={styles.wrap}>
       {/* A framed card over a blurred screen, dismissed by tapping anywhere.
           Big enough to recognise a machine, small enough that the page behind
-          still reads as where you were. */}
-      {zoom && (
+          still reads as where you were.
+
+          Rendered into <body>, not here: the tab panes carry a transform for
+          the swipe, and a transformed ancestor becomes the containing block for
+          everything fixed inside it — so "inset: 0" would mean the full height
+          of the scrolled page rather than the screen, and the card would land
+          wherever the middle of that page happens to be. */}
+      {zoom && createPortal(
         <div className={styles.lightbox} onClick={() => setZoom(null)} role="dialog" aria-modal="true">
           <div className={styles.lightboxCard}>
             <img src={zoom.url} alt={zoom.name} className={styles.lightboxImg} />
             <span className={styles.lightboxName}>{zoom.name}</span>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {exercises.map(ex => {
