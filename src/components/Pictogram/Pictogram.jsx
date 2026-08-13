@@ -96,41 +96,49 @@ const SHAPES = {
   },
 
   // ── Muscle groups ──
-  // A torso seen from the front, a pair of legs, and a back with its wings. At
-  // this size the body has to be read from its silhouette, so each one keeps
-  // only the outline that no other could be mistaken for.
+  // Drawn as muscle rather than as a body: a chest with its two heads and the
+  // shoulders above it, a quad with its separation, a back with the lats
+  // spread, a forearm braced. At this size an anatomical outline reads faster
+  // than a whole figure, because a figure at 15px is a stick.
   upper: {
     line: (
       <>
-        <path d="M8.4 4.2 12 6l3.6-1.8 3.2 1.6-1 4.2-1.6-.5v8.3a1 1 0 0 1-1 1H7.8a1 1 0 0 1-1-1V9.5l-1.6.5-1-4.2z" />
-        <path d="M12 6v5" />
+        <path d="M4.6 8.4c0-1.9 1.6-3.2 3.6-3.2 1.5 0 2.6.6 3.8.6s2.3-.6 3.8-.6c2 0 3.6 1.3 3.6 3.2 0 2.6-2 4.4-4.6 4.4-1.4 0-2.2-.6-2.8-.6s-1.4.6-2.8.6c-2.6 0-4.6-1.8-4.6-4.4z" />
+        <path d="M12 5.8v6.4" />
+        <path d="M7.6 14.4c.6 2.4 1.9 4.2 4.4 4.2s3.8-1.8 4.4-4.2" />
       </>
     ),
-    solid: <path d="M9.3 12.4h5.4v6.4H9.3z" />,
+    solid: <path d="M4.6 8.4c0-1.9 1.6-3.2 3.6-3.2 1.5 0 2.6.6 3.8.6v6.8c-1.4 0-2.2.6-2.8.6-2.6 0-4.6-1.8-4.6-4.8z" />,
   },
   lower: {
     line: (
       <>
-        <path d="M7.6 3.4h8.8l-.7 5.4-1 5.1-.5 6.7h-3l-.6-6.6-.5-3-.5 3-.6 6.6h-3l-.5-6.7-1-5.1z" />
+        <path d="M8.6 3.6h6.8c1 0 1.7.9 1.5 1.9l-1.3 6.6c-.4 2-1.4 3.6-2.4 5.2l-1.2 2 1.4 3.1H9.2l1.2-3.2-1.4-2.2c-1-1.6-1.8-3.1-2.1-4.9L5.8 5.5c-.2-1 .6-1.9 1.6-1.9z" />
+        <path d="M11.4 6.4c-.6 2.6-.5 5.2.6 7.8" />
       </>
     ),
-    solid: <path d="M7.6 3.4h8.8l-.5 4H8.1z" />,
+    solid: <path d="M8.6 3.6h6.8c1 0 1.7.9 1.5 1.9l-.7 3.4H6.9l-.7-3.4c-.2-1 .5-1.9 1.5-1.9z" />,
   },
   pull: {
     line: (
       <>
-        <path d="M12 4.4c-1.2 0-2.1.9-2.1 2s.9 2 2.1 2 2.1-.9 2.1-2-.9-2-2.1-2z" />
-        <path d="M12 8.8v10.8" />
-        <path d="M12 9.6 5.2 12l1.4 4.6L12 14.2z" />
-        <path d="M12 9.6 18.8 12l-1.4 4.6L12 14.2z" />
+        <path d="M12 4.2c-1.3 0-2.3 1-2.3 2.2S10.7 8.6 12 8.6s2.3-1 2.3-2.2S13.3 4.2 12 4.2z" />
+        <path d="M12 9.2c3.4 0 6.2 1.4 7.4 3.2-1.4 3-3.4 5.2-5.6 6.6l-1.8-4.6-1.8 4.6c-2.2-1.4-4.2-3.6-5.6-6.6 1.2-1.8 4-3.2 7.4-3.2z" />
       </>
     ),
-    solid: (
+    solid: <path d="M12 9.2c3.4 0 6.2 1.4 7.4 3.2-1 2.1-2.3 3.9-3.7 5.2L12 14.4l-3.7 3.2C6.9 16.3 5.6 14.5 4.6 12.4c1.2-1.8 4-3.2 7.4-3.2z" />,
+  },
+  // Forearm, traps and neck — the accessory day. A braced forearm with the
+  // fist closed says grip work more directly than a neck ever could.
+  extra: {
+    line: (
       <>
-        <path d="M12 9.6 5.2 12l1.4 4.6L12 14.2z" />
-        <path d="M12 9.6 18.8 12l-1.4 4.6L12 14.2z" />
+        <path d="M6.4 3.8c2.4 0 4 1.2 5.2 3 1 1.6 1.8 3.4 3.4 4.6l2.6 2c1 .8 1.2 2.2.4 3.2l-.8 1c-.8 1-2.2 1.2-3.2.4l-2.4-1.9" />
+        <path d="M11.6 16.1 8.4 13c-1.6-1.5-2.6-3-3.2-5" />
+        <path d="M14.2 18.6c-.8.9-2.1 1-3 .3l-1.5-1.2" />
       </>
     ),
+    solid: <path d="M14.2 11.4l2.8 2.2c1 .8 1.2 2.2.4 3.2l-.8 1c-.8 1-2.2 1.2-3.2.4l-2.6-2z" />,
   },
 
   // Anything a coach invents: still drawn, still the same construction.

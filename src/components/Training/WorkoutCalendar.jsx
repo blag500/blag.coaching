@@ -10,7 +10,7 @@ const MONTHS = [
 ]
 const DOW = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
-const GROUPS = ['upper', 'lower', 'pull']
+const GROUPS = ['upper', 'lower', 'pull', 'extra']
 
 /**
  * The month, as a record of what was trained.
