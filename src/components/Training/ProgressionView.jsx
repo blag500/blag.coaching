@@ -34,8 +34,16 @@ function smoothPath(pts) {
   return d
 }
 
+// Epley's estimate, so a set that added reps counts as the progress it is.
+// The chart plotted load alone, which drew a flat line through eight weeks of
+// going from eight reps to twelve — see BlockCompare for the same reasoning.
+export function e1RM(weight, reps) {
+  if (!weight) return 0
+  return Math.round(weight * (1 + (reps || 1) / 30) * 10) / 10
+}
+
 function ExerciseChart({ entries }) {
-  const vals = entries.map(e => e.weight).filter(w => w > 0)
+  const vals = entries.map(e => e1RM(e.weight, e.reps)).filter(w => w > 0)
   if (!vals.length) return <p className={styles.noData}>Няма данни за тегло.</p>
 
   const rawMin = Math.min(...vals), rawMax = Math.max(...vals)
@@ -43,11 +51,12 @@ function ExerciseChart({ entries }) {
   const minVal = rawMin - pad, maxVal = rawMax + pad
   const rangeV = maxVal - minVal
   const ve     = entries.filter(e => e.weight > 0)
+              .map(e => ({ ...e, plot: e1RM(e.weight, e.reps) }))
 
   function toX(i) { return PL + (i / Math.max(ve.length - 1, 1)) * CW }
   function toY(v) { return PT + (1 - (v - minVal) / rangeV) * CH }
 
-  const pts      = ve.map((e, i) => ({ x: toX(i), y: toY(e.weight), ...e }))
+  const pts      = ve.map((e, i) => ({ x: toX(i), y: toY(e.plot), ...e }))
   const last     = pts[pts.length - 1]
   const linePath = smoothPath(pts)
   const areaPath = ve.length > 1
@@ -196,7 +205,11 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
 
   const withW = filtered.filter(e => e.weight > 0)
   const maxW  = withW.length ? Math.max(...withW.map(e => e.weight)) : null
-  const diff  = withW.length >= 2 ? +(withW.at(-1).weight - withW[0].weight).toFixed(1) : null
+  // Progress on what the sets were worth, not on what was on the bar: reps are
+  // progression too, and measured on load alone they read as standing still.
+  const diff  = withW.length >= 2
+    ? +(e1RM(withW.at(-1).weight, withW.at(-1).reps) - e1RM(withW[0].weight, withW[0].reps)).toFixed(1)
+    : null
 
   return (
     <div className={styles.wrap}>
@@ -236,10 +249,17 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
                 <span className={`${styles.statVal} ${diff > 0 ? styles.statUp : diff < 0 ? styles.statDown : ''}`}>
                   {diff > 0 ? `+${diff}` : diff}kg
                 </span>
-                <span className={styles.statLabel}>прогрес</span>
+                <span className={styles.statLabel}>прогрес*</span>
               </div>
             )}
           </div>
+
+          {/* Said once, rather than leaving the reader to wonder why the line
+              moved on a day the weight did not. */}
+          <p className={styles.chartNote}>
+            * Кривата и прогресът броят и повторенията — серия с повече повторения
+            на същата тежест се води напредък.
+          </p>
 
           <ExerciseTable entries={tableEntries} onDelete={onDelete} onUpdate={onUpdate} />
         </>
