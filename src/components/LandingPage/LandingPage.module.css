@@ -25,9 +25,10 @@
   height: 100%;
   /* Cover, unlike the artwork it replaces: this is a photographed room, and a
      letterboxed room reads as a mistake where a letterboxed drawing did not.
-     Held slightly left of centre, which is where he stands in the frame. */
+     Centred on him and lifted, so he lands inside the mask rather than under
+     its faded edge — the ellipse sits at 32% down the screen. */
   object-fit: cover;
-  object-position: 42% 40%;
+  object-position: 50% 30%;
   opacity: 0.16;
   /* Fading out before it reaches the text: the headline has to stay the
      brightest thing on the screen. */
@@ -41,7 +42,7 @@
 /* What someone who asked for less movement gets: the same frame, standing
    still. Not the video paused — the video is never fetched at all. */
 .backdropStill {
-  background: url('/hero-poster.jpg') 42% 40% / cover no-repeat;
+  background: url('/hero-poster.jpg') 50% 30% / cover no-repeat;
   animation: none;
   transform: scale(1.03);
 }
@@ -70,9 +71,10 @@
   height: 100%;
   /* Cover, unlike the artwork it replaces: this is a photographed room, and a
      letterboxed room reads as a mistake where a letterboxed drawing did not.
-     Held slightly left of centre, which is where he stands in the frame. */
+     Centred on him and lifted, so he lands inside the mask rather than under
+     its faded edge — the ellipse sits at 32% down the screen. */
   object-fit: cover;
-  object-position: 42% 40%;
+  object-position: 50% 30%;
   opacity: 0.16;
   /* Fading out before it reaches the text: the headline has to stay the
      brightest thing on the screen. */
@@ -86,7 +88,7 @@
 /* What someone who asked for less movement gets: the same frame, standing
    still. Not the video paused — the video is never fetched at all. */
 .backdropStill {
-  background: url('/hero-poster.jpg') 42% 40% / cover no-repeat;
+  background: url('/hero-poster.jpg') 50% 30% / cover no-repeat;
   animation: none;
   transform: scale(1.03);
 }
