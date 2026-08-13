@@ -89,6 +89,10 @@ export default function WorkoutCalendar({ completions, blocks = [], lifts = {}, 
 
   return (
     <div className={styles.wrap}>
+      {/* The calendar is one card and the day's exercises are their own — the
+          log used to sit inside the calendar's pane, so exercise panes were
+          cards within a card and the whole thing read as one block. */}
+      <div className={styles.card}>
       <div className={styles.head}>
         <button className={styles.nav} onClick={() => step(-1)} type="button" aria-label="Предходен месец">‹</button>
         <div className={styles.title}>
@@ -153,6 +157,8 @@ export default function WorkoutCalendar({ completions, blocks = [], lifts = {}, 
           ))}
         </div>
       )}
+
+      </div>
 
       {/* The day opens here: what was done, then its exercises, editable. The
           calendar is the log book, so the log book is where logging happens. */}

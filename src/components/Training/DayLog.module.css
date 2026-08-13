@@ -1,7 +1,6 @@
+/* No top border and no join: the exercises are their own panes below the
+   calendar, not a continuation of it. */
 .wrap {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 10px;
