@@ -17,6 +17,33 @@ function e1RM(weight, reps) {
   return weight * (1 + (reps || 1) / 30)
 }
 
+/**
+ * Total work in a session: kilograms actually moved.
+ *
+ * Nobody times a set, so time under tension cannot be recorded without asking
+ * for something that will not be given — and a field left empty is worse than
+ * no field. Volume measures the same thing from the other side: it is already
+ * in the data, it needs nothing from anyone, and it rises when reps or sets
+ * rise at the same load, which is exactly the progression that "+0кг" was
+ * hiding.
+ *
+ * Rows from before one-set-per-row are a whole exercise carrying "sets: 4",
+ * while rows since are a single set carrying "sets: 1" — multiplying by the
+ * count is right for both, and a naïve sum would have undercounted every old
+ * session fourfold.
+ */
+function volume(rows) {
+  return rows.reduce((sum, r) => sum + (r.weight || 0) * (r.reps || 0) * (r.sets || 1), 0)
+}
+
+/** Sets behind a session, in the same two shapes. */
+function setCount(rows) {
+  return rows.reduce((n, r) => n + (r.sets || 1), 0)
+}
+
+/** Thousands separated — a five-figure tonnage is unreadable as a bare run. */
+const fmt = n => Math.round(n).toLocaleString('bg-BG')
+
 /** Best set of a session — best by what it was worth, not by what it weighed. */
 function topSet(rows) {
   return rows.reduce((best, r) => {
@@ -66,11 +93,18 @@ export default function BlockCompare({ block, allLogs }) {
       for (const l of logs) (byDay[l.date] ??= []).push(l)
       const days = Object.keys(byDay).sort()
 
-      const first = topSet(byDay[days[0]])
-      const last  = topSet(byDay[days[days.length - 1]])
+      const firstRows = byDay[days[0]]
+      const lastRows  = byDay[days[days.length - 1]]
+      const first = topSet(firstRows)
+      const last  = topSet(lastRows)
       const a = first ? e1RM(first.weight, first.reps) : 0
       const b = last  ? e1RM(last.weight,  last.reps)  : 0
       const delta = b - a
+
+      const volFirst  = volume(firstRows)
+      const volLast   = volume(lastRows)
+      const setsFirst = setCount(firstRows)
+      const setsLast  = setCount(lastRows)
 
       return {
         name: ex.name,
@@ -83,6 +117,15 @@ export default function BlockCompare({ block, allLogs }) {
         change: first && last ? deltaLabel(first, last) : '',
         pct: a ? Math.round((delta / a) * 100) : 0,
         single: days.length === 1,
+        volFirst,
+        volLast,
+        volPct: volFirst ? Math.round(((volLast - volFirst) / volFirst) * 100) : 0,
+        // Volume across a different number of sets is not the same measurement,
+        // so the comparison says so rather than crediting an extra set as
+        // strength gained.
+        setsChanged: setsFirst !== setsLast,
+        setsFirst,
+        setsLast,
       }
     })
 
@@ -105,7 +148,8 @@ export default function BlockCompare({ block, allLogs }) {
     <div className={styles.wrap}>
       <p className={styles.lead}>
         Първата срещу последната тренировка от {sinceLabel} насам.
-        Процентът брои и повторенията, не само килограмите.
+        Процентът брои и повторенията, не само килограмите, а обемът —
+        колко тежест общо си вдигнал в тренировката.
       </p>
 
       {rows.map(r => (
@@ -134,6 +178,25 @@ export default function BlockCompare({ block, allLogs }) {
                 {r.change || 'без промяна'}
                 {r.change && ` · ${r.pct > 0 ? '+' : ''}${r.pct}%`}
               </span>
+
+              {/* Work done, for the sessions where the top set barely moved but
+                  the session was plainly harder. */}
+              {r.volFirst > 0 && (
+                <span className={styles.volume}>
+                  обем {fmt(r.volFirst)} → {fmt(r.volLast)} кг
+                  <span
+                    className={styles.volPct}
+                    style={{ color: r.volPct > 2 ? '#81C784' : r.volPct < -2 ? '#ef5350' : 'var(--muted)' }}
+                  >
+                    {r.volPct > 0 ? '+' : ''}{r.volPct}%
+                  </span>
+                  {r.setsChanged && (
+                    <span className={styles.volNote}>
+                      ({r.setsFirst} → {r.setsLast} серии)
+                    </span>
+                  )}
+                </span>
+              )}
             </span>
           )}
 

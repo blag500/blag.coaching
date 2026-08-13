@@ -79,3 +79,28 @@
   padding: 18px 0;
   text-align: center;
 }
+
+/* Work done, under the top-set line. Quieter than the headline figures: it is
+   the second reading, not the first. */
+.volume {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+  /* Its own line inside the wrapping flex row, rather than trailing the
+     percentage and breaking wherever it happens to run out of width. */
+  flex-basis: 100%;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.volPct {
+  font-weight: 600;
+}
+
+.volNote {
+  opacity: 0.75;
+}
