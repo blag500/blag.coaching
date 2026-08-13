@@ -25,10 +25,12 @@
   height: 100%;
   /* Cover, unlike the artwork it replaces: this is a photographed room, and a
      letterboxed room reads as a mistake where a letterboxed drawing did not.
-     Centred on him and lifted, so he lands inside the mask rather than under
-     its faded edge — the ellipse sits at 32% down the screen. */
+     The phone is taller than the film, so cover crops top and bottom rather
+     than the sides. He stands between 30% and 65% of the frame, and 44% is the
+     band that keeps him whole — with the empty floor below him falling off the
+     bottom, which is where it belongs. */
   object-fit: cover;
-  object-position: 50% 30%;
+  object-position: 50% 44%;
   opacity: 0.34;
   /* Still fading out before the edges, but far wider and held solid through
      the middle third: masked as tightly as the artwork was, a photographed room
@@ -44,7 +46,7 @@
 /* What someone who asked for less movement gets: the same frame, standing
    still. Not the video paused — the video is never fetched at all. */
 .backdropStill {
-  background: url('/hero-poster.jpg') 50% 30% / cover no-repeat;
+  background: url('/hero-poster.jpg') 50% 44% / cover no-repeat;
   animation: none;
   transform: scale(1.03);
 }
@@ -73,10 +75,12 @@
   height: 100%;
   /* Cover, unlike the artwork it replaces: this is a photographed room, and a
      letterboxed room reads as a mistake where a letterboxed drawing did not.
-     Centred on him and lifted, so he lands inside the mask rather than under
-     its faded edge — the ellipse sits at 32% down the screen. */
+     The phone is taller than the film, so cover crops top and bottom rather
+     than the sides. He stands between 30% and 65% of the frame, and 44% is the
+     band that keeps him whole — with the empty floor below him falling off the
+     bottom, which is where it belongs. */
   object-fit: cover;
-  object-position: 50% 30%;
+  object-position: 50% 44%;
   opacity: 0.34;
   /* Still fading out before the edges, but far wider and held solid through
      the middle third: masked as tightly as the artwork was, a photographed room
@@ -92,7 +96,7 @@
 /* What someone who asked for less movement gets: the same frame, standing
    still. Not the video paused — the video is never fetched at all. */
 .backdropStill {
-  background: url('/hero-poster.jpg') 50% 30% / cover no-repeat;
+  background: url('/hero-poster.jpg') 50% 44% / cover no-repeat;
   animation: none;
   transform: scale(1.03);
 }
