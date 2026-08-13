@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -8,6 +8,14 @@ import styles from './DayLog.module.css'
 
 /** Blank row for a set that has not been entered yet. */
 const EMPTY = { id: null, weight: '', reps: '', created_at: null }
+
+/** Long enough that it does not fire mid-number, short enough that putting the
+ *  phone down never loses a set. Blur commits sooner than this anyway. */
+const AUTOSAVE_MS = 1200
+
+/** What a row is worth saving as — two rows with the same signature are the
+ *  same set, so nothing is written twice. */
+const sig = r => `${r.weight}|${r.reps}`
 
 /**
  * A small square beside the exercise: the photo if there is one, a camera if
@@ -43,29 +51,54 @@ function ExerciseThumb({ name, url, busy, onPick, onZoom }) {
   )
 }
 
+/** What a finished exercise says on its one line, once it is folded away. */
+function summarise(sets) {
+  const done = sets.filter(s => s.id && s.weight !== '')
+  if (!done.length) return ''
+  const weights = [...new Set(done.map(s => String(s.weight)))]
+  // The usual case is one load across the sets, and repeating it three times
+  // says nothing three times.
+  if (weights.length === 1) {
+    return `${weights[0]}кг × ${done.map(s => s.reps || '?').join(', ')}`
+  }
+  return done.map(s => `${s.weight}×${s.reps || '?'}`).join(' · ')
+}
+
 /**
  * A day's exercises, opened from the calendar and written to in place.
  *
  * One row per set, because a set of four is almost never four identical sets —
- * 80×10, 80×9, 80×7, 80×6 is what actually happens, and a single row carrying
- * "sets: 4" had nowhere to say it. The programme's prescribed count decides how
- * many rows appear, so the form already has the shape of the session.
+ * 80×10, 80×9, 80×7, 80×6 is what actually happens. The programme's prescribed
+ * count decides how many rows appear, so the form already has the shape of the
+ * session.
  *
- * Rows already logged arrive filled in and stay editable: a set entered wrong
- * is the most common thing anyone needs to fix, and it should not require
- * finding another screen.
+ * The row itself is only the numbers. A save button and a delete button on
+ * every row put thirty-six controls on a six-exercise day, nearly all of them
+ * for something done rarely or not at all: typing a number and moving on is the
+ * actual gesture, so that is what saves. Emptying a row deletes it, which is
+ * what empty already means.
  */
 export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const { user } = useAuth()
   const [rows, setRows] = useState({})   // planned name → [{ id, weight, reps }]
-  const [busy, setBusy] = useState(null)
   const [saved, setSaved] = useState(null)
-  // planned name → what was actually done instead, for this day only.
-  const [swap, setSwap] = useState({})
+  const [swap, setSwap] = useState({})   // planned name → what stood in, today
   const [editing, setEditing] = useState(null)
+  const [open, setOpen] = useState({})   // explicit fold state, overrides default
   const { byName: photos, upload } = useExercisePhotos()
   const [uploading, setUploading] = useState(null)
   const [zoom, setZoom] = useState(null)
+
+  // Autosave reads the newest values from a ref: a debounced call fired from a
+  // closure would still be holding whatever was on screen when the timer was
+  // set, and would save the number as it looked one keystroke ago.
+  const rowsRef    = useRef(rows)
+  const swapRef    = useRef(swap)
+  const timers     = useRef({})
+  const inflight   = useRef({})
+  const lastSaved  = useRef({})
+  useEffect(() => { rowsRef.current = rows }, [rows])
+  useEffect(() => { swapRef.current = swap }, [swap])
 
   const exercises = (blocks ?? [])
     .filter(b => blockLabels.includes(b.label))
@@ -92,14 +125,16 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
           const stood = mine.find(r => r.replaces === ex.name)
           if (stood) sw[ex.name] = stood.exercise_name
 
-          // Enough rows for the programme, or for what was actually logged if
-          // more sets were done than asked for.
           const count = Math.max(planned, mine.length)
           m[ex.name] = Array.from({ length: count }, (_, i) => {
             const hit = mine[i]
-            return hit
+            const row = hit
               ? { id: hit.id, weight: hit.weight ?? '', reps: hit.reps ?? '', created_at: hit.created_at }
               : { ...EMPTY }
+            // Remembered as already stored, so simply focusing a loaded row and
+            // leaving it does not write it back unchanged.
+            lastSaved.current[`${ex.name}-${i}`] = sig(row)
+            return row
           })
         }
         setRows(m)
@@ -109,23 +144,60 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
   useEffect(() => { load() }, [load])
 
-  function edit(name, i, field, value) {
-    setRows(prev => ({
-      ...prev,
-      [name]: prev[name].map((r, j) => (j === i ? { ...r, [field]: value } : r)),
-    }))
-  }
+  /** Every pending timer fires before the panel goes, so a set typed and then
+   *  closed straight away is still on record.
+   *
+   *  Through a ref, not the closure: this runs once at unmount and would
+   *  otherwise be holding the first render's `date`, writing the last set of a
+   *  session to whichever day the panel was first opened on. */
+  const commitRef = useRef(null)
+  useEffect(() => {
+    commitRef.current = commit
+  })
+  useEffect(() => () => {
+    for (const key of Object.keys(timers.current)) {
+      clearTimeout(timers.current[key])
+      const cut = key.lastIndexOf('-')
+      commitRef.current?.(key.slice(0, cut), +key.slice(cut + 1))
+    }
+  }, [])
 
-  async function save(name, i) {
-    const r = rows[name]?.[i]
-    if (!user || !r?.weight) return
+  /**
+   * Write the row if it has changed. Emptied rows are deleted: a set with no
+   * numbers in it is a set that did not happen, and that is what clearing it
+   * has always looked like.
+   */
+  async function commit(name, i) {
+    const r = rowsRef.current[name]?.[i]
+    if (!user || !r) return
     const key = `${name}-${i}`
-    setBusy(key)
+    if (inflight.current[key]) return
+    if (lastSaved.current[key] === sig(r)) return
 
+    const blank = String(r.weight).trim() === '' && String(r.reps).trim() === ''
+
+    if (blank) {
+      if (!r.id) { lastSaved.current[key] = sig(r); return }
+      inflight.current[key] = true
+      await supabase.from('exercise_logs').delete().eq('id', r.id)
+      inflight.current[key] = false
+      lastSaved.current[key] = sig(EMPTY)
+      setRows(prev => ({
+        ...prev,
+        [name]: prev[name].map((x, j) => (j === i ? { ...EMPTY } : x)),
+      }))
+      onLogged?.()
+      return
+    }
+
+    // Reps alone are not a set yet — the weight is what is being recorded.
+    if (String(r.weight).trim() === '') return
+
+    inflight.current[key] = true
     // Logged under whatever was actually done, with a note of what it replaced —
     // so the substitute builds its own history and the planned lift knows why
     // it has a gap that week.
-    const done = swap[name] || name
+    const done = swapRef.current[name] || name
     const payload = {
       user_id: user.id,
       date,
@@ -137,34 +209,38 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       replaces: done === name ? null : name,
     }
 
-    // Updated in place when the row exists, so correcting a set does not leave
-    // the wrong figure sitting beside the right one.
     const { data, error } = r.id
       ? await supabase.from('exercise_logs').update(payload).eq('id', r.id).select().single()
       : await supabase.from('exercise_logs').insert(payload).select().single()
 
-    setBusy(null)
+    inflight.current[key] = false
     if (error) return
+
+    lastSaved.current[key] = sig(r)
     setRows(prev => ({
       ...prev,
       [name]: prev[name].map((x, j) => (j === i ? { ...x, id: data.id, created_at: data.created_at } : x)),
     }))
     setSaved(key)
-    setTimeout(() => setSaved(s => (s === key ? null : s)), 1500)
+    setTimeout(() => setSaved(s => (s === key ? null : s)), 1400)
     onLogged?.()
   }
 
-  async function clear(name, i) {
-    const r = rows[name]?.[i]
-    if (!r?.id) return
-    setBusy(`${name}-${i}`)
-    await supabase.from('exercise_logs').delete().eq('id', r.id)
-    setBusy(null)
+  function edit(name, i, field, value) {
     setRows(prev => ({
       ...prev,
-      [name]: prev[name].map((x, j) => (j === i ? { ...EMPTY } : x)),
+      [name]: prev[name].map((r, j) => (j === i ? { ...r, [field]: value } : r)),
     }))
-    onLogged?.()
+    const key = `${name}-${i}`
+    clearTimeout(timers.current[key])
+    timers.current[key] = setTimeout(() => commit(name, i), AUTOSAVE_MS)
+  }
+
+  /** Leaving a field is the clearest sign the number is finished. */
+  function blur(name, i) {
+    const key = `${name}-${i}`
+    clearTimeout(timers.current[key])
+    commit(name, i)
   }
 
   /** An extra set beyond the programme — it happened, so it can be recorded. */
@@ -179,14 +255,10 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   return (
     <div className={styles.wrap}>
       {/* A framed card over a blurred screen, dismissed by tapping anywhere.
-          Big enough to recognise a machine, small enough that the page behind
-          still reads as where you were.
-
-          Rendered into <body>, not here: the tab panes carry a transform for
-          the swipe, and a transformed ancestor becomes the containing block for
-          everything fixed inside it — so "inset: 0" would mean the full height
-          of the scrolled page rather than the screen, and the card would land
-          wherever the middle of that page happens to be. */}
+          Rendered into <body>: the tab panes carry a transform for the swipe,
+          and a transformed ancestor becomes the containing block for everything
+          fixed inside it, so "inset: 0" would mean the height of the scrolled
+          page rather than the screen. */}
       {zoom && createPortal(
         <div className={styles.lightbox} onClick={() => setZoom(null)} role="dialog" aria-modal="true">
           <div className={styles.lightboxCard}>
@@ -200,26 +272,46 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       {exercises.map(ex => {
         const sets = rows[ex.name] ?? []
         const doneCount = sets.filter(s => s.id).length
-        const pace = setPace(sets.filter(s => s.id))
+        const complete = sets.length > 0 && doneCount === sets.length
+        // Finished work folds itself away, so the list gets shorter as the
+        // session goes on instead of staying the same size throughout.
+        const isOpen = open[ex.name] ?? !complete
+        const shown  = swap[ex.name] || ex.name
+        const pace   = setPace(sets.filter(s => s.id))
+
+        if (!isOpen) {
+          return (
+            <button
+              key={`${ex.block}-${ex.name}`}
+              type="button"
+              className={styles.folded}
+              onClick={() => setOpen(p => ({ ...p, [ex.name]: true }))}
+            >
+              <span className={styles.foldedTick}>✓</span>
+              <span className={styles.foldedName}>{shown}</span>
+              <span className={styles.foldedSum}>{summarise(sets)}</span>
+            </button>
+          )
+        }
+
         return (
           <div key={`${ex.block}-${ex.name}`} className={styles.exercise}>
             <div className={styles.head}>
-              {/* The picture, where the name alone is not enough. "Тяга в
-                  наклон" is four different movements depending on who wrote
-                  it, and the person reading it in the gym is the one guessing. */}
+              {/* The picture, where the name alone is not enough. Only in the
+                  open exercise: on every row at once it was decoration. */}
               <ExerciseThumb
-                name={swap[ex.name] || ex.name}
-                url={photos[swap[ex.name] || ex.name]}
+                name={shown}
+                url={photos[shown]}
                 busy={uploading === ex.name}
                 onPick={async file => {
                   setUploading(ex.name)
-                  await upload(swap[ex.name] || ex.name, file)
+                  await upload(shown, file)
                   setUploading(null)
                 }}
                 onZoom={setZoom}
               />
               <span className={styles.nameWrap}>
-                <span className={styles.name}>{swap[ex.name] || ex.name}</span>
+                <span className={styles.name}>{shown}</span>
                 <button
                   type="button"
                   className={styles.swapBtn}
@@ -230,6 +322,14 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
               <span className={styles.target}>
                 {doneCount}/{sets.length} × {ex.reps}
               </span>
+              {complete && (
+                <button
+                  type="button"
+                  className={styles.fold}
+                  onClick={() => setOpen(p => ({ ...p, [ex.name]: false }))}
+                  aria-label="Сгъни"
+                >▴</button>
+              )}
             </div>
 
             {/* Today only. The programme is untouched, so next session comes
@@ -248,11 +348,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                   aria-label="Какво направи вместо него"
                   autoFocus
                 />
-                <button
-                  type="button"
-                  className={styles.swapDone}
-                  onClick={() => setEditing(null)}
-                >Готово</button>
+                <button type="button" className={styles.swapDone} onClick={() => setEditing(null)}>
+                  Готово
+                </button>
                 {swap[ex.name] && (
                   <button
                     type="button"
@@ -276,6 +374,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       value={r.weight}
                       placeholder="кг"
                       onChange={e => edit(ex.name, i, 'weight', e.target.value)}
+                      onBlur={() => blur(ex.name, i)}
                       aria-label={`${ex.name}, серия ${i + 1}, килограми`}
                     />
                   </label>
@@ -289,28 +388,17 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       value={r.reps}
                       placeholder={String(ex.reps ?? '')}
                       onChange={e => edit(ex.name, i, 'reps', e.target.value)}
+                      onBlur={() => blur(ex.name, i)}
                       aria-label={`${ex.name}, серия ${i + 1}, повторения`}
                     />
                   </label>
 
-                  <button
-                    type="button"
-                    className={`${styles.save} ${r.id ? styles.saveEdit : ''}`}
-                    onClick={() => save(ex.name, i)}
-                    disabled={busy === key || !r.weight}
-                  >
-                    {saved === key ? '✓' : r.id ? '↻' : '✓'}
-                  </button>
-
-                  {r.id && (
-                    <button
-                      type="button"
-                      className={styles.clear}
-                      onClick={() => clear(ex.name, i)}
-                      disabled={busy === key}
-                      aria-label={`Изтрий серия ${i + 1}`}
-                    >×</button>
-                  )}
+                  {/* The only thing left on the row, and it is not a control:
+                      saving is automatic, so the row still owes an answer that
+                      it happened. */}
+                  <span className={`${styles.mark} ${saved === key ? styles.markFlash : ''}`}>
+                    {saved === key ? '✓' : r.id ? '·' : ''}
+                  </span>
                 </div>
               )
             })}
@@ -320,10 +408,8 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                 + серия
               </button>
 
-              {/* Read off the clock, not asked for: every ✓ carries the moment
-                  it was tapped, so the gaps are already recorded. Absent rather
-                  than invented when the timings cannot support a figure — a
-                  session typed up at home has gaps of seconds. */}
+              {/* Read off the clock, not asked for: every save carries the
+                  moment it happened, so the gaps are already recorded. */}
               {pace != null && (
                 <span className={styles.pace} title="Средно време от серия до серия, включително самата серия">
                   {formatPace(pace)} между сериите
