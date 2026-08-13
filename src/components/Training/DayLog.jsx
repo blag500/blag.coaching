@@ -176,12 +176,15 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
   return (
     <div className={styles.wrap}>
-      {/* Full size, over everything, dismissed by tapping anywhere — the point
-          is recognition, and recognition wants the picture big. */}
+      {/* A framed card over a blurred screen, dismissed by tapping anywhere.
+          Big enough to recognise a machine, small enough that the page behind
+          still reads as where you were. */}
       {zoom && (
         <div className={styles.lightbox} onClick={() => setZoom(null)} role="dialog" aria-modal="true">
-          <img src={zoom.url} alt={zoom.name} className={styles.lightboxImg} />
-          <span className={styles.lightboxName}>{zoom.name}</span>
+          <div className={styles.lightboxCard}>
+            <img src={zoom.url} alt={zoom.name} className={styles.lightboxImg} />
+            <span className={styles.lightboxName}>{zoom.name}</span>
+          </div>
         </div>
       )}
 

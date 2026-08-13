@@ -274,23 +274,49 @@
   align-items: center;
 }
 
+/* The backdrop only dims and blurs — the picture sits in a card of its own, so
+   the screen behind stays legible as context rather than being blacked out. */
 .lightbox {
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(0, 0, 0, 0.94);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px) saturate(0.9);
+  -webkit-backdrop-filter: blur(10px) saturate(0.9);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 20px;
+  padding: 24px;
   cursor: zoom-out;
+  animation: lbIn 0.18s ease-out;
+}
+
+/* Smoked glass with a gold edge, like every other raised surface. The card
+   wraps the image rather than the image filling the viewport: a machine is
+   recognised at a glance, and a glance does not need the whole screen. */
+.lightboxCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  max-width: min(88vw, 420px);
+  border-radius: var(--r-lg);
+  background: var(--glass-bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  animation: lbCardIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
 .lightboxImg {
-  max-width: 100%;
-  max-height: 78vh;
+  display: block;
+  width: 100%;
+  /* Capped well short of the viewport so the caption below it, and the nav
+     under that, are never what gets pushed off. */
+  max-height: 58vh;
   border-radius: var(--r-md);
   object-fit: contain;
 }
@@ -301,4 +327,15 @@
   letter-spacing: 0.08em;
   color: var(--text);
   text-align: center;
+  padding-bottom: 2px;
+}
+
+@keyframes lbIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
+@keyframes lbCardIn {
+  from { opacity: 0; transform: scale(0.94) }
+  to   { opacity: 1; transform: none }
 }
