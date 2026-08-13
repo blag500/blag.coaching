@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
+import { setPace, formatPace } from '../../utils/setPace'
 import styles from './DayLog.module.css'
 
 /** Blank row for a set that has not been entered yet. */
-const EMPTY = { id: null, weight: '', reps: '' }
+const EMPTY = { id: null, weight: '', reps: '', created_at: null }
 
 /**
  * A small square beside the exercise: the photo if there is one, a camera if
@@ -74,7 +75,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     if (!user?.id) return
     supabase
       .from('exercise_logs')
-      .select('id, exercise_name, weight, reps, sets, set_index, replaces')
+      .select('id, exercise_name, weight, reps, sets, set_index, replaces, created_at')
       .eq('user_id', user.id)
       .eq('date', date)
       .then(({ data }) => {
@@ -97,7 +98,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
           m[ex.name] = Array.from({ length: count }, (_, i) => {
             const hit = mine[i]
             return hit
-              ? { id: hit.id, weight: hit.weight ?? '', reps: hit.reps ?? '' }
+              ? { id: hit.id, weight: hit.weight ?? '', reps: hit.reps ?? '', created_at: hit.created_at }
               : { ...EMPTY }
           })
         }
@@ -146,7 +147,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     if (error) return
     setRows(prev => ({
       ...prev,
-      [name]: prev[name].map((x, j) => (j === i ? { ...x, id: data.id } : x)),
+      [name]: prev[name].map((x, j) => (j === i ? { ...x, id: data.id, created_at: data.created_at } : x)),
     }))
     setSaved(key)
     setTimeout(() => setSaved(s => (s === key ? null : s)), 1500)
@@ -199,6 +200,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       {exercises.map(ex => {
         const sets = rows[ex.name] ?? []
         const doneCount = sets.filter(s => s.id).length
+        const pace = setPace(sets.filter(s => s.id))
         return (
           <div key={`${ex.block}-${ex.name}`} className={styles.exercise}>
             <div className={styles.head}>
@@ -313,9 +315,21 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
               )
             })}
 
-            <button type="button" className={styles.addSet} onClick={() => addSet(ex.name)}>
-              + серия
-            </button>
+            <div className={styles.footRow}>
+              <button type="button" className={styles.addSet} onClick={() => addSet(ex.name)}>
+                + серия
+              </button>
+
+              {/* Read off the clock, not asked for: every ✓ carries the moment
+                  it was tapped, so the gaps are already recorded. Absent rather
+                  than invented when the timings cannot support a figure — a
+                  session typed up at home has gaps of seconds. */}
+              {pace != null && (
+                <span className={styles.pace} title="Средно време от серия до серия, включително самата серия">
+                  {formatPace(pace)} между сериите
+                </span>
+              )}
+            </div>
           </div>
         )
       })}
