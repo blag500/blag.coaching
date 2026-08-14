@@ -87,6 +87,13 @@ export default function DashboardCards() {
     return el.getBoundingClientRect().top - (id === dragIdRef.current ? shift.current : 0)
   }
 
+  /** The same, but measured from the top of the list instead of the top of the
+      window. The list scrolls with the page and sits inside a tab that carries
+      its own transform, so viewport coordinates taken one render apart are not
+      comparable — the difference between them counts the scrolling as movement
+      and flings the row that far. */
+  function slotIn(id, el, listTop) { return slotTop(id, el) - listTop }
+
   /** Keeps the held row under the fingertip, whatever slot it now occupies. */
   function follow() {
     const el = rowEls.current.get(dragIdRef.current)
@@ -170,6 +177,10 @@ export default function DashboardCards() {
       timer: setTimeout(() => {
         hold.current = null
         const el = rowEls.current.get(id)
+        /* Cleared before it is measured: the row may still carry a transform
+           from the last time something moved past it, and every offset from
+           here on is computed against this one reading. */
+        if (el) { el.style.transition = 'none'; el.style.transform = '' }
         grab.current = el ? pointer.current.y - el.getBoundingClientRect().top : 0
         shift.current = 0
         drag.current = { id, index, from: index }
@@ -184,10 +195,22 @@ export default function DashboardCards() {
      displaced rows are never seen in their new places — they are only ever seen
      travelling to them. */
   useLayoutEffect(() => {
-    const now = new Map()
-    rowEls.current.forEach((el, id) => {
-      if (el?.isConnected) now.set(id, slotTop(id, el))
+    const els = [...rowEls.current.entries()].filter(([, el]) => el?.isConnected)
+
+    /* Every leftover transform is stripped before anything is measured. A row
+       caught mid-animation reports where it is passing through rather than
+       where it belongs, and the next displacement is then computed from that
+       error and added to it. Two quick swaps were enough to send the list
+       across the screen. */
+    els.forEach(([id, el]) => {
+      if (id === dragIdRef.current) return
+      el.style.transition = 'none'
+      el.style.transform = ''
     })
+
+    const listTop = listRef.current?.getBoundingClientRect().top ?? 0
+    const now = new Map()
+    els.forEach(([id, el]) => now.set(id, slotIn(id, el, listTop)))
 
     if (prevTops.current.size && !still) {
       now.forEach((top, id) => {
@@ -195,9 +218,10 @@ export default function DashboardCards() {
         const was = prevTops.current.get(id)
         if (was == null || Math.abs(was - top) < 0.5) return
         const el = rowEls.current.get(id)
-        el.style.transition = 'none'
         el.style.transform = `translateY(${was - top}px)`
         requestAnimationFrame(() => {
+          // Gone from the list between the two frames — nothing left to release.
+          if (!el.isConnected) return
           el.style.transition = `transform ${MOVE_MS}ms ${EASE}`
           el.style.transform = ''
         })
