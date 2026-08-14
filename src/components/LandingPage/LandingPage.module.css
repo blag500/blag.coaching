@@ -1,15 +1,22 @@
+/* Three screens that scroll, not one that fits. The page used to be a fixed
+   pane with everything squeezed into it; a funnel has steps, and a step the
+   visitor scrolls to is a step they chose to take. */
 .page {
-  position: fixed;
-  inset: 0;
-  height: 100dvh;
+  min-height: 100dvh;
   background: var(--bg);
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 52px 28px calc(40px + env(safe-area-inset-bottom));
-  overflow: hidden;
+  justify-content: center;
+  padding: 52px 24px calc(48px + env(safe-area-inset-bottom));
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* ── Moving backdrop ──────────────────────────────────────────────────────
@@ -23,21 +30,15 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  /* Cover, unlike the artwork it replaces: this is a photographed room, and a
-     letterboxed room reads as a mistake where a letterboxed drawing did not.
-     The phone is taller than the film, so cover crops top and bottom rather
-     than the sides. He stands between 30% and 65% of the frame, and 44% is the
-     band that keeps him whole — with the empty floor below him falling off the
-     bottom, which is where it belongs. */
+  /* Cover, unlike artwork: this is a photographed room, and a letterboxed room
+     reads as a mistake. He stands between 30% and 65% of the frame, and 44% is
+     the band that keeps him whole, with the empty floor falling off the bottom
+     where it belongs. */
   object-fit: cover;
   object-position: 50% 44%;
   opacity: 0.34;
-  /* Still fading out before the edges, but far wider and held solid through
-     the middle third: masked as tightly as the artwork was, a photographed room
-     reads as a smudge rather than as a gym. The headline keeps its contrast
-     from its own weight, not from starving the picture behind it. */
-  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
-  mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 40%, #000 0%, #000 34%, transparent 86%);
+  mask-image: radial-gradient(ellipse 92% 74% at 50% 40%, #000 0%, #000 34%, transparent 86%);
   animation: drift 65s ease-in-out infinite alternate;
   will-change: transform;
   pointer-events: none;
@@ -56,6 +57,16 @@
   to   { transform: scale(1.07) translate3d(1%, -0.8%, 0); }
 }
 
+/* Only the thing that has to change belongs in the override — the whole rule
+   used to be repeated here, drift animation included, so asking for less
+   movement got exactly the same movement. */
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .backdropStill {
+    animation: none;
+  }
+}
+
 /* Film grain, static. Animated grain is the single most expensive thing a
    landing page can do for the least anyone notices. */
 .grain {
@@ -66,16 +77,6 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
 }
 
-/* The whole rule block used to be repeated in here, drift animation and all,
-   which meant asking for less movement got exactly the same movement. Only the
-   thing that has to change belongs in the override. */
-@media (prefers-reduced-motion: reduce) {
-  .backdrop,
-  .backdropStill {
-    animation: none;
-  }
-}
-
 .glowTop {
   position: absolute;
   top: -80px;
@@ -83,106 +84,129 @@
   transform: translateX(-50%);
   width: 360px;
   height: 360px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(var(--accent-rgb), 0.13) 0%,
-    transparent 68%
-  );
+  background: radial-gradient(ellipse at center,
+    rgba(var(--accent-rgb), 0.13) 0%, transparent 68%);
   pointer-events: none;
 }
 
-/* Logo */
-.logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+/* ── The lockup ───────────────────────────────────────────────────────────
+   The splash arrangement, held still: two arms and the name between them. */
+.lockup {
+  position: relative;
   z-index: 1;
-}
-
-.logoName {
-  font-family: var(--font-heading);
-  font-size: 36px;
-  line-height: 0.9;
-  letter-spacing: 0.16em;
-  color: var(--accent);
-}
-
-.logoRule {
-  width: 40px;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--accent), transparent);
-}
-
-.logoSub {
-  font-family: var(--font-heading);
-  font-size: 12px;
-  letter-spacing: 0.48em;
-  color: var(--muted);
-}
-
-/* Hero */
-.hero {
-  text-align: center;
-  z-index: 1;
-}
-
-.headline {
-  font-family: var(--font-heading);
-  font-size: clamp(40px, 12vw, 56px);
-  line-height: 0.95;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  margin: 0 0 14px;
-}
-
-/* Feature chips */
-.chips {
   display: flex;
   align-items: center;
-  gap: 12px;
-  z-index: 1;
-}
-
-.chip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.chipIcon {
-  font-size: 26px;
-  line-height: 1;
-}
-
-.chipLabel {
-  font-family: var(--font-body);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
-
-.chipDot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--border);
-  margin-bottom: 14px;
-}
-
-/* Bottom */
-.bottom {
+  justify-content: center;
   width: 100%;
+  max-width: 520px;
+}
+
+.armLeft,
+.armRight {
+  flex: 0 0 auto;
+  width: 96px;
+  height: 160px;
+  background: url('/arms-hi.webp') center / contain no-repeat;
+}
+
+/* One drawing, mirrored — the artwork is a right arm, and a left arm is the
+   same arm seen from the other side. */
+.armLeft { transform: scaleX(-1); }
+
+.brand {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  z-index: 1;
+  gap: 8px;
+  padding: 0 6px;
+}
+
+/* Flat gold, not the brushed metal of the splash. The metal is the one moment
+   the brand performs, and a ramp used on every screen it appears on stops
+   being a moment. One property to change if that trade is worth making. */
+.name {
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 11vw, 44px);
+  letter-spacing: 0.2em;
+  /* Tracking pads the right of the last letter and nothing before the first, so
+     a centred line sits half a space to the left. */
+  text-indent: 0.2em;
+  line-height: 1;
+  margin: 0;
+  color: var(--accent);
+  text-shadow: 0 0 34px rgba(var(--accent-rgb), 0.22);
+}
+
+.kicker {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.46em;
+  text-indent: 0.46em;
+  color: var(--muted);
+}
+
+/* A hairline at the foot of the first screen. A page that fills the viewport
+   exactly looks finished, and nobody scrolls a finished page. */
+.scrollHint {
+  position: absolute;
+  bottom: calc(26px + env(safe-area-inset-bottom));
+  left: 50%;
+  width: 1px;
+  height: 34px;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, transparent, rgba(var(--accent-rgb), 0.5));
+  animation: hint 2.6s ease-in-out infinite;
+}
+
+@keyframes hint {
+  0%, 100% { opacity: 0.25; transform: translateX(-50%) scaleY(0.7); }
+  50%      { opacity: 0.9;  transform: translateX(-50%) scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollHint { animation: none; }
+}
+
+/* ── The two blocks below ─────────────────────────────────────────────────
+   Deliberately identical in shape. One is about a person and one about a
+   program, and giving either the louder treatment answers a question the
+   visitor has not been asked yet. */
+.block {
+  min-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 28px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.blockLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.lead {
+  margin: 0 0 8px;
+  max-width: 26ch;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
 }
 
 .cta {
   width: 100%;
+  max-width: 340px;
   padding: 18px;
   background: var(--accent);
   border: none;
@@ -191,15 +215,16 @@
   font-family: var(--font-heading);
   font-size: 17px;
   letter-spacing: 0.12em;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
   cursor: pointer;
   box-shadow: 0 6px 32px rgba(var(--accent-rgb), 0.32);
   transition: opacity 120ms;
   -webkit-tap-highlight-color: transparent;
 }
 
-.cta:active {
-  opacity: 0.85;
-}
+.cta:active { opacity: 0.85; }
 
 .loginLink {
   background: none;
@@ -219,41 +244,11 @@
   text-underline-offset: 2px;
 }
 
-.helpLink {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--accent);
-  opacity: 0.65;
-  text-decoration: none;
-  letter-spacing: 0.08em;
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-  border-radius: var(--r-lg);
-  padding: 6px 16px;
-  transition: opacity 120ms;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.helpLink:active {
-  opacity: 1;
-}
-
-/* Under the headline and well clear of it, so the two read as a title and its
-   caption rather than as one block of type. */
-.sub {
-  margin: 16px 0 0;
-  font-family: var(--font-body);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-}
-
-/* Last and quietest. A second invitation with the weight of the first would
-   make the visitor choose rather than act, and fewer would do either. */
 .social {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 4px;
 }
 
 /* The same round pane the header's controls are cut from, so these read as part

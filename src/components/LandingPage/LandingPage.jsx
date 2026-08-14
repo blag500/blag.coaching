@@ -1,6 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './LandingPage.module.css'
 
+/**
+ * The top of the funnel, not a shop window.
+ *
+ * Someone arrives here from a video knowing a name and nothing else, so the
+ * page answers three things in the order a stranger asks them: who is this,
+ * how do I reach him, and what is the thing he keeps showing.
+ *
+ * Three screens rather than one. Everything crammed above the fold competes
+ * with itself — the contact and the app were two invitations of equal weight
+ * on one screen, and two equal invitations get fewer of both. Apart, each gets
+ * a screen to itself and asks once.
+ */
 export default function LandingPage({ onContinue, onLogin }) {
   // Respect the setting, and follow it if it changes while the page is open.
   const [stillOnly, setStillOnly] = useState(
@@ -32,59 +44,62 @@ export default function LandingPage({ onContinue, onLogin }) {
 
   return (
     <div className={styles.page}>
-      {/* Held far back, dimmed and masked: a real gym behind the words does
-          more for this than any amount of gradient, but the headline has to
-          stay the brightest thing on the screen.
 
-          Decided in JS rather than hidden in CSS, so that someone who has asked
-          for less movement does not download five seconds of video in order to
-          not watch it. */}
-      {stillOnly ? (
-        <div className={styles.backdropStill} aria-hidden="true" />
-      ) : (
-        <video
-          ref={videoRef}
-          className={styles.backdrop}
-          autoPlay muted loop playsInline
-          preload="auto"
-          poster="/hero-poster.jpg"
-          aria-hidden="true"
+      {/* ── 1. Who ─────────────────────────────────────────────────────── */}
+      <section className={styles.hero}>
+        {/* Held far back, dimmed and masked: a real gym behind the mark does
+            more for this than any amount of gradient, but the lockup has to
+            stay the brightest thing on the screen.
+            Decided in JS rather than hidden in CSS, so that someone who has
+            asked for less movement does not download five seconds of video in
+            order to not watch it. */}
+        {stillOnly ? (
+          <div className={styles.backdropStill} aria-hidden="true" />
+        ) : (
+          <video
+            ref={videoRef}
+            className={styles.backdrop}
+            autoPlay muted loop playsInline
+            preload="auto"
+            poster="/hero-poster.jpg"
+            aria-hidden="true"
+          >
+            <source src="/hero.webm" type="video/webm" />
+            <source src="/hero.mp4" type="video/mp4" />
+          </video>
+        )}
+        <div className={styles.grain} aria-hidden="true" />
+        <div className={styles.glowTop} aria-hidden="true" />
+
+        {/* The splash lockup, standing still. The same arms in the same
+            arrangement — someone arriving from a video has already watched it
+            assemble once, and this is the recognition rather than the reveal. */}
+        <div className={styles.lockup}>
+          <div className={styles.armLeft} aria-hidden="true" />
+          <div className={styles.brand}>
+            <h1 className={styles.name}>BLAG</h1>
+            <p className={styles.kicker}>COACHING</p>
+          </div>
+          <div className={styles.armRight} aria-hidden="true" />
+        </div>
+
+        <span className={styles.scrollHint} aria-hidden="true" />
+      </section>
+
+      {/* ── 2. How to reach him ────────────────────────────────────────── */}
+      <section className={styles.block}>
+        <span className={styles.blockLabel}>ТРЕНЬОР</span>
+        <p className={styles.lead}>
+          Николай Благьов. Кажи ми къде си сега и накъде искаш —
+          останалото го правим заедно.
+        </p>
+        <a
+          className={styles.cta}
+          href="https://ig.me/m/blag.coaching"
+          target="_blank" rel="noopener noreferrer"
         >
-          <source src="/hero.webm" type="video/webm" />
-          <source src="/hero.mp4" type="video/mp4" />
-        </video>
-      )}
-      <div className={styles.grain} aria-hidden="true" />
-      <div className={styles.glowTop} aria-hidden="true" />
-
-      <div className={styles.logo}>
-        <span className={styles.logoName}>BLAG</span>
-      </div>
-
-      <div className={styles.hero}>
-        <h1 className={styles.headline}>ПОСТИГНИ<br />ЦЕЛТА СИ</h1>
-        {/* Three words, in the same idiom as the row of nouns that used to sit
-            here: separated by middots rather than full stops. Three short
-            sentences in a row is the cadence of every advert ever written, and
-            the eye skips it — the same three words on one line read as a label
-            instead. */}
-        <p className={styles.sub}>Виж · Ползвай · Постигай</p>
-      </div>
-
-      <div className={styles.bottom}>
-        <button className={styles.cta} onClick={onContinue} type="button">
-          РЕГИСТРИРАЙ СЕ
-        </button>
-        <button className={styles.loginLink} onClick={onLogin} type="button">
-          Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
-        </button>
-
-        {/* Marks, not sentences. "Или ми пиши в Instagram" was a third line of
-            text on a page that already had too many, and it named one network
-            while there are two. A logo needs no verb: everyone who has ever used
-            either of them recognises it faster than they can read.
-            Quiet and last on purpose — two equal invitations on one screen get
-            fewer of both, and the button above is the one that matters. */}
+          ПИШИ МИ
+        </a>
         <div className={styles.social}>
           <a
             className={styles.socialBtn}
@@ -100,8 +115,6 @@ export default function LandingPage({ onContinue, onLogin }) {
           </a>
           <a
             className={styles.socialBtn}
-            /* The address he sent carried ?_r and ?_t — those belong to his own
-               session on his own phone and mean nothing to a visitor. */
             href="https://www.tiktok.com/@blag.coaching"
             target="_blank" rel="noopener noreferrer" aria-label="TikTok"
           >
@@ -110,7 +123,21 @@ export default function LandingPage({ onContinue, onLogin }) {
             </svg>
           </a>
         </div>
-      </div>
+      </section>
+
+      {/* ── 3. The app ─────────────────────────────────────────────────── */}
+      <section className={styles.block}>
+        <span className={styles.blockLabel}>ПРИЛОЖЕНИЕТО</span>
+        <p className={styles.lead}>
+          Хранене, тренировки и тегло на едно място.
+        </p>
+        <button className={styles.cta} onClick={onContinue} type="button">
+          РЕГИСТРИРАЙ СЕ
+        </button>
+        <button className={styles.loginLink} onClick={onLogin} type="button">
+          Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
+        </button>
+      </section>
     </div>
   )
 }
