@@ -251,13 +251,30 @@
 
 /* Last and quietest. A second invitation with the weight of the first would
    make the visitor choose rather than act, and fewer would do either. */
-.contact {
-  display: inline-block;
-  margin-top: 14px;
-  font-family: var(--font-body);
-  font-size: 12px;
+.social {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* The same round pane the header's controls are cut from, so these read as part
+   of the interface rather than as badges stuck on the bottom of it. */
+.socialBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(var(--accent-rgb), 0.35);
-  padding-bottom: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 140ms, border-color 140ms;
+}
+
+.socialBtn:active {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.5);
 }
