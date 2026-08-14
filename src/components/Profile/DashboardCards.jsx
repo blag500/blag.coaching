@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { CARDS, DEFAULT_ORDER, layout } from '../TodayDashboard/cards'
 import styles from './DashboardCards.module.css'
@@ -60,18 +60,58 @@ export default function DashboardCards() {
 
   // ── Dragging ──────────────────────────────────────────────────────────────
 
-  /** Which row the pointer is over, by the rows' own boxes rather than by an
-      assumed height — they are the same height today and need not stay so. */
+  /* Two things move, and they move for different reasons.
+     The held row follows the finger, continuously, because a finger that has
+     picked something up expects it under the fingertip and nowhere else. The
+     rows it displaces slide into their new places, because a row that teleports
+     leaves the eye to work out after the fact what changed.
+     The second one is done with FLIP: React has already rearranged the list by
+     the time this can see it, so each row is measured where it landed, put back
+     where it was with a transform, and then released — which the compositor
+     animates without laying anything out again. */
+  const MOVE_MS = 190
+  const EASE = 'cubic-bezier(.2,.7,.3,1)'
+
+  const rowEls = useRef(new Map())   // id → element
+  const prevTops = useRef(new Map()) // where each row was before this render
+  const shift = useRef(0)            // how far the held row is from its slot
+  const grab = useRef(0)             // where in the row the finger took hold
+  const pointer = useRef({ x: 0, y: 0 })
+  const dragIdRef = useRef(null)
+
+  const still = typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+  /** Where a row sits with its transform discounted — its slot, not its skin. */
+  function slotTop(id, el) {
+    return el.getBoundingClientRect().top - (id === dragIdRef.current ? shift.current : 0)
+  }
+
+  /** Keeps the held row under the fingertip, whatever slot it now occupies. */
+  function follow() {
+    const el = rowEls.current.get(dragIdRef.current)
+    if (!el) return
+    shift.current = (pointer.current.y - grab.current) - slotTop(dragIdRef.current, el)
+    el.style.transition = 'none'
+    el.style.transform = `translateY(${shift.current}px)`
+  }
+
+  /** Which slot the fingertip is over, measured by slots rather than by skins:
+      the held row's own box has been dragged away from where it belongs. */
   function indexAt(clientY) {
     const rows = [...(listRef.current?.children ?? [])]
     for (let i = 0; i < rows.length; i++) {
+      const id = orderRef.current[i]
       const r = rows[i].getBoundingClientRect()
-      if (clientY < r.bottom) return i
+      const top = slotTop(id, rows[i])
+      if (clientY < top + r.height) return i
     }
     return rows.length - 1
   }
 
   function onMove(e) {
+    pointer.current = { x: e.clientX, y: e.clientY }
+
     // Still deciding whether this is a drag or a scroll.
     if (hold.current) {
       const dx = Math.abs(e.clientX - hold.current.x)
@@ -80,6 +120,8 @@ export default function DashboardCards() {
       return
     }
     if (!drag.current) return
+
+    follow()
 
     const to = indexAt(e.clientY)
     const from = drag.current.index
@@ -96,8 +138,19 @@ export default function DashboardCards() {
     cancelHold()
     if (!drag.current) return
     const moved = drag.current
+    const el = rowEls.current.get(moved.id)
+
+    // Released, so it travels the last stretch to its slot rather than snapping
+    // there — the only moment in the gesture where the row moves on its own.
+    if (el) {
+      el.style.transition = still ? 'none' : `transform ${MOVE_MS}ms ${EASE}`
+      el.style.transform = ''
+    }
+    shift.current = 0
     drag.current = null
+    dragIdRef.current = null
     setDragId(null)
+
     // One write at the end, not one per row crossed.
     if (moved.index !== moved.from) persist(orderRef.current)
   }
@@ -110,16 +163,48 @@ export default function DashboardCards() {
     // Left button / touch / pen only, and never from the "Скрий" button.
     if (e.button != null && e.button !== 0) return
     if (e.target.closest('button')) return
+    pointer.current = { x: e.clientX, y: e.clientY }
     hold.current = {
       x: e.clientX,
       y: e.clientY,
       timer: setTimeout(() => {
         hold.current = null
+        const el = rowEls.current.get(id)
+        grab.current = el ? pointer.current.y - el.getBoundingClientRect().top : 0
+        shift.current = 0
         drag.current = { id, index, from: index }
+        dragIdRef.current = id
         setDragId(id)
       }, HOLD_MS),
     }
   }
+
+  /* FLIP, after every reordering: measure where each row landed, put it back
+     where it was, and let go on the next frame. Runs before paint, so the
+     displaced rows are never seen in their new places — they are only ever seen
+     travelling to them. */
+  useLayoutEffect(() => {
+    const now = new Map()
+    rowEls.current.forEach((el, id) => {
+      if (el?.isConnected) now.set(id, slotTop(id, el))
+    })
+
+    if (prevTops.current.size && !still) {
+      now.forEach((top, id) => {
+        if (id === dragIdRef.current) return          // that one follows the finger
+        const was = prevTops.current.get(id)
+        if (was == null || Math.abs(was - top) < 0.5) return
+        const el = rowEls.current.get(id)
+        el.style.transition = 'none'
+        el.style.transform = `translateY(${was - top}px)`
+        requestAnimationFrame(() => {
+          el.style.transition = `transform ${MOVE_MS}ms ${EASE}`
+          el.style.transform = ''
+        })
+      })
+    }
+    prevTops.current = now
+  }, [order])
 
   /* Bound to the window rather than to the row: once a row is moving, the
      pointer spends most of its time over its neighbours, and a listener on the
@@ -200,6 +285,10 @@ export default function DashboardCards() {
         {order.map((id, i) => (
           <li
             key={id}
+            ref={el => {
+              if (el) rowEls.current.set(id, el)
+              else rowEls.current.delete(id)
+            }}
             className={`${styles.row} ${dragId === id ? styles.rowDrag : ''}`}
             onPointerDown={e => onDown(e, id, i)}
             onKeyDown={e => onKeyDown(e, i)}

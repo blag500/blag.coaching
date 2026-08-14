@@ -70,13 +70,17 @@
   opacity: 0.5;
 }
 
-/* Held and moving. Lifted off the list so it is obvious which row the finger
-   owns, and the transition is left off: the row changes places several times a
-   second while dragging, and animating each swap turns the list to soup. */
+/* Held and moving. Lifted off the list — raised above its neighbours so it
+   passes over them rather than through them, and shadowed so it reads as picked
+   up rather than merely coloured.
+   Its transform is set frame by frame from JS and must never be transitioned:
+   a transition here would put the row a fifth of a second behind the finger. */
 .rowDrag {
   border-color: rgba(var(--accent-rgb), 0.5);
   background: var(--accent-dim);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
 }
 
 /* A hold that selects the label instead of picking up the row is the gesture
