@@ -42,6 +42,44 @@ function habitColor(id) { return HABIT_COLORS[id] ?? 'var(--accent)' }
 const SCOOPED = /креатин|креат|протеин|whey|уей|bcaa|бцаа|глутамин|гейнер|gainer|колаген|collagen|прах|powder|creatine|protein/i
 function suppIcon(name) { return SCOOPED.test(name || '') ? 'powder' : 'capsule' }
 
+/* A colour per supplement, taken from the name rather than from its place in
+   the list. Position would mean the whole row changed colour the moment one was
+   deleted, and a colour that moves teaches nothing — while a colour fixed to
+   "креатин" is learned once and recognised from across the room.
+   The habits row picks its six by hand because they are always the same six;
+   a stack is whatever the client typed, so this is the same palette dealt out
+   by the name's own checksum. */
+const SUPP_COLORS = [
+  '#42A5F5', '#66BB6A', '#AB47BC', '#FF8A65', '#EF5350',
+  '#26C6DA', '#FFCA28', '#8D6E63', '#EC407A',
+]
+function suppHash(name) {
+  let h = 0
+  for (const ch of String(name || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0
+  return h
+}
+
+/* The checksum alone gives two of six stacks a repeated colour — with nine
+   shades and six names, a collision is the likely case, not the unlucky one,
+   and two identical chips defeat the whole point of colouring them. So the
+   name picks first and anything already taken walks to the next free shade.
+   A deletion can therefore shift one colour; distinctness today is worth more
+   than a colour that never moves. */
+function suppColors(list) {
+  const used = new Set()
+  const out = {}
+  for (const s of list) {
+    const start = suppHash(s.name) % SUPP_COLORS.length
+    let c = SUPP_COLORS[start]
+    for (let i = 1; used.has(c) && i < SUPP_COLORS.length; i++) {
+      c = SUPP_COLORS[(start + i) % SUPP_COLORS.length]
+    }
+    used.add(c)
+    out[s.id] = c
+  }
+  return out
+}
+
 function dateStr(offset = 0) {
   const d = new Date()
   d.setDate(d.getDate() - offset)
@@ -92,6 +130,8 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
 
   const todayWorkouts = workouts.filter(w => w.completed_date === dateStr(0))
 
+  const suppColor = suppColors(supplements)
+
   const recommendations = recommendProducts(shopProducts, targets, totals)
 
   const completedHabits = habits.filter(h => checked[h.id]).length
@@ -116,6 +156,25 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     const timer = setTimeout(() => setHabitsCheer(false), 1000)
     return () => clearTimeout(timer)
   }, [completedHabits, habits.length])
+
+  // ── The whole stack taken ──
+  // Same rule as the habits wave and the water: it fires on the transition into
+  // a finished stack, never on arriving at one that was already finished.
+  const [suppCheer, setSuppCheer] = useState(false)
+  const [suppBurst, setSuppBurst] = useState(0)
+  const prevAllSupps = useRef(null)
+
+  useEffect(() => {
+    const all = suppTotal > 0 && suppTakenCount === suppTotal
+    const was = prevAllSupps.current
+    prevAllSupps.current = all
+    if (was === null || !all || was) return
+
+    setSuppCheer(true)
+    setSuppBurst(b => b + 1)
+    const timer = setTimeout(() => setSuppCheer(false), 1000)
+    return () => clearTimeout(timer)
+  }, [suppTakenCount, suppTotal])
 
   // ── Water hitting its target ──
   // Same rule as the habits wave: it fires on the transition, not on arriving at
@@ -279,13 +338,14 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         instruction to go and configure something, which is not what this page
         is for. The stack itself is edited on its own page, in the drawer. */
     supplements: supplements.length > 0 && (
-      <div className={styles.habitsCard}>
+      <div className={`${styles.habitsCard} ${suppCheer ? styles.habitsCheer : ''}`}>
+        {suppCheer && <Confetti burst={`s${suppBurst}`} />}
         <div className={styles.habitsHead}>
           <span className={styles.cardLabel}>{t('nav.supplements')}</span>
           <span className={styles.habitsCount}>{suppTakenCount}/{suppTotal}</span>
         </div>
         <div className={styles.habitsGrid}>
-          {supplements.map(s => (
+          {supplements.map((s, i) => (
             <button
               key={s.id}
               type="button"
@@ -293,11 +353,12 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
               onClick={() => toggleSupp(s.id)}
               aria-pressed={!!suppTaken[s.id]}
               title={s.dose ? `${s.name} · ${s.dose}` : s.name}
-              /* One colour for the whole row, unlike the habits: those are six
-                 fixed things whose colours can be learned, while a stack is
-                 whatever the client typed, and a palette assigned by arrival
-                 order would mean nothing. */
-              style={suppTaken[s.id] ? { '--habit': 'var(--accent)' } : null}
+              style={{
+                // Neutral until taken, exactly like the habits: undone, the row
+                // reads as progress rather than as a rack of coloured buttons.
+                ...(suppTaken[s.id] ? { '--habit': suppColor[s.id] } : null),
+                ...(suppCheer ? { animationDelay: `${i * 55}ms` } : null),
+              }}
             >
               <Pictogram name={suppIcon(s.name)} size={16} className={styles.habitIcon} />
               <span className={styles.habitLabel}>{s.name}</span>
