@@ -12,7 +12,6 @@
   margin-bottom: 0;
 }
 
-
 /* ── Cards ── */
 .card {
   position: relative;
@@ -136,7 +135,6 @@
   color: var(--text);
   white-space: nowrap;
 }
-
 
 /* ── Standalone water card ── */
 .waterCard {
@@ -323,26 +321,6 @@
   text-align: center;
 }
 
-/* ── Quick log button ── */
-.logBtn {
-  width: 100%;
-  padding: 16px;
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  border-radius: var(--r-md);
-  font-family: var(--font-heading);
-  font-size: 16px;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.logBtn:active {
-  opacity: 0.85;
-}
-
 /* ── Recent food ── */
 .recentList {
   display: flex;
@@ -385,180 +363,6 @@
   padding: 0;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
-}
-
-/* ── Training card ── */
-.trainingCard {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  border-radius: var(--r-lg);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: border-color 0.15s;
-  width: 100%;
-  text-align: left;
-}
-
-.trainingCard:active {
-  border-color: rgba(var(--accent-rgb), 0.4);
-}
-
-.trainingHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.streak {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--accent);
-}
-
-.dotRow {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.dotCol {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-
-.dot {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-}
-
-.dotDone {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.dotToday {
-  border-color: rgba(var(--accent-rgb), 0.6);
-}
-
-.dotToday.dotDone {
-  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.4);
-}
-
-.dotLabel {
-  font-family: var(--font-body);
-  font-size: 9px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-}
-
-.dotLabelToday {
-  color: var(--accent);
-}
-
-.trainingFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.trainingDone {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: #66BB6A;
-}
-
-.trainingLast {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.trainingEmpty {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--muted);
-  opacity: 0.6;
-}
-
-.trainingCta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  background: rgba(var(--accent-rgb), 0.06);
-  border: 1px dashed rgba(var(--accent-rgb), 0.25);
-  border-radius: var(--r-sm);
-}
-
-.trainingCtaText {
-  flex: 1;
-  min-width: 0;
-}
-
-.trainingCtaBtn {
-  font-family: var(--font-heading);
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.trainingArrow {
-  font-family: var(--font-body);
-  font-size: 16px;
-  color: var(--accent);
-}
-
-/* ── Quick shortcuts 2×2 grid ── */
-.shortcutGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.shortcutBtn {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  border-radius: var(--r-md);
-  padding: 14px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.shortcutBtn:active {
-  border-color: rgba(var(--accent-rgb), 0.4);
-  background: rgba(var(--accent-rgb), 0.06);
-}
-
-.shortcutIcon {
-  font-size: 22px;
-  line-height: 1;
-}
-
-.shortcutLabel {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  text-align: center;
 }
 
 .checkinArrow {
@@ -720,7 +524,6 @@
   color: var(--muted);
   line-height: 1;
 }
-
 
 /* ── Habits ───────────────────────────────────────────────────────────────
    Chips rather than a checklist. A vertical list of six rows would own the

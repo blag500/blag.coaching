@@ -160,6 +160,35 @@ const SHAPES = {
     solid: <path d="M7.8 15.4a4.2 4.2 0 0 1 8.4 0z" />,
   },
 
+  // ── Supplements ──
+  // Only two, because only two are honest. A stack is powders and pills in some
+  // mixture, and guessing further — softgel for the omega, round tablet for the
+  // magnesium — is a taxonomy that will be wrong for half of anyone's shelf.
+  // The name on the chip is what tells them apart; the drawing says which
+  // gesture it is: scoop it or swallow it.
+  capsule: {
+    line: (
+      <g transform="rotate(-40 12 12)">
+        <rect x="3.6" y="8.6" width="16.8" height="6.8" rx="3.4" />
+        <line x1="12" y1="8.6" x2="12" y2="15.4" />
+      </g>
+    ),
+    solid: (
+      <g transform="rotate(-40 12 12)">
+        <path d="M7 8.6h5v6.8H7a3.4 3.4 0 0 1 0-6.8z" />
+      </g>
+    ),
+  },
+  powder: {
+    line: (
+      <>
+        <path d="M6.6 8.6h10.8l-1 9.9a1.6 1.6 0 0 1-1.6 1.4H9.2a1.6 1.6 0 0 1-1.6-1.4z" />
+        <rect x="5.4" y="4.6" width="13.2" height="4" rx="1.2" />
+      </>
+    ),
+    solid: <path d="M7.2 14.6h9.6l-.4 3.9a1.6 1.6 0 0 1-1.6 1.4H9.2a1.6 1.6 0 0 1-1.6-1.4z" />,
+  },
+
   // Anything a coach invents: still drawn, still the same construction.
   generic: {
     line: <circle cx="12" cy="12" r="7.4" />,

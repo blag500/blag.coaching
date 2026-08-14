@@ -36,6 +36,41 @@ function fmtKg(n) {
   return n.toLocaleString('bg-BG', { minimumFractionDigits: 0, maximumFractionDigits: 1 })
 }
 
+function signed(kg) {
+  const v = Math.round(kg * 10) / 10
+  if (v === 0) return `±0 кг`
+  return `${v > 0 ? '+' : '−'}${fmtKg(Math.abs(v))} кг`
+}
+
+const WINDOW_DAYS = 30
+
+/**
+ * One line under the number: how far it has moved, and over what.
+ *
+ * Returns null when there is nothing honest to say — a single weigh-in is a
+ * point, not a direction, and "±0 кг since today" is worse than silence.
+ */
+function trendSummary(weights, todayEntry) {
+  if (!todayEntry || weights.length < 2) return null
+
+  const cutoff = new Date(Date.now() - WINDOW_DAYS * 86400000).toISOString().slice(0, 10)
+  const inWindow = weights.filter(w => w.date >= cutoff && w.date !== todayEntry.date)
+
+  const earliestInWindow = inWindow[0] ?? null
+  const earliestOverall  = weights.find(w => w.date !== todayEntry.date) ?? null
+  const base = earliestInWindow ?? earliestOverall
+  if (!base) return null
+
+  const spanDays = Math.round(
+    (new Date(todayEntry.date) - new Date(base.date)) / 86400000)
+
+  // A window only earns its name once it is nearly full. Below that, the date
+  // is the honest label: "−0,4 кг от 13.08" claims nothing about a month.
+  return spanDays >= WINDOW_DAYS - 5
+    ? `${signed(todayEntry.kg - base.kg)} за ${WINDOW_DAYS} дни`
+    : `${signed(todayEntry.kg - base.kg)} от ${shortDate(base.date)}`
+}
+
 export default function WeightCard() {
   const { t } = useSettings()
   const { profile } = useAuth()
@@ -53,12 +88,13 @@ export default function WeightCard() {
 
   const asking = !todayEntry || editing
 
-  // The most recent entry that is not today's — what today's number is a change
-  // from. Weights arrive sorted by date from the hook.
-  const previous = todayEntry
-    ? [...weights].reverse().find(w => w.date !== todayEntry.date) ?? null
-    : null
-  const delta = previous ? Math.round((todayEntry.kg - previous.kg) * 10) / 10 : null
+  /* The caption says what the line beside it draws.
+     It used to compare today with the previous entry — but yesterday minus today
+     is scale noise, a number that changes sign with a glass of water and tells
+     nobody anything. A month is the shortest window in which a real direction
+     shows, and if the history is shorter than that the caption says so with the
+     date rather than pretending to a month it does not have. */
+  const summary = trendSummary(weights, todayEntry)
 
   async function save(e) {
     e.preventDefault()
@@ -127,10 +163,7 @@ export default function WeightCard() {
                 <span className={styles.kgUnit}>кг</span>
               </span>
               <span className={styles.delta}>
-                {delta === null
-                  ? t('today.weightFirst')
-                  : `${delta > 0 ? '+' : delta < 0 ? '−' : '±'}${fmtKg(Math.abs(delta))} кг ` +
-                    t('today.weightSince').replace('{date}', shortDate(previous.date))}
+                {summary ?? t('today.weightFirst')}
               </span>
             </button>
 

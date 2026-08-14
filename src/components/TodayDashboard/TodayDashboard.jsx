@@ -33,6 +33,14 @@ const HABIT_COLORS = {
 }
 function habitColor(id) { return HABIT_COLORS[id] ?? 'var(--accent)' }
 
+/* Powders get the tub, everything else gets the capsule.
+   A stack is scoops and pills in some mixture, and the split between them is the
+   only one that holds for everyone — beyond it, softgel-versus-tablet is a guess
+   that will be wrong for half of any shelf. The name on the chip is what tells
+   two supplements apart; the drawing only says which gesture it is. */
+const SCOOPED = /креатин|креат|протеин|whey|уей|bcaa|бцаа|глутамин|гейнер|gainer|колаген|collagen|прах|powder|creatine|protein/i
+function suppIcon(name) { return SCOOPED.test(name || '') ? 'powder' : 'capsule' }
+
 function dateStr(offset = 0) {
   const d = new Date()
   d.setDate(d.getDate() - offset)
@@ -45,7 +53,10 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
   const { log, totals } = useFoodLog()
   const { habits, checked, toggle: toggleHabit } = useHabitsToday()
   const { glasses, target: waterTarget, add: addWater } = useWaterLog()
-  const { takenCount: suppTaken, totalCount: suppTotal } = useSupplements()
+  const {
+    supplements, taken: suppTaken, toggle: toggleSupp,
+    takenCount: suppTakenCount, totalCount: suppTotal,
+  } = useSupplements()
   const { products: shopProducts } = useShop()
   const cart = useCart()
   const [workouts, setWorkouts] = useState([])
@@ -57,21 +68,15 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     fat:     profile?.fat      ?? 0,
   }
 
-  const DAYS_SHORT = Array.from({ length: 7 }, (_, i) => t(`days.${i}`))
-
-  function daysAgoLabel(date) {
-    const today = dateStr(0)
-    const yesterday = dateStr(1)
-    if (date === today)     return t('today.ago.today')
-    if (date === yesterday) return t('today.ago.yesterday')
-    const diff = Math.round((new Date(today) - new Date(date)) / 86400000)
-    return t('today.ago.days').replace('{n}', diff)
-  }
-
   const recentFood = [...(log || [])].reverse().slice(0, 3)
   const hour       = new Date().getHours()
   const greeting   = hour < 12 ? t('today.greeting.morning') : hour < 18 ? t('today.greeting.afternoon') : t('today.greeting.evening')
 
+  /* Still fetched with the training card gone: whether they trained today is
+     what awards the training badge and the perfect-day badge below. Only the
+     last two days are needed for that, but the query is left at fourteen — it
+     is one round trip either way, and narrowing it would only make the next
+     thing that wants a streak fetch it again. */
   useEffect(() => {
     if (!user?.id) return
     const since = dateStr(13)
@@ -85,32 +90,11 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     })
   }, [user?.id])
 
-  // Last 7 days: oldest → newest (left → right)
-  const last7 = Array.from({ length: 7 }, (_, i) => {
-    const offset = 6 - i
-    const ds     = dateStr(offset)
-    const done   = workouts.some(w => w.completed_date === ds)
-    const labels = [...new Set(workouts.filter(w => w.completed_date === ds).map(w => w.block_label))]
-    const d      = new Date(); d.setDate(d.getDate() - offset)
-    return { ds, dow: DAYS_SHORT[d.getDay()], done, labels, isToday: offset === 0 }
-  })
-
-  // Streak (consecutive days going back from today or yesterday)
-  const doneSet = new Set(workouts.map(w => w.completed_date))
-  let streak = 0
-  let startOffset = doneSet.has(dateStr(0)) ? 0 : 1
-  for (let i = startOffset; i <= 13; i++) {
-    if (doneSet.has(dateStr(i))) streak++
-    else break
-  }
-
-  const lastWorkout   = workouts[0] ?? null
   const todayWorkouts = workouts.filter(w => w.completed_date === dateStr(0))
 
   const recommendations = recommendProducts(shopProducts, targets, totals)
 
   const completedHabits = habits.filter(h => checked[h.id]).length
-  const totalHabits     = habits.length || 1
   const trainedToday    = todayWorkouts.length > 0
 
   // ── The habits wave ──
@@ -197,63 +181,13 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         onAvatarClick={() => onNavigate('profile')}
       />
 
+      {/* The page is ordered by what a person can act on right now, not by what
+          the app knows about them: the verdict first, then the four things they
+          tick or type, then the tally that only reads back what they logged
+          elsewhere. */}
+
       {/* ── Readiness widget ── */}
       <ReadinessWidget onNavigate={onNavigate} />
-
-      {/* ── Macros ── */}
-      <MacroScale
-        label={t('today.macros')}
-        macros={[
-          { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
-          { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
-          { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: 'var(--macro-carbs)' },
-          { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: 'var(--macro-fat)' },
-        ]}
-      />
-
-      {/* ── Water card ──
-          Full is a small win and it gets the same treatment as the other two:
-          it fires once when the last glass lands, and stays tappable afterwards
-          so the burst can be replayed. A div rather than a button because it
-          already contains one, and a button inside a button is invalid. */}
-      <div
-        className={`${styles.waterCard} ${waterFull ? styles.waterCardDone : ''}`}
-        onClick={waterFull ? () => setWaterBurst(b => b + 1) : undefined}
-        role={waterFull ? 'button' : undefined}
-        tabIndex={waterFull ? 0 : undefined}
-        onKeyDown={waterFull ? e => {
-          if (e.key === 'Enter' || e.key === ' ') setWaterBurst(b => b + 1)
-        } : undefined}
-      >
-        {waterBurst > 0 && <Confetti burst={`w${waterBurst}`} />}
-        <span className={styles.waterLabel}>
-          <Pictogram name="water" size={14} />
-          {t('today.water')}
-        </span>
-        <div className={styles.waterGlasses}>
-          {Array.from({ length: waterTarget }, (_, i) => (
-            <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
-          ))}
-        </div>
-        <div className={styles.waterActions}>
-          <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
-          <button
-            type="button"
-            className={styles.waterBtn}
-            /* Stops the tap reaching the card, so adding a glass never doubles
-               as a celebration. */
-            onClick={e => { e.stopPropagation(); addWater(1) }}
-            aria-label="Добави чаша"
-          >+</button>
-        </div>
-      </div>
-
-      {/* ── Weight ──
-          Directly under water, because both are morning facts and both are
-          asked for once a day. Above the habits row rather than below it: the
-          habits are six taps someone can do at any hour, and the weigh-in is
-          the one that stops being answerable once the day has started. */}
-      <WeightCard />
 
       {/* ── Habits ──
           Ticked here rather than prompted from here. A nudge that sends you to
@@ -296,10 +230,93 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         </div>
       )}
 
-      {/* ── Quick log button ── */}
-      <button className={styles.logBtn} onClick={() => onNavigate('nutrition')} type="button">
-        {t('today.logFood')}
-      </button>
+      {/* ── Weight ── */}
+      <WeightCard />
+
+      {/* ── Water card ──
+          Full is a small win and it gets the same treatment as the other two:
+          it fires once when the last glass lands, and stays tappable afterwards
+          so the burst can be replayed. A div rather than a button because it
+          already contains one, and a button inside a button is invalid. */}
+      <div
+        className={`${styles.waterCard} ${waterFull ? styles.waterCardDone : ''}`}
+        onClick={waterFull ? () => setWaterBurst(b => b + 1) : undefined}
+        role={waterFull ? 'button' : undefined}
+        tabIndex={waterFull ? 0 : undefined}
+        onKeyDown={waterFull ? e => {
+          if (e.key === 'Enter' || e.key === ' ') setWaterBurst(b => b + 1)
+        } : undefined}
+      >
+        {waterBurst > 0 && <Confetti burst={`w${waterBurst}`} />}
+        <span className={styles.waterLabel}>
+          <Pictogram name="water" size={14} />
+          {t('today.water')}
+        </span>
+        <div className={styles.waterGlasses}>
+          {Array.from({ length: waterTarget }, (_, i) => (
+            <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
+          ))}
+        </div>
+        <div className={styles.waterActions}>
+          <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
+          <button
+            type="button"
+            className={styles.waterBtn}
+            /* Stops the tap reaching the card, so adding a glass never doubles
+               as a celebration. */
+            onClick={e => { e.stopPropagation(); addWater(1) }}
+            aria-label="Добави чаша"
+          >+</button>
+        </div>
+      </div>
+
+      {/* ── Macros ──
+          Last of the five, because it is the only one that cannot be answered
+          from this screen: it reads back what was logged in the nutrition tab. */}
+      <MacroScale
+        label={t('today.macros')}
+        macros={[
+          { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
+          { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
+          { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: 'var(--macro-carbs)' },
+          { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: 'var(--macro-fat)' },
+        ]}
+      />
+
+      {/* ── Supplements ──
+          The habits row again, built from whatever the client put in their
+          stack: one chip per supplement, tapped when it is taken. Nothing is
+          shown to someone with an empty stack — a bar reading 0/0 is an
+          instruction to go and configure something, which is not what this page
+          is for. The stack itself is edited on its own page, in the drawer. */}
+      {supplements.length > 0 && (
+        <div className={styles.habitsCard}>
+          <div className={styles.habitsHead}>
+            <span className={styles.cardLabel}>{t('nav.supplements')}</span>
+            <span className={styles.habitsCount}>{suppTakenCount}/{suppTotal}</span>
+          </div>
+          <div className={styles.habitsGrid}>
+            {supplements.map(s => (
+              <button
+                key={s.id}
+                type="button"
+                className={`${styles.habitChip} ${suppTaken[s.id] ? styles.habitChipOn : ''}`}
+                onClick={() => toggleSupp(s.id)}
+                aria-pressed={!!suppTaken[s.id]}
+                title={s.dose ? `${s.name} · ${s.dose}` : s.name}
+                /* One colour for the whole row, unlike the habits: those are six
+                   fixed things whose colours can be learned, while a stack is
+                   whatever the client typed, and a palette assigned by arrival
+                   order would mean nothing. */
+                style={suppTaken[s.id] ? { '--habit': 'var(--accent)' } : null}
+              >
+                <Pictogram name={suppIcon(s.name)} size={16} className={styles.habitIcon} />
+                <span className={styles.habitLabel}>{s.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Recent food ── */}
       {recentFood.length > 0 && (
@@ -318,67 +335,6 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
           </button>
         </div>
       )}
-
-      {/* ── Training card ── */}
-      <button className={styles.trainingCard} onClick={() => onNavigate('training')} type="button">
-        <div className={styles.trainingHeader}>
-          <span className={styles.cardLabel}>{t('today.workoutCard')}</span>
-          {streak > 1 && (
-            <span className={styles.streak}>🔥 {streak} {t('today.streakUnit')}</span>
-          )}
-        </div>
-
-        <div className={styles.dotRow}>
-          {last7.map(day => (
-            <div key={day.ds} className={styles.dotCol}>
-              <div className={`${styles.dot} ${day.done ? styles.dotDone : ''} ${day.isToday ? styles.dotToday : ''}`} />
-              <span className={`${styles.dotLabel} ${day.isToday ? styles.dotLabelToday : ''}`}>{day.dow}</span>
-            </div>
-          ))}
-        </div>
-
-        {todayWorkouts.length > 0 ? (
-          <div className={styles.trainingFooter}>
-            <span className={styles.trainingDone}>
-              ✓ {todayWorkouts.map(w => w.block_label).join(' · ')}
-            </span>
-            <span className={styles.trainingArrow}>→</span>
-          </div>
-        ) : (
-          <div className={styles.trainingCta}>
-            <div className={styles.trainingCtaText}>
-              {lastWorkout ? (
-                <span className={styles.trainingLast}>{t('today.lastWorkout')} {lastWorkout.block_label} · {daysAgoLabel(lastWorkout.completed_date)}</span>
-              ) : (
-                <span className={styles.trainingLast}>{t('today.noWorkouts')}</span>
-              )}
-            </div>
-            <span className={styles.trainingCtaBtn}>{t('today.logBtn')}</span>
-          </div>
-        )}
-      </button>
-
-      {/* ── Quick shortcuts 2×2 grid ── */}
-      <div className={styles.shortcutGrid}>
-        <button className={styles.shortcutBtn} onClick={() => onNavigate('profile')} type="button">
-          <span className={styles.shortcutIcon}>📋</span>
-          <span className={styles.shortcutLabel}>{t('today.checkin')}</span>
-        </button>
-        <button className={styles.shortcutBtn} onClick={() => onNavigate('rewards')} type="button">
-          <span className={styles.shortcutIcon}>⭐</span>
-          <span className={styles.shortcutLabel}>{t('today.rewards')}</span>
-        </button>
-        <button className={styles.shortcutBtn} onClick={() => onNavigate('supplements')} type="button">
-          <span className={styles.shortcutIcon}>💊</span>
-          <span className={styles.shortcutLabel}>
-            {suppTotal > 0 ? `${suppTaken}/${suppTotal}` : t('nav.supplements')}
-          </span>
-        </button>
-        <button className={styles.shortcutBtn} onClick={() => onNavigate('shop')} type="button">
-          <span className={styles.shortcutIcon}>🛒</span>
-          <span className={styles.shortcutLabel}>{t('today.shop')}</span>
-        </button>
-      </div>
 
       {/* ── Recommendation widget ── */}
       {recommendations.length > 0 && (

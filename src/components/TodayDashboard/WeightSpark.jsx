@@ -12,8 +12,12 @@ import { smoothPath } from '../../utils/smoothPath'
  * person moves two kilos in ninety, and a line drawn from zero is flat by
  * construction — it would say "nothing is happening" every single day.
  */
-const W = 84
-const H = 30
+/* Wider than it first was. The card had a hand's width of nothing between the
+   number and the line, and the cure for empty space is to let the thing that
+   carries information have it — a longer line separates readings that were
+   piling on top of each other, which is more legible rather than busier. */
+const W = 124
+const H = 32
 const PAD = 3.5
 
 export default function WeightSpark({ weights, gradId = 'todayWeightSpark' }) {
