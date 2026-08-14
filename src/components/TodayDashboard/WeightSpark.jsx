@@ -36,15 +36,17 @@ export default function WeightSpark({ weights, gradId = 'todayWeightSpark' }) {
   const lo = Math.min(...vals)
   const hi = Math.max(...vals)
 
-  /* Headroom above and below, rather than stretching the readings from floor to
-     ceiling. Scaled edge to edge, a month that moved two kilos fills thirty
-     pixels with every daily wobble at full height, and the line reads as a heart
-     monitor instead of a direction. The 0.45 is the wobble's share of the box:
-     the shape survives, the noise stops shouting. Flat history divides by zero
-     and, more usefully, belongs in the middle. */
+  /* How much of the box the readings are allowed to fill.
+     There is no axis here, so this number is a choice, not a fact — every
+     sparkline makes it, and it decides whether two kilos look like two kilos or
+     like a cliff. It began at 0.45, which was quiet to the point of saying
+     nothing; 0.78 gives the month its shape back. Higher still and a single bad
+     morning would tower over the trend it interrupts.
+     Flat history divides by zero and, more usefully, belongs in the middle. */
+  const FILL = 0.78
   const seen = hi - lo || 1
   const mid = (hi + lo) / 2
-  const span = seen / 0.45
+  const span = seen / FILL
   const min = mid - span / 2
 
   const pts = weights.map((w, i) => ({
@@ -52,7 +54,10 @@ export default function WeightSpark({ weights, gradId = 'todayWeightSpark' }) {
     y: PAD + (1 - (w.kg - min) / span) * (H - PAD * 2),
   }))
 
-  const line = smoothPath(pts)
+  // Barely rounded. The profile chart's soft curve is drawn across 300 pixels;
+  // the same softening across 124 turns every peak into a hump and the line
+  // stops describing anything.
+  const line = smoothPath(pts, 0.14)
   const area = `${line} L${pts[pts.length - 1].x},${H} L${pts[0].x},${H} Z`
   const last = pts[pts.length - 1]
 
@@ -75,10 +80,9 @@ export default function WeightSpark({ weights, gradId = 'todayWeightSpark' }) {
         d={line}
         fill="none"
         stroke={LINE}
-        strokeWidth="1.6"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity="0.85"
       />
       {/* Where it stands now — the one point worth marking when the axis is gone. */}
       <circle cx={last.x} cy={last.y} r="2.2" fill={LINE} />
