@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { readSource } from '../utils/source'
+import { clearPendingWeight } from '../utils/pendingWeight'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
@@ -123,9 +124,16 @@ export function AuthProvider({ children }) {
     if (!error && data) setProfile(prev => ({ ...prev, ...data }))
     if (!error && weight_kg) {
       const today = new Date().toISOString().slice(0, 10)
-      await supabase.from('weight_logs')
-        .upsert({ user_id: session.user.id, weight: weight_kg, logged_at: today },
-          { onConflict: 'user_id,logged_at' })
+      // Columns are `date` and `kg` (002_client_data.sql). This wrote `weight`
+      // and `logged_at`, which do not exist, and threw away the error it got
+      // back — so every client's starting weight was silently discarded and
+      // their chart began at their second weigh-in.
+      const { error: wErr } = await supabase.from('weight_logs')
+        .upsert({ user_id: session.user.id, kg: weight_kg, date: today },
+          { onConflict: 'user_id,date' })
+      if (wErr) console.error('weight_logs upsert failed', wErr)
+      // Written to a real row now, so it must not seed a second account.
+      else clearPendingWeight()
     }
     return { error }
   }

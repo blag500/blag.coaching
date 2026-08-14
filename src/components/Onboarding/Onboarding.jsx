@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { readPendingWeight } from '../../utils/pendingWeight'
 import styles from './Onboarding.module.css'
 
 const TOTAL_STEPS_SELF  = 5
@@ -37,6 +38,14 @@ function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal })
 // on the macros step, so nothing is decided behind the user's back.
 const DEFAULTS = { age: '28', height_cm: '178', weight_kg: '80' }
 
+// If they typed a weight on the landing page, that is not a placeholder to be
+// checked — it is their answer, given before they had an account. Asking for it
+// twice would say the first time was for nothing.
+function startingWeight() {
+  const kg = readPendingWeight()
+  return kg === null ? DEFAULTS.weight_kg : String(kg)
+}
+
 export default function Onboarding({ isCoachingIntake = false }) {
   const { profile, completeOnboarding, signOut } = useAuth()
   const knownName = (profile?.name ?? '').trim()
@@ -47,11 +56,14 @@ export default function Onboarding({ isCoachingIntake = false }) {
   const [error, setError]   = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const [form, setForm] = useState({
-    name: knownName, goal: 'maintain',
-    gender: 'male', ...DEFAULTS, target_weight: DEFAULTS.weight_kg,
-    activity_level: 'moderate',
-    calories: '', protein: '', carbs: '', fat: '',
+  const [form, setForm] = useState(() => {
+    const weight_kg = startingWeight()
+    return {
+      name: knownName, goal: 'maintain',
+      gender: 'male', ...DEFAULTS, weight_kg, target_weight: weight_kg,
+      activity_level: 'moderate',
+      calories: '', protein: '', carbs: '', fat: '',
+    }
   })
 
   function set(field, val) {

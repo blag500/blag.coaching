@@ -66,40 +66,14 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
 }
 
+/* The whole rule block used to be repeated in here, drift animation and all,
+   which meant asking for less movement got exactly the same movement. Only the
+   thing that has to change belongs in the override. */
 @media (prefers-reduced-motion: reduce) {
   .backdrop,
-.backdropStill {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  /* Cover, unlike the artwork it replaces: this is a photographed room, and a
-     letterboxed room reads as a mistake where a letterboxed drawing did not.
-     The phone is taller than the film, so cover crops top and bottom rather
-     than the sides. He stands between 30% and 65% of the frame, and 44% is the
-     band that keeps him whole — with the empty floor below him falling off the
-     bottom, which is where it belongs. */
-  object-fit: cover;
-  object-position: 50% 44%;
-  opacity: 0.34;
-  /* Still fading out before the edges, but far wider and held solid through
-     the middle third: masked as tightly as the artwork was, a photographed room
-     reads as a smudge rather than as a gym. The headline keeps its contrast
-     from its own weight, not from starving the picture behind it. */
-  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
-  mask-image: radial-gradient(ellipse 92% 74% at 50% 36%, #000 0%, #000 34%, transparent 86%);
-  animation: drift 65s ease-in-out infinite alternate;
-  will-change: transform;
-  pointer-events: none;
-}
-
-/* What someone who asked for less movement gets: the same frame, standing
-   still. Not the video paused — the video is never fetched at all. */
-.backdropStill {
-  background: url('/hero-poster.jpg') 50% 44% / cover no-repeat;
-  animation: none;
-  transform: scale(1.03);
-}
+  .backdropStill {
+    animation: none;
+  }
 }
 
 .glowTop {
@@ -213,6 +187,63 @@
   align-items: center;
   gap: 10px;
   z-index: 1;
+}
+
+/* ── The one number ───────────────────────────────────────────────────────
+   Placed directly above the button rather than beside it: a field and a button
+   on one line read as a search bar, and nobody expects a search bar to enrol
+   them in anything. Stacked, the button is plainly what happens next. */
+.weighLabel {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.weighRow {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  box-sizing: border-box;
+  transition: border-color 140ms;
+}
+
+.weighRow:focus-within {
+  border-color: rgba(var(--accent-rgb), 0.55);
+}
+
+.weighInput {
+  width: 4.5ch;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-heading);
+  /* 28px: at 16px or more iOS does not zoom the page when the field is
+     focused, and a zoomed landing page never zooms back. */
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-align: right;
+  padding: 0;
+}
+
+.weighInput::placeholder {
+  color: var(--muted);
+  opacity: 0.35;
+}
+
+.weighUnit {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .cta {
