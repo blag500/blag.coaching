@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { smoothPath } from '../../utils/smoothPath'
 import styles from './WeightChart.module.css'
 
 const RANGES = [
@@ -14,18 +15,6 @@ const PAD_L = 38
 const PAD_R = 10
 const PAD_T = 14
 const PAD_B = 24
-
-function smoothPath(pts) {
-  if (pts.length < 2) return ''
-  let d = `M${pts[0].x},${pts[0].y}`
-  for (let i = 1; i < pts.length; i++) {
-    const prev = pts[i - 1]
-    const curr = pts[i]
-    const cpx = (curr.x - prev.x) * 0.4
-    d += ` C${prev.x + cpx},${prev.y} ${curr.x - cpx},${curr.y} ${curr.x},${curr.y}`
-  }
-  return d
-}
 
 export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', range: rangeProp, onRange: onRangeProp }) {
   const [rangeInternal, setRangeInternal] = useState('1M')
