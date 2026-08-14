@@ -46,7 +46,11 @@ export default function DashboardCards() {
     // the feature not working rather than as the write not landing.
     if (err) {
       console.error('dashboard_cards update failed', err)
-      setError('Не се записа. Опитай пак.')
+      /* The reason, not just the fact. "Опитай пак." sent us looking at the
+         drag code for an hour when the database was answering "column
+         profiles.dashboard_cards does not exist" the whole time — and a person
+         retrying a save that cannot succeed has been told the wrong thing. */
+      setError(err.message || 'Не се записа. Опитай пак.')
     } else {
       setError('')
     }
@@ -186,7 +190,11 @@ export default function DashboardCards() {
       <p className={styles.lead}>
         Задръж и влачи, за да пренаредиш.
       </p>
-      {error && <p className={styles.error}>{error}</p>}
+      {error && (
+        <p className={styles.error}>
+          Не се записа. <span className={styles.errorWhy}>{error}</span>
+        </p>
+      )}
 
       <ul className={styles.list} ref={listRef}>
         {order.map((id, i) => (

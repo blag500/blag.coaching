@@ -175,3 +175,11 @@
   font-size: 11px;
   color: var(--danger, #EF5350);
 }
+
+/* The database's own words, quieter than the sentence that introduces them.
+   Nobody needs to read it until something is wrong, and then it is the only
+   thing worth reading. */
+.errorWhy {
+  color: var(--muted);
+  opacity: 0.8;
+}
