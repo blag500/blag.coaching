@@ -11,7 +11,16 @@ import { smoothPath } from '../../utils/smoothPath'
  * Scaled to its own minimum and maximum rather than to zero: over a month a
  * person moves two kilos in ninety, and a line drawn from zero is flat by
  * construction — it would say "nothing is happening" every single day.
+ *
+ * Green, not gold. Gold is what the whole interface is made of, so a gold line
+ * is another piece of the furniture; the green the app already uses for carbs
+ * and for the steps habit reads as something alive, and this is the one number
+ * a person watches for weeks. It is a constant, never a verdict — the line is
+ * the same colour whichever way it points, because down is progress for someone
+ * cutting and a setback for someone gaining.
  */
+const LINE = '#66BB6A'
+
 /* Wider than it first was. The card had a hand's width of nothing between the
    number and the line, and the cure for empty space is to let the thing that
    carries information have it — a longer line separates readings that were
@@ -57,22 +66,22 @@ export default function WeightSpark({ weights, gradId = 'todayWeightSpark' }) {
     >
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="var(--accent)" stopOpacity="0.26" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+          <stop offset="0%"   stopColor={LINE} stopOpacity="0.30" />
+          <stop offset="100%" stopColor={LINE} stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={area} fill={`url(#${gradId})`} />
       <path
         d={line}
         fill="none"
-        stroke="var(--accent)"
+        stroke={LINE}
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
         opacity="0.85"
       />
       {/* Where it stands now — the one point worth marking when the axis is gone. */}
-      <circle cx={last.x} cy={last.y} r="2.2" fill="var(--accent)" />
+      <circle cx={last.x} cy={last.y} r="2.2" fill={LINE} />
     </svg>
   )
 }

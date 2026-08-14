@@ -18,9 +18,12 @@
   gap: 12px;
 }
 
+/* The same green as the line beside it, for the same reason the water card's
+   glass is the blue of its drops: the icon is what names the card, and a grey
+   one next to a coloured chart reads as a placeholder somebody forgot. */
 .icon {
   flex-shrink: 0;
-  color: var(--muted);
+  color: #66BB6A;
 }
 
 /* ── Answered ── */
