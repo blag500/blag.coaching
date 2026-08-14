@@ -73,7 +73,7 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       <div className={styles.bottom}>
         <button className={styles.cta} onClick={onContinue} type="button">
-          ВЛЕЗ В ПРИЛОЖЕНИЕТО
+          РЕГИСТРИРАЙ СЕ
         </button>
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>

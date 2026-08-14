@@ -13,9 +13,12 @@ function GoogleIcon() {
   )
 }
 
-export default function AuthScreen({ onBack }) {
+export default function AuthScreen({ onBack, initialMode = 'login' }) {
   const { signIn, signUp, signInWithGoogle, authError } = useAuth()
-  const [mode, setMode]       = useState('login') // 'login' | 'register'
+  /* Which door they came through. The landing page has two, and a button that
+     says "регистрирай се" opening on the login form makes a liar of the button
+     and asks a new visitor for a password they have not chosen yet. */
+  const [mode, setMode]       = useState(initialMode) // 'login' | 'register'
   const [email, setEmail]     = useState('')
   const [password, setPassword] = useState('')
   const [name, setName]       = useState('')

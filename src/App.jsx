@@ -55,6 +55,7 @@ function AppShell() {
   // no drag is in progress and the stylesheet is in charge of its position.
   const [drawerDrag, setDrawerDrag] = useState(null)
   const [landingSeen, setLandingSeen] = useState(false)
+  const [authMode, setAuthMode] = useState('register')
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
     return new URLSearchParams(window.location.search).get('payment') === 'success'
   })
@@ -164,12 +165,12 @@ function AppShell() {
     if (!landingSeen) {
       return (
         <LandingPage
-          onContinue={() => setLandingSeen(true)}
-          onLogin={() => setLandingSeen(true)}
+          onContinue={() => { setAuthMode('register'); setLandingSeen(true) }}
+          onLogin={() => { setAuthMode('login'); setLandingSeen(true) }}
         />
       )
     }
-    return <AuthScreen onBack={() => setLandingSeen(false)} />
+    return <AuthScreen initialMode={authMode} onBack={() => setLandingSeen(false)} />
   }
 
   // Session known but profile not yet fetched — keep showing the loader
