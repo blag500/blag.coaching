@@ -27,17 +27,21 @@
 /* A button rather than a div: correcting a weigh-in is the only thing anyone
    does to this card twice, and hunting for a separate "edit" link to do it is
    three words of chrome for one tap. */
+/* Centred in the gap between the scale and the line, with the number sitting
+   over its own caption rather than both hugging the left edge — left-aligned,
+   the block left a hole in the middle of the card and the eye had nowhere to
+   land between the icon and the chart. */
 .readout {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 2px;
   background: none;
   border: none;
   padding: 0;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -48,6 +52,13 @@
   line-height: 1;
   letter-spacing: 0.03em;
   color: var(--text);
+}
+
+/* The goal, in the same type as the weight but dimmed — same as 0/8 on the
+   water card, where the target is context and the first number is the news. */
+.target {
+  color: var(--muted);
+  opacity: 0.55;
 }
 
 .kgUnit {

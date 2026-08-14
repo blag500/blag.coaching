@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { parseWeight } from '../../utils/pendingWeight'
@@ -37,7 +38,13 @@ function fmtKg(n) {
 
 export default function WeightCard() {
   const { t } = useSettings()
+  const { profile } = useAuth()
   const { weights, todayEntry, addWeight } = useWeightLog()
+
+  // profiles.target_weight, not the localStorage copy the profile page keeps:
+  // this is the one onboarding writes and the coach can edit, so it is the only
+  // target that means the same thing on both sides of the app.
+  const target = profile?.target_weight ? Number(profile.target_weight) : null
 
   const [input, setInput]     = useState('')
   const [editing, setEditing] = useState(false)
@@ -108,8 +115,16 @@ export default function WeightCard() {
               onClick={() => { setInput(String(todayEntry.kg).replace('.', ',')); setEditing(true) }}
               aria-label={t('today.weightEdit')}
             >
+              {/* Written as the water card writes its glasses — 0/8 — because
+                  it is the same sentence: where you are, out of where you said
+                  you were going. The target is dimmed so the eye still lands on
+                  today's number first. */}
               <span className={styles.kg}>
-                {fmtKg(todayEntry.kg)}<span className={styles.kgUnit}>кг</span>
+                {fmtKg(todayEntry.kg)}
+                {target !== null && (
+                  <span className={styles.target}>/{fmtKg(target)}</span>
+                )}
+                <span className={styles.kgUnit}>кг</span>
               </span>
               <span className={styles.delta}>
                 {delta === null
