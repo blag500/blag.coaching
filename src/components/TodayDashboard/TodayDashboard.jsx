@@ -69,7 +69,6 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     fat:     profile?.fat      ?? 0,
   }
 
-  const recentFood = [...(log || [])].reverse().slice(0, 3)
   const hour       = new Date().getHours()
   const greeting   = hour < 12 ? t('today.greeting.morning') : hour < 18 ? t('today.greeting.afternoon') : t('today.greeting.evening')
 
@@ -263,6 +262,8 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         from this screen: it reads back what was logged in the nutrition tab. */
     macros: <MacroScale
       label={t('today.macros')}
+      log={log || []}
+      t={t}
       macros={[
         { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
         { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
@@ -303,24 +304,6 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
             </button>
           ))}
         </div>
-      </div>
-    ),
-
-    /* ── Recent food ── */
-    recent: recentFood.length > 0 && (
-      <div className={styles.card}>
-        <span className={styles.cardLabel}>{t('today.recentAdded')}</span>
-        <div className={styles.recentList}>
-          {recentFood.map((f, i) => (
-            <div key={i} className={styles.recentRow}>
-              <span className={styles.recentName}>{f.name}</span>
-              <span className={styles.recentKcal}>{f.kcal} {t('today.kcal')}</span>
-            </div>
-          ))}
-        </div>
-        <button className={styles.seeAll} onClick={() => onNavigate('nutrition')} type="button">
-          {t('today.seeAll')}
-        </button>
       </div>
     ),
 

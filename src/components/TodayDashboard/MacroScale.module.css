@@ -124,3 +124,121 @@
   font-size: 10px;
   color: var(--muted);
 }
+
+/* ── The card has two sides ───────────────────────────────────────────────
+   The day's log used to be a panel of its own below this one, showing three
+   entries out of however many. It is the same subject as the macros above it —
+   what was eaten — so it goes on the back rather than taking a second panel to
+   say a third of it. */
+.flip {
+  perspective: 1200px;
+}
+
+.inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 420ms cubic-bezier(.2, .7, .3, 1);
+}
+
+.turned {
+  transform: rotateY(180deg);
+}
+
+/* The front stays in the flow and so decides the height; the back is laid over
+   it. Without that the card would be as tall as whichever side had more in it,
+   and the page below would move every time it was turned. */
+.face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.backFace {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* The strip that turns it. Quiet gold and the full width of the card: it is a
+   handle, not a call to action, and it has to be findable without being the
+   first thing read. */
+.turn {
+  margin-top: 10px;
+  padding: 7px 0 0;
+  border: none;
+  border-top: 1px solid var(--panel-border);
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  opacity: 0.75;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.turn:active { opacity: 1; }
+
+.count {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.logList {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.logRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.logName {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.estMark {
+  flex-shrink: 0;
+  color: var(--accent);
+  opacity: 0.75;
+}
+
+.logKcal {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.logEmpty {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner { transition: none; }
+}

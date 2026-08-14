@@ -28,24 +28,33 @@ function state(key, val, target) {
  * landed. So: four thin tracks, each lit once it is inside its band, and a mark
  * in the corner when the set is complete.
  */
-export default function MacroScale({ macros, label }) {
+export default function MacroScale({ macros, label, log = [], t }) {
   const [burst, setBurst] = useState(0)
+  const [back, setBack] = useState(false)
 
   const rows    = macros.map(m => ({ ...m, state: state(m.key, m.val, m.target) }))
   const allHit  = rows.length > 0 && rows.every(r => r.state === 'hit')
 
-  // The card does not navigate. The plus in the bar below is the way into
-  // logging and it is one thumb-reach away, so spending this card's whole
-  // surface on a second route to the same place bought nothing — and it cost
-  // the obvious place to put the reward.
-  const Tag = allHit ? 'button' : 'div'
+  // Newest first: the thing just eaten is the thing being checked.
+  const entries = [...log].reverse()
+
+  /* A div with a role rather than a button, because it now contains two of
+     them — the turn and, when the set is complete, the reward. A button inside
+     a button is invalid, and the browsers that tolerate it disagree about which
+     one a tap belongs to. */
+  const replay = allHit ? () => setBurst(b => b + 1) : undefined
 
   return (
-    <Tag
-      className={`${styles.card} ${allHit ? styles.cardDone : ''}`}
-      type={allHit ? 'button' : undefined}
-      onClick={allHit ? () => setBurst(b => b + 1) : undefined}
+    <div className={styles.flip}>
+      <div className={`${styles.inner} ${back ? styles.turned : ''}`}>
+    <div
+      className={`${styles.card} ${styles.face} ${allHit ? styles.cardDone : ''}`}
+      onClick={replay}
+      role={allHit ? 'button' : undefined}
+      tabIndex={allHit ? 0 : undefined}
+      onKeyDown={allHit ? e => { if (e.key === 'Enter' || e.key === ' ') replay() } : undefined}
       aria-label={allHit ? 'Всички макроси в целта' : undefined}
+      aria-hidden={back}
     >
       {burst > 0 && <Confetti burst={burst} />}
 
@@ -83,6 +92,55 @@ export default function MacroScale({ macros, label }) {
           )
         })}
       </div>
-    </Tag>
+
+      {/* The whole day's log lives on the other side of this card rather than in
+          a card of its own below it. It is the same subject — what was eaten —
+          and it was costing a full panel to show three of them. */}
+      <button
+        type="button"
+        className={styles.turn}
+        onClick={e => { e.stopPropagation(); setBack(true) }}
+      >
+        {t('today.recentAdded')} →
+      </button>
+    </div>
+
+    <div className={`${styles.card} ${styles.face} ${styles.backFace}`} aria-hidden={!back}>
+      <div className={styles.head}>
+        <span className={styles.label}>{t('today.recentAdded')}</span>
+        <span className={styles.count}>{entries.length}</span>
+      </div>
+
+      {/* Scrolls inside the card, which keeps the card the height of its front
+          — a panel that grows with the number of meals would push everything
+          below it down the page by a different amount every day. */}
+      <div className={styles.logList}>
+        {entries.length === 0 && <p className={styles.logEmpty}>Още нищо за днес.</p>}
+        {entries.map((f, i) => (
+          <div key={f.id ?? i} className={styles.logRow}>
+            <span className={styles.logName}>
+              {/* The same drawn ≈ the food log uses, for the same reason: a
+                  number a model guessed should say so wherever it is read. */}
+              {f.estimated && (
+                <svg viewBox="0 0 20 20" width="11" height="11" className={styles.estMark}
+                     aria-label="изчислено приблизително" role="img">
+                  <path d="M5 8.2c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0M5 12.4c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0"
+                        fill="none" stroke="currentColor" strokeWidth="1.7"
+                        strokeLinecap="round" transform="translate(1,0)" />
+                </svg>
+              )}
+              {f.name}
+            </span>
+            <span className={styles.logKcal}>{f.kcal} {t('today.kcal')}</span>
+          </div>
+        ))}
+      </div>
+
+      <button type="button" className={styles.turn} onClick={() => setBack(false)}>
+        ← {label}
+      </button>
+    </div>
+      </div>
+    </div>
   )
 }

@@ -70,6 +70,21 @@ export default function Profile({ onMenuOpen }) {
   useEffect(() => { setTargetInput(String(profile?.target_weight ?? '')) },
     [profile?.target_weight])
 
+  /* Anyone who set a goal before it moved to the database still has it in this
+     browser, and moving the source without moving the value would have quietly
+     thrown their number away. Carried up once, then the old copy is deleted so
+     it can never come back and overwrite a newer one. */
+  useEffect(() => {
+    if (!profile || profile.target_weight != null) return
+    let old = null
+    try { old = JSON.parse(localStorage.getItem('blag_target_weight_v1')) } catch { /* nothing to carry */ }
+    const kg = parseWeight(old)
+    if (kg === null) return
+    updateProfile({ target_weight: kg }).then(({ error }) => {
+      if (!error) localStorage.removeItem('blag_target_weight_v1')
+    })
+  }, [profile?.id, profile?.target_weight])
+
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
   const [showAllWeights, setShowAllWeights] = useState(false)
