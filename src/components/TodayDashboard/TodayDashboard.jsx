@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
@@ -15,6 +15,7 @@ import MacroScale from './MacroScale'
 import WeightCard from './WeightCard'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
+import { layout } from './cards'
 import styles from './TodayDashboard.module.css'
 
 // A colour per habit, for when it is done.
@@ -167,6 +168,198 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     if (earned.length) setBadgeQueue(q => [...q, ...earned])
   }, [calDone, habsDone, trainedToday])
 
+  const { visible } = layout(profile?.dashboard_cards)
+
+  /* Every card the page can show, keyed by id. Built as a table rather than
+     written out in order, because the order is the client's: what follows
+     renders whichever of these they kept, in the sequence they put them. */
+  const cardNodes = {
+    /* ── Readiness widget ── */
+    readiness: <ReadinessWidget onNavigate={onNavigate} />,
+
+    /* ── Habits ──
+        Ticked here rather than prompted from here. A nudge that sends you to
+        another tab to spend four seconds is a nudge most people decline, and
+        habits are 20% of the readiness score — the component most often left
+        empty precisely because it lived somewhere else. */
+    habits: habits.length > 0 && (
+      <div className={`${styles.habitsCard} ${habitsCheer ? styles.habitsCheer : ''}`}>
+        {habitsCheer && <Confetti burst={burst} />}
+        <div className={styles.habitsHead}>
+          <span className={styles.cardLabel}>{t('today.habits')}</span>
+          <span className={styles.habitsCount}>
+            {completedHabits}/{habits.length}
+          </span>
+        </div>
+        <div className={styles.habitsGrid}>
+          {habits.map((h, i) => (
+            <button
+              key={h.id}
+              type="button"
+              className={`${styles.habitChip} ${checked[h.id] ? styles.habitChipOn : ''}`}
+              onClick={() => toggleHabit(h.id)}
+              aria-pressed={!!checked[h.id]}
+              title={h.label}
+              style={{
+                // The chip takes its colour only once it is ticked; undone it
+                // stays neutral, so the row reads as progress rather than as
+                // six coloured buttons waiting to be pressed.
+                ...(checked[h.id] ? { '--habit': habitColor(h.id) } : null),
+                // The wave runs left to right rather than firing at once, so
+                // the row reads as a run being completed instead of a flash.
+                ...(habitsCheer ? { animationDelay: `${i * 55}ms` } : null),
+              }}
+            >
+              <Pictogram name={h.id} size={16} className={styles.habitIcon} />
+              <span className={styles.habitLabel}>{h.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    ),
+
+    /* ── Weight ── */
+    weight: <WeightCard />,
+
+    /* ── Water card ──
+        Full is a small win and it gets the same treatment as the other two:
+        it fires once when the last glass lands, and stays tappable afterwards
+        so the burst can be replayed. A div rather than a button because it
+        already contains one, and a button inside a button is invalid. */
+    water: <div
+      className={`${styles.waterCard} ${waterFull ? styles.waterCardDone : ''}`}
+      onClick={waterFull ? () => setWaterBurst(b => b + 1) : undefined}
+      role={waterFull ? 'button' : undefined}
+      tabIndex={waterFull ? 0 : undefined}
+      onKeyDown={waterFull ? e => {
+        if (e.key === 'Enter' || e.key === ' ') setWaterBurst(b => b + 1)
+      } : undefined}
+    >
+      {waterBurst > 0 && <Confetti burst={`w${waterBurst}`} />}
+      <span className={styles.waterLabel}>
+        <Pictogram name="water" size={14} />
+        {t('today.water')}
+      </span>
+      <div className={styles.waterGlasses}>
+        {Array.from({ length: waterTarget }, (_, i) => (
+          <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
+        ))}
+      </div>
+      <div className={styles.waterActions}>
+        <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
+        <button
+          type="button"
+          className={styles.waterBtn}
+          /* Stops the tap reaching the card, so adding a glass never doubles
+             as a celebration. */
+          onClick={e => { e.stopPropagation(); addWater(1) }}
+          aria-label="Добави чаша"
+        >+</button>
+      </div>
+    </div>,
+
+    /* ── Macros ──
+        Last of the five, because it is the only one that cannot be answered
+        from this screen: it reads back what was logged in the nutrition tab. */
+    macros: <MacroScale
+      label={t('today.macros')}
+      macros={[
+        { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
+        { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
+        { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: 'var(--macro-carbs)' },
+        { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: 'var(--macro-fat)' },
+      ]}
+    />,
+
+    /* ── Supplements ──
+        The habits row again, built from whatever the client put in their
+        stack: one chip per supplement, tapped when it is taken. Nothing is
+        shown to someone with an empty stack — a bar reading 0/0 is an
+        instruction to go and configure something, which is not what this page
+        is for. The stack itself is edited on its own page, in the drawer. */
+    supplements: supplements.length > 0 && (
+      <div className={styles.habitsCard}>
+        <div className={styles.habitsHead}>
+          <span className={styles.cardLabel}>{t('nav.supplements')}</span>
+          <span className={styles.habitsCount}>{suppTakenCount}/{suppTotal}</span>
+        </div>
+        <div className={styles.habitsGrid}>
+          {supplements.map(s => (
+            <button
+              key={s.id}
+              type="button"
+              className={`${styles.habitChip} ${suppTaken[s.id] ? styles.habitChipOn : ''}`}
+              onClick={() => toggleSupp(s.id)}
+              aria-pressed={!!suppTaken[s.id]}
+              title={s.dose ? `${s.name} · ${s.dose}` : s.name}
+              /* One colour for the whole row, unlike the habits: those are six
+                 fixed things whose colours can be learned, while a stack is
+                 whatever the client typed, and a palette assigned by arrival
+                 order would mean nothing. */
+              style={suppTaken[s.id] ? { '--habit': 'var(--accent)' } : null}
+            >
+              <Pictogram name={suppIcon(s.name)} size={16} className={styles.habitIcon} />
+              <span className={styles.habitLabel}>{s.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    ),
+
+    /* ── Recent food ── */
+    recent: recentFood.length > 0 && (
+      <div className={styles.card}>
+        <span className={styles.cardLabel}>{t('today.recentAdded')}</span>
+        <div className={styles.recentList}>
+          {recentFood.map((f, i) => (
+            <div key={i} className={styles.recentRow}>
+              <span className={styles.recentName}>{f.name}</span>
+              <span className={styles.recentKcal}>{f.kcal} {t('today.kcal')}</span>
+            </div>
+          ))}
+        </div>
+        <button className={styles.seeAll} onClick={() => onNavigate('nutrition')} type="button">
+          {t('today.seeAll')}
+        </button>
+      </div>
+    ),
+
+    /* ── Recommendation widget ── */
+    shop: recommendations.length > 0 && (
+      <div className={styles.recCard}>
+        <div className={styles.recHeader}>
+          <span className={styles.cardLabel}>{t('today.shopRec')}</span>
+          <span className={styles.recDeficit}>
+            {t('today.shopRecSub')} {Math.round(Math.max(0, targets.protein - (totals.protein || 0)))}g П
+            {targets.kcal > 0 && Math.max(0, targets.kcal - (totals.kcal || 0)) > 100
+              ? ` · ${Math.round(Math.max(0, targets.kcal - (totals.kcal || 0)))} kcal`
+              : ''}
+          </span>
+        </div>
+        <div className={styles.recList}>
+          {recommendations.map(p => {
+            const inCart = cart.items.find(i => i.product_id === p.id)
+            return (
+              <div key={p.id} className={styles.recRow}>
+                <div className={styles.recInfo}>
+                  <span className={styles.recName}>{p.name}</span>
+                  <span className={styles.recMacros}>{p.protein_per_serving}g П · {p.kcal_per_serving} kcal · {(p.price_stotinki / 100).toFixed(2)} лв.</span>
+                </div>
+                <button
+                  type="button"
+                  className={`${styles.recOrderBtn} ${inCart ? styles.recOrderBtnDone : ''}`}
+                  onClick={() => { if (!inCart) { cart.addItem(p); onNavigate('shop') } }}
+                >
+                  {inCart ? '✓' : t('today.shopOrder')}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    ),
+  }
+
   return (
     <div className={styles.page}>
       {badgeQueue[0] && (
@@ -181,195 +374,11 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         onAvatarClick={() => onNavigate('profile')}
       />
 
-      {/* The page is ordered by what a person can act on right now, not by what
-          the app knows about them: the verdict first, then the four things they
-          tick or type, then the tally that only reads back what they logged
-          elsewhere. */}
-
-      {/* ── Readiness widget ── */}
-      <ReadinessWidget onNavigate={onNavigate} />
-
-      {/* ── Habits ──
-          Ticked here rather than prompted from here. A nudge that sends you to
-          another tab to spend four seconds is a nudge most people decline, and
-          habits are 20% of the readiness score — the component most often left
-          empty precisely because it lived somewhere else. */}
-      {habits.length > 0 && (
-        <div className={`${styles.habitsCard} ${habitsCheer ? styles.habitsCheer : ''}`}>
-          {habitsCheer && <Confetti burst={burst} />}
-          <div className={styles.habitsHead}>
-            <span className={styles.cardLabel}>{t('today.habits')}</span>
-            <span className={styles.habitsCount}>
-              {completedHabits}/{habits.length}
-            </span>
-          </div>
-          <div className={styles.habitsGrid}>
-            {habits.map((h, i) => (
-              <button
-                key={h.id}
-                type="button"
-                className={`${styles.habitChip} ${checked[h.id] ? styles.habitChipOn : ''}`}
-                onClick={() => toggleHabit(h.id)}
-                aria-pressed={!!checked[h.id]}
-                title={h.label}
-                style={{
-                  // The chip takes its colour only once it is ticked; undone it
-                  // stays neutral, so the row reads as progress rather than as
-                  // six coloured buttons waiting to be pressed.
-                  ...(checked[h.id] ? { '--habit': habitColor(h.id) } : null),
-                  // The wave runs left to right rather than firing at once, so
-                  // the row reads as a run being completed instead of a flash.
-                  ...(habitsCheer ? { animationDelay: `${i * 55}ms` } : null),
-                }}
-              >
-                <Pictogram name={h.id} size={16} className={styles.habitIcon} />
-                <span className={styles.habitLabel}>{h.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Weight ── */}
-      <WeightCard />
-
-      {/* ── Water card ──
-          Full is a small win and it gets the same treatment as the other two:
-          it fires once when the last glass lands, and stays tappable afterwards
-          so the burst can be replayed. A div rather than a button because it
-          already contains one, and a button inside a button is invalid. */}
-      <div
-        className={`${styles.waterCard} ${waterFull ? styles.waterCardDone : ''}`}
-        onClick={waterFull ? () => setWaterBurst(b => b + 1) : undefined}
-        role={waterFull ? 'button' : undefined}
-        tabIndex={waterFull ? 0 : undefined}
-        onKeyDown={waterFull ? e => {
-          if (e.key === 'Enter' || e.key === ' ') setWaterBurst(b => b + 1)
-        } : undefined}
-      >
-        {waterBurst > 0 && <Confetti burst={`w${waterBurst}`} />}
-        <span className={styles.waterLabel}>
-          <Pictogram name="water" size={14} />
-          {t('today.water')}
-        </span>
-        <div className={styles.waterGlasses}>
-          {Array.from({ length: waterTarget }, (_, i) => (
-            <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
-          ))}
-        </div>
-        <div className={styles.waterActions}>
-          <span className={styles.waterCount}>{glasses}/{waterTarget}</span>
-          <button
-            type="button"
-            className={styles.waterBtn}
-            /* Stops the tap reaching the card, so adding a glass never doubles
-               as a celebration. */
-            onClick={e => { e.stopPropagation(); addWater(1) }}
-            aria-label="Добави чаша"
-          >+</button>
-        </div>
-      </div>
-
-      {/* ── Macros ──
-          Last of the five, because it is the only one that cannot be answered
-          from this screen: it reads back what was logged in the nutrition tab. */}
-      <MacroScale
-        label={t('today.macros')}
-        macros={[
-          { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
-          { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
-          { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: 'var(--macro-carbs)' },
-          { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: 'var(--macro-fat)' },
-        ]}
-      />
-
-      {/* ── Supplements ──
-          The habits row again, built from whatever the client put in their
-          stack: one chip per supplement, tapped when it is taken. Nothing is
-          shown to someone with an empty stack — a bar reading 0/0 is an
-          instruction to go and configure something, which is not what this page
-          is for. The stack itself is edited on its own page, in the drawer. */}
-      {supplements.length > 0 && (
-        <div className={styles.habitsCard}>
-          <div className={styles.habitsHead}>
-            <span className={styles.cardLabel}>{t('nav.supplements')}</span>
-            <span className={styles.habitsCount}>{suppTakenCount}/{suppTotal}</span>
-          </div>
-          <div className={styles.habitsGrid}>
-            {supplements.map(s => (
-              <button
-                key={s.id}
-                type="button"
-                className={`${styles.habitChip} ${suppTaken[s.id] ? styles.habitChipOn : ''}`}
-                onClick={() => toggleSupp(s.id)}
-                aria-pressed={!!suppTaken[s.id]}
-                title={s.dose ? `${s.name} · ${s.dose}` : s.name}
-                /* One colour for the whole row, unlike the habits: those are six
-                   fixed things whose colours can be learned, while a stack is
-                   whatever the client typed, and a palette assigned by arrival
-                   order would mean nothing. */
-                style={suppTaken[s.id] ? { '--habit': 'var(--accent)' } : null}
-              >
-                <Pictogram name={suppIcon(s.name)} size={16} className={styles.habitIcon} />
-                <span className={styles.habitLabel}>{s.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Recent food ── */}
-      {recentFood.length > 0 && (
-        <div className={styles.card}>
-          <span className={styles.cardLabel}>{t('today.recentAdded')}</span>
-          <div className={styles.recentList}>
-            {recentFood.map((f, i) => (
-              <div key={i} className={styles.recentRow}>
-                <span className={styles.recentName}>{f.name}</span>
-                <span className={styles.recentKcal}>{f.kcal} {t('today.kcal')}</span>
-              </div>
-            ))}
-          </div>
-          <button className={styles.seeAll} onClick={() => onNavigate('nutrition')} type="button">
-            {t('today.seeAll')}
-          </button>
-        </div>
-      )}
-
-      {/* ── Recommendation widget ── */}
-      {recommendations.length > 0 && (
-        <div className={styles.recCard}>
-          <div className={styles.recHeader}>
-            <span className={styles.cardLabel}>{t('today.shopRec')}</span>
-            <span className={styles.recDeficit}>
-              {t('today.shopRecSub')} {Math.round(Math.max(0, targets.protein - (totals.protein || 0)))}g П
-              {targets.kcal > 0 && Math.max(0, targets.kcal - (totals.kcal || 0)) > 100
-                ? ` · ${Math.round(Math.max(0, targets.kcal - (totals.kcal || 0)))} kcal`
-                : ''}
-            </span>
-          </div>
-          <div className={styles.recList}>
-            {recommendations.map(p => {
-              const inCart = cart.items.find(i => i.product_id === p.id)
-              return (
-                <div key={p.id} className={styles.recRow}>
-                  <div className={styles.recInfo}>
-                    <span className={styles.recName}>{p.name}</span>
-                    <span className={styles.recMacros}>{p.protein_per_serving}g П · {p.kcal_per_serving} kcal · {(p.price_stotinki / 100).toFixed(2)} лв.</span>
-                  </div>
-                  <button
-                    type="button"
-                    className={`${styles.recOrderBtn} ${inCart ? styles.recOrderBtnDone : ''}`}
-                    onClick={() => { if (!inCart) { cart.addItem(p); onNavigate('shop') } }}
-                  >
-                    {inCart ? '✓' : t('today.shopOrder')}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      {/* Ordered by the client, in their profile. The default is the argument
+          the page makes on its own: the verdict first, then the things they
+          tick or type here, then the tallies that read back what was logged
+          somewhere else. */}
+      {visible.map(id => <Fragment key={id}>{cardNodes[id]}</Fragment>)}
     </div>
   )
 }

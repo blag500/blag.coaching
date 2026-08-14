@@ -8,6 +8,7 @@ import { parseWeight } from '../../utils/pendingWeight'
 import { supabase } from '../../lib/supabase'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
+import DashboardCards from './DashboardCards'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
@@ -487,6 +488,10 @@ export default function Profile({ onMenuOpen }) {
       </section>
 
       <NotificationSettings />
+
+      {/* Next to the theme and the language, because it is the same kind of
+          setting: how the app looks to this person, not what it knows. */}
+      <DashboardCards />
 
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>{t('settings.appearance')}</h2>

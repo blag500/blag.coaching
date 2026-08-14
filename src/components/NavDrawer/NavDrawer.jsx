@@ -120,6 +120,16 @@ const OrdersIcon = () => (
     <line x1="9" y1="17" x2="13" y2="17" />
   </svg>
 )
+// A medal, not a second trophy: the trophy already means the competition
+// protocol, and two cups in one drawer would send people to the wrong page.
+const MedalIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M8 2l2 6" />
+    <path d="M16 2l-2 6" />
+    <circle cx="12" cy="15" r="6" />
+    <path d="M12 12.4l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" />
+  </svg>
+)
 const SupplementIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M9 3L3 9a6 6 0 0 0 8.49 8.49L20 9a6 6 0 0 0-8.49-8.49z" />
@@ -172,6 +182,8 @@ const CLIENT_SECTIONS = [
     labelEn: 'PERSONAL',
     tabs: [
       { id: 'profile', key: 'nav.profile', Icon: ProfileIcon },
+      // The only way in since the shortcut tiles left Днес.
+      { id: 'rewards', key: 'nav.rewards', Icon: MedalIcon },
     ],
   },
 ]

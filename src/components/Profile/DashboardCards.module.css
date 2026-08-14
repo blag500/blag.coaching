@@ -1,0 +1,157 @@
+.wrap {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.saving {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+.lead {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.subhead {
+  margin-top: 6px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rowOff {
+  opacity: 0.5;
+}
+
+/* Stacked, so the pair occupies one row's height rather than two — a settings
+   list that is twice as tall as its content stops reading as a list. */
+.arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.arrow {
+  width: 26px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.hint {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toggle,
+.toggleOn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+}
+
+.toggleOn {
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
