@@ -81,6 +81,7 @@ const TRANSLATIONS = {
     'today.weightSave':         'ЗАПИШИ',
     'today.weightEdit':         'Поправи',
     'today.weightSince':        'от {date}',
+    'today.weightOverDays':     'за {n} дни',
     'today.weightFirst':        'първо мерене',
     'today.weightError':        'Провери числото',
 
@@ -214,6 +215,7 @@ const TRANSLATIONS = {
     'today.weightSave':         'SAVE',
     'today.weightEdit':         'Correct',
     'today.weightSince':        'since {date}',
+    'today.weightOverDays':     'over {n} days',
     'today.weightFirst':        'first weigh-in',
     'today.weightError':        'Check the number',
 

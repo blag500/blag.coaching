@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { CARDS, DEFAULT_ORDER, layout } from '../TodayDashboard/cards'
 import styles from './DashboardCards.module.css'
@@ -8,44 +8,152 @@ import styles from './DashboardCards.module.css'
  *
  * Two people using this for two different things want two different pages: one
  * is cutting and opens it for the weight and the macros, another is building a
- * habit and only wants the six chips. Rather than guess an order that suits the
+ * habit and only wants the chips. Rather than guess an order that suits the
  * average of them — which suits neither — the page is theirs to arrange.
  *
- * Arrows rather than drag and drop. Dragging a row inside a scrolling page on a
- * phone fights the scroll, and the fight is lost by the person whose finger
- * moves eight pixels before it moves eighty. Two taps always work.
- *
- * Saved on every change instead of behind a "save" button: there is nothing to
- * validate and nothing to undo that a second tap does not undo, so a button
- * would only be one more thing to forget to press.
+ * Hold a row, then drag it. Not the browser's drag-and-drop, which does not
+ * exist on touch, and not pointer-down-to-drag either: this list sits inside a
+ * scrolling page, and a row that grabs the finger the instant it lands makes
+ * the page impossible to scroll past. The hold is what separates "I am moving
+ * this" from "I am moving the page", and the hold is abandoned the moment the
+ * finger travels — so a scroll that starts on a row is still a scroll.
  */
+const HOLD_MS = 220
+const SCROLL_CANCEL_PX = 8
+
 export default function DashboardCards() {
   const { profile, updateProfile } = useAuth()
   const [order, setOrder] = useState(() => layout(profile?.dashboard_cards).visible)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [dragId, setDragId] = useState(null)
+
+  const listRef = useRef(null)
+  const hold = useRef(null)      // pending long-press: { timer, x, y }
+  const drag = useRef(null)      // live drag: { id, index }
+  const orderRef = useRef(order) // the drag reads and writes this synchronously
+  orderRef.current = order
 
   const hidden = DEFAULT_ORDER.filter(id => !order.includes(id))
   const meta = id => CARDS.find(c => c.id === id)
 
-  async function commit(next) {
-    setOrder(next)
+  async function persist(next) {
     setSaving(true)
-    await updateProfile({ dashboard_cards: next })
+    const { error: err } = await updateProfile({ dashboard_cards: next })
     setSaving(false)
+    // Loudly, because the previous version failed in silence: the list
+    // rearranged itself on screen and reverted on the next load, which reads as
+    // the feature not working rather than as the write not landing.
+    if (err) {
+      console.error('dashboard_cards update failed', err)
+      setError('Не се записа. Опитай пак.')
+    } else {
+      setError('')
+    }
   }
 
-  function move(i, delta) {
-    const j = i + delta
-    if (j < 0 || j >= order.length) return
-    const next = [...order]
-    ;[next[i], next[j]] = [next[j], next[i]]
-    commit(next)
+  function commit(next) { setOrder(next); persist(next) }
+
+  // ── Dragging ──────────────────────────────────────────────────────────────
+
+  /** Which row the pointer is over, by the rows' own boxes rather than by an
+      assumed height — they are the same height today and need not stay so. */
+  function indexAt(clientY) {
+    const rows = [...(listRef.current?.children ?? [])]
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i].getBoundingClientRect()
+      if (clientY < r.bottom) return i
+    }
+    return rows.length - 1
   }
+
+  function onMove(e) {
+    // Still deciding whether this is a drag or a scroll.
+    if (hold.current) {
+      const dx = Math.abs(e.clientX - hold.current.x)
+      const dy = Math.abs(e.clientY - hold.current.y)
+      if (dx > SCROLL_CANCEL_PX || dy > SCROLL_CANCEL_PX) cancelHold()
+      return
+    }
+    if (!drag.current) return
+
+    const to = indexAt(e.clientY)
+    const from = drag.current.index
+    if (to === from || to < 0) return
+
+    const next = [...orderRef.current]
+    next.splice(to, 0, next.splice(from, 1)[0])
+    drag.current.index = to
+    orderRef.current = next
+    setOrder(next)
+  }
+
+  function onUp() {
+    cancelHold()
+    if (!drag.current) return
+    const moved = drag.current
+    drag.current = null
+    setDragId(null)
+    // One write at the end, not one per row crossed.
+    if (moved.index !== moved.from) persist(orderRef.current)
+  }
+
+  function cancelHold() {
+    if (hold.current) { clearTimeout(hold.current.timer); hold.current = null }
+  }
+
+  function onDown(e, id, index) {
+    // Left button / touch / pen only, and never from the "Скрий" button.
+    if (e.button != null && e.button !== 0) return
+    if (e.target.closest('button')) return
+    hold.current = {
+      x: e.clientX,
+      y: e.clientY,
+      timer: setTimeout(() => {
+        hold.current = null
+        drag.current = { id, index, from: index }
+        setDragId(id)
+      }, HOLD_MS),
+    }
+  }
+
+  /* Bound to the window rather than to the row: once a row is moving, the
+     pointer spends most of its time over its neighbours, and a listener on the
+     row itself would stop hearing about it.
+     Called through a ref because the listeners are attached once, and the
+     handlers they would otherwise capture reach updateProfile — which closes
+     over the session. A session refreshed an hour into the visit would leave
+     the drag writing with the old one. */
+  const handlers = useRef({ onMove, onUp })
+  handlers.current = { onMove, onUp }
+
+  useEffect(() => {
+    const move = e => handlers.current.onMove(e)
+    const up = () => handlers.current.onUp()
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+    return () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+    }
+  }, [])
+
+  /* The page must not scroll under a row that is being dragged. touch-action
+     cannot do it — changing it mid-gesture does not affect the gesture already
+     in flight — so the touchmove is refused outright while a drag is live, and
+     only then. */
+  useEffect(() => {
+    if (!dragId) return
+    const block = e => e.preventDefault()
+    window.addEventListener('touchmove', block, { passive: false })
+    return () => window.removeEventListener('touchmove', block)
+  }, [dragId])
 
   /* Slotted in where the default order would have put it, rather than appended:
      someone switching the weight card back on wants it back near the top, not
-     underneath the shop. Everything already in the list keeps the arrangement
-     it has — only the returning card is placed. */
+     underneath the shop. Everything already in the list keeps its arrangement. */
   function show(id) {
     const rank = x => DEFAULT_ORDER.indexOf(x)
     const at = order.findIndex(x => rank(x) > rank(id))
@@ -56,6 +164,19 @@ export default function DashboardCards() {
 
   function hide(id) { commit(order.filter(x => x !== id)) }
 
+  /* Keyboard equivalent. Holding a row is a gesture a keyboard cannot make, and
+     without this the setting would be operable only by people who can. */
+  function onKeyDown(e, index) {
+    const delta = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0
+    if (!delta || !e.altKey) return
+    const to = index + delta
+    if (to < 0 || to >= order.length) return
+    e.preventDefault()
+    const next = [...order]
+    ;[next[index], next[to]] = [next[to], next[index]]
+    commit(next)
+  }
+
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
@@ -63,22 +184,24 @@ export default function DashboardCards() {
         {saving && <span className={styles.saving}>записва…</span>}
       </div>
       <p className={styles.lead}>
-        Подреди какво виждаш, когато отвориш приложението.
+        Задръж и влачи, за да пренаредиш.
       </p>
+      {error && <p className={styles.error}>{error}</p>}
 
-      <ul className={styles.list}>
+      <ul className={styles.list} ref={listRef}>
         {order.map((id, i) => (
-          <li key={id} className={styles.row}>
-            <div className={styles.arrows}>
-              <button
-                type="button" className={styles.arrow} onClick={() => move(i, -1)}
-                disabled={i === 0} aria-label="Нагоре"
-              >↑</button>
-              <button
-                type="button" className={styles.arrow} onClick={() => move(i, 1)}
-                disabled={i === order.length - 1} aria-label="Надолу"
-              >↓</button>
-            </div>
+          <li
+            key={id}
+            className={`${styles.row} ${dragId === id ? styles.rowDrag : ''}`}
+            onPointerDown={e => onDown(e, id, i)}
+            onKeyDown={e => onKeyDown(e, i)}
+            tabIndex={0}
+            role="button"
+            aria-label={`${meta(id)?.label}. Alt със стрелка нагоре или надолу мести.`}
+          >
+            <span className={styles.grip} aria-hidden="true">
+              <span /><span /><span />
+            </span>
             <div className={styles.text}>
               <span className={styles.name}>{meta(id)?.label ?? id}</span>
               <span className={styles.hint}>{meta(id)?.hint}</span>
@@ -91,9 +214,7 @@ export default function DashboardCards() {
       </ul>
 
       {order.length === 0 && (
-        <p className={styles.empty}>
-          Няма нищо избрано — страницата ще е празна.
-        </p>
+        <p className={styles.empty}>Няма нищо избрано — страницата ще е празна.</p>
       )}
 
       {hidden.length > 0 && (

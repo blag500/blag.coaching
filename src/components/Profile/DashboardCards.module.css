@@ -70,35 +70,48 @@
   opacity: 0.5;
 }
 
-/* Stacked, so the pair occupies one row's height rather than two — a settings
-   list that is twice as tall as its content stops reading as a list. */
-.arrows {
+/* Held and moving. Lifted off the list so it is obvious which row the finger
+   owns, and the transition is left off: the row changes places several times a
+   second while dragging, and animating each swap turns the list to soup. */
+.rowDrag {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* A hold that selects the label instead of picking up the row is the gesture
+   failing, and on iOS it also raises the copy callout. */
+.row {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+}
+
+.rowDrag { cursor: grabbing; }
+
+.row:focus-visible {
+  outline: 1px solid rgba(var(--accent-rgb), 0.6);
+  outline-offset: 2px;
+}
+
+/* Three bars, the universal "this moves". Drawn rather than an emoji, and
+   deliberately quiet — it marks the row as draggable without asking to be
+   pressed, because the whole row is the target, not the grip. */
+.grip {
+  flex-shrink: 0;
+  width: 14px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex-shrink: 0;
+  gap: 3px;
+  opacity: 0.35;
 }
 
-.arrow {
-  width: 26px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  background: var(--surface-2);
-  color: var(--text);
-  font-size: 11px;
-  line-height: 1;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.arrow:disabled {
-  opacity: 0.25;
-  cursor: default;
+.grip span {
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--muted);
 }
 
 .text {
@@ -154,4 +167,11 @@
   font-size: 11px;
   color: var(--muted);
   opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--danger, #EF5350);
 }

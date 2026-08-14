@@ -3,7 +3,6 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
-import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { parseWeight } from '../../utils/pendingWeight'
 import { supabase } from '../../lib/supabase'
 import WeightChart from './WeightChart'
@@ -43,7 +42,13 @@ export default function Profile({ onMenuOpen }) {
   const { theme, setTheme, lang, setLang, t } = useSettings()
   const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
   const history = useHabitHistory()
-  const [targetWeight, setTargetWeight] = useLocalStorage('blag_target_weight_v1', '')
+  /* profiles.target_weight, not localStorage.
+     Onboarding writes this column and the coach edits it from the client panel,
+     so a second copy in the browser meant three places could disagree: the goal
+     line on the chart below, the fraction on the Днес card, and whatever the
+     coach had set. It also vanished when the client opened the app anywhere
+     else. */
+  const targetWeight = profile?.target_weight ?? ''
 
   const [name, setName]           = useState(profile?.name ?? '')
   const [nameSaved, setNameSaved] = useState(false)
@@ -59,6 +64,11 @@ export default function Profile({ onMenuOpen }) {
     if (todayEntry) setWeightInput(String(todayEntry.kg))
   }, [todayEntry?.date])
   const [targetInput, setTargetInput] = useState(String(targetWeight ?? ''))
+  /* The profile arrives after the first render, and it changes again when the
+     coach edits the goal from their panel — so the field follows the column
+     rather than being seeded from it once and drifting. */
+  useEffect(() => { setTargetInput(String(profile?.target_weight ?? '')) },
+    [profile?.target_weight])
 
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
@@ -157,9 +167,11 @@ export default function Profile({ onMenuOpen }) {
     }
   }
 
-  function handleTargetSave() {
-    const v = parseFloat(targetInput)
-    setTargetWeight(v || '')
+  async function handleTargetSave() {
+    const v = parseWeight(targetInput)
+    if (v === null && targetInput.trim() !== '') return
+    const { error } = await updateProfile({ target_weight: v })
+    if (error) return
     setTargetSaved(true)
     setTimeout(() => setTargetSaved(false), 3000)
   }

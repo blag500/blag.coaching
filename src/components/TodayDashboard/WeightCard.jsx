@@ -19,11 +19,9 @@ import styles from './WeightCard.module.css'
  * Built on one line like the water card beside it, and read left to right: what
  * this is, what it says today, and which way it has been going.
  *
- * The change is shown against the previous entry with its date, not against a
- * seven-day window: entries are irregular, and "-0.4 kg over 7 days" is a
- * sentence the data often cannot support. Whichever direction it moved is
- * printed plainly, in the same colour either way — down is not progress for
- * someone gaining, and this card does not know which they are.
+ * Whichever direction the number moved is printed plainly, in the same colour
+ * either way — down is not progress for someone gaining, and this card does not
+ * know which they are.
  */
 
 /** "2026-08-11" → "11.08". The year is noise for a number from this week. */
@@ -50,7 +48,7 @@ const WINDOW_DAYS = 30
  * Returns null when there is nothing honest to say — a single weigh-in is a
  * point, not a direction, and "±0 кг since today" is worse than silence.
  */
-function trendSummary(weights, todayEntry) {
+function trendSummary(weights, todayEntry, t) {
   if (!todayEntry || weights.length < 2) return null
 
   const cutoff = new Date(Date.now() - WINDOW_DAYS * 86400000).toISOString().slice(0, 10)
@@ -66,9 +64,10 @@ function trendSummary(weights, todayEntry) {
 
   // A window only earns its name once it is nearly full. Below that, the date
   // is the honest label: "−0,4 кг от 13.08" claims nothing about a month.
+  const change = signed(todayEntry.kg - base.kg)
   return spanDays >= WINDOW_DAYS - 5
-    ? `${signed(todayEntry.kg - base.kg)} за ${WINDOW_DAYS} дни`
-    : `${signed(todayEntry.kg - base.kg)} от ${shortDate(base.date)}`
+    ? `${change} ${t('today.weightOverDays').replace('{n}', WINDOW_DAYS)}`
+    : `${change} ${t('today.weightSince').replace('{date}', shortDate(base.date))}`
 }
 
 export default function WeightCard() {
@@ -94,7 +93,7 @@ export default function WeightCard() {
      nobody anything. A month is the shortest window in which a real direction
      shows, and if the history is shorter than that the caption says so with the
      date rather than pretending to a month it does not have. */
-  const summary = trendSummary(weights, todayEntry)
+  const summary = trendSummary(weights, todayEntry, t)
 
   async function save(e) {
     e.preventDefault()
