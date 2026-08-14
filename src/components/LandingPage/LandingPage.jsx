@@ -63,15 +63,12 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       <div className={styles.hero}>
         <h1 className={styles.headline}>ПОСТИГНИ<br />ЦЕЛТА СИ</h1>
-        {/* The only line of explanation on the page. Someone arriving from a
-            video has never heard of this and cannot tell it from any other
-            tracker, and this says the thing that is actually different: a person
-            reads the numbers, not only an app that collects them.
-            The three nouns that used to sit above it said less in more words. */}
-        <p className={styles.pitch}>
-          Приложение, което следи храненето и тренировките ти — и треньор,
-          който ги гледа.
-        </p>
+        {/* Three words, in the same idiom as the row of nouns that used to sit
+            here: separated by middots rather than full stops. Three short
+            sentences in a row is the cadence of every advert ever written, and
+            the eye skips it — the same three words on one line read as a label
+            instead. */}
+        <p className={styles.sub}>Виж · Ползвай · Постигай</p>
       </div>
 
       <div className={styles.bottom}>

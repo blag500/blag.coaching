@@ -237,15 +237,13 @@
   opacity: 1;
 }
 
-/* One sentence for someone who has never heard of this. Smaller than the
-   headline, larger than the fine print: it is the only thing on the screen
-   that explains what the button leads to. */
-.pitch {
-  margin: 14px auto 0;
-  max-width: 30ch;
+/* Under the headline and well clear of it, so the two read as a title and its
+   caption rather than as one block of type. */
+.sub {
+  margin: 16px 0 0;
   font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  letter-spacing: 0.14em;
   color: var(--muted);
 }
 
