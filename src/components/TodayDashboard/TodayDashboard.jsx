@@ -12,6 +12,7 @@ import BadgePopup from './BadgePopup'
 import Confetti from './Confetti'
 import Pictogram from '../Pictogram/Pictogram'
 import MacroScale from './MacroScale'
+import WeightCard from './WeightCard'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './TodayDashboard.module.css'
@@ -246,6 +247,13 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
           >+</button>
         </div>
       </div>
+
+      {/* ── Weight ──
+          Directly under water, because both are morning facts and both are
+          asked for once a day. Above the habits row rather than below it: the
+          habits are six taps someone can do at any hour, and the weigh-in is
+          the one that stops being answerable once the day has started. */}
+      <WeightCard />
 
       {/* ── Habits ──
           Ticked here rather than prompted from here. A nudge that sends you to

@@ -141,6 +141,25 @@ const SHAPES = {
     solid: <path d="M14.2 11.4l2.8 2.2c1 .8 1.2 2.2.4 3.2l-.8 1c-.8 1-2.2 1.2-3.2.4l-2.6-2z" />,
   },
 
+  // A bathroom scale from above: the platform, the dial, and the needle as the
+  // filled part. Not a downward arrow and not a scale-with-pans — one says the
+  // number should go down, which is wrong for anyone gaining, and the other is
+  // a courthouse.
+  weight: {
+    // The dial is a half disc rather than an arc alone, and it sits low in the
+    // platform: an arc drawn across the middle fills the box and reads as a
+    // dome. The needle is a stroke on top of the fill, which is the only way it
+    // survives — inside the disc it disappears at 16px.
+    line: (
+      <>
+        <rect x="3.6" y="5.2" width="16.8" height="13.6" rx="3" />
+        <path d="M7.8 15.4a4.2 4.2 0 0 1 8.4 0" />
+        <path d="M12 15.4l2.7-3" />
+      </>
+    ),
+    solid: <path d="M7.8 15.4a4.2 4.2 0 0 1 8.4 0z" />,
+  },
+
   // Anything a coach invents: still drawn, still the same construction.
   generic: {
     line: <circle cx="12" cy="12" r="7.4" />,

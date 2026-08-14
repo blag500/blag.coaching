@@ -1,0 +1,152 @@
+/* Same panel as the water card beside it — this is one more thing about today,
+   not a feature announcing itself. */
+.card {
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.edit {
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.7;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Asking ── */
+.form {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.inputWrap {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  transition: border-color 140ms;
+}
+
+.inputWrap:focus-within {
+  border-color: rgba(var(--accent-rgb), 0.55);
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-heading);
+  /* 16px is the floor at which iOS stops zooming the page on focus, and a
+     dashboard that zooms when you tap a field never zooms back. */
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  padding: 0;
+}
+
+.input::placeholder {
+  color: var(--muted);
+  opacity: 0.3;
+}
+
+.unit {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.save {
+  padding: 0 18px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 120ms;
+}
+
+.save:active { opacity: 0.85; }
+.save:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Answered ── */
+.readout {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.kg {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.kgUnit {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+/* Deliberately not coloured by direction. Down is progress for someone cutting
+   and a setback for someone gaining, and this card does not know which. */
+.delta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.hint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--danger, #EF5350);
+}

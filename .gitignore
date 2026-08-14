@@ -3,3 +3,6 @@ dist/
 .DS_Store
 .env.local
 .env
+
+# Playwright MCP scratch output (snapshots, console logs, screenshots)
+.playwright-mcp/

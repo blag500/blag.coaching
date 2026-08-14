@@ -75,6 +75,13 @@ const TRANSLATIONS = {
     'today.ago.days':           'преди {n} дни',
     'today.suppTaken':          'взети',
     'today.suppEmpty':          'Настрой стека →',
+    'today.weight':             'ТЕГЛО',
+    'today.weightAsk':          'Не си се мерил днес',
+    'today.weightSave':         'ЗАПИШИ',
+    'today.weightEdit':         'Поправи',
+    'today.weightSince':        'от {date}',
+    'today.weightFirst':        'първо мерене',
+    'today.weightError':        'Провери числото',
 
     // BadgePopup
     'badge.calories.label': 'КАЛОРИИ',
@@ -200,6 +207,13 @@ const TRANSLATIONS = {
     'today.ago.days':           '{n} days ago',
     'today.suppTaken':          'taken',
     'today.suppEmpty':          'Set up stack →',
+    'today.weight':             'WEIGHT',
+    'today.weightAsk':          "You haven't weighed in today",
+    'today.weightSave':         'SAVE',
+    'today.weightEdit':         'Correct',
+    'today.weightSince':        'since {date}',
+    'today.weightFirst':        'first weigh-in',
+    'today.weightError':        'Check the number',
 
     // BadgePopup
     'badge.calories.label': 'CALORIES',

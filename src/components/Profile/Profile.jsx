@@ -4,6 +4,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { parseWeight } from '../../utils/pendingWeight'
 import { supabase } from '../../lib/supabase'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
@@ -141,8 +142,10 @@ export default function Profile({ onMenuOpen }) {
 
   async function handleWeightSave(e) {
     e.preventDefault()
-    const kg = parseFloat(weightInput)
-    if (!kg || kg < 20 || kg > 300) return
+    // parseFloat stops at the comma, so "86,4" was being logged as 86 — the
+    // decimal is the whole point of weighing yourself daily.
+    const kg = parseWeight(weightInput)
+    if (kg === null) { setWeightError('Провери числото'); return }
     setWeightError('')
     const { error } = await addWeight(kg)
     if (error) {
