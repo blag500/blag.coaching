@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { readSource } from '../utils/source'
-import { clearPendingWeight } from '../utils/pendingWeight'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
@@ -132,8 +131,6 @@ export function AuthProvider({ children }) {
         .upsert({ user_id: session.user.id, kg: weight_kg, date: today },
           { onConflict: 'user_id,date' })
       if (wErr) console.error('weight_logs upsert failed', wErr)
-      // Written to a real row now, so it must not seed a second account.
-      else clearPendingWeight()
     }
     return { error }
   }

@@ -1,25 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './LandingPage.module.css'
-import { savePendingWeight, parseWeight } from '../../utils/pendingWeight'
 
 export default function LandingPage({ onContinue, onLogin }) {
-  /* One number, asked for before anything else.
-     "Влез в приложението" asks a stranger to commit to something they cannot
-     see yet. A weight field asks for three seconds and one fact they already
-     know, and the person who answers it has started using the thing rather than
-     considered using it. The number is not thrown away: it is what onboarding
-     opens with, in place of the 80 kg placeholder. */
-  const [kg, setKg] = useState('')
-  const valid = parseWeight(kg) !== null
-
-  function start(e) {
-    e?.preventDefault()
-    // An empty field must never block the door. Someone who does not want to
-    // type their weight into a page they just landed on is still welcome.
-    if (valid) savePendingWeight(kg)
-    onContinue()
-  }
-
   // Respect the setting, and follow it if it changes while the page is open.
   const [stillOnly, setStillOnly] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
@@ -81,42 +63,21 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       <div className={styles.hero}>
         <h1 className={styles.headline}>ПОСТИГНИ<br />ЦЕЛТА СИ</h1>
-        <p className={styles.sub}>Хранене · Тренировки · Прогрес</p>
-        {/* Someone arriving from a video has never heard of this and cannot
-            tell it from any other tracker. One sentence, saying the thing that
-            is actually different: a person reads the numbers, not only an app
-            that collects them. */}
+        {/* The only line of explanation on the page. Someone arriving from a
+            video has never heard of this and cannot tell it from any other
+            tracker, and this says the thing that is actually different: a person
+            reads the numbers, not only an app that collects them.
+            The three nouns that used to sit above it said less in more words. */}
         <p className={styles.pitch}>
           Приложение, което следи храненето и тренировките ти — и треньор,
           който ги гледа.
         </p>
       </div>
 
-      <form className={styles.bottom} onSubmit={start}>
-        <label className={styles.weighLabel} htmlFor="landing-kg">
-          Започни с днешното си тегло
-        </label>
-        <div className={styles.weighRow}>
-          <input
-            id="landing-kg"
-            className={styles.weighInput}
-            value={kg}
-            onChange={e => setKg(e.target.value)}
-            /* decimal, not numeric: the phone keyboard has to carry a comma,
-               and 82,5 is how the number is written here. */
-            inputMode="decimal"
-            enterKeyHint="go"
-            placeholder="82,5"
-            autoComplete="off"
-            maxLength={5}
-          />
-          <span className={styles.weighUnit}>кг</span>
-        </div>
-
-        <button className={styles.cta} type="submit">
-          {valid ? 'ЗАПИШИ ТЕГЛОТО СИ' : 'ВЛЕЗ В ПРИЛОЖЕНИЕТО'}
+      <div className={styles.bottom}>
+        <button className={styles.cta} onClick={onContinue} type="button">
+          ВЛЕЗ В ПРИЛОЖЕНИЕТО
         </button>
-        <p className={styles.note}>Безплатно завинаги. Без карта.</p>
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
         </button>
@@ -133,7 +94,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         >
           Или ми пиши в Instagram
         </a>
-      </form>
+      </div>
     </div>
   )
 }

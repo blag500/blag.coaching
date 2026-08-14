@@ -136,14 +136,6 @@
   margin: 0 0 14px;
 }
 
-.sub {
-  font-family: var(--font-body);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin: 0;
-}
-
 /* Feature chips */
 .chips {
   display: flex;
@@ -189,63 +181,6 @@
   z-index: 1;
 }
 
-/* ── The one number ───────────────────────────────────────────────────────
-   Placed directly above the button rather than beside it: a field and a button
-   on one line read as a search bar, and nobody expects a search bar to enrol
-   them in anything. Stacked, the button is plainly what happens next. */
-.weighLabel {
-  font-family: var(--font-body);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-
-.weighRow {
-  width: 100%;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 12px 16px;
-  box-sizing: border-box;
-  transition: border-color 140ms;
-}
-
-.weighRow:focus-within {
-  border-color: rgba(var(--accent-rgb), 0.55);
-}
-
-.weighInput {
-  width: 4.5ch;
-  background: none;
-  border: none;
-  outline: none;
-  font-family: var(--font-heading);
-  /* 28px: at 16px or more iOS does not zoom the page when the field is
-     focused, and a zoomed landing page never zooms back. */
-  font-size: 28px;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  text-align: right;
-  padding: 0;
-}
-
-.weighInput::placeholder {
-  color: var(--muted);
-  opacity: 0.35;
-}
-
-.weighUnit {
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--muted);
-}
-
 .cta {
   width: 100%;
   padding: 18px;
@@ -264,15 +199,6 @@
 
 .cta:active {
   opacity: 0.85;
-}
-
-.note {
-  font-family: var(--font-body);
-  font-size: 11px;
-  color: var(--muted);
-  margin: 0;
-  opacity: 0.5;
-  letter-spacing: 0.04em;
 }
 
 .loginLink {
