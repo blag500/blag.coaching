@@ -33,6 +33,12 @@ const FEATURES = [
   { icon: 'weight',   title: 'Тегло' },
   { icon: 'chat',     title: 'Чат с треньора' },
   { icon: 'calendar', title: 'График' },
+  /* Three more, and the grid comes out square at four rows of three rather
+     than nine with a hole in it. All of them are things the app already does —
+     padding a list with wishes is how a features section stops being read. */
+  { icon: 'bell',     title: 'Известия' },
+  { icon: 'book',     title: 'Рецепти' },
+  { icon: 'camera',   title: 'Снимки на прогреса' },
 ]
 
 const STEPS = [
@@ -143,8 +149,11 @@ export default function LandingPage({ onContinue, onLogin }) {
       <section className={styles.section} id="app">
         <span className={styles.eyebrow}>ПРИЛОЖЕНИЕТО</span>
         <h2 className={styles.h2}>И всичко се записва</h2>
+        {/* The strongest thing about the free half, said plainly: it works on
+            its own. An app that only nags while somebody is paying for a coach
+            is a trial with a nicer name. */}
         <p className={styles.sectionLead}>
-          Твоите числа на едно място — и аз ги гледам заедно с теб.
+          Твоите числа на едно място. Напомня ти само — с треньор или без.
         </p>
         <AppShowcase />
 

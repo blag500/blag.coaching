@@ -228,6 +228,34 @@ const SHAPES = {
     solid: <path d="M6.6 12.4h3.4v3.2H6.6zM11.4 12.4h3.4v3.2h-3.4z" />,
   },
 
+  // A bell with its clapper as the filled part. Not a bell with lines coming
+  // off it: at sixteen pixels the ringing lines are three specks of dust.
+  bell: {
+    line: <path d="M6.4 17.4c1.1-1.3 1.6-2.8 1.6-4.6v-2.2a4 4 0 0 1 8 0v2.2c0 1.8.5 3.3 1.6 4.6z" />,
+    solid: <path d="M10.2 18.6h3.6a1.8 1.8 0 0 1-3.6 0z" />,
+  },
+  // An open book, seen from above — the spine down the middle and one page
+  // weighted, which is what stops two blank halves reading as a folded sheet.
+  book: {
+    line: (
+      <>
+        <path d="M12 6.6c-1.7-1.2-3.6-1.8-5.6-1.8H4.2v12.4h2.2c2 0 3.9.6 5.6 1.8" />
+        <path d="M12 6.6c1.7-1.2 3.6-1.8 5.6-1.8h2.2v12.4h-2.2c-2 0-3.9.6-5.6 1.8" />
+        <path d="M12 6.6v12.4" />
+      </>
+    ),
+    solid: <path d="M12 8.4c1.4-.9 3-1.4 4.6-1.5v8.8c-1.6.1-3.2.6-4.6 1.5z" />,
+  },
+  camera: {
+    line: (
+      <>
+        <path d="M3.6 8.6h3.6l1.4-2.2h6.8l1.4 2.2h3.6v10.8H3.6z" />
+        <circle cx="12" cy="13.6" r="3.4" />
+      </>
+    ),
+    solid: <circle cx="12" cy="13.6" r="1.6" />,
+  },
+
   // Anything a coach invents: still drawn, still the same construction.
   generic: {
     line: <circle cx="12" cy="12" r="7.4" />,
