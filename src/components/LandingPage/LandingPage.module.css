@@ -482,20 +482,36 @@
 .lessonsBg {
   position: absolute;
   inset: 0;
-  background: url('/lessons-bg.webp') 50% 42% / cover no-repeat;
-  /* 0.38: the relief across his back is written in a narrow band of grey, and
-     below this it reads as texture rather than as a back. */
-  opacity: 0.38;
+  /* 62%, not 42%: at the higher framing the band of sky ran across the top as a
+     pale stripe and took the eye before the figure did. */
+  background: url('/lessons-bg.webp') 50% 62% / cover no-repeat;
+  /* 0.62. It can be this strong because the ground under the words is bought
+     separately, below, rather than by holding the whole picture down. */
+  opacity: 0.62;
   /* Faded out towards the middle and the foot, where the words sit. A flat
      opacity puts the same amount of picture behind the heading as behind the
      empty corners, and the heading is the half that cannot afford it. */
-  -webkit-mask-image: radial-gradient(ellipse 120% 88% at 50% 34%, #000 0%, #000 22%, transparent 82%);
-  mask-image: radial-gradient(ellipse 120% 88% at 50% 34%, #000 0%, #000 22%, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 130% 96% at 50% 40%, #000 0%, #000 42%, transparent 92%);
+  mask-image: radial-gradient(ellipse 130% 96% at 50% 40%, #000 0%, #000 42%, transparent 92%);
+  pointer-events: none;
+}
+
+/* The pillow the type sits on. Wide and soft, centred on the block of lines,
+   and gone by the edges — so the print is at full strength in the corners and
+   the words still have something to be read against. */
+.lessonsWash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 86% 46% at 50% 50%,
+    rgba(12, 10, 6, 0.86) 0%,
+    rgba(12, 10, 6, 0.66) 42%,
+    rgba(12, 10, 6, 0.22) 72%,
+    transparent 90%);
   pointer-events: none;
 }
 
 /* Everything in the section stands above it. */
-.lessonsSection > *:not(.lessonsBg) { position: relative; z-index: 1; }
+.lessonsSection > *:not(.lessonsBg):not(.lessonsWash) { position: relative; z-index: 1; }
 
 .eyebrow {
   font-family: var(--font-heading);

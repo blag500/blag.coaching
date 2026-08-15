@@ -145,6 +145,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             sheet, and given its grain. Held far back, because four lines and a
             heading have to stay the brightest thing here. */}
         <div className={styles.lessonsBg} aria-hidden="true" />
+        {/* Dark where the words are and nowhere else. Turning the picture down
+            until the text was safe turned it down everywhere, including the
+            corners where nothing needed protecting. */}
+        <div className={styles.lessonsWash} aria-hidden="true" />
         <span className={styles.eyebrow}>THE BLAG COACH</span>
         <h2 className={styles.h2}>Ще те науча да:</h2>
         <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
