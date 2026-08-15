@@ -324,3 +324,10 @@
   .f2, .f3 { opacity: 0; }
   .captions li { opacity: 1; color: var(--text); }
 }
+
+/* Under the breath, like every other one on this page. */
+.wink {
+  font-weight: 300;
+  color: var(--muted);
+  opacity: 0.7;
+}

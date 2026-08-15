@@ -68,7 +68,9 @@ export default function InstallDemo() {
       <ol className={styles.captions}>
         <li className={styles.c1}><b>1</b> Отвори blag-coaching.com и натисни бутона за споделяне.</li>
         <li className={styles.c2}><b>2</b> Избери „Към Начален екран".</li>
-        <li className={styles.c3}><b>3</b> Готово — BLAG стои до другите приложения.</li>
+        <li className={styles.c3}><b>3</b> Готово — BLAG стои до другите приложения
+          <span className={styles.wink}> (ама е по-добро ;)</span>
+        </li>
       </ol>
     </div>
   )

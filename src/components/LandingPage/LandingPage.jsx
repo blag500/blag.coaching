@@ -61,6 +61,8 @@ const FAQ = [
     a: 'Да. Приложението е безплатно и работи само по себе си. Треньорът е отделно решение, което взимаш когато прецениш.' },
   { q: 'Какво става с данните ми?',
     a: 'Стоят в твоя профил и ги виждаме само ти и аз. Спреш ли, изтриваш профила си и си отиват с него.' },
+  { q: 'Защо ми е?',
+    a: 'Ми ако искаш ;)\nИ щото coach-ът е много blag ;)' },
 ]
 
 /* One place to write the offer. It travels along the bottom of every screen,
@@ -122,7 +124,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             fetchpriority="high"
           />
           <div className={styles.ink}>
-            <h1 className={styles.inkName}>Blag<br />Coaching<br />в Blag app</h1>
+            {/* Two lines, not three. The words are his and stay as they are — only
+                the breaks move: alone on a line the Cyrillic в sat between two
+                Latin words with nothing to belong to. */}
+            <h1 className={styles.inkName}>Blag Coaching<br />в Blag app</h1>
             <span className={styles.inkRule} aria-hidden="true" />
             <p className={styles.inkLine}>
               Приложението, което<br />постига целите ти.
@@ -131,8 +136,11 @@ export default function LandingPage({ onContinue, onLogin }) {
         </div>
         <span className={styles.posterShade} aria-hidden="true" />
 
+        {/* "Тренирай с мен" was an order shouted by nobody. This is the same
+            invitation in his own voice, and it hands straight to the section
+            it opens. */}
         <a className={styles.cta} href="#lessons" onClick={go('lessons')}>
-          ТРЕНИРАЙ С МЕН
+          Ела да те науча ;)
         </a>
 
         <span className={styles.scrollHint} aria-hidden="true" />
@@ -156,8 +164,8 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── The app ────────────────────────────────────────────────────── */}
       <section className={`${styles.section} ${styles.appSection}`} id="app">
-        <span className={styles.eyebrow}>ПРИЛОЖЕНИЕТО</span>
-        <h2 className={styles.h2}>И всичко се записва</h2>
+        <span className={styles.eyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
+        <h2 className={styles.h2}>Всичко се записва</h2>
         {/* The strongest thing about the free half, said plainly: it works on
             its own. An app that only nags while somebody is paying for a coach
             is a trial with a nicer name. */}
@@ -169,34 +177,17 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.appGlow} aria-hidden="true" />
 
         <p className={styles.sectionLead}>
-          Твоите числа на едно място. Напомня ти само — с треньор или без.
+          Ти входираш, то следи<br />
+          и напомня да не кривнеш ;)
         </p>
         <AppShowcase />
 
-        <form
-          className={styles.capture}
-          onSubmit={e => { e.preventDefault(); onContinue(email) }}
-        >
-          <span className={styles.at} aria-hidden="true">@</span>
-          <input
-            className={styles.captureInput}
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            enterKeyHint="go"
-            placeholder="Имейлът ти..."
-            aria-label="Имейл"
-          />
-          <button className={styles.captureBtn} type="submit">
-            ЗАПОЧНИ
-          </button>
-        </form>
-
-        <p className={styles.benefits}>
-          Приложението е безплатно. Мен ме взимаш, когато решиш.
+        <p className={styles.freeLine}>
+          Приложението е безплатно<br />
+          <span className={styles.freeMark}>Blag Coach — ако искаш</span><br />
+          <span className={styles.wink}>Абе трябва ти ;)</span>
         </p>
+
         <a className={styles.note} href="#install" onClick={go('install')}>
           Виж как да го инсталираш
         </a>
@@ -252,6 +243,8 @@ export default function LandingPage({ onContinue, onLogin }) {
       {/* ── Coach ──────────────────────────────────────────────────────── */}
       <section className={styles.section} id="coach">
         <h2 className={styles.h2}>Николай Благьов</h2>
+        {/* The splash's own lettering, small — his name and then what he is. */}
+        <a className={styles.coachMark} href="#price" onClick={go('price')}>Blag Coach</a>
 
         <p className={styles.sectionLead}>
           Направих BLAG, защото ми омръзна да гледам как хората се губят между
@@ -264,9 +257,11 @@ export default function LandingPage({ onContinue, onLogin }) {
               heard of is enough to say what it is; anything vaguer invites the
               reader to fill the gap with a finished qualification, and that is
               a sentence he would then have to defend. */}
-          <li className={styles.pointPending}>
+          {/* A bullet like the others; the clock goes at the end, where it
+              qualifies the line rather than replacing its mark. */}
+          <li>
+            J3University — в процес на обучение
             <span className={styles.pendingMark} aria-hidden="true" />
-            J3University — в процес на обучение.
           </li>
           <li>Планът се мени според твоите логове, не по усет.</li>
           <li>Седмичен чек-ин, обратна връзка по техника и корекция на макросите.</li>
@@ -288,11 +283,12 @@ export default function LandingPage({ onContinue, onLogin }) {
               <path d="M16.9 2.6c.36 2.06 1.6 3.36 3.6 3.5v2.7c-1.18.06-2.28-.28-3.36-.95v5.86c0 3.6-2.9 6.06-5.98 6.06-3.32 0-5.76-2.66-5.76-5.86 0-3.4 2.86-5.98 6.5-5.62v2.86c-.44-.12-.86-.18-1.28-.18-1.6 0-2.94 1.3-2.94 2.94 0 1.78 1.36 3.02 3.06 3.02s3.06-1.28 3.06-3.06V2.6h3.1z" />
             </svg>
           </a>
-          <a className={styles.write} href="https://ig.me/m/blag.coaching"
-             target="_blank" rel="noopener noreferrer">
-            Питай ме
-          </a>
         </div>
+
+        <a className={styles.write} href="https://ig.me/m/blag.coaching"
+           target="_blank" rel="noopener noreferrer">
+          Питай ме, не хапя ;)
+        </a>
       </section>
 
       {/* ── Price ──────────────────────────────────────────────────────── */}
@@ -300,8 +296,27 @@ export default function LandingPage({ onContinue, onLogin }) {
         <span className={styles.eyebrow}>ЦЕНА</span>
         <h2 className={styles.h2}>Приложението е безплатно</h2>
         <p className={styles.sectionLead}>
-          Плаща се само треньорът. Едно нещо, без степени и без пакети.
+          Плащаш само за Blag Coach — да те направи Blag Бог,
+          ако искаш (а ти май искаш ;) )
         </p>
+
+        {/* The free half gets a card of its own. Written as a price list with
+            the same shape as the one under it, because a thing described in a
+            sentence and a thing described in a card do not look like two
+            options — they look like an option and an aside. */}
+        <div className={`${styles.priceCard} ${styles.freeCard}`}>
+          <span className={styles.priceLabel}>ПРИЛОЖЕНИЕТО</span>
+          <ul className={styles.freeList}>
+            {['Хранене и макроси', 'Тренировки и рекорди', 'Тегло и тенденция',
+              'Навици, вода, суплементи', 'Известия'].map(x => (
+              <li key={x}>
+                <span>{x}</span>
+                <b className={styles.freeWord}>безплатно</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className={styles.wink}>Абе безплатно е бе ;)</p>
 
         <div className={styles.priceCard}>
           <span className={styles.priceLabel}>ПРИЛОЖЕНИЕ + ТРЕНЬОР</span>

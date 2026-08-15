@@ -246,7 +246,9 @@ export default function Profile({ onMenuOpen }) {
       <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
       <AppHeader
         onMenuOpen={onMenuOpen}
-        eyebrow={profile?.plan ? profile.plan.toUpperCase() : undefined}
+        /* No plan above the name. It printed FREE over his own profile — the
+           one screen where the reader already knows what they are paying, and
+           the last place a reminder of it belongs. */
         title={profile?.name || 'ПРОФИЛ'}
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}
