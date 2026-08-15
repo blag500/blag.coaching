@@ -1,51 +1,111 @@
-/* Three screens that scroll, not one that fits. The page used to be a fixed
-   pane with everything squeezed into it; a funnel has steps, and a step the
+/* A page that scrolls, not a pane that fits. A funnel has steps, and a step the
    visitor scrolls to is a step they chose to take. */
 .page {
   min-height: 100dvh;
   background: var(--bg);
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
+/* ── Bar ──────────────────────────────────────────────────────────────────
+   The same smoked glass as the app's own header, so the page and the thing it
+   is selling are visibly made of one material. */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px calc(12px + env(safe-area-inset-top, 0px));
+  background: linear-gradient(to bottom,
+    rgba(20, 17, 11, 0.82) 0%, rgba(12, 10, 6, 0.66) 100%);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.14);
+}
+
+.barBrand {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: var(--accent);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+/* Hidden on phones, where five anchors would take the whole bar and the page is
+   short enough to thumb through anyway. */
+.barNav { display: none; }
+
+@media (min-width: 860px) {
+  .barNav {
+    display: flex;
+    gap: 26px;
+  }
+  .barNav a {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 140ms;
+  }
+  .barNav a:hover { color: var(--accent); }
+}
+
+.barBtn {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 60px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 52px 24px calc(48px + env(safe-area-inset-bottom));
+  gap: 18px;
+  padding: 48px 24px 72px;
   box-sizing: border-box;
   overflow: hidden;
+  text-align: center;
 }
 
-/* ── Moving backdrop ──────────────────────────────────────────────────────
-   One element, one transform, sixty-five seconds a cycle. Slow enough that it
-   is never caught moving — you notice it only by looking away and back — and
-   cheap enough to leave running, because it is the compositor moving a layer
-   rather than the browser redrawing anything. */
+/* One element, one transform, sixty-five seconds a cycle. Slow enough that it
+   is never caught moving, and cheap enough to leave running — the compositor
+   moves a layer, the browser redraws nothing. */
 .backdrop,
 .backdropStill {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  /* Cover, unlike artwork: this is a photographed room, and a letterboxed room
-     reads as a mistake. He stands between 30% and 65% of the frame, and 44% is
-     the band that keeps him whole, with the empty floor falling off the bottom
-     where it belongs. */
+  /* He stands between 30% and 65% of the frame; 44% is the band that keeps him
+     whole, with the empty floor falling off the bottom where it belongs. */
   object-fit: cover;
   object-position: 50% 44%;
-  opacity: 0.34;
-  -webkit-mask-image: radial-gradient(ellipse 92% 74% at 50% 40%, #000 0%, #000 34%, transparent 86%);
-  mask-image: radial-gradient(ellipse 92% 74% at 50% 40%, #000 0%, #000 34%, transparent 86%);
+  opacity: 0.3;
+  -webkit-mask-image: radial-gradient(ellipse 96% 78% at 50% 42%, #000 0%, #000 32%, transparent 88%);
+  mask-image: radial-gradient(ellipse 96% 78% at 50% 42%, #000 0%, #000 32%, transparent 88%);
   animation: drift 65s ease-in-out infinite alternate;
   will-change: transform;
   pointer-events: none;
 }
 
-/* What someone who asked for less movement gets: the same frame, standing
-   still. Not the video paused — the video is never fetched at all. */
 .backdropStill {
   background: url('/hero-poster.jpg') 50% 44% / cover no-repeat;
   animation: none;
@@ -57,18 +117,13 @@
   to   { transform: scale(1.07) translate3d(1%, -0.8%, 0); }
 }
 
-/* Only the thing that has to change belongs in the override — the whole rule
-   used to be repeated here, drift animation included, so asking for less
-   movement got exactly the same movement. */
+/* Only the thing that has to change belongs in the override. */
 @media (prefers-reduced-motion: reduce) {
-  .backdrop,
-  .backdropStill {
-    animation: none;
-  }
+  .backdrop, .backdropStill { animation: none; }
 }
 
-/* Film grain, static. Animated grain is the single most expensive thing a
-   landing page can do for the least anyone notices. */
+/* Static. Animated grain is the most expensive thing a page can do for the
+   least anyone notices. */
 .grain {
   position: absolute;
   inset: 0;
@@ -77,20 +132,7 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
 }
 
-.glowTop {
-  position: absolute;
-  top: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(ellipse at center,
-    rgba(var(--accent-rgb), 0.13) 0%, transparent 68%);
-  pointer-events: none;
-}
-
-/* ── The lockup ───────────────────────────────────────────────────────────
-   The splash arrangement, held still: two arms and the name between them. */
+/* ── The lockup ─────────────────────────────────────────────────────────── */
 .lockup {
   position: relative;
   z-index: 1;
@@ -98,14 +140,14 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 520px;
+  max-width: 460px;
 }
 
 .armLeft,
 .armRight {
   flex: 0 0 auto;
-  width: 96px;
-  height: 160px;
+  width: 84px;
+  height: 142px;
   background: url('/arms-hi.webp') center / contain no-repeat;
 }
 
@@ -119,43 +161,110 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 0 6px;
+  gap: 10px;
 }
 
-/* Flat gold, not the brushed metal of the splash. The metal is the one moment
-   the brand performs, and a ramp used on every screen it appears on stops
-   being a moment. One property to change if that trade is worth making. */
-.name {
+/* Brushed gold, sampled off the arm artwork, exactly as the splash draws it: a
+   dark-to-highlight-to-dark ramp is what separates metal from a flat yellow
+   fill. Used here and on the splash and nowhere else. */
+.brandName {
   font-family: var(--font-heading);
-  font-size: clamp(34px, 11vw, 44px);
+  font-size: clamp(30px, 9vw, 40px);
   letter-spacing: 0.2em;
   /* Tracking pads the right of the last letter and nothing before the first, so
      a centred line sits half a space to the left. */
   text-indent: 0.2em;
   line-height: 1;
-  margin: 0;
-  color: var(--accent);
-  text-shadow: 0 0 34px rgba(var(--accent-rgb), 0.22);
+  color: #C8A05A;
+  background-image: linear-gradient(177deg,
+    #6B4A1E 0%, #C8A05A 22%, #F8E8B8 44%, #B08A45 58%, #E4CE94 74%, #7A5726 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.kicker {
-  margin: 0;
+.brandRule {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(var(--accent-rgb), 0.6), transparent);
+}
+
+.brandTag {
   font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.46em;
-  text-indent: 0.46em;
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  line-height: 1.9;
   color: var(--muted);
 }
 
-/* A hairline at the foot of the first screen. A page that fills the viewport
-   exactly looks finished, and nobody scrolls a finished page. */
+.headline {
+  position: relative;
+  z-index: 1;
+  margin: 6px 0 0;
+  max-width: 18ch;
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 8.5vw, 52px);
+  line-height: 1.06;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
+}
+
+.headlineGold { color: var(--accent); }
+
+.heroText {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: 46ch;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.heroActions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.badges {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Two claims, both checkable in ten seconds. The third one the reference
+   carried — "works offline" — is not true here: the shell is cached but every
+   number lives on a server, so offline the app opens empty. */
+.badge {
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+/* A page that fills the viewport exactly looks finished, and nobody scrolls a
+   finished page. */
 .scrollHint {
   position: absolute;
-  bottom: calc(26px + env(safe-area-inset-bottom));
+  bottom: 24px;
   left: 50%;
   width: 1px;
-  height: 34px;
+  height: 32px;
   transform: translateX(-50%);
   background: linear-gradient(to bottom, transparent, rgba(var(--accent-rgb), 0.5));
   animation: hint 2.6s ease-in-out infinite;
@@ -170,89 +279,172 @@
   .scrollHint { animation: none; }
 }
 
-/* ── The two blocks below ─────────────────────────────────────────────────
-   Deliberately identical in shape. One is about a person and one about a
-   program, and giving either the louder treatment answers a question the
-   visitor has not been asked yet. */
-.block {
-  min-height: 78vh;
+/* ── Sections ─────────────────────────────────────────────────────────── */
+.section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 40px 28px;
+  gap: 12px;
+  padding: 72px 22px;
   text-align: center;
-  box-sizing: border-box;
+  scroll-margin-top: 70px;   /* the sticky bar must not cover a jumped-to title */
 }
 
-.blockLabel {
+.eyebrow {
   font-family: var(--font-heading);
   font-size: 10px;
   letter-spacing: 0.34em;
   text-indent: 0.34em;
-  color: var(--muted);
-  opacity: 0.75;
+  color: var(--accent);
+  opacity: 0.8;
 }
 
-.lead {
-  margin: 0 0 8px;
-  max-width: 26ch;
+.h2 {
+  margin: 0;
+  max-width: 20ch;
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 6.5vw, 34px);
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.sectionLead {
+  margin: 0 0 12px;
+  max-width: 48ch;
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ── Feature cards ────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 1040px;
+}
+
+@media (min-width: 620px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 20px;
+  text-align: left;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+}
+
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.cardText {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* ── Steps ────────────────────────────────────────────────────────────── */
+.steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 1040px;
+}
+
+@media (min-width: 800px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 22px;
+  text-align: left;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+}
+
+/* Big and dim: it orders the cards without competing with what they say. */
+.stepNum {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.35;
+}
+
+/* ── Coach ────────────────────────────────────────────────────────────── */
+.points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 52ch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.points li {
+  position: relative;
+  padding-left: 20px;
+  font-family: var(--font-body);
+  font-size: 13px;
   line-height: 1.6;
   color: var(--text);
 }
 
-.cta {
-  width: 100%;
-  max-width: 340px;
-  padding: 18px;
-  background: var(--accent);
-  border: none;
-  border-radius: var(--r-md);
-  color: #0C0A06;
-  font-family: var(--font-heading);
-  font-size: 17px;
-  letter-spacing: 0.12em;
-  text-align: center;
-  text-decoration: none;
-  box-sizing: border-box;
-  cursor: pointer;
-  box-shadow: 0 6px 32px rgba(var(--accent-rgb), 0.32);
-  transition: opacity 120ms;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.cta:active { opacity: 0.85; }
-
-.loginLink {
-  background: none;
-  border: none;
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 4px 0;
-  opacity: 0.6;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.loginLinkUnder {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+/* A gold rule rather than a bullet glyph — a dot at this size reads as dirt on
+   the screen, and a tick would claim each line is a feature that is finished. */
+.points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 10px;
+  height: 1px;
+  background: rgba(var(--accent-rgb), 0.7);
 }
 
 .social {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 4px;
+  margin-top: 18px;
 }
 
-/* The same round pane the header's controls are cut from, so these read as part
-   of the interface rather than as badges stuck on the bottom of it. */
 .socialBtn {
   width: 38px;
   height: 38px;
@@ -267,7 +459,188 @@
   transition: color 140ms, border-color 140ms;
 }
 
-.socialBtn:active {
+.socialBtn:active,
+.socialBtn:hover {
   color: var(--accent);
   border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.write {
+  padding: 10px 20px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+}
+
+/* ── Price ────────────────────────────────────────────────────────────── */
+.priceCard {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 24px;
+  background: var(--panel-bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  box-shadow: 0 20px 60px -30px rgba(var(--accent-rgb), 0.5), var(--panel-shadow);
+  border-radius: var(--r-lg);
+}
+
+.priceLabel {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  color: var(--muted);
+}
+
+.price {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.priceUnit {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.priceNote {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────── */
+.faq {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faqItem {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.faqQ {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* A plus drawn from two rules, so opening rotates one of them away rather than
+   swapping one glyph for another. */
+.faqMark {
+  position: relative;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.faqMark::before,
+.faqMark::after {
+  content: '';
+  position: absolute;
+  background: var(--accent);
+  transition: transform 200ms var(--ease-out);
+}
+
+.faqMark::before { left: 0; top: 5.5px; width: 12px; height: 1px; }
+.faqMark::after  { top: 0; left: 5.5px; height: 12px; width: 1px; }
+
+.faqMarkOpen::after { transform: scaleY(0); }
+
+.faqA {
+  margin: 0;
+  padding: 0 18px 18px;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* ── Close ────────────────────────────────────────────────────────────── */
+.close {
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--panel-border);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.cta {
+  width: 100%;
+  max-width: 340px;
+  padding: 17px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-md);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  box-shadow: 0 6px 32px rgba(var(--accent-rgb), 0.3);
+  transition: opacity 120ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cta:active { opacity: 0.85; }
+
+.ctaGhost {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.35);
+  padding-bottom: 2px;
+}
+
+.loginLink {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px 0;
+  opacity: 0.6;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.loginLinkUnder {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

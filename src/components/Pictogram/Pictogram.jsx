@@ -189,6 +189,21 @@ const SHAPES = {
     solid: <path d="M7.2 14.6h9.6l-.4 3.9a1.6 1.6 0 0 1-1.6 1.4H9.2a1.6 1.6 0 0 1-1.6-1.4z" />,
   },
 
+  // ── Elsewhere in the app ──
+  chat: {
+    line: <path d="M20.4 14.6a2 2 0 0 1-2 2H7.6l-4 3.4V5.4a2 2 0 0 1 2-2h12.8a2 2 0 0 1 2 2z" />,
+    solid: <path d="M7.2 8.4h9.6v1.6H7.2zM7.2 11.6h6.4v1.6H7.2z" />,
+  },
+  calendar: {
+    line: (
+      <>
+        <rect x="3.4" y="5" width="17.2" height="15.4" rx="2.6" />
+        <path d="M8.2 3v3.6M15.8 3v3.6M3.4 10h17.2" />
+      </>
+    ),
+    solid: <path d="M6.6 12.4h3.4v3.2H6.6zM11.4 12.4h3.4v3.2h-3.4z" />,
+  },
+
   // Anything a coach invents: still drawn, still the same construction.
   generic: {
     line: <circle cx="12" cy="12" r="7.4" />,
