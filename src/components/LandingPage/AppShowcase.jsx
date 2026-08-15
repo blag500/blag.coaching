@@ -1,84 +1,62 @@
 import styles from './AppShowcase.module.css'
 
 /**
- * Three phones, fanned, showing the thing itself.
+ * Three phones, fanned, cycling through the real screens.
  *
  * A landing page for software that never shows the software is asking to be
- * taken on trust. These are the real screens — the dashboard's own cards, the
- * habit chips, the macro tracks — rebuilt at phone scale rather than
- * screenshotted, so they cannot go stale the next time a card changes and they
- * cost nothing to download.
+ * taken on trust. These are photographs of the running app on his own phone —
+ * his numbers, his training, his check-in — not a drawing of what it might
+ * look like. Whatever the drawing got wrong, nobody would have known until a
+ * visitor installed it and found out.
  *
- * The middle one stands upright and forward; the outer two lean away and sit
- * dimmer, which is what makes three rectangles read as a stack rather than as
- * a row of tiles.
+ * All three run the same four shots on one sixteen-second clock, each starting
+ * at a different one. Two things fall out of that: no phone ever shows what
+ * its neighbour is showing, and they never turn over together — three
+ * simultaneous changes read as a slideshow, one at a time reads as a device
+ * being used.
  */
+const SHOTS = [
+  { src: '/shots/table.webp',    alt: 'Таблото: готовност, тегло, навици, вода и макроси' },
+  { src: '/shots/food.webp',     alt: 'Храненето: приемът за деня и дневникът' },
+  { src: '/shots/training.webp', alt: 'Тренировката: календарът и упражненията' },
+  { src: '/shots/checkin.webp',  alt: 'Чек-инът на формата' },
+]
+
+const BEAT = 4      // seconds a screen is held; the CSS cycle is four of these
+
+/** The same four, started from a different one. */
+function from(offset) {
+  return SHOTS.map((_, i) => SHOTS[(i + offset) % SHOTS.length])
+}
+
+function Phone({ className, offset, priority = false }) {
+  return (
+    <div className={`${styles.phone} ${className}`}>
+      <div className={styles.screen}>
+        {from(offset).map((shot, i) => (
+          <img
+            key={shot.src}
+            className={styles.shot}
+            src={shot.src}
+            alt={i === 0 ? shot.alt : ''}
+            /* Only the middle phone's first screen is worth blocking on. The
+               rest arrive while the visitor is still reading the headline. */
+            loading={priority && i === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            style={{ animationDelay: `${i * BEAT}s` }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function AppShowcase() {
   return (
-    <div className={styles.fan} aria-hidden="true">
-      {/* left — the training log */}
-      <div className={`${styles.phone} ${styles.left}`}>
-        <div className={styles.screen}>
-          <span className={styles.eyebrow}>ТРЕНИРОВКА</span>
-          {[['Клек', '80кг × 8'], ['Преса', '60кг × 10'], ['Напади', '24кг × 12']].map(([n, v]) => (
-            <div key={n} className={styles.row}>
-              <span className={styles.rowName}>{n}</span>
-              <span className={styles.rowVal}>{v}</span>
-            </div>
-          ))}
-          <div className={styles.pill}><span style={{ width: '72%' }} /></div>
-        </div>
-      </div>
-
-      {/* centre — the dashboard */}
-      <div className={`${styles.phone} ${styles.mid}`}>
-        <div className={styles.screen}>
-          <span className={styles.eyebrow}>ДОБРО УТРО</span>
-          <span className={styles.name}>НИКОЛАЙ</span>
-
-          <div className={styles.card}>
-            <span className={styles.ring} />
-            <div className={styles.ringText}>
-              <span className={styles.big}>78</span>
-              <span className={styles.small}>ГОТОВНОСТ</span>
-            </div>
-          </div>
-
-          <div className={styles.card}>
-            <span className={styles.cardLabel}>МАКРОСИ</span>
-            {[['var(--accent)', 92], ['#42A5F5', 100], ['#66BB6A', 78], ['#CE93D8', 88]].map(([c, w], i) => (
-              <div key={i} className={styles.track}>
-                <span style={{ width: `${w}%`, background: c }} />
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.chips}>
-            {['#42A5F5', '#EF5350', 'var(--accent)', '#AB47BC', '#66BB6A', '#FF8A65'].map((c, i) => (
-              <span key={i} className={styles.chip}
-                    style={i < 3 ? { borderColor: c, color: c, background: 'rgba(255,255,255,0.04)' } : null} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* right — the weight trend */}
-      <div className={`${styles.phone} ${styles.right}`}>
-        <div className={styles.screen}>
-          <span className={styles.eyebrow}>ТЕГЛО</span>
-          <div className={styles.weight}>
-            <span className={styles.big}>75,6</span>
-            <span className={styles.small}>−2 кг за 30 дни</span>
-          </div>
-          <svg viewBox="0 0 120 44" className={styles.spark}>
-            <path d="M4 12l14 9 12-4 14 11 12-3 14 9 12-2 14 8"
-                  fill="none" stroke="#66BB6A" strokeWidth="2"
-                  strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <div className={styles.pill}><span style={{ width: '46%' }} /></div>
-          <div className={styles.pill}><span style={{ width: '64%' }} /></div>
-        </div>
-      </div>
+    <div className={styles.fan}>
+      <Phone className={styles.left}  offset={2} />
+      <Phone className={styles.mid}   offset={0} priority />
+      <Phone className={styles.right} offset={3} />
     </div>
   )
 }
