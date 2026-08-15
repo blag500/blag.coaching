@@ -87,14 +87,9 @@ export default function LandingPage({ onContinue, onLogin }) {
         {/* The mark lives here now, small, rather than filling the middle of the
             first screen — the splash has just shown it at full size, and showing
             it again immediately spends the reveal twice. */}
-        {/* No arms up here. At the twenty pixels a bar allows, the drawing is
-            a smudge — and a mark whose distinctive half is unreadable is worse
-            than the wordmark standing on its own. They keep their size on the
-            splash, which is where they are meant to be seen. */}
-        <a className={styles.barBrand} href="#top" onClick={go('top')} aria-label="BLAG COACHING">
-          <span className={styles.barWord}>BLAG</span>
-          <span className={styles.barWord2}>COACHING</span>
-        </a>
+        {/* No mark up here. The splash has just shown it at full size and the
+            poster below carries the brand on its own; a third copy in the
+            corner was the app talking over itself. */}
         <nav className={styles.barNav}>
           <a href="#features" onClick={go('features')}>ФУНКЦИИ</a>
           <a href="#how"      onClick={go('how')}>КАК РАБОТИ</a>
@@ -108,11 +103,17 @@ export default function LandingPage({ onContinue, onLogin }) {
       <section className={styles.hero} id="top">
         <div className={styles.grain} aria-hidden="true" />
 
-        <span className={styles.kicker}>ПРИЛОЖЕНИЕ И ТРЕНЬОР В ЕДНО</span>
+        <img
+          className={styles.poster}
+          src="/poster.webp"
+          width="760" height="943"
+          alt="Николай Благьов"
+          fetchpriority="high"
+        />
 
         <h1 className={styles.headline}>
-          Тренировка, хранене и навици<br />
-          <span className={styles.headlineGold}>на едно място</span>
+          Аз съм Николай.<br />
+          <span className={styles.headlineGold}>Ще ти напиша плана.</span>
         </h1>
 
         <form
@@ -136,13 +137,11 @@ export default function LandingPage({ onContinue, onLogin }) {
           </button>
         </form>
 
-        {/* Three lines, in the order somebody weighs them: what it costs, how
-            long it takes, and whether anyone is actually on the other end. */}
-        <div className={styles.benefits}>
-          <span><b>Безплатно</b> — приложението остава такова.</span>
-          <span><b>Две минути</b> на ден за записване.</span>
-          <span><b>Треньор</b>, когато решиш, че искаш план.</span>
-        </div>
+        {/* One line where three were. The poster has taken the room, and three
+            stacked promises under a picture of the man is a brochure. */}
+        <p className={styles.benefits}>
+          Приложението е безплатно. Мен ме взимаш, когато решиш.
+        </p>
 
         <a className={styles.ctaGhost} href="#lessons" onClick={go('lessons')}>
           Виж на какво ще те науча

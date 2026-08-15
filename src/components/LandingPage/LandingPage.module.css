@@ -10,11 +10,13 @@
 /* ── Bar ──────────────────────────────────────────────────────────────────
    The same smoked glass as the app's own header, so the page and the thing it
    is selling are visibly made of one material. */
+/* Hidden on phones. Its only contents are the five anchors, which are already
+   hidden there, and a sticky strip with nothing in it is a strip of nothing. */
 .bar {
+  display: none;
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -68,6 +70,7 @@
 .barNav { display: none; }
 
 @media (min-width: 860px) {
+  .bar { display: flex; }
   .barNav {
     display: flex;
     gap: 26px;
@@ -216,26 +219,27 @@
   background: linear-gradient(to right, transparent, rgba(var(--accent-rgb), 0.6), transparent);
 }
 
-/* Above the headline, quiet: it says which of the two things this is before the
-   headline says what they do. */
-.kicker {
+/* Hung like a print on a dark wall: a warm rule under it and a shadow, so the
+   cream paper reads as a thing placed on the page rather than as a hole cut in
+   it. No border on the picture itself — the artwork already has its own. */
+.poster {
   position: relative;
   z-index: 1;
-  margin-top: 10px;
-  font-family: var(--font-heading);
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  color: var(--muted);
+  width: min(62vw, 290px);
+  height: auto;
+  border-radius: 4px;
+  box-shadow:
+    0 30px 70px -26px rgba(0, 0, 0, 0.95),
+    0 0 60px -22px rgba(var(--accent-rgb), 0.5);
 }
 
 .headline {
   position: relative;
   z-index: 1;
-  margin: 6px 0 0;
-  max-width: 18ch;
+  margin: 4px 0 0;
+  max-width: 20ch;
   font-family: var(--font-heading);
-  font-size: clamp(30px, 8.5vw, 52px);
+  font-size: clamp(26px, 7.4vw, 44px);
   line-height: 1.06;
   letter-spacing: 0.02em;
   color: var(--text);
@@ -304,29 +308,15 @@
 
 .captureBtn:active { opacity: 0.85; }
 
-/* Three short lines, in the order somebody weighs them. */
 .benefits {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  margin: 0;
+  max-width: 34ch;
   font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 12.5px;
+  line-height: 1.6;
   color: var(--muted);
-}
-
-.benefits b {
-  color: var(--text);
-  font-weight: 400;
-}
-
-@media (min-width: 760px) {
-  .benefits {
-    flex-direction: row;
-    gap: 22px;
-  }
 }
 
 /* One line, not two capsules. The claim is worth making — it is the only thing

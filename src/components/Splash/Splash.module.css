@@ -40,8 +40,11 @@
 .armLeft,
 .armRight {
   flex: 0 0 auto;
-  width: 120px;
-  height: 200px;
+  /* The arms give way to the name rather than the other way round: COACHING is
+     eight letters where BLAG is four, so at one size it needs twice the room,
+     and on a phone that room can only come from the sides. */
+  width: clamp(72px, 24vw, 120px);
+  height: clamp(120px, 40vw, 200px);
   background-image: url('/arms-hi.webp');
   background-size: contain;
   background-repeat: no-repeat;
@@ -72,7 +75,9 @@
    is what separates metal from a flat yellow fill. */
 .title {
   font-family: var(--font-heading);
-  font-size: 42px;
+  /* Fluid, because the second line is the one that decides how wide the lockup
+     has to be. Both words are set from this, so they cannot drift apart. */
+  font-size: clamp(21px, 7.4vw, 42px);
   letter-spacing: 0.2em;
   /* Tracking puts a gap after the last letter and none before the first, so a
      centred line sits half a space to the left. Both lines carry the same
@@ -103,20 +108,23 @@
    because the word is a third the height — the same 177deg across ten pixels
    puts the whole highlight inside one stroke. */
 .kicker {
-  margin: -4px 0 0;
+  margin: 0;
   font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.52em;
-  text-indent: 0.52em;
+  /* The same size as the name above it, which is what makes the two read as one
+     mark rather than as a title and a label under it. */
+  font-size: clamp(21px, 7.4vw, 42px);
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  line-height: 1;
   color: #C8A05A;
   background-image: linear-gradient(
-    172deg,
-    #8A6428 0%,
-    #C8A05A 26%,
-    #F8E8B8 50%,
-    #B08A45 68%,
-    #E4CE94 84%,
-    #8A6428 100%
+    177deg,
+    #6B4A1E 0%,
+    #C8A05A 22%,
+    #F8E8B8 44%,
+    #B08A45 58%,
+    #E4CE94 74%,
+    #7A5726 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -200,21 +208,15 @@
   }
 }
 
-@media (max-width: 380px) {
-  .armLeft,
-  .armRight {
-    width: 85px;
-    height: 140px;
-  }
-  .title {
-    font-size: 32px;
-  }
-}
+/* No fixed override any more — both words and the arms are already sized off
+   the viewport, and a hard 32px here would have pulled the two lines apart
+   again on exactly the screens where they are tightest. */
 
 @media (prefers-reduced-motion: reduce) {
   .armLeft,
   .armRight,
   .title,
+  .kicker,
   .divider,
   .tagline {
     animation: none;
