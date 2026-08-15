@@ -61,36 +61,43 @@
   border-radius: 18px;
   background: #0C0A06;
   overflow: hidden;
+  /* The turn happens inside the frame, so the depth belongs to the frame. Put
+     the perspective on the turning element itself and every phone would look
+     as though it were being viewed head-on from its own centre. */
+  perspective: 620px;
 }
 
-/* Anchored to the top rather than centred: every one of these screens leads
-   with its header and its first card, and that is the half worth showing when
-   the frame is shorter than the picture. */
-.shot {
+.turner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* Slow in, slow out, and slowest across the edge: the middle of a half turn
+     is where the screen is thinnest, and rushing it is what makes a flip read
+     as a glitch rather than as a movement. */
+  transition: transform 720ms cubic-bezier(.62, .02, .35, 1);
+}
+
+.face {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Anchored to the top: every one of these screens leads with its header and
+     first card, and that is the half worth showing when the frame is shorter
+     than the picture. */
   object-position: 50% 0;
-  opacity: 0;
-  animation: swap 16s linear infinite;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
 }
 
-/* Each screen holds a quarter of the cycle. The outgoing one is still up while
-   the next is already arriving — 25% is exactly where the next image's own 0%
-   falls, so the two overlap there and the phone never shows an empty frame. */
-@keyframes swap {
-  0%    { opacity: 0; }
-  2%    { opacity: 1; }
-  25%   { opacity: 1; }
-  27%   { opacity: 0; }
-  100%  { opacity: 0; }
-}
+/* The second face is already turned away; the container turning 180 brings it
+   round the right way up. */
+.back { transform: rotateY(180deg); }
 
-/* Someone who asked for less movement gets the first screen of each phone,
-   standing still — three phones, three different screens, no cycling. */
+/* Someone who asked for less movement gets three still phones, each on a
+   different screen — the point of the fan survives without the turning. */
 @media (prefers-reduced-motion: reduce) {
-  .shot { animation: none; }
-  .shot:first-child { opacity: 1; }
+  .turner { transition: none; }
 }
