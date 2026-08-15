@@ -5,6 +5,11 @@
   background: var(--bg);
   overflow-x: hidden;
   scroll-behavior: smooth;
+  /* Proximity, not mandatory. A section that insists on snapping fights anyone
+     reading the middle of a long one, and two of these are taller than a small
+     phone; proximity settles the page when a scroll ends near a boundary and
+     otherwise stays out of the way. */
+  scroll-snap-type: y proximity;
 }
 
 /* ── Bar ──────────────────────────────────────────────────────────────────
@@ -106,6 +111,7 @@
 .hero {
   position: relative;
   min-height: 100dvh;
+  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -447,14 +453,28 @@
 }
 
 /* ── Sections ─────────────────────────────────────────────────────────── */
+/* One section, one screen. They used to run into each other — the foot of the
+   poster showed above the next heading and the eye had two things to be in the
+   middle of. A full height each, with the content centred in it, means whatever
+   is on screen is the only thing being said. */
 .section {
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  padding: 72px 22px;
+  padding: 84px 22px;
+  box-sizing: border-box;
   text-align: center;
-  scroll-margin-top: 70px;   /* the sticky bar must not cover a jumped-to title */
+  scroll-snap-align: center;
+}
+
+/* Only where there is a bar to clear. On a phone the bar is hidden, and the
+   70px of margin was leaving a strip of the previous section showing above a
+   section that otherwise fits the screen exactly. */
+@media (min-width: 860px) {
+  .section { scroll-margin-top: 70px; }
 }
 
 .eyebrow {
