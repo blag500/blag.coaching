@@ -483,7 +483,9 @@
   position: absolute;
   inset: 0;
   background: url('/lessons-bg.webp') 50% 42% / cover no-repeat;
-  opacity: 0.32;
+  /* 0.38: the relief across his back is written in a narrow band of grey, and
+     below this it reads as texture rather than as a back. */
+  opacity: 0.38;
   /* Faded out towards the middle and the foot, where the words sit. A flat
      opacity puts the same amount of picture behind the heading as behind the
      empty corners, and the heading is the half that cannot afford it. */
