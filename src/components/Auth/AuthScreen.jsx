@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './AuthScreen.module.css'
 
@@ -26,6 +26,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
   const [name, setName]       = useState('')
   const [loading, setLoading] = useState(false)
   const [info, setInfo]       = useState('')
+  const passwordRef = useRef(null)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -35,8 +36,18 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     if (mode === 'login') {
       await signIn(email, password)
     } else {
-      const ok = await signUp(email, password, name)
-      if (ok) setInfo('Провери имейла си за потвърждение. Ако не го виждаш — провери папката Спам.')
+      const res = await signUp(email, password, name)
+      /* Already registered: move them to the door they actually need, with
+         their address still in the field and the password box waiting. Being
+         told "this email is taken" and left on the wrong form is how people
+         decide to make a second account. */
+      if (res === 'exists') {
+        setMode('login')
+        setInfo('Вече имаш акаунт с този имейл. Влез с паролата си.')
+        setTimeout(() => passwordRef.current?.focus(), 60)
+      } else if (res) {
+        setInfo('Провери имейла си за потвърждение. Ако не го виждаш — провери папката Спам.')
+      }
     }
 
     setLoading(false)
@@ -104,6 +115,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
             <label className={styles.label} htmlFor="auth-password">Парола</label>
             <input
               id="auth-password"
+              ref={passwordRef}
               className={styles.input}
               type="password"
               placeholder="••••••••"

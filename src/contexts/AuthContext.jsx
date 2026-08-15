@@ -65,10 +65,10 @@ export function AuthProvider({ children }) {
        we let the signup proceed: a network hiccup should not turn into a locked
        door, and the trigger behind it will still refuse a genuine duplicate. */
     const { data: status } = await supabase.rpc('email_status', { addr: email })
-    if (status === 'taken') {
-      setAuthError('Вече има акаунт с този имейл. Логни се или си смени паролата.')
-      return false
-    }
+    /* 'exists' rather than false. Somebody who already has an account has not
+       made a mistake — they have forgotten, and the useful answer is the login
+       form with their address already in it, not a red line telling them off. */
+    if (status === 'taken') return 'exists'
     if (status === 'disposable') {
       setAuthError('Този имейл е временен. Ползвай постоянен адрес.')
       return false
@@ -79,10 +79,11 @@ export function AuthProvider({ children }) {
       /* Postgres refusals reach the auth service as a generic database error,
          so the marker the trigger raises is what tells them apart. */
       const raw = error.message || ''
+      if (raw.includes('blag_duplicate_account')) return 'exists'
       setAuthError(
-        raw.includes('blag_duplicate_account') ? 'Вече има акаунт с този имейл.'
-        : raw.includes('blag_disposable_email') ? 'Този имейл е временен. Ползвай постоянен адрес.'
-        : raw,
+        raw.includes('blag_disposable_email')
+          ? 'Този имейл е временен. Ползвай постоянен адрес.'
+          : raw,
       )
       return false
     }
