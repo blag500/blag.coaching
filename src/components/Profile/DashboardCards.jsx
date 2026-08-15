@@ -4,7 +4,7 @@ import { CARDS, DEFAULT_ORDER, layout } from '../TodayDashboard/cards'
 import styles from './DashboardCards.module.css'
 
 /**
- * Which cards Днес shows, and in what order.
+ * Which cards the dashboard shows, and in what order.
  *
  * Two people using this for two different things want two different pages: one
  * is cutting and opens it for the weight and the macros, another is building a
@@ -293,7 +293,7 @@ export default function DashboardCards() {
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
-        <span className={styles.title}>СТРАНИЦАТА „ДНЕС"</span>
+        <span className={styles.title}>ТАБЛОТО</span>
         {saving && <span className={styles.saving}>записва…</span>}
       </div>
       <p className={styles.lead}>

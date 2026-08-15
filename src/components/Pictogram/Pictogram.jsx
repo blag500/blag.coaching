@@ -190,6 +190,30 @@ const SHAPES = {
   },
 
   // ── Elsewhere in the app ──
+  // A plate between a fork and a knife. The flame belongs to calories, which is
+  // one number inside eating rather than the thing itself.
+  meal: {
+    line: (
+      <>
+        <circle cx="12.4" cy="12.6" r="5.2" />
+        <path d="M4.4 3.6v4.2a1.7 1.7 0 0 0 3.4 0V3.6M6.1 8.5v11.9" />
+        <path d="M19.6 3.6c-1.4 0-2.3 1.6-2.3 3.6s.9 2.9 2.3 2.9zM19.6 3.6v16.8" />
+      </>
+    ),
+    solid: <circle cx="12.4" cy="12.6" r="2.4" />,
+  },
+  // A line climbing across two axes — the chart, not the walking figure. Habits
+  // are not steps; steps are one of them.
+  trend: {
+    line: (
+      <>
+        <path d="M3.4 20.4V6.2M3.4 20.4h16.8" />
+        <path d="M6.4 16.6l4-4.2 3 2.8 4.8-5.6" />
+        <path d="M14.6 9.6h3.8v3.8" />
+      </>
+    ),
+    solid: <path d="M6.4 16.6l4-4.2 3 2.8 4.8-5.6v7H6.4z" />,
+  },
   chat: {
     line: <path d="M20.4 14.6a2 2 0 0 1-2 2H7.6l-4 3.4V5.4a2 2 0 0 1 2-2h12.8a2 2 0 0 1 2 2z" />,
     solid: <path d="M7.2 8.4h9.6v1.6H7.2zM7.2 11.6h6.4v1.6H7.2z" />,

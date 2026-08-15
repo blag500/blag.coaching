@@ -21,9 +21,9 @@ import styles from './LandingPage.module.css'
    The names are the answer to "what does it track" on their own; anything that
    needs explaining has a section of its own further down. */
 const FEATURES = [
-  { icon: 'kcal',     title: 'Хранене' },
+  { icon: 'meal',     title: 'Хранене' },
   { icon: 'training', title: 'Тренировка' },
-  { icon: 'steps',    title: 'Навици' },
+  { icon: 'trend',    title: 'Навици' },
   { icon: 'sleep',    title: 'Възстановяване' },
   { icon: 'capsule',  title: 'Суплементи' },
   { icon: 'water',    title: 'Вода' },

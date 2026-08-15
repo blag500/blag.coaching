@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const TRANSLATIONS = {
   bg: {
-    'nav.today':        'ДНЕС',
+    'nav.today':        'ТАБЛО',
     'nav.nutrition':    'ХРАНЕНЕ',
     'nav.training':     'ТРЕНИРОВКА',
     'nav.training_long':'ТРЕНИРОВКА',
@@ -136,7 +136,7 @@ const TRANSLATIONS = {
     'readiness.component.training':  'ТРЕНИРОВКИ (7д)',
   },
   en: {
-    'nav.today':        'TODAY',
+    'nav.today':        'DASHBOARD',
     'nav.nutrition':    'NUTRITION',
     'nav.training':     'TRAINING',
     'nav.training_long':'TRAINING',

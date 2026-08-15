@@ -7,8 +7,10 @@
   transition: background 420ms var(--ease-drawer);
 }
 
+/* Lighter than it was: the panel is glass now, and a heavy veil behind glass
+   just makes the glass dark. */
 .backdropVisible {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.5);
   pointer-events: all;
 }
 
@@ -19,9 +21,25 @@
   bottom: 0;
   width: 72%;
   max-width: 280px;
-  background: var(--bg);
-  border-right: 1px solid rgba(var(--accent-rgb), 0.12);
-  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.6);
+  /* Smoked glass, the same material as the app header — the drawer slides over
+     the page rather than replacing it, so it should let the page show through.
+     A flat --bg panel read as a second screen that had covered the first.
+     The warm bloom at the top left is where the light would fall if the gold
+     edge were catching any: it is what separates glass from grey. */
+  background:
+    radial-gradient(120% 60% at 0% 0%,
+      rgba(200, 160, 90, 0.08) 0%,
+      rgba(200, 160, 90, 0.02) 42%,
+      transparent 70%),
+    linear-gradient(to bottom,
+      rgba(20, 17, 11, 0.82) 0%,
+      rgba(12, 10, 6, 0.72) 100%);
+  backdrop-filter: blur(34px) saturate(170%);
+  -webkit-backdrop-filter: blur(34px) saturate(170%);
+  border-right: 1px solid rgba(var(--accent-rgb), 0.22);
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.05),
+    8px 0 48px rgba(0, 0, 0, 0.65);
   z-index: 201;
   transform: translateX(-100%);
   transition: transform 420ms var(--ease-drawer);
@@ -34,6 +52,29 @@
 
 .drawerOpen {
   transform: translateX(0);
+}
+
+/* Without backdrop-filter the panel would be see-through onto unreadable text,
+   so fall back to the solid surface rather than to a guess. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .drawer { background: var(--bg); }
+}
+
+/* A gold hairline down the leading edge, brightest where the header sits and
+   dying out towards the floor — the same rule the app header draws along its
+   bottom, stood on end. */
+.drawer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom,
+    rgba(var(--accent-rgb), 0.45) 0%,
+    rgba(var(--accent-rgb), 0.16) 38%,
+    transparent 88%);
+  pointer-events: none;
 }
 
 .header {
