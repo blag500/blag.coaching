@@ -165,7 +165,7 @@ export default function LandingPage({ onContinue, onLogin }) {
             down, and a grid is the furniture of that without being a picture of
             anything — it holds the black off being a void and asks for nothing.
             Behind it, one warm light, so the phones stand in something. */}
-        <div className={styles.grid} aria-hidden="true" />
+        <div className={styles.ruled} aria-hidden="true" />
         <div className={styles.appGlow} aria-hidden="true" />
 
         <p className={styles.sectionLead}>

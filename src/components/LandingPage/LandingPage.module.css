@@ -533,8 +533,13 @@
 
 /* Two hairlines crossed at 44 pixels, at a twentieth of the gold's strength.
    Close enough to read as ruled paper, faint enough that nobody looks at it —
-   which is the whole brief: the black needed a floor, not a picture. */
-.grid {
+   which is the whole brief: the black needed a floor, not a picture.
+   Named `ruled`, not `grid`. `.grid` already belonged to the twelve feature
+   chips, and declaring it again turned their container into an absolutely
+   positioned box — which, with no positioned ancestor to attach to, took the
+   viewport as its frame and painted twelve chips over the poster on every
+   screen. */
+.ruled {
   position: absolute;
   inset: 0;
   background-image:
@@ -564,7 +569,7 @@
   pointer-events: none;
 }
 
-.appSection > *:not(.grid):not(.appGlow) { position: relative; z-index: 1; }
+.appSection > *:not(.ruled):not(.appGlow) { position: relative; z-index: 1; }
 
 .eyebrow {
   font-family: var(--font-heading);
