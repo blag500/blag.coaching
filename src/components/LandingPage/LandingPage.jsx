@@ -116,10 +116,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             fetchpriority="high"
           />
           <div className={styles.ink}>
-            <h1 className={styles.inkName}>Николай<br />Благьов</h1>
+            <h1 className={styles.inkName}>Blag<br />Coaching<br />в Blag app</h1>
             <span className={styles.inkRule} aria-hidden="true" />
             <p className={styles.inkLine}>
-              Тренировка и хранене,<br />писани за теб.
+              Приложението, което<br />постига целите ти.
             </p>
           </div>
         </div>
@@ -134,12 +134,9 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── What he teaches ────────────────────────────────────────────── */}
       <section className={styles.section} id="lessons">
-        <span className={styles.eyebrow}>ТРЕНЬОРЪТ</span>
-        <h2 className={styles.h2}>Виж на какво ще те науча</h2>
-        <p className={styles.sectionLead}>
-          Изпълнение, възстановяване, позиране и хранене. Показано, не обещано.
-        </p>
-        <Lessons />
+        <span className={styles.eyebrow}>THE BLAG COACH</span>
+        <h2 className={styles.h2}>Ще те науча да:</h2>
+        <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
       </section>
 
       {/* ── The app ────────────────────────────────────────────────────── */}

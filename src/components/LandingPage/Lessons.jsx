@@ -1,83 +1,100 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './Lessons.module.css'
 
 /**
- * What he teaches, shown rather than claimed.
+ * What he teaches, as four words you can open.
  *
  * The page can say "треньор" as often as it likes; a visitor from a video has
  * no way to weigh that. Eleven seconds of him under a machine is the only
- * sentence on this page that cannot be written by somebody who cannot do it.
+ * sentence here that cannot be written by somebody who cannot do it.
  *
- * Nothing plays until it is asked for. Three portrait videos starting by
- * themselves would be three downloads and three moving things fighting for the
- * same pair of eyes — so each card is a still until it is touched, and touching
- * one stops whichever was already running.
+ * A line opens onto the whole screen rather than into a card: everything else
+ * goes, the word stays in the middle, and the film runs behind it under a
+ * blur. The blur is the point — this is not a video to be watched, it is proof
+ * that there is one, and the word has to stay the thing being read.
+ *
+ * Two of the four have no footage yet. They open the same way onto the paper,
+ * because a line that does nothing when you press it teaches the visitor that
+ * the rest do not either.
  */
-
-/* Names are his to correct — these are read off the footage, and the coach is
-   the only person here entitled to say what a movement is called. */
 const LESSONS = [
-  { id: '5765', title: 'Разтваряния на машина', muscle: 'ГЪРДИ' },
-  { id: '5766', title: 'Издърпване на скрипец', muscle: 'ГРЪБ' },
-  { id: '5769', title: 'Наклонена преса с дъмбели', muscle: 'ГЪРДИ' },
+  { id: 'train',   word: 'Тренираш',         film: '/lessons/5765.mp4', webm: '/lessons/5765.webm' },
+  { id: 'pose',    word: 'Позираш',          film: '/hero.mp4',         webm: '/hero.webm' },
+  { id: 'eat',     word: 'Се храниш' },
+  { id: 'recover', word: 'Се възстановяваш' },
 ]
 
-export default function Lessons() {
-  const [playing, setPlaying] = useState(null)
-  const refs = useRef({})
+function Sheet({ lesson, onClose }) {
+  const videoRef = useRef(null)
 
-  function toggle(id) {
-    // One at a time. Two clips running side by side is a shop window, not a
-    // lesson, and neither of them gets watched.
-    Object.entries(refs.current).forEach(([key, el]) => {
-      if (el && key !== id) { el.pause(); el.currentTime = 0 }
-    })
-    const el = refs.current[id]
-    if (!el) return
-    if (playing === id) { el.pause(); setPlaying(null) }
-    else { el.play().catch(() => {}); setPlaying(id) }
-  }
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    // The page must not scroll away underneath an open screen.
+    const had = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = had
+    }
+  }, [onClose])
+
+  useEffect(() => {
+    videoRef.current?.play().catch(() => {})
+  }, [lesson.id])
+
+  /* To the body, not into the section. A fixed element inside an ancestor that
+     carries a transform is positioned against that ancestor rather than the
+     window, and this page has several. */
+  return createPortal(
+    <div className={styles.sheet} onClick={onClose} role="dialog" aria-label={lesson.word}>
+      {lesson.film ? (
+        <video ref={videoRef} className={styles.sheetFilm}
+               muted loop playsInline preload="auto" aria-hidden="true">
+          <source src={lesson.webm} type="video/webm" />
+          <source src={lesson.film} type="video/mp4" />
+        </video>
+      ) : (
+        <div className={styles.sheetPaper} aria-hidden="true" />
+      )}
+
+      <div className={styles.sheetVeil} aria-hidden="true" />
+
+      <span className={styles.sheetWord}>{lesson.word}</span>
+
+      <button type="button" className={styles.sheetClose} onClick={onClose} aria-label="Затвори">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+             strokeWidth="1.8" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>,
+    document.body,
+  )
+}
+
+export default function Lessons({ onProgress }) {
+  const [open, setOpen] = useState(null)
 
   return (
-    <div className={styles.row}>
-      {LESSONS.map(l => (
-        <button
-          key={l.id}
-          type="button"
-          className={`${styles.card} ${playing === l.id ? styles.on : ''}`}
-          onClick={() => toggle(l.id)}
-          aria-label={`${l.title} — пусни видеото`}
-        >
-          <video
-            ref={el => { refs.current[l.id] = el }}
-            className={styles.video}
-            poster={`/lessons/${l.id}.jpg`}
-            /* Silent by design: these are demonstrations, not talks. Muted also
-               means a phone will let them start without a second tap. */
-            muted loop playsInline
-            preload="none"
-            onEnded={() => setPlaying(null)}
-          >
-            <source src={`/lessons/${l.id}.webm`} type="video/webm" />
-            <source src={`/lessons/${l.id}.mp4`} type="video/mp4" />
-          </video>
+    <>
+      <ul className={styles.list}>
+        {LESSONS.map(l => (
+          <li key={l.id}>
+            <button type="button" className={styles.line} onClick={() => setOpen(l)}>
+              <span className={styles.word}>{l.word}</span>
+              <span className={styles.arrow} aria-hidden="true">→</span>
+            </button>
+          </li>
+        ))}
+      </ul>
 
-          <span className={styles.shade} aria-hidden="true" />
+      {/* Louder than the four above it, because it is the one that carries on
+          down the page rather than opening a screen of its own. */}
+      <button type="button" className={styles.progress} onClick={onProgress}>
+        Да прогресираш с <span className={styles.progressMark}>BLAG APP</span>
+      </button>
 
-          {playing !== l.id && (
-            <span className={styles.play} aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M8 5.4v13.2l10.4-6.6z" />
-              </svg>
-            </span>
-          )}
-
-          <span className={styles.meta}>
-            <span className={styles.muscle}>{l.muscle}</span>
-            <span className={styles.title}>{l.title}</span>
-          </span>
-        </button>
-      ))}
-    </div>
+      {open && <Sheet lesson={open} onClose={() => setOpen(null)} />}
+    </>
   )
 }

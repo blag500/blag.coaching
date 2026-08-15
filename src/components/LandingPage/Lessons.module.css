@@ -1,111 +1,174 @@
-.row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+/* Four lines, each the full width. A row that runs edge to edge is obviously a
+   thing to press; four chips in a grid would be four labels. */
+.list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
   width: 100%;
-  max-width: 760px;
-  margin-top: 8px;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Three across even on a phone. Stacked, each card would be a screen of its
-   own and the section would become a scroll; side by side they read as a set
-   of three things he can teach, which is the point being made. */
-.card {
-  position: relative;
-  aspect-ratio: 9 / 16;
-  padding: 0;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--r-lg);
-  background: #0C0A06;
-  overflow: hidden;
+.line {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 4px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--panel-border);
+  text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: border-color 200ms, transform 200ms;
+  transition: padding-left 220ms var(--ease-out);
 }
 
-.card:active { transform: scale(0.985); }
+.list li:first-child .line { border-top: 1px solid var(--panel-border); }
 
-.on {
-  border-color: rgba(var(--accent-rgb), 0.55);
-  box-shadow: 0 0 34px -10px rgba(var(--accent-rgb), 0.5);
+/* The word steps forward under the finger; the rule stays put. Movement, not a
+   colour change — a row that lights up looks selected, and nothing here is. */
+.line:active { padding-left: 12px; }
+
+.word {
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 6vw, 30px);
+  letter-spacing: 0.03em;
+  color: var(--text);
 }
 
-.video {
+.arrow {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--accent);
+  opacity: 0.6;
+  transition: transform 220ms var(--ease-out), opacity 220ms;
+}
+
+.line:active .arrow { transform: translateX(4px); opacity: 1; }
+
+/* ── The one that carries on down the page ───────────────────────────────
+   Louder than the four above it, and deliberately not a gold slab: the page
+   already has two of those, and a third would make this look like the same
+   offer repeated rather than the next step. */
+.progress {
+  margin-top: 26px;
+  padding: 15px 26px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: clamp(14px, 4vw, 18px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 40px -14px rgba(var(--accent-rgb), 0.7);
+  transition: background 200ms, box-shadow 200ms;
+}
+
+.progress:active {
+  background: rgba(var(--accent-rgb), 0.2);
+  box-shadow: 0 0 46px -10px rgba(var(--accent-rgb), 0.9);
+}
+
+.progressMark { color: var(--text); }
+
+/* ── The opened screen ───────────────────────────────────────────────────── */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0C0A06;
+  cursor: pointer;
+  animation: rise 320ms var(--ease-out) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sheetFilm,
+.sheetPaper {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* He is upper-middle in every one of these frames — the machine and the floor
-     take the bottom third, and cropping from the centre cut his head off on the
-     narrow cards. */
-  object-position: 50% 34%;
 }
 
-/* Dark at the foot only, so the name sits on something and the picture is left
-   alone everywhere else. */
-.shade {
+/* The two without footage open onto the poster's own paper rather than onto
+   black — a line that does nothing when pressed teaches the visitor that the
+   others will not either. */
+.sheetPaper {
+  background: url('/poster.webp') 46% 36% / cover no-repeat;
+}
+
+/* Blurred and darkened, both. This is not a film to be watched — it is proof
+   that there is one, and the word has to stay the thing being read. */
+.sheetVeil {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top,
-    rgba(12, 10, 6, 0.92) 0%,
-    rgba(12, 10, 6, 0.55) 22%,
-    transparent 48%);
-  pointer-events: none;
+  backdrop-filter: blur(11px) saturate(125%);
+  -webkit-backdrop-filter: blur(11px) saturate(125%);
+  /* 0.42 rather than 0.55: at the heavier weight the dark gym behind
+     "Тренираш" went to a flat brown and the whole point — that something is
+     moving back there — was lost. */
+  background: rgba(12, 10, 6, 0.42);
 }
 
-.play {
+/* Where a blur is not available the picture would sit at full strength behind
+   the word, so the veil pays for it in darkness instead. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sheetVeil { background: rgba(12, 10, 6, 0.8); }
+}
+
+.sheetWord {
+  position: relative;
+  z-index: 1;
+  padding: 0 24px;
+  font-family: var(--font-heading);
+  font-size: clamp(38px, 13vw, 92px);
+  line-height: 1.02;
+  letter-spacing: 0.03em;
+  text-align: center;
+  color: var(--text);
+  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.8);
+  animation: word 460ms var(--ease-out) both;
+}
+
+@keyframes word {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.sheetClose {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 42px;
-  height: 42px;
+  top: calc(16px + env(safe-area-inset-top));
+  right: 16px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(12, 10, 6, 0.6);
-  border: 1px solid rgba(var(--accent-rgb), 0.5);
-  color: var(--accent);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  /* The triangle's own mass sits right of its box; nudge it back or it reads as
-     off-centre inside a circle. */
-  padding-left: 2px;
-  box-sizing: border-box;
-}
-
-.meta {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 9px;
-  text-align: left;
-}
-
-.muscle {
-  font-family: var(--font-heading);
-  font-size: 8px;
-  letter-spacing: 0.24em;
-  color: var(--accent);
-  opacity: 0.85;
-}
-
-.title {
-  font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1.3;
+  background: rgba(12, 10, 6, 0.55);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-@media (max-width: 420px) {
-  .row { gap: 7px; }
-  .title { font-size: 9.5px; }
-  .muscle { font-size: 7px; letter-spacing: 0.18em; }
-  .play { width: 34px; height: 34px; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .sheetWord { animation: none; }
+  .line, .arrow { transition: none; }
 }
