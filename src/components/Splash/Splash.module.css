@@ -96,15 +96,31 @@
 }
 
 /* Only on the way to the landing page. The word is the difference between the
-   product and the service, and the app itself is the product. Tracked wide and
-   kept small so it reads as part of the mark rather than as a second line. */
+   product and the service, and the app itself is the product.
+   The same brushed ramp as the name above it, not a grey second line: the two
+   words are one mark, and a mark whose halves are made of different materials
+   reads as a title with a subtitle. Poured through a slightly flatter angle
+   because the word is a third the height — the same 177deg across ten pixels
+   puts the whole highlight inside one stroke. */
 .kicker {
-  margin: -6px 0 0;
+  margin: -4px 0 0;
   font-family: var(--font-heading);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.52em;
   text-indent: 0.52em;
-  color: var(--muted);
+  color: #C8A05A;
+  background-image: linear-gradient(
+    172deg,
+    #8A6428 0%,
+    #C8A05A 26%,
+    #F8E8B8 50%,
+    #B08A45 68%,
+    #E4CE94 84%,
+    #8A6428 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: titleReveal 1s var(--ease-out) 0.75s both;
 }
 
