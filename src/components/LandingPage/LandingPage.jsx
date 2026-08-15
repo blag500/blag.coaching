@@ -139,7 +139,12 @@ export default function LandingPage({ onContinue, onLogin }) {
       </section>
 
       {/* ── What he teaches ────────────────────────────────────────────── */}
-      <section className={styles.section} id="lessons">
+      <section className={`${styles.section} ${styles.lessonsSection}`} id="lessons">
+        {/* The same print as the poster — screened from a photograph of him at
+            the same size of dot, inked with the two colours sampled off that
+            sheet, and given its grain. Held far back, because four lines and a
+            heading have to stay the brightest thing here. */}
+        <div className={styles.lessonsBg} aria-hidden="true" />
         <span className={styles.eyebrow}>THE BLAG COACH</span>
         <h2 className={styles.h2}>Ще те науча да:</h2>
         <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
