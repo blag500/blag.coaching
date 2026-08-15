@@ -100,58 +100,20 @@ export default function LandingPage({ onContinue, onLogin }) {
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
+      {/* The poster, whole and full height, with one thing to do on it. A first
+          screen that asks a single question gets a straighter answer than one
+          that offers a field, two links and three promises at once. */}
       <section className={styles.hero} id="top">
-        <div className={styles.grain} aria-hidden="true" />
-
         <img
           className={styles.poster}
           src="/poster.webp"
-          width="760" height="943"
           alt="Николай Благьов"
           fetchpriority="high"
         />
+        <span className={styles.posterShade} aria-hidden="true" />
 
-        <h1 className={styles.headline}>
-          Аз съм Николай.<br />
-          <span className={styles.headlineGold}>Ще ти напиша плана.</span>
-        </h1>
-
-        <form
-          className={styles.capture}
-          onSubmit={e => { e.preventDefault(); onContinue(email) }}
-        >
-          <span className={styles.at} aria-hidden="true">@</span>
-          <input
-            className={styles.captureInput}
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            enterKeyHint="go"
-            placeholder="Имейлът ти..."
-            aria-label="Имейл"
-          />
-          <button className={styles.captureBtn} type="submit">
-            ЗАПОЧНИ
-          </button>
-        </form>
-
-        {/* One line where three were. The poster has taken the room, and three
-            stacked promises under a picture of the man is a brochure. */}
-        <p className={styles.benefits}>
-          Приложението е безплатно. Мен ме взимаш, когато решиш.
-        </p>
-
-        <a className={styles.ctaGhost} href="#lessons" onClick={go('lessons')}>
-          Виж на какво ще те науча
-        </a>
-
-        {/* "Без App Store · добавя се на началния екран" was a specification.
-            Someone who has never installed a web app does not need to be told
-            the category it belongs to — they need to be shown how. */}
-        <a className={styles.note} href="#install" onClick={go('install')}>
-          Виж как да го инсталираш
+        <a className={styles.cta} href="#lessons" onClick={go('lessons')}>
+          ТРЕНИРАЙ С МЕН
         </a>
 
         <span className={styles.scrollHint} aria-hidden="true" />
@@ -175,6 +137,34 @@ export default function LandingPage({ onContinue, onLogin }) {
           Твоите числа на едно място — и аз ги гледам заедно с теб.
         </p>
         <AppShowcase />
+
+        <form
+          className={styles.capture}
+          onSubmit={e => { e.preventDefault(); onContinue(email) }}
+        >
+          <span className={styles.at} aria-hidden="true">@</span>
+          <input
+            className={styles.captureInput}
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            enterKeyHint="go"
+            placeholder="Имейлът ти..."
+            aria-label="Имейл"
+          />
+          <button className={styles.captureBtn} type="submit">
+            ЗАПОЧНИ
+          </button>
+        </form>
+
+        <p className={styles.benefits}>
+          Приложението е безплатно. Мен ме взимаш, когато решиш.
+        </p>
+        <a className={styles.note} href="#install" onClick={go('install')}>
+          Виж как да го инсталираш
+        </a>
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────── */}

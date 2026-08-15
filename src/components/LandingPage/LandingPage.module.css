@@ -100,16 +100,18 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── Hero ─────────────────────────────────────────────────────────────── */
+/* ── Hero ───────────────────────────────────────────────────────────────
+   The whole first screen is the poster. Content sits at the foot of it, which
+   is where a thumb already is and where the artwork has the least to lose. */
 .hero {
   position: relative;
-  min-height: calc(100dvh - 60px);
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 48px 24px 72px;
+  justify-content: flex-end;
+  gap: 18px;
+  padding: 0 24px calc(74px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   overflow: hidden;
   text-align: center;
@@ -219,18 +221,42 @@
   background: linear-gradient(to right, transparent, rgba(var(--accent-rgb), 0.6), transparent);
 }
 
-/* Hung like a print on a dark wall: a warm rule under it and a shadow, so the
-   cream paper reads as a thing placed on the page rather than as a hole cut in
-   it. No border on the picture itself — the artwork already has its own. */
 .poster {
-  position: relative;
-  z-index: 1;
-  width: min(62vw, 290px);
-  height: auto;
-  border-radius: 4px;
-  box-shadow:
-    0 30px 70px -26px rgba(0, 0, 0, 0.95),
-    0 0 60px -22px rgba(var(--accent-rgb), 0.5);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* He stands slightly right of centre in the artwork, and the paper's own
+     border is the first thing a crop eats. Held at 46% keeps him whole and
+     keeps a little of the frame on the side that still shows; 36% down leaves
+     air above his head instead of pinning it to the top edge. */
+  object-position: 46% 36%;
+}
+
+/* On anything wider than it is tall, cover would take a 4:5 print and show a
+   letterbox slice of its middle — the frame, the stripes and the dot field all
+   gone, which is most of what makes it a poster. Wide screens get the whole
+   sheet instead, standing on the page's own dark. */
+@media (min-aspect-ratio: 1 / 1) {
+  .poster {
+    object-fit: contain;
+    object-position: 50% 22%;
+  }
+}
+
+/* Dark from the foot upwards, so the button has something to sit on without a
+   veil over the picture. Two stops rather than one: a single linear fade puts
+   its darkest edge halfway up the poster, across his chest. */
+.posterShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,
+    rgba(12, 10, 6, 0.96) 0%,
+    rgba(12, 10, 6, 0.86) 14%,
+    rgba(12, 10, 6, 0.45) 30%,
+    transparent 52%);
+  pointer-events: none;
 }
 
 .headline {
@@ -254,6 +280,7 @@
 .capture {
   position: relative;
   z-index: 1;
+  margin-top: 26px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -340,7 +367,7 @@
    finished page. */
 .scrollHint {
   position: absolute;
-  bottom: 24px;
+  bottom: calc(30px + env(safe-area-inset-bottom));
   left: 50%;
   width: 1px;
   height: 32px;
@@ -666,6 +693,9 @@
 
 /* ── Buttons ──────────────────────────────────────────────────────────── */
 .cta {
+  position: relative;
+  z-index: 1;
+  display: block;
   width: 100%;
   max-width: 340px;
   padding: 17px;
