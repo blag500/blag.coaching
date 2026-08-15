@@ -135,10 +135,12 @@ export default function LandingPage({ onContinue, onLogin }) {
             assemble once, so this is recognition rather than a second reveal. */}
         <div className={styles.lockup}>
           <div className={styles.armLeft} aria-hidden="true" />
+          {/* No tagline inside the mark. "Be blag, be better" belongs to the
+              splash, where it has a screen to itself; here it was a fourth line
+              of type competing with the headline two inches below it. */}
           <div className={styles.brand}>
             <span className={styles.brandName}>BLAG</span>
             <span className={styles.brandRule} aria-hidden="true" />
-            <span className={styles.brandTag}>Be blag,<br />Be better</span>
           </div>
           <div className={styles.armRight} aria-hidden="true" />
         </div>
@@ -147,12 +149,6 @@ export default function LandingPage({ onContinue, onLogin }) {
           Тренировка, хранене и навици<br />
           <span className={styles.headlineGold}>на едно място</span>
         </h1>
-
-        <p className={styles.heroText}>
-          BLAG следи тренировките, храненето, теглото, навиците, суплементите,
-          възстановяването и водата ти. Добавя се на телефона и работи заедно
-          с треньор, който гледа същите числа.
-        </p>
 
         <div className={styles.heroActions}>
           <button className={styles.cta} onClick={onContinue} type="button">
@@ -163,10 +159,10 @@ export default function LandingPage({ onContinue, onLogin }) {
           </a>
         </div>
 
-        <div className={styles.badges}>
-          <span className={styles.badge}>БЕЗ APP STORE</span>
-          <span className={styles.badge}>ДОБАВЯ СЕ НА ЕКРАНА</span>
-        </div>
+        {/* One quiet line where two pill badges were. The claim is worth
+            making — it is the only thing here a competitor cannot copy by
+            Friday — but two outlined capsules made it look like a promotion. */}
+        <p className={styles.note}>Без App Store · добавя се на началния екран</p>
 
         <span className={styles.scrollHint} aria-hidden="true" />
       </section>
