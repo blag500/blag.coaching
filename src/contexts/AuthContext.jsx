@@ -58,8 +58,34 @@ export function AuthProvider({ children }) {
 
   async function signUp(email, password, name) {
     setAuthError(null)
+
+    /* Asked before the form is sent, so the answer arrives in Bulgarian.
+       The same rule runs again inside the database as the account is created —
+       this call is the courtesy, that one is the rule. If it cannot be reached
+       we let the signup proceed: a network hiccup should not turn into a locked
+       door, and the trigger behind it will still refuse a genuine duplicate. */
+    const { data: status } = await supabase.rpc('email_status', { addr: email })
+    if (status === 'taken') {
+      setAuthError('Вече има акаунт с този имейл. Логни се или си смени паролата.')
+      return false
+    }
+    if (status === 'disposable') {
+      setAuthError('Този имейл е временен. Ползвай постоянен адрес.')
+      return false
+    }
+
     const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) { setAuthError(error.message); return false }
+    if (error) {
+      /* Postgres refusals reach the auth service as a generic database error,
+         so the marker the trigger raises is what tells them apart. */
+      const raw = error.message || ''
+      setAuthError(
+        raw.includes('blag_duplicate_account') ? 'Вече има акаунт с този имейл.'
+        : raw.includes('blag_disposable_email') ? 'Този имейл е временен. Ползвай постоянен адрес.'
+        : raw,
+      )
+      return false
+    }
     if (data.user) {
       // The one moment there is an account to hang it on. Null for everyone who
       // arrived by knowing the address, which is most people.
