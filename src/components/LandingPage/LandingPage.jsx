@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Pictogram from '../Pictogram/Pictogram'
 import InstallDemo from './InstallDemo'
 import AppShowcase from './AppShowcase'
+import Lessons from './Lessons'
 import styles from './LandingPage.module.css'
 
 /**
@@ -63,34 +64,6 @@ const OFFER = '−20% от треньорския план за първия м�
 const TICKER = Array.from({ length: 4 }, () => OFFER).join('   ·   ') + '   ·   '
 
 export default function LandingPage({ onContinue, onLogin }) {
-  // Respect the setting, and follow it if it changes while the page is open.
-  const [stillOnly, setStillOnly] = useState(
-    () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
-  useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    if (!mq) return
-    const on = e => setStillOnly(e.matches)
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [])
-
-  /* Autoplay is refused more often than it looks: iOS in Low Power Mode blocks
-     it outright, and a page that then sits on its poster forever looks broken
-     rather than restrained. So the play is asked for, and if it is refused, it
-     is asked for again at the first touch — by which point the browser counts
-     it as something the visitor started. */
-  const videoRef = useRef(null)
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    const start = () => v.play().catch(() => {})
-    start()
-    const once = () => { start(); window.removeEventListener('touchstart', once); window.removeEventListener('click', once) }
-    window.addEventListener('touchstart', once, { passive: true })
-    window.addEventListener('click', once)
-    return () => { window.removeEventListener('touchstart', once); window.removeEventListener('click', once) }
-  }, [stillOnly])
-
   /* The email is asked for here and carried into the form, so the first field
      is already filled when they arrive. A field on a landing page that makes
      you type the same thing again on the next screen is a field that has cost
@@ -133,30 +106,7 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <section className={styles.hero} id="top">
-        {/* Held far back, dimmed and masked: a real gym behind the mark does
-            more for this than any amount of gradient, but the lockup has to
-            stay the brightest thing on the screen.
-            Decided in JS rather than hidden in CSS, so someone who has asked
-            for less movement does not download five seconds of video in order
-            to not watch it. */}
-        {stillOnly ? (
-          <div className={styles.backdropStill} aria-hidden="true" />
-        ) : (
-          <video
-            ref={videoRef}
-            className={styles.backdrop}
-            autoPlay muted loop playsInline
-            preload="auto"
-            poster="/hero-poster.jpg"
-            aria-hidden="true"
-          >
-            <source src="/hero.webm" type="video/webm" />
-            <source src="/hero.mp4" type="video/mp4" />
-          </video>
-        )}
         <div className={styles.grain} aria-hidden="true" />
-
-        <AppShowcase />
 
         <span className={styles.kicker}>ПРИЛОЖЕНИЕ И ТРЕНЬОР В ЕДНО</span>
 
@@ -194,8 +144,8 @@ export default function LandingPage({ onContinue, onLogin }) {
           <span><b>Треньор</b>, когато решиш, че искаш план.</span>
         </div>
 
-        <a className={styles.ctaGhost} href="#how" onClick={go('how')}>
-          Виж как работи
+        <a className={styles.ctaGhost} href="#lessons" onClick={go('lessons')}>
+          Виж на какво ще те науча
         </a>
 
         {/* "Без App Store · добавя се на началния екран" was a specification.
@@ -206,6 +156,26 @@ export default function LandingPage({ onContinue, onLogin }) {
         </a>
 
         <span className={styles.scrollHint} aria-hidden="true" />
+      </section>
+
+      {/* ── What he teaches ────────────────────────────────────────────── */}
+      <section className={styles.section} id="lessons">
+        <span className={styles.eyebrow}>ТРЕНЬОРЪТ</span>
+        <h2 className={styles.h2}>Виж на какво ще те науча</h2>
+        <p className={styles.sectionLead}>
+          Изпълнение, възстановяване, позиране и хранене. Показано, не обещано.
+        </p>
+        <Lessons />
+      </section>
+
+      {/* ── The app ────────────────────────────────────────────────────── */}
+      <section className={styles.section} id="app">
+        <span className={styles.eyebrow}>ПРИЛОЖЕНИЕТО</span>
+        <h2 className={styles.h2}>И всичко се записва</h2>
+        <p className={styles.sectionLead}>
+          Твоите числа на едно място — и аз ги гледам заедно с теб.
+        </p>
+        <AppShowcase />
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────── */}
