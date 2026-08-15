@@ -78,6 +78,11 @@
   /* Fluid, because the second line is the one that decides how wide the lockup
      has to be. Both words are set from this, so they cannot drift apart. */
   font-size: clamp(21px, 7.4vw, 42px);
+  /* Stated, not inherited. Oswald ships four weights; an h1 takes the browser's
+     bold and a p takes its normal, so the two words of one mark were being set
+     600 against 400 — which is exactly the "BLAG is heavier than COACHING" the
+     eye was catching. */
+  font-weight: 600;
   letter-spacing: 0.2em;
   /* Tracking puts a gap after the last letter and none before the first, so a
      centred line sits half a space to the left. Both lines carry the same
@@ -113,6 +118,7 @@
   /* The same size as the name above it, which is what makes the two read as one
      mark rather than as a title and a label under it. */
   font-size: clamp(21px, 7.4vw, 42px);
+  font-weight: 600;
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   line-height: 1;
