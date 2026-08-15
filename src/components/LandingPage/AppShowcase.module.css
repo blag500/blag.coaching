@@ -1,20 +1,29 @@
-/* Three phones on one baseline, the outer two leaning away and set back.
-   Overlapped rather than spaced: three separate rectangles read as a
-   comparison, and there is nothing here to compare — it is one product seen
-   from three sides. */
-.fan {
+/* The stage carries the depth, not the phones. Perspective set on each phone
+   would show every one of them head-on from its own centre, and the turn would
+   flatten out. */
+.stage {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  perspective: 1100px;
   pointer-events: none;
   user-select: none;
 }
 
+.carousel {
+  position: relative;
+  width: 168px;
+  height: 336px;
+  transform-style: preserve-3d;
+}
+
+/* All four are the same size; the ones waiting are scaled down rather than
+   built smaller, so a phone changes place without changing what it is. */
 .phone {
-  flex-shrink: 0;
+  position: absolute;
+  inset: 0;
   border-radius: 22px;
   padding: 5px;
   box-sizing: border-box;
@@ -23,81 +32,51 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.09),
     0 26px 60px -22px rgba(0, 0, 0, 0.95);
+  /* Slow away, slow back: the middle of the swing is where a card is edge-on
+     and thinnest, and rushing through it is what makes a carousel read as a
+     jump rather than as a movement. */
+  transition:
+    transform 900ms cubic-bezier(.55, .06, .3, 1),
+    opacity   900ms cubic-bezier(.55, .06, .3, 1);
+  will-change: transform;
 }
 
-/* The middle one is upright, forward and at full strength; it is the one being
-   shown. The others are context. */
-.mid {
-  width: 168px;
-  height: 336px;
-  z-index: 2;
+/* The one in front gets the gold bloom; the others are context and should not
+   compete for it. A class rather than an attribute selector on the inline
+   style — that would depend on exactly how React chooses to write the
+   declaration, which is nobody's contract. */
+.front {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 30px 70px -20px rgba(0, 0, 0, 0.95),
     0 0 60px -18px rgba(var(--accent-rgb), 0.45);
 }
 
-.left,
-.right {
-  width: 132px;
-  height: 268px;
-  opacity: 0.62;
-}
-
-.left  { transform: rotate(-9deg) translate(22px, -8px); }
-.right { transform: rotate(9deg)  translate(-22px, -8px); }
-
 @media (max-width: 520px) {
-  .mid { width: 146px; height: 292px; }
-  .left, .right { width: 110px; height: 224px; }
-  .left  { transform: rotate(-9deg) translate(20px, -6px); }
-  .right { transform: rotate(9deg)  translate(-20px, -6px); }
+  .carousel { width: 148px; height: 296px; }
 }
 
 .screen {
-  position: relative;
   width: 100%;
   height: 100%;
   border-radius: 18px;
   background: #0C0A06;
   overflow: hidden;
-  /* The turn happens inside the frame, so the depth belongs to the frame. Put
-     the perspective on the turning element itself and every phone would look
-     as though it were being viewed head-on from its own centre. */
-  perspective: 620px;
 }
 
-.turner {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  /* Slow in, slow out, and slowest across the edge: the middle of a half turn
-     is where the screen is thinnest, and rushing it is what makes a flip read
-     as a glitch rather than as a movement. */
-  transition: transform 720ms cubic-bezier(.62, .02, .35, 1);
-}
-
-.face {
-  position: absolute;
-  inset: 0;
+.shot {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   /* Anchored to the top: every one of these screens leads with its header and
-     first card, and that is the half worth showing when the frame is shorter
-     than the picture. */
+     its first card, and that is the half worth showing when the frame is
+     shorter than the picture. */
   object-position: 50% 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 18px;
 }
 
-/* The second face is already turned away; the container turning 180 brings it
-   round the right way up. */
-.back { transform: rotateY(180deg); }
-
-/* Someone who asked for less movement gets three still phones, each on a
-   different screen — the point of the fan survives without the turning. */
+/* Someone who asked for less movement gets the carousel standing still —
+   it still cycles, it simply arrives rather than travels. */
 @media (prefers-reduced-motion: reduce) {
-  .turner { transition: none; }
+  .phone { transition: none; }
 }

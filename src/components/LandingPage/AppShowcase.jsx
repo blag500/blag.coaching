@@ -2,20 +2,19 @@ import { useState, useEffect } from 'react'
 import styles from './AppShowcase.module.css'
 
 /**
- * Three phones, fanned, turning over to the next screen.
+ * Four phones on a carousel, one of them front and centre.
  *
  * A landing page for software that never shows the software is asking to be
  * taken on trust. These are photographs of the running app on his own phone —
  * his numbers, his training, his check-in — not a drawing of what it might
  * look like.
  *
- * The screens turn rather than fade. A crossfade says one picture is being
- * replaced by another; a half turn says the phone has a second side, which is
- * the impression a device gives when somebody is using it. Two faces, and the
- * one about to come round is loaded while it is still behind.
- *
- * All three run the same four screens, each starting at a different one, so no
- * phone ever shows what its neighbour shows and they never turn together.
+ * Each phone holds one screen and keeps it. What moves is the carousel: every
+ * few seconds the one waiting on the right turns square to the viewer and takes
+ * the middle, the one that was in the middle swings out to the left, and the
+ * fourth waits out of sight behind. Nothing fades into anything else — a screen
+ * arrives by being brought round, which is what a stack of phones on a table
+ * would actually do.
  */
 const SHOTS = [
   { src: '/shots/table.webp',    alt: 'Таблото: готовност, тегло, навици, вода и макроси' },
@@ -24,73 +23,58 @@ const SHOTS = [
   { src: '/shots/checkin.webp',  alt: 'Чек-инът на формата' },
 ]
 
-const BEAT = 4200   // how long a screen is held
-const TURN = 720    // how long the half turn takes
+const HOLD = 4200   // how long a screen stays in the middle
 
-function Phone({ className, offset, priority = false }) {
-  // How many half turns have happened. The visible face is k % 2, and it shows
-  // SHOTS[k % 4] — everything else is derived from that one number.
-  const [k, setK] = useState(0)
-  const [faces, setFaces] = useState([
-    SHOTS[offset % SHOTS.length],
-    SHOTS[(offset + 1) % SHOTS.length],
-  ])
-
-  useEffect(() => {
-    // Staggered so the three phones never turn on the same beat.
-    const start = setTimeout(() => {
-      setK(v => v + 1)
-      const iv = setInterval(() => setK(v => v + 1), BEAT)
-      cancel = () => clearInterval(iv)
-    }, BEAT + offset * (BEAT / SHOTS.length))
-    let cancel = () => {}
-    return () => { clearTimeout(start); cancel() }
-  }, [offset])
-
-  /* The face that has just gone behind gets the next screen — after the turn
-     has finished, never during it. Loaded any earlier and the picture would
-     change while that face was still in view. */
-  useEffect(() => {
-    if (k === 0) return
-    const t = setTimeout(() => {
-      setFaces(f => {
-        const next = [...f]
-        next[k % 2 === 0 ? 1 : 0] = SHOTS[(offset + k + 1) % SHOTS.length]
-        return next
-      })
-    }, TURN)
-    return () => clearTimeout(t)
-  }, [k, offset])
-
-  return (
-    <div className={`${styles.phone} ${className}`}>
-      <div className={styles.screen}>
-        <div
-          className={styles.turner}
-          style={{ transform: `rotateY(${k * 180}deg)`, transitionDuration: `${TURN}ms` }}
-        >
-          {faces.map((shot, i) => (
-            <img
-              key={i}
-              className={`${styles.face} ${i === 1 ? styles.back : ''}`}
-              src={shot.src}
-              alt={i === 0 ? shot.alt : ''}
-              loading={priority && i === 0 ? 'eager' : 'lazy'}
-              decoding="async"
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+/* The four places a phone can be, as one table rather than as four branches in
+   the markup. Position 2 is the one nobody sees: it is parked small and behind
+   the middle, which is where a card has to be so that arriving on the right and
+   leaving on the left are the same journey. */
+const PLACE = [
+  { x: 0,   deg: 0,   scale: 1,    opacity: 1,    z: 3 },  // centre
+  { x: 86,  deg: -26, scale: 0.78, opacity: 0.62, z: 2 },  // waiting, right
+  { x: 0,   deg: 0,   scale: 0.55, opacity: 0,    z: 0 },  // out of sight
+  { x: -86, deg: 26,  scale: 0.78, opacity: 0.62, z: 2 },  // leaving, left
+]
 
 export default function AppShowcase() {
+  const [k, setK] = useState(0)
+
+  useEffect(() => {
+    const iv = setInterval(() => setK(v => v + 1), HOLD)
+    return () => clearInterval(iv)
+  }, [])
+
   return (
-    <div className={styles.fan}>
-      <Phone className={styles.left}  offset={2} />
-      <Phone className={styles.mid}   offset={0} priority />
-      <Phone className={styles.right} offset={3} />
+    <div className={styles.stage}>
+      <div className={styles.carousel}>
+        {SHOTS.map((shot, i) => {
+          // Which of the four places this phone is standing in right now.
+          const p = PLACE[(i - k % SHOTS.length + SHOTS.length) % SHOTS.length]
+          return (
+            <div
+              key={shot.src}
+              className={`${styles.phone} ${p.z === 3 ? styles.front : ''}`}
+              style={{
+                transform: `translateX(${p.x}px) rotateY(${p.deg}deg) scale(${p.scale})`,
+                opacity: p.opacity,
+                zIndex: p.z,
+              }}
+            >
+              <div className={styles.screen}>
+                <img
+                  className={styles.shot}
+                  src={shot.src}
+                  alt={shot.alt}
+                  /* Only the one that opens in the middle is worth blocking on;
+                     the rest arrive while the headline is still being read. */
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
