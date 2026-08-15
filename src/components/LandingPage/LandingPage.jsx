@@ -104,12 +104,25 @@ export default function LandingPage({ onContinue, onLogin }) {
           screen that asks a single question gets a straighter answer than one
           that offers a field, two links and three promises at once. */}
       <section className={styles.hero} id="top">
-        <img
-          className={styles.poster}
-          src="/poster.webp"
-          alt="Николай Благьов"
-          fetchpriority="high"
-        />
+        {/* A sheet with the print's own proportions, sized to cover the phone
+            and to stand whole on a desktop. Everything written on it is placed
+            in percentages of the sheet, so the words keep their place on the
+            paper instead of drifting across it as the window changes. */}
+        <div className={styles.sheet}>
+          <img
+            className={styles.poster}
+            src="/poster.webp"
+            alt=""
+            fetchpriority="high"
+          />
+          <div className={styles.ink}>
+            <h1 className={styles.inkName}>Николай<br />Благьов</h1>
+            <span className={styles.inkRule} aria-hidden="true" />
+            <p className={styles.inkLine}>
+              Тренировка и хранене,<br />писани за теб.
+            </p>
+          </div>
+        </div>
         <span className={styles.posterShade} aria-hidden="true" />
 
         <a className={styles.cta} href="#lessons" onClick={go('lessons')}>
