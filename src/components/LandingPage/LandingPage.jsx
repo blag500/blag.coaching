@@ -15,16 +15,21 @@ import styles from './LandingPage.module.css'
  * that flatters is the first thing a real prospect goes looking to disprove.
  */
 
+/* Nine names, no sentences.
+   Each card carried two lines of description, and nine descriptions is a page
+   you scroll through without reading and then feel you have missed something.
+   The names are the answer to "what does it track" on their own; anything that
+   needs explaining has a section of its own further down. */
 const FEATURES = [
-  { icon: 'kcal',     title: 'Хранене',        text: 'Макроси, калории, баркод и въвеждане с описание. История, чернови и рецепти.' },
-  { icon: 'training', title: 'Тренировка',     text: 'Серии, повторения и тежести, с историята на всяко упражнение и личните рекорди.' },
-  { icon: 'steps',    title: 'Навици',         text: 'Вода, протеин, стъпки, сън и без захар — отмятат се на началния екран.' },
-  { icon: 'sleep',    title: 'Възстановяване', text: 'Чек-ин за трийсет секунди и оценка за готовност спрямо твоята норма, не спрямо чужда.' },
-  { icon: 'capsule',  title: 'Суплементи',     text: 'Твоят стек, отметнат за деня, с история назад.' },
-  { icon: 'water',    title: 'Вода',           text: 'Чаши и дневна цел, добавени с едно докосване.' },
-  { icon: 'weight',   title: 'Тегло',          text: 'Ежедневно мерене и тенденцията за месец — посоката, а не шума от вчера.' },
-  { icon: 'chat',     title: 'Чат с треньора', text: 'Директна връзка. Въпроси, корекции и обратна връзка по техника.' },
-  { icon: 'calendar', title: 'График',         text: 'Записване на часове и планът за седмицата на същото място.' },
+  { icon: 'kcal',     title: 'Хранене' },
+  { icon: 'training', title: 'Тренировка' },
+  { icon: 'steps',    title: 'Навици' },
+  { icon: 'sleep',    title: 'Възстановяване' },
+  { icon: 'capsule',  title: 'Суплементи' },
+  { icon: 'water',    title: 'Вода' },
+  { icon: 'weight',   title: 'Тегло' },
+  { icon: 'chat',     title: 'Чат с треньора' },
+  { icon: 'calendar', title: 'График' },
 ]
 
 const STEPS = [
@@ -48,6 +53,12 @@ const FAQ = [
   { q: 'Какво става с данните ми?',
     a: 'Стоят в твоя профил и ги виждаме само ти и аз. Спреш ли, изтриваш профила си и си отиват с него.' },
 ]
+
+/* One place to write the offer. It travels along the bottom of every screen,
+   so whatever it says is the last thing read on the page and the first thing
+   remembered about it. */
+const OFFER = '−20% от треньорския план за първия месец'
+const TICKER = Array.from({ length: 4 }, () => OFFER).join('   ·   ') + '   ·   '
 
 export default function LandingPage({ onContinue, onLogin }) {
   // Respect the setting, and follow it if it changes while the page is open.
@@ -92,7 +103,14 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── Bar ────────────────────────────────────────────────────────── */}
       <header className={styles.bar}>
-        <a className={styles.barBrand} href="#top" onClick={go('top')}>BLAG</a>
+        {/* The mark lives here now, small, rather than filling the middle of the
+            first screen — the splash has just shown it at full size, and showing
+            it again immediately spends the reveal twice. */}
+        <a className={styles.barBrand} href="#top" onClick={go('top')} aria-label="BLAG COACHING">
+          <span className={styles.barArmLeft} aria-hidden="true" />
+          <span className={styles.barWord}>BLAG<span className={styles.barWord2}>COACHING</span></span>
+          <span className={styles.barArmRight} aria-hidden="true" />
+        </a>
         <nav className={styles.barNav}>
           <a href="#features" onClick={go('features')}>ФУНКЦИИ</a>
           <a href="#how"      onClick={go('how')}>КАК РАБОТИ</a>
@@ -100,9 +118,6 @@ export default function LandingPage({ onContinue, onLogin }) {
           <a href="#price"    onClick={go('price')}>ЦЕНА</a>
           <a href="#faq"      onClick={go('faq')}>ВЪПРОСИ</a>
         </nav>
-        <button className={styles.barBtn} onClick={onContinue} type="button">
-          ОТВОРИ ПРИЛОЖЕНИЕТО
-        </button>
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
@@ -130,21 +145,6 @@ export default function LandingPage({ onContinue, onLogin }) {
         )}
         <div className={styles.grain} aria-hidden="true" />
 
-        {/* The splash lockup, standing still. The same arms in the same
-            arrangement — someone arriving from a video has already watched it
-            assemble once, so this is recognition rather than a second reveal. */}
-        <div className={styles.lockup}>
-          <div className={styles.armLeft} aria-hidden="true" />
-          {/* No tagline inside the mark. "Be blag, be better" belongs to the
-              splash, where it has a screen to itself; here it was a fourth line
-              of type competing with the headline two inches below it. */}
-          <div className={styles.brand}>
-            <span className={styles.brandName}>BLAG</span>
-            <span className={styles.brandRule} aria-hidden="true" />
-          </div>
-          <div className={styles.armRight} aria-hidden="true" />
-        </div>
-
         <h1 className={styles.headline}>
           Тренировка, хранене и навици<br />
           <span className={styles.headlineGold}>на едно място</span>
@@ -159,10 +159,12 @@ export default function LandingPage({ onContinue, onLogin }) {
           </a>
         </div>
 
-        {/* One quiet line where two pill badges were. The claim is worth
-            making — it is the only thing here a competitor cannot copy by
-            Friday — but two outlined capsules made it look like a promotion. */}
-        <p className={styles.note}>Без App Store · добавя се на началния екран</p>
+        {/* "Без App Store · добавя се на началния екран" was a specification.
+            Someone who has never installed a web app does not need to be told
+            the category it belongs to — they need to be shown how. */}
+        <a className={styles.note} href="#faq" onClick={go('faq')}>
+          Виж как да го инсталираш
+        </a>
 
         <span className={styles.scrollHint} aria-hidden="true" />
       </section>
@@ -177,12 +179,11 @@ export default function LandingPage({ onContinue, onLogin }) {
 
         <div className={styles.grid}>
           {FEATURES.map(f => (
-            <article key={f.title} className={styles.card}>
-              <span className={styles.cardIcon}>
-                <Pictogram name={f.icon} size={20} />
+            <article key={f.title} className={styles.chip}>
+              <span className={styles.chipIcon}>
+                <Pictogram name={f.icon} size={18} />
               </span>
-              <h3 className={styles.cardTitle}>{f.title}</h3>
-              <p className={styles.cardText}>{f.text}</p>
+              <span className={styles.chipTitle}>{f.title}</span>
             </article>
           ))}
         </div>
@@ -206,7 +207,6 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
       <section className={styles.section} id="coach">
-        <span className={styles.eyebrow}>ТРЕНЬОР</span>
         <h2 className={styles.h2}>Николай Благьов</h2>
 
         <p className={styles.sectionLead}>
@@ -216,7 +216,14 @@ export default function LandingPage({ onContinue, onLogin }) {
         </p>
 
         <ul className={styles.points}>
-          <li>Треньор по бодибилдинг, с практика при натурални атлети.</li>
+          {/* Written plainly on purpose. "В процес" beside a name people have
+              heard of is enough to say what it is; anything vaguer invites the
+              reader to fill the gap with a finished qualification, and that is
+              a sentence he would then have to defend. */}
+          <li className={styles.pointPending}>
+            <span className={styles.pendingMark} aria-hidden="true" />
+            J3University — в процес на обучение.
+          </li>
           <li>Планът се мени според твоите логове, не по усет.</li>
           <li>Седмичен чек-ин, обратна връзка по техника и корекция на макросите.</li>
         </ul>
@@ -255,7 +262,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.priceCard}>
           <span className={styles.priceLabel}>ПРИЛОЖЕНИЕ + ТРЕНЬОР</span>
           <p className={styles.price}>
-            100 €<span className={styles.priceUnit}> / месец</span>
+            119,99 €<span className={styles.priceUnit}> / месец</span>
           </p>
           <ul className={styles.points}>
             <li>Индивидуална програма, преработвана всеки месец.</li>
@@ -311,6 +318,16 @@ export default function LandingPage({ onContinue, onLogin }) {
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
         </button>
       </section>
+
+      {/* A strip along the bottom, always there, always moving.
+          The offer is written once and repeated in the markup only so the loop
+          has no seam — the second copy is hidden from screen readers. */}
+      <div className={styles.ticker} role="note">
+        <div className={styles.tickerTrack}>
+          <span className={styles.tickerRun}>{TICKER}</span>
+          <span className={styles.tickerRun} aria-hidden="true">{TICKER}</span>
+        </div>
+      </div>
     </div>
   )
 }

@@ -26,14 +26,52 @@
   border-bottom: 1px solid rgba(var(--accent-rgb), 0.14);
 }
 
+/* The mark, at the size a mark belongs: arms flanking the name, top left. */
 .barBrand {
-  font-family: var(--font-heading);
-  font-size: 20px;
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
-  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 7px;
   text-decoration: none;
   flex-shrink: 0;
+}
+
+.barArmLeft,
+.barArmRight {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 32px;
+  background: url('/arms-hi.webp') center / contain no-repeat;
+}
+
+/* One drawing, mirrored — the artwork is a right arm. */
+.barArmLeft { transform: scaleX(-1); }
+
+/* Brushed gold, the same ramp the splash pours through its title: a
+   dark-to-highlight-to-dark run is what separates metal from a flat yellow
+   fill. Reserved for the mark itself — the running text on this page is plain
+   gold, or the metal stops meaning anything. */
+.barWord {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: #C8A05A;
+  background-image: linear-gradient(177deg,
+    #6B4A1E 0%, #C8A05A 20%, #F8E8B8 46%, #B08A45 60%, #E4CE94 76%, #7A5726 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.barWord2 {
+  font-size: 7px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  margin-top: 3px;
 }
 
 /* Hidden on phones, where five anchors would take the whole bar and the page is
@@ -227,7 +265,9 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--muted);
-  opacity: 0.65;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.3);
+  padding-bottom: 2px;
 }
 
 /* A page that fills the viewport exactly looks finished, and nobody scrolls a
@@ -292,57 +332,47 @@
 }
 
 /* ── Feature cards ────────────────────────────────────────────────────── */
+/* Three across, like the habits row inside the app. Nine names read as one
+   block that way; as nine paragraphs they read as a list nobody finishes. */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   width: 100%;
-  max-width: 1040px;
+  max-width: 620px;
+  margin-top: 6px;
 }
 
-@media (min-width: 620px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 980px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-
-.card {
+.chip {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
-  padding: 20px;
-  text-align: left;
+  padding: 16px 8px;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
 }
 
-.cardIcon {
+.chipIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: var(--accent-dim);
-  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
   color: var(--accent);
-  margin-bottom: 4px;
 }
 
-.cardTitle {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: 17px;
-  letter-spacing: 0.04em;
-  color: var(--text);
-}
-
-.cardText {
-  margin: 0;
+.chipTitle {
   font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 1.65;
-  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--text);
+  text-align: center;
 }
 
 /* ── Steps ────────────────────────────────────────────────────────────── */
@@ -564,7 +594,7 @@
 
 /* ── Close ────────────────────────────────────────────────────────────── */
 .close {
-  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--panel-border);
 }
 
@@ -616,4 +646,86 @@
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* The one line on the page about a qualification that is not finished, marked
+   as unfinished. A clock rather than a tick: a tick would say it is done. */
+.pointPending::before { display: none; }
+
+.pointPending {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding-left: 0;
+}
+
+.pendingMark {
+  position: relative;
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  margin-top: 0.34em;
+  border: 1px solid rgba(var(--accent-rgb), 0.75);
+  border-radius: 50%;
+}
+
+/* The hand, pointing at one o'clock. */
+.pendingMark::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1.5px;
+  width: 1px;
+  height: 4px;
+  background: rgba(var(--accent-rgb), 0.95);
+}
+
+/* ── The running strip ────────────────────────────────────────────────────
+   Fixed to the bottom of the window rather than the end of the page, so it is
+   read on every screen. The page is padded by exactly its height, or it would
+   sit on top of the last button. */
+.ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(to right,
+    rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.30), rgba(var(--accent-rgb), 0.16));
+  border-top: 1px solid rgba(var(--accent-rgb), 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: content-box;
+  pointer-events: none;
+}
+
+.tickerTrack {
+  display: flex;
+  white-space: nowrap;
+  animation: run 26s linear infinite;
+}
+
+/* Two identical runs, and the track moves exactly one run's width — so the
+   moment the first ends the second is already where it started, and the loop
+   has no seam to notice. */
+.tickerRun {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text);
+  padding-right: 0;
+}
+
+@keyframes run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tickerTrack { animation: none; }
 }
