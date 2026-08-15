@@ -56,6 +56,7 @@ function AppShell() {
   const [drawerDrag, setDrawerDrag] = useState(null)
   const [landingSeen, setLandingSeen] = useState(false)
   const [authMode, setAuthMode] = useState('register')
+  const [authEmail, setAuthEmail] = useState('')
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
     return new URLSearchParams(window.location.search).get('payment') === 'success'
   })
@@ -168,12 +169,15 @@ function AppShell() {
     if (!landingSeen) {
       return (
         <LandingPage
-          onContinue={() => { setAuthMode('register'); setLandingSeen(true) }}
+          onContinue={typed => {
+            if (typeof typed === 'string') setAuthEmail(typed)
+            setAuthMode('register'); setLandingSeen(true)
+          }}
           onLogin={() => { setAuthMode('login'); setLandingSeen(true) }}
         />
       )
     }
-    return <AuthScreen initialMode={authMode} onBack={() => setLandingSeen(false)} />
+    return <AuthScreen initialMode={authMode} initialEmail={authEmail} onBack={() => setLandingSeen(false)} />
   }
 
   // Session known but profile not yet fetched — keep showing the loader

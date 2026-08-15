@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Pictogram from '../Pictogram/Pictogram'
 import InstallDemo from './InstallDemo'
+import AppShowcase from './AppShowcase'
 import styles from './LandingPage.module.css'
 
 /**
@@ -90,6 +91,12 @@ export default function LandingPage({ onContinue, onLogin }) {
     return () => { window.removeEventListener('touchstart', once); window.removeEventListener('click', once) }
   }, [stillOnly])
 
+  /* The email is asked for here and carried into the form, so the first field
+     is already filled when they arrive. A field on a landing page that makes
+     you type the same thing again on the next screen is a field that has cost
+     the visitor something and bought them nothing. */
+  const [email, setEmail] = useState('')
+
   // Only one answer open at a time — five open at once is the wall of text the
   // accordion exists to prevent.
   const [openQ, setOpenQ] = useState(null)
@@ -149,19 +156,47 @@ export default function LandingPage({ onContinue, onLogin }) {
         )}
         <div className={styles.grain} aria-hidden="true" />
 
+        <AppShowcase />
+
+        <span className={styles.kicker}>ПРИЛОЖЕНИЕ И ТРЕНЬОР В ЕДНО</span>
+
         <h1 className={styles.headline}>
           Тренировка, хранене и навици<br />
           <span className={styles.headlineGold}>на едно място</span>
         </h1>
 
-        <div className={styles.heroActions}>
-          <button className={styles.cta} onClick={onContinue} type="button">
-            ЗАПОЧНИ БЕЗПЛАТНО
+        <form
+          className={styles.capture}
+          onSubmit={e => { e.preventDefault(); onContinue(email) }}
+        >
+          <span className={styles.at} aria-hidden="true">@</span>
+          <input
+            className={styles.captureInput}
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            enterKeyHint="go"
+            placeholder="Имейлът ти..."
+            aria-label="Имейл"
+          />
+          <button className={styles.captureBtn} type="submit">
+            ЗАПОЧНИ
           </button>
-          <a className={styles.ctaGhost} href="#how" onClick={go('how')}>
-            Виж как работи
-          </a>
+        </form>
+
+        {/* Three lines, in the order somebody weighs them: what it costs, how
+            long it takes, and whether anyone is actually on the other end. */}
+        <div className={styles.benefits}>
+          <span><b>Безплатно</b> — приложението остава такова.</span>
+          <span><b>Две минути</b> на ден за записване.</span>
+          <span><b>Треньор</b>, когато решиш, че искаш план.</span>
         </div>
+
+        <a className={styles.ctaGhost} href="#how" onClick={go('how')}>
+          Виж как работи
+        </a>
 
         {/* "Без App Store · добавя се на началния екран" was a specification.
             Someone who has never installed a web app does not need to be told

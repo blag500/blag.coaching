@@ -216,6 +216,19 @@
   background: linear-gradient(to right, transparent, rgba(var(--accent-rgb), 0.6), transparent);
 }
 
+/* Above the headline, quiet: it says which of the two things this is before the
+   headline says what they do. */
+.kicker {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--muted);
+}
+
 .headline {
   position: relative;
   z-index: 1;
@@ -231,15 +244,89 @@
 
 .headlineGold { color: var(--accent); }
 
-.heroActions {
+/* Field and button in one pill, not stacked. Stacked they are two decisions;
+   joined they are one control, and the button is plainly what finishes the
+   thing the cursor is already inside. */
+.capture {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+  padding: 6px 6px 6px 14px;
+  box-sizing: border-box;
+  border-radius: var(--r-pill);
+  background: rgba(20, 17, 11, 0.72);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 18px 46px -22px rgba(0, 0, 0, 0.95);
+}
+
+.at {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.captureInput {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  /* 16px: below it iOS zooms the page when the field is focused, and a landing
+     page that zooms on the first tap never zooms back. */
+  font-size: 16px;
+  color: var(--text);
+  padding: 10px 0;
+}
+
+.captureInput::placeholder { color: var(--muted); opacity: 0.5; }
+
+.captureBtn {
+  flex-shrink: 0;
+  padding: 13px 22px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.captureBtn:active { opacity: 0.85; }
+
+/* Three short lines, in the order somebody weighs them. */
+.benefits {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  max-width: 340px;
+  gap: 7px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.benefits b {
+  color: var(--text);
+  font-weight: 400;
+}
+
+@media (min-width: 760px) {
+  .benefits {
+    flex-direction: row;
+    gap: 22px;
+  }
 }
 
 /* One line, not two capsules. The claim is worth making — it is the only thing

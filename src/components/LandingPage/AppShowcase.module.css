@@ -1,0 +1,210 @@
+/* Three phones on one baseline, the outer two leaning away and set back.
+   Overlapped rather than spaced: a row of three separate rectangles reads as a
+   comparison, and there is nothing here to compare — it is one product seen
+   from three sides. */
+.fan {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.phone {
+  flex-shrink: 0;
+  border-radius: 22px;
+  padding: 5px;
+  box-sizing: border-box;
+  background: linear-gradient(160deg, #2a2418 0%, #100d08 62%);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 26px 60px -22px rgba(0, 0, 0, 0.95);
+}
+
+/* The middle one is upright, forward and full strength; it is the one being
+   shown. The others are context. */
+.mid {
+  width: 168px;
+  height: 336px;
+  z-index: 2;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 30px 70px -20px rgba(0, 0, 0, 0.95),
+    0 0 60px -18px rgba(var(--accent-rgb), 0.45);
+}
+
+.left,
+.right {
+  width: 132px;
+  height: 268px;
+  opacity: 0.6;
+}
+
+.left  { transform: rotate(-9deg) translate(22px, -8px); }
+.right { transform: rotate(9deg)  translate(-22px, -8px); }
+
+@media (max-width: 520px) {
+  .mid { width: 142px; height: 288px; }
+  .left, .right { width: 106px; height: 216px; }
+  .left  { transform: rotate(-9deg) translate(20px, -6px); }
+  .right { transform: rotate(9deg)  translate(-20px, -6px); }
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  background: #0C0A06;
+  padding: 14px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 6px;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px;
+  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+}
+
+.cardLabel {
+  font-family: var(--font-heading);
+  font-size: 5.5px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+/* The readiness dial, open at the top left the way the real one is. */
+.ring {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid rgba(var(--accent-rgb), 0.85);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.1);
+  transform: rotate(38deg);
+  align-self: center;
+}
+
+.ringText {
+  position: absolute;
+  inset: 9px 0 auto;
+  height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.big {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.small {
+  font-family: var(--font-body);
+  font-size: 5px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.track span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.chip {
+  height: 17px;
+  border-radius: 9px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── The two behind ───────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.rowName {
+  font-family: var(--font-body);
+  font-size: 6.5px;
+  color: var(--text);
+}
+
+.rowVal {
+  font-family: var(--font-heading);
+  font-size: 7px;
+  color: var(--accent);
+}
+
+.pill {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.pill span {
+  display: block;
+  height: 100%;
+  background: rgba(var(--accent-rgb), 0.4);
+}
+
+.weight {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.spark {
+  width: 100%;
+  height: 30px;
+  display: block;
+}
