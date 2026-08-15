@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import styles from './Splash.module.css'
 
-export default function Splash({ onDone }) {
+export default function Splash({ onDone, coaching = false }) {
   const [leaving, setLeaving] = useState(false)
 
   useEffect(() => {
@@ -21,6 +21,7 @@ export default function Splash({ onDone }) {
         <div className={styles.armLeft} aria-hidden="true" />
         <div className={styles.brandCenter}>
           <h1 className={styles.title}>BLAG</h1>
+          {coaching && <p className={styles.kicker}>COACHING</p>}
           <div className={styles.divider} aria-hidden="true" />
           {/* Broken deliberately after the comma — the centre column is narrow
               between the two arms, and left to wrap it splits as "BE BLAG, BE". */}

@@ -26,39 +26,27 @@
   border-bottom: 1px solid rgba(var(--accent-rgb), 0.14);
 }
 
-/* The mark, at the size a mark belongs: arms flanking the name, top left. */
+/* The mark, at the size a mark belongs: the name, and under it the word that
+   says which of the two things this page is about. */
 .barBrand {
   display: flex;
-  align-items: center;
-  gap: 7px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
   text-decoration: none;
   flex-shrink: 0;
+  line-height: 1;
 }
-
-.barArmLeft,
-.barArmRight {
-  flex: 0 0 auto;
-  width: 20px;
-  height: 32px;
-  background: url('/arms-hi.webp') center / contain no-repeat;
-}
-
-/* One drawing, mirrored — the artwork is a right arm. */
-.barArmLeft { transform: scaleX(-1); }
 
 /* Brushed gold, the same ramp the splash pours through its title: a
    dark-to-highlight-to-dark run is what separates metal from a flat yellow
-   fill. Reserved for the mark itself — the running text on this page is plain
-   gold, or the metal stops meaning anything. */
+   fill. Reserved for the mark — the running text on this page is plain gold,
+   or the metal stops meaning anything. */
 .barWord {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
   font-family: var(--font-heading);
-  font-size: 17px;
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
+  font-size: 19px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
   color: #C8A05A;
   background-image: linear-gradient(177deg,
     #6B4A1E 0%, #C8A05A 20%, #F8E8B8 46%, #B08A45 60%, #E4CE94 76%, #7A5726 100%);
@@ -68,10 +56,11 @@
 }
 
 .barWord2 {
+  font-family: var(--font-heading);
   font-size: 7px;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
-  margin-top: 3px;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
+  color: var(--muted);
 }
 
 /* Hidden on phones, where five anchors would take the whole bar and the page is

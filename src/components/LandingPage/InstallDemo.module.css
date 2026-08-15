@@ -1,0 +1,326 @@
+/* One clock for the whole thing: three screens and three captions, each lit for
+   a third of it. Everything below is a delay off this number, so changing the
+   pace is changing one value in four places rather than guessing at twelve. */
+.wrap {
+  --beat: 3s;          /* how long one step is held */
+  --cycle: 9s;         /* three of them */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  max-width: 620px;
+}
+
+@media (min-width: 760px) {
+  .wrap {
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+    justify-content: center;
+  }
+}
+
+/* ── The phone ────────────────────────────────────────────────────────── */
+.phone {
+  position: relative;
+  flex-shrink: 0;
+  width: 190px;
+  height: 386px;
+  border-radius: 30px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: linear-gradient(160deg, #2a2418 0%, #100d08 60%);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 24px 60px -20px rgba(0, 0, 0, 0.9),
+    0 0 40px -14px rgba(var(--accent-rgb), 0.4);
+}
+
+.notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 14px;
+  border-radius: 0 0 9px 9px;
+  background: #0b0906;
+  z-index: 3;
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 23px;
+  overflow: hidden;
+  background: #0C0A06;
+}
+
+/* The three states are stacked and cross-faded rather than slid: a slide would
+   claim the phone is scrolling, and it is not — it is changing screens. */
+.frame {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: hold var(--cycle) linear infinite;
+}
+
+.f1 { animation-delay: 0s; }
+.f2 { animation-delay: var(--beat); }
+.f3 { animation-delay: calc(var(--beat) * 2); }
+
+/* The outgoing screen is still at full when the next one starts arriving.
+   Held to 31% and gone by 36%, the two were both faint at the hand-over and the
+   phone went blank for a fifth of a second every three seconds — measured, not
+   guessed: sampling the cycle showed a frame reading 000 at exactly 3.0, 6.0
+   and 9.0. A third of nine seconds is 33.3%, so that is where one has to still
+   be up and the other already climbing. */
+@keyframes hold {
+  0%     { opacity: 0; }
+  2%     { opacity: 1; }
+  33.3%  { opacity: 1; }
+  36%    { opacity: 0; }
+  100%   { opacity: 0; }
+}
+
+/* ── 1. The page and the address bar ──────────────────────────────────── */
+.page {
+  position: absolute;
+  inset: 26px 14px 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pageMark {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--accent);
+}
+
+.pageLine {
+  width: 78%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.short { width: 52%; }
+
+.omni {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.url {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* The one control the visitor has to find, breathing so the eye lands on it. */
+.share {
+  display: flex;
+  color: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.75; }
+  50%      { transform: scale(1.22); opacity: 1; }
+}
+
+/* ── 2. The share sheet ───────────────────────────────────────────────── */
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border-radius: 18px 18px 0 0;
+  background: rgba(28, 24, 16, 0.96);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.24);
+  animation: rise var(--cycle) ease-out infinite;
+  animation-delay: var(--beat);
+}
+
+@keyframes rise {
+  0%   { transform: translateY(28px); }
+  6%   { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+
+.grab {
+  width: 34px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  align-self: center;
+  margin-bottom: 2px;
+}
+
+.rowDim,
+.rowHot {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border-radius: 9px;
+}
+
+.rowDim { opacity: 0.3; }
+
+.rowDim span:first-child {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.rowBar {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.rowHot {
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+}
+
+.plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  background: rgba(var(--accent-rgb), 0.22);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.rowText {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ── 3. The home screen ───────────────────────────────────────────────── */
+.home {
+  position: absolute;
+  inset: 34px 20px auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.appIcon {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* The one that just arrived — it lands a beat after the screen does, which is
+   the whole point of the third frame. */
+.appNew {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #C8A05A, #7A5726);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 22px -4px rgba(var(--accent-rgb), 0.8);
+  animation: pop var(--cycle) ease-out infinite;
+  animation-delay: calc(var(--beat) * 2);
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.2); opacity: 0; }
+  4%   { transform: scale(1.14); opacity: 1; }
+  8%   { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+/* ── The captions ─────────────────────────────────────────────────────── */
+.captions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  max-width: 34ch;
+}
+
+.captions li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  opacity: 0.4;
+  animation: lit var(--cycle) linear infinite;
+}
+
+.captions b {
+  flex-shrink: 0;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* Written as `.captions .cN`, not `.cN`. The rule above is `.captions li`,
+   which outranks a lone class — and because it uses the `animation` shorthand,
+   it was resetting the delay to zero and lighting all three at once. */
+.captions .c1 { animation-delay: 0s; }
+.captions .c2 { animation-delay: var(--beat); }
+.captions .c3 { animation-delay: calc(var(--beat) * 2); }
+
+@keyframes lit {
+  0%    { opacity: 0.4; color: var(--muted); }
+  3%    { opacity: 1;   color: var(--text); }
+  33.3% { opacity: 1;   color: var(--text); }
+  36%   { opacity: 0.4; color: var(--muted); }
+  100%  { opacity: 0.4; color: var(--muted); }
+}
+
+/* Someone who asked for less movement gets the first screen and all three
+   captions readable — not a blank phone. */
+@media (prefers-reduced-motion: reduce) {
+  .frame, .sheet, .share, .appNew, .captions li { animation: none; }
+  .f1 { opacity: 1; }
+  .f2, .f3 { opacity: 0; }
+  .captions li { opacity: 1; color: var(--text); }
+}

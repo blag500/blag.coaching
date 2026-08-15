@@ -95,6 +95,19 @@
   animation: titleReveal 1s var(--ease-out) 0.6s both;
 }
 
+/* Only on the way to the landing page. The word is the difference between the
+   product and the service, and the app itself is the product. Tracked wide and
+   kept small so it reads as part of the mark rather than as a second line. */
+.kicker {
+  margin: -6px 0 0;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.52em;
+  text-indent: 0.52em;
+  color: var(--muted);
+  animation: titleReveal 1s var(--ease-out) 0.75s both;
+}
+
 .divider {
   width: 56px;
   height: 1px;

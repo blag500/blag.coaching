@@ -142,8 +142,11 @@ function AppShell() {
     return () => document.removeEventListener('visibilitychange', handler)
   }, [supplementPending])
 
+  /* A visitor with no session is on their way to the landing page, and that
+     page sells coaching — so the mark they see first is the full one. Someone
+     already signed in is on their way into the app, which is BLAG. */
   if (splash) return (
-    <Splash onDone={() => {
+    <Splash coaching={!session} onDone={() => {
       setSplash(false)
       if (supplementPending > 0) {
         setTimeout(() => setShowSupplementBanner(true), 1500)

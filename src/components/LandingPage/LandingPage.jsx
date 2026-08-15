@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Pictogram from '../Pictogram/Pictogram'
+import InstallDemo from './InstallDemo'
 import styles from './LandingPage.module.css'
 
 /**
@@ -106,10 +107,13 @@ export default function LandingPage({ onContinue, onLogin }) {
         {/* The mark lives here now, small, rather than filling the middle of the
             first screen — the splash has just shown it at full size, and showing
             it again immediately spends the reveal twice. */}
+        {/* No arms up here. At the twenty pixels a bar allows, the drawing is
+            a smudge — and a mark whose distinctive half is unreadable is worse
+            than the wordmark standing on its own. They keep their size on the
+            splash, which is where they are meant to be seen. */}
         <a className={styles.barBrand} href="#top" onClick={go('top')} aria-label="BLAG COACHING">
-          <span className={styles.barArmLeft} aria-hidden="true" />
-          <span className={styles.barWord}>BLAG<span className={styles.barWord2}>COACHING</span></span>
-          <span className={styles.barArmRight} aria-hidden="true" />
+          <span className={styles.barWord}>BLAG</span>
+          <span className={styles.barWord2}>COACHING</span>
         </a>
         <nav className={styles.barNav}>
           <a href="#features" onClick={go('features')}>ФУНКЦИИ</a>
@@ -162,7 +166,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         {/* "Без App Store · добавя се на началния екран" was a specification.
             Someone who has never installed a web app does not need to be told
             the category it belongs to — they need to be shown how. */}
-        <a className={styles.note} href="#faq" onClick={go('faq')}>
+        <a className={styles.note} href="#install" onClick={go('install')}>
           Виж как да го инсталираш
         </a>
 
@@ -203,6 +207,17 @@ export default function LandingPage({ onContinue, onLogin }) {
             </article>
           ))}
         </div>
+      </section>
+
+      {/* ── Install ───────────────────────────────────────────────────── */}
+      <section className={styles.section} id="install">
+        <span className={styles.eyebrow}>ИНСТАЛИРАНЕ</span>
+        <h2 className={styles.h2}>Три докосвания</h2>
+        <p className={styles.sectionLead}>
+          Няма магазин за приложения и няма сваляне. Браузърът го слага на
+          екрана ти сам.
+        </p>
+        <InstallDemo />
       </section>
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
