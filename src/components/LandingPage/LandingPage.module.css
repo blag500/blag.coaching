@@ -479,6 +479,22 @@
 
 .lessonsSection { position: relative; overflow: hidden; }
 
+/* The join. Both sections end and begin in the dark, so what shows is the
+   change of texture — one moment there is no print and the next there is a
+   screen. A tall bleed of the page's own colour over the top of the print turns
+   the edge into an arrival. */
+.lessonsSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34vh;
+  background: linear-gradient(to bottom, var(--bg) 0%, rgba(12, 10, 6, 0.7) 40%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
 .lessonsBg {
   position: absolute;
   inset: 0;
@@ -512,6 +528,43 @@
 
 /* Everything in the section stands above it. */
 .lessonsSection > *:not(.lessonsBg):not(.lessonsWash) { position: relative; z-index: 1; }
+
+.appSection { position: relative; overflow: hidden; }
+
+/* Two hairlines crossed at 44 pixels, at a twentieth of the gold's strength.
+   Close enough to read as ruled paper, faint enough that nobody looks at it —
+   which is the whole brief: the black needed a floor, not a picture. */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(var(--accent-rgb), 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  /* Fading out well before the edges, or the ruling ends on a straight line and
+     announces itself as a rectangle laid over the page. */
+  -webkit-mask-image: radial-gradient(ellipse 88% 66% at 50% 46%, #000 0%, #000 30%, transparent 84%);
+  mask-image: radial-gradient(ellipse 88% 66% at 50% 46%, #000 0%, #000 30%, transparent 84%);
+  pointer-events: none;
+}
+
+/* One warm light behind the phones, so they stand in something rather than
+   float on nothing. */
+.appGlow {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: min(120vw, 700px);
+  height: min(80vh, 620px);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center,
+    rgba(var(--accent-rgb), 0.10) 0%,
+    rgba(var(--accent-rgb), 0.04) 42%,
+    transparent 72%);
+  pointer-events: none;
+}
+
+.appSection > *:not(.grid):not(.appGlow) { position: relative; z-index: 1; }
 
 .eyebrow {
   font-family: var(--font-heading);

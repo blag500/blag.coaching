@@ -155,12 +155,19 @@ export default function LandingPage({ onContinue, onLogin }) {
       </section>
 
       {/* ── The app ────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="app">
+      <section className={`${styles.section} ${styles.appSection}`} id="app">
         <span className={styles.eyebrow}>ПРИЛОЖЕНИЕТО</span>
         <h2 className={styles.h2}>И всичко се записва</h2>
         {/* The strongest thing about the free half, said plainly: it works on
             its own. An app that only nags while somebody is paying for a coach
             is a trial with a nicer name. */}
+        {/* Ruled paper, faintly. The section is about numbers being written
+            down, and a grid is the furniture of that without being a picture of
+            anything — it holds the black off being a void and asks for nothing.
+            Behind it, one warm light, so the phones stand in something. */}
+        <div className={styles.grid} aria-hidden="true" />
+        <div className={styles.appGlow} aria-hidden="true" />
+
         <p className={styles.sectionLead}>
           Твоите числа на едно място. Напомня ти само — с треньор или без.
         </p>

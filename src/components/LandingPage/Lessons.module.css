@@ -117,12 +117,15 @@
 .sheetVeil {
   position: absolute;
   inset: 0;
-  backdrop-filter: blur(11px) saturate(125%);
-  -webkit-backdrop-filter: blur(11px) saturate(125%);
-  /* 0.42 rather than 0.55: at the heavier weight the dark gym behind
-     "Тренираш" went to a flat brown and the whole point — that something is
-     moving back there — was lost. */
-  background: rgba(12, 10, 6, 0.42);
+  /* 4, not 11. At eleven the film was a suggestion that something was moving
+     and nothing more — you could not tell a press from a row. The point is to
+     hold back the whole lesson, not to hide the movement: four keeps the
+     execution readable and still stops anyone treating this as the video. */
+  backdrop-filter: blur(4px) saturate(125%);
+  -webkit-backdrop-filter: blur(4px) saturate(125%);
+  /* Up from 0.42, because less blur means more light reaching the word. The
+     darkness does the protecting now instead of the smearing. */
+  background: rgba(12, 10, 6, 0.5);
 }
 
 /* Where a blur is not available the picture would sit at full strength behind
@@ -141,7 +144,9 @@
   letter-spacing: 0.03em;
   text-align: center;
   color: var(--text);
-  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.8);
+  /* Two shadows: a tight one so the letters hold their edge against a picture
+     that is now sharp, and the wide one for the glow. */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 6px 44px rgba(0, 0, 0, 0.85);
   animation: word 460ms var(--ease-out) both;
 }
 
