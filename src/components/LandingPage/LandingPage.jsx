@@ -148,6 +148,13 @@ export default function LandingPage({ onContinue, onLogin }) {
         <button className={styles.quietCta} onClick={onContinue} type="button">
           Или само приложението — без мен.
         </button>
+
+        {/* The way on. Nothing on this screen pointed at the last section, so
+            anybody who was not going to press either button had no reason to
+            keep scrolling. */}
+        <a className={styles.faqLink} href="#faq" onClick={go('faq')}>
+          Често задавани въпроси
+        </a>
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}
