@@ -82,7 +82,7 @@ export default function Lessons({ onProgress }) {
           <li key={l.id}>
             <button type="button" className={styles.line} onClick={() => setOpen(l)}>
               <span className={styles.word}>{l.word}</span>
-              <span className={styles.arrow} aria-hidden="true">→</span>
+              <span className={styles.arrow} aria-hidden="true">▶</span>
             </button>
           </li>
         ))}

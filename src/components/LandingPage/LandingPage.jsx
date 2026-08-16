@@ -163,7 +163,7 @@ export default function LandingPage({ onContinue, onLogin }) {
             corners where nothing needed protecting. */}
         <div className={styles.lessonsWash} aria-hidden="true" />
         <span className={styles.eyebrow}>THE BLAG COACH</span>
-        <h2 className={styles.h2}>Ще те научи как:</h2>
+        <h2 className={styles.h2}>ще те научи как да:</h2>
         <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
       </section>
 
