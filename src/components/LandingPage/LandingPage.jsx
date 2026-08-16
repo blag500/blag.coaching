@@ -164,7 +164,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.lessonsWash} aria-hidden="true" />
         <span className={styles.eyebrow}>THE BLAG COACH</span>
         <h2 className={styles.h2}>ще те научи как да:</h2>
-        <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+        <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'end' })} />
       </section>
 
       {/* ── The app ────────────────────────────────────────────────────── */}
