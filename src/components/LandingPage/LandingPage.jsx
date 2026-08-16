@@ -136,11 +136,12 @@ export default function LandingPage({ onContinue, onLogin }) {
         </div>
         <span className={styles.posterShade} aria-hidden="true" />
 
-        {/* "Тренирай с мен" was an order shouted by nobody. This is the same
-            invitation in his own voice, and it hands straight to the section
-            it opens. */}
-        <a className={styles.cta} href="#lessons" onClick={go('lessons')}>
-          Ела да те науча ;)
+        {/* Its own class, not the page's gold slab. On the poster a filled
+            block reads as a sticker somebody put on a print; a frame with the
+            paper showing through belongs to it. The solid one stays further
+            down, where the page has earned the right to ask outright. */}
+        <a className={styles.heroCta} href="#lessons" onClick={go('lessons')}>
+          ТРЕНИРАЙ С МЕН
         </a>
 
         <span className={styles.scrollHint} aria-hidden="true" />

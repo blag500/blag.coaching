@@ -261,7 +261,11 @@
      past the left of the screen and the name lost its first letter. */
   left: 15%;
   top: 26%;
-  width: 30%;
+  /* 46, not 30. Two lines were asked for and the markup gives two, but at 30%
+     the box was narrower than "Blag Coaching" and the wrap put it back to four.
+     The visible part of the sheet runs to about 70%, so 15 plus 46 still lands
+     inside it with room to spare. */
+  width: 46%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -278,7 +282,7 @@
   font-family: var(--font-heading);
   /* Sized off the sheet rather than the window, so the words grow and shrink
      with the paper they are printed on. */
-  font-size: clamp(22px, 6.1cqw, 54px);
+  font-size: clamp(19px, 5cqw, 44px);
   line-height: 0.92;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -1110,3 +1114,56 @@
 
 /* An answer can carry two lines now. */
 .faqA { white-space: pre-line; }
+
+/* ── The button on the poster ─────────────────────────────────────────────
+   A frame with the print showing through it, not a slab laid over it. Glass
+   the way the header and the drawer are glass, so the first screen is made of
+   the same material as everything behind the login.
+
+   The warmth comes from a tint rather than a fill: at any opacity a gold fill
+   is still a gold rectangle, and a rectangle is what was wrong with it. */
+.heroCta {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  padding: 17px;
+  box-sizing: border-box;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.16) 0%,
+    rgba(200, 160, 90, 0.06) 100%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  /* Three shadows doing three jobs: a hairline of light along the top edge so
+     the glass has a lip, a soft warm bloom outside so it lifts off the paper,
+     and a dark seat underneath so it is sitting on something. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.28),
+    0 0 34px -8px rgba(var(--accent-rgb), 0.45),
+    0 10px 30px -14px rgba(0, 0, 0, 0.9);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+  transition: background 180ms, border-color 180ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.heroCta:active {
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.26) 0%,
+    rgba(200, 160, 90, 0.12) 100%);
+  border-color: rgba(var(--accent-rgb), 0.8);
+}
+
+/* Where the glass cannot be blurred, a flat tint would let the halftone read
+   straight through the letters, so it closes up instead. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .heroCta { background: rgba(24, 19, 11, 0.82); }
+}
