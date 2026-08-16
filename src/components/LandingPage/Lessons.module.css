@@ -68,7 +68,10 @@
 /* The product's name, inside the row that opens it. Same face and same size as
    the word before it — only the colour changes, so the line reads as one
    sentence with the name lit rather than as a heading with a tagline. */
-.withApp { color: var(--accent); }
+/* Gold, but sat down. At full strength the name jumped out of the middle of
+   the sentence and the line stopped reading as one thing; held back it marks
+   the words without shouting over the four rows around it. */
+.withApp { color: rgba(var(--accent-rgb), 0.72); }
 
 /* ── The opened screen ───────────────────────────────────────────────────── */
 .sheet {
