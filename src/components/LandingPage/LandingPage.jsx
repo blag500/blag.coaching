@@ -185,8 +185,12 @@ export default function LandingPage({ onContinue, onLogin }) {
 
         <p className={styles.sectionLead}>
           Ти входираш,{' '}
-          <a className={styles.leadLink} href="#features"
-             onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }}>то следи</a><br />
+          <span className={styles.leadAnchor}>
+            <a className={styles.leadLink} href="#features"
+               onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }}>то следи</a>
+            <span className={styles.tapHint} aria-hidden="true">☝️</span>
+          </span>
+          <br />
           и напомня да не кривнеш ;)
         </p>
 
