@@ -125,10 +125,13 @@ export default function LandingPage({ onContinue, onLogin }) {
                 Latin words with nothing to belong to. */}
             <h1 className={styles.inkName}>
               Blag Coaching
+              <span className={styles.inkAmp}>&amp;</span>
+              Blag app
             </h1>
             <span className={styles.inkRule} aria-hidden="true" />
             <p className={styles.inkLine}>
-              Постигни целите си<br />с треньор.
+              Blag Coach — планът,<br />нагласен по твоите числа.<br />
+              <span style={{ opacity: 0.72 }}>Blag app — числата<br />на едно място.</span>
             </p>
           </div>
         </div>
