@@ -275,7 +275,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   font-family: var(--font-heading);
   /* Sized off the sheet rather than the window, so the words grow and shrink
      with the paper they are printed on. */
