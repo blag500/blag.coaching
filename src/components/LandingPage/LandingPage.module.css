@@ -502,7 +502,18 @@
   .section { scroll-margin-top: 70px; }
 }
 
-.lessonsSection { position: relative; overflow: hidden; }
+/* The one section taller than the screen. Centred and snapped to its middle it
+   hid both ends at once — the last line under the ticker and a hand's width of
+   empty paper above the heading. It starts at the top instead, and keeps the
+   ticker's own height clear underneath. */
+.lessonsSection {
+  position: relative;
+  overflow: hidden;
+  justify-content: flex-start;
+  scroll-snap-align: start;
+  padding-top: 58px;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
 
 /* Mirrors the ::before that covers the hero-to-lessons join — covers the bottom
    edge of the lessons section so the background image does not bleed into the
