@@ -260,37 +260,22 @@
    floating above a photograph of a poster rather than being part of one. */
 .ink {
   position: absolute;
-  /* Read together with the sheet's transform, which was moved right by the
-     same 4% this came left. On its own this number cannot go far: the sheet
-     hangs off both edges of a phone, and at 7% the name lost its first letter
-     off the side of the screen. */
-  left: 11%;
+  left: 8%;
   top: 26%;
-  /* Narrow enough to clear him. Centred type fills its box from the middle
-     out, so the 46% that fitted a left-aligned line pushed the right edge of
-     "COACHING" into his shoulder; 33% ends around 215 of 390 and he begins at
-     about 230. The size comes down with it — the words have to fit unwrapped,
-     because the shape is three lines and a wrap would make four. */
-  width: 33%;
+  width: 36%;
   display: flex;
   flex-direction: column;
-  /* Centred, now that the mark is three stacked lines with an ampersand pinned
-     between them. Left-aligned, the & would hang off the start of its line
-     rather than sit under the word above it, which is the whole shape. */
-  align-items: center;
-  /* In ems, not percent. A percentage gap in a column resolves against the
-     container's height, which is auto here — so it came out as nothing and the
-     rule sat welded to the name. */
+  align-items: flex-start;
   gap: 0.6em;
   color: #241C12;
-  text-align: center;
+  text-align: left;
 }
 
 .inkName {
   margin: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   font-family: var(--font-heading);
   /* Sized off the sheet rather than the window, so the words grow and shrink
      with the paper they are printed on. */
@@ -313,7 +298,7 @@
 }
 
 .inkRule {
-  width: 34%;
+  width: 40%;
   height: 2px;
   flex-shrink: 0;
   background: #241C12;

@@ -130,8 +130,8 @@ export default function LandingPage({ onContinue, onLogin }) {
             </h1>
             <span className={styles.inkRule} aria-hidden="true" />
             <p className={styles.inkLine}>
-              Blag Coach — планът,<br />нагласен по твоите числа.<br />
-              <span style={{ opacity: 0.72 }}>Blag app — числата<br />на едно място.</span>
+              Blag Coach, който ще те направи blag.<br />
+              <span style={{ opacity: 0.72 }}>Blag app, който ще следи и напомня.</span>
             </p>
           </div>
         </div>
