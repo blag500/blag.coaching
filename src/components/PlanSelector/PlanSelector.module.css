@@ -27,12 +27,16 @@
 .armLeft,
 .armRight {
   flex: 0 0 auto;
-  width: clamp(56px, 18vw, 90px);
-  height: clamp(96px, 30vw, 148px);
+  width: clamp(40px, 13vw, 64px);
+  height: clamp(68px, 22vw, 108px);
   background-image: url('/arms-hi.webp');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+.armLeft {
+  transform: scaleX(-1);
 }
 
 .brandCenter {
@@ -46,7 +50,7 @@
 
 .brandName {
   font-family: var(--font-heading);
-  font-size: clamp(48px, 16vw, 72px);
+  font-size: clamp(36px, 12vw, 54px);
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.2em;
