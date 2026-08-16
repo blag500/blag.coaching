@@ -250,12 +250,12 @@ export default function Onboarding({ isCoachingIntake = false }) {
               <div className={styles.statField}>
                 <label className={styles.label}>Възраст</label>
                 <input className={styles.input} type="number" min="10" max="100"
-                  placeholder="25" value={form.age} onChange={e => set('age', e.target.value)} />
+                  placeholder="" value={form.age} onChange={e => set('age', e.target.value)} />
               </div>
               <div className={styles.statField}>
                 <label className={styles.label}>Ръст (cm)</label>
                 <input className={styles.input} type="number" min="100" max="250"
-                  placeholder="178" value={form.height_cm} onChange={e => set('height_cm', e.target.value)} />
+                  placeholder="" value={form.height_cm} onChange={e => set('height_cm', e.target.value)} />
               </div>
             </div>
 
@@ -263,12 +263,12 @@ export default function Onboarding({ isCoachingIntake = false }) {
               <div className={styles.statField}>
                 <label className={styles.label}>Тегло сега (kg)</label>
                 <input className={styles.input} type="number" min="30" max="300"
-                  placeholder="80" value={form.weight_kg} onChange={e => set('weight_kg', e.target.value)} />
+                  placeholder="" value={form.weight_kg} onChange={e => set('weight_kg', e.target.value)} />
               </div>
               <div className={styles.statField}>
                 <label className={styles.label}>Цел. тегло (kg)</label>
                 <input className={styles.input} type="number" min="30" max="300"
-                  placeholder="75" value={form.target_weight} onChange={e => set('target_weight', e.target.value)} />
+                  placeholder="" value={form.target_weight} onChange={e => set('target_weight', e.target.value)} />
               </div>
             </div>
           </div>

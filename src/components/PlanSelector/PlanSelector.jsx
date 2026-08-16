@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import AppShowcase from '../LandingPage/AppShowcase'
 import styles from './PlanSelector.module.css'
 
 const PLANS = {
@@ -77,20 +78,18 @@ export default function PlanSelector({ onSelect, onSaved }) {
 
   return (
     <div className={styles.page}>
-      {/* Brand */}
-      <div className={styles.brand}>
-        <div className={styles.armsRow}>
-          <div className={styles.armLeft} aria-hidden="true" />
-          <div className={styles.brandCenter}>
-            <span className={styles.brandName}>BLAG</span>
-            <p className={styles.brandTagline}>BE BLAG, BE BETTER</p>
-          </div>
-          <div className={styles.armRight} aria-hidden="true" />
-        </div>
-      </div>
+      <span className={styles.eyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
+      <p className={styles.lead}>
+        Ти входираш, то следи<br />и напомня да не кривнеш ;)
+      </p>
+
+      <AppShowcase />
+
+      <p className={styles.leadBelow}>
+        Приложението е безплатно.<br />Blag Coach — ако искаш.
+      </p>
 
       <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
-      <p className={styles.subtitle}>Приложението е безплатно завинаги.<br />Плаща се само за работа с треньор.</p>
 
       {/* Pills */}
       <div className={styles.pills}>

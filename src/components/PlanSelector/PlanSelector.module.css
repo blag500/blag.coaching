@@ -5,98 +5,51 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: calc(env(safe-area-inset-top) + 24px) 20px 40px;
+  padding: calc(env(safe-area-inset-top) + 32px) 0 40px;
   overflow-y: auto;
 }
 
-/* ── Brand (same metallic lockup as auth screen) ── */
-.brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.armsRow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.armLeft,
-.armRight {
-  flex: 0 0 auto;
-  width: clamp(40px, 13vw, 64px);
-  height: clamp(68px, 22vw, 108px);
-  background-image: url('/arms-hi.webp');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.armLeft {
-  transform: scaleX(-1);
-}
-
-.brandCenter {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
-}
-
-.brandName {
-  font-family: var(--font-heading);
-  font-size: clamp(36px, 12vw, 54px);
-  font-weight: 600;
-  line-height: 1;
+/* ── Eyebrow + lead text ── */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
   letter-spacing: 0.2em;
-  text-indent: 0.2em;
-  color: #C8A05A;
-  background-image: linear-gradient(
-    177deg,
-    #6B4A1E 0%,
-    #C8A05A 22%,
-    #F8E8B8 44%,
-    #B08A45 58%,
-    #E4CE94 74%,
-    #7A5726 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent);
+  opacity: 0.8;
+  text-align: center;
+  padding: 0 24px;
 }
 
-.brandTagline {
-  font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  text-indent: 0.32em;
+.lead {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  text-align: center;
+  margin: 10px 0 0;
+  padding: 0 24px;
+  opacity: 0.85;
+}
+
+.leadBelow {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--muted);
-  opacity: 0.7;
-  margin: 0;
+  text-align: center;
+  margin: 4px 0 0;
+  padding: 0 24px;
 }
 
 /* ── Title ── */
 .title {
   font-family: var(--font-heading);
-  font-size: 28px;
+  font-size: 26px;
   letter-spacing: 0.12em;
   color: var(--text);
-  margin: 0 0 8px;
+  margin: 24px 0 0;
   text-align: center;
-}
-
-.subtitle {
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--muted);
-  margin: 0 0 32px;
-  line-height: 1.6;
-  text-align: center;
+  padding: 0 24px;
 }
 
 /* ── Pill buttons ── */
@@ -105,6 +58,9 @@
   gap: 12px;
   width: 100%;
   max-width: 340px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  margin-top: 16px;
 }
 
 .pill {
@@ -135,7 +91,7 @@
   font-family: var(--font-body);
   font-size: 0.78rem;
   color: #ef5350;
-  margin: 16px 0 0;
+  margin: 12px 24px 0;
   text-align: center;
 }
 
@@ -146,7 +102,7 @@
   font-family: var(--font-body);
   font-size: 11px;
   cursor: pointer;
-  padding: 28px 0 0;
+  padding: 20px 0 0;
   opacity: 0.5;
   -webkit-tap-highlight-color: transparent;
 }
