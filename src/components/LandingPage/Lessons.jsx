@@ -94,7 +94,9 @@ function AppSheet({ onClose }) {
   return createPortal(
     <div className={styles.sheet} onClick={onClose} role="dialog" aria-label="Blag app">
       <div className={styles.appFrame} onClick={e => e.stopPropagation()}>
-        <span className={styles.appEyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ</span>
+        {/* His line, whole. The second half is the half that makes it his — cut
+            down to the first two words it was a category, not a name. */}
+        <span className={styles.appEyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
         <p className={styles.appLead}>
           Ти входираш, то следи<br />и напомня да не кривнеш ;)
         </p>

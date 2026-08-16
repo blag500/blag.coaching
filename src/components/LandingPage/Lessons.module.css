@@ -217,6 +217,10 @@
   text-indent: 0.24em;
   color: var(--accent);
   opacity: 0.85;
+  text-align: center;
+  /* Long enough to wrap on a narrow phone, and it should wrap rather than run
+     off the frame — the tracking is what makes it read as a mark, not one line. */
+  line-height: 1.7;
 }
 
 .appLead {
