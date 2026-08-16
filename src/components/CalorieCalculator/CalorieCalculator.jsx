@@ -189,7 +189,7 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
             <input
               className={styles.input}
               type="text"
-              placeholder="Николай"
+              placeholder=""
               value={name}
               onChange={e => setName(e.target.value)}
               autoFocus
@@ -217,17 +217,17 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
           <div className={styles.field}>
             <label className={styles.label}>ВЪЗРАСТ</label>
             <input className={styles.input} type="number" min="10" max="100"
-              placeholder="25" value={form.age} onChange={e => set('age', e.target.value)} />
+              placeholder="" value={form.age} onChange={e => set('age', e.target.value)} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>РЪСТ (CM)</label>
             <input className={styles.input} type="number" min="100" max="250"
-              placeholder="178" value={form.height} onChange={e => set('height', e.target.value)} />
+              placeholder="" value={form.height} onChange={e => set('height', e.target.value)} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>ТЕГЛО (KG)</label>
             <input className={styles.input} type="number" min="30" max="300"
-              placeholder="80" value={form.weight} onChange={e => set('weight', e.target.value)} />
+              placeholder="" value={form.weight} onChange={e => set('weight', e.target.value)} />
           </div>
         </div>
 
