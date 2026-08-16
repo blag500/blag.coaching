@@ -24,11 +24,11 @@ const FAQ = [
   { q: 'Защо ми е?',
     a: 'Ако тренираш сам и планираш сам — вероятно не ти е. Blag app е инструментът, Blag Coaching е мозъкът.' },
   { q: 'Как изглежда коучингът на практика?',
-    a: 'Тренираме заедно. Пишеш ми, гледаме числата от приложението, настройваме плана. Седмичен чек-ин, корекция на макросите и обратна връзка по техника — по реални данни, не по усет.' },
+    a: 'Пишеш ми, гледаме числата от приложението, настройваме плана. Седмичен чек-ин, корекция на макросите и обратна връзка по техника — по реални данни, не по усет. Тренираме заедно.' },
   /* The one answer that is shown instead of written. Three taps described in a
      paragraph is a paragraph nobody reads; the same three taps happening on a
      phone are over before anyone decides whether to pay attention. */
-  { q: 'Трябва ли да го свалям от App Store?', demo: true },
+  { q: 'Трябва ли да го свалям от App Store/Google Play?', demo: true },
 ]
 
 /* One place to write the offer. It travels along the bottom of every screen,
