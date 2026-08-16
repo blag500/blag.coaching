@@ -58,7 +58,7 @@ function macrosForKcal(kcal, weight, proteinCoeff = 2.0) {
 
 // isOnboarding=true  → first-time setup; saves via completeOnboarding(), shows name field
 // isOnboarding=false → tool in Explore; saves via updateProfile()
-export default function CalorieCalculator({ onBack, isOnboarding = false }) {
+export default function CalorieCalculator({ onBack, isOnboarding = false, onChangePlan }) {
   const { profile, updateProfile, completeOnboarding, signOut } = useAuth()
 
   const [name, setName] = useState(profile?.name ?? '')
@@ -166,6 +166,9 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
       <header className={styles.header}>
         {isOnboarding ? (
           <>
+            {onChangePlan && (
+              <button className={styles.backBtn} onClick={onChangePlan} type="button">← Смени плана</button>
+            )}
             <div className={styles.onboardingBrand}>
               <span className={styles.brandName}>BLAG</span>
             </div>

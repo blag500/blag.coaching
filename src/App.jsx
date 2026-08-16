@@ -55,6 +55,7 @@ function AppShell() {
   // no drag is in progress and the stylesheet is in charge of its position.
   const [drawerDrag, setDrawerDrag] = useState(null)
   const [landingSeen, setLandingSeen] = useState(false)
+  const [forcePlanSelect, setForcePlanSelect] = useState(false)
   const [authMode, setAuthMode] = useState('register')
   const [authEmail, setAuthEmail] = useState('')
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
@@ -191,14 +192,15 @@ function AppShell() {
 
   const isCoach = profile.role === 'coach'
 
-  if (!isCoach && !profile.plan)            return <PlanSelector />
+  if (!isCoach && (!profile.plan || forcePlanSelect))
+    return <PlanSelector onSaved={() => setForcePlanSelect(false)} />
   if (!isCoach && !profile.onboarding_done) {
     // PRO is the coached tier, so it gets the full intake. 'coaching' is the
     // old id for the same thing — still honoured for clients who chose it then.
     const coached = profile.plan === 'pro' || profile.plan === 'coaching'
     return coached
-      ? <Onboarding isCoachingIntake />
-      : <CalorieCalculator isOnboarding />
+      ? <Onboarding isCoachingIntake onChangePlan={() => setForcePlanSelect(true)} />
+      : <CalorieCalculator isOnboarding onChangePlan={() => setForcePlanSelect(true)} />
   }
 
   // Nothing is sold by card here. PRO is arranged with the coach, who approves

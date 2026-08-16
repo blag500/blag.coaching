@@ -49,7 +49,7 @@ const PLANS = [
 
 // onSelect prop = public/unauthenticated mode (caller handles navigation)
 // No onSelect = authenticated mode (saves plan directly to profile)
-export default function PlanSelector({ onSelect }) {
+export default function PlanSelector({ onSelect, onSaved }) {
   const auth = useAuth()
   const [loading, setLoading] = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -74,6 +74,7 @@ export default function PlanSelector({ onSelect }) {
 
     if (planId === 'pro') notifyCoach()
     await auth.refreshProfile()
+    onSaved?.()
     setLoading(false)
   }
 
