@@ -311,22 +311,42 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* The landing page's glass, not the metal slab. A poured-gold rectangle is the
+   loudest thing on a screen whose whole job is one quiet question, and the two
+   are the same product — the button should not change character between them.
+   The warmth comes from a tint and a lit top edge rather than from a fill. */
 .nextBtn {
   padding: 14px 28px;
-  background: var(--accent-metal);
-  border: none;
   border-radius: var(--r-md);
-  color: #241B0C;
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.16) 0%,
+    rgba(200, 160, 90, 0.06) 100%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.28),
+    0 0 34px -8px rgba(var(--accent-rgb), 0.45),
+    0 10px 30px -14px rgba(0, 0, 0, 0.9);
+  color: var(--accent);
   font-family: var(--font-heading);
   font-size: 15px;
   letter-spacing: 0.1em;
   cursor: pointer;
-  transition: opacity 150ms;
+  transition: background 180ms, border-color 180ms, opacity 150ms;
   -webkit-tap-highlight-color: transparent;
 }
 
+.nextBtn:active:not(:disabled) {
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.26) 0%,
+    rgba(200, 160, 90, 0.12) 100%);
+  border-color: rgba(var(--accent-rgb), 0.8);
+}
+
 .nextBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
