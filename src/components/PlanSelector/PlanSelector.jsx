@@ -3,17 +3,11 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import styles from './PlanSelector.module.css'
 
-// Two tiers, not three. The whole product is free; the paid layer is the coach
-// himself — protocols, assessment, plan. Everything that used to sit behind
-// "PRO 4.99" is in the free app now.
-const PLANS = [
-  {
+const PLANS = {
+  free: {
     id: 'free',
     name: 'BLAG',
-    price: null,
-    period: null,
-    badge: null,
-    available: true,
+    cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
     features: [
       'AI търсене на храни + баркод скенер',
       'Дневник на храненето с макроси',
@@ -22,17 +16,12 @@ const PLANS = [
       'Навици, тегло и прогрес',
       'Известия и напомняния',
     ],
-    cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
-    accent: 'var(--accent)',
-    fill: 'var(--accent-metal)',
   },
-  {
+  pro: {
     id: 'pro',
     name: 'BLAG PRO',
-    price: null,
-    period: null,
     badge: 'С ТРЕНЬОР',
-    available: true,
+    cta: 'КАНДИДАТСТВАЙ ЗА PRO',
     features: [
       'Всичко от BLAG',
       'Оценка на формата за начало',
@@ -41,18 +30,14 @@ const PLANS = [
       'Личен тренировъчен план и цели',
       'Директен чат с треньора',
     ],
-    cta: 'КАНДИДАТСТВАЙ ЗА PRO',
-    accent: 'var(--accent)',
-    fill: 'var(--accent-metal)',
   },
-]
+}
 
-// onSelect prop = public/unauthenticated mode (caller handles navigation)
-// No onSelect = authenticated mode (saves plan directly to profile)
 export default function PlanSelector({ onSelect, onSaved }) {
   const auth = useAuth()
   const [loading, setLoading] = useState(false)
   const [saveError, setSaveError] = useState(null)
+  const [sheet, setSheet] = useState(null) // 'free' | 'pro' | null
 
   async function handleSelect(planId) {
     if (loading) return
@@ -63,8 +48,6 @@ export default function PlanSelector({ onSelect, onSaved }) {
       return
     }
 
-    // The RPC, not a plain update — it also raises plan_pending, which is what
-    // puts a PRO applicant in the coach's pending list.
     const { error } = await supabase.rpc('select_plan', { plan_choice: planId })
     if (error) {
       setLoading(false)
@@ -78,7 +61,6 @@ export default function PlanSelector({ onSelect, onSaved }) {
     setLoading(false)
   }
 
-  /** Tell the coach someone applied. Best effort — never block the signup on it. */
   function notifyCoach() {
     const coachId = auth.profile?.coach_id
     if (!coachId) return
@@ -91,59 +73,36 @@ export default function PlanSelector({ onSelect, onSaved }) {
     }).catch(() => {})
   }
 
+  const plan = sheet ? PLANS[sheet] : null
+
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <div className={styles.brand}>
-          <span className={styles.brandName}>BLAG</span>
+      {/* Brand */}
+      <div className={styles.brand}>
+        <div className={styles.armsRow}>
+          <div className={styles.armLeft} aria-hidden="true" />
+          <div className={styles.brandCenter}>
+            <span className={styles.brandName}>BLAG</span>
+            <p className={styles.brandTagline}>BE BLAG, BE BETTER</p>
+          </div>
+          <div className={styles.armRight} aria-hidden="true" />
         </div>
-        <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
-        <p className={styles.subtitle}>Приложението е безплатно завинаги. Плаща се само за работа с треньор.</p>
       </div>
 
-      <div className={styles.plans}>
-        {PLANS.map(plan => (
-          <div
-            key={plan.id}
-            className={`${styles.planCard} ${plan.id === 'free' ? styles.planCardFeatured : ''}`}
-            style={{ '--plan-accent': plan.accent }}
+      <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
+      <p className={styles.subtitle}>Приложението е безплатно завинаги.<br />Плаща се само за работа с треньор.</p>
+
+      {/* Pills */}
+      <div className={styles.pills}>
+        {Object.values(PLANS).map(p => (
+          <button
+            key={p.id}
+            className={`${styles.pill} ${sheet === p.id ? styles.pillActive : ''}`}
+            onClick={() => setSheet(prev => prev === p.id ? null : p.id)}
+            type="button"
           >
-            {plan.badge && (
-              <span className={styles.badge}>{plan.badge}</span>
-            )}
-            {plan.id === 'free' && (
-              <span className={styles.popularBadge}>ЗАПОЧНИ ОТ ТУК</span>
-            )}
-
-            <div className={styles.planHeader}>
-              <span className={styles.planName} style={{ color: plan.accent }}>{plan.name}</span>
-              {plan.price && (
-              <div className={styles.planPrice}>
-                <span className={styles.priceAmount}>{plan.price}</span>
-                <span className={styles.pricePeriod}>/{plan.period}</span>
-              </div>
-            )}
-            </div>
-
-            <ul className={styles.features}>
-              {plan.features.map(f => (
-                <li key={f} className={styles.feature}>
-                  <span className={styles.featureCheck} style={{ color: plan.accent }}>✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-
-            <button
-              className={styles.cta}
-              style={{ background: plan.fill }}
-              onClick={() => handleSelect(plan.id)}
-              disabled={loading}
-              type="button"
-            >
-              {loading ? '...' : plan.cta}
-            </button>
-          </div>
+            {p.name}
+          </button>
         ))}
       </div>
 
@@ -154,6 +113,40 @@ export default function PlanSelector({ onSelect, onSaved }) {
           Изход
         </button>
       )}
+
+      {/* Backdrop */}
+      {sheet && (
+        <div className={styles.backdrop} onClick={() => setSheet(null)} />
+      )}
+
+      {/* Bottom sheet */}
+      <div className={`${styles.sheet} ${sheet ? styles.sheetOpen : ''}`}>
+        {plan && (
+          <>
+            <div className={styles.sheetHandle} />
+            <div className={styles.sheetHeader}>
+              <span className={styles.sheetName}>{plan.name}</span>
+              {plan.badge && <span className={styles.sheetBadge}>{plan.badge}</span>}
+            </div>
+            <ul className={styles.features}>
+              {plan.features.map(f => (
+                <li key={f} className={styles.feature}>
+                  <span className={styles.featureCheck}>✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              className={styles.cta}
+              onClick={() => handleSelect(plan.id)}
+              disabled={loading}
+              type="button"
+            >
+              {loading ? '...' : plan.cta}
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

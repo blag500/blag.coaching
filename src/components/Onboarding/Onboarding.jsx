@@ -35,7 +35,7 @@ function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal })
 // Typical starting values. Pre-filling turns "fill this in from scratch" into
 // "check and adjust", which is a far easier task — and the numbers stay visible
 // on the macros step, so nothing is decided behind the user's back.
-const DEFAULTS = { age: '28', height_cm: '178', weight_kg: '80' }
+const DEFAULTS = { age: '', height_cm: '', weight_kg: '' }
 
 export default function Onboarding({ isCoachingIntake = false }) {
   const { profile, completeOnboarding, signOut } = useAuth()

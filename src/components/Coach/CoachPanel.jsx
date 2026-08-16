@@ -386,6 +386,9 @@ export default function CoachPanel() {
                                 </span>
                               )}
                             </div>
+                            {client.email && (
+                              <span className={styles.clientEmail}>{client.email}</span>
+                            )}
                             <div className={styles.clientMeta}>
                               {s?.kcalToday > 0
                                 ? <span className={styles.kcalToday}>{Math.round(s.kcalToday)} ккал</span>

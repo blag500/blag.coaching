@@ -36,7 +36,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     if (mode === 'login') {
       await signIn(email, password)
     } else {
-      const res = await signUp(email, password, name)
+      const res = await signUp(email, password)
       /* Already registered: move them to the door they actually need, with
          their address still in the field and the password box waiting. Being
          told "this email is taken" and left on the wrong form is how people
@@ -56,11 +56,15 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
   return (
     <div className={styles.screen}>
       <div className={styles.inner}>
-        {onBack && (
-          <button className={styles.backLink} onClick={onBack} type="button">← Смени план</button>
-        )}
         <div className={styles.brand}>
-          <span className={styles.brandName}>BLAG</span>
+          <div className={styles.armsRow}>
+            <div className={styles.armLeft} aria-hidden="true" />
+            <div className={styles.brandCenter}>
+              <span className={styles.brandName}>BLAG</span>
+              <p className={styles.brandTagline}>BE BLAG, BE BETTER</p>
+            </div>
+            <div className={styles.armRight} aria-hidden="true" />
+          </div>
         </div>
 
         <div className={styles.toggle}>
@@ -81,22 +85,6 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          {mode === 'register' && (
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="auth-name">Твоето име</label>
-              <input
-                id="auth-name"
-                className={styles.input}
-                type="text"
-                placeholder="Николай"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                autoComplete="name"
-              />
-            </div>
-          )}
-
           <div className={styles.field}>
             <label className={styles.label} htmlFor="auth-email">Имейл</label>
             <input

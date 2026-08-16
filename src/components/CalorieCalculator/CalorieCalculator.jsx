@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import styles from './CalorieCalculator.module.css'
+import calcStyles from './CalorieCalculator.module.css'
+import stepStyles from '../Onboarding/Onboarding.module.css'
 
 const ACTIVITY_OPTIONS = [
   { id: 'sedentary',   label: 'Заседнал',         desc: 'Офис работа, без спорт',           mult: 1.2   },
@@ -8,6 +9,12 @@ const ACTIVITY_OPTIONS = [
   { id: 'moderate',    label: 'Умерено активен',   desc: '3–5 тренировки на седмица',         mult: 1.55  },
   { id: 'active',      label: 'Много активен',     desc: '6–7 тренировки на седмица',         mult: 1.725 },
   { id: 'very_active', label: 'Изключително акт.', desc: 'Физически труд + ежедневен спорт',  mult: 1.9   },
+]
+
+const GOAL_OPTIONS = [
+  { id: 'cut',      label: 'ИЗГАРЯНЕ',   icon: '🔥', desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
+  { id: 'maintain', label: 'ПОДДЪРЖАНЕ', icon: '⚖️', desc: 'Запазване на теглото',        kcalDelta: 0    },
+  { id: 'bulk',     label: 'ПОКАЧВАНЕ',  icon: '💪', desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
 ]
 
 const GOAL_PRESETS = [
@@ -21,12 +28,18 @@ const GOAL_PRESETS = [
 ]
 
 const BMI_CATEGORIES = [
-  { max: 18.5,     label: 'Слабо тегло',       color: '#42A5F5' },
-  { max: 25,       label: 'Нормално тегло',     color: '#66BB6A' },
-  { max: 30,       label: 'Наднормено',         color: '#FFA726' },
-  { max: 35,       label: 'Затлъстяване I',     color: '#FF7043' },
-  { max: 40,       label: 'Затлъстяване II',    color: '#ef5350' },
-  { max: Infinity, label: 'Затлъстяване III',   color: '#b71c1c' },
+  { max: 18.5,     label: 'Слабо тегло',     color: '#42A5F5' },
+  { max: 25,       label: 'Нормално тегло',   color: '#66BB6A' },
+  { max: 30,       label: 'Наднормено',       color: '#FFA726' },
+  { max: 35,       label: 'Затлъстяване I',   color: '#FF7043' },
+  { max: 40,       label: 'Затлъстяване II',  color: '#ef5350' },
+  { max: Infinity, label: 'Затлъстяване III', color: '#b71c1c' },
+]
+
+const PROTEIN_COEFFS = [
+  { value: 2.0, label: '2.0', desc: 'Стандарт' },
+  { value: 2.5, label: '2.5', desc: 'Атлет'    },
+  { value: 3.0, label: '3.0', desc: 'Prep'      },
 ]
 
 function calcBMR(gender, age, height, weight) {
@@ -43,12 +56,6 @@ function getBMICategory(bmi) {
   return BMI_CATEGORIES.find(c => bmi < c.max) || BMI_CATEGORIES.at(-1)
 }
 
-const PROTEIN_COEFFS = [
-  { value: 2.0, label: '2.0', desc: 'Стандарт' },
-  { value: 2.5, label: '2.5', desc: 'Атлет'    },
-  { value: 3.0, label: '3.0', desc: 'Prep'      },
-]
-
 function macrosForKcal(kcal, weight, proteinCoeff = 2.0) {
   const protein = Math.round(weight * proteinCoeff)
   const fat     = Math.round((kcal * 0.25) / 9)
@@ -56,12 +63,38 @@ function macrosForKcal(kcal, weight, proteinCoeff = 2.0) {
   return { protein, fat, carbs }
 }
 
-// isOnboarding=true  → first-time setup; saves via completeOnboarding(), shows name field
-// isOnboarding=false → tool in Explore; saves via updateProfile()
+function calcOnboardingMacros({ gender, age, height_cm, weight_kg, goal }) {
+  const bmr   = calcBMR(gender, age, height_cm, weight_kg)
+  const delta = GOAL_OPTIONS.find(g => g.id === goal)?.kcalDelta ?? 0
+  const calories = Math.round(bmr * 1.55 + delta)
+  const protein  = Math.round(weight_kg * 2)
+  const fat      = Math.round((calories * 0.25) / 9)
+  const carbs    = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4))
+  return { calories, protein, carbs, fat }
+}
+
+// isOnboarding=true  → step-by-step first-time setup; saves via completeOnboarding()
+// isOnboarding=false → single-screen tool in Explore; saves via updateProfile()
 export default function CalorieCalculator({ onBack, isOnboarding = false, onChangePlan }) {
   const { profile, updateProfile, completeOnboarding, signOut } = useAuth()
 
-  const [name, setName] = useState(profile?.name ?? '')
+  // ── Step-flow state (used when isOnboarding=true) ────────────────────────
+  const knownName = (profile?.name ?? '').trim()
+  const [step, setStep]           = useState(knownName ? 2 : 1)
+  const [stepError, setStepError] = useState('')
+  const [stepSaving, setStepSaving] = useState(false)
+  const [stepForm, setStepForm]   = useState({
+    name:           knownName,
+    goal:           'maintain',
+    gender:         'male',
+    age:            '',
+    height_cm:      '',
+    weight_kg:      '',
+    activity_level: 'moderate',
+    calories: '', protein: '', carbs: '', fat: '',
+  })
+
+  // ── Single-screen state (used when isOnboarding=false) ───────────────────
   const [form, setForm] = useState({
     gender:   profile?.gender         || 'male',
     age:      profile?.age            || '',
@@ -73,9 +106,60 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
   const [saved, setSaved]         = useState(false)
   const [saveError, setSaveError] = useState('')
   const [results, setResults]     = useState(null)
-  const [selectedGoal, setSelectedGoal]   = useState('maintain')
-  const [proteinCoeff, setProteinCoeff]   = useState(2.0)
+  const [selectedGoal, setSelectedGoal] = useState('maintain')
+  const [proteinCoeff, setProteinCoeff] = useState(2.0)
 
+  // ── Step helpers ─────────────────────────────────────────────────────────
+  function setS(field, val) { setStepForm(prev => ({ ...prev, [field]: val })) }
+
+  function setGoal(goal) {
+    setStepForm(prev => ({ ...prev, goal }))
+  }
+
+  const TOTAL_STEPS = 5
+
+  function stepNext() {
+    setStepError('')
+    if (step === 1 && !stepForm.name.trim()) { setStepError('Въведи името си'); return }
+    if (step === 3) {
+      if (!stepForm.age || !stepForm.height_cm || !stepForm.weight_kg) {
+        setStepError('Попълни всички полета'); return
+      }
+      const macros = calcOnboardingMacros({
+        gender:    stepForm.gender,
+        age:       parseInt(stepForm.age),
+        height_cm: parseFloat(stepForm.height_cm),
+        weight_kg: parseFloat(stepForm.weight_kg),
+        goal:      stepForm.goal,
+      })
+      setStepForm(prev => ({ ...prev, ...macros }))
+    }
+    if (step === TOTAL_STEPS) { handleStepFinish(); return }
+    setStep(s => s + 1)
+  }
+
+  async function handleStepFinish() {
+    setStepSaving(true)
+    setStepError('')
+    const { error } = await completeOnboarding({
+      name:           stepForm.name.trim(),
+      goal:           stepForm.goal,
+      gender:         stepForm.gender,
+      age:            parseInt(stepForm.age)         || null,
+      height_cm:      parseFloat(stepForm.height_cm) || null,
+      weight_kg:      parseFloat(stepForm.weight_kg) || null,
+      target_weight:  null,
+      activity_level: stepForm.activity_level,
+      calories:       parseInt(stepForm.calories),
+      protein:        parseInt(stepForm.protein),
+      carbs:          parseInt(stepForm.carbs),
+      fat:            parseInt(stepForm.fat),
+    })
+    setStepSaving(false)
+    if (error) setStepError(error.message || 'Грешка при запис. Опитай пак.')
+  }
+
+  // ── Calc helpers ─────────────────────────────────────────────────────────
   function set(field, val) { setForm(prev => ({ ...prev, [field]: val })) }
 
   function calculate() {
@@ -115,8 +199,6 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
     const goalPreset = results.goals.find(g => g.id === selectedGoal)
     if (!goalPreset) return
 
-    if (isOnboarding && !name.trim()) { setSaveError('Въведи името си'); return }
-
     setSaving(true)
     setSaveError('')
 
@@ -126,88 +208,235 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
       carbs:          goalPreset.macros.carbs,
       fat:            goalPreset.macros.fat,
       gender:         form.gender,
-      age:            parseInt(form.age)    || null,
+      age:            parseInt(form.age)      || null,
       height_cm:      parseFloat(form.height) || null,
       activity_level: form.activity,
       goal:           goalPreset.goal,
     }
 
     let error
-    try {
-      if (isOnboarding) {
-        ;({ error } = await completeOnboarding({
-          ...payload,
-          name:          name.trim(),
-          weight_kg:     parseFloat(form.weight) || null,
-          target_weight: null,
-        }))
-      } else {
-        ;({ error } = await updateProfile(payload))
-      }
-    } catch (e) {
-      error = e
-    }
+    try { ;({ error } = await updateProfile(payload)) } catch (e) { error = e }
 
     setSaving(false)
-    if (error) {
-      console.error('CalorieCalculator save error:', error)
-      setSaveError(error.message || 'Грешка при запис. Опитай пак.')
-    } else {
-      setSaved(true)
-    }
+    if (error) setSaveError(error.message || 'Грешка при запис. Опитай пак.')
+    else setSaved(true)
   }
 
-  const canCalc    = form.age && form.height && form.weight
-  const canSave    = results && (!isOnboarding || name.trim())
+  // ── Onboarding step UI ───────────────────────────────────────────────────
+  if (isOnboarding) {
+    const s = stepStyles
+    return (
+      <div className={s.page}>
+        <div className={s.progressBar}>
+          {Array.from({ length: TOTAL_STEPS + 1 }, (_, i) => (
+            <div
+              key={i}
+              className={`${s.progressDot} ${i < step ? s.progressDotDone : ''} ${i === step ? s.progressDotActive : ''}`}
+            />
+          ))}
+        </div>
+
+        {onChangePlan && (
+          <button
+            className={s.signOutLink}
+            style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 14px)', left: 20, color: 'var(--accent)' }}
+            onClick={onChangePlan}
+            type="button"
+          >
+            ← Смени плана
+          </button>
+        )}
+
+        <div className={s.content}>
+          {/* Step 1 — Name */}
+          {step === 1 && (
+            <div className={s.stepWrap}>
+              <div className={s.emoji}>👋</div>
+              <h1 className={s.heading}>ДОБРЕ ДОШЪЛ</h1>
+              <p className={s.sub}>Нека настроим профила ти за 2 минути.</p>
+              <label className={s.label}>Как се казваш?</label>
+              <input
+                className={s.input}
+                type="text"
+                placeholder="Твоето име"
+                value={stepForm.name}
+                onChange={e => setS('name', e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && stepNext()}
+                autoFocus
+              />
+            </div>
+          )}
+
+          {/* Step 2 — Goal */}
+          {step === 2 && (
+            <div className={s.stepWrap}>
+              <h1 className={s.heading}>КАКВА Е ЦЕЛТА ТИ?</h1>
+              <p className={s.sub}>Това определя твоя калориен баланс.</p>
+              <div className={s.goalGrid}>
+                {GOAL_OPTIONS.map(g => (
+                  <button
+                    key={g.id}
+                    className={`${s.goalCard} ${stepForm.goal === g.id ? s.goalCardActive : ''}`}
+                    onClick={() => setGoal(g.id)}
+                    type="button"
+                  >
+                    <span className={s.goalIcon}>{g.icon}</span>
+                    <span className={s.goalLabel}>{g.label}</span>
+                    <span className={s.goalDesc}>{g.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Body */}
+          {step === 3 && (
+            <div className={s.stepWrap}>
+              <h1 className={s.heading}>ТЯЛОТО ТИ</h1>
+              <p className={s.sub}>Нужно за точно изчисляване на калориите.</p>
+              <label className={s.label}>Пол</label>
+              <div className={s.toggle}>
+                {[{ id: 'male', label: '♂ МЪЖ' }, { id: 'female', label: '♀ ЖЕНА' }].map(g => (
+                  <button
+                    key={g.id}
+                    className={`${s.toggleBtn} ${stepForm.gender === g.id ? s.toggleBtnActive : ''}`}
+                    onClick={() => setS('gender', g.id)}
+                    type="button"
+                  >{g.label}</button>
+                ))}
+              </div>
+              <div className={s.statsRow}>
+                <div className={s.statField}>
+                  <label className={s.label}>Възраст</label>
+                  <input className={s.input} type="number" min="10" max="100"
+                    placeholder="" value={stepForm.age} onChange={e => setS('age', e.target.value)} />
+                </div>
+                <div className={s.statField}>
+                  <label className={s.label}>Ръст (cm)</label>
+                  <input className={s.input} type="number" min="100" max="250"
+                    placeholder="" value={stepForm.height_cm} onChange={e => setS('height_cm', e.target.value)} />
+                </div>
+              </div>
+              <div className={s.statsRow}>
+                <div className={s.statField}>
+                  <label className={s.label}>Тегло (kg)</label>
+                  <input className={s.input} type="number" min="30" max="300"
+                    placeholder="" value={stepForm.weight_kg} onChange={e => setS('weight_kg', e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4 — Activity */}
+          {step === 4 && (
+            <div className={s.stepWrap}>
+              <h1 className={s.heading}>АКТИВНОСТ</h1>
+              <p className={s.sub}>Колко активен си извън тренировките?</p>
+              <div className={s.activityList}>
+                {ACTIVITY_OPTIONS.map(a => (
+                  <button
+                    key={a.id}
+                    className={`${s.activityRow} ${stepForm.activity_level === a.id ? s.activityRowActive : ''}`}
+                    onClick={() => setS('activity_level', a.id)}
+                    type="button"
+                  >
+                    <div className={s.activityLabel}>{a.label}</div>
+                    <div className={s.activityDesc}>{a.desc}</div>
+                    {stepForm.activity_level === a.id && <div className={s.activityCheck}>✓</div>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 5 — Macros */}
+          {step === 5 && (
+            <div className={s.stepWrap}>
+              <div className={s.emoji}>🎯</div>
+              <h1 className={s.heading}>ТВОИТЕ МАКРОСИ</h1>
+              <p className={s.sub}>Изчислени по твоите данни. Можеш да ги промениш по-късно.</p>
+              <div className={s.macroGrid}>
+                {[
+                  { key: 'calories', label: 'ККАЛ',    color: '#F06292' },
+                  { key: 'protein',  label: 'ПРОТЕИН', color: 'var(--macro-protein)' },
+                  { key: 'carbs',    label: 'ВЪГЛ',    color: 'var(--macro-carbs)' },
+                  { key: 'fat',      label: 'МАЗН',    color: 'var(--accent)' },
+                ].map(m => (
+                  <div key={m.key} className={s.macroCard} style={{ borderColor: `${m.color}40` }}>
+                    <label className={s.macroLabel} style={{ color: m.color }}>{m.label}</label>
+                    <input
+                      className={s.macroInput}
+                      type="number" min="0"
+                      value={stepForm[m.key]}
+                      onChange={e => setS(m.key, e.target.value)}
+                      style={{ color: m.color }}
+                    />
+                    {m.key !== 'calories' && <span className={s.macroUnit}>g</span>}
+                  </div>
+                ))}
+              </div>
+              <p className={s.macroNote}>
+                {GOAL_OPTIONS.find(g => g.id === stepForm.goal)?.icon}{' '}
+                {GOAL_OPTIONS.find(g => g.id === stepForm.goal)?.desc}
+                {' · '}
+                {ACTIVITY_OPTIONS.find(a => a.id === stepForm.activity_level)?.label}
+              </p>
+              <p className={s.macroNote} style={{ opacity: 0.65, marginTop: 6 }}>
+                Сметнато за {stepForm.age} г. · {stepForm.height_cm} см · {stepForm.weight_kg} кг
+                {' · '}
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer',
+                           color: 'var(--accent)', font: 'inherit', textDecoration: 'underline' }}
+                >
+                  поправи
+                </button>
+              </p>
+            </div>
+          )}
+
+          {stepError && <p className={s.error}>{stepError}</p>}
+        </div>
+
+        <div className={s.nav}>
+          {step > 1 && (
+            <button className={s.backBtn} onClick={() => setStep(s => s - 1)} type="button">
+              ← НАЗАД
+            </button>
+          )}
+          <button className={s.nextBtn} onClick={stepNext} disabled={stepSaving} type="button">
+            {step === TOTAL_STEPS
+              ? (stepSaving ? 'ЗАПИСВА...' : 'ЗАПОЧНИ →')
+              : 'НАПРЕД →'}
+          </button>
+        </div>
+
+        <button className={s.signOutLink} onClick={signOut} type="button">Изход</button>
+      </div>
+    )
+  }
+
+  // ── Single-screen calculator (Explore tab) ───────────────────────────────
+  const canCalc        = form.age && form.height && form.weight
   const selectedPreset = results?.goals.find(g => g.id === selectedGoal)
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        {isOnboarding ? (
-          <>
-            {onChangePlan && (
-              <button className={styles.backBtn} onClick={onChangePlan} type="button">← Смени плана</button>
-            )}
-            <div className={styles.onboardingBrand}>
-              <span className={styles.brandName}>BLAG</span>
-            </div>
-            <h1 className={styles.title}>НАСТРОЙКА НА ПРОФИЛА</h1>
-            <p className={styles.subtitle}>Изчисли нуждите си и започни</p>
-          </>
-        ) : (
-          <>
-            <button className={styles.backBtn} onClick={onBack} type="button">← НАЗАД</button>
-            <h1 className={styles.title}>КАЛОРИЕН КАЛКУЛАТОР</h1>
-            <p className={styles.subtitle}>TDEE · BMR · Макроси · ИТМ</p>
-          </>
-        )}
+    <div className={calcStyles.page}>
+      <header className={calcStyles.header}>
+        <button className={calcStyles.backBtn} onClick={onBack} type="button">← НАЗАД</button>
+        <h1 className={calcStyles.title}>КАЛОРИЕН КАЛКУЛАТОР</h1>
+        <p className={calcStyles.subtitle}>TDEE · BMR · Макроси · ИТМ</p>
       </header>
 
-      <div className={styles.body}>
-        {/* Name field — onboarding only */}
-        {isOnboarding && (
-          <div className={styles.field}>
-            <label className={styles.label}>ТВОЕТО ИМЕ</label>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder=""
-              value={name}
-              onChange={e => setName(e.target.value)}
-              autoFocus
-            />
-          </div>
-        )}
-
-        {/* Gender */}
-        <div className={styles.section}>
-          <label className={styles.label}>ПОЛ</label>
-          <div className={styles.toggle}>
+      <div className={calcStyles.body}>
+        <div className={calcStyles.section}>
+          <label className={calcStyles.label}>ПОЛ</label>
+          <div className={calcStyles.toggle}>
             {[{ id: 'male', label: '♂ МЪЖ' }, { id: 'female', label: '♀ ЖЕНА' }].map(g => (
               <button
                 key={g.id}
-                className={`${styles.toggleBtn} ${form.gender === g.id ? styles.toggleBtnActive : ''}`}
+                className={`${calcStyles.toggleBtn} ${form.gender === g.id ? calcStyles.toggleBtnActive : ''}`}
                 onClick={() => set('gender', g.id)}
                 type="button"
               >{g.label}</button>
@@ -215,108 +444,102 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
           </div>
         </div>
 
-        {/* Stats */}
-        <div className={styles.statsGrid}>
-          <div className={styles.field}>
-            <label className={styles.label}>ВЪЗРАСТ</label>
-            <input className={styles.input} type="number" min="10" max="100"
+        <div className={calcStyles.statsGrid}>
+          <div className={calcStyles.field}>
+            <label className={calcStyles.label}>ВЪЗРАСТ</label>
+            <input className={calcStyles.input} type="number" min="10" max="100"
               placeholder="" value={form.age} onChange={e => set('age', e.target.value)} />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>РЪСТ (CM)</label>
-            <input className={styles.input} type="number" min="100" max="250"
+          <div className={calcStyles.field}>
+            <label className={calcStyles.label}>РЪСТ (CM)</label>
+            <input className={calcStyles.input} type="number" min="100" max="250"
               placeholder="" value={form.height} onChange={e => set('height', e.target.value)} />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>ТЕГЛО (KG)</label>
-            <input className={styles.input} type="number" min="30" max="300"
+          <div className={calcStyles.field}>
+            <label className={calcStyles.label}>ТЕГЛО (KG)</label>
+            <input className={calcStyles.input} type="number" min="30" max="300"
               placeholder="" value={form.weight} onChange={e => set('weight', e.target.value)} />
           </div>
         </div>
 
-        {/* Activity */}
-        <div className={styles.section}>
-          <label className={styles.label}>АКТИВНОСТ</label>
-          <div className={styles.activityList}>
+        <div className={calcStyles.section}>
+          <label className={calcStyles.label}>АКТИВНОСТ</label>
+          <div className={calcStyles.activityList}>
             {ACTIVITY_OPTIONS.map(a => (
               <button
                 key={a.id}
-                className={`${styles.activityRow} ${form.activity === a.id ? styles.activityRowActive : ''}`}
+                className={`${calcStyles.activityRow} ${form.activity === a.id ? calcStyles.activityRowActive : ''}`}
                 onClick={() => set('activity', a.id)}
                 type="button"
               >
-                <span className={styles.activityLabel}>{a.label}</span>
-                <span className={styles.activityDesc}>{a.desc}</span>
-                {form.activity === a.id && <span className={styles.check}>✓</span>}
+                <span className={calcStyles.activityLabel}>{a.label}</span>
+                <span className={calcStyles.activityDesc}>{a.desc}</span>
+                {form.activity === a.id && <span className={calcStyles.check}>✓</span>}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Protein coefficient */}
-        <div className={styles.section}>
-          <label className={styles.label}>ПРОТЕИН (g/кг)</label>
-          <div className={styles.toggle}>
+        <div className={calcStyles.section}>
+          <label className={calcStyles.label}>ПРОТЕИН (g/кг)</label>
+          <div className={calcStyles.toggle}>
             {PROTEIN_COEFFS.map(c => (
               <button
                 key={c.value}
-                className={`${styles.toggleBtn} ${proteinCoeff === c.value ? styles.toggleBtnActive : ''}`}
+                className={`${calcStyles.toggleBtn} ${proteinCoeff === c.value ? calcStyles.toggleBtnActive : ''}`}
                 onClick={() => changeCoeff(c.value)}
                 type="button"
               >
                 <span>{c.label}</span>
-                <span className={styles.coeffDesc}>{c.desc}</span>
+                <span className={calcStyles.coeffDesc}>{c.desc}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <button className={styles.calcBtn} onClick={calculate} disabled={!canCalc} type="button">
+        <button className={calcStyles.calcBtn} onClick={calculate} disabled={!canCalc} type="button">
           ИЗЧИСЛИ
         </button>
 
         {results && (
           <>
-            {/* BMR / TDEE */}
-            <div className={styles.resultCards}>
-              <div className={styles.resultCard}>
-                <span className={styles.resultLabel}>BMR</span>
-                <span className={styles.resultValue}>{results.bmr}</span>
-                <span className={styles.resultUnit}>ккал/ден в покой</span>
+            <div className={calcStyles.resultCards}>
+              <div className={calcStyles.resultCard}>
+                <span className={calcStyles.resultLabel}>BMR</span>
+                <span className={calcStyles.resultValue}>{results.bmr}</span>
+                <span className={calcStyles.resultUnit}>ккал/ден в покой</span>
               </div>
-              <div className={styles.resultCard}>
-                <span className={styles.resultLabel}>TDEE</span>
-                <span className={styles.resultValue} style={{ color: 'var(--accent)' }}>{results.tdee}</span>
-                <span className={styles.resultUnit}>ккал/ден с активност</span>
+              <div className={calcStyles.resultCard}>
+                <span className={calcStyles.resultLabel}>TDEE</span>
+                <span className={calcStyles.resultValue} style={{ color: 'var(--accent)' }}>{results.tdee}</span>
+                <span className={calcStyles.resultUnit}>ккал/ден с активност</span>
               </div>
             </div>
 
-            {/* BMI */}
-            <div className={styles.bmiCard} style={{ borderColor: results.bmiCat.color + '60' }}>
-              <div className={styles.bmiRow}>
-                <span className={styles.bmiLabel}>ИТМ</span>
-                <span className={styles.bmiValue} style={{ color: results.bmiCat.color }}>{results.bmi}</span>
+            <div className={calcStyles.bmiCard} style={{ borderColor: results.bmiCat.color + '60' }}>
+              <div className={calcStyles.bmiRow}>
+                <span className={calcStyles.bmiLabel}>ИТМ</span>
+                <span className={calcStyles.bmiValue} style={{ color: results.bmiCat.color }}>{results.bmi}</span>
               </div>
-              <div className={styles.bmiCat} style={{ color: results.bmiCat.color }}>{results.bmiCat.label}</div>
+              <div className={calcStyles.bmiCat} style={{ color: results.bmiCat.color }}>{results.bmiCat.label}</div>
             </div>
 
-            {/* Goal presets */}
-            <div className={styles.section}>
-              <label className={styles.label}>ИЗБЕРИ ЦЕЛ</label>
-              <div className={styles.goalGrid}>
+            <div className={calcStyles.section}>
+              <label className={calcStyles.label}>ИЗБЕРИ ЦЕЛ</label>
+              <div className={calcStyles.goalGrid}>
                 {results.goals.map(g => (
                   <button
                     key={g.id}
-                    className={`${styles.goalCard} ${selectedGoal === g.id ? styles.goalCardActive : ''}`}
+                    className={`${calcStyles.goalCard} ${selectedGoal === g.id ? calcStyles.goalCardActive : ''}`}
                     style={selectedGoal === g.id ? { borderColor: g.color, background: g.color + '15' } : {}}
                     onClick={() => setSelectedGoal(g.id)}
                     type="button"
                   >
-                    <span className={styles.goalKcal} style={{ color: g.color }}>{g.kcal}</span>
-                    <span className={styles.goalLabel}>{g.label}</span>
-                    <span className={styles.goalDelta}>{g.delta > 0 ? '+' : ''}{g.delta} ккал</span>
+                    <span className={calcStyles.goalKcal} style={{ color: g.color }}>{g.kcal}</span>
+                    <span className={calcStyles.goalLabel}>{g.label}</span>
+                    <span className={calcStyles.goalDelta}>{g.delta > 0 ? '+' : ''}{g.delta} ккал</span>
                     {g.kgPerWeek !== 0 && (
-                      <span className={styles.goalKgWeek} style={{ color: g.color }}>
+                      <span className={calcStyles.goalKgWeek} style={{ color: g.color }}>
                         {g.kgPerWeek > 0 ? '+' : ''}{g.kgPerWeek} kg/сед
                       </span>
                     )}
@@ -325,51 +548,42 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
               </div>
             </div>
 
-            {/* Macros */}
             {selectedPreset && (
-              <div className={styles.macroSection}>
-                <label className={styles.label}>МАКРОСИ ЗА "{selectedPreset.label.toUpperCase()}"</label>
-                <div className={styles.macroGrid}>
+              <div className={calcStyles.macroSection}>
+                <label className={calcStyles.label}>МАКРОСИ ЗА "{selectedPreset.label.toUpperCase()}"</label>
+                <div className={calcStyles.macroGrid}>
                   {[
-                    { key: 'kcal',    label: 'ККАЛ',    val: selectedPreset.kcal,                color: '#F06292', unit: ''  },
-                    { key: 'protein', label: 'ПРОТЕИН', val: selectedPreset.macros.protein,      color: 'var(--macro-protein)', unit: 'g' },
-                    { key: 'carbs',   label: 'ВЪГЛ',    val: selectedPreset.macros.carbs,        color: 'var(--macro-carbs)', unit: 'g' },
-                    { key: 'fat',     label: 'МАЗН',    val: selectedPreset.macros.fat,          color: 'var(--accent)', unit: 'g' },
+                    { key: 'kcal',    label: 'ККАЛ',    val: selectedPreset.kcal,           color: '#F06292', unit: ''  },
+                    { key: 'protein', label: 'ПРОТЕИН', val: selectedPreset.macros.protein, color: 'var(--macro-protein)', unit: 'g' },
+                    { key: 'carbs',   label: 'ВЪГЛ',    val: selectedPreset.macros.carbs,   color: 'var(--macro-carbs)', unit: 'g' },
+                    { key: 'fat',     label: 'МАЗН',    val: selectedPreset.macros.fat,     color: 'var(--accent)', unit: 'g' },
                   ].map(m => (
-                    <div key={m.key} className={styles.macroCard} style={{ borderColor: m.color + '40' }}>
-                      <span className={styles.macroLabel} style={{ color: m.color }}>{m.label}</span>
-                      <span className={styles.macroVal} style={{ color: m.color }}>
-                        {m.val}<span className={styles.macroUnit}>{m.unit}</span>
+                    <div key={m.key} className={calcStyles.macroCard} style={{ borderColor: m.color + '40' }}>
+                      <span className={calcStyles.macroLabel} style={{ color: m.color }}>{m.label}</span>
+                      <span className={calcStyles.macroVal} style={{ color: m.color }}>
+                        {m.val}<span className={calcStyles.macroUnit}>{m.unit}</span>
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {saveError && <p className={styles.saveError}>{saveError}</p>}
+                {saveError && <p className={calcStyles.saveError}>{saveError}</p>}
                 <button
-                  className={isOnboarding ? styles.calcBtn : styles.applyBtn}
+                  className={calcStyles.applyBtn}
                   onClick={handleSave}
-                  disabled={saving || saved || !canSave}
+                  disabled={saving || saved}
                   type="button"
                 >
-                  {saved
-                    ? (isOnboarding ? '✓ ГОТОВО' : '✓ ЗАПИСАНО В ПРОФИЛА')
-                    : saving
-                      ? 'ЗАПИСВА...'
-                      : (isOnboarding ? 'ЗАПОЧНИ →' : 'ЗАПАЗИ В ПРОФИЛА')}
+                  {saved ? '✓ ЗАПИСАНО В ПРОФИЛА' : saving ? 'ЗАПИСВА...' : 'ЗАПАЗИ В ПРОФИЛА'}
                 </button>
               </div>
             )}
           </>
         )}
 
-        <div className={styles.disclaimer}>
+        <div className={calcStyles.disclaimer}>
           Изчислено по формулата Mifflin-St Jeor. Резултатите са приблизителни.
         </div>
-
-        {isOnboarding && (
-          <button className={styles.signOutLink} onClick={signOut} type="button">Изход</button>
-        )}
       </div>
     </div>
   )
