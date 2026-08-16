@@ -207,7 +207,6 @@ export default function LandingPage({ onContinue, onLogin }) {
       {installOpen && (
         <FrameSheet
           label="Как се инсталира"
-          eyebrow="БЕЗ APP STORE, БЕЗ СВАЛЯНЕ"
           lead="Отваряш адреса и го слагаш на началния екран."
           onClose={() => setInstallOpen(false)}
         >

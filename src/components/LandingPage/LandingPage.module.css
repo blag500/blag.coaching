@@ -510,8 +510,12 @@
   position: relative;
   overflow: hidden;
   justify-content: flex-start;
-  scroll-snap-align: start;
-  padding-top: 58px;
+  /* No snap point of its own. Taller than the screen, it cannot be snapped to
+     without one end of it being off-screen, and proximity snapping kept pulling
+     the tail back out of reach as soon as the finger let go. It scrolls freely;
+     the sections that do fit still snap. */
+  scroll-snap-align: none;
+  padding-top: 46px;
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -1112,7 +1116,7 @@
    the button the width of the rows above rather than shrinking the type until
    it fits on one. */
 .lessonsCta {
-  margin-top: 34px;
+  margin-top: 24px;
   font-size: 14px;
   letter-spacing: 0.1em;
   line-height: 1.35;
