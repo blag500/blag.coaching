@@ -228,15 +228,14 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── Install ───────────────────────────────────────────────────── */}
       <section className={styles.section} id="install">
-        <span className={styles.eyebrow}>ИНСТАЛИРАНЕ</span>
-        <h2 className={styles.h2}>Три докосвания</h2>
+        <h2 className={styles.h2}>Инсталирай в три докосвания</h2>
         <p className={styles.sectionLead}>
           Няма магазин за приложения и няма сваляне. Браузърът го слага на
           екрана ти сам.
         </p>
         <InstallDemo />
         <a className={styles.note} href="#coach" onClick={go('coach')}>
-          Кой е Blag Coach →
+          Ами кой е тоя Blag Coach изобщо ;)
         </a>
       </section>
 
