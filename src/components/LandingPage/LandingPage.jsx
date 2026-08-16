@@ -35,8 +35,6 @@ const FAQ = [
 const SECTIONS = [
   { id: 'top',     label: 'НАЧАЛО' },
   { id: 'lessons', label: 'УРОЦИ' },
-  { id: 'coach',   label: 'ТРЕНЬОР' },
-  { id: 'price',   label: 'ЦЕНА' },
   { id: 'faq',     label: 'ВЪПРОСИ' },
   { id: 'close',   label: 'НАПРЕД' },
 ]
@@ -75,9 +73,8 @@ export default function LandingPage({ onContinue, onLogin }) {
             corner was the app talking over itself. */}
         <nav className={styles.barNav}>
           <a href="#lessons" onClick={go('lessons')}>УРОЦИ</a>
-          <a href="#coach"   onClick={go('coach')}>ТРЕНЬОР</a>
-          <a href="#price"   onClick={go('price')}>ЦЕНА</a>
           <a href="#faq"     onClick={go('faq')}>ВЪПРОСИ</a>
+          <a href="#close"   onClick={go('close')}>НАПРЕД</a>
         </nav>
       </header>
 
@@ -132,106 +129,27 @@ export default function LandingPage({ onContinue, onLogin }) {
             until the text was safe turned it down everywhere, including the
             corners where nothing needed protecting. */}
         <div className={styles.lessonsWash} aria-hidden="true" />
-        {/* The name is the way through to him. It carries a slow sweep of light
-            across the letters so it reads as live rather than as a label, and
-            the ring closes around it when a finger is on it. */}
-        <a className={styles.markLink} href="#coach" onClick={go('coach')}>
+        {/* The name, lit from inside by a slow sweep across the letters. No ring
+            around it any more and nowhere to press: it stopped being a doorway
+            when the section it opened went away, and a frame on something that
+            does nothing is a promise the page cannot keep. */}
+        <span className={styles.markLink}>
           <span className={styles.markText}>THE BLAG COACH</span>
-          <span className={styles.markRing} aria-hidden="true" />
-        </a>
+        </span>
         <h2 className={styles.h2}>ще те научи как да:</h2>
         <Lessons />
-      </section>
 
-      {/* ── Coach ──────────────────────────────────────────────────────── */}
-      <section className={`${styles.section} ${styles.coachSection}`} id="coach">
-        <div className={styles.coachBg} aria-hidden="true" />
-        <div className={styles.coachWash} aria-hidden="true" />
-        <h2 className={styles.h2}>Николай Благьов</h2>
-        {/* The splash's own lettering, small — his name and then what he is. */}
-        <a className={styles.coachMark} href="#price" onClick={go('price')}>Blag Coach</a>
-
-        <ul className={styles.points}>
-          {/* Always first. Written plainly on purpose: "в процес" beside a name
-              people have heard of is enough to say what it is; anything vaguer
-              invites the reader to fill the gap with a finished qualification,
-              and that is a sentence he would then have to defend. */}
-          <li>
-            J3University — в процес на обучение
-            <span className={styles.pendingMark} aria-hidden="true" />
-          </li>
-          <li>
-            Направих BLAG, защото ми омръзна да гледам как хората се губят
-            между тетрадки, чатове и пет приложения.
-          </li>
-          <li>Планът се мени според твоите логове, не по усет.</li>
-          <li>Седмичен чек-ин, обратна връзка по техника и корекция на макросите.</li>
-        </ul>
-
-        <div className={styles.social}>
-          <a className={styles.socialBtn} href="https://instagram.com/blag.coaching"
-             target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none"
-                 stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
-              <rect x="3" y="3" width="18" height="18" rx="5.2" />
-              <circle cx="12" cy="12" r="4.1" />
-              <circle cx="17.3" cy="6.7" r="1.15" fill="currentColor" stroke="none" />
-            </svg>
-          </a>
-          <a className={styles.socialBtn} href="https://www.tiktok.com/@blag.coaching"
-             target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
-              <path d="M16.9 2.6c.36 2.06 1.6 3.36 3.6 3.5v2.7c-1.18.06-2.28-.28-3.36-.95v5.86c0 3.6-2.9 6.06-5.98 6.06-3.32 0-5.76-2.66-5.76-5.86 0-3.4 2.86-5.98 6.5-5.62v2.86c-.44-.12-.86-.18-1.28-.18-1.6 0-2.94 1.3-2.94 2.94 0 1.78 1.36 3.02 3.06 3.02s3.06-1.28 3.06-3.06V2.6h3.1z" />
-            </svg>
-          </a>
-        </div>
-
-        <a className={styles.write} href="#price" onClick={go('price')}>
-          Какво включва работата с мен
+        {/* The ask, immediately under what he teaches. The page used to walk on
+            through a section about him and a price card before it asked for
+            anything; both were saying again, at length, what the five lines
+            above have already said. */}
+        <a className={`${styles.cta} ${styles.lessonsCta}`} href="https://ig.me/m/blag.coaching"
+           target="_blank" rel="noopener noreferrer">
+          ПИШИ МИ
         </a>
-      </section>
-
-      {/* ── Price ──────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="price">
-        <span className={styles.eyebrow}>ЦЕНА</span>
-        <h2 className={styles.h2}>Работи с мен</h2>
-        <p className={styles.sectionLead}>
-          Приложението е инструментът. Треньорът е планът.
-        </p>
-
-        <div className={styles.priceCard}>
-          <span className={styles.priceLabel}>ПРИЛОЖЕНИЕ + ТРЕНЬОР</span>
-          <p className={styles.price}>
-            119,99 €<span className={styles.priceUnit}> / месец</span>
-          </p>
-          <ul className={styles.points}>
-            <li>Индивидуална програма, преработвана всеки месец.</li>
-            <li>Макроси, настроени според теглото и снимките на прогреса.</li>
-            <li>Седмичен чек-ин и обратна връзка по техника.</li>
-            <li>Директен чат с мен в приложението.</li>
-          </ul>
-          <a className={styles.cta} href="https://ig.me/m/blag.coaching"
-             target="_blank" rel="noopener noreferrer">
-            ПИШИ МИ
-          </a>
-          <p className={styles.priceNote}>
-            Без такса за започване. Спираш когато решиш.
-          </p>
-        </div>
-
-        <div className={`${styles.priceCard} ${styles.freeCard}`}>
-          <span className={styles.priceLabel}>САМО ПРИЛОЖЕНИЕТО</span>
-          <ul className={styles.freeList}>
-            {['Хранене и макроси', 'Тренировки и рекорди', 'Тегло и тенденция',
-              'Навици, вода, суплементи', 'Известия'].map(x => (
-              <li key={x}>
-                <span>{x}</span>
-                <b className={styles.freeWord}>безплатно</b>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className={styles.wink}>Абе безплатно е бе ;)</p>
+        <button className={styles.quietCta} onClick={onContinue} type="button">
+          Или само приложението — без мен.
+        </button>
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}

@@ -734,8 +734,6 @@
   justify-content: center;
   padding: 9px 18px;
   text-decoration: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .markText {
@@ -763,25 +761,6 @@
 @keyframes sweep {
   from { background-position: 150% 0; }
   to   { background-position: -150% 0; }
-}
-
-/* Closed on both sides, open at the ends — brackets rather than a box, so it
-   frames the name without boxing it in. */
-.markRing {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--r-pill, 999px);
-  border: 1px solid rgba(var(--accent-rgb), 0.22);
-  transition: border-color 200ms, transform 200ms var(--ease-out),
-              box-shadow 200ms;
-  pointer-events: none;
-}
-
-.markLink:active .markRing,
-.markLink:hover .markRing {
-  border-color: rgba(var(--accent-rgb), 0.65);
-  transform: scale(1.04);
-  box-shadow: 0 0 24px -6px rgba(var(--accent-rgb), 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1099,6 +1078,30 @@
 }
 
 .cta:active { opacity: 0.85; }
+
+/* Air above it, so the ask is not read as a sixth lesson. */
+.lessonsCta { margin-top: 34px; }
+
+/* The other way out, deliberately smaller and unlit. It is a real offer and it
+   has to be findable, but a second gold slab beside the first would make the
+   visitor choose between two equal things instead of taking the one. */
+.quietCta {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms;
+}
+
+.quietCta:active,
+.quietCta:hover { color: var(--text); }
 
 .ctaGhost {
   font-family: var(--font-body);
