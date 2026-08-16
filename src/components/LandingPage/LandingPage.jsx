@@ -196,7 +196,7 @@ export default function LandingPage({ onContinue, onLogin }) {
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────── */}
-      <section className={styles.section} id="features">
+      <section className={`${styles.section} ${styles.featuresSection}`} id="features">
         <span className={styles.eyebrow}>ПРОСЛЕДЯВАНЕ</span>
         <h2 className={styles.h2}>Всичко важно в едно приложение</h2>
         <p className={styles.sectionLead}>
