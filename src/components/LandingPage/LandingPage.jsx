@@ -220,8 +220,9 @@ export default function LandingPage({ onContinue, onLogin }) {
         </div>
 
         <span id="features-install" />
-        <a className={styles.note} href="#install" onClick={go('install')}>
-          Виж как да го инсталираш
+        <a className={styles.note} href="#install"
+           onClick={e => { e.preventDefault(); document.getElementById('install')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
+          Инсталиране в три докосвания
         </a>
       </section>
 
@@ -234,6 +235,9 @@ export default function LandingPage({ onContinue, onLogin }) {
           екрана ти сам.
         </p>
         <InstallDemo />
+        <a className={styles.note} href="#coach" onClick={go('coach')}>
+          Кой е Blag Coach →
+        </a>
       </section>
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
