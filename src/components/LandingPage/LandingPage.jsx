@@ -141,7 +141,7 @@ export default function LandingPage({ onContinue, onLogin }) {
             through a section about him and a price card before it asked for
             anything; both were saying again, at length, what the five lines
             above have already said. */}
-        <a className={`${styles.cta} ${styles.lessonsCta}`} href="https://ig.me/m/blag.coaching"
+        <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/blag.coaching"
            target="_blank" rel="noopener noreferrer">
           ПИШИ МИ
         </a>
