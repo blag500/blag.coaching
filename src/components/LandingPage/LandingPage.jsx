@@ -181,7 +181,8 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.appGlow} aria-hidden="true" />
 
         <p className={styles.sectionLead}>
-          Ти входираш, то следи<br />
+          Ти входираш,{' '}
+          <a className={styles.leadLink} href="#features" onClick={go('features')}>то следи</a><br />
           и напомня да не кривнеш ;)
         </p>
 
@@ -192,9 +193,6 @@ export default function LandingPage({ onContinue, onLogin }) {
           Blag Coach — ако искаш.
         </p>
 
-        <a className={styles.note} href="#install" onClick={go('install')}>
-          Виж как да го инсталираш
-        </a>
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────── */}

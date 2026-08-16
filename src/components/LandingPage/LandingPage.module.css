@@ -1067,6 +1067,14 @@
 
 .freeMark { color: var(--accent); }
 
+.leadLink {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* The name in the splash's own lettering, small: it says what he is directly
    under who he is, and carries on to the price. */
 .coachMark {
