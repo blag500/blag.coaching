@@ -21,7 +21,7 @@ import styles from './Lessons.module.css'
 const LESSONS = [
   { id: 'train',   word: 'Тренираш',         film: '/lessons/5765.mp4', webm: '/lessons/5765.webm' },
   { id: 'pose',    word: 'Позираш',          film: '/hero.mp4',         webm: '/hero.webm' },
-  { id: 'eat',     word: 'Се храниш' },
+  { id: 'eat',     word: 'Се храниш',        film: '/lessons/eat.mp4',  webm: '/lessons/eat.webm' },
   { id: 'recover', word: 'Се възстановяваш' },
 ]
 
