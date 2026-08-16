@@ -492,7 +492,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 84px 22px;
+  padding: 84px 22px 100px;
   box-sizing: border-box;
   text-align: center;
   scroll-snap-align: center;
@@ -601,9 +601,9 @@
 
 .eyebrow {
   font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
+  font-size: 13px;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
   color: var(--accent);
   opacity: 0.8;
 }
