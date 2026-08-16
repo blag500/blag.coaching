@@ -100,7 +100,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  gap: 0;
+  gap: clamp(2px, 1.5vw, 10px);
 }
 
 .armLeft,
@@ -118,8 +118,11 @@
   transform: scaleX(-1);
 }
 
+/* Sized by the word, not by the row. Stretched to fill it, the wordmark pushed
+   the two arms out to the edges of the screen and the three stopped reading as
+   one mark. */
 .brandCenter {
-  flex: 1;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
