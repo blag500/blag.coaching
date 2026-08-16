@@ -65,13 +65,10 @@
   border-color: rgba(var(--accent-rgb), 0.8);
 }
 
-/* The product's name, inside the row that opens it: gold and a size down, so
-   the row still reads as one line rather than two words fighting. */
-.withApp {
-  color: var(--accent);
-  font-size: 0.62em;
-  letter-spacing: 0.1em;
-}
+/* The product's name, inside the row that opens it. Same face and same size as
+   the word before it — only the colour changes, so the line reads as one
+   sentence with the name lit rather than as a heading with a tagline. */
+.withApp { color: var(--accent); }
 
 /* ── The opened screen ───────────────────────────────────────────────────── */
 .sheet {

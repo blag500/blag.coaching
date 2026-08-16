@@ -22,11 +22,11 @@ import styles from './Lessons.module.css'
 const LESSONS = [
   { id: 'train',   word: 'Тренираш',         film: '/lessons/5765.mp4', webm: '/lessons/5765.webm' },
   { id: 'pose',    word: 'Позираш',          film: '/hero.mp4',         webm: '/hero.webm' },
-  { id: 'eat',     word: 'Се храниш',        film: '/lessons/eat.mp4',  webm: '/lessons/eat.webm' },
-  { id: 'recover', word: 'Се възстановяваш' },
   /* The app, as one of the five rather than a button under them. It teaches the
      same way the others do — you press the word and the thing opens. */
   { id: 'app',     word: 'Прогресираш', app: true },
+  { id: 'eat',     word: 'Се храниш',        film: '/lessons/eat.mp4',  webm: '/lessons/eat.webm' },
+  { id: 'recover', word: 'Се възстановяваш' },
 ]
 
 function Sheet({ lesson, onClose }) {

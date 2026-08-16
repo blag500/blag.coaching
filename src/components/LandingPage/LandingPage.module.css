@@ -638,8 +638,16 @@
 
 .coachSection { position: relative; overflow: hidden; }
 
-/* No top cover here. The print is the top of this section now, and a veil of
-   page-dark over it would be covering the thing worth showing. */
+/* Top cover — same device as lessonsSection::before. */
+.coachSection::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 30vh;
+  background: linear-gradient(to bottom, var(--bg) 0%, rgba(12,10,6,0.7) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
 
 /* Bottom cover. */
 .coachSection::after {
@@ -656,37 +664,36 @@
    facing away and closes it facing away. The sheet is cream, so it hangs at
    the top of the section at full strength and the text sits below it on the
    page's own dark rather than fighting the paper for contrast. */
+/* The print behind the whole section, not a panel at the top of it. Blurred
+   and held back: it is the ground the words stand on, and a sheet at full
+   sharpness under running text turns both into noise. */
 .coachBg {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  /* Tall enough to read as a poster, short enough that the bullets under it
-     are on screen at the same time on a phone. */
-  height: 62vh;
-  background: url('/coach-poster.webp') 50% 12% / cover no-repeat;
+  inset: 0;
+  background: url('/coach-poster.webp') 50% 42% / cover no-repeat;
+  filter: blur(3px) saturate(88%);
+  /* The blur samples past the edges and leaves a pale rim, so the layer is
+     grown a little beyond the box it fills. */
+  transform: scale(1.06);
+  opacity: 0.34;
+  -webkit-mask-image: radial-gradient(ellipse 128% 92% at 50% 44%, #000 0%, #000 40%, transparent 90%);
+  mask-image: radial-gradient(ellipse 128% 92% at 50% 44%, #000 0%, #000 40%, transparent 90%);
   pointer-events: none;
 }
 
-/* Dark from the foot of the print upwards — the same two-stop fade the hero
-   uses, so the paper ends in the page instead of being cut off by a line. */
+/* Dark pillow under the words. The paper is cream and the text is not, so the
+   contrast has to be bought here rather than by turning the whole print down
+   until nothing of it is left. */
 .coachWash {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 62vh;
-  background: linear-gradient(to bottom,
-    rgba(12, 10, 6, 0.28) 0%,
-    rgba(12, 10, 6, 0.10) 22%,
-    rgba(12, 10, 6, 0.55) 66%,
-    rgba(12, 10, 6, 0.94) 86%,
-    var(--bg) 100%);
+  inset: 0;
+  background: radial-gradient(ellipse 86% 62% at 50% 50%,
+    rgba(12, 10, 6, 0.86) 0%,
+    rgba(12, 10, 6, 0.66) 42%,
+    rgba(12, 10, 6, 0.24) 72%,
+    transparent 92%);
   pointer-events: none;
 }
-
-/* The section starts below the print. */
-.coachSection { padding-top: calc(62vh - 40px); }
 
 /* All direct children sit above the two background layers. */
 .coachSection > *:not(.coachBg):not(.coachWash) { position: relative; z-index: 1; }
@@ -717,6 +724,72 @@
   white-space: nowrap;
   color: var(--accent);
   opacity: 0.8;
+}
+
+/* ── The name, as the way through ─────────────────────────────────────────
+   A label that happens to be a link gets read as a label. This one is lit from
+   inside: a band of pale gold crosses the letters every few seconds, slowly
+   enough that it is never caught moving, and a ring draws itself around the
+   whole thing when a finger lands. */
+.markLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.markText {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  white-space: nowrap;
+  /* The sweep. A wide gradient with a bright band in it, three times the width
+     of the text, walked across by background-position. */
+  color: var(--accent);
+  background-image: linear-gradient(100deg,
+    rgba(var(--accent-rgb), 0.72) 0%,
+    rgba(var(--accent-rgb), 0.72) 38%,
+    #FFF0CE 48%,
+    rgba(var(--accent-rgb), 0.72) 58%,
+    rgba(var(--accent-rgb), 0.72) 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: sweep 4.5s linear infinite;
+}
+
+@keyframes sweep {
+  from { background-position: 150% 0; }
+  to   { background-position: -150% 0; }
+}
+
+/* Closed on both sides, open at the ends — brackets rather than a box, so it
+   frames the name without boxing it in. */
+.markRing {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-pill, 999px);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  transition: border-color 200ms, transform 200ms var(--ease-out),
+              box-shadow 200ms;
+  pointer-events: none;
+}
+
+.markLink:active .markRing,
+.markLink:hover .markRing {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  transform: scale(1.04);
+  box-shadow: 0 0 24px -6px rgba(var(--accent-rgb), 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markText { animation: none; }
 }
 
 .h2 {

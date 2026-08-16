@@ -14,12 +14,9 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  /* Barely there, but there — a strip of slightly different dark is enough to
-     say "this column belongs to the navigation" without drawing a border. */
-  background: linear-gradient(to left,
-    rgba(20, 17, 11, 0.55) 0%, rgba(20, 17, 11, 0.16) 60%, transparent 100%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  /* No ground of its own. The strip was a black band down the side of every
+     section — the marks carry themselves, and the page already reserves the
+     width so nothing lands under them. */
 }
 
 /* Dashes, not dots. A short vertical stroke reads as a position on a scale;

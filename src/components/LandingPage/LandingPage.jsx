@@ -132,13 +132,15 @@ export default function LandingPage({ onContinue, onLogin }) {
             until the text was safe turned it down everywhere, including the
             corners where nothing needed protecting. */}
         <div className={styles.lessonsWash} aria-hidden="true" />
-        <span className={styles.eyebrow}>THE BLAG COACH</span>
+        {/* The name is the way through to him. It carries a slow sweep of light
+            across the letters so it reads as live rather than as a label, and
+            the ring closes around it when a finger is on it. */}
+        <a className={styles.markLink} href="#coach" onClick={go('coach')}>
+          <span className={styles.markText}>THE BLAG COACH</span>
+          <span className={styles.markRing} aria-hidden="true" />
+        </a>
         <h2 className={styles.h2}>ще те научи как да:</h2>
         <Lessons />
-
-        <a className={styles.heroCta} href="#coach" onClick={go('coach')}>
-          КОЙ Е BLAG COACH?
-        </a>
       </section>
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
@@ -184,13 +186,8 @@ export default function LandingPage({ onContinue, onLogin }) {
           </a>
         </div>
 
-        <a className={styles.heroCta} href="#price" onClick={go('price')}>
-          КОЛКО СТРУВА?
-        </a>
-
-        <a className={styles.write} href="https://ig.me/m/blag.coaching"
-           target="_blank" rel="noopener noreferrer">
-          Питай ме, не хапя ;)
+        <a className={styles.write} href="#price" onClick={go('price')}>
+          Какво включва работата с мен
         </a>
       </section>
 
