@@ -616,7 +616,7 @@
 
 .appSection > *:not(.ruled):not(.appGlow) { position: relative; z-index: 1; }
 
-.featuresSection { position: relative; }
+.featuresSection { position: relative; padding-top: 20px; padding-bottom: 60px; }
 
 .featuresSection::before {
   content: '';

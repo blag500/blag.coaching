@@ -200,9 +200,6 @@ export default function LandingPage({ onContinue, onLogin }) {
       <section className={`${styles.section} ${styles.featuresSection}`} id="features">
         <span className={styles.eyebrow}>ПРОСЛЕДЯВАНЕ</span>
         <h2 className={styles.h2}>Всичко важно в едно приложение</h2>
-        <p className={styles.sectionLead}>
-          Без пет различни приложения и тетрадка в чантата.
-        </p>
 
         <div className={styles.grid}>
           {FEATURES.map(f => (
