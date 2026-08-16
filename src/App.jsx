@@ -247,7 +247,6 @@ function AppShell() {
 
   return (
     <div className={styles.shell}>
-      {!isCoach && showWelcome && <WelcomeOverlay onDone={dismissWelcome} />}
       {!isCoach && showSupplementBanner && supplementPending > 0 && (
         <SupplementBanner
           count={supplementPending}
