@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import AppShowcase from './AppShowcase'
 import styles from './Lessons.module.css'
 
 /**
@@ -72,8 +73,43 @@ function Sheet({ lesson, onClose }) {
   )
 }
 
-export default function Lessons({ onProgress }) {
+/* The app, on a framed sheet of its own. It used to be a whole section further
+   down the page; a page that has to be scrolled through before it asks anything
+   asks too late, so the app now opens where it is mentioned and closes again. */
+function AppSheet({ onClose }) {
+  useEffect(() => {
+    const onKey = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    const had = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = had
+    }
+  }, [onClose])
+
+  return createPortal(
+    <div className={styles.sheet} onClick={onClose} role="dialog" aria-label="Blag app">
+      <div className={styles.appFrame} onClick={e => e.stopPropagation()}>
+        <span className={styles.appEyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ</span>
+        <p className={styles.appLead}>
+          Ти входираш, то следи<br />и напомня да не кривнеш ;)
+        </p>
+        <AppShowcase />
+      </div>
+
+      <button type="button" className={styles.sheetClose} onClick={onClose} aria-label="Затвори">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+             strokeWidth="1.8" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>,
+    document.body,
+  )
+}
+
+export default function Lessons() {
   const [open, setOpen] = useState(null)
+  const [appOpen, setAppOpen] = useState(false)
 
   return (
     <>
@@ -88,13 +124,14 @@ export default function Lessons({ onProgress }) {
         ))}
       </ul>
 
-      {/* Louder than the four above it, because it is the one that carries on
-          down the page rather than opening a screen of its own. */}
-      <button type="button" className={styles.progress} onClick={onProgress}>
+      {/* Louder than the four above it: the other four open a word, this one
+          opens the product. */}
+      <button type="button" className={styles.progress} onClick={() => setAppOpen(true)}>
         Да прогресираш с <span className={styles.progressMark}>BLAG APP</span>
       </button>
 
       {open && <Sheet lesson={open} onClose={() => setOpen(null)} />}
+      {appOpen && <AppSheet onClose={() => setAppOpen(false)} />}
     </>
   )
 }

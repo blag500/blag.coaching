@@ -1,0 +1,96 @@
+/* Down the right edge, vertically centred, and out of the way of everything.
+   The rail itself draws the line between the dots — one border rather than a
+   connector element per gap. */
+.rail {
+  position: fixed;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  pointer-events: auto;
+}
+
+/* The thread the dots are strung on. Behind them, faint, and stopping short at
+   both ends so the run reads as a line with beads rather than a bar. */
+.rail::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(var(--accent-rgb), 0.28) 12%,
+    rgba(var(--accent-rgb), 0.28) 88%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+/* The hit area is the button; the visible dot is smaller and lives inside it.
+   A 7px target is a target nobody hits. */
+.dot {
+  position: relative;
+  width: 24px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.3);
+  box-shadow: 0 0 0 3px var(--bg);
+  transition: background 220ms var(--ease-out),
+              transform 220ms var(--ease-out),
+              box-shadow 220ms var(--ease-out);
+}
+
+.dotOn .mark {
+  background: var(--accent);
+  transform: scale(1.35);
+  box-shadow: 0 0 0 3px var(--bg), 0 0 12px rgba(var(--accent-rgb), 0.7);
+}
+
+/* The label, on hover only — a phone never shows it, and on a phone the dots
+   are a position indicator rather than a menu. */
+.tip {
+  position: absolute;
+  right: 26px;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  background: rgba(12, 10, 6, 0.9);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: var(--r-pill, 999px);
+  padding: 4px 9px;
+  opacity: 0;
+  transform: translateX(4px);
+  pointer-events: none;
+  transition: opacity 180ms, transform 180ms;
+}
+
+@media (hover: hover) {
+  .dot:hover .tip { opacity: 1; transform: translateX(0); }
+  .dot:hover .mark { background: rgba(var(--accent-rgb), 0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark, .tip { transition: none; }
+}

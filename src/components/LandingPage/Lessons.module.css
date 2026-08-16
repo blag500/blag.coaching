@@ -204,7 +204,54 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ── The app sheet ──────────────────────────────────────────────────────────
+   A framed card on the same dark ground the lesson sheets use. The frame is
+   what says "this is a thing being shown to you", rather than a section you
+   have scrolled into. */
+.appFrame {
+  position: relative;
+  z-index: 1;
+  width: min(88vw, 400px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 20px 34px;
+  box-sizing: border-box;
+  border-radius: var(--r-lg, 20px);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: linear-gradient(168deg,
+    rgba(28, 23, 14, 0.96) 0%, rgba(14, 12, 7, 0.98) 100%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7),
+              0 0 0 1px rgba(var(--accent-rgb), 0.06) inset;
+  cursor: default;
+  animation: appRise 380ms var(--ease-out) both;
+}
+
+@keyframes appRise {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.appEyebrow {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.appLead {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sheet, .sheetWord { animation: none; }
+  .sheet, .sheetWord, .appFrame { animation: none; }
   .line, .arrow { transition: none; }
 }

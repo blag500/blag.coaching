@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import Pictogram from '../Pictogram/Pictogram'
-import InstallDemo from './InstallDemo'
-import AppShowcase from './AppShowcase'
 import Lessons from './Lessons'
+import DotNav from './DotNav'
 import styles from './LandingPage.module.css'
 
 /**
@@ -18,38 +16,6 @@ import styles from './LandingPage.module.css'
  * that flatters is the first thing a real prospect goes looking to disprove.
  */
 
-/* Nine names, no sentences.
-   Each card carried two lines of description, and nine descriptions is a page
-   you scroll through without reading and then feel you have missed something.
-   The names are the answer to "what does it track" on their own; anything that
-   needs explaining has a section of its own further down. */
-const FEATURES = [
-  { icon: 'meal',     title: 'Хранене' },
-  { icon: 'training', title: 'Тренировка' },
-  { icon: 'trend',    title: 'Навици' },
-  { icon: 'sleep',    title: 'Възстановяване' },
-  { icon: 'capsule',  title: 'Суплементи' },
-  { icon: 'water',    title: 'Вода' },
-  { icon: 'weight',   title: 'Тегло' },
-  { icon: 'chat',     title: 'Чат с треньора' },
-  { icon: 'calendar', title: 'График' },
-  /* Three more, and the grid comes out square at four rows of three rather
-     than nine with a hole in it. All of them are things the app already does —
-     padding a list with wishes is how a features section stops being read. */
-  { icon: 'bell',     title: 'Известия' },
-  { icon: 'book',     title: 'Рецепти' },
-  { icon: 'camera',   title: 'Снимки на прогреса' },
-]
-
-const STEPS = [
-  { n: '01', title: 'Отвори и добави',
-    text: 'Влизаш в blag-coaching.com и добавяш BLAG на началния екран. Без App Store, без сваляне.' },
-  { n: '02', title: 'Записвай',
-    text: 'Хранене, тренировка, тегло, навици и вода. Под две минути на ден, а не водене на тетрадка.' },
-  { n: '03', title: 'Коригираме',
-    text: 'Гледам реалните ти числа и местя плана според тях — не по усет и не по календар.' },
-]
-
 const FAQ = [
   { q: 'Мога ли да го ползвам без треньор?',
     a: 'Да, и е безплатно. Логваш, следиш, напредваш. Треньорът е за хората, на които им трябва план по техните конкретни числа, а не само инструмент за записване.' },
@@ -64,6 +30,17 @@ const FAQ = [
 /* One place to write the offer. It travels along the bottom of every screen,
    so whatever it says is the last thing read on the page and the first thing
    remembered about it. */
+/* The stops on the page, in order — the dot rail reads this and nothing else,
+   so a section added or dropped is one line here. */
+const SECTIONS = [
+  { id: 'top',     label: 'НАЧАЛО' },
+  { id: 'lessons', label: 'УРОЦИ' },
+  { id: 'coach',   label: 'ТРЕНЬОР' },
+  { id: 'price',   label: 'ЦЕНА' },
+  { id: 'faq',     label: 'ВЪПРОСИ' },
+  { id: 'close',   label: 'НАПРЕД' },
+]
+
 const OFFER = '−20% от треньорския план за първия месец'
 const TICKER = Array.from({ length: 4 }, () => OFFER).join('   ·   ') + '   ·   '
 
@@ -86,6 +63,8 @@ export default function LandingPage({ onContinue, onLogin }) {
   return (
     <div className={styles.page}>
 
+      <DotNav sections={SECTIONS} />
+
       {/* ── Bar ────────────────────────────────────────────────────────── */}
       <header className={styles.bar}>
         {/* The mark lives here now, small, rather than filling the middle of the
@@ -95,11 +74,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             poster below carries the brand on its own; a third copy in the
             corner was the app talking over itself. */}
         <nav className={styles.barNav}>
-          <a href="#features" onClick={go('features')}>ФУНКЦИИ</a>
-          <a href="#how"      onClick={go('how')}>КАК РАБОТИ</a>
-          <a href="#coach"    onClick={go('coach')}>ТРЕНЬОР</a>
-          <a href="#price"    onClick={go('price')}>ЦЕНА</a>
-          <a href="#faq"      onClick={go('faq')}>ВЪПРОСИ</a>
+          <a href="#lessons" onClick={go('lessons')}>УРОЦИ</a>
+          <a href="#coach"   onClick={go('coach')}>ТРЕНЬОР</a>
+          <a href="#price"   onClick={go('price')}>ЦЕНА</a>
+          <a href="#faq"     onClick={go('faq')}>ВЪПРОСИ</a>
         </nav>
       </header>
 
@@ -156,60 +134,11 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.lessonsWash} aria-hidden="true" />
         <span className={styles.eyebrow}>THE BLAG COACH</span>
         <h2 className={styles.h2}>ще те научи как да:</h2>
-        <Lessons onProgress={() => {
-                const el = document.getElementById('app')
-                if (el) window.scrollTo({ top: el.offsetTop, behavior: 'smooth' })
-              }} />
-      </section>
-
-      {/* ── The app ────────────────────────────────────────────────────── */}
-      <section className={`${styles.section} ${styles.appSection}`} id="app">
-        <span className={styles.eyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
-        {/* The strongest thing about the free half, said plainly: it works on
-            its own. An app that only nags while somebody is paying for a coach
-            is a trial with a nicer name. */}
-        {/* Ruled paper, faintly. The section is about numbers being written
-            down, and a grid is the furniture of that without being a picture of
-            anything — it holds the black off being a void and asks for nothing.
-            Behind it, one warm light, so the phones stand in something. */}
-        <div className={styles.ruled} aria-hidden="true" />
-        <div className={styles.appGlow} aria-hidden="true" />
-
-        <p className={styles.sectionLead}>
-          Ти входираш, то следи<br />и напомня да не кривнеш ;)
-        </p>
-
-        <div style={{ margin: '32px 0' }}>
-          <AppShowcase />
-        </div>
-
-        <a className={styles.heroCta} href="#features"
-           onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>
-          КАКВО СЛЕДИ?
-        </a>
-
-      </section>
-
-      {/* ── Features ───────────────────────────────────────────────────── */}
-      <section className={`${styles.section} ${styles.featuresSection}`} id="features">
-        <span className={styles.eyebrow}>ПРОСЛЕДЯВАНЕ</span>
-        <h2 className={styles.h2}>Всичко важно в едно приложение</h2>
-
-        <div className={styles.grid}>
-          {FEATURES.map(f => (
-            <article key={f.title} className={styles.chip}>
-              <span className={styles.chipIcon}>
-                <Pictogram name={f.icon} size={18} />
-              </span>
-              <span className={styles.chipTitle}>{f.title}</span>
-            </article>
-          ))}
-        </div>
+        <Lessons />
 
         <a className={styles.textCta} href="#coach" onClick={go('coach')}>
           Но кой е този Blag Coach?
         </a>
-
       </section>
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
@@ -332,7 +261,7 @@ export default function LandingPage({ onContinue, onLogin }) {
       </section>
 
       {/* ── Close ──────────────────────────────────────────────────────── */}
-      <section className={`${styles.section} ${styles.close}`}>
+      <section className={`${styles.section} ${styles.close}`} id="close">
         <span className={styles.eyebrow}>BE BLAG, BE BETTER</span>
         <h2 className={styles.h2}>Готов ли си?</h2>
         <p className={styles.sectionLead}>
