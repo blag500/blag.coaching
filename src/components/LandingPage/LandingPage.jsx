@@ -188,10 +188,10 @@ export default function LandingPage({ onContinue, onLogin }) {
 
         <AppShowcase />
 
-        <p className={styles.sectionLead}>
-          Ползвам го с всеки клиент.<br />
-          Не работиш с мен? Пак е твоето — безплатно.
-        </p>
+        <a className={styles.heroCta} href="#features"
+           onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>
+          КАКВО СЛЕДИ?
+        </a>
 
       </section>
 
@@ -211,24 +211,6 @@ export default function LandingPage({ onContinue, onLogin }) {
           ))}
         </div>
 
-        <span id="features-install" />
-        <a className={styles.note} href="#install"
-           onClick={e => { e.preventDefault(); document.getElementById('install')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}>
-          Инсталиране в три докосвания
-        </a>
-      </section>
-
-      {/* ── Install ───────────────────────────────────────────────────── */}
-      <section className={styles.section} id="install">
-        <h2 className={styles.h2}>Инсталирай в три докосвания</h2>
-        <p className={styles.sectionLead}>
-          Няма магазин за приложения и няма сваляне. Браузърът го слага на
-          екрана ти сам.
-        </p>
-        <InstallDemo />
-        <a className={styles.note} href="#coach" onClick={go('coach')}>
-          Ами кой е тоя Blag Coach изобщо ;)
-        </a>
       </section>
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
