@@ -635,6 +635,56 @@
 
 .appSection > *:not(.ruled):not(.appGlow) { position: relative; z-index: 1; }
 
+.coachSection { position: relative; overflow: hidden; }
+
+/* Top cover — same device as lessonsSection::before. */
+.coachSection::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 30vh;
+  background: linear-gradient(to bottom, var(--bg) 0%, rgba(12,10,6,0.7) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Bottom cover. */
+.coachSection::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 25vh;
+  background: linear-gradient(to top, var(--bg) 0%, var(--bg) 20%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* The back photo — positioned to keep the shoulders and traps centred. */
+.coachBg {
+  position: absolute;
+  inset: 0;
+  background: url('/coach-bg.jpg') 50% 55% / cover no-repeat;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(ellipse 120% 90% at 50% 52%, #000 0%, #000 38%, transparent 88%);
+  mask-image: radial-gradient(ellipse 120% 90% at 50% 52%, #000 0%, #000 38%, transparent 88%);
+  pointer-events: none;
+}
+
+/* Dark pillow so the text stays readable against the skin tones. */
+.coachWash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 50%,
+    rgba(12,10,6,0.82) 0%,
+    rgba(12,10,6,0.60) 40%,
+    rgba(12,10,6,0.18) 70%,
+    transparent 90%);
+  pointer-events: none;
+}
+
+/* All direct children sit above the two background layers. */
+.coachSection > *:not(.coachBg):not(.coachWash) { position: relative; z-index: 1; }
+
 .featuresSection { position: relative; padding-top: 20px; padding-bottom: 60px; }
 
 .featuresSection::before {

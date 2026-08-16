@@ -240,7 +240,9 @@ export default function LandingPage({ onContinue, onLogin }) {
       </section>
 
       {/* ── Coach ──────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="coach">
+      <section className={`${styles.section} ${styles.coachSection}`} id="coach">
+        <div className={styles.coachBg} aria-hidden="true" />
+        <div className={styles.coachWash} aria-hidden="true" />
         <h2 className={styles.h2}>Николай Благьов</h2>
         {/* The splash's own lettering, small — his name and then what he is. */}
         <a className={styles.coachMark} href="#price" onClick={go('price')}>Blag Coach</a>
