@@ -1,0 +1,101 @@
+/* The ground. Solid rather than translucent: whatever is inside the frame is
+   the only thing worth looking at while it is open. */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0C0A06;
+  cursor: pointer;
+  animation: fade 320ms var(--ease-out) both;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Nearly the whole screen. A card floating in the middle of a black field
+   wastes the two thirds around it, and what goes inside is the thing worth
+   the space. */
+.frame {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 460px);
+  height: min(88dvh, 820px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 34px 20px;
+  box-sizing: border-box;
+  border-radius: var(--r-lg, 22px);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: linear-gradient(168deg,
+    rgba(28, 23, 14, 0.96) 0%, rgba(14, 12, 7, 0.98) 100%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7),
+              0 0 0 1px rgba(var(--accent-rgb), 0.06) inset;
+  cursor: default;
+  overflow: hidden;
+  animation: rise 380ms var(--ease-out) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-align: center;
+  line-height: 1.7;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.lead {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text);
+}
+
+/* Whatever is being shown, centred in the space the heading leaves. */
+.body {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  right: 16px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(12, 10, 6, 0.55);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .frame { animation: none; }
+}

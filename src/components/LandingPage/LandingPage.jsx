@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Lessons from './Lessons'
 import DotNav from './DotNav'
+import FrameSheet from './FrameSheet'
+import InstallDemo from './InstallDemo'
 import styles from './LandingPage.module.css'
 
 /**
@@ -23,8 +25,10 @@ const FAQ = [
     a: 'Ако тренираш сам и планираш сам — вероятно не ти е. Blag app е инструментът, Blag Coaching е мозъкът.' },
   { q: 'Как изглежда коучингът на практика?',
     a: 'Тренираме заедно. Пишеш ми, гледаме числата от приложението, настройваме плана. Седмичен чек-ин, корекция на макросите и обратна връзка по техника — по реални данни, не по усет.' },
-  { q: 'Трябва ли да го свалям от App Store?',
-    a: 'Не. Отваряш адреса в браузъра и го добавяш на началния екран — оттам изглежда и работи като приложение. Нищо за сваляне, нищо за одобряване.' },
+  /* The one answer that is shown instead of written. Three taps described in a
+     paragraph is a paragraph nobody reads; the same three taps happening on a
+     phone are over before anyone decides whether to pay attention. */
+  { q: 'Трябва ли да го свалям от App Store?', demo: true },
 ]
 
 /* One place to write the offer. It travels along the bottom of every screen,
@@ -51,6 +55,9 @@ export default function LandingPage({ onContinue, onLogin }) {
   // Only one answer open at a time — five open at once is the wall of text the
   // accordion exists to prevent.
   const [openQ, setOpenQ] = useState(null)
+
+  // The install question opens the demo rather than an answer.
+  const [installOpen, setInstallOpen] = useState(false)
 
   const go = id => e => {
     e.preventDefault()
@@ -172,14 +179,16 @@ export default function LandingPage({ onContinue, onLogin }) {
             <div key={item.q} className={styles.faqItem}>
               <button
                 className={styles.faqQ}
-                onClick={() => setOpenQ(openQ === i ? null : i)}
-                aria-expanded={openQ === i}
+                onClick={() => item.demo ? setInstallOpen(true) : setOpenQ(openQ === i ? null : i)}
+                aria-expanded={item.demo ? undefined : openQ === i}
                 type="button"
               >
                 <span>{item.q}</span>
-                <span className={`${styles.faqMark} ${openQ === i ? styles.faqMarkOpen : ''}`} aria-hidden="true" />
+                {item.demo
+                  ? <span className={styles.faqPlay} aria-hidden="true">▶</span>
+                  : <span className={`${styles.faqMark} ${openQ === i ? styles.faqMarkOpen : ''}`} aria-hidden="true" />}
               </button>
-              {openQ === i && <p className={styles.faqA}>{item.a}</p>}
+              {!item.demo && openQ === i && <p className={styles.faqA}>{item.a}</p>}
             </div>
           ))}
         </div>
@@ -195,6 +204,17 @@ export default function LandingPage({ onContinue, onLogin }) {
       {/* A strip along the bottom, always there, always moving.
           The offer is written once and repeated in the markup only so the loop
           has no seam — the second copy is hidden from screen readers. */}
+      {installOpen && (
+        <FrameSheet
+          label="Как се инсталира"
+          eyebrow="БЕЗ APP STORE, БЕЗ СВАЛЯНЕ"
+          lead="Отваряш адреса и го слагаш на началния екран."
+          onClose={() => setInstallOpen(false)}
+        >
+          <InstallDemo />
+        </FrameSheet>
+      )}
+
       <div className={styles.ticker} role="note">
         <div className={styles.tickerTrack}>
           <span className={styles.tickerRun}>{TICKER}</span>

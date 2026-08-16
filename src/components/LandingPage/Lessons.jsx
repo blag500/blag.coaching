@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import AppShowcase from './AppShowcase'
+import FrameSheet from './FrameSheet'
 import styles from './Lessons.module.css'
 
 /**
@@ -78,37 +79,23 @@ function Sheet({ lesson, onClose }) {
 
 /* The app, on a framed sheet of its own. It used to be a whole section further
    down the page; a page that has to be scrolled through before it asks anything
-   asks too late, so the app now opens where it is mentioned and closes again. */
+   asks too late, so the app now opens where it is mentioned and closes again.
+   The frame itself lives in FrameSheet — the FAQ opens the same one to show
+   how the thing is installed. */
 function AppSheet({ onClose }) {
-  useEffect(() => {
-    const onKey = e => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    const had = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = had
-    }
-  }, [onClose])
-
-  return createPortal(
-    <div className={styles.sheet} onClick={onClose} role="dialog" aria-label="Blag app">
-      <div className={styles.appFrame} onClick={e => e.stopPropagation()}>
-        {/* His line, whole. The second half is the half that makes it his — cut
-            down to the first two words it was a category, not a name. */}
-        <span className={styles.appEyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
-        <p className={styles.appLead}>
-          Ти входираш, то следи<br />и напомня да не кривнеш ;)
-        </p>
-        <AppShowcase />
-      </div>
-
-      <button type="button" className={styles.sheetClose} onClick={onClose} aria-label="Затвори">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-             strokeWidth="1.8" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-      </button>
-    </div>,
-    document.body,
+  return (
+    <FrameSheet
+      label="Blag app"
+      /* His line, whole. The second half is the half that makes it his — cut
+         down to the first two words it was a category, not a name. */
+      eyebrow="БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА"
+      lead={<>Ти входираш, то следи<br />и напомня да не кривнеш ;)</>}
+      onClose={onClose}
+    >
+      {/* The carousel is built at a fixed 168×336; inside a sheet this tall it
+          would be stranded in the middle, so it is scaled up to fill it. */}
+      <div className={styles.showcaseScale}><AppShowcase /></div>
+    </FrameSheet>
   )
 }
 

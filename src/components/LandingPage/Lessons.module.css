@@ -65,9 +65,6 @@
   border-color: rgba(var(--accent-rgb), 0.8);
 }
 
-/* The product's name, inside the row that opens it. Same face and same size as
-   the word before it — only the colour changes, so the line reads as one
-   sentence with the name lit rather than as a heading with a tagline. */
 /* The same cream as the word before it, held back. Gold at any strength was a
    second colour inside one sentence; dimming the same colour marks the name as
    the quieter half of the line without breaking it in two. */
@@ -168,74 +165,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── The app sheet ──────────────────────────────────────────────────────────
-   A framed card on the same dark ground the lesson sheets use. The frame is
-   what says "this is a thing being shown to you", rather than a section you
-   have scrolled into. */
-.appFrame {
-  position: relative;
-  z-index: 1;
-  /* Nearly the whole screen. A card floating in the middle of a black field
-     wastes the two thirds around it, and the phones inside are the thing worth
-     the space. */
-  width: min(92vw, 460px);
-  height: min(88dvh, 820px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 34px 20px;
-  box-sizing: border-box;
-  border-radius: var(--r-lg, 22px);
-  border: 1px solid rgba(var(--accent-rgb), 0.28);
-  background: linear-gradient(168deg,
-    rgba(28, 23, 14, 0.96) 0%, rgba(14, 12, 7, 0.98) 100%);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7),
-              0 0 0 1px rgba(var(--accent-rgb), 0.06) inset;
-  cursor: default;
-  animation: appRise 380ms var(--ease-out) both;
-}
-
-/* The carousel is built at a fixed 168×336; inside a sheet this tall that
-   leaves it stranded in the middle, so it is scaled up to fill the frame. */
-.appFrame > :last-child {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  transform: scale(1.35);
-}
-
-@keyframes appRise {
-  from { opacity: 0; transform: translateY(18px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.appEyebrow {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.24em;
-  text-indent: 0.24em;
-  color: var(--accent);
-  opacity: 0.85;
-  text-align: center;
-  /* Long enough to wrap on a narrow phone, and it should wrap rather than run
-     off the frame — the tracking is what makes it read as a mark, not one line. */
-  line-height: 1.7;
-}
-
-.appLead {
-  margin: 0 0 6px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.5;
-  text-align: center;
-  color: var(--text);
-}
+/* The showcase is built at a fixed 168×336. In the sheet it is scaled up
+   rather than rebuilt, so the carousel stays one size everywhere it appears. */
+.showcaseScale { transform: scale(1.35); }
 
 @media (prefers-reduced-motion: reduce) {
-  .sheet, .sheetWord, .appFrame { animation: none; }
+  .sheet, .sheetWord { animation: none; }
   .line, .arrow { transition: none; }
 }

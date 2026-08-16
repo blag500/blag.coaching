@@ -1048,6 +1048,23 @@
 
 .faqMarkOpen::after { transform: scaleY(0); }
 
+/* The one question that opens something instead of unfolding. A plus would
+   promise a paragraph; the same play mark the lessons carry promises a screen,
+   which is what this one gives. */
+.faqPlay {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 8px;
+}
+
 .faqA {
   margin: 0;
   padding: 0 18px 18px;
