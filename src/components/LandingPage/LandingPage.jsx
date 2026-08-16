@@ -182,7 +182,7 @@ export default function LandingPage({ onContinue, onLogin }) {
 
         <p className={styles.sectionLead}>
           Ти входираш,{' '}
-          <a className={styles.leadLink} href="#features" onClick={go('features')}>то следи</a><br />
+          <a className={styles.leadLink} href="#features-install" onClick={go('features-install')}>то следи</a><br />
           и напомня да не кривнеш ;)
         </p>
 
@@ -214,6 +214,7 @@ export default function LandingPage({ onContinue, onLogin }) {
           ))}
         </div>
 
+        <span id="features-install" />
         <a className={styles.note} href="#install" onClick={go('install')}>
           Виж как да го инсталираш
         </a>
