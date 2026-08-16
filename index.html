@@ -35,6 +35,17 @@
     <meta name="twitter:title"       content="BLAG COACHING" />
     <meta name="twitter:description" content="Приложението, което постига целите ти." />
     <meta name="twitter:image"       content="https://blag-coaching.com/og.jpg" />
+    <!-- Asked for here rather than from inside the stylesheet. An @import is
+         found only after the CSS bundle has been fetched and parsed, which put
+         two fresh DNS lookups behind it and left the first screen drawn in the
+         fallback face for most of a second. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap&subset=cyrillic,latin"
+    />
+
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-64XXVZSD8C"></script>
     <script>

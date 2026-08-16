@@ -2,7 +2,24 @@
    silently fell back to a system font and looked different on each device.
    JetBrains Mono is gone — see --font-body — which also removes a webfont from
    the critical path. */
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap&subset=cyrillic,latin');
+/* The face itself is asked for from index.html, early, where the browser can
+   see it before the bundle exists.
+
+   This is what stands in until it lands. The stack used to end in Arial
+   Narrow, which iOS does not have, so an iPhone drew every heading in
+   Helvetica — around a third wider than Oswald — and on the poster the name
+   ran out of its column and into his shoulder for as long as the download
+   took. A local narrow face where there is one, cut down to Oswald's width
+   where there is not. */
+@font-face {
+  font-family: 'Oswald stand-in';
+  src: local('Arial Narrow'), local('Helvetica Neue'), local('Arial');
+  size-adjust: 84%;
+  ascent-override: 142%;
+  descent-override: 34%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -25,7 +42,7 @@
   --border:    #2B2215;
   --red:       #FF4455;
 
-  --font-heading: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-heading: 'Oswald', 'Oswald stand-in', 'Arial Narrow', sans-serif;
 
   /* The device's own face. On an iPhone this resolves to SF Pro — the same one
      Apple Health is set in — without shipping a file, which their licence would
