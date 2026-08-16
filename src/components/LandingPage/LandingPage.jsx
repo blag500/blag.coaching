@@ -136,8 +136,8 @@ export default function LandingPage({ onContinue, onLogin }) {
         <h2 className={styles.h2}>ще те научи как да:</h2>
         <Lessons />
 
-        <a className={styles.textCta} href="#coach" onClick={go('coach')}>
-          Но кой е този Blag Coach?
+        <a className={styles.heroCta} href="#coach" onClick={go('coach')}>
+          КОЙ Е BLAG COACH?
         </a>
       </section>
 
@@ -149,22 +149,18 @@ export default function LandingPage({ onContinue, onLogin }) {
         {/* The splash's own lettering, small — his name and then what he is. */}
         <a className={styles.coachMark} href="#price" onClick={go('price')}>Blag Coach</a>
 
-        <p className={styles.sectionLead}>
-          Направих BLAG, защото ми омръзна да гледам как хората се губят между
-          тетрадки, чатове и пет приложения. Ползвам същото приложение с
-          клиентите си, за да взимаме решения по реални числа.
-        </p>
-
         <ul className={styles.points}>
-          {/* Written plainly on purpose. "В процес" beside a name people have
-              heard of is enough to say what it is; anything vaguer invites the
-              reader to fill the gap with a finished qualification, and that is
-              a sentence he would then have to defend. */}
-          {/* A bullet like the others; the clock goes at the end, where it
-              qualifies the line rather than replacing its mark. */}
+          {/* Always first. Written plainly on purpose: "в процес" beside a name
+              people have heard of is enough to say what it is; anything vaguer
+              invites the reader to fill the gap with a finished qualification,
+              and that is a sentence he would then have to defend. */}
           <li>
             J3University — в процес на обучение
             <span className={styles.pendingMark} aria-hidden="true" />
+          </li>
+          <li>
+            Направих BLAG, защото ми омръзна да гледам как хората се губят
+            между тетрадки, чатове и пет приложения.
           </li>
           <li>Планът се мени според твоите логове, не по усет.</li>
           <li>Седмичен чек-ин, обратна връзка по техника и корекция на макросите.</li>
@@ -187,6 +183,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             </svg>
           </a>
         </div>
+
+        <a className={styles.heroCta} href="#price" onClick={go('price')}>
+          КОЛКО СТРУВА?
+        </a>
 
         <a className={styles.write} href="https://ig.me/m/blag.coaching"
            target="_blank" rel="noopener noreferrer">

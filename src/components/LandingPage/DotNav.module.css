@@ -1,44 +1,34 @@
-/* Down the right edge, vertically centred, and out of the way of everything.
-   The rail itself draws the line between the dots — one border rather than a
-   connector element per gap. */
+/* A rail down the right edge, on a ground of its own.
+   The first version floated bare dots over the page and they landed on top of
+   whatever the section happened to have there. This one owns a narrow strip:
+   the page keeps its content clear of it, and nothing has to be dodged. */
 .rail {
   position: fixed;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 30;
+  width: 26px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 10px 0;
-  pointer-events: auto;
+  justify-content: center;
+  gap: 16px;
+  /* Barely there, but there — a strip of slightly different dark is enough to
+     say "this column belongs to the navigation" without drawing a border. */
+  background: linear-gradient(to left,
+    rgba(20, 17, 11, 0.55) 0%, rgba(20, 17, 11, 0.16) 60%, transparent 100%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
-/* The thread the dots are strung on. Behind them, faint, and stopping short at
-   both ends so the run reads as a line with beads rather than a bar. */
-.rail::before {
-  content: '';
-  position: absolute;
-  top: 14px;
-  bottom: 14px;
-  left: 50%;
-  width: 1px;
-  transform: translateX(-50%);
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    rgba(var(--accent-rgb), 0.28) 12%,
-    rgba(var(--accent-rgb), 0.28) 88%,
-    transparent 100%);
-  pointer-events: none;
-}
-
-/* The hit area is the button; the visible dot is smaller and lives inside it.
-   A 7px target is a target nobody hits. */
+/* Dashes, not dots. A short vertical stroke reads as a position on a scale;
+   round dots read as buttons, which is what made the first version look like
+   something dropped on the page. */
 .dot {
   position: relative;
-  width: 24px;
-  height: 16px;
+  width: 26px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,33 +40,30 @@
 }
 
 .mark {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(var(--accent-rgb), 0.3);
-  box-shadow: 0 0 0 3px var(--bg);
+  width: 2px;
+  height: 12px;
+  border-radius: 1px;
+  background: rgba(var(--accent-rgb), 0.28);
   transition: background 220ms var(--ease-out),
-              transform 220ms var(--ease-out),
+              height 220ms var(--ease-out),
               box-shadow 220ms var(--ease-out);
 }
 
 .dotOn .mark {
+  height: 22px;
   background: var(--accent);
-  transform: scale(1.35);
-  box-shadow: 0 0 0 3px var(--bg), 0 0 12px rgba(var(--accent-rgb), 0.7);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.6);
 }
 
-/* The label, on hover only — a phone never shows it, and on a phone the dots
-   are a position indicator rather than a menu. */
 .tip {
   position: absolute;
-  right: 26px;
+  right: 28px;
   white-space: nowrap;
   font-family: var(--font-heading);
   font-size: 9px;
   letter-spacing: 0.16em;
   color: var(--accent);
-  background: rgba(12, 10, 6, 0.9);
+  background: rgba(12, 10, 6, 0.92);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: var(--r-pill, 999px);
   padding: 4px 9px;

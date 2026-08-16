@@ -5,6 +5,10 @@
   background: var(--bg);
   overflow-x: hidden;
   scroll-behavior: smooth;
+  /* The dot rail owns the right edge. Reserving it here rather than padding
+     each section keeps the two from ever landing on each other. */
+  padding-right: 26px;
+  box-sizing: border-box;
   /* Proximity, not mandatory. A section that insists on snapping fights anyone
      reading the middle of a long one, and two of these are taller than a small
      phone; proximity settles the page when a scroll ends near a boundary and

@@ -24,6 +24,9 @@ const LESSONS = [
   { id: 'pose',    word: 'Позираш',          film: '/hero.mp4',         webm: '/hero.webm' },
   { id: 'eat',     word: 'Се храниш',        film: '/lessons/eat.mp4',  webm: '/lessons/eat.webm' },
   { id: 'recover', word: 'Се възстановяваш' },
+  /* The app, as one of the five rather than a button under them. It teaches the
+     same way the others do — you press the word and the thing opens. */
+  { id: 'app',     word: 'Прогресираш', app: true },
 ]
 
 function Sheet({ lesson, onClose }) {
@@ -116,19 +119,17 @@ export default function Lessons() {
       <ul className={styles.list}>
         {LESSONS.map(l => (
           <li key={l.id}>
-            <button type="button" className={styles.line} onClick={() => setOpen(l)}>
-              <span className={styles.word}>{l.word}</span>
+            <button type="button" className={styles.line}
+                    onClick={() => l.app ? setAppOpen(true) : setOpen(l)}>
+              <span className={styles.word}>
+                {l.word}
+                {l.app && <span className={styles.withApp}> с BLAG APP</span>}
+              </span>
               <span className={styles.arrow} aria-hidden="true">▶</span>
             </button>
           </li>
         ))}
       </ul>
-
-      {/* Louder than the four above it: the other four open a word, this one
-          opens the product. */}
-      <button type="button" className={styles.progress} onClick={() => setAppOpen(true)}>
-        Да прогресираш с <span className={styles.progressMark}>BLAG APP</span>
-      </button>
 
       {open && <Sheet lesson={open} onClose={() => setOpen(null)} />}
       {appOpen && <AppSheet onClose={() => setAppOpen(false)} />}

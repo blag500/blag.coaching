@@ -65,49 +65,13 @@
   border-color: rgba(var(--accent-rgb), 0.8);
 }
 
-/* ── The one that carries on down the page ───────────────────────────────
-   Same glass treatment as the hero CTA so it reads as the same kind of ask. */
-.progress {
-  margin-top: 26px;
-  width: 100%;
-  max-width: 340px;
-  padding: 17px;
-  box-sizing: border-box;
-  border-radius: var(--r-md);
-  border: 1px solid rgba(var(--accent-rgb), 0.55);
-  background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.16) 0%,
-    rgba(200, 160, 90, 0.06) 100%);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 236, 200, 0.28),
-    0 0 34px -8px rgba(var(--accent-rgb), 0.45),
-    0 10px 30px -14px rgba(0, 0, 0, 0.9);
+/* The product's name, inside the row that opens it: gold and a size down, so
+   the row still reads as one line rather than two words fighting. */
+.withApp {
   color: var(--accent);
-  font-family: var(--font-heading);
-  font-size: 16px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-align: center;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 180ms, border-color 180ms;
+  font-size: 0.62em;
+  letter-spacing: 0.1em;
 }
-
-.progress:active {
-  background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.26) 0%,
-    rgba(200, 160, 90, 0.12) 100%);
-  border-color: rgba(var(--accent-rgb), 0.8);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .progress { background: rgba(24, 19, 11, 0.82); }
-}
-
-.progressMark { color: var(--text); }
 
 /* ── The opened screen ───────────────────────────────────────────────────── */
 .sheet {
@@ -211,14 +175,19 @@
 .appFrame {
   position: relative;
   z-index: 1;
-  width: min(88vw, 400px);
+  /* Nearly the whole screen. A card floating in the middle of a black field
+     wastes the two thirds around it, and the phones inside are the thing worth
+     the space. */
+  width: min(92vw, 460px);
+  height: min(88dvh, 820px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 28px 20px 34px;
+  justify-content: center;
+  gap: 16px;
+  padding: 34px 20px;
   box-sizing: border-box;
-  border-radius: var(--r-lg, 20px);
+  border-radius: var(--r-lg, 22px);
   border: 1px solid rgba(var(--accent-rgb), 0.28);
   background: linear-gradient(168deg,
     rgba(28, 23, 14, 0.96) 0%, rgba(14, 12, 7, 0.98) 100%);
@@ -226,6 +195,17 @@
               0 0 0 1px rgba(var(--accent-rgb), 0.06) inset;
   cursor: default;
   animation: appRise 380ms var(--ease-out) both;
+}
+
+/* The carousel is built at a fixed 168×336; inside a sheet this tall that
+   leaves it stranded in the middle, so it is scaled up to fill the frame. */
+.appFrame > :last-child {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  transform: scale(1.35);
 }
 
 @keyframes appRise {
