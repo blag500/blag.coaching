@@ -176,14 +176,7 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.appGlow} aria-hidden="true" />
 
         <p className={styles.sectionLead}>
-          Ти входираш,{' '}
-          <span className={styles.leadAnchor}>
-            <a className={styles.leadLink} href="#features"
-               onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }}>то следи</a>
-            <span className={styles.tapHint} aria-hidden="true">☝️</span>
-          </span>
-          <br />
-          и напомня да не кривнеш ;)
+          Ти входираш, то следи<br />и напомня да не кривнеш ;)
         </p>
 
         <div style={{ margin: '32px 0' }}>
@@ -212,6 +205,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             </article>
           ))}
         </div>
+
+        <a className={styles.textCta} href="#coach" onClick={go('coach')}>
+          Но кой е този Blag Coach?
+        </a>
 
       </section>
 

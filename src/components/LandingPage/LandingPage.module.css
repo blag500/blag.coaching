@@ -443,6 +443,18 @@
   padding-bottom: 2px;
 }
 
+.textCta {
+  position: relative;
+  z-index: 1;
+  margin-top: 32px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.82;
+  letter-spacing: 0.02em;
+}
+
 /* A page that fills the viewport exactly looks finished, and nobody scrolls a
    finished page. */
 .scrollHint {
