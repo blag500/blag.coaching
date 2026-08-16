@@ -1090,8 +1090,17 @@
 
 .cta:active { opacity: 0.85; }
 
-/* Air above it, so the ask is not read as a sixth lesson. */
-.lessonsCta { margin-top: 34px; }
+/* Air above it, so the ask is not read as a sixth lesson. The line is long
+   enough to wrap on a narrow phone; letting it wrap on two tight lines keeps
+   the button the width of the rows above rather than shrinking the type until
+   it fits on one. */
+.lessonsCta {
+  margin-top: 34px;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  padding: 15px 14px;
+}
 
 /* The other way out, deliberately smaller and unlit. It is a real offer and it
    has to be findable, but a second gold slab beside the first would make the

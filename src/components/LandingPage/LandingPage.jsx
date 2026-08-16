@@ -38,7 +38,7 @@ const SECTIONS = [
   { id: 'faq',     label: 'ВЪПРОСИ' },
 ]
 
-const OFFER = '−20% от треньорския план за първия месец'
+const OFFER = '−20% от Blag Coaching през първия месец'
 const TICKER = Array.from({ length: 4 }, () => OFFER).join('   ·   ') + '   ·   '
 
 export default function LandingPage({ onContinue, onLogin }) {
@@ -143,7 +143,7 @@ export default function LandingPage({ onContinue, onLogin }) {
             above have already said. */}
         <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/blag.coaching"
            target="_blank" rel="noopener noreferrer">
-          ПИШИ МИ
+          ПИШИ МИ ЗА БЕЗПЛАТНА ТРЕНИРОВКА
         </a>
         <button className={styles.quietCta} onClick={onContinue} type="button">
           Или само приложението — без мен.
