@@ -213,22 +213,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             </article>
           ))}
         </div>
-      </section>
 
-      {/* ── How ────────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="how">
-        <span className={styles.eyebrow}>КАК РАБОТИ</span>
-        <h2 className={styles.h2}>Три стъпки</h2>
-
-        <div className={styles.steps}>
-          {STEPS.map(s => (
-            <article key={s.n} className={styles.step}>
-              <span className={styles.stepNum}>{s.n}</span>
-              <h3 className={styles.cardTitle}>{s.title}</h3>
-              <p className={styles.cardText}>{s.text}</p>
-            </article>
-          ))}
-        </div>
+        <a className={styles.note} href="#install" onClick={go('install')}>
+          Виж как да го инсталираш
+        </a>
       </section>
 
       {/* ── Install ───────────────────────────────────────────────────── */}
