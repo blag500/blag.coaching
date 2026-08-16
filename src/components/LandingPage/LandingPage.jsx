@@ -36,7 +36,6 @@ const SECTIONS = [
   { id: 'top',     label: 'НАЧАЛО' },
   { id: 'lessons', label: 'УРОЦИ' },
   { id: 'faq',     label: 'ВЪПРОСИ' },
-  { id: 'close',   label: 'НАПРЕД' },
 ]
 
 const OFFER = '−20% от треньорския план за първия месец'
@@ -74,7 +73,6 @@ export default function LandingPage({ onContinue, onLogin }) {
         <nav className={styles.barNav}>
           <a href="#lessons" onClick={go('lessons')}>УРОЦИ</a>
           <a href="#faq"     onClick={go('faq')}>ВЪПРОСИ</a>
-          <a href="#close"   onClick={go('close')}>НАПРЕД</a>
         </nav>
       </header>
 
@@ -153,7 +151,9 @@ export default function LandingPage({ onContinue, onLogin }) {
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="faq">
+      {/* The last thing on the page now. It keeps the closing section's bottom
+          padding so the ticker never lands on the final answer. */}
+      <section className={`${styles.section} ${styles.close}`} id="faq">
         <span className={styles.eyebrow}>ВЪПРОСИ</span>
         <h2 className={styles.h2}>Това, което хората питат</h2>
 
@@ -173,22 +173,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             </div>
           ))}
         </div>
-      </section>
 
-      {/* ── Close ──────────────────────────────────────────────────────── */}
-      <section className={`${styles.section} ${styles.close}`} id="close">
-        <span className={styles.eyebrow}>BE BLAG, BE BETTER</span>
-        <h2 className={styles.h2}>Готов ли си?</h2>
-        <p className={styles.sectionLead}>
-          Пиши ми — разберем дали си подходящ за програмата и тръгваме.
-        </p>
-        <a className={styles.cta} href="https://ig.me/m/blag.coaching"
-           target="_blank" rel="noopener noreferrer">
-          ПИШИ МИ
-        </a>
-        <button className={styles.loginLink} onClick={onContinue} type="button">
-          Или пробвай приложението само — безплатно е.
-        </button>
+        {/* The one thing the closing section held that nothing else did. It is
+            not an offer and it does not belong beside the ask, so it sits at the
+            very bottom, where somebody who already has an account will look. */}
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
         </button>

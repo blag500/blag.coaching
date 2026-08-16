@@ -1113,6 +1113,7 @@
 }
 
 .loginLink {
+  margin-top: 26px;
   background: none;
   border: none;
   font-family: var(--font-body);
