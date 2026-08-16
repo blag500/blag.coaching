@@ -181,6 +181,11 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.ruled} aria-hidden="true" />
         <div className={styles.appGlow} aria-hidden="true" />
 
+        <p className={styles.sectionLead}>
+          Ти входираш, то следи<br />
+          и напомня да не кривнеш ;)
+        </p>
+
         <AppShowcase />
 
         <p className={styles.sectionLead}>
