@@ -182,7 +182,8 @@ export default function LandingPage({ onContinue, onLogin }) {
 
         <p className={styles.sectionLead}>
           Ти входираш,{' '}
-          <a className={styles.leadLink} href="#features-install" onClick={go('features-install')}>то следи</a><br />
+          <a className={styles.leadLink} href="#features"
+             onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }}>то следи</a><br />
           и напомня да не кривнеш ;)
         </p>
 
