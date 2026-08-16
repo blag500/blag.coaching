@@ -638,16 +638,8 @@
 
 .coachSection { position: relative; overflow: hidden; }
 
-/* Top cover — same device as lessonsSection::before. */
-.coachSection::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 30vh;
-  background: linear-gradient(to bottom, var(--bg) 0%, rgba(12,10,6,0.7) 50%, transparent 100%);
-  pointer-events: none;
-  z-index: 1;
-}
+/* No top cover here. The print is the top of this section now, and a veil of
+   page-dark over it would be covering the thing worth showing. */
 
 /* Bottom cover. */
 .coachSection::after {
@@ -660,28 +652,41 @@
   z-index: 0;
 }
 
-/* The back photo — positioned to keep the shoulders and traps centred. */
+/* The same print as the hero, screened from the back shot: he opens the page
+   facing away and closes it facing away. The sheet is cream, so it hangs at
+   the top of the section at full strength and the text sits below it on the
+   page's own dark rather than fighting the paper for contrast. */
 .coachBg {
   position: absolute;
-  inset: 0;
-  background: url('/coach-bg.jpg') 50% 55% / cover no-repeat;
-  opacity: 0.55;
-  -webkit-mask-image: radial-gradient(ellipse 120% 90% at 50% 52%, #000 0%, #000 38%, transparent 88%);
-  mask-image: radial-gradient(ellipse 120% 90% at 50% 52%, #000 0%, #000 38%, transparent 88%);
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Tall enough to read as a poster, short enough that the bullets under it
+     are on screen at the same time on a phone. */
+  height: 62vh;
+  background: url('/coach-poster.webp') 50% 12% / cover no-repeat;
   pointer-events: none;
 }
 
-/* Dark pillow so the text stays readable against the skin tones. */
+/* Dark from the foot of the print upwards — the same two-stop fade the hero
+   uses, so the paper ends in the page instead of being cut off by a line. */
 .coachWash {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 80% 50% at 50% 50%,
-    rgba(12,10,6,0.82) 0%,
-    rgba(12,10,6,0.60) 40%,
-    rgba(12,10,6,0.18) 70%,
-    transparent 90%);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 62vh;
+  background: linear-gradient(to bottom,
+    rgba(12, 10, 6, 0.28) 0%,
+    rgba(12, 10, 6, 0.10) 22%,
+    rgba(12, 10, 6, 0.55) 66%,
+    rgba(12, 10, 6, 0.94) 86%,
+    var(--bg) 100%);
   pointer-events: none;
 }
+
+/* The section starts below the print. */
+.coachSection { padding-top: calc(62vh - 40px); }
 
 /* All direct children sit above the two background layers. */
 .coachSection > *:not(.coachBg):not(.coachWash) { position: relative; z-index: 1; }
