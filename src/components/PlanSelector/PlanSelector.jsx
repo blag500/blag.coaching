@@ -1,58 +1,60 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
-import AppShowcase from '../LandingPage/AppShowcase'
 import styles from './PlanSelector.module.css'
 
-const PLANS = {
-  free: {
+const PLANS = [
+  {
     id: 'free',
     name: 'BLAG',
+    pitch: 'Безплатно завинаги.',
+    sub: 'Всичко за да тръгнеш.',
+    premium: false,
     cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
     features: [
-      'AI търсене на храни + баркод скенер',
-      'Дневник на храненето с макроси',
-      'Рецепти с калкулатор на порции',
-      'Тренировъчен дневник и прогресия',
-      'Навици, тегло и прогрес',
-      'Известия и напомняния',
+      { icon: '🍽', text: 'Храна с AI и баркод' },
+      { icon: '🏋', text: 'Тренировъчен дневник' },
+      { icon: '📈', text: 'Тегло, навици, прогрес' },
     ],
   },
-  pro: {
+  {
     id: 'pro',
     name: 'BLAG PRO',
+    pitch: 'Личен треньор.',
+    sub: 'Всичко от BLAG + план по мярка.',
+    premium: true,
     badge: 'С ТРЕНЬОР',
-    cta: 'КАНДИДАТСТВАЙ ЗА PRO',
+    cta: 'КАНДИДАТСТВАЙ',
     features: [
-      'Всичко от BLAG',
-      'Оценка на формата за начало',
-      'Какво ядеш преди и след тренировка',
-      'Протокол за суплементация',
-      'Личен тренировъчен план и цели',
-      'Директен чат с треньора',
+      { icon: '🎯', text: 'Индивидуален хранителен план' },
+      { icon: '💪', text: 'Тренировъчна програма' },
+      { icon: '💬', text: 'Директна връзка с треньора' },
     ],
   },
-}
+]
 
 export default function PlanSelector({ onSelect, onSaved }) {
   const auth = useAuth()
   const [loading, setLoading] = useState(false)
+  const [loadingId, setLoadingId] = useState(null)
   const [saveError, setSaveError] = useState(null)
-  const [sheet, setSheet] = useState(null) // 'free' | 'pro' | null
 
   async function handleSelect(planId) {
     if (loading) return
     setLoading(true)
+    setLoadingId(planId)
     if (onSelect) {
       onSelect(planId)
       setLoading(false)
+      setLoadingId(null)
       return
     }
 
     const { error } = await supabase.rpc('select_plan', { plan_choice: planId })
     if (error) {
       setLoading(false)
-      setSaveError('Грешка при запазване — опитай отново.')
+      setLoadingId(null)
+      setSaveError('Грешка — опитай отново.')
       return
     }
 
@@ -60,6 +62,7 @@ export default function PlanSelector({ onSelect, onSaved }) {
     await auth.refreshProfile()
     onSaved?.()
     setLoading(false)
+    setLoadingId(null)
   }
 
   function notifyCoach() {
@@ -74,34 +77,44 @@ export default function PlanSelector({ onSelect, onSaved }) {
     }).catch(() => {})
   }
 
-  const plan = sheet ? PLANS[sheet] : null
-
   return (
     <div className={styles.page}>
-      <span className={styles.eyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
-      <p className={styles.lead}>
-        Ти входираш, то следи<br />и напомня да не кривнеш ;)
-      </p>
+      <p className={styles.eyebrow}>ИЗБЕРИ ПЛАН</p>
 
-      <AppShowcase />
-
-      <p className={styles.leadBelow}>
-        Приложението е безплатно.<br />Blag Coach — ако искаш.
-      </p>
-
-      <h1 className={styles.title}>ИЗБЕРИ ПЛАН</h1>
-
-      {/* Pills */}
-      <div className={styles.pills}>
-        {Object.values(PLANS).map(p => (
-          <button
-            key={p.id}
-            className={`${styles.pill} ${sheet === p.id ? styles.pillActive : ''}`}
-            onClick={() => setSheet(prev => prev === p.id ? null : p.id)}
-            type="button"
+      <div className={styles.cards}>
+        {PLANS.map(plan => (
+          <div
+            key={plan.id}
+            className={`${styles.card} ${plan.premium ? styles.cardPremium : ''}`}
           >
-            {p.name}
-          </button>
+            {plan.badge && <span className={styles.badge}>{plan.badge}</span>}
+
+            <div className={styles.cardTop}>
+              <h2 className={`${styles.planName} ${plan.premium ? styles.planNamePremium : ''}`}>
+                {plan.name}
+              </h2>
+              <p className={styles.pitch}>{plan.pitch}</p>
+              <p className={styles.sub}>{plan.sub}</p>
+            </div>
+
+            <ul className={styles.features}>
+              {plan.features.map(f => (
+                <li key={f.text} className={styles.feature}>
+                  <span className={styles.featureIcon}>{f.icon}</span>
+                  <span>{f.text}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              className={`${styles.cta} ${plan.premium ? styles.ctaPremium : styles.ctaFree}`}
+              onClick={() => handleSelect(plan.id)}
+              disabled={loading}
+              type="button"
+            >
+              {loadingId === plan.id ? '...' : plan.cta}
+            </button>
+          </div>
         ))}
       </div>
 
@@ -112,40 +125,6 @@ export default function PlanSelector({ onSelect, onSaved }) {
           Изход
         </button>
       )}
-
-      {/* Backdrop */}
-      {sheet && (
-        <div className={styles.backdrop} onClick={() => setSheet(null)} />
-      )}
-
-      {/* Bottom sheet */}
-      <div className={`${styles.sheet} ${sheet ? styles.sheetOpen : ''}`}>
-        {plan && (
-          <>
-            <div className={styles.sheetHandle} />
-            <div className={styles.sheetHeader}>
-              <span className={styles.sheetName}>{plan.name}</span>
-              {plan.badge && <span className={styles.sheetBadge}>{plan.badge}</span>}
-            </div>
-            <ul className={styles.features}>
-              {plan.features.map(f => (
-                <li key={f} className={styles.feature}>
-                  <span className={styles.featureCheck}>✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button
-              className={styles.cta}
-              onClick={() => handleSelect(plan.id)}
-              disabled={loading}
-              type="button"
-            >
-              {loading ? '...' : plan.cta}
-            </button>
-          </>
-        )}
-      </div>
     </div>
   )
 }
