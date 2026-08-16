@@ -330,6 +330,21 @@
   cursor: not-allowed;
 }
 
+.backPlan {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  padding: calc(env(safe-area-inset-top) + 12px) 20px 0;
+  opacity: 0.55;
+  align-self: flex-start;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.backPlan:hover { opacity: 0.85; }
+
 .signOutLink {
   background: none;
   border: none;

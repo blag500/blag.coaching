@@ -37,7 +37,7 @@ function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal })
 // on the macros step, so nothing is decided behind the user's back.
 const DEFAULTS = { age: '', height_cm: '', weight_kg: '' }
 
-export default function Onboarding({ isCoachingIntake = false }) {
+export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
   const { profile, completeOnboarding, signOut } = useAuth()
   const knownName = (profile?.name ?? '').trim()
 
@@ -175,6 +175,11 @@ export default function Onboarding({ isCoachingIntake = false }) {
 
   return (
     <div className={styles.page}>
+      {onChangePlan && (
+        <button className={styles.backPlan} onClick={onChangePlan} type="button">
+          ← Смени план
+        </button>
+      )}
       {/* Progress. The first mark is the account they already created — nobody
           should be looking at an empty bar before they have even started. */}
       <div className={styles.progressBar}>
