@@ -127,7 +127,11 @@ export default function LandingPage({ onContinue, onLogin }) {
             {/* Two lines, not three. The words are his and stay as they are — only
                 the breaks move: alone on a line the Cyrillic в sat between two
                 Latin words with nothing to belong to. */}
-            <h1 className={styles.inkName}>Blag Coaching<br />в Blag app</h1>
+            <h1 className={styles.inkName}>
+              Blag Coaching
+              <span className={styles.inkAmp}>&amp;</span>
+              Blag app
+            </h1>
             <span className={styles.inkRule} aria-hidden="true" />
             <p className={styles.inkLine}>
               Приложението, което<br />постига целите ти.

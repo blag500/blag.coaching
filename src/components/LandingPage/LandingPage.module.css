@@ -261,31 +261,50 @@
      past the left of the screen and the name lost its first letter. */
   left: 15%;
   top: 26%;
-  /* 46, not 30. Two lines were asked for and the markup gives two, but at 30%
-     the box was narrower than "Blag Coaching" and the wrap put it back to four.
-     The visible part of the sheet runs to about 70%, so 15 plus 46 still lands
-     inside it with room to spare. */
-  width: 46%;
+  /* Narrow enough to clear him. Centred type fills its box from the middle
+     out, so the 46% that fitted a left-aligned line pushed the right edge of
+     "COACHING" into his shoulder; 33% ends around 215 of 390 and he begins at
+     about 230. The size comes down with it — the words have to fit unwrapped,
+     because the shape is three lines and a wrap would make four. */
+  width: 33%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  /* Centred, now that the mark is three stacked lines with an ampersand pinned
+     between them. Left-aligned, the & would hang off the start of its line
+     rather than sit under the word above it, which is the whole shape. */
+  align-items: center;
   /* In ems, not percent. A percentage gap in a column resolves against the
      container's height, which is auto here — so it came out as nothing and the
      rule sat welded to the name. */
   gap: 0.6em;
   color: #241C12;
-  text-align: left;
+  text-align: center;
 }
 
 .inkName {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   font-family: var(--font-heading);
   /* Sized off the sheet rather than the window, so the words grow and shrink
      with the paper they are printed on. */
-  font-size: clamp(19px, 5cqw, 44px);
+  font-size: clamp(15px, 4.2cqw, 38px);
   line-height: 0.92;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+/* Its own line and its own size: smaller than the names it joins, because an
+   ampersand at their weight becomes a third word rather than the join between
+   two. Tracking removed — there is nothing after it to be spaced from, and the
+   indent that centres the words would push it off its own axis. */
+.inkAmp {
+  font-size: 0.62em;
+  letter-spacing: 0;
+  text-indent: 0;
+  line-height: 1.25;
+  opacity: 0.75;
 }
 
 .inkRule {
