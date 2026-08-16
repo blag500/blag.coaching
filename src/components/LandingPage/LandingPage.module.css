@@ -566,11 +566,11 @@
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 50vh;
+  height: 60vh;
   background: linear-gradient(to bottom,
     var(--bg) 0%,
-    var(--bg) 25%,
-    rgba(12, 10, 6, 0.85) 55%,
+    var(--bg) 50%,
+    rgba(12, 10, 6, 0.9) 75%,
     transparent 100%);
   pointer-events: none;
   z-index: 1;

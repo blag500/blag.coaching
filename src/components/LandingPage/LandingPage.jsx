@@ -164,7 +164,10 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.lessonsWash} aria-hidden="true" />
         <span className={styles.eyebrow}>THE BLAG COACH</span>
         <h2 className={styles.h2}>ще те научи как да:</h2>
-        <Lessons onProgress={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'end' })} />
+        <Lessons onProgress={() => {
+                const el = document.getElementById('app')
+                if (el) window.scrollTo({ top: el.offsetTop, behavior: 'smooth' })
+              }} />
       </section>
 
       {/* ── The app ────────────────────────────────────────────────────── */}
