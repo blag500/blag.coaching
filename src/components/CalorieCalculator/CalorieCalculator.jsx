@@ -75,8 +75,8 @@ function calcOnboardingMacros({ gender, age, height_cm, weight_kg, goal }) {
 
 // isOnboarding=true  → step-by-step first-time setup; saves via completeOnboarding()
 // isOnboarding=false → single-screen tool in Explore; saves via updateProfile()
-export default function CalorieCalculator({ onBack, isOnboarding = false, onChangePlan }) {
-  const { profile, updateProfile, completeOnboarding, signOut } = useAuth()
+export default function CalorieCalculator({ onBack, isOnboarding = false }) {
+  const { profile, updateProfile, completeOnboarding, selectPlan, signOut } = useAuth()
 
   // ── Step-flow state (used when isOnboarding=true) ────────────────────────
   const knownName = (profile?.name ?? '').trim()
@@ -134,13 +134,14 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
       })
       setStepForm(prev => ({ ...prev, ...macros }))
     }
-    if (step === TOTAL_STEPS) { handleStepFinish(); return }
+    // Step 5 advances to upsell screen (step 6) without saving yet
     setStep(s => s + 1)
   }
 
-  async function handleStepFinish() {
+  async function handleStepFinish(plan = 'free') {
     setStepSaving(true)
     setStepError('')
+    await selectPlan(plan)
     const { error } = await completeOnboarding({
       name:           stepForm.name.trim(),
       goal:           stepForm.goal,
@@ -225,26 +226,18 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
   // ── Onboarding step UI ───────────────────────────────────────────────────
   if (isOnboarding) {
     const s = stepStyles
+    const isUpsell = step === 6
     return (
       <div className={s.page}>
-        <div className={s.progressBar}>
-          {Array.from({ length: TOTAL_STEPS + 1 }, (_, i) => (
-            <div
-              key={i}
-              className={`${s.progressDot} ${i < step ? s.progressDotDone : ''} ${i === step ? s.progressDotActive : ''}`}
-            />
-          ))}
-        </div>
-
-        {onChangePlan && (
-          <button
-            className={s.signOutLink}
-            style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 14px)', left: 20, color: 'var(--accent)' }}
-            onClick={onChangePlan}
-            type="button"
-          >
-            ← Смени плана
-          </button>
+        {!isUpsell && (
+          <div className={s.progressBar}>
+            {Array.from({ length: TOTAL_STEPS + 1 }, (_, i) => (
+              <div
+                key={i}
+                className={`${s.progressDot} ${i < step ? s.progressDotDone : ''} ${i === step ? s.progressDotActive : ''}`}
+              />
+            ))}
+          </div>
         )}
 
         <div className={s.content}>
@@ -396,21 +389,73 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onChan
             </div>
           )}
 
+          {/* Step 6 — Coach upsell */}
+          {step === 6 && (
+            <div className={s.stepWrap} style={{ textAlign: 'center', gap: 16 }}>
+              <div className={s.emoji}>💪</div>
+              <h1 className={s.heading}>ТРЯБВА ТИ<br />ТРЕНЬОР?</h1>
+              <p className={s.sub} style={{ maxWidth: 300, margin: '0 auto' }}>
+                Макросите са изчислени. Можеш да тръгнеш сам — или с треньор, който ще ги нагласи точно за теб.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, width: '100%' }}>
+                {[
+                  { icon: '🎯', text: 'Индивидуален хранителен план' },
+                  { icon: '🏋', text: 'Тренировъчна програма по мярка' },
+                  { icon: '💬', text: 'Директна връзка с треньора' },
+                  { icon: '💊', text: 'Протокол за суплементация' },
+                ].map(f => (
+                  <div key={f.text} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', borderRadius: 12,
+                    background: 'var(--surface-1)',
+                    border: '1px solid rgba(var(--accent-rgb), 0.1)',
+                    textAlign: 'left',
+                  }}>
+                    <span style={{ fontSize: 18 }}>{f.icon}</span>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: 13, letterSpacing: '0.06em', color: 'var(--text)' }}>
+                      {f.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {stepError && <p className={s.error}>{stepError}</p>}
         </div>
 
-        <div className={s.nav}>
-          {step > 1 && (
-            <button className={s.backBtn} onClick={() => setStep(s => s - 1)} type="button">
-              ← НАЗАД
+        {!isUpsell ? (
+          <div className={s.nav}>
+            {step > 1 && (
+              <button className={s.backBtn} onClick={() => setStep(s => s - 1)} type="button">
+                ← НАЗАД
+              </button>
+            )}
+            <button className={s.nextBtn} onClick={stepNext} disabled={stepSaving} type="button">
+              НАПРЕД →
             </button>
-          )}
-          <button className={s.nextBtn} onClick={stepNext} disabled={stepSaving} type="button">
-            {step === TOTAL_STEPS
-              ? (stepSaving ? 'ЗАПИСВА...' : 'ЗАПОЧНИ →')
-              : 'НАПРЕД →'}
-          </button>
-        </div>
+          </div>
+        ) : (
+          <div className={s.nav} style={{ flexDirection: 'column', gap: 10 }}>
+            <button
+              className={s.nextBtn}
+              onClick={() => handleStepFinish('pro')}
+              disabled={stepSaving}
+              type="button"
+            >
+              {stepSaving ? '...' : 'ДА, ИСКАМ ТРЕНЬОР →'}
+            </button>
+            <button
+              className={s.backBtn}
+              onClick={() => handleStepFinish('free')}
+              disabled={stepSaving}
+              type="button"
+              style={{ textAlign: 'center' }}
+            >
+              ПРОДЪЛЖИ САМ
+            </button>
+          </div>
+        )}
 
         <button className={s.signOutLink} onClick={signOut} type="button">Изход</button>
       </div>
