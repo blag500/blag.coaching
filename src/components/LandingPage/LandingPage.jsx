@@ -186,7 +186,9 @@ export default function LandingPage({ onContinue, onLogin }) {
           и напомня да не кривнеш ;)
         </p>
 
-        <AppShowcase />
+        <div style={{ margin: '32px 0' }}>
+          <AppShowcase />
+        </div>
 
         <a className={styles.heroCta} href="#features"
            onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>
