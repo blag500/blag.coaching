@@ -170,7 +170,6 @@ export default function LandingPage({ onContinue, onLogin }) {
       {/* ── The app ────────────────────────────────────────────────────── */}
       <section className={`${styles.section} ${styles.appSection}`} id="app">
         <span className={styles.eyebrow}>БЛАГОТО ПРИЛОЖЕНИЕ — ЗА БЛАГИТЕ ХОРА</span>
-        <h2 className={styles.h2}>Всичко се записва</h2>
         {/* The strongest thing about the free half, said plainly: it works on
             its own. An app that only nags while somebody is paying for a coach
             is a trial with a nicer name. */}
@@ -189,7 +188,8 @@ export default function LandingPage({ onContinue, onLogin }) {
         <AppShowcase />
 
         <p className={styles.sectionLead}>
-          Приложението е безплатно. Blag Coach — ако искаш.
+          Приложението е безплатно.<br />
+          Blag Coach — ако искаш.
         </p>
 
         <a className={styles.note} href="#install" onClick={go('install')}>
