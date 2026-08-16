@@ -557,7 +557,7 @@
 /* Everything in the section stands above it. */
 .lessonsSection > *:not(.lessonsBg):not(.lessonsWash) { position: relative; z-index: 1; }
 
-.appSection { position: relative; overflow: hidden; padding-top: 54px; padding-bottom: 120px; }
+.appSection { position: relative; overflow: hidden; padding-top: 54px; padding-bottom: 0; }
 
 /* Dark bleed cover — same device as lessonsSection::before. When the section
    above has a picture at its foot the edge shows through the top of this one
