@@ -154,7 +154,6 @@ export default function LandingPage({ onContinue, onLogin }) {
       {/* The last thing on the page now. It keeps the closing section's bottom
           padding so the ticker never lands on the final answer. */}
       <section className={`${styles.section} ${styles.close}`} id="faq">
-        <span className={styles.eyebrow}>ВЪПРОСИ</span>
         <h2 className={styles.h2}>Това, което хората питат</h2>
 
         <div className={styles.faq}>
