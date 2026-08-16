@@ -3,122 +3,131 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import styles from './PlanSelector.module.css'
 
-const PLANS = [
-  {
+const PLANS = {
+  free: {
     id: 'free',
-    name: 'BLAG',
-    pitch: 'Безплатно завинаги.',
-    sub: 'Всичко за да тръгнеш.',
-    premium: false,
+    label: 'BLAG',
     cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
+    ctaStyle: 'free',
     features: [
-      { icon: '🍽', text: 'Храна с AI и баркод' },
-      { icon: '🏋', text: 'Тренировъчен дневник' },
-      { icon: '📈', text: 'Тегло, навици, прогрес' },
+      { icon: '🍽', title: 'AI храна + баркод',       sub: 'Логвай за секунди'            },
+      { icon: '🏋', title: 'Тренировъчен дневник',    sub: 'Прогресия и история'          },
+      { icon: '📊', title: 'Тегло, навици, прогрес',  sub: 'Всичко на едно място'        },
+      { icon: '🔔', title: 'Известия',                sub: 'Напомняния по твой график'    },
+      { icon: '♾', title: 'Безплатно завинаги',       sub: 'Без абонамент, без трик'      },
     ],
   },
-  {
+  pro: {
     id: 'pro',
-    name: 'BLAG PRO',
-    pitch: 'Личен треньор.',
-    sub: 'Всичко от BLAG + план по мярка.',
-    premium: true,
+    label: 'BLAG PRO',
     badge: 'С ТРЕНЬОР',
-    cta: 'КАНДИДАТСТВАЙ',
+    cta: 'КАНДИДАТСТВАЙ ЗА PRO',
+    ctaStyle: 'pro',
     features: [
-      { icon: '🎯', text: 'Индивидуален хранителен план' },
-      { icon: '💪', text: 'Тренировъчна програма' },
-      { icon: '💬', text: 'Директна връзка с треньора' },
+      { icon: '✓', title: 'Всичко от BLAG',           sub: 'Пълен достъп до приложението' },
+      { icon: '🎯', title: 'Хранителен план по мярка', sub: 'Съобразен с теб и целта ти'   },
+      { icon: '💪', title: 'Тренировъчна програма',   sub: 'Написана от треньора'          },
+      { icon: '💬', title: 'Директна връзка',          sub: 'Чат с треньора по всяко време' },
+      { icon: '💊', title: 'Суплементация',            sub: 'Протокол за теб'              },
     ],
   },
-]
+}
 
 export default function PlanSelector({ onSelect, onSaved }) {
   const auth = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [loadingId, setLoadingId] = useState(null)
+  const [selected, setSelected] = useState('free')
+  const [loading, setLoading]   = useState(false)
   const [saveError, setSaveError] = useState(null)
 
-  async function handleSelect(planId) {
+  const plan = PLANS[selected]
+
+  async function handleCta() {
     if (loading) return
     setLoading(true)
-    setLoadingId(planId)
-    if (onSelect) {
-      onSelect(planId)
-      setLoading(false)
-      setLoadingId(null)
-      return
+    if (onSelect) { onSelect(plan.id); setLoading(false); return }
+
+    const { error } = await supabase.rpc('select_plan', { plan_choice: plan.id })
+    if (error) { setLoading(false); setSaveError('Грешка — опитай отново.'); return }
+
+    if (plan.id === 'pro') {
+      const coachId = auth.profile?.coach_id
+      if (coachId) {
+        supabase.functions.invoke('send-push', {
+          body: {
+            toUserId: coachId,
+            title: 'Нова заявка за PRO',
+            body: `${auth.profile?.name || auth.profile?.email || 'Нов клиент'} кандидатства за PRO`,
+          },
+        }).catch(() => {})
+      }
     }
 
-    const { error } = await supabase.rpc('select_plan', { plan_choice: planId })
-    if (error) {
-      setLoading(false)
-      setLoadingId(null)
-      setSaveError('Грешка — опитай отново.')
-      return
-    }
-
-    if (planId === 'pro') notifyCoach()
     await auth.refreshProfile()
     onSaved?.()
     setLoading(false)
-    setLoadingId(null)
-  }
-
-  function notifyCoach() {
-    const coachId = auth.profile?.coach_id
-    if (!coachId) return
-    supabase.functions.invoke('send-push', {
-      body: {
-        toUserId: coachId,
-        title: 'Нова заявка за PRO',
-        body: `${auth.profile?.name || auth.profile?.email || 'Нов клиент'} кандидатства за PRO`,
-      },
-    }).catch(() => {})
   }
 
   return (
     <div className={styles.page}>
-      <p className={styles.eyebrow}>ИЗБЕРИ ПЛАН</p>
+      {/* Header */}
+      <div className={styles.header}>
+        <p className={styles.greeting}>Добре дошъл</p>
+        <h1 className={styles.heading}>Готов ли си<br />да започнеш?</h1>
+      </div>
 
-      <div className={styles.cards}>
-        {PLANS.map(plan => (
-          <div
-            key={plan.id}
-            className={`${styles.card} ${plan.premium ? styles.cardPremium : ''}`}
+      {/* Plan bubbles */}
+      <div className={styles.bubblesRow}>
+        {Object.values(PLANS).map(p => (
+          <button
+            key={p.id}
+            className={`${styles.bubble} ${selected === p.id ? styles.bubbleActive : ''} ${p.id === 'pro' && selected === p.id ? styles.bubbleActivePro : ''}`}
+            onClick={() => setSelected(p.id)}
+            type="button"
           >
-            {plan.badge && <span className={styles.badge}>{plan.badge}</span>}
+            <span className={styles.bubbleLabel}>{p.label}</span>
+            {p.badge && selected === p.id && (
+              <span className={styles.bubbleBadge}>{p.badge}</span>
+            )}
+          </button>
+        ))}
+      </div>
 
-            <div className={styles.cardTop}>
-              <h2 className={`${styles.planName} ${plan.premium ? styles.planNamePremium : ''}`}>
-                {plan.name}
-              </h2>
-              <p className={styles.pitch}>{plan.pitch}</p>
-              <p className={styles.sub}>{plan.sub}</p>
+      {/* Features list */}
+      <div className={styles.list}>
+        <p className={styles.listTitle}>
+          {selected === 'free' ? 'Какво включва' : 'Какво получаваш'}
+        </p>
+        {plan.features.map(f => (
+          <div key={f.title} className={styles.row}>
+            <span className={styles.rowIcon}>{f.icon}</span>
+            <div className={styles.rowText}>
+              <span className={styles.rowTitle}>{f.title}</span>
+              <span className={styles.rowSub}>{f.sub}</span>
             </div>
-
-            <ul className={styles.features}>
-              {plan.features.map(f => (
-                <li key={f.text} className={styles.feature}>
-                  <span className={styles.featureIcon}>{f.icon}</span>
-                  <span>{f.text}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              className={`${styles.cta} ${plan.premium ? styles.ctaPremium : styles.ctaFree}`}
-              onClick={() => handleSelect(plan.id)}
-              disabled={loading}
-              type="button"
-            >
-              {loadingId === plan.id ? '...' : plan.cta}
-            </button>
+            <span className={styles.rowArrow}>→</span>
           </div>
         ))}
       </div>
 
-      {saveError && <p className={styles.saveError}>{saveError}</p>}
+      {/* CTA card */}
+      <div className={`${styles.ctaCard} ${selected === 'pro' ? styles.ctaCardPro : ''}`}>
+        <div className={styles.ctaCardTop}>
+          <span className={styles.ctaPlanName}>{plan.label}</span>
+          {plan.id === 'free'
+            ? <span className={styles.ctaPrice}>Безплатно</span>
+            : <span className={styles.ctaPrice}>По договаряне</span>
+          }
+        </div>
+        {saveError && <p className={styles.saveError}>{saveError}</p>}
+        <button
+          className={`${styles.cta} ${selected === 'pro' ? styles.ctaPro : styles.ctaFree}`}
+          onClick={handleCta}
+          disabled={loading}
+          type="button"
+        >
+          {loading ? '...' : plan.cta}
+        </button>
+      </div>
 
       {!onSelect && (
         <button className={styles.signOutLink} onClick={auth.signOut} type="button">
