@@ -128,11 +128,6 @@ export default function LandingPage({ onContinue, onLogin }) {
               <span className={styles.inkAmp}>&amp;</span>
               Blag app
             </h1>
-            <span className={styles.inkRule} aria-hidden="true" />
-            <p className={styles.inkLine}>
-              Blag Coach, който ще те направи blag.<br />
-              <span style={{ opacity: 0.72 }}>Blag app, който ще следи и напомня.</span>
-            </p>
           </div>
         </div>
         <span className={styles.posterShade} aria-hidden="true" />
