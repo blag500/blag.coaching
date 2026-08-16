@@ -327,6 +327,30 @@
   border-color: rgba(201, 162, 39, 0.3);
 }
 
+.forgotLink {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+  opacity: 0.7;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.forgotLink:hover { opacity: 1; }
+
+.resetIntro {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+
 .helpNote {
   display: block;
   text-align: center;

@@ -14,18 +14,12 @@ function GoogleIcon() {
 }
 
 export default function AuthScreen({ onBack, initialMode = 'login', initialEmail = '' }) {
-  const { signIn, signUp, signInWithGoogle, authError } = useAuth()
-  /* Which door they came through. The landing page has two, and a button that
-     says "регистрирай се" opening on the login form makes a liar of the button
-     and asks a new visitor for a password they have not chosen yet. */
-  const [mode, setMode]       = useState(initialMode) // 'login' | 'register'
-  /* Typed on the landing page, if it was. Asking for it twice would make the
-     field there a toll rather than a head start. */
-  const [email, setEmail]     = useState(initialEmail)
+  const { signIn, signUp, signInWithGoogle, resetPassword, authError } = useAuth()
+  const [mode, setMode]         = useState(initialMode) // 'login' | 'register' | 'reset'
+  const [email, setEmail]       = useState(initialEmail)
   const [password, setPassword] = useState('')
-  const [name, setName]       = useState('')
-  const [loading, setLoading] = useState(false)
-  const [info, setInfo]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [info, setInfo]         = useState('')
   const passwordRef = useRef(null)
 
   async function handleSubmit(e) {
@@ -33,14 +27,17 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     setLoading(true)
     setInfo('')
 
+    if (mode === 'reset') {
+      const ok = await resetPassword(email)
+      if (ok) setInfo('Изпратихме линк за нова парола. Провери имейла си.')
+      setLoading(false)
+      return
+    }
+
     if (mode === 'login') {
       await signIn(email, password)
     } else {
       const res = await signUp(email, password)
-      /* Already registered: move them to the door they actually need, with
-         their address still in the field and the password box waiting. Being
-         told "this email is taken" and left on the wrong form is how people
-         decide to make a second account. */
       if (res === 'exists') {
         setMode('login')
         setInfo('Вече имаш акаунт с този имейл. Влез с паролата си.')
@@ -52,6 +49,8 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
 
     setLoading(false)
   }
+
+  function switchMode(m) { setMode(m); setInfo('') }
 
   return (
     <div className={styles.screen}>
@@ -67,22 +66,30 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           </div>
         </div>
 
-        <div className={styles.toggle}>
-          <button
-            className={`${styles.toggleBtn} ${mode === 'login' ? styles.toggleActive : ''}`}
-            onClick={() => { setMode('login'); setInfo('') }}
-            type="button"
-          >
-            ВХОД
-          </button>
-          <button
-            className={`${styles.toggleBtn} ${mode === 'register' ? styles.toggleActive : ''}`}
-            onClick={() => { setMode('register'); setInfo('') }}
-            type="button"
-          >
-            РЕГИСТРАЦИЯ
-          </button>
-        </div>
+        {mode !== 'reset' && (
+          <div className={styles.toggle}>
+            <button
+              className={`${styles.toggleBtn} ${mode === 'login' ? styles.toggleActive : ''}`}
+              onClick={() => switchMode('login')}
+              type="button"
+            >
+              ВХОД
+            </button>
+            <button
+              className={`${styles.toggleBtn} ${mode === 'register' ? styles.toggleActive : ''}`}
+              onClick={() => switchMode('register')}
+              type="button"
+            >
+              РЕГИСТРАЦИЯ
+            </button>
+          </div>
+        )}
+
+        {mode === 'reset' && (
+          <p className={styles.resetIntro}>
+            Въведи имейла си и ще ти изпратим линк за нова парола.
+          </p>
+        )}
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
@@ -99,42 +106,58 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
             />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="auth-password">Парола</label>
-            <input
-              id="auth-password"
-              ref={passwordRef}
-              className={styles.input}
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            />
-          </div>
+          {mode !== 'reset' && (
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="auth-password">Парола</label>
+              <input
+                id="auth-password"
+                ref={passwordRef}
+                className={styles.input}
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                minLength={6}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+            </div>
+          )}
 
           {authError && <p className={styles.error}>{authError}</p>}
           {info      && <p className={styles.info}>{info}</p>}
 
           <button className={styles.submit} type="submit" disabled={loading}>
-            {loading ? '...' : mode === 'login' ? 'ВЛЕЗ' : 'СЪЗДАЙ АКАУНТ'}
+            {loading ? '...' : mode === 'login' ? 'ВЛЕЗ' : mode === 'register' ? 'СЪЗДАЙ АКАУНТ' : 'ИЗПРАТИ ЛИНК'}
           </button>
         </form>
 
-        <div className={styles.divider}>
-          <span className={styles.dividerLine} />
-          <span className={styles.dividerText}>или</span>
-          <span className={styles.dividerLine} />
-        </div>
+        {mode === 'login' && (
+          <button className={styles.forgotLink} onClick={() => switchMode('reset')} type="button">
+            Забравена парола?
+          </button>
+        )}
 
-        <button className={styles.googleBtn} onClick={signInWithGoogle} type="button">
-          <GoogleIcon />
-          Продължи с Google
-        </button>
+        {mode === 'reset' && (
+          <button className={styles.forgotLink} onClick={() => switchMode('login')} type="button">
+            ← Обратно към вход
+          </button>
+        )}
 
+        {mode !== 'reset' && (
+          <>
+            <div className={styles.divider}>
+              <span className={styles.dividerLine} />
+              <span className={styles.dividerText}>или</span>
+              <span className={styles.dividerLine} />
+            </div>
 
+            <button className={styles.googleBtn} onClick={signInWithGoogle} type="button">
+              <GoogleIcon />
+              Продължи с Google
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

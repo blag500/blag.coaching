@@ -52,6 +52,24 @@ export function AuthProvider({ children }) {
   async function signIn(email, password) {
     setAuthError(null)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      const msg = error.message || ''
+      if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials'))
+        setAuthError('Грешен имейл или парола.')
+      else if (msg.includes('Email not confirmed'))
+        setAuthError('Потвърди имейла си преди да влезеш.')
+      else
+        setAuthError(msg)
+      return false
+    }
+    return true
+  }
+
+  async function resetPassword(email) {
+    setAuthError(null)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
     if (error) { setAuthError(error.message); return false }
     return true
   }
@@ -452,6 +470,7 @@ export function AuthProvider({ children }) {
       signIn,
       signUp,
       signInWithGoogle,
+      resetPassword,
       signOut,
       refreshProfile,
       updateProfile,
