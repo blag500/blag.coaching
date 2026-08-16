@@ -141,7 +141,10 @@ export default function LandingPage({ onContinue, onLogin }) {
             through a section about him and a price card before it asked for
             anything; both were saying again, at length, what the five lines
             above have already said. */}
-        <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/blag.coaching"
+        {/* His own account, not the brand one. The brand account has nobody
+            behind it yet, and a message into an empty inbox is worse than no
+            button at all. */}
+        <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/niki.blggg"
            target="_blank" rel="noopener noreferrer">
           ПИШИ МИ ЗА БЕЗПЛАТНА ТРЕНИРОВКА
         </a>
