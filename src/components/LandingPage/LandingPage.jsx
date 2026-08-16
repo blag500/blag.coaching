@@ -181,16 +181,10 @@ export default function LandingPage({ onContinue, onLogin }) {
         <div className={styles.ruled} aria-hidden="true" />
         <div className={styles.appGlow} aria-hidden="true" />
 
-        <p className={styles.sectionLead}>
-          Ти входираш, то следи<br />
-          и напомня да не кривнеш ;)
-        </p>
         <AppShowcase />
 
-        <p className={styles.freeLine}>
-          Приложението е безплатно<br />
-          <span className={styles.freeMark}>Blag Coach — ако искаш</span><br />
-          <span className={styles.wink}>Абе трябва ти ;)</span>
+        <p className={styles.sectionLead}>
+          Приложението е безплатно. Blag Coach — ако искаш.
         </p>
 
         <a className={styles.note} href="#install" onClick={go('install')}>

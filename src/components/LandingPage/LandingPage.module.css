@@ -557,7 +557,7 @@
 /* Everything in the section stands above it. */
 .lessonsSection > *:not(.lessonsBg):not(.lessonsWash) { position: relative; z-index: 1; }
 
-.appSection { position: relative; overflow: hidden; }
+.appSection { position: relative; overflow: hidden; padding-bottom: 120px; }
 
 /* Two hairlines crossed at 44 pixels, at a twentieth of the gold's strength.
    Close enough to read as ruled paper, faint enough that nobody looks at it —
