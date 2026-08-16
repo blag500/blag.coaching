@@ -51,18 +51,14 @@ const STEPS = [
 ]
 
 const FAQ = [
-  { q: 'Трябва ли да го свалям от App Store?',
-    a: 'Не. Отваряш адреса в браузъра и го добавяш на началния екран — оттам изглежда и работи като приложение. Нищо за сваляне и нищо за одобряване.' },
-  { q: 'Работи ли без интернет?',
-    a: 'Отваря се, но не. Числата ти живеят на сървър, за да ги виждам и аз, така че за записване и четене трябва връзка.' },
-  { q: 'Само за бодибилдъри ли е?',
-    a: 'Не. Проследяването е същото за всеки, който тренира; разликата е в плана, а той се пише според твоята цел.' },
   { q: 'Мога ли да го ползвам без треньор?',
-    a: 'Да. Приложението е безплатно и работи само по себе си. Треньорът е отделно решение, което взимаш когато прецениш.' },
-  { q: 'Какво става с данните ми?',
-    a: 'Стоят в твоя профил и ги виждаме само ти и аз. Спреш ли, изтриваш профила си и си отиват с него.' },
+    a: 'Да, и е безплатно. Логваш, следиш, напредваш. Треньорът е за хората, на които им трябва план по техните конкретни числа, а не само инструмент за записване.' },
   { q: 'Защо ми е?',
-    a: 'Ми ако искаш ;)\nИ щото coach-ът е много blag ;)' },
+    a: 'Ако тренираш сам и планираш сам — вероятно не ти е. Ако работиш с мен — тук е всичко, от което се нуждаем, на едно място.' },
+  { q: 'Как изглежда коучингът на практика?',
+    a: 'Пишеш ми, гледаме числата от приложението, настройваме плана. Седмичен чек-ин, корекция на макросите и обратна връзка по техника — по реални данни, не по усет.' },
+  { q: 'Трябва ли да го свалям от App Store?',
+    a: 'Не. Отваряш адреса в браузъра и го добавяш на началния екран — оттам изглежда и работи като приложение. Нищо за сваляне, нищо за одобряване.' },
 ]
 
 /* One place to write the offer. It travels along the bottom of every screen,
@@ -129,12 +125,10 @@ export default function LandingPage({ onContinue, onLogin }) {
                 Latin words with nothing to belong to. */}
             <h1 className={styles.inkName}>
               Blag Coaching
-              <span className={styles.inkAmp}>&amp;</span>
-              Blag app
             </h1>
             <span className={styles.inkRule} aria-hidden="true" />
             <p className={styles.inkLine}>
-              Приложението, което<br />постига целите ти.
+              Постигни целите си<br />с треньор.
             </p>
           </div>
         </div>
@@ -197,8 +191,8 @@ export default function LandingPage({ onContinue, onLogin }) {
         <AppShowcase />
 
         <p className={styles.sectionLead}>
-          Приложението е безплатно.<br />
-          Blag Coach — ако искаш.
+          Ползвам го с всеки клиент.<br />
+          Не работиш с мен? Пак е твоето — безплатно.
         </p>
 
       </section>
@@ -295,29 +289,10 @@ export default function LandingPage({ onContinue, onLogin }) {
       {/* ── Price ──────────────────────────────────────────────────────── */}
       <section className={styles.section} id="price">
         <span className={styles.eyebrow}>ЦЕНА</span>
-        <h2 className={styles.h2}>Приложението е безплатно</h2>
+        <h2 className={styles.h2}>Работи с мен</h2>
         <p className={styles.sectionLead}>
-          Плащаш само за Blag Coach — да те направи Blag Бог,
-          ако искаш (а ти май искаш ;) )
+          Приложението е инструментът. Треньорът е планът.
         </p>
-
-        {/* The free half gets a card of its own. Written as a price list with
-            the same shape as the one under it, because a thing described in a
-            sentence and a thing described in a card do not look like two
-            options — they look like an option and an aside. */}
-        <div className={`${styles.priceCard} ${styles.freeCard}`}>
-          <span className={styles.priceLabel}>ПРИЛОЖЕНИЕТО</span>
-          <ul className={styles.freeList}>
-            {['Хранене и макроси', 'Тренировки и рекорди', 'Тегло и тенденция',
-              'Навици, вода, суплементи', 'Известия'].map(x => (
-              <li key={x}>
-                <span>{x}</span>
-                <b className={styles.freeWord}>безплатно</b>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className={styles.wink}>Абе безплатно е бе ;)</p>
 
         <div className={styles.priceCard}>
           <span className={styles.priceLabel}>ПРИЛОЖЕНИЕ + ТРЕНЬОР</span>
@@ -338,6 +313,20 @@ export default function LandingPage({ onContinue, onLogin }) {
             Без такса за започване. Спираш когато решиш.
           </p>
         </div>
+
+        <div className={`${styles.priceCard} ${styles.freeCard}`}>
+          <span className={styles.priceLabel}>САМО ПРИЛОЖЕНИЕТО</span>
+          <ul className={styles.freeList}>
+            {['Хранене и макроси', 'Тренировки и рекорди', 'Тегло и тенденция',
+              'Навици, вода, суплементи', 'Известия'].map(x => (
+              <li key={x}>
+                <span>{x}</span>
+                <b className={styles.freeWord}>безплатно</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className={styles.wink}>Абе безплатно е бе ;)</p>
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}
@@ -366,13 +355,16 @@ export default function LandingPage({ onContinue, onLogin }) {
       {/* ── Close ──────────────────────────────────────────────────────── */}
       <section className={`${styles.section} ${styles.close}`}>
         <span className={styles.eyebrow}>BE BLAG, BE BETTER</span>
-        <h2 className={styles.h2}>Започни да записваш</h2>
+        <h2 className={styles.h2}>Готов ли си?</h2>
         <p className={styles.sectionLead}>
-          Приложението е безплатно и се добавя за секунди. Треньор взимаш,
-          когато решиш, че искаш план по своите числа.
+          Пиши ми — разберем дали си подходящ за програмата и тръгваме.
         </p>
-        <button className={styles.cta} onClick={onContinue} type="button">
-          ЗАПОЧНИ БЕЗПЛАТНО
+        <a className={styles.cta} href="https://ig.me/m/blag.coaching"
+           target="_blank" rel="noopener noreferrer">
+          ПИШИ МИ
+        </a>
+        <button className={styles.loginLink} onClick={onContinue} type="button">
+          Или пробвай приложението само — безплатно е.
         </button>
         <button className={styles.loginLink} onClick={onLogin} type="button">
           Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
