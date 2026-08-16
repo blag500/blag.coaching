@@ -241,7 +241,11 @@
   height: max(100dvh, calc(100vw * 1152 / 928));
   /* Him to the right, the empty half of the circle to the left, which is where
      the words go. */
-  transform: translate(-42%, -54%);
+  /* Paired with the ink's own left. Moving the words alone would have taken
+     them off the side of a phone; moving the paper right by the same amount
+     the words move left keeps them where they were on screen and only changes
+     where they sit on the print — which is the part that had to change. */
+  transform: translate(-38%, -54%);
 }
 
 .poster {
@@ -256,10 +260,11 @@
    floating above a photograph of a poster rather than being part of one. */
 .ink {
   position: absolute;
-  /* Inside the part of the sheet the window actually shows. The sheet is wider
-     than a phone and hangs off both edges, so 7% of the paper was 43 pixels
-     past the left of the screen and the name lost its first letter. */
-  left: 15%;
+  /* Read together with the sheet's transform, which was moved right by the
+     same 4% this came left. On its own this number cannot go far: the sheet
+     hangs off both edges of a phone, and at 7% the name lost its first letter
+     off the side of the screen. */
+  left: 11%;
   top: 26%;
   /* Narrow enough to clear him. Centred type fills its box from the middle
      out, so the 46% that fitted a left-aligned line pushed the right edge of
