@@ -148,16 +148,17 @@ export default function LandingPage({ onContinue, onLogin }) {
            target="_blank" rel="noopener noreferrer">
           ПИШИ МИ ЗА БЕЗПЛАТНА ТРЕНИРОВКА
         </a>
-        <button className={styles.quietCta} onClick={onContinue} type="button">
-          Или само приложението — без мен.
-        </button>
-
-        {/* The way on. Nothing on this screen pointed at the last section, so
-            anybody who was not going to press either button had no reason to
-            keep scrolling. */}
-        <a className={styles.faqLink} href="#faq" onClick={go('faq')}>
-          Често задавани въпроси
-        </a>
+        {/* Both on one line, split by a dot. On its own row underneath, the way
+            on to the questions read as an afterthought; beside the other quiet
+            option it is one of two small things rather than a stray one. It is
+            FAQ and not the whole phrase because the whole phrase wraps. */}
+        <p className={styles.quietRow}>
+          <button className={styles.quietCta} onClick={onContinue} type="button">
+            Или само приложението — без мен
+          </button>
+          <span className={styles.quietDot} aria-hidden="true">•</span>
+          <a className={styles.faqLink} href="#faq" onClick={go('faq')}>FAQ</a>
+        </p>
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}

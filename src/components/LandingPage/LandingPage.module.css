@@ -1105,10 +1105,20 @@
 /* The other way out, deliberately smaller and unlit. It is a real offer and it
    has to be findable, but a second gold slab beside the first would make the
    visitor choose between two equal things instead of taking the one. */
-.quietCta {
+/* One line, two ways out of it. */
+.quietRow {
   position: relative;
   z-index: 1;
-  margin-top: 14px;
+  margin: 14px 0 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.quietDot { color: var(--muted); opacity: 0.5; font-size: 11px; }
+
+.quietCta {
   padding: 8px 4px;
   background: none;
   border: none;
@@ -1126,10 +1136,7 @@
 /* Not an offer, so it is not dressed as one — a small gold line, underscored,
    which is what a link into the rest of the page should look like. */
 .faqLink {
-  position: relative;
-  z-index: 1;
-  margin-top: 18px;
-  padding: 6px 4px;
+  padding: 8px 2px;
   font-family: var(--font-body);
   font-size: 12.5px;
   color: rgba(var(--accent-rgb), 0.8);
