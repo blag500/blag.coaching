@@ -5,10 +5,10 @@
 .rail {
   position: fixed;
   top: 0;
-  right: 0;
+  right: 2px;
   bottom: 0;
   z-index: 30;
-  width: 26px;
+  width: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,7 +24,7 @@
    something dropped on the page. */
 .dot {
   position: relative;
-  width: 26px;
+  width: 18px;
   height: 14px;
   display: flex;
   align-items: center;
