@@ -1,0 +1,132 @@
+/* The poster fills the screen and the asks sit at its foot, where a thumb
+   already is and where the artwork has the least to lose. Positioned, because
+   the sheet and the shade borrowed from the landing page are absolute and this
+   is what they measure themselves against. */
+.page {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 24px calc(30px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--bg);
+  text-align: center;
+}
+
+.stack {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* The way to the answer, under the ask rather than printed on the paper: in the
+   ink the line lands at about ten pixels on a phone, which is a size you can
+   read and not a size you can hit. Gold and underscored, because it opens
+   something — the line below it only continues. */
+.why {
+  margin-top: 16px;
+  padding: 8px 6px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--accent);
+  opacity: 0.85;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 160ms;
+}
+
+.why:active { opacity: 1; }
+
+/* The other way out, deliberately unlit. It is a real offer and it has to be
+   findable, but a second lit control beside the first would make the client
+   choose between two equal things instead of taking the one. */
+.skip {
+  margin-top: 2px;
+  padding: 8px 6px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms;
+}
+
+.skip:active:not(:disabled),
+.skip:hover:not(:disabled) { color: var(--text); }
+
+.skip:disabled { opacity: 0.5; cursor: default; }
+
+.error {
+  margin: 0 0 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #ef5350;
+}
+
+/* ── Why he is needed ──────────────────────────────────────────────────── */
+.whySheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  background: #0C0A06;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: rise 280ms var(--ease-out) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.whyBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: calc(38px + env(safe-area-inset-top, 0px)) 20px 8px;
+  text-align: center;
+}
+
+.whyFoot {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, #0C0A06 55%, rgba(12, 10, 6, 0));
+}
+
+.back {
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back:active { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .whySheet { animation: none; }
+}
