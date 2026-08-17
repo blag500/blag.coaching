@@ -107,6 +107,22 @@
   to   { opacity: 1; }
 }
 
+/* Paints over the two background layers (it follows them in the DOM) but under
+   the body (z-index 1), so the print dissolves into the page's own black behind
+   the top of the text. */
+.topFade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42vh;
+  background: linear-gradient(to bottom,
+    #0C0A06 0%,
+    rgba(12, 10, 6, 0.7) 42%,
+    transparent 100%);
+  pointer-events: none;
+}
+
 .whyBody {
   position: relative;
   z-index: 1;

@@ -44,6 +44,10 @@ function WhySheet({ onClose }) {
           the landing page — reused, not copied, so the two never drift. */}
       <div className={land.lessonsBg} aria-hidden="true" />
       <div className={land.lessonsWash} aria-hidden="true" />
+      {/* Fades the print into black at the top, the way the landing section does,
+          so THE BLAG COACH and the heading read against the dark rather than the
+          halftone. */}
+      <div className={styles.topFade} aria-hidden="true" />
       <div className={styles.whyBody}>
         <span className={land.markLink}>
           <span className={land.markText}>THE BLAG COACH</span>
