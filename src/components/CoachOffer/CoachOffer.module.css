@@ -16,6 +16,17 @@
   text-align: center;
 }
 
+/* The same sheet the landing page uses, seated 4% lower. The landing hero lifts
+   it by that much (translateY -54%) to make room for a taller stack of controls
+   under it; this screen's stack is shorter, so the lift only left a black band
+   under his feet. -50% drops the foot of the print onto the foot of the screen.
+   The posterShade's dark bottom hides the seam. */
+.sheetSeat { transform: translate(-38%, -50%) !important; }
+
+@media (min-aspect-ratio: 1 / 1) {
+  .sheetSeat { transform: translate(-50%, -50%) !important; }
+}
+
 .stack {
   position: relative;
   z-index: 1;

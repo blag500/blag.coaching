@@ -63,7 +63,7 @@ export default function CoachOffer({ onWrite, onSkip, saving, error }) {
 
   return (
     <div className={styles.page}>
-      <div className={land.sheet}>
+      <div className={`${land.sheet} ${styles.sheetSeat}`}>
         <img className={land.poster} src="/poster.webp" alt="" fetchpriority="high" />
         <div className={land.ink}>
           <h1 className={land.inkName}>
