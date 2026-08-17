@@ -40,6 +40,11 @@ function blockColor(idx) { return PALETTE[idx % PALETTE.length] }
 export default function Training({ onMenuOpen }) {
   const { user, profile, updateProfile, removeExerciseLog } = useAuth()
   const isCoach = profile?.role === 'coach'
+  // A coached client's plan is written by the coach and waited on; a self-serve
+  // client has no one preparing anything, so they set and edit their own.
+  const coached = profile?.plan === 'pro' || profile?.plan === 'coaching'
+  const selfManaged = !isCoach && !coached
+  const canEdit = isCoach || selfManaged
   const blocks  = getBlocks(profile?.training_plan)
 
   const [selectedId, setSelectedId]     = useState(blocks?.[0]?.id ?? '0')
@@ -141,6 +146,20 @@ export default function Training({ onMenuOpen }) {
     setEditing(false)
   }
 
+  // The one-tap way in: a ready 4-day upper/lower split the client can log from
+  // today and reshape whenever. Deep-copied so the shared default is never
+  // mutated by later edits.
+  async function applyStarter() {
+    setSavingPlan(true)
+    await updateProfile({
+      training_plan: DEFAULT_TRAINING_BLOCKS.map(b => ({
+        ...b,
+        exercises: b.exercises.map(e => ({ ...e })),
+      })),
+    })
+    setSavingPlan(false)
+  }
+
   function handleSaved(entry) {
     // The row shows what was just logged, so it has to hear about it.
     refreshLifts()
@@ -196,7 +215,7 @@ export default function Training({ onMenuOpen }) {
     setMarking(false)
   }
 
-  if (editing && isCoach) {
+  if (editing && canEdit) {
     return (
       <div className={styles.page}>
         <AppHeader
@@ -220,20 +239,44 @@ export default function Training({ onMenuOpen }) {
   if (!blocks) {
     return (
       <div className={styles.page}>
-        <AppHeader
-          onMenuOpen={onMenuOpen}
-          title="ТРЕНИРОВКА"
-          action={isCoach && (
-            <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
-              РЕДАКТИРАЙ
-            </button>
-          )}
-        />
-        <div className={styles.noPlanWrap}>
-          <p className={styles.noPlanIcon}>🏋️</p>
-          <p className={styles.noPlanTitle}>ПРОГРАМАТА СЕ ПОДГОТВЯ</p>
-          <p className={styles.noPlanSub}>Треньорът подготвя твоята тренировъчна програма. Очаквай скоро!</p>
-        </div>
+        <AppHeader onMenuOpen={onMenuOpen} title="ТРЕНИРОВКА" />
+        {selfManaged ? (
+          // No coach is coming — so the empty state is a setup, not a wait. One
+          // tap to a ready split, or the editor to build from scratch.
+          <div className={styles.noPlanWrap}>
+            <p className={styles.noPlanIcon}>🏋️</p>
+            <p className={styles.noPlanTitle}>ЗАДАЙ ТРЕНИРОВКА</p>
+            <p className={styles.noPlanSub}>
+              Тръгни с готова програма или си направи своя. Ще можеш да я
+              променяш по всяко време.
+            </p>
+            <div className={styles.setupActions}>
+              <button
+                className={styles.setupPrimary}
+                onClick={applyStarter}
+                disabled={savingPlan}
+                type="button"
+              >
+                {savingPlan ? '...' : 'Започни с готова програма'}
+              </button>
+              <span className={styles.setupHint}>Upper / Lower · 4 дни</span>
+              <button
+                className={styles.setupSecondary}
+                onClick={() => setEditing(true)}
+                disabled={savingPlan}
+                type="button"
+              >
+                Създай своя от нулата
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.noPlanWrap}>
+            <p className={styles.noPlanIcon}>🏋️</p>
+            <p className={styles.noPlanTitle}>ПРОГРАМАТА СЕ ПОДГОТВЯ</p>
+            <p className={styles.noPlanSub}>Треньорът подготвя твоята тренировъчна програма. Очаквай скоро!</p>
+          </div>
+        )}
       </div>
     )
   }
@@ -243,7 +286,7 @@ export default function Training({ onMenuOpen }) {
       <AppHeader
         onMenuOpen={onMenuOpen}
         title="ТРЕНИРОВКА"
-        action={isCoach ? (
+        action={canEdit && !showProgression ? (
           <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
             РЕДАКТИРАЙ
           </button>

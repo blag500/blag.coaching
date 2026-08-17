@@ -36,6 +36,75 @@
   line-height: 1.5;
   max-width: 260px;
 }
+/* Setup, for the client who chose the app alone. */
+.setupActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.setupPrimary {
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.16) 0%,
+    rgba(200, 160, 90, 0.06) 100%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.28),
+    0 0 34px -8px rgba(var(--accent-rgb), 0.45),
+    0 10px 30px -14px rgba(0, 0, 0, 0.9);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 180ms, border-color 180ms, opacity 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.setupPrimary:active:not(:disabled) {
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.26) 0%,
+    rgba(200, 160, 90, 0.12) 100%);
+  border-color: rgba(var(--accent-rgb), 0.8);
+}
+
+.setupPrimary:disabled { opacity: 0.5; box-shadow: none; cursor: default; }
+
+.setupHint {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.setupSecondary {
+  margin-top: 4px;
+  padding: 8px 6px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms;
+}
+
+.setupSecondary:active:not(:disabled),
+.setupSecondary:hover:not(:disabled) { color: var(--text); }
+
+.setupSecondary:disabled { opacity: 0.5; cursor: default; }
+
 .editBtn {
   padding: 8px 12px;
   background: var(--accent-dim);
