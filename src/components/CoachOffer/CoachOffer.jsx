@@ -40,6 +40,10 @@ function WhySheet({ onClose }) {
      than against the window. */
   return createPortal(
     <div className={styles.whySheet} role="dialog" aria-label="Защо ми е Blag Coach">
+      {/* The same print and the same dark pillow the lessons section carries on
+          the landing page — reused, not copied, so the two never drift. */}
+      <div className={land.lessonsBg} aria-hidden="true" />
+      <div className={land.lessonsWash} aria-hidden="true" />
       <div className={styles.whyBody}>
         <span className={land.markLink}>
           <span className={land.markText}>THE BLAG COACH</span>
