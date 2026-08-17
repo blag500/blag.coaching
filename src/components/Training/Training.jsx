@@ -15,6 +15,21 @@ import WorkoutCalendar from './WorkoutCalendar'
 import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
 import styles from './Training.module.css'
 
+// The same dumbbell the bottom nav draws, so the empty state speaks the app's
+// own line-icon language rather than dropping a colour emoji into it.
+const DumbbellIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"
+       strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="8" y1="12" x2="16" y2="12" />
+    <line x1="5" y1="9"  x2="5"  y2="15" />
+    <line x1="19" y1="9" x2="19" y2="15" />
+    <line x1="3" y1="10" x2="3"  y2="14" />
+    <line x1="21" y1="10" x2="21" y2="14" />
+    <line x1="3" y1="12" x2="5"  y2="12" />
+    <line x1="19" y1="12" x2="21" y2="12" />
+  </svg>
+)
+
 // Detect old 7-day format
 function isOldFormat(plan) {
   return Array.isArray(plan) && plan.length > 0 && plan[0]?.day !== undefined
@@ -244,7 +259,7 @@ export default function Training({ onMenuOpen }) {
           // No coach is coming — so the empty state is a setup, not a wait. One
           // tap to a ready split, or the editor to build from scratch.
           <div className={styles.noPlanWrap}>
-            <p className={styles.noPlanIcon}>🏋️</p>
+            <span className={styles.noPlanIcon}><DumbbellIcon /></span>
             <p className={styles.noPlanTitle}>ЗАДАЙ ТРЕНИРОВКА</p>
             <p className={styles.noPlanSub}>
               Тръгни с готова програма или си направи своя. Ще можеш да я
@@ -272,7 +287,7 @@ export default function Training({ onMenuOpen }) {
           </div>
         ) : (
           <div className={styles.noPlanWrap}>
-            <p className={styles.noPlanIcon}>🏋️</p>
+            <span className={styles.noPlanIcon}><DumbbellIcon /></span>
             <p className={styles.noPlanTitle}>ПРОГРАМАТА СЕ ПОДГОТВЯ</p>
             <p className={styles.noPlanSub}>Треньорът подготвя твоята тренировъчна програма. Очаквай скоро!</p>
           </div>

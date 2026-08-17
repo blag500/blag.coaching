@@ -15,9 +15,15 @@
 }
 
 .noPlanIcon {
-  font-size: 48px;
   margin: 0;
-  line-height: 1;
+  line-height: 0;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.noPlanIcon svg {
+  width: 46px;
+  height: 46px;
 }
 
 .noPlanTitle {
