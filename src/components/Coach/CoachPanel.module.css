@@ -41,6 +41,27 @@
 }
 
 /* Card */
+/* Client photo in the list — a small round face, or the initial when none is
+   set. flex-shrink:0 so a long name never squeezes it out of round. */
+.avatar {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--panel-border);
+  background: var(--surface-2);
+}
+
+.avatarInitial {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
 .card {
   display: flex;
   align-items: center;

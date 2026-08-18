@@ -12,6 +12,18 @@ const STATUS_LABELS = {
   completed: 'ПРОВЕДЕНО',
 }
 
+/* The client's face in the list, so the coach recognises a person before
+   reading a name. Falls back to the first letter when no photo is set — an
+   empty grey circle would say less than the initial does. */
+function ClientAvatar({ client }) {
+  const initial = (client?.name || client?.email || '?').trim()[0]?.toUpperCase() || '?'
+  return client?.avatar_url ? (
+    <img className={styles.avatar} src={client.avatar_url} alt="" />
+  ) : (
+    <span className={`${styles.avatar} ${styles.avatarInitial}`}>{initial}</span>
+  )
+}
+
 const MONTHS_SHORT = ['ЯНУ','ФЕВ','МАР','АПР','МАЙ','ЮНИ','ЮЛИ','АВГ','СЕП','ОКТ','НОЕ','ДЕК']
 
 function fmtDay(iso) {
@@ -300,6 +312,7 @@ export default function CoachPanel() {
                   {pending.map(client => (
                     <div key={client.id} className={styles.pendingCard}>
                       <div className={styles.pendingTop}>
+                        <ClientAvatar client={client} />
                         <div className={styles.clientInfo}>
                           <div className={styles.clientNameRow}>
                             <span className={styles.clientName}>{client.name || '—'}</span>
@@ -377,6 +390,7 @@ export default function CoachPanel() {
                           onClick={() => setSelectedClient(client)}
                           type="button"
                         >
+                          <ClientAvatar client={client} />
                           <div className={styles.clientInfo}>
                             <div className={styles.clientNameRow}>
                               <span className={styles.clientName}>{client.name || '—'}</span>
