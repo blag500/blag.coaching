@@ -72,6 +72,7 @@ export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
         protein: r.protein,
         carbs: r.carbs,
         fat: r.fat,
+        mealType: r.meal_type ?? undefined,
       })
     }
     setBusy(false)

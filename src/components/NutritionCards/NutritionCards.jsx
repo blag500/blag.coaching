@@ -11,6 +11,7 @@ import NutritionProgress from './NutritionProgress'
 import ActivityLog from './ActivityLog'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
+import { MEALS, defaultMeal } from '../FoodLogger/meals'
 import MealCards from '../MealCards/MealCards'
 import RecipeBuilder from '../FoodLogger/RecipeBuilder'
 import AppHeader from '../AppHeader/AppHeader'
@@ -33,6 +34,7 @@ function greeting() {
   return 'ДОБЪР ВЕЧЕР'
 }
 
+
 export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { chrome: paneChrome } = usePane()
   const { profile } = useAuth()
@@ -43,6 +45,14 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const [view, setView] = useState('log')
   const [showBuilder, setShowBuilder] = useState(false)
   const [logServings, setLogServings] = useState({}) // id → servings input
+  const [meal, setMeal] = useState(defaultMeal())     // which meal new food is filed under
+
+  // Wrap the log-hook writers so every add path — search, barcode, bot, recipes,
+  // custom foods — files under the selected meal without each one having to know
+  // about it. A payload that already names a meal (an undo, a copied day) keeps
+  // its own.
+  const addEntryMeal = (food, grams) => addEntry(food, grams, meal)
+  const addRawMeal   = (p) => addRawEntry({ ...p, mealType: p.mealType ?? meal })
 
   const targets = {
     kcal:    profile?.calories ?? 0,
@@ -57,7 +67,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
 
   function handleLogCustomFood(food) {
     const servings = parseFloat(logServings[food.id]) || 1
-    addRawEntry({
+    addRawMeal({
       name:    food.name,
       grams:   Math.round(food.serving_grams * servings),
       kcal:    Math.round(food.kcal    * servings),
@@ -153,8 +163,22 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             kcalBurned={totalKcalBurned}
             eatBack={!!profile?.eat_back_calories}
           />
-          <FoodSearch onAdd={addEntry} onAddRaw={addRawEntry} totals={totals} targets={targets} />
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawEntry} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} date={selectedDate} />
+          <div className={styles.mealTabs} role="tablist" aria-label="Хранене">
+            {MEALS.map(m => (
+              <button
+                key={m.id}
+                role="tab"
+                aria-selected={meal === m.id}
+                className={`${styles.mealTab} ${meal === m.id ? styles.mealTabActive : ''}`}
+                onClick={() => setMeal(m.id)}
+                type="button"
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <FoodSearch onAdd={addEntryMeal} onAddRaw={addRawMeal} totals={totals} targets={targets} />
+          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawMeal} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} date={selectedDate} />
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : view === 'meals' ? (

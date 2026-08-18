@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import CopyPreviousDay from './CopyPreviousDay'
+import { MEALS, MEAL_LABEL } from './meals'
 import styles from './FoodLog.module.css'
 
 function UndoIcon() {
@@ -38,12 +39,13 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   function handleUndo() {
     if (!lastRemoved) return
     onAddRaw({
-      name:    lastRemoved.name,
-      grams:   lastRemoved.grams,
-      kcal:    lastRemoved.kcal,
-      protein: lastRemoved.protein,
-      carbs:   lastRemoved.carbs,
-      fat:     lastRemoved.fat,
+      name:     lastRemoved.name,
+      grams:    lastRemoved.grams,
+      kcal:     lastRemoved.kcal,
+      protein:  lastRemoved.protein,
+      carbs:    lastRemoved.carbs,
+      fat:      lastRemoved.fat,
+      mealType: lastRemoved.meal_type ?? undefined,
     })
     setLastRemoved(null)
   }
@@ -107,6 +109,156 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     photoTargetRef.current = null
   }
 
+  // One log row, in either its editing or its resting shape. Pulled out of the
+  // list so the day can be drawn as meal sections without duplicating it.
+  function renderEntry(entry, i) {
+    return editingId === entry.id ? (
+      <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
+        <div className={styles.editNameField}>
+          <label className={styles.editLabel} htmlFor={`edit-name-${entry.id}`}>Наименование</label>
+          <input
+            id={`edit-name-${entry.id}`}
+            className={styles.editInput}
+            type="text"
+            value={draft.name}
+            onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
+            autoFocus
+          />
+        </div>
+
+        <div className={styles.editGramsRow}>
+          <label className={styles.editLabel}>Грамаж</label>
+          <input
+            className={styles.editInput}
+            type="number"
+            min="0"
+            value={draft.grams}
+            onChange={e => handleGramsChange(entry, e.target.value)}
+          />
+          <span className={styles.editUnit}>g</span>
+        </div>
+
+        <div className={styles.editMacroGrid}>
+          {[
+            { key: 'kcal',    label: 'ккал' },
+            { key: 'protein', label: 'Протеин' },
+            { key: 'carbs',   label: 'Въгл.' },
+            { key: 'fat',     label: 'Мазн.' },
+          ].map(({ key, label }) => (
+            <div key={key} className={styles.editMacroField}>
+              <label className={styles.editLabel}>{label}</label>
+              <input
+                className={styles.editInput}
+                type="number"
+                min="0"
+                value={draft[key]}
+                onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
+              />
+            </div>
+          ))}
+        </div>
+
+        {onPhotoUpload && (
+          <div className={styles.editPhotoRow}>
+            {entry.photo_url ? (
+              <button
+                type="button"
+                className={styles.editPhotoRemoveBtn}
+                onClick={() => onPhotoRemove && onPhotoRemove(entry.id, entry.photo_url)}
+              >
+                × Премахни снимката
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.editPhotoAddBtn}
+                onClick={() => openPhotoPicker(entry.id)}
+                disabled={uploadingId === entry.id}
+              >
+                {uploadingId === entry.id ? (
+                  <><span className={styles.uploadDot} /> Качва...</>
+                ) : (
+                  <><CameraIcon /> Добави снимка</>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className={styles.editActions}>
+          <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">Отказ</button>
+          <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">Запази</button>
+        </div>
+      </li>
+    ) : (
+      <li key={entry.id} className={styles.entry} style={{ '--i': i }}>
+        {/* Meal photo: thumbnail on left side if present */}
+        {entry.photo_url && (
+          <button
+            type="button"
+            className={styles.thumbBtn}
+            onClick={() => setLightboxUrl(entry.photo_url)}
+            aria-label="Виж снимката"
+          >
+            <img src={entry.photo_url} className={styles.thumbImg} alt="" />
+          </button>
+        )}
+
+        <div className={styles.entryLeft}>
+          <span className={styles.entryName}>
+            {entry.name}
+            {/* Small and beside the name, not a banner: the estimate is
+                usually close, and a row of warnings down the day would
+                teach everyone to stop reading them. */}
+            {entry.estimated && (
+              <svg viewBox="0 0 20 20" width="11" height="11" className={styles.estMark}
+                   aria-label="изчислено приблизително" role="img">
+                <path d="M5 8.2c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0M5 12.4c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0"
+                      fill="none" stroke="currentColor" strokeWidth="1.7"
+                      strokeLinecap="round" transform="translate(1,0)" />
+              </svg>
+            )}
+          </span>
+          <span className={styles.entryMacros}>
+            {entry.grams > 0 && <><span className={styles.entryGrams}>{entry.grams}g</span> · </>}
+            {entry.kcal} ккал · П{entry.protein}g · В{entry.carbs}g · М{entry.fat}g
+          </span>
+        </div>
+
+        <div className={styles.entryRight}>
+          <button
+            className={styles.editBtn}
+            onClick={() => startEdit(entry)}
+            aria-label={`Редактирай ${entry.name}`}
+            type="button"
+          >
+            ✎
+          </button>
+          <button
+            className={styles.removeBtn}
+            onClick={() => handleRemove(entry)}
+            aria-label={`Премахни ${entry.name}`}
+            type="button"
+          >
+            ×
+          </button>
+        </div>
+      </li>
+    )
+  }
+
+  // The day, split into its meals. The four known meals in order, then anything
+  // logged before meals existed (or without one) gathered under "Друго" so no
+  // row is ever hidden. Empty meals draw nothing.
+  const groups = MEALS.map(m => ({
+    id: m.id,
+    label: m.label,
+    items: log.filter(e => e.meal_type === m.id),
+  }))
+  const other = log.filter(e => !MEAL_LABEL[e.meal_type])
+  if (other.length) groups.push({ id: '_other', label: 'Друго', items: other })
+  const shownGroups = groups.filter(g => g.items.length > 0)
+
   if (log.length === 0) {
     return (
       <div className={styles.empty}>
@@ -157,143 +309,23 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         </div>
       </div>
 
-      <ul className={styles.list}>
-        {log.map((entry, i) =>
-          editingId === entry.id ? (
-            <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
-              <div className={styles.editNameField}>
-                <label className={styles.editLabel} htmlFor={`edit-name-${entry.id}`}>Наименование</label>
-                <input
-                  id={`edit-name-${entry.id}`}
-                  className={styles.editInput}
-                  type="text"
-                  value={draft.name}
-                  onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
-                  autoFocus
-                />
-              </div>
-
-              <div className={styles.editGramsRow}>
-                <label className={styles.editLabel}>Грамаж</label>
-                <input
-                  className={styles.editInput}
-                  type="number"
-                  min="0"
-                  value={draft.grams}
-                  onChange={e => handleGramsChange(entry, e.target.value)}
-                />
-                <span className={styles.editUnit}>g</span>
-              </div>
-
-              <div className={styles.editMacroGrid}>
-                {[
-                  { key: 'kcal',    label: 'ккал' },
-                  { key: 'protein', label: 'Протеин' },
-                  { key: 'carbs',   label: 'Въгл.' },
-                  { key: 'fat',     label: 'Мазн.' },
-                ].map(({ key, label }) => (
-                  <div key={key} className={styles.editMacroField}>
-                    <label className={styles.editLabel}>{label}</label>
-                    <input
-                      className={styles.editInput}
-                      type="number"
-                      min="0"
-                      value={draft[key]}
-                      onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {onPhotoUpload && (
-                <div className={styles.editPhotoRow}>
-                  {entry.photo_url ? (
-                    <button
-                      type="button"
-                      className={styles.editPhotoRemoveBtn}
-                      onClick={() => onPhotoRemove && onPhotoRemove(entry.id, entry.photo_url)}
-                    >
-                      × Премахни снимката
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className={styles.editPhotoAddBtn}
-                      onClick={() => openPhotoPicker(entry.id)}
-                      disabled={uploadingId === entry.id}
-                    >
-                      {uploadingId === entry.id ? (
-                        <><span className={styles.uploadDot} /> Качва...</>
-                      ) : (
-                        <><CameraIcon /> Добави снимка</>
-                      )}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className={styles.editActions}>
-                <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">Отказ</button>
-                <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">Запази</button>
-              </div>
-            </li>
-          ) : (
-            <li key={entry.id} className={styles.entry} style={{ '--i': i }}>
-              {/* Meal photo: thumbnail on left side if present */}
-              {entry.photo_url && (
-                <button
-                  type="button"
-                  className={styles.thumbBtn}
-                  onClick={() => setLightboxUrl(entry.photo_url)}
-                  aria-label="Виж снимката"
-                >
-                  <img src={entry.photo_url} className={styles.thumbImg} alt="" />
-                </button>
-              )}
-
-              <div className={styles.entryLeft}>
-                <span className={styles.entryName}>
-                  {entry.name}
-                  {/* Small and beside the name, not a banner: the estimate is
-                      usually close, and a row of warnings down the day would
-                      teach everyone to stop reading them. */}
-                  {entry.estimated && (
-                    <svg viewBox="0 0 20 20" width="11" height="11" className={styles.estMark}
-                         aria-label="изчислено приблизително" role="img">
-                      <path d="M5 8.2c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0M5 12.4c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0"
-                            fill="none" stroke="currentColor" strokeWidth="1.7"
-                            strokeLinecap="round" transform="translate(1,0)" />
-                    </svg>
-                  )}
-                </span>
-                <span className={styles.entryMacros}>
-                  {entry.grams > 0 && <><span className={styles.entryGrams}>{entry.grams}g</span> · </>}
-                  {entry.kcal} ккал · П{entry.protein}g · В{entry.carbs}g · М{entry.fat}g
-                </span>
-              </div>
-
-              <div className={styles.entryRight}>
-                <button
-                  className={styles.editBtn}
-                  onClick={() => startEdit(entry)}
-                  aria-label={`Редактирай ${entry.name}`}
-                  type="button"
-                >
-                  ✎
-                </button>
-                <button
-                  className={styles.removeBtn}
-                  onClick={() => handleRemove(entry)}
-                  aria-label={`Премахни ${entry.name}`}
-                  type="button"
-                >
-                  ×
-                </button>
-              </div>
-            </li>
-          )
-        )}
-      </ul>
+      {/* The day as its meals: each section its own small header with a calorie
+          subtotal, so a glance answers "what was breakfast" without adding up
+          rows. Empty meals are absent rather than shown empty. */}
+      {shownGroups.map(group => {
+        const kcal = Math.round(group.items.reduce((s, e) => s + (e.kcal || 0), 0))
+        return (
+          <section key={group.id} className={styles.mealGroup}>
+            <div className={styles.mealHead}>
+              <span className={styles.mealName}>{group.label}</span>
+              <span className={styles.mealKcal}>{kcal} ккал</span>
+            </div>
+            <ul className={styles.list}>
+              {group.items.map((entry, i) => renderEntry(entry, i))}
+            </ul>
+          </section>
+        )
+      })}
 
       {/* Lightbox */}
       {lightboxUrl && (

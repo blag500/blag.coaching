@@ -31,7 +31,7 @@ export function useFoodLog() {
 
   /** `food.estimated` is set by whichever route produced it — a model's reading
    *  is carried into the row so the day can still be read honestly later. */
-  async function addEntry(food, grams) {
+  async function addEntry(food, grams, mealType = null) {
     if (!user) return
     const ratio = grams / 100
     const entry = {
@@ -44,6 +44,7 @@ export function useFoodLog() {
       carbs:   Math.round(food.per100g.carbs   * ratio * 10) / 10,
       fat:     Math.round(food.per100g.fat     * ratio * 10) / 10,
       estimated: food.estimated ?? null,
+      meal_type: mealType,
     }
     const tempId = `temp-${Date.now()}`
     setLog(prev => [...prev, { ...entry, id: tempId }])
@@ -56,7 +57,7 @@ export function useFoodLog() {
     }
   }
 
-  async function addRawEntry({ name, grams, kcal, protein, carbs, fat, estimated }) {
+  async function addRawEntry({ name, grams, kcal, protein, carbs, fat, estimated, mealType = null }) {
     if (!user) return
     const entry = {
       user_id: user.id,
@@ -68,6 +69,7 @@ export function useFoodLog() {
       carbs:   Math.round(carbs   * 10) / 10,
       fat:     Math.round(fat     * 10) / 10,
       estimated: estimated ?? null,
+      meal_type: mealType,
     }
     const tempId = `temp-${Date.now()}`
     setLog(prev => [...prev, { ...entry, id: tempId }])
