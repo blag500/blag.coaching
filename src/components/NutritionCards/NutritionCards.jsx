@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePane } from '../SwipePager/PaneContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -54,14 +54,6 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const addEntryMeal = (food, grams) => addEntry(food, grams, meal)
   const addRawMeal   = (p) => addRawEntry({ ...p, mealType: p.mealType ?? meal })
 
-  // The "+" on a meal section: target that meal, then bring the search up so the
-  // next thing added lands there. The picker in the add panel shows the choice
-  // and can still change it.
-  const searchRef = useRef(null)
-  function handleQuickAdd(mealId) {
-    setMeal(mealId)
-    searchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 
   const targets = {
     kcal:    profile?.calories ?? 0,
@@ -172,16 +164,14 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             kcalBurned={totalKcalBurned}
             eatBack={!!profile?.eat_back_calories}
           />
-          <div ref={searchRef}>
-            <FoodSearch
-              onAdd={addEntryMeal}
-              onAddRaw={addRawMeal}
-              meal={meal}
-              onMealChange={setMeal}
-              totals={totals}
-              targets={targets}
-            />
-          </div>
+          <FoodSearch
+            onAdd={addEntryMeal}
+            onAddRaw={addRawMeal}
+            meal={meal}
+            onMealChange={setMeal}
+            totals={totals}
+            targets={targets}
+          />
           <FoodLog
             log={log}
             onRemove={removeEntry}
@@ -190,7 +180,6 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             onAddRaw={addRawMeal}
             onPhotoUpload={uploadMealPhoto}
             onPhotoRemove={removeMealPhoto}
-            onQuickAdd={handleQuickAdd}
             date={selectedDate}
           />
           <p className={styles.quote}>"{dailyQuote}"</p>

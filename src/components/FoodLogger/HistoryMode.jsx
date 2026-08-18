@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
+import MealPicker from './MealPicker'
 import styles from './HistoryMode.module.css'
 
 /**
@@ -7,7 +8,7 @@ import styles from './HistoryMode.module.css'
  * Portions can be adjusted before adding, names corrected everywhere at once,
  * and mistakes forgotten for good.
  */
-export default function HistoryMode({ onAddRaw }) {
+export default function HistoryMode({ onAddRaw, meal, onMealChange }) {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery]     = useState('')
@@ -184,6 +185,8 @@ export default function HistoryMode({ onAddRaw }) {
                         return `За ${Math.round(parseFloat(grams) || 0)}g → ${s.kcal} ккал · П ${s.protein}g · В ${s.carbs}g · М ${s.fat}g`
                       })()}
                     </p>
+
+                    {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
 
                     <div className={styles.actions}>
                       <button className={styles.addBtn} onClick={() => add(item)} type="button">

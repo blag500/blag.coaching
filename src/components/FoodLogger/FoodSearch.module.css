@@ -621,6 +621,37 @@
   margin-bottom: 12px;
 }
 
+/* The macro line with pictograms — kcal in gold, then P/C/F each drawn in its
+   own colour. Wraps on narrow screens rather than clipping. */
+.macroRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 14px;
+  margin-bottom: 12px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+}
+
+.macroPrefix {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.macroKcal {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.macroChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.macroChip svg { flex-shrink: 0; }
+
 .panelActions {
   display: flex;
   gap: 8px;

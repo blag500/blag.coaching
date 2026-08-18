@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import CopyPreviousDay from './CopyPreviousDay'
+import QuickAddSheet from './QuickAddSheet'
 import { MEALS, MEAL_LABEL } from './meals'
 import styles from './FoodLog.module.css'
 
@@ -21,12 +22,25 @@ function CameraIcon() {
   )
 }
 
-export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove, onQuickAdd, date }) {
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15" aria-hidden="true">
+      <path d="M3 6h18" />
+      <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+      <path d="M6 6v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6" />
+      <line x1="10" y1="11" x2="10" y2="17" />
+      <line x1="14" y1="11" x2="14" y2="17" />
+    </svg>
+  )
+}
+
+export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove, date }) {
   const [editingId,    setEditingId]    = useState(null)
   const [draft,        setDraft]        = useState({})
   const [lastRemoved,  setLastRemoved]  = useState(null)
   const [uploadingId,  setUploadingId]  = useState(null)
   const [lightboxUrl,  setLightboxUrl]  = useState(null)
+  const [quickMeal,    setQuickMeal]    = useState(null)  // section + → history sheet
 
   const photoInputRef  = useRef()
   const photoTargetRef = useRef(null)  // which entry id the next pick targets
@@ -286,7 +300,9 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
             >
               <UndoIcon />
             </button>
-            <button className={styles.clearBtn} onClick={onClear} type="button">Изчисти</button>
+            <button className={styles.clearBtn} onClick={onClear} type="button" aria-label="Изчисти деня" title="Изчисти">
+              <TrashIcon />
+            </button>
           </div>
         </div>
       )}
@@ -302,10 +318,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
               <span className={styles.mealName}>{group.label}</span>
               <span className={styles.mealHeadRight}>
                 {group.items.length > 0 && <span className={styles.mealKcal}>{kcal} ккал</span>}
-                {!group.legacy && onQuickAdd && (
+                {!group.legacy && onAddRaw && (
                   <button
                     className={styles.mealAdd}
-                    onClick={() => onQuickAdd(group.id)}
+                    onClick={() => setQuickMeal(group.id)}
                     type="button"
                     aria-label={`Добави в ${group.label}`}
                   >
@@ -319,7 +335,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
                 {group.items.map((entry, i) => renderEntry(entry, gi * 100 + i))}
               </ul>
             ) : (
-              <p className={styles.mealEmpty}>Още нищо тук</p>
+              <p className={styles.mealEmpty}>–</p>
             )}
           </section>
         )
@@ -327,6 +343,14 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
 
       {log.length === 0 && onAddRaw && date && (
         <CopyPreviousDay date={date} onAddRaw={onAddRaw} />
+      )}
+
+      {quickMeal && (
+        <QuickAddSheet
+          meal={quickMeal}
+          onAddRaw={onAddRaw}
+          onClose={() => setQuickMeal(null)}
+        />
       )}
 
       {/* Lightbox */}

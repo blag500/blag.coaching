@@ -9,7 +9,29 @@ import BarcodeScanner from './BarcodeScanner'
 import DraftMode from './DraftMode'
 import HistoryMode from './HistoryMode'
 import MealPicker from './MealPicker'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './FoodSearch.module.css'
+
+/* The macro line the add card shows, with the app's own pictograms instead of
+   the bare letters П/В/М — the same drawings the ring carries above, each in its
+   macro's colour so the row is scannable rather than merely legible. */
+function Macros({ kcal, p, c, f, prefix }) {
+  return (
+    <div className={styles.macroRow}>
+      {prefix && <span className={styles.macroPrefix}>{prefix}</span>}
+      <span className={styles.macroKcal}>{kcal} ккал</span>
+      <span className={styles.macroChip} style={{ color: 'var(--macro-protein)' }}>
+        <Pictogram name="protein" size={14} />{p}g
+      </span>
+      <span className={styles.macroChip} style={{ color: 'var(--macro-carbs)' }}>
+        <Pictogram name="carbs" size={14} />{c}g
+      </span>
+      <span className={styles.macroChip} style={{ color: 'var(--macro-fat)' }}>
+        <Pictogram name="fat" size={14} />{f}g
+      </span>
+    </div>
+  )
+}
 
 function PlateIcon() {
   return (
@@ -403,9 +425,7 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
             onChange={e => { setResult(prev => ({ ...prev, name: e.target.value })); setIsCooked(false) }}
             aria-label="Наименование"
           />
-          <div className={styles.aiPer100g}>
-            на 100g: {result.per100g.kcal} ккал · П{result.per100g.protein}g · В{result.per100g.carbs}g · М{result.per100g.fat}g
-          </div>
+          <Macros prefix="на 100g" kcal={result.per100g.kcal} p={result.per100g.protein} c={result.per100g.carbs} f={result.per100g.fat} />
 
           {fc?.level === 2 && (
             <div className={styles.cookingToggle}>
@@ -451,12 +471,12 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
             <span className={styles.gramUnit}>g</span>
           </div>
           {g > 0 && (
-            <div className={styles.preview}>
-              {Math.round(result.per100g.kcal    * effG / 100)} ккал ·
-              П {Math.round(result.per100g.protein * effG / 100 * 10) / 10}g ·
-              В {Math.round(result.per100g.carbs   * effG / 100 * 10) / 10}g ·
-              М {Math.round(result.per100g.fat     * effG / 100 * 10) / 10}g
-            </div>
+            <Macros
+              kcal={Math.round(result.per100g.kcal * effG / 100)}
+              p={Math.round(result.per100g.protein * effG / 100 * 10) / 10}
+              c={Math.round(result.per100g.carbs   * effG / 100 * 10) / 10}
+              f={Math.round(result.per100g.fat     * effG / 100 * 10) / 10}
+            />
           )}
           {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
           <div className={styles.panelActions}>
@@ -661,9 +681,7 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
       {result.brand && (
         <div className={styles.aiPer100g}>{result.brand}</div>
       )}
-      <div className={styles.aiPer100g}>
-        на 100g: {result.per100g.kcal} ккал · П{result.per100g.protein}g · В{result.per100g.carbs}g · М{result.per100g.fat}g
-      </div>
+      <Macros prefix="на 100g" kcal={result.per100g.kcal} p={result.per100g.protein} c={result.per100g.carbs} f={result.per100g.fat} />
       <div className={styles.gramRow}>
         <label className={styles.gramLabel} htmlFor="bc-grams-input">Грамаж</label>
         <input
@@ -679,12 +697,12 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
         <span className={styles.gramUnit}>g</span>
       </div>
       {g > 0 && (
-        <div className={styles.preview}>
-          {Math.round(result.per100g.kcal    * g / 100)} ккал ·
-          П {Math.round(result.per100g.protein * g / 100 * 10) / 10}g ·
-          В {Math.round(result.per100g.carbs   * g / 100 * 10) / 10}g ·
-          М {Math.round(result.per100g.fat     * g / 100 * 10) / 10}g
-        </div>
+        <Macros
+          kcal={Math.round(result.per100g.kcal * g / 100)}
+          p={Math.round(result.per100g.protein * g / 100 * 10) / 10}
+          c={Math.round(result.per100g.carbs   * g / 100 * 10) / 10}
+          f={Math.round(result.per100g.fat     * g / 100 * 10) / 10}
+        />
       )}
       {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
       <div className={styles.panelActions}>
