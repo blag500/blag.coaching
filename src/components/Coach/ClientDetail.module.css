@@ -902,6 +902,67 @@
   overflow: hidden;
 }
 
+/* Meal section — mirrors the client's split so the coach reads the day the
+   same way. */
+.mealGroup {
+  margin-top: 14px;
+}
+
+.mealGroup:first-of-type {
+  margin-top: 6px;
+}
+
+.mealHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mealName {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.mealKcal {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Meal picker in the coach's manual-add form. */
+.addMealTabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.addMealTab {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms, background 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addMealTabActive {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.55);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
 /* Add food button */
 .addFoodBtn {
   width: 100%;

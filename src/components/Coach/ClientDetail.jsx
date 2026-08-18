@@ -10,6 +10,7 @@ import WeightChart from '../Profile/WeightChart'
 import { useClientTasks } from '../../hooks/useTasks'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import ClientReminderSettings from './ClientReminderSettings'
+import { MEALS, MEAL_LABEL, defaultMeal } from '../FoodLogger/meals'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
@@ -529,6 +530,7 @@ function NutritionTab({ client }) {
   const [draft, setDraft]       = useState({})
   const [showAdd, setShowAdd]   = useState(false)
   const [newEntry, setNewEntry] = useState({ name: '', grams: '', kcal: '', protein: '', carbs: '', fat: '' })
+  const [addMeal, setAddMeal]   = useState(defaultMeal())  // meal the coach files a manual add under
   const [adding, setAdding]     = useState(false)
   const [lightboxUrl, setLightboxUrl] = useState(null)
   const [mealPhotos, setMealPhotos] = useState([])
@@ -612,6 +614,7 @@ function NutritionTab({ client }) {
       protein: Math.round((parseFloat(newEntry.protein) || 0) * 10) / 10,
       carbs:   Math.round((parseFloat(newEntry.carbs)   || 0) * 10) / 10,
       fat:     Math.round((parseFloat(newEntry.fat)     || 0) * 10) / 10,
+      meal_type: addMeal,
     }
     const { data } = await supabase.from('food_logs').insert(entry).select().single()
     if (data) {
@@ -630,6 +633,83 @@ function NutritionTab({ client }) {
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
   const targetKcal = client.calories || 0
+
+  // One log row in either shape — pulled out so the coach's day can be drawn as
+  // meal sections, the same split the client sees.
+  function renderLogEntry(entry) {
+    return editingId === entry.id ? (
+      <div key={entry.id} className={`${styles.logEntry} ${styles.logEntryEditing}`}>
+        <input
+          className={styles.logEditName}
+          type="text"
+          value={draft.name}
+          onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
+        />
+        <div className={styles.logEditGrid}>
+          <div className={styles.logEditField}>
+            <label className={styles.logEditLabel}>Грамаж</label>
+            <input className={styles.logEditInput} type="number" min="0"
+              value={draft.grams}
+              onChange={e => handleDraftGramsChange(entry, e.target.value)}
+            />
+          </div>
+          {[
+            { key: 'kcal',    label: 'Ккал'      },
+            { key: 'protein', label: 'Протеин g'  },
+            { key: 'carbs',   label: 'Въгл g'     },
+            { key: 'fat',     label: 'Мазнини g'  },
+          ].map(({ key, label }) => (
+            <div key={key} className={styles.logEditField}>
+              <label className={styles.logEditLabel}>{label}</label>
+              <input className={styles.logEditInput} type="number" min="0"
+                value={draft[key]}
+                onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
+              />
+            </div>
+          ))}
+        </div>
+        <div className={styles.logEditActions}>
+          <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">Отказ</button>
+          <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">Запази</button>
+        </div>
+      </div>
+    ) : (
+      <div key={entry.id} className={styles.logEntry}>
+        {entry.photo_url && (
+          <button
+            type="button"
+            className={styles.logThumbBtn}
+            onClick={() => setLightboxUrl(entry.photo_url)}
+            aria-label="Виж снимката на ястието"
+          >
+            <img src={entry.photo_url} className={styles.logThumbImg} alt="" />
+          </button>
+        )}
+        <div className={styles.logLeft}>
+          <span className={styles.logName}>{entry.name}</span>
+          <span className={styles.logMacros}>
+            {entry.grams > 0 && <><span className={styles.logGrams}>{entry.grams}g</span> · </>}
+            {entry.kcal} ккал · П{Math.round(entry.protein * 10) / 10}g · В{Math.round(entry.carbs * 10) / 10}g · М{Math.round(entry.fat * 10) / 10}g
+          </span>
+        </div>
+        <div className={styles.logEntryActions}>
+          <button className={styles.logEditBtn} onClick={() => startEdit(entry)} type="button" aria-label="Редактирай">✎</button>
+          <button className={styles.logDeleteBtn} onClick={() => deleteEntry(entry.id)} type="button" aria-label="Изтрий">×</button>
+        </div>
+      </div>
+    )
+  }
+
+  // The client's day split into its meals, in order; anything without one falls
+  // to "Друго" so no row is lost. Empty meals draw nothing.
+  const logGroups = MEALS.map(m => ({
+    id: m.id,
+    label: m.label,
+    items: logs.filter(e => e.meal_type === m.id),
+  }))
+  const otherLogs = logs.filter(e => !MEAL_LABEL[e.meal_type])
+  if (otherLogs.length) logGroups.push({ id: '_other', label: 'Друго', items: otherLogs })
+  const shownLogGroups = logGroups.filter(g => g.items.length > 0)
 
   return (
     <div className={styles.nutritionTab}>
@@ -662,6 +742,18 @@ function NutritionTab({ client }) {
             value={newEntry.name}
             onChange={e => setNewEntry(prev => ({ ...prev, name: e.target.value }))}
           />
+          <div className={styles.addMealTabs}>
+            {MEALS.map(m => (
+              <button
+                key={m.id}
+                type="button"
+                className={`${styles.addMealTab} ${addMeal === m.id ? styles.addMealTabActive : ''}`}
+                onClick={() => setAddMeal(m.id)}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
           <div className={styles.addFoodGrid}>
             {[
               { key: 'kcal',    label: 'Ккал *'   },
@@ -710,71 +802,20 @@ function NutritionTab({ client }) {
       ) : logs.length === 0 ? (
         <p className={styles.empty}>Няма логирани храни за тази дата</p>
       ) : (
-        <div className={styles.logList}>
-          {logs.map(entry =>
-            editingId === entry.id ? (
-              <div key={entry.id} className={`${styles.logEntry} ${styles.logEntryEditing}`}>
-                <input
-                  className={styles.logEditName}
-                  type="text"
-                  value={draft.name}
-                  onChange={e => setDraft(prev => ({ ...prev, name: e.target.value }))}
-                />
-                <div className={styles.logEditGrid}>
-                  <div className={styles.logEditField}>
-                    <label className={styles.logEditLabel}>Грамаж</label>
-                    <input className={styles.logEditInput} type="number" min="0"
-                      value={draft.grams}
-                      onChange={e => handleDraftGramsChange(entry, e.target.value)}
-                    />
-                  </div>
-                  {[
-                    { key: 'kcal',    label: 'Ккал'      },
-                    { key: 'protein', label: 'Протеин g'  },
-                    { key: 'carbs',   label: 'Въгл g'     },
-                    { key: 'fat',     label: 'Мазнини g'  },
-                  ].map(({ key, label }) => (
-                    <div key={key} className={styles.logEditField}>
-                      <label className={styles.logEditLabel}>{label}</label>
-                      <input className={styles.logEditInput} type="number" min="0"
-                        value={draft[key]}
-                        onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.logEditActions}>
-                  <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">Отказ</button>
-                  <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">Запази</button>
-                </div>
+        shownLogGroups.map(group => {
+          const kcal = Math.round(group.items.reduce((s, e) => s + (e.kcal || 0), 0))
+          return (
+            <section key={group.id} className={styles.mealGroup}>
+              <div className={styles.mealHead}>
+                <span className={styles.mealName}>{group.label}</span>
+                <span className={styles.mealKcal}>{kcal} ккал</span>
               </div>
-            ) : (
-              <div key={entry.id} className={styles.logEntry}>
-                {entry.photo_url && (
-                  <button
-                    type="button"
-                    className={styles.logThumbBtn}
-                    onClick={() => setLightboxUrl(entry.photo_url)}
-                    aria-label="Виж снимката на ястието"
-                  >
-                    <img src={entry.photo_url} className={styles.logThumbImg} alt="" />
-                  </button>
-                )}
-                <div className={styles.logLeft}>
-                  <span className={styles.logName}>{entry.name}</span>
-                  <span className={styles.logMacros}>
-                    {entry.grams > 0 && <><span className={styles.logGrams}>{entry.grams}g</span> · </>}
-                    {entry.kcal} ккал · П{Math.round(entry.protein * 10) / 10}g · В{Math.round(entry.carbs * 10) / 10}g · М{Math.round(entry.fat * 10) / 10}g
-                  </span>
-                </div>
-                <div className={styles.logEntryActions}>
-                  <button className={styles.logEditBtn} onClick={() => startEdit(entry)} type="button" aria-label="Редактирай">✎</button>
-                  <button className={styles.logDeleteBtn} onClick={() => deleteEntry(entry.id)} type="button" aria-label="Изтрий">×</button>
-                </div>
+              <div className={styles.logList}>
+                {group.items.map(renderLogEntry)}
               </div>
-            )
-          )}
-        </div>
+            </section>
+          )
+        })
       )}
 
       {/* Meal photo lightbox */}
