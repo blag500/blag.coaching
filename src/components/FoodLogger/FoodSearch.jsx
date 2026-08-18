@@ -8,6 +8,7 @@ import MealBot from '../MealBot/MealBot'
 import BarcodeScanner from './BarcodeScanner'
 import DraftMode from './DraftMode'
 import HistoryMode from './HistoryMode'
+import MealPicker from './MealPicker'
 import styles from './FoodSearch.module.css'
 
 function PlateIcon() {
@@ -101,7 +102,7 @@ function resizeImage(file, maxDim = 900, maxBytes = 700_000) {
   })
 }
 
-export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} }) {
+export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals = {}, targets = {} }) {
   const [mode, setMode] = useState('ai')
 
   return (
@@ -127,9 +128,9 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
         ))}
       </div>
 
-      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} onAdded={() => setMode('history')} />}
-      {mode === 'history' && <HistoryMode onAddRaw={onAddRaw} />}
-      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} onAdded={() => setMode('history')} />}
+      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} />}
+      {mode === 'history' && <HistoryMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} />}
+      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} />}
       {mode === 'draft'   && <DraftMode onAddRaw={onAddRaw} totals={totals} targets={targets} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
@@ -139,7 +140,7 @@ export default function FoodSearch({ onAdd, onAddRaw, totals = {}, targets = {} 
 
 // ─── AI macro lookup mode ────────────────────────────────────────────────────
 
-function AiMode({ onAdd, onAddRaw, onAdded }) {
+function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
   const [query, setQuery]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [labelLoading, setLabelLoading] = useState(false)
@@ -457,6 +458,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
               М {Math.round(result.per100g.fat     * effG / 100 * 10) / 10}g
             </div>
           )}
+          {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
           <div className={styles.panelActions}>
             <button className={styles.cancelBtn} onClick={() => setResult(null)} type="button">Назад</button>
             <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
@@ -470,6 +472,8 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
         <div ref={addPanelRef}>
           <MultiAddPanel
             initialItems={multiItems}
+            meal={meal}
+            onMealChange={onMealChange}
             onAdd={(items) => {
               items.forEach(item => onAddRaw({
                 name:    item.name,
@@ -493,7 +497,7 @@ function AiMode({ onAdd, onAddRaw, onAdded }) {
 
 // ─── Multi-food confirmation panel ───────────────────────────────────────────
 
-function MultiAddPanel({ initialItems, onAdd, onCancel }) {
+function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
   const [items, setItems] = useState(initialItems)
 
   function updateGrams(idx, rawVal) {
@@ -580,6 +584,8 @@ function MultiAddPanel({ initialItems, onAdd, onCancel }) {
         </span>
       </div>
 
+      {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
+
       <div className={styles.panelActions}>
         <button className={styles.cancelBtn} onClick={onCancel} type="button">Назад</button>
         <button className={styles.addBtn} onClick={() => onAdd(items)} type="button">
@@ -592,7 +598,7 @@ function MultiAddPanel({ initialItems, onAdd, onCancel }) {
 
 // ─── Barcode scan mode ───────────────────────────────────────────────────────
 
-function BarcodeMode({ onAddRaw, onAdded }) {
+function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
   const [scanning, setScanning] = useState(true)
   const [result, setResult]     = useState(null)
   const [grams, setGrams]       = useState('100')
@@ -680,6 +686,7 @@ function BarcodeMode({ onAddRaw, onAdded }) {
           М {Math.round(result.per100g.fat     * g / 100 * 10) / 10}g
         </div>
       )}
+      {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
       <div className={styles.panelActions}>
         <button className={styles.cancelBtn} onClick={() => setScanning(true)} type="button">← Сканирай</button>
         <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>

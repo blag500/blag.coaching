@@ -154,7 +154,7 @@
 
 .mealHead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 0 2px 6px;
@@ -169,11 +169,51 @@
   color: var(--accent);
 }
 
+.mealHeadRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .mealKcal {
   font-family: var(--font-body);
   font-size: 11px;
   letter-spacing: 0.02em;
   color: var(--muted);
+}
+
+/* Quick-add for this meal: targets the section and lifts the search to it. A
+   lit gold coin, small, so four of them down the day stay quiet. */
+.mealAdd {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--accent-rgb), 0.08);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mealAdd:active {
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.8);
+}
+
+.mealEmpty {
+  margin: 0 0 4px;
+  padding: 2px 2px 6px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--muted);
+  opacity: 0.6;
 }
 
 .list {

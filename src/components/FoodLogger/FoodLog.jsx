@@ -21,7 +21,7 @@ function CameraIcon() {
   )
 }
 
-export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove, date }) {
+export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove, onQuickAdd, date }) {
   const [editingId,    setEditingId]    = useState(null)
   const [draft,        setDraft]        = useState({})
   const [lastRemoved,  setLastRemoved]  = useState(null)
@@ -247,38 +247,18 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     )
   }
 
-  // The day, split into its meals. The four known meals in order, then anything
-  // logged before meals existed (or without one) gathered under "Друго" so no
-  // row is ever hidden. Empty meals draw nothing.
+  // Every day wears the same four sections whether or not they hold anything,
+  // so the shape of the day is a given the client fills in rather than a list
+  // that appears as they log. Anything from before meals existed (or without
+  // one) gathers under "Друго", shown only when it has rows and never offered as
+  // a place to add to.
   const groups = MEALS.map(m => ({
     id: m.id,
     label: m.label,
     items: log.filter(e => e.meal_type === m.id),
   }))
   const other = log.filter(e => !MEAL_LABEL[e.meal_type])
-  if (other.length) groups.push({ id: '_other', label: 'Друго', items: other })
-  const shownGroups = groups.filter(g => g.items.length > 0)
-
-  if (log.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <span className={styles.emptyIcon}>🍽</span>
-        <p className={styles.emptyTitle}>Няма логнато хранене днес</p>
-        <p className={styles.emptyHint}>Търси продукт или сканирай баркод по-горе</p>
-        <button
-          className={styles.emptyBtn}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          type="button"
-        >
-          + ДОБАВИ ХРАНА
-        </button>
-
-        {onAddRaw && date && (
-          <CopyPreviousDay date={date} onAddRaw={onAddRaw} />
-        )}
-      </div>
-    )
-  }
+  if (other.length) groups.push({ id: '_other', label: 'Друго', items: other, legacy: true })
 
   return (
     <div className={styles.wrap}>
@@ -292,40 +272,62 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         onChange={handlePhotoSelected}
       />
 
-      <div className={styles.listHeader}>
-        <span className={styles.listTitle}>Дневен лог ({log.length})</span>
-        <div className={styles.headerActions}>
-          <button
-            className={`${styles.undoBtn} ${lastRemoved ? styles.undoBtnActive : ''}`}
-            onClick={handleUndo}
-            disabled={!lastRemoved}
-            type="button"
-            aria-label="Отмени последното премахване"
-            title="Отмени"
-          >
-            <UndoIcon />
-          </button>
-          <button className={styles.clearBtn} onClick={onClear} type="button">Изчисти</button>
+      {log.length > 0 && (
+        <div className={styles.listHeader}>
+          <span className={styles.listTitle}>Дневен лог ({log.length})</span>
+          <div className={styles.headerActions}>
+            <button
+              className={`${styles.undoBtn} ${lastRemoved ? styles.undoBtnActive : ''}`}
+              onClick={handleUndo}
+              disabled={!lastRemoved}
+              type="button"
+              aria-label="Отмени последното премахване"
+              title="Отмени"
+            >
+              <UndoIcon />
+            </button>
+            <button className={styles.clearBtn} onClick={onClear} type="button">Изчисти</button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* The day as its meals: each section its own small header with a calorie
-          subtotal, so a glance answers "what was breakfast" without adding up
-          rows. Empty meals are absent rather than shown empty. */}
-      {shownGroups.map(group => {
+      {/* The day as its meals: each section a small header with a calorie
+          subtotal and a + that targets it for the next add. Empty sections stay,
+          so the four meals are always there to add into. */}
+      {groups.map((group, gi) => {
         const kcal = Math.round(group.items.reduce((s, e) => s + (e.kcal || 0), 0))
         return (
           <section key={group.id} className={styles.mealGroup}>
             <div className={styles.mealHead}>
               <span className={styles.mealName}>{group.label}</span>
-              <span className={styles.mealKcal}>{kcal} ккал</span>
+              <span className={styles.mealHeadRight}>
+                {group.items.length > 0 && <span className={styles.mealKcal}>{kcal} ккал</span>}
+                {!group.legacy && onQuickAdd && (
+                  <button
+                    className={styles.mealAdd}
+                    onClick={() => onQuickAdd(group.id)}
+                    type="button"
+                    aria-label={`Добави в ${group.label}`}
+                  >
+                    +
+                  </button>
+                )}
+              </span>
             </div>
-            <ul className={styles.list}>
-              {group.items.map((entry, i) => renderEntry(entry, i))}
-            </ul>
+            {group.items.length > 0 ? (
+              <ul className={styles.list}>
+                {group.items.map((entry, i) => renderEntry(entry, gi * 100 + i))}
+              </ul>
+            ) : (
+              <p className={styles.mealEmpty}>Още нищо тук</p>
+            )}
           </section>
         )
       })}
+
+      {log.length === 0 && onAddRaw && date && (
+        <CopyPreviousDay date={date} onAddRaw={onAddRaw} />
+      )}
 
       {/* Lightbox */}
       {lightboxUrl && (

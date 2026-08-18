@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { usePane } from '../SwipePager/PaneContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -11,7 +11,7 @@ import NutritionProgress from './NutritionProgress'
 import ActivityLog from './ActivityLog'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
-import { MEALS, defaultMeal } from '../FoodLogger/meals'
+import { defaultMeal } from '../FoodLogger/meals'
 import MealCards from '../MealCards/MealCards'
 import RecipeBuilder from '../FoodLogger/RecipeBuilder'
 import AppHeader from '../AppHeader/AppHeader'
@@ -53,6 +53,15 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   // its own.
   const addEntryMeal = (food, grams) => addEntry(food, grams, meal)
   const addRawMeal   = (p) => addRawEntry({ ...p, mealType: p.mealType ?? meal })
+
+  // The "+" on a meal section: target that meal, then bring the search up so the
+  // next thing added lands there. The picker in the add panel shows the choice
+  // and can still change it.
+  const searchRef = useRef(null)
+  function handleQuickAdd(mealId) {
+    setMeal(mealId)
+    searchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const targets = {
     kcal:    profile?.calories ?? 0,
@@ -163,22 +172,27 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             kcalBurned={totalKcalBurned}
             eatBack={!!profile?.eat_back_calories}
           />
-          <div className={styles.mealTabs} role="tablist" aria-label="Хранене">
-            {MEALS.map(m => (
-              <button
-                key={m.id}
-                role="tab"
-                aria-selected={meal === m.id}
-                className={`${styles.mealTab} ${meal === m.id ? styles.mealTabActive : ''}`}
-                onClick={() => setMeal(m.id)}
-                type="button"
-              >
-                {m.label}
-              </button>
-            ))}
+          <div ref={searchRef}>
+            <FoodSearch
+              onAdd={addEntryMeal}
+              onAddRaw={addRawMeal}
+              meal={meal}
+              onMealChange={setMeal}
+              totals={totals}
+              targets={targets}
+            />
           </div>
-          <FoodSearch onAdd={addEntryMeal} onAddRaw={addRawMeal} totals={totals} targets={targets} />
-          <FoodLog log={log} onRemove={removeEntry} onClear={clearLog} onEdit={updateEntry} onAddRaw={addRawMeal} onPhotoUpload={uploadMealPhoto} onPhotoRemove={removeMealPhoto} date={selectedDate} />
+          <FoodLog
+            log={log}
+            onRemove={removeEntry}
+            onClear={clearLog}
+            onEdit={updateEntry}
+            onAddRaw={addRawMeal}
+            onPhotoUpload={uploadMealPhoto}
+            onPhotoRemove={removeMealPhoto}
+            onQuickAdd={handleQuickAdd}
+            date={selectedDate}
+          />
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : view === 'meals' ? (
