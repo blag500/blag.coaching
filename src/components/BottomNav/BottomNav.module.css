@@ -16,9 +16,12 @@
   z-index: 100;
   padding: 0 4px;
   overflow: visible;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
+  /* No transform and no will-change here on purpose. Both promote this fixed
+     bar to its own compositor layer, and on mobile that layer lags the viewport
+     during momentum scroll and while the browser's address bar slides in and
+     out — the bar appears to drift instead of staying pinned. Plain position:
+     fixed is what keeps it still. The backdrop-filter below still composites on
+     its own. */
 }
 
 .tab {
