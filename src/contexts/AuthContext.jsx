@@ -10,20 +10,27 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState(null)
 
   async function fetchProfile(userId) {
+    // maybeSingle, not single: a genuinely missing profile comes back as
+    // data=null with NO error, while a flaky network or a token caught
+    // mid-refresh comes back WITH an error. The two must not be treated alike —
+    // signing out on any error logged clients straight out to the landing page
+    // every time a launch-time request happened to fail.
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single()
-    if (!error && data) {
+      .maybeSingle()
+
+    if (data) {
       if (data.role === 'client') {
         const { data: coachId } = await supabase.rpc('get_coach_id')
         setProfile(coachId ? { ...data, coach_id: coachId } : data)
       } else {
         setProfile(data)
       }
-    } else {
-      // Auth account exists but no profile — account was deleted, sign out
+    } else if (!error) {
+      // No row and no error — the account really has no profile (deleted). Only
+      // then is signing out correct. A transient error leaves the session alone.
       await supabase.auth.signOut()
     }
   }

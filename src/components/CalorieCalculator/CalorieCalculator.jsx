@@ -186,8 +186,11 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
 
     /* The DM is the real signal, but it is a signal that only exists if the
        client actually sends it. A push means the interest is known even when
-       the message never gets written. */
+       the message never gets written — and plan_pending files them under the
+       coach's "ЧАКАЩИ ОДОБРЕНИЕ" list, separated from the self-serve clients,
+       so a coaching request is visible even if the message never arrives. */
     if (plan === 'pro') {
+      await updateProfile({ plan_pending: true })
       const coachId = profile?.coach_id
       if (coachId) {
         supabase.functions.invoke('send-push', {

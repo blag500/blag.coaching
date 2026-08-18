@@ -40,6 +40,10 @@ function defaultBlocks(initialPlan) {
 export default function TrainingEditor({ initialPlan, onSave, saving }) {
   const [blocks, setBlocks] = useState(() => defaultBlocks(initialPlan))
   const [openId, setOpenId] = useState(null)
+  // The muscle field keeps the raw text the user is typing. Deriving the input's
+  // value from the parsed array ate the comma the instant it was typed (the
+  // empty trailing segment was filtered away), so a comma could never be typed.
+  const [muscleRaw, setMuscleRaw] = useState({})
 
   function updateBlock(id, field, value) {
     setBlocks(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b))
@@ -85,6 +89,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
   }
 
   function updateMuscles(blockId, raw) {
+    setMuscleRaw(prev => ({ ...prev, [blockId]: raw }))
     const muscles = raw.split(',').map(s => s.trim()).filter(Boolean)
     updateBlock(blockId, 'muscles', muscles)
   }
@@ -144,7 +149,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                       className={styles.fieldInput}
                       type="text"
                       placeholder="напр. Гърди, Гръб, Рамене"
-                      value={block.muscles.join(', ')}
+                      value={muscleRaw[block.id] ?? block.muscles.join(', ')}
                       onChange={e => updateMuscles(block.id, e.target.value)}
                     />
                   </div>
