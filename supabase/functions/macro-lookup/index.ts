@@ -3,6 +3,20 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Groq retires text models the same way it retires vision ones — without much
+// notice. llama-3.3-70b-versatile was decommissioned on 2026-08-16 and took the
+// food search down with it. A list, tried in order, so the next retirement is a
+// fallback rather than an outage; first that answers wins.
+//
+// gpt-oss-120b leads because it is the one that both reads Bulgarian food names
+// and honours JSON mode; the 20b is its lighter twin for when the large one is
+// busy. (qwen/qwen3.6-27b was tried here too, but it rejects response_format
+// json_object with a 400, so it only ever cost a failed round-trip.)
+const MODELS = [
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+]
+
 // ─── System prompt ────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `You are a precise nutrition database. Given a food description, return ONLY a valid JSON object — no markdown, no explanation.
@@ -158,6 +172,7 @@ Deno.serve(async (req) => {
   }
 
   const { query } = await req.json()
+
   if (!query?.trim()) {
     return new Response(JSON.stringify({ error: 'missing query' }), {
       status: 400,
@@ -173,30 +188,44 @@ Deno.serve(async (req) => {
     })
   }
 
-  const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user',   content: query.trim() },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.1,
-      max_tokens: 512,
-    }),
-  })
+  // Try each model until one answers. A model that is gone returns a 4xx with a
+  // decommission message, so a failed response falls through to the next rather
+  // than to the user.
+  let text = ''
+  for (const model of MODELS) {
+    const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user',   content: query.trim() },
+        ],
+        response_format: { type: 'json_object' },
+        // The gpt-oss models reason before they answer, and that reasoning is
+        // drawn from the same token budget as the reply. Left unchecked, a
+        // multi-food query spends the budget thinking and returns an empty
+        // body; 'low' keeps the thinking short and 1024 leaves room for the
+        // longer multi-item JSON. Groq ignores reasoning_effort on models that
+        // don't reason, so it is safe across the whole fallback chain.
+        reasoning_effort: 'low',
+        temperature: 0.1,
+        max_tokens: 1024,
+      }),
+    })
+    if (!aiRes.ok) continue
+    const aiData = await aiRes.json()
+    text = aiData.choices?.[0]?.message?.content ?? ''
+    if (text) break
+  }
 
-  if (!aiRes.ok) {
+  if (!text) {
     return new Response(JSON.stringify({ error: 'AI request failed' }), {
       status: 502,
       headers: { 'Content-Type': 'application/json', ...CORS },
     })
   }
-
-  const aiData = await aiRes.json()
-  const text   = aiData.choices?.[0]?.message?.content ?? ''
 
   let parsed: Record<string, unknown>
   try {
