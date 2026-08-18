@@ -74,6 +74,29 @@ export function AuthProvider({ children }) {
     return true
   }
 
+  /* Whether an address already has an account behind it, in the app's own
+     words. The friendly half of the same check signUp runs — used after a
+     failed login to tell "wrong password" apart from "this account exists but
+     you can't get in yet", which is a stuck state that needs a way out, not a
+     red line. Returns 'ok' | 'taken' | 'disposable' | 'invalid', or null if the
+     check itself could not be reached. */
+  async function checkEmailStatus(email) {
+    const { data, error } = await supabase.rpc('email_status', { addr: email })
+    return error ? null : data
+  }
+
+  /* Sends the confirmation email again. The way out of the most common locked
+     door: an account was created but the first confirmation never landed (or
+     never got clicked), so the address is taken but the password won't let you
+     in. Nothing here reveals whether the address exists — the caller only
+     offers this once it already knows it does. */
+  async function resendConfirmation(email) {
+    setAuthError(null)
+    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    if (error) { setAuthError(error.message); return false }
+    return true
+  }
+
   async function signUp(email, password, name) {
     setAuthError(null)
 
@@ -471,6 +494,8 @@ export function AuthProvider({ children }) {
       signUp,
       signInWithGoogle,
       resetPassword,
+      checkEmailStatus,
+      resendConfirmation,
       signOut,
       refreshProfile,
       updateProfile,

@@ -14,18 +14,21 @@ function GoogleIcon() {
 }
 
 export default function AuthScreen({ onBack, initialMode = 'login', initialEmail = '' }) {
-  const { signIn, signUp, signInWithGoogle, resetPassword, authError } = useAuth()
+  const { signIn, signUp, signInWithGoogle, resetPassword, checkEmailStatus, resendConfirmation, authError } = useAuth()
   const [mode, setMode]         = useState(initialMode) // 'login' | 'register' | 'reset'
   const [email, setEmail]       = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [loading, setLoading]   = useState(false)
   const [info, setInfo]         = useState('')
+  const [stuck, setStuck]       = useState(false)   // account exists but login failed
+  const [resending, setResending] = useState(false)
   const passwordRef = useRef(null)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     setInfo('')
+    setStuck(false)
 
     if (mode === 'reset') {
       const ok = await resetPassword(email)
@@ -35,7 +38,15 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     }
 
     if (mode === 'login') {
-      await signIn(email, password)
+      const ok = await signIn(email, password)
+      // A login that fails on an address that already has an account is not
+      // "wrong password" as far as the user is concerned — it is a door they
+      // can't get through. Usually an unconfirmed email. Offer the two ways out
+      // rather than leaving them to guess between register and login.
+      if (!ok) {
+        const status = await checkEmailStatus(email)
+        if (status === 'taken') setStuck(true)
+      }
     } else {
       const res = await signUp(email, password)
       if (res === 'exists') {
@@ -50,7 +61,17 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     setLoading(false)
   }
 
-  function switchMode(m) { setMode(m); setInfo('') }
+  async function handleResend() {
+    setResending(true)
+    const ok = await resendConfirmation(email)
+    setResending(false)
+    if (ok) {
+      setStuck(false)
+      setInfo('Изпратихме нов линк за потвърждение. Провери имейла си (и папката Спам).')
+    }
+  }
+
+  function switchMode(m) { setMode(m); setInfo(''); setStuck(false) }
 
   return (
     <div className={styles.screen}>
@@ -100,7 +121,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => { setEmail(e.target.value); setStuck(false) }}
               required
               autoComplete="email"
             />
@@ -130,6 +151,36 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           <button className={styles.submit} type="submit" disabled={loading}>
             {loading ? '...' : mode === 'login' ? 'ВЛЕЗ' : mode === 'register' ? 'СЪЗДАЙ АКАУНТ' : 'ИЗПРАТИ ЛИНК'}
           </button>
+
+          {/* The way out of the locked door: this address has an account, but the
+              password wouldn't open it. Almost always an unconfirmed email, so
+              resending is offered first; a forgotten password is the other half. */}
+          {stuck && (
+            <div className={styles.recover}>
+              <p className={styles.recoverText}>
+                Този имейл вече има акаунт, но входът не мина. Ако още не си
+                потвърдил имейла си, изпрати линка отново. Ако си забравил
+                паролата — създай нова.
+              </p>
+              <div className={styles.recoverActions}>
+                <button
+                  className={styles.recoverPrimary}
+                  onClick={handleResend}
+                  disabled={resending}
+                  type="button"
+                >
+                  {resending ? '...' : 'Изпрати отново потвърждение'}
+                </button>
+                <button
+                  className={styles.recoverSecondary}
+                  onClick={() => switchMode('reset')}
+                  type="button"
+                >
+                  Забравена парола
+                </button>
+              </div>
+            </div>
+          )}
         </form>
 
         {mode === 'login' && (
