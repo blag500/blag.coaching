@@ -157,7 +157,12 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
        onError pulls it back down to this flow to retry. */
     onComplete?.(stepForm.name.trim())
 
-    await selectPlan(plan)
+    /* Everyone finishes registration as a self-serve client. Writing to the
+       coach is an intent, signalled by the push below — it must NOT set the
+       tier to 'pro' here: 'pro' is the coach's to grant when he accepts, and
+       flipping it now reclassifies the client mid-flow, so App swaps this setup
+       for the coaching intake and the registration can never complete. */
+    await selectPlan('free')
     const { error } = await completeOnboarding({
       name:           stepForm.name.trim(),
       goal:           stepForm.goal,
