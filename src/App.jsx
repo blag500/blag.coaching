@@ -16,6 +16,7 @@ import ChatPage from './components/Chat/ChatPage'
 import Explore from './components/Explore/Explore'
 import CalorieCalculator from './components/CalorieCalculator/CalorieCalculator'
 import Onboarding from './components/Onboarding/Onboarding'
+import RegistrationSuccess from './components/RegistrationSuccess/RegistrationSuccess'
 import PlanSelector from './components/PlanSelector/PlanSelector'
 import LandingPage from './components/LandingPage/LandingPage'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
@@ -43,6 +44,9 @@ import styles from './App.module.css'
 
 const NAV_ORDER = ['today', 'nutrition', 'training', 'profile']
 
+// Goal ids → the word the success chip shows after the calorie target.
+const GOAL_LABEL = { cut: 'Изгаряне', maintain: 'Поддържане', bulk: 'Покачване' }
+
 function AppShell() {
   const { session, profile, loading, selectPlan, refreshProfile } = useAuth()
   const [splash, setSplash] = useState(true)
@@ -55,6 +59,10 @@ function AppShell() {
   // no drag is in progress and the stylesheet is in charge of its position.
   const [drawerDrag, setDrawerDrag] = useState(null)
   const [landingSeen, setLandingSeen] = useState(false)
+  // Set to the client's name (armed) the instant the self-serve flow finishes,
+  // so the success screen stands in front of the tabs for one deliberate beat.
+  // null = not finishing; '' = finishing but nameless.
+  const [onboardName, setOnboardName] = useState(null)
   const [authMode, setAuthMode] = useState('register')
   const [authEmail, setAuthEmail] = useState('')
   const [paymentProcessing, setPaymentProcessing] = useState(() => {
@@ -191,13 +199,32 @@ function AppShell() {
 
   const isCoach = profile.role === 'coach'
 
+  // Checked before the onboarding gate and the tabs both: once the self-serve
+  // flow arms this, the success screen owns the view until the client taps in —
+  // even while the save is still settling and onboarding_done flips underneath.
+  if (onboardName !== null && !isCoach) {
+    return (
+      <RegistrationSuccess
+        name={onboardName}
+        calories={profile.calories}
+        goal={GOAL_LABEL[profile.goal]}
+        ready={profile.onboarding_done}
+        onEnter={() => setOnboardName(null)}
+      />
+    )
+  }
+
   if (!isCoach && !profile.onboarding_done) {
     // PRO is the coached tier — set by the coach directly in the DB.
     // Everyone else goes through the self-serve flow which ends with the coach upsell.
     const coached = profile.plan === 'pro' || profile.plan === 'coaching'
     return coached
       ? <Onboarding isCoachingIntake />
-      : <CalorieCalculator isOnboarding />
+      : <CalorieCalculator
+          isOnboarding
+          onComplete={name => setOnboardName(name || '')}
+          onError={() => setOnboardName(null)}
+        />
   }
 
   // Nothing is sold by card here. PRO is arranged with the coach, who approves

@@ -83,7 +83,7 @@ function calcOnboardingMacros({ gender, age, height_cm, weight_kg, goal }) {
 
 // isOnboarding=true  → step-by-step first-time setup; saves via completeOnboarding()
 // isOnboarding=false → single-screen tool in Explore; saves via updateProfile()
-export default function CalorieCalculator({ onBack, isOnboarding = false }) {
+export default function CalorieCalculator({ onBack, isOnboarding = false, onComplete, onError }) {
   const { profile, updateProfile, completeOnboarding, selectPlan, signOut } = useAuth()
 
   // ── Step-flow state (used when isOnboarding=true) ────────────────────────
@@ -149,6 +149,14 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
   async function handleStepFinish(plan = 'free') {
     setStepSaving(true)
     setStepError('')
+
+    /* Arm the success screen before the save, so the app cuts straight from the
+       poster to the seal — no flash of the tabs, and no flash of the coaching
+       intake when selectPlan('pro') briefly flips the tier below. App holds the
+       success screen in front until the client taps in; if the save fails,
+       onError pulls it back down to this flow to retry. */
+    onComplete?.(stepForm.name.trim())
+
     await selectPlan(plan)
     const { error } = await completeOnboarding({
       name:           stepForm.name.trim(),
@@ -165,12 +173,16 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
       fat:            parseInt(stepForm.fat),
     })
     setStepSaving(false)
-    if (error) setStepError(error.message || 'Грешка при запис. Опитай пак.')
+    if (error) {
+      setStepError(error.message || 'Грешка при запис. Опитай пак.')
+      onError?.()
+      return
+    }
 
     /* The DM is the real signal, but it is a signal that only exists if the
        client actually sends it. A push means the interest is known even when
        the message never gets written. */
-    if (plan === 'pro' && !error) {
+    if (plan === 'pro') {
       const coachId = profile?.coach_id
       if (coachId) {
         supabase.functions.invoke('send-push', {
