@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import CoachOffer from '../CoachOffer/CoachOffer'
+import AvatarPicker from '../Onboarding/AvatarPicker'
+import { GOAL_ICON, TargetIcon } from '../Onboarding/StepIcons'
 import calcStyles from './CalorieCalculator.module.css'
 import stepStyles from '../Onboarding/Onboarding.module.css'
 
@@ -14,10 +16,14 @@ const ACTIVITY_OPTIONS = [
 ]
 
 const GOAL_OPTIONS = [
-  { id: 'cut',      label: 'ИЗГАРЯНЕ',   icon: '🔥', desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
-  { id: 'maintain', label: 'ПОДДЪРЖАНЕ', icon: '⚖️', desc: 'Запазване на теглото',        kcalDelta: 0    },
-  { id: 'bulk',     label: 'ПОКАЧВАНЕ',  icon: '💪', desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
+  { id: 'cut',      label: 'ИЗГАРЯНЕ',   desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
+  { id: 'maintain', label: 'ПОДДЪРЖАНЕ', desc: 'Запазване на теглото',        kcalDelta: 0    },
+  { id: 'bulk',     label: 'ПОКАЧВАНЕ',  desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
 ]
+
+// One kilogram of body mass is worth roughly 7700 kcal. The weekly change a plan
+// implies is the daily gap from maintenance, spread over seven days.
+const KCAL_PER_KG = 7700
 
 const GOAL_PRESETS = [
   { id: 'extreme_cut', label: 'Екст. загуба', delta: -1000, kgPerWeek: -1,    color: '#ef5350', goal: 'cut'      },
@@ -245,6 +251,22 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
   if (isOnboarding) {
     const s = stepStyles
 
+    /* What the calorie target implies for the scale. Measured against
+       maintenance (the same 1.55 the macro calculator uses), not the goal's
+       nominal delta, so a client who hand-edits the calories on this screen
+       sees the projection follow. */
+    const bmrNow = calcBMR(
+      stepForm.gender,
+      parseInt(stepForm.age) || 0,
+      parseFloat(stepForm.height_cm) || 0,
+      parseFloat(stepForm.weight_kg) || 0,
+    )
+    const maintenanceKcal = Math.round(bmrNow * 1.55)
+    const currentKcal     = parseInt(stepForm.calories) || maintenanceKcal
+    const weeklyKg        = ((currentKcal - maintenanceKcal) * 7) / KCAL_PER_KG
+    const weeklyAbs       = Math.abs(weeklyKg)
+    const weeklyDir       = weeklyAbs < 0.03 ? 'hold' : weeklyKg > 0 ? 'up' : 'down'
+
     /* The last step is the poster, whole — its own screen rather than a step
        inside the form. Nothing of the wizard belongs on it: no progress rail
        above a decision that is not part of the count, and no ← НАЗАД, because
@@ -274,9 +296,13 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
           {/* Step 1 — Name */}
           {step === 1 && (
             <div className={s.stepWrap}>
-              <div className={s.emoji}>👋</div>
               <h1 className={s.heading}>ДОБРЕ ДОШЪЛ</h1>
               <p className={s.sub}>Нека настроим профила ти за 2 минути.</p>
+
+              {/* The face goes on first, so the profile is already someone's
+                  the moment the numbers land. */}
+              <AvatarPicker />
+
               <label className={s.label}>Как се казваш?</label>
               <input
                 className={s.input}
@@ -296,18 +322,23 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
               <h1 className={s.heading}>КАКВА Е ЦЕЛТА ТИ?</h1>
               <p className={s.sub}>Това определя твоя калориен баланс.</p>
               <div className={s.goalGrid}>
-                {GOAL_OPTIONS.map(g => (
-                  <button
-                    key={g.id}
-                    className={`${s.goalCard} ${stepForm.goal === g.id ? s.goalCardActive : ''}`}
-                    onClick={() => setGoal(g.id)}
-                    type="button"
-                  >
-                    <span className={s.goalIcon}>{g.icon}</span>
-                    <span className={s.goalLabel}>{g.label}</span>
-                    <span className={s.goalDesc}>{g.desc}</span>
-                  </button>
-                ))}
+                {GOAL_OPTIONS.map(g => {
+                  const Icon = GOAL_ICON[g.id]
+                  return (
+                    <button
+                      key={g.id}
+                      className={`${s.goalCard} ${stepForm.goal === g.id ? s.goalCardActive : ''}`}
+                      onClick={() => setGoal(g.id)}
+                      type="button"
+                    >
+                      <span className={s.goalIcon}><Icon /></span>
+                      <span className={s.goalText}>
+                        <span className={s.goalLabel}>{g.label}</span>
+                        <span className={s.goalDesc}>{g.desc}</span>
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -375,9 +406,26 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
           {/* Step 5 — Macros */}
           {step === 5 && (
             <div className={s.stepWrap}>
-              <div className={s.emoji}>🎯</div>
+              <span className={s.stepIcon}><TargetIcon /></span>
               <h1 className={s.heading}>ТВОИТЕ МАКРОСИ</h1>
               <p className={s.sub}>Изчислени по твоите данни. Можеш да ги промениш по-късно.</p>
+
+              {/* What the plan does to the scale, in the client's own words. A
+                  deficit reads "надолу", a surplus "нагоре", parity holds. */}
+              <div className={s.projection}>
+                <span className={s.projectionLabel}>ОЧАКВАНА ПРОМЯНА</span>
+                {weeklyDir === 'hold' ? (
+                  <span className={s.projectionValue}>Теглото се задържа</span>
+                ) : (
+                  <span className={s.projectionValue}>
+                    ≈ {Number(weeklyAbs.toFixed(2))} кг
+                    <span className={s.projectionDir}>
+                      {weeklyDir === 'down' ? ' надолу' : ' нагоре'} / седмица
+                    </span>
+                  </span>
+                )}
+              </div>
+
               <div className={s.macroGrid}>
                 {[
                   { key: 'calories', label: 'ККАЛ',    color: '#F06292' },
@@ -399,7 +447,6 @@ export default function CalorieCalculator({ onBack, isOnboarding = false }) {
                 ))}
               </div>
               <p className={s.macroNote}>
-                {GOAL_OPTIONS.find(g => g.id === stepForm.goal)?.icon}{' '}
                 {GOAL_OPTIONS.find(g => g.id === stepForm.goal)?.desc}
                 {' · '}
                 {ACTIVITY_OPTIONS.find(a => a.id === stepForm.activity_level)?.label}

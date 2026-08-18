@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import AvatarPicker from './AvatarPicker'
+import { GOAL_ICON, CheckIcon, TargetIcon } from './StepIcons'
 import styles from './Onboarding.module.css'
 
 const TOTAL_STEPS_SELF  = 5
@@ -14,9 +16,9 @@ const ACTIVITY_OPTIONS = [
 ]
 
 const GOAL_OPTIONS = [
-  { id: 'cut',      label: 'ИЗГАРЯНЕ',    icon: '🔥', desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
-  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  icon: '⚖️', desc: 'Запазване на теглото',        kcalDelta: 0    },
-  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   icon: '💪', desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
+  { id: 'cut',      label: 'ИЗГАРЯНЕ',    desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
+  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  desc: 'Запазване на теглото',        kcalDelta: 0    },
+  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
 ]
 
 function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal }) {
@@ -149,12 +151,29 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
 
   const totalSteps = isCoachingIntake ? TOTAL_STEPS_COACH : TOTAL_STEPS_SELF
 
+  // What the calorie target implies for the scale, measured against maintenance
+  // (bmr × the chosen activity multiplier), so a client who hand-edits the
+  // calories on the macros step sees the projection follow. One kilogram of body
+  // mass is worth roughly 7700 kcal, spread over the seven days of a week.
+  const wAge  = parseInt(form.age) || 0
+  const wH    = parseFloat(form.height_cm) || 0
+  const wW    = parseFloat(form.weight_kg) || 0
+  const bmrNow = form.gender === 'male'
+    ? 10 * wW + 6.25 * wH - 5 * wAge + 5
+    : 10 * wW + 6.25 * wH - 5 * wAge - 161
+  const wMult = ACTIVITY_OPTIONS.find(a => a.id === form.activity_level)?.mult ?? 1.55
+  const maintenanceKcal = Math.round(bmrNow * wMult)
+  const currentKcal     = parseInt(form.calories) || maintenanceKcal
+  const weeklyKg  = ((currentKcal - maintenanceKcal) * 7) / 7700
+  const weeklyAbs = Math.abs(weeklyKg)
+  const weeklyDir = weeklyAbs < 0.03 ? 'hold' : weeklyKg > 0 ? 'up' : 'down'
+
   if (submitted) {
     return (
       <div className={styles.page}>
         <div className={styles.content}>
-          <div className={styles.stepWrap} style={{ textAlign: 'center' }}>
-            <div className={styles.emoji}>✅</div>
+          <div className={styles.stepWrap} style={{ textAlign: 'center', alignItems: 'center' }}>
+            <span className={styles.stepIcon}><CheckIcon /></span>
             <h1 className={styles.heading}>ЗАЯВКАТА Е ИЗПРАТЕНА</h1>
             <p className={styles.sub}>
               Треньорът ще прегледа данните ти и ще настрои индивидуален план в рамките на 24 часа.
@@ -195,9 +214,13 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
         {/* Step 1 — Name */}
         {step === 1 && (
           <div className={styles.stepWrap}>
-            <div className={styles.emoji}>👋</div>
             <h1 className={styles.heading}>ДОБРЕ ДОШЪЛ</h1>
             <p className={styles.sub}>Нека настроим профила ти за 2 минути.</p>
+
+            {/* The face goes on first — the coach reviewing the intake sees a
+                person rather than an initial. */}
+            <AvatarPicker />
+
             <label className={styles.label}>Как се казваш?</label>
             <input
               className={styles.input}
@@ -217,18 +240,23 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
             <h1 className={styles.heading}>КАКВА Е ЦЕЛТА ТИ?</h1>
             <p className={styles.sub}>Това определя твоя калориен баланс.</p>
             <div className={styles.goalGrid}>
-              {GOAL_OPTIONS.map(g => (
-                <button
-                  key={g.id}
-                  className={`${styles.goalCard} ${form.goal === g.id ? styles.goalCardActive : ''}`}
-                  onClick={() => setGoal(g.id)}
-                  type="button"
-                >
-                  <span className={styles.goalIcon}>{g.icon}</span>
-                  <span className={styles.goalLabel}>{g.label}</span>
-                  <span className={styles.goalDesc}>{g.desc}</span>
-                </button>
-              ))}
+              {GOAL_OPTIONS.map(g => {
+                const Icon = GOAL_ICON[g.id]
+                return (
+                  <button
+                    key={g.id}
+                    className={`${styles.goalCard} ${form.goal === g.id ? styles.goalCardActive : ''}`}
+                    onClick={() => setGoal(g.id)}
+                    type="button"
+                  >
+                    <span className={styles.goalIcon}><Icon /></span>
+                    <span className={styles.goalText}>
+                      <span className={styles.goalLabel}>{g.label}</span>
+                      <span className={styles.goalDesc}>{g.desc}</span>
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -304,9 +332,24 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
         {/* Step 5 — Macros preview */}
         {step === 5 && (
           <div className={styles.stepWrap}>
-            <div className={styles.emoji}>🎯</div>
+            <span className={styles.stepIcon}><TargetIcon /></span>
             <h1 className={styles.heading}>ТВОИТЕ МАКРОСИ</h1>
             <p className={styles.sub}>Изчислени по твоите данни. Можеш да ги промениш по-късно.</p>
+
+            <div className={styles.projection}>
+              <span className={styles.projectionLabel}>ОЧАКВАНА ПРОМЯНА</span>
+              {weeklyDir === 'hold' ? (
+                <span className={styles.projectionValue}>Теглото се задържа</span>
+              ) : (
+                <span className={styles.projectionValue}>
+                  ≈ {Number(weeklyAbs.toFixed(2))} кг
+                  <span className={styles.projectionDir}>
+                    {weeklyDir === 'down' ? ' надолу' : ' нагоре'} / седмица
+                  </span>
+                </span>
+              )}
+            </div>
+
             <div className={styles.macroGrid}>
               {[
                 { key: 'calories', label: 'ККАЛ',    color: '#F06292' },
@@ -328,7 +371,6 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
               ))}
             </div>
             <p className={styles.macroNote}>
-              {GOAL_OPTIONS.find(g => g.id === form.goal)?.icon}{' '}
               {GOAL_OPTIONS.find(g => g.id === form.goal)?.desc}
               {' · '}
               {ACTIVITY_OPTIONS.find(a => a.id === form.activity_level)?.label}
