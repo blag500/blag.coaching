@@ -28,12 +28,12 @@
      edge were catching any: it is what separates glass from grey. */
   background:
     radial-gradient(120% 60% at 0% 0%,
-      rgba(200, 160, 90, 0.08) 0%,
-      rgba(200, 160, 90, 0.02) 42%,
+      rgba(var(--accent-rgb), 0.08) 0%,
+      rgba(var(--accent-rgb), 0.02) 42%,
       transparent 70%),
     linear-gradient(to bottom,
-      rgba(20, 17, 11, 0.82) 0%,
-      rgba(12, 10, 6, 0.72) 100%);
+      rgba(var(--bg-rgb), 0.86) 0%,
+      rgba(var(--bg-rgb), 0.72) 100%);
   backdrop-filter: blur(34px) saturate(170%);
   -webkit-backdrop-filter: blur(34px) saturate(170%);
   border-right: 1px solid rgba(var(--accent-rgb), 0.22);

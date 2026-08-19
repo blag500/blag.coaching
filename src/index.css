@@ -29,6 +29,10 @@
 
 :root {
   --bg:        #0C0A06;
+  /* The background as an rgb triple, so chrome that tints itself with the
+     ground (header glass, tab bar, drawer, scrims) follows the theme instead of
+     baking in this one warm brown. Crystal and light restate it. */
+  --bg-rgb:    12, 10, 6;
   --surface-1: #131009;
   --surface-2: #1A1710;
   /* Antique gold — the core tone of the splash animation held flat, without
@@ -169,6 +173,7 @@ html[data-theme="light"] {
   --accent-metal: linear-gradient(155deg,
     #6B5220 0%, #8A6A2E 30%, #B99553 52%, #7E6028 72%, #A5813C 88%, #6B5220 100%);
   --bg:        #F5F0E8;
+  --bg-rgb:    245, 240, 232;
   --surface-1: #FFFFFF;
   --surface-2: #EDE8DE;
   --accent:    #8A6A2E;
@@ -187,6 +192,7 @@ html[data-theme="light"] {
 html[data-theme="glass"] {
   --accent-rgb: 200, 160, 90;
   --bg:        #0A0A0F;
+  --bg-rgb:    10, 10, 15;
   --surface-1: rgba(16, 18, 28, 0.72);
   --surface-2: rgba(22, 24, 38, 0.82);
   --accent:    #C8A05A;

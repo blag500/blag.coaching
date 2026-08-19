@@ -5,7 +5,7 @@
   left: 12px;
   right: 12px;
   height: 68px;
-  background: rgba(12, 10, 6, 0.52);
+  background: rgba(var(--bg-rgb), 0.52);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   border-radius: var(--r-xl);
@@ -130,7 +130,7 @@
   margin-top: -24px;
   box-shadow:
     0 4px 18px rgba(var(--accent-rgb), 0.50),
-    0 0 0 3px rgba(12, 10, 6, 0.80);
+    0 0 0 3px rgba(var(--bg-rgb), 0.80);
   -webkit-tap-highlight-color: transparent;
   transition: transform 200ms var(--ease-out), box-shadow 150ms var(--ease-out);
   flex-shrink: 0;
@@ -150,7 +150,7 @@
   transform: scale(0.88) translateY(2px);
   box-shadow:
     0 2px 8px rgba(var(--accent-rgb), 0.30),
-    0 0 0 3px rgba(12, 10, 6, 0.80);
+    0 0 0 3px rgba(var(--bg-rgb), 0.80);
 }
 
 /* ── Action sheet (pops above FAB) ── */
