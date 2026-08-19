@@ -120,6 +120,40 @@ export default function LandingPage({ onContinue, onLogin }) {
           ТРЕНИРАЙ С МЕН
         </a>
 
+        {/* Two pills under the ask, together as wide as it. Same glass, so they
+            read as the button's own footnote rather than a second offer — the
+            channels where the work already lives, one tap away. */}
+        <div className={styles.socials}>
+          <a
+            className={styles.social}
+            href="https://www.instagram.com/niki.blggg/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+          >
+            <svg className={styles.socialIcon} viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="5.5"
+                fill="none" stroke="currentColor" strokeWidth="1.7" />
+              <circle cx="12" cy="12" r="4.2"
+                fill="none" stroke="currentColor" strokeWidth="1.7" />
+              <circle cx="17.4" cy="6.6" r="1.25" fill="currentColor" />
+            </svg>
+            <span>Instagram</span>
+          </a>
+          <a
+            className={styles.social}
+            href="https://www.tiktok.com/@blag.coaching"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok"
+          >
+            <svg className={styles.socialIcon} viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M16.5 3.2c.3 2.02 1.53 3.6 3.5 3.9v2.42c-1.2.08-2.35-.23-3.44-.86v5.66c0 2.9-2.13 5.18-4.98 5.18-2.6 0-4.66-1.9-4.66-4.42 0-2.7 2.28-4.66 5.02-4.24v2.5c-.3-.1-.63-.15-.98-.12-1.1.1-1.9.94-1.86 2.02.04 1.06.9 1.86 1.98 1.82 1.1-.04 1.86-.9 1.86-2.06V3.2h2.56Z" />
+            </svg>
+            <span>TikTok</span>
+          </a>
+        </div>
+
         <span className={styles.scrollHint} aria-hidden="true" />
       </section>
 

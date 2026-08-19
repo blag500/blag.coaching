@@ -1485,3 +1485,68 @@
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .heroCta { background: rgba(24, 19, 11, 0.82); }
 }
+
+/* The two channel pills, as a row exactly as wide as the CTA above them so the
+   three read as one stack. A gap between, and each takes an equal half. */
+.socials {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  /* The hero puts an 18px gap between its children; pull back so the pills seat
+     close under the CTA and read as its footnote, not a separate row. */
+  margin-top: -8px;
+  box-sizing: border-box;
+}
+
+/* An ellipse, not the CTA's rounded rectangle: the pill shape is what tells the
+   eye these are the lighter, secondary ask. Same glass, border and gold as the
+   button above, dropped a weight — a thinner rim and no outer bloom, so they
+   sit under the CTA rather than competing with it. */
+.social {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 8px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.42);
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.13) 0%,
+    rgba(200, 160, 90, 0.05) 100%);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.22),
+    0 8px 22px -14px rgba(0, 0, 0, 0.9);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+  transition: background 180ms, border-color 180ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.social:active {
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.22) 0%,
+    rgba(200, 160, 90, 0.1) 100%);
+  border-color: rgba(var(--accent-rgb), 0.7);
+}
+
+.socialIcon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .social { background: rgba(24, 19, 11, 0.82); }
+}
