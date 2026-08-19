@@ -147,7 +147,23 @@
 
 .tagline {
   font-size: 10px;
-  color: var(--muted);
+  /* The same brushed-gold ramp as the name above it — the tagline is the
+     slogan for the mark, so it is cast in the mark's own material rather than
+     a grey caption. Poured through a flatter angle because the line is a
+     fraction of the name's height. */
+  color: #C8A05A;
+  background-image: linear-gradient(
+    177deg,
+    #6B4A1E 0%,
+    #C8A05A 22%,
+    #F8E8B8 44%,
+    #B08A45 58%,
+    #E4CE94 74%,
+    #7A5726 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   line-height: 1.9;
