@@ -21,6 +21,11 @@ const sig = r => `${r.weight}|${r.reps}`
  *  reps get typed once and then mostly repeat. */
 const STEP = 2.5
 
+/** When the rest chip stops counting up quietly and says you are good to go —
+ *  and buzzes once, for the eyes that are not on the phone. A middle default
+ *  between a heavy triple and an isolation drop set. */
+const REST_TARGET = 120
+
 /** The set a new row most likely repeats: the nearest one above it with a
  *  weight in it. What "carry the last set" and the ghost placeholders read off. */
 function prevSet(sets, i) {
@@ -98,6 +103,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const { user } = useAuth()
   const [rows, setRows] = useState({})   // planned name → [{ id, weight, reps }]
   const [lastSess, setLastSess] = useState({}) // planned name → last session's sets
+  const [rest, setRest] = useState(null) // { name, since } — the running rest clock
+  const [now, setNow]   = useState(Date.now())
+  const buzzedRef       = useRef(false)
   const [saved, setSaved] = useState(null)
   const [swap, setSwap] = useState({})   // planned name → what stood in, today
   const [editing, setEditing] = useState(null)
@@ -198,6 +206,28 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const echo = (sets, i, name) =>
     prevSet(sets, i) ?? lastSess[name]?.[i] ?? lastSess[name]?.at(-1) ?? null
 
+  // The rest clock ticks once a second while it runs, and buzzes the phone the
+  // moment it reaches the target — the one signal that reaches you when the
+  // screen is dark on the bench beside you.
+  useEffect(() => {
+    if (!rest) return
+    const id = setInterval(() => {
+      setNow(Date.now())
+      if (!buzzedRef.current && (Date.now() - rest.since) / 1000 >= REST_TARGET) {
+        buzzedRef.current = true
+        navigator.vibrate?.(180)
+      }
+    }, 1000)
+    return () => clearInterval(id)
+  }, [rest?.since])
+
+  /** A finished set starts the clock over. */
+  function startRest(name) {
+    buzzedRef.current = false
+    setNow(Date.now())
+    setRest({ name, since: Date.now() })
+  }
+
   /** Every pending timer fires before the panel goes, so a set typed and then
    *  closed straight away is still on record.
    *
@@ -247,6 +277,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     // Reps alone are not a set yet — the weight is what is being recorded.
     if (String(r.weight).trim() === '') return
 
+    // A fresh row, not an edit to one already saved — this is the moment a set
+    // is actually finished, so it is the moment rest starts.
+    const isNew = !r.id
     inflight.current[key] = true
     // Logged under whatever was actually done, with a note of what it replaced —
     // so the substitute builds its own history and the planned lift knows why
@@ -277,6 +310,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     }))
     setSaved(key)
     setTimeout(() => setSaved(s => (s === key ? null : s)), 1400)
+    if (isNew) startRest(name)
     onLogged?.()
   }
 
@@ -555,13 +589,27 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                 + серия
               </button>
 
-              {/* Read off the clock, not asked for: every save carries the
-                  moment it happened, so the gaps are already recorded. */}
-              {pace != null && (
+              {/* While the clock is running it is the loud thing on the row;
+                  tapping it stops it. Otherwise the quiet retrospective pace,
+                  read off the save times, takes the slot back. */}
+              {rest?.name === ex.name ? (() => {
+                const sec  = Math.max(0, Math.floor((now - rest.since) / 1000))
+                const over = sec >= REST_TARGET
+                return (
+                  <button
+                    type="button"
+                    className={`${styles.rest} ${over ? styles.restDone : ''}`}
+                    onClick={() => setRest(null)}
+                    title="Спри почивката"
+                  >
+                    {over ? `✓ готов · ${formatPace(sec)}` : `⏱ почивка ${formatPace(sec)}`}
+                  </button>
+                )
+              })() : pace != null ? (
                 <span className={styles.pace} title="Средно време от серия до серия, включително самата серия">
                   {formatPace(pace)} между сериите
                 </span>
-              )}
+              ) : null}
             </div>
           </div>
         )
