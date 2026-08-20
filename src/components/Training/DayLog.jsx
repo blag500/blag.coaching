@@ -17,6 +17,19 @@ const AUTOSAVE_MS = 1200
  *  same set, so nothing is written twice. */
 const sig = r => `${r.weight}|${r.reps}`
 
+/** One plate's worth of adjustment. The stepper moves the load, not the reps —
+ *  reps get typed once and then mostly repeat. */
+const STEP = 2.5
+
+/** The set a new row most likely repeats: the nearest one above it with a
+ *  weight in it. What "carry the last set" and the ghost placeholders read off. */
+function prevSet(sets, i) {
+  for (let j = i - 1; j >= 0; j--) {
+    if (String(sets[j]?.weight).trim() !== '') return sets[j]
+  }
+  return null
+}
+
 /**
  * A small square beside the exercise: the photo if there is one, a camera if
  * there is not. Tapping a photo opens it; tapping the empty square adds one.
@@ -239,6 +252,52 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     timers.current[key] = setTimeout(() => commit(name, i), AUTOSAVE_MS)
   }
 
+  /** Same debounce as a keystroke: a filled row schedules its own save. */
+  function schedule(name, i) {
+    const key = `${name}-${i}`
+    clearTimeout(timers.current[key])
+    timers.current[key] = setTimeout(() => commit(name, i), AUTOSAVE_MS)
+  }
+
+  /**
+   * Nudge the load by one plate. On an empty row this is also where the last
+   * set carries over — the weight starts from the one above and the reps come
+   * with it — so bumping a fresh row is one gesture: repeat, then correct.
+   */
+  function bump(name, i, dir) {
+    setRows(prev => {
+      const sets = prev[name]
+      const r = sets[i]
+      const prevR = prevSet(sets, i)
+      const empty = String(r.weight).trim() === ''
+      const base = empty ? (parseFloat(prevR?.weight) || 0) : (parseFloat(r.weight) || 0)
+      const next = Math.max(0, Math.round((base + dir * STEP) * 2) / 2)
+      const reps = empty && String(r.reps).trim() === '' ? (prevR?.reps ?? r.reps) : r.reps
+      return {
+        ...prev,
+        [name]: sets.map((x, j) => (j === i ? { ...x, weight: String(next), reps } : x)),
+      }
+    })
+    schedule(name, i)
+  }
+
+  /** Carry the last set here whole — the same load and reps, no change. The
+   *  stepper is for when there is a change; this is for when there is not. */
+  function repeat(name, i) {
+    let done = false
+    setRows(prev => {
+      const sets = prev[name]
+      const p = prevSet(sets, i)
+      if (!p) return prev
+      done = true
+      return {
+        ...prev,
+        [name]: sets.map((x, j) => (j === i ? { ...x, weight: String(p.weight), reps: p.reps } : x)),
+      }
+    })
+    if (done) schedule(name, i)
+  }
+
   /** Leaving a field is the clearest sign the number is finished. */
   function blur(name, i) {
     const key = `${name}-${i}`
@@ -383,21 +442,41 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
             {sets.map((r, i) => {
               const key = `${ex.name}-${i}`
+              const empty = String(r.weight).trim() === ''
+              // What this row would repeat — drives the ghost load, the ghost
+              // reps, and the one-tap carry at the end of an empty row.
+              const prev = empty ? prevSet(sets, i) : null
               return (
                 <div key={i} className={`${styles.setRow} ${r.id ? styles.setDone : ''}`}>
                   <span className={styles.setNo}>{i + 1}</span>
 
-                  <label className={styles.field}>
-                    <input
-                      className={styles.input}
-                      type="number" min="0" step="0.5" inputMode="decimal"
-                      value={r.weight}
-                      placeholder="кг"
-                      onChange={e => edit(ex.name, i, 'weight', e.target.value)}
-                      onBlur={() => blur(ex.name, i)}
-                      aria-label={`${ex.name}, серия ${i + 1}, килограми`}
-                    />
-                  </label>
+                  {/* − load + : the plate stepper. On an empty row the first
+                      press also carries the set above, so it doubles as repeat. */}
+                  <div className={styles.stepper}>
+                    <button
+                      type="button" className={styles.step} tabIndex={-1}
+                      onClick={() => bump(ex.name, i, -1)}
+                      aria-label={`${ex.name}, серия ${i + 1}, по-малко тегло`}
+                    >−</button>
+
+                    <label className={styles.field}>
+                      <input
+                        className={styles.input}
+                        type="number" min="0" step="0.5" inputMode="decimal"
+                        value={r.weight}
+                        placeholder={prev ? String(prev.weight) : 'кг'}
+                        onChange={e => edit(ex.name, i, 'weight', e.target.value)}
+                        onBlur={() => blur(ex.name, i)}
+                        aria-label={`${ex.name}, серия ${i + 1}, килограми`}
+                      />
+                    </label>
+
+                    <button
+                      type="button" className={styles.step} tabIndex={-1}
+                      onClick={() => bump(ex.name, i, +1)}
+                      aria-label={`${ex.name}, серия ${i + 1}, повече тегло`}
+                    >+</button>
+                  </div>
 
                   <span className={styles.times}>×</span>
 
@@ -406,19 +485,28 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       className={styles.input}
                       type="number" min="0" step="1" inputMode="numeric"
                       value={r.reps}
-                      placeholder={String(ex.reps ?? '')}
+                      placeholder={prev ? String(prev.reps ?? ex.reps ?? '') : String(ex.reps ?? '')}
                       onChange={e => edit(ex.name, i, 'reps', e.target.value)}
                       onBlur={() => blur(ex.name, i)}
                       aria-label={`${ex.name}, серия ${i + 1}, повторения`}
                     />
                   </label>
 
-                  {/* The only thing left on the row, and it is not a control:
-                      saving is automatic, so the row still owes an answer that
-                      it happened. */}
-                  <span className={`${styles.mark} ${saved === key ? styles.markFlash : ''}`}>
-                    {saved === key ? '✓' : r.id ? '·' : ''}
-                  </span>
+                  {/* An empty row that has something to repeat offers it in one
+                      tap; otherwise the slot just answers whether the set is on
+                      record, since saving is automatic. */}
+                  {empty && prev ? (
+                    <button
+                      type="button" className={styles.repeat}
+                      onClick={() => repeat(ex.name, i)}
+                      aria-label={`Повтори ${prev.weight}кг × ${prev.reps ?? '?'}`}
+                      title="Повтори предната серия"
+                    >⟳</button>
+                  ) : (
+                    <span className={`${styles.mark} ${saved === key ? styles.markFlash : ''}`}>
+                      {saved === key ? '✓' : r.id ? '·' : ''}
+                    </span>
+                  )}
                 </div>
               )
             })}

@@ -99,6 +99,54 @@
 
 .input:focus { border-color: rgba(var(--accent-rgb), 0.55); }
 
+/* − load + : the weight, flanked by its plate stepper. Takes the same share of
+   the row as the reps field beside it, so the two numbers stay level. */
+.stepper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stepper .field { flex: 1; }
+
+.step {
+  flex-shrink: 0;
+  width: 30px;
+  height: 34px;
+  padding: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step:active { background: rgba(var(--accent-rgb), 0.16); }
+
+/* Sits where the save tick sits, so an empty row is never wider than a full
+   one. Quiet until pressed. */
+.repeat {
+  flex-shrink: 0;
+  width: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0.6;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.repeat:active { color: var(--accent); opacity: 1; }
+
 .times {
   font-family: var(--font-body);
   font-size: 11px;
