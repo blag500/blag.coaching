@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
-import DayCard from './DayCard'
-import LiftLogger from './LiftLogger'
+import DayLog from './DayLog'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
@@ -53,7 +51,7 @@ function blockColor(idx) { return PALETTE[idx % PALETTE.length] }
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function Training({ onMenuOpen }) {
-  const { user, profile, updateProfile, removeExerciseLog } = useAuth()
+  const { user, profile, updateProfile } = useAuth()
   const isCoach = profile?.role === 'coach'
   // A coached client's plan is written by the coach and waited on; a self-serve
   // client has no one preparing anything, so they set and edit their own.
@@ -63,7 +61,6 @@ export default function Training({ onMenuOpen }) {
   const blocks  = getBlocks(profile?.training_plan)
 
   const [selectedId, setSelectedId]     = useState(blocks?.[0]?.id ?? '0')
-  const [selectedExercise, setSelectedExercise] = useState(null)
   const [showProgression, setShowProgression] = useState(false)
   const [editing, setEditing]           = useState(false)
   const [savingPlan, setSavingPlan]     = useState(false)
@@ -71,8 +68,6 @@ export default function Training({ onMenuOpen }) {
   const [soreness, setSoreness]         = useState(null)
   const [marking, setMarking]           = useState(false)
   const [justMarked, setJustMarked]     = useState(false)
-  const [undoEntry, setUndoEntry]       = useState(null) // { id, exerciseName, weight }
-  const undoTimerRef                    = useRef(null)
   const [logDate, setLogDate]           = useState(() => new Date().toISOString().slice(0, 10))
   const { byName: lifts, refresh: refreshLifts } = useLastLifts(logDate)
   // Whether the block on screen was chosen or merely offered.
@@ -173,23 +168,6 @@ export default function Training({ onMenuOpen }) {
       })),
     })
     setSavingPlan(false)
-  }
-
-  function handleSaved(entry) {
-    // The row shows what was just logged, so it has to hear about it.
-    refreshLifts()
-    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
-    setUndoEntry(entry)
-    undoTimerRef.current = setTimeout(() => setUndoEntry(null), 8000)
-  }
-
-  async function handleUndo() {
-    if (!undoEntry) return
-    clearTimeout(undoTimerRef.current)
-    await removeExerciseLog(undoEntry.id)
-    // Undo takes the entry back out, so the row must stop claiming it is done.
-    refreshLifts()
-    setUndoEntry(null)
   }
 
   async function handleMarkDone() {
@@ -368,7 +346,22 @@ export default function Training({ onMenuOpen }) {
 
           <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
 
-          <DayCard dayData={selectedBlock} onLogLift={setSelectedExercise} lifts={lifts} />
+          {/* The same inline, set-by-set logger the diary uses — one flow, one
+              data model. Rest days have nothing to log, so they stay a card. */}
+          {selectedBlock.isRest || (selectedBlock.label || '').toUpperCase().includes('ПОЧИВК') ? (
+            <div className={styles.restCard}>
+              <span className={styles.restIcon}>🛌</span>
+              <p className={styles.restTitle}>Почивка</p>
+              <p className={styles.restSub}>Сън · Хидратация · Мобилити</p>
+            </div>
+          ) : (
+            <DayLog
+              date={logDate}
+              blockLabels={[selectedBlock.label]}
+              blocks={blocks}
+              onLogged={refreshLifts}
+            />
+          )}
 
           <button
             className={[
@@ -429,27 +422,6 @@ export default function Training({ onMenuOpen }) {
         </section>
       )}
 
-      {selectedExercise && createPortal(
-        <LiftLogger
-          exercise={selectedExercise}
-          date={logDate}
-          onClose={() => setSelectedExercise(null)}
-          onSaved={handleSaved}
-        />,
-        document.body
-      )}
-
-      {/* Undo toast */}
-      {undoEntry && (
-        <div className={styles.undoToast}>
-          <span className={styles.undoText}>
-            {undoEntry.exerciseName} · {undoEntry.weight}kg
-          </span>
-          <button className={styles.undoBtn} onClick={handleUndo} type="button">
-            Отмени
-          </button>
-        </div>
-      )}
     </div>
   )
 }

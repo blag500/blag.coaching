@@ -221,6 +221,34 @@
   margin-bottom: 28px;
 }
 
+/* A rest block has nothing to log — so it says so, where the sets would be. */
+.restCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px;
+  gap: 6px;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.restIcon { font-size: 36px; margin-bottom: 4px; }
+.restTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  margin: 0;
+}
+.restSub {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  opacity: 0.7;
+}
+
 .markDoneBtn {
   width: 100%;
   margin-top: 14px;
