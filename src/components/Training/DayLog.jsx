@@ -97,6 +97,7 @@ function summarise(sets) {
 export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const { user } = useAuth()
   const [rows, setRows] = useState({})   // planned name → [{ id, weight, reps }]
+  const [lastSess, setLastSess] = useState({}) // planned name → last session's sets
   const [saved, setSaved] = useState(null)
   const [swap, setSwap] = useState({})   // planned name → what stood in, today
   const [editing, setEditing] = useState(null)
@@ -159,6 +160,43 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   }, [user?.id, date, JSON.stringify(exercises.map(e => e.name + e.sets))])
 
   useEffect(() => { load() }, [load])
+
+  // The last time each of these lifts was trained, set for set. It seeds the
+  // ghost on a fresh row: the first set of the day opens on last session's
+  // numbers, so repeating is one tap and progressing is one press of +.
+  useEffect(() => {
+    if (!user?.id || !exercises.length) return
+    supabase
+      .from('exercise_logs')
+      .select('exercise_name, replaces, weight, reps, date, set_index')
+      .eq('user_id', user.id)
+      .lt('date', date)
+      .order('date', { ascending: false })
+      .order('set_index', { ascending: true })
+      .limit(300)
+      .then(({ data }) => {
+        const byName = {}
+        for (const ex of exercises) {
+          const rows = (data ?? []).filter(
+            r => r.exercise_name === ex.name || r.replaces === ex.name
+          )
+          if (!rows.length) continue
+          // Newest row first, so its date is the session to echo — and only
+          // that session's sets, in order.
+          const day = rows[0].date
+          byName[ex.name] = rows
+            .filter(r => r.date === day)
+            .sort((a, b) => (a.set_index ?? 0) - (b.set_index ?? 0))
+            .map(r => ({ weight: r.weight, reps: r.reps }))
+        }
+        setLastSess(byName)
+      })
+  }, [user?.id, date, JSON.stringify(exercises.map(e => e.name))])
+
+  /** What an empty row echoes: the set above it today if there is one, else the
+   *  matching set from last session (its last set if the counts differ). */
+  const echo = (sets, i, name) =>
+    prevSet(sets, i) ?? lastSess[name]?.[i] ?? lastSess[name]?.at(-1) ?? null
 
   /** Every pending timer fires before the panel goes, so a set typed and then
    *  closed straight away is still on record.
@@ -268,7 +306,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     setRows(prev => {
       const sets = prev[name]
       const r = sets[i]
-      const prevR = prevSet(sets, i)
+      const prevR = echo(sets, i, name)
       const empty = String(r.weight).trim() === ''
       const base = empty ? (parseFloat(prevR?.weight) || 0) : (parseFloat(r.weight) || 0)
       const next = Math.max(0, Math.round((base + dir * STEP) * 2) / 2)
@@ -287,7 +325,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     let done = false
     setRows(prev => {
       const sets = prev[name]
-      const p = prevSet(sets, i)
+      const p = echo(sets, i, name)
       if (!p) return prev
       done = true
       return {
@@ -443,9 +481,10 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
             {sets.map((r, i) => {
               const key = `${ex.name}-${i}`
               const empty = String(r.weight).trim() === ''
-              // What this row would repeat — drives the ghost load, the ghost
-              // reps, and the one-tap carry at the end of an empty row.
-              const prev = empty ? prevSet(sets, i) : null
+              // What this row would repeat — the set above today, or last
+              // session's. Drives the ghost load, the ghost reps, and the
+              // one-tap carry at the end of an empty row.
+              const prev = empty ? echo(sets, i, ex.name) : null
               return (
                 <div key={i} className={`${styles.setRow} ${r.id ? styles.setDone : ''}`}>
                   <span className={styles.setNo}>{i + 1}</span>
