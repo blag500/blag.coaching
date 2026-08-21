@@ -1,0 +1,234 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ── Weekly goal ── */
+
+.ringWrap {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  align-items: center;
+}
+
+.ring {
+  width: 92px;
+  height: 92px;
+}
+
+.streak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.streakNum {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.streakLabel {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ── Counters ── */
+
+.bigStat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  flex: 1;
+  justify-content: center;
+}
+
+.bigNum {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.bigLabel {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.subStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.subStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 7px 2px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+
+/* The week is the one number that is still moving, so it is the one that is
+   lit. The other three are history and should not compete with it. */
+.subStatLive {
+  background: rgba(var(--accent-rgb), 0.13);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.subNum {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.subStatLive .subNum { color: var(--accent); }
+
+.subLabel {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ── Workout to beat ── */
+
+.beat {
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 160ms, background 160ms;
+  font: inherit;
+  color: inherit;
+}
+
+.beat:active {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: var(--surface-2);
+}
+
+.beatHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.beatEyebrow {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.beatTitle {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.beatBadge {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: var(--r-pill);
+  background: rgba(var(--accent-rgb), 0.14);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.beatList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.beatRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+}
+
+.beatName {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.beatVal {
+  flex: 0 0 auto;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.beatMore {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.beatFoot {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}

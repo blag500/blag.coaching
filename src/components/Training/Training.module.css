@@ -1,4 +1,4 @@
-﻿.page {
+.page {
   min-height: 100vh;
   padding: 0 16px calc(100px + env(safe-area-inset-bottom));
   max-width: 480px;
@@ -159,8 +159,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* One accent, not seven.
+   The active pill used to take its colour from a per-block palette, which meant
+   the selected control changed hue depending on which day of the split you were
+   on — the app's one "this is chosen" signal, saying something different every
+   session. The block is named in the pill; the colour only has to say it is the
+   one selected. */
 .activePill {
   color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
   box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.32), 0 2px 6px rgba(0,0,0,0.3);
 }
 
@@ -300,17 +308,39 @@
 
 .unmarkBtn:disabled { opacity: 0.4; cursor: default; }
 
-/* History section */
-.historySection {
-  margin-top: 8px;
+/* One line of reasoning above the log: whether the muscles this block hits
+   have had their hours. The dot carries the verdict so the sentence does not
+   have to be read to be understood. */
+.recoveryNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.35;
 }
 
-.historyTitle {
-  font-family: var(--font-heading);
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  color: var(--muted);
-  margin: 0 0 12px;
+.recoveryDot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: currentColor;
+}
+
+.recoveryReady {
+  color: #81C784;
+  border-color: rgba(129, 199, 132, 0.32);
+}
+
+.recoveryWait {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 
@@ -345,6 +375,188 @@
   color: var(--muted);
 }
 
-.historyTitleSecond {
-  margin-top: 24px;
+/* Once every exercise in the block is on record, the button stops being
+   paperwork and becomes the obvious last action. */
+.markDoneReady {
+  background: rgba(var(--accent-rgb), 0.16);
+  border-color: rgba(var(--accent-rgb), 0.7);
+}
+
+/* ── Home: what to train ─────────────────────────────────────────────────────
+   The one card that is a decision rather than a report. It sits above the
+   dashboard because the dashboard exists to justify it, not the other way
+   round. */
+
+.today {
+  margin: 14px 0 12px;
+  padding: 16px;
+  border-radius: var(--r-xl);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(var(--accent-rgb), 0.14) 0%, transparent 70%),
+    var(--surface-1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.todayEyebrow {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.todayTitle {
+  font-family: var(--font-heading);
+  font-size: 27px;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  color: var(--text);
+  margin: 0;
+  font-weight: 400;
+}
+
+.todayState {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+}
+
+.todayReady { color: #81C784; }
+.todayWait  { color: var(--accent); }
+
+.todayReady .recoveryDot { background: #81C784; }
+.todayWait  .recoveryDot { background: var(--accent); }
+
+.todayPreview {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 2px;
+}
+
+.startBtn {
+  margin-top: 8px;
+  padding: 15px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.2) 0%,
+    rgba(200, 160, 90, 0.07) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.28),
+    0 0 34px -8px rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 180ms, border-color 180ms;
+}
+
+.startBtn:active {
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.3) 0%,
+    rgba(200, 160, 90, 0.14) 100%);
+  border-color: rgba(var(--accent-rgb), 0.8);
+}
+
+/* ── Home: sections ── */
+
+.section {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  font-weight: 400;
+  margin: 0;
+}
+
+.seeAll {
+  background: none;
+  border: none;
+  padding: 2px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sectionEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.recent {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recentRow {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font: inherit;
+  color: inherit;
+  transition: border-color 160ms;
+}
+
+.recentRow:active { border-color: rgba(var(--accent-rgb), 0.4); }
+
+.recentDate {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+  min-width: 48px;
+}
+
+.recentName {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recentMeta {
+  flex: 0 0 auto;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }

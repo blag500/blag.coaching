@@ -1,0 +1,271 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.month {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.monthTitle {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  font-weight: 400;
+  margin: 4px 0 2px;
+}
+
+.session {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color 160ms;
+}
+
+.sessionOpen { border-color: rgba(var(--accent-rgb), 0.28); }
+
+.sessionHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+/* The date is the handle you scan the list by, so it is a solid block rather
+   than one more line of text competing with the name. */
+.date {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  background: rgba(var(--accent-rgb), 0.16);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.dateRest {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.dateDay {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.dateRest .dateDay { color: var(--muted); }
+
+.dateMon {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.metaBit { white-space: nowrap; }
+.metaPr { color: var(--accent); }
+
+.chev {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 200ms ease;
+}
+
+.chevOpen { transform: rotate(180deg); }
+
+/* ── Opened session ── */
+
+.body {
+  padding: 0 11px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.exercise {
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: 10px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.exHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.exName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.prTag {
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  background: rgba(var(--accent-rgb), 0.18);
+  font-family: var(--font-heading);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.chartBtn {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chartBtn:active { background: rgba(var(--accent-rgb), 0.2); }
+
+.swapNote {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-weight: 400;
+  text-align: right;
+  padding: 0 0 5px;
+}
+
+.thNo { text-align: left; width: 46px; }
+
+.table td {
+  font-size: 12.5px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+.tdNo {
+  text-align: left;
+  color: var(--muted);
+}
+
+.tdVal { color: var(--text); }
+
+.noSets {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+.editDay {
+  align-self: flex-start;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms, border-color 160ms;
+}
+
+.editDay:active {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+/* ── Empty ── */
+
+.empty {
+  padding: 50px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emptyTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.emptySub {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--muted);
+}

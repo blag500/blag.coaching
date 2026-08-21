@@ -10,6 +10,9 @@ import WeightChart from '../Profile/WeightChart'
 import { useClientTasks } from '../../hooks/useTasks'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import ClientReminderSettings from './ClientReminderSettings'
+import SessionHistory from '../Training/SessionHistory'
+import ExerciseStats from '../Training/ExerciseStats'
+import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import { MEALS, MEAL_LABEL, defaultMeal } from '../FoodLogger/meals'
 import styles from './ClientDetail.module.css'
 
@@ -837,6 +840,12 @@ function NutritionTab({ client }) {
 function LiftsTab({ clientId }) {
   const { addExerciseLogForClient, updateExerciseLog, removeExerciseLog } = useAuth()
   const [subTab,       setSubTab]       = useState('log')
+  // The client's own session view, read-only. A coach opening a client before a
+  // call wants what the client sees — the session as it was performed, and one
+  // lift's whole arc — not a date picker and a list of loose rows to reassemble
+  // in their head.
+  const { sessions: clientSessions } = useTrainingHistory(clientId)
+  const [statsEx,      setStatsEx]      = useState(null)
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [logs,         setLogs]         = useState([])
   const [loading,      setLoading]      = useState(false)
@@ -959,7 +968,27 @@ function LiftsTab({ clientId }) {
           className={`${styles.liftsSubTab} ${subTab === 'progression' ? styles.liftsSubTabActive : ''}`}
           onClick={() => setSubTab('progression')} type="button"
         >ПРОГРЕСИЯ</button>
+        <button
+          className={`${styles.liftsSubTab} ${subTab === 'sessions' ? styles.liftsSubTabActive : ''}`}
+          onClick={() => { setSubTab('sessions'); setStatsEx(null) }} type="button"
+        >СЕСИИ</button>
       </div>
+
+      {/* ── SESSIONS view — the same screens the client has ── */}
+      {subTab === 'sessions' && (
+        statsEx ? (
+          <ExerciseStats name={statsEx} sessions={clientSessions} onBack={() => setStatsEx(null)} />
+        ) : (
+          <SessionHistory
+            sessions={clientSessions}
+            onOpenExercise={setStatsEx}
+            /* Editing lives in ДНЕВНИК, where the coach already has add, edit
+               and delete on every row. Two ways to change the same number is
+               how they end up disagreeing. */
+            onEditDay={date => { setSelectedDate(date); setSubTab('log') }}
+          />
+        )
+      )}
 
       {/* ── DIARY view ── */}
       {subTab === 'log' && (

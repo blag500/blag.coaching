@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
@@ -8,9 +8,13 @@ import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
+import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import MuscleStatus from './MuscleStatus'
-import WorkoutCalendar from './WorkoutCalendar'
+import TrainingDashboard from './TrainingDashboard'
+import SessionHistory from './SessionHistory'
+import ExerciseStats from './ExerciseStats'
 import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
+import { trainingStats, agoLabel, bigNum, iso, dayDate, MONTHS_SHORT } from '../../utils/training'
 import styles from './Training.module.css'
 
 // The same dumbbell the bottom nav draws, so the empty state speaks the app's
@@ -38,18 +42,22 @@ function getBlocks(plan) {
   return plan
 }
 
-// Colour per block index.
-//
-// The old set had two entries at the same hue and two more twelve degrees
-// apart — telling them apart in a 7px dot was not a matter of looking harder,
-// it was impossible. These are as far apart as seven categorical colours get,
-// and seven is honestly the limit of what colour alone can carry, which is why
-// the legend swatches are large enough to judge rather than merely notice.
-const PALETTE = ['var(--accent)', '#42A5F5', '#EF5350', '#66BB6A', '#AB47BC', '#26C6DA', '#F06292']
-function blockColor(idx) { return PALETTE[idx % PALETTE.length] }
+const isRestBlock = b => !!b && (b.isRest || (b.label || '').toUpperCase().includes('ПОЧИВК'))
 
-// ── Main component ───────────────────────────────────────────────────────────
-
+/**
+ * The training tab.
+ *
+ * It used to be one long screen that did three unrelated jobs at once — decide
+ * what to train, log it set by set, and account for what had been logged — with
+ * the third of those reduced to a month of coloured dots because there was no
+ * room left. Splitting them is not a layout preference: logging happens with
+ * one hand between sets, and reviewing happens on the sofa afterwards, and a
+ * screen that serves both at the same time serves neither.
+ *
+ * So: the page is the account (`home`), logging is a screen you enter and leave
+ * (`session`), and the record is a screen of its own (`history`) that opens
+ * into a single lift's whole history (`exercise`).
+ */
 export default function Training({ onMenuOpen }) {
   const { user, profile, updateProfile } = useAuth()
   const isCoach = profile?.role === 'coach'
@@ -60,37 +68,42 @@ export default function Training({ onMenuOpen }) {
   const canEdit = isCoach || selfManaged
   const blocks  = getBlocks(profile?.training_plan)
 
+  const [view, setView]                 = useState('home')
+  const [exercise, setExercise]         = useState(null)
   const [selectedId, setSelectedId]     = useState(blocks?.[0]?.id ?? '0')
-  const [showProgression, setShowProgression] = useState(false)
   const [editing, setEditing]           = useState(false)
   const [savingPlan, setSavingPlan]     = useState(false)
-  const [completions, setCompletions]   = useState([])
   const [soreness, setSoreness]         = useState(null)
   const [marking, setMarking]           = useState(false)
   const [justMarked, setJustMarked]     = useState(false)
-  const [logDate, setLogDate]           = useState(() => new Date().toISOString().slice(0, 10))
+  const [logDate, setLogDate]           = useState(() => iso(new Date()))
   const { byName: lifts, refresh: refreshLifts } = useLastLifts(logDate)
+  const { sessions, completions, refresh: refreshHistory } = useTrainingHistory()
   // Whether the block on screen was chosen or merely offered.
   const userPicked = useRef(false)
 
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('workout_completions')
-      .select('block_label, completed_date')
-      .eq('user_id', user.id)
-      .order('completed_date', { ascending: false })
-      .then(({ data }) => { if (data) setCompletions(data) })
-
     // Today's check-in, for the one answer that belongs in this decision.
     supabase
       .from('sleep_logs')
       .select('soreness')
       .eq('user_id', user.id)
-      .eq('date', new Date().toISOString().slice(0, 10))
+      .eq('date', iso(new Date()))
       .maybeSingle()
       .then(({ data }) => setSoreness(data?.soreness ?? null))
   }, [user?.id])
+
+  // A saved set changes both the logger's ghosts and every number on the
+  // dashboard, so one write refreshes both rather than leaving them to drift.
+  function handleLogged() {
+    refreshLifts()
+    refreshHistory()
+  }
+
+  // Scrolling is per-screen: arriving at the history from halfway down the
+  // dashboard should not arrive halfway down the history.
+  useEffect(() => { window.scrollTo({ top: 0 }) }, [view, exercise])
 
   // ── Which session is due ──
   // The screen used to open on whichever block happened to be first and wait to
@@ -104,9 +117,7 @@ export default function Training({ onMenuOpen }) {
   // Rest is excluded, and it is not a detail: nobody ticks a rest day off, so
   // by any "longest since done" measure it is permanently the most overdue
   // thing in the plan — the screen would have opened on Почивка every time.
-  const trainable = (blocks ?? []).filter(
-    b => !b.isRest && !(b.label || '').toUpperCase().includes('ПОЧИВК')
-  )
+  const trainable = (blocks ?? []).filter(b => !isRestBlock(b))
 
   // Which one is ready, not which one is next.
   //
@@ -130,21 +141,27 @@ export default function Training({ onMenuOpen }) {
     setSelectedId(dueBlock.id)
   }, [dueBlock?.id])
 
-
   const selectedBlock = blocks ? (blocks.find(b => b.id === selectedId) ?? blocks[0]) : null
   // Where the block on screen stands, so the page can justify its suggestion —
   // and say so plainly when you have picked something that has not rested.
   const selRec = selectedBlock ? blockReadiness(selectedBlock, recovery, lastDone) : null
   const selHours = selRec?.group ? recovery[selRec.group]?.hours : null
 
-  // lastDone keys off the label, and blockReadiness needs it for splits whose
-  // muscle groups it cannot name.
-  // Every exercise in the block logged today. Until then the finish button is
-  // an outline: it is a claim about work done, and it should not look like the
-  // loudest thing on a screen where the work has not been done yet.
+  // The weekly goal is what the client already said at intake. Falling back to
+  // the number of trainable blocks means a four-day split asks for four days,
+  // which is the only honest guess when nobody has said.
+  const goal = profile?.intake_training_days || Math.max(trainable.length, 1) || 3
+  const stats = useMemo(() => trainingStats(sessions, goal), [sessions, goal])
+
+  // The last time the block you are about to train was actually trained.
+  const toBeat = useMemo(
+    () => (dueBlock ? sessions.find(s => s.labels.includes(dueBlock.label) && s.setCount > 0) ?? null : null),
+    [sessions, dueBlock?.label],
+  )
+
+  const todayStr = iso(new Date())
   const allLogged = (selectedBlock?.exercises?.length ?? 0) > 0 &&
     selectedBlock.exercises.every(e => lifts[e.name]?.today)
-  const todayStr = new Date().toISOString().slice(0, 10)
   const alreadyMarked = completions.some(
     c => c.completed_date === logDate && c.block_label === selectedBlock?.label
   )
@@ -180,11 +197,8 @@ export default function Training({ onMenuOpen }) {
         { onConflict: 'user_id,block_label,completed_date', ignoreDuplicates: true }
       )
     if (!error) {
-      setCompletions(prev => [
-        { block_label: selectedBlock.label, completed_date: logDate },
-        ...prev,
-      ])
       setJustMarked(true)
+      refreshHistory()
       setTimeout(() => setJustMarked(false), 2500)
     }
     setMarking(false)
@@ -200,13 +214,23 @@ export default function Training({ onMenuOpen }) {
       .eq('block_label', selectedBlock.label)
       .eq('completed_date', logDate)
     if (!error) {
-      setCompletions(prev =>
-        prev.filter(c => !(c.completed_date === logDate && c.block_label === selectedBlock.label))
-      )
       setJustMarked(false)
+      refreshHistory()
     }
     setMarking(false)
   }
+
+  /** Enter the logger on a given day, with the block that day belongs to. */
+  function openSession(date = todayStr, label = null) {
+    const block = label ? blocks?.find(b => b.label === label) : dueBlock
+
+    if (block) { userPicked.current = true; setSelectedId(block.id) }
+    setLogDate(date)
+    setJustMarked(false)
+    setView('session')
+  }
+
+  // ── Editor ──
 
   if (editing && canEdit) {
     return (
@@ -228,6 +252,8 @@ export default function Training({ onMenuOpen }) {
       </div>
     )
   }
+
+  // ── No plan yet ──
 
   if (!blocks) {
     return (
@@ -274,56 +300,113 @@ export default function Training({ onMenuOpen }) {
     )
   }
 
-  return (
-    <div className={styles.page}>
-      <AppHeader
-        onMenuOpen={onMenuOpen}
-        title="ТРЕНИРОВКА"
-        action={canEdit && !showProgression ? (
-          <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
-            РЕДАКТИРАЙ
-          </button>
-        ) : showProgression ? (
-          <button className={styles.editBtn} onClick={() => setShowProgression(false)} type="button">
-            НАЗАД
-          </button>
-        ) : null}
-      />
+  // ── One lift's history ──
 
-      {/* Block selector */}
-      <div className={styles.pillBar} role="tablist">
-        {blocks.map((block, idx) => (
-          <button
-            key={block.id}
-            className={`${styles.pill} ${selectedId === block.id && !showProgression ? styles.activePill : ''}`}
-            style={selectedId === block.id && !showProgression ? { background: blockColor(idx), borderColor: blockColor(idx) } : {}}
-            onClick={() => {
-              userPicked.current = true
-              setSelectedId(block.id); setJustMarked(false); setShowProgression(false)
-            }}
-            role="tab"
-            aria-selected={selectedId === block.id && !showProgression}
-            type="button"
-          >
-            {block.label}
-          </button>
-        ))}
+  if (view === 'exercise' && exercise) {
+    return (
+      <div className={styles.page}>
+        <AppHeader onMenuOpen={onMenuOpen} title="ПРОГРЕС" />
+        <ExerciseStats
+          name={exercise}
+          sessions={sessions}
+          onBack={() => { setExercise(null); setView('history') }}
+        />
       </div>
+    )
+  }
 
-      {/* Progression view */}
-      {showProgression && (
-        <div className={styles.progressionWrap}>
-          <ProgressionView onClose={() => setShowProgression(false)} blocks={blocks} />
+  // ── The record ──
+
+  if (view === 'history') {
+    return (
+      <div className={styles.page}>
+        <AppHeader
+          onMenuOpen={onMenuOpen}
+          title="ДНЕВНИК"
+          action={
+            <button className={styles.editBtn} onClick={() => setView('home')} type="button">
+              НАЗАД
+            </button>
+          }
+        />
+        <SessionHistory
+          sessions={sessions}
+          onOpenExercise={name => { setExercise(name); setView('exercise') }}
+          onEditDay={date => {
+            const s = sessions.find(x => x.date === date)
+            // A day that was logged but never ticked has no block label, so the
+            // block is recovered from the exercises themselves — otherwise the
+            // logger would open on whatever is due today and show none of them.
+            const label = s?.labels[0]
+              ?? blocks.find(b => b.exercises?.some(e => s?.exercises?.has(e.name)))?.label
+              ?? null
+            openSession(date, label)
+          }}
+        />
+      </div>
+    )
+  }
+
+  // ── Progression (blocks compared, sets edited) ──
+
+  if (view === 'progression') {
+    return (
+      <div className={styles.page}>
+        <AppHeader
+          onMenuOpen={onMenuOpen}
+          title="ПРОГРЕСИЯ"
+          action={
+            <button className={styles.editBtn} onClick={() => setView('home')} type="button">
+              НАЗАД
+            </button>
+          }
+        />
+        <ProgressionView onClose={() => setView('home')} blocks={blocks} />
+      </div>
+    )
+  }
+
+  // ── Logging ──
+
+  if (view === 'session') {
+    const rest = isRestBlock(selectedBlock)
+    return (
+      <div className={styles.page}>
+        <AppHeader
+          onMenuOpen={onMenuOpen}
+          title="ЛОГ"
+          action={
+            <button className={styles.editBtn} onClick={() => setView('home')} type="button">
+              ГОТОВО
+            </button>
+          }
+        />
+
+        {/* Block selector */}
+        <div className={styles.pillBar} role="tablist">
+          {blocks.map(block => (
+            <button
+              key={block.id}
+              className={`${styles.pill} ${selectedId === block.id ? styles.activePill : ''}`}
+              onClick={() => {
+                userPicked.current = true
+                setSelectedId(block.id)
+                setJustMarked(false)
+              }}
+              role="tab"
+              aria-selected={selectedId === block.id}
+              type="button"
+            >
+              {block.label}
+            </button>
+          ))}
         </div>
-      )}
 
-      {/* Exercise list */}
-      {!showProgression && selectedBlock && (
         <div className={styles.blockContent}>
           {/* One line of reasoning. The muscle percentages have existed on the
               Today card for a while without ever being connected to anything;
               this is the decision they were always describing. */}
-          {selRec && selRec.basis !== 'never' && !selectedBlock.isRest && (
+          {selRec && selRec.basis !== 'never' && !rest && (
             <div className={[
               styles.recoveryNote,
               selRec.pct >= 80 ? styles.recoveryReady : styles.recoveryWait,
@@ -346,9 +429,7 @@ export default function Training({ onMenuOpen }) {
 
           <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
 
-          {/* The same inline, set-by-set logger the diary uses — one flow, one
-              data model. Rest days have nothing to log, so they stay a card. */}
-          {selectedBlock.isRest || (selectedBlock.label || '').toUpperCase().includes('ПОЧИВК') ? (
+          {rest ? (
             <div className={styles.restCard}>
               <span className={styles.restIcon}>🛌</span>
               <p className={styles.restTitle}>Почивка</p>
@@ -359,7 +440,7 @@ export default function Training({ onMenuOpen }) {
               date={logDate}
               blockLabels={[selectedBlock.label]}
               blocks={blocks}
-              onLogged={refreshLifts}
+              onLogged={handleLogged}
             />
           )}
 
@@ -377,7 +458,7 @@ export default function Training({ onMenuOpen }) {
               ? `✓ Отбелязано${logDate !== todayStr ? ` за ${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}` : ' за днес'}!`
               : marking
               ? '...'
-              : selectedBlock.isRest
+              : rest
               ? `✓ Маркирай почивен ден${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`
               : `✓ Маркирай като готово${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`}
           </button>
@@ -387,41 +468,105 @@ export default function Training({ onMenuOpen }) {
             </button>
           )}
         </div>
-      )}
+      </div>
+    )
+  }
 
-      {/* Progression — on the page, not behind the menu. Eight weeks of logging
-          the same lifts and comparing the end against the start is the method
-          this screen exists to serve, so it does not get to be a header link. */}
-      {!showProgression && (
-        <button
-          className={styles.progressionEntry}
-          onClick={() => setShowProgression(true)}
-          type="button"
-        >
-          <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
-          <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
+  // ── Home: the account ──
+
+  const last = sessions[0] ?? null
+
+  return (
+    <div className={styles.page}>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        title="ТРЕНИРОВКА"
+        action={canEdit ? (
+          <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
+            ПРОГРАМА
+          </button>
+        ) : null}
+      />
+
+      {/* What to train, and the one tap that starts it. Everything below is
+          context for this decision; this is the decision. */}
+      <section className={styles.today}>
+        <span className={styles.todayEyebrow}>
+          {last ? `Последна тренировка ${agoLabel(last.date)}` : 'Още нищо не е логнато'}
+        </span>
+        <h2 className={styles.todayTitle}>{dueBlock?.label ?? 'Почивка'}</h2>
+
+        {dueEntry && dueEntry.basis !== 'never' && (
+          <span className={[
+            styles.todayState,
+            dueEntry.pct >= 80 ? styles.todayReady : styles.todayWait,
+          ].join(' ')}>
+            <span className={styles.recoveryDot} />
+            {dueEntry.pct >= 80
+              ? 'Възстановена и готова'
+              : `${dueEntry.pct}% възстановена`}
+          </span>
+        )}
+
+        {dueBlock?.exercises?.length > 0 && (
+          <span className={styles.todayPreview}>
+            {dueBlock.exercises.slice(0, 3).map(e => e.name).join(' · ')}
+            {dueBlock.exercises.length > 3 ? ` · +${dueBlock.exercises.length - 3}` : ''}
+          </span>
+        )}
+
+        <button type="button" className={styles.startBtn} onClick={() => openSession()}>
+          ЗАПОЧНИ ТРЕНИРОВКА
         </button>
-      )}
+      </section>
 
-      {/* History */}
-      {!showProgression && (
-        <section className={styles.historySection}>
-          <h2 className={styles.historyTitle}>МУСКУЛНИ ГРУПИ</h2>
-          <MuscleStatus completions={completions} recovery={recovery} />
+      <TrainingDashboard
+        sessions={sessions}
+        stats={stats}
+        toBeat={toBeat}
+        onOpenSession={() => openSession()}
+      />
 
-          {/* Readiness says what to do next; the calendar says what was done.
-              The page owes both — they are two features, not two attempts at
-              one, and every previous version failed by making one replace the
-              other. */}
-          <h2 className={`${styles.historyTitle} ${styles.historyTitleSecond}`}>ДНЕВНИК</h2>
-          <WorkoutCalendar
-            completions={completions}
-            blocks={blocks ?? []}
-            onLogged={refreshLifts}
-          />
-        </section>
-      )}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>МУСКУЛНИ ГРУПИ</h2>
+        <MuscleStatus completions={completions} recovery={recovery} />
+      </section>
 
+      {/* The record, three sessions deep — enough to recognise where you are,
+          and a door to the rest rather than a wall of it. */}
+      <section className={styles.section}>
+        <div className={styles.sectionHead}>
+          <h2 className={styles.sectionTitle}>ДНЕВНИК</h2>
+          <button type="button" className={styles.seeAll} onClick={() => setView('history')}>
+            всички {sessions.length} ›
+          </button>
+        </div>
+
+        {sessions.length === 0 ? (
+          <p className={styles.sectionEmpty}>Първата логната серия отваря дневника.</p>
+        ) : (
+          <ul className={styles.recent}>
+            {sessions.slice(0, 3).map(s => (
+              <li key={s.date}>
+                <button type="button" className={styles.recentRow} onClick={() => setView('history')}>
+                  <span className={styles.recentDate}>
+                    {dayDate(s.date).getDate()} {MONTHS_SHORT[dayDate(s.date).getMonth()].toLowerCase()}
+                  </span>
+                  <span className={styles.recentName}>{s.title}</span>
+                  <span className={styles.recentMeta}>
+                    {s.volume > 0 ? `${bigNum(s.volume)} кг` : `${s.setCount} серии`}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
+        <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
+        <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
+      </button>
     </div>
   )
 }
