@@ -113,8 +113,8 @@
 
 .editBtn {
   padding: 8px 12px;
-  background: var(--accent-dim);
-  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  background: transparent;
+  border: 1px solid rgba(var(--accent-rgb), 0.6);
   border-radius: var(--r-sm);
   color: var(--accent);
   font-family: var(--font-heading);
@@ -122,11 +122,12 @@
   letter-spacing: 0.1em;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
+  transition: background 160ms, border-color 160ms;
 }
 
 .editBtn:active {
-  background: rgba(var(--accent-rgb), 0.18);
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.9);
 }
 
 /* Block pill selector */
