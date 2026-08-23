@@ -6,12 +6,31 @@ export function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
+// A tiny per-day, per-user cache so re-opening the tab does not flash an empty
+// log while the network round-trips. The initial state is seeded from it, and
+// every successful fetch writes back — stale-while-revalidate for one screen.
+const CACHE_KEY = (uid, date) => `blag_food_log_${uid || 'anon'}_${date}`
+function readCache(uid, date) {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY(uid, date)) || '[]') }
+  catch { return [] }
+}
+function writeCache(uid, date, log) {
+  try { localStorage.setItem(CACHE_KEY(uid, date), JSON.stringify(log)) }
+  catch { /* quota / private mode — silent, cache is a nice-to-have */ }
+}
+
 export function useFoodLog() {
   const { user } = useAuth()
   const [selectedDate, setSelectedDate] = useState(todayStr())
-  const [log, setLog] = useState([])
+  const [log, setLog] = useState(() => readCache(user?.id, todayStr()))
 
   const isToday = selectedDate === todayStr()
+
+  // When user or date changes, re-seed from cache immediately so the screen
+  // never blanks — the network fetch that follows will replace with fresh data.
+  useEffect(() => {
+    setLog(readCache(user?.id, selectedDate))
+  }, [user?.id, selectedDate])
 
   const fetchLog = useCallback(async () => {
     if (!user) return
@@ -23,7 +42,9 @@ export function useFoodLog() {
       .order('added_at')
     if (data) setLog(prev => {
       const temps = prev.filter(e => String(e.id).startsWith('temp-'))
-      return temps.length ? [...data, ...temps] : data
+      const next = temps.length ? [...data, ...temps] : data
+      writeCache(user.id, selectedDate, data)
+      return next
     })
   }, [user?.id, selectedDate])
 
