@@ -274,7 +274,7 @@ const TRANSLATIONS = {
 const SettingsContext = createContext(null)
 
 export function SettingsProvider({ children }) {
-  const [theme, setThemeState] = useState(() => localStorage.getItem('blag_theme') || 'dark')
+  const [theme, setThemeState] = useState(() => localStorage.getItem('blag_theme') || 'glass')
   const [lang,  setLangState]  = useState(() => localStorage.getItem('blag_lang')  || 'bg')
 
   useEffect(() => {

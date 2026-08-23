@@ -10,6 +10,8 @@ import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import MuscleStatus from './MuscleStatus'
+import MuscleMap from './MuscleMap'
+import WeeklyReport from './WeeklyReport'
 import TrainingDashboard from './TrainingDashboard'
 import SessionHistory from './SessionHistory'
 import ExerciseStats from './ExerciseStats'
@@ -69,6 +71,7 @@ export default function Training({ onMenuOpen }) {
   const blocks  = getBlocks(profile?.training_plan)
 
   const [view, setView]                 = useState('home')
+  const [homeTab, setHomeTab]           = useState('today')
   const [exercise, setExercise]         = useState(null)
   const [selectedId, setSelectedId]     = useState(blocks?.[0]?.id ?? '0')
   const [editing, setEditing]           = useState(false)
@@ -488,85 +491,122 @@ export default function Training({ onMenuOpen }) {
         ) : null}
       />
 
-      {/* What to train, and the one tap that starts it. Everything below is
-          context for this decision; this is the decision. */}
-      <section className={styles.today}>
-        <span className={styles.todayEyebrow}>
-          {last ? `Последна тренировка ${agoLabel(last.date)}` : 'Още нищо не е логнато'}
-        </span>
-        <h2 className={styles.todayTitle}>{dueBlock?.label ?? 'Почивка'}</h2>
-
-        {dueEntry && dueEntry.basis !== 'never' && (
-          <span className={[
-            styles.todayState,
-            dueEntry.pct >= 80 ? styles.todayReady : styles.todayWait,
-          ].join(' ')}>
-            <span className={styles.recoveryDot} />
-            {dueEntry.pct >= 80
-              ? 'Възстановена и готова'
-              : `${dueEntry.pct}% възстановена`}
-          </span>
-        )}
-
-        {dueBlock?.exercises?.length > 0 && (
-          <span className={styles.todayPreview}>
-            {dueBlock.exercises.slice(0, 3).map(e => e.name).join(' · ')}
-            {dueBlock.exercises.length > 3 ? ` · +${dueBlock.exercises.length - 3}` : ''}
-          </span>
-        )}
-
-        <button type="button" className={styles.startBtn} onClick={() => openSession()}>
-          ЗАПОЧНИ ТРЕНИРОВКА
-        </button>
-      </section>
-
-      <TrainingDashboard
-        sessions={sessions}
-        stats={stats}
-        toBeat={toBeat}
-        onOpenSession={() => openSession()}
-      />
-
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>МУСКУЛНИ ГРУПИ</h2>
-        <MuscleStatus completions={completions} recovery={recovery} />
-      </section>
-
-      {/* The record, three sessions deep — enough to recognise where you are,
-          and a door to the rest rather than a wall of it. */}
-      <section className={styles.section}>
-        <div className={styles.sectionHead}>
-          <h2 className={styles.sectionTitle}>ДНЕВНИК</h2>
-          <button type="button" className={styles.seeAll} onClick={() => setView('history')}>
-            всички {sessions.length} ›
+      {/* Sub-tabs. The home page grew into three unrelated readings — today's
+          decision, the week's shape, and the body's state. Stacking them made
+          the screen a scroll test; separating them lets each be arrived at. */}
+      <div className={styles.pillBar} role="tablist">
+        {[
+          { id: 'today', label: 'ДНЕС' },
+          { id: 'week',  label: 'СЕДМИЦА' },
+          { id: 'body',  label: 'ТЯЛО' },
+        ].map(t => (
+          <button
+            key={t.id}
+            className={`${styles.pill} ${homeTab === t.id ? styles.activePill : ''}`}
+            onClick={() => setHomeTab(t.id)}
+            role="tab"
+            aria-selected={homeTab === t.id}
+            type="button"
+          >
+            {t.label}
           </button>
-        </div>
+        ))}
+      </div>
 
-        {sessions.length === 0 ? (
-          <p className={styles.sectionEmpty}>Първата логната серия отваря дневника.</p>
-        ) : (
-          <ul className={styles.recent}>
-            {sessions.slice(0, 3).map(s => (
-              <li key={s.date}>
-                <button type="button" className={styles.recentRow} onClick={() => setView('history')}>
-                  <span className={styles.recentDate}>
-                    {dayDate(s.date).getDate()} {MONTHS_SHORT[dayDate(s.date).getMonth()].toLowerCase()}
-                  </span>
-                  <span className={styles.recentName}>{s.title}</span>
-                  <span className={styles.recentMeta}>
-                    {s.volume > 0 ? `${bigNum(s.volume)} кг` : `${s.setCount} серии`}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {homeTab === 'today' && (
+        <>
+          {/* What to train, and the one tap that starts it. */}
+          <section className={styles.today}>
+            <span className={styles.todayEyebrow}>
+              {last ? `Последна тренировка ${agoLabel(last.date)}` : 'Още нищо не е логнато'}
+            </span>
+            <h2 className={styles.todayTitle}>{dueBlock?.label ?? 'Почивка'}</h2>
 
-      <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
-        <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
-        <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
-      </button>
+            {dueEntry && dueEntry.basis !== 'never' && (
+              <span className={[
+                styles.todayState,
+                dueEntry.pct >= 80 ? styles.todayReady : styles.todayWait,
+              ].join(' ')}>
+                <span className={styles.recoveryDot} />
+                {dueEntry.pct >= 80
+                  ? 'Възстановена и готова'
+                  : `${dueEntry.pct}% възстановена`}
+              </span>
+            )}
+
+            {dueBlock?.exercises?.length > 0 && (
+              <span className={styles.todayPreview}>
+                {dueBlock.exercises.slice(0, 3).map(e => e.name).join(' · ')}
+                {dueBlock.exercises.length > 3 ? ` · +${dueBlock.exercises.length - 3}` : ''}
+              </span>
+            )}
+
+            <button type="button" className={styles.startBtn} onClick={() => openSession()}>
+              ЗАПОЧНИ ТРЕНИРОВКА
+            </button>
+          </section>
+
+          {/* The last few sessions live with today, because "what did I do
+              yesterday" is a today question, not a weekly report. */}
+          <section className={styles.section}>
+            <div className={styles.sectionHead}>
+              <h2 className={styles.sectionTitle}>ДНЕВНИК</h2>
+              <button type="button" className={styles.seeAll} onClick={() => setView('history')}>
+                всички {sessions.length} ›
+              </button>
+            </div>
+
+            {sessions.length === 0 ? (
+              <p className={styles.sectionEmpty}>Първата логната серия отваря дневника.</p>
+            ) : (
+              <ul className={styles.recent}>
+                {sessions.slice(0, 3).map(s => (
+                  <li key={s.date}>
+                    <button type="button" className={styles.recentRow} onClick={() => setView('history')}>
+                      <span className={styles.recentDate}>
+                        {dayDate(s.date).getDate()} {MONTHS_SHORT[dayDate(s.date).getMonth()].toLowerCase()}
+                      </span>
+                      <span className={styles.recentName}>{s.title}</span>
+                      <span className={styles.recentMeta}>
+                        {s.volume > 0 ? `${bigNum(s.volume)} кг` : `${s.setCount} серии`}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
+            <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
+            <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
+          </button>
+        </>
+      )}
+
+      {homeTab === 'week' && (
+        <>
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>СЕДМИЧЕН ДОКЛАД</h2>
+            <WeeklyReport sessions={sessions} goal={goal} />
+          </section>
+
+          <TrainingDashboard
+            sessions={sessions}
+            stats={stats}
+            toBeat={toBeat}
+            onOpenSession={() => openSession()}
+          />
+        </>
+      )}
+
+      {homeTab === 'body' && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>МУСКУЛНИ ГРУПИ</h2>
+          <MuscleMap recovery={recovery} sessions={sessions} completions={completions} />
+          <MuscleStatus completions={completions} recovery={recovery} />
+        </section>
+      )}
     </div>
   )
 }
