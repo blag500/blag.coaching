@@ -395,9 +395,11 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
         const sets = rows[ex.name] ?? []
         const doneCount = sets.filter(s => s.id).length
         const complete = sets.length > 0 && doneCount === sets.length
-        // Finished work folds itself away, so the list gets shorter as the
-        // session goes on instead of staying the same size throughout.
-        const isOpen = open[ex.name] ?? !complete
+        // Stay open by default. Auto-folding on "complete" was firing on the
+        // first set whenever the plan only prescribed one, and hiding rows
+        // the user still wanted to add — a fold has to be their decision, not
+        // the app's guess.
+        const isOpen = open[ex.name] ?? true
         const shown  = swap[ex.name] || ex.name
         const pace   = setPace(sets.filter(s => s.id))
 
