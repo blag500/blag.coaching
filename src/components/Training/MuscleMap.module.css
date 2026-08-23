@@ -43,19 +43,38 @@
   box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.28);
 }
 
-.svg {
+.bodies {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  align-items: end;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart {
   width: 100%;
-  max-width: 400px;
+  max-width: 150px;
+  display: flex;
+  justify-content: center;
+}
+
+.chart svg {
+  width: 100%;
   height: auto;
   display: block;
-  margin: 0 auto;
 }
 
 .caption {
   font-family: var(--font-heading);
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
-  fill: var(--muted);
+  color: var(--muted);
 }
 
 .hint {
