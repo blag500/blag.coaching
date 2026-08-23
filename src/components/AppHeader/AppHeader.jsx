@@ -8,6 +8,7 @@ import styles from './AppHeader.module.css'
  */
 export default function AppHeader({
   onMenuOpen,
+  onBack,
   eyebrow,
   title,
   avatarUrl,
@@ -21,13 +22,21 @@ export default function AppHeader({
     <header className={styles.header}>
       <div className={styles.bar}>
         <div className={styles.left}>
-          <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label="Меню">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
-              <line x1="3" y1="6"  x2="21" y2="6"  />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
+          {onBack ? (
+            <button className={styles.menuBtn} onClick={onBack} type="button" aria-label="Назад">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+                <polyline points="15 6 9 12 15 18" />
+              </svg>
+            </button>
+          ) : (
+            <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label="Меню">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
+                <line x1="3" y1="6"  x2="21" y2="6"  />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <div className={`${styles.center} ${eyebrow ? '' : styles.centerSolo}`}>

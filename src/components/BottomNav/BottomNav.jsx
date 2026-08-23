@@ -70,21 +70,51 @@ export default function BottomNav({ activeTab, onTabChange }) {
     localStorage.setItem(HIDDEN_KEY, hidden ? '1' : '0')
   }, [hidden])
 
-  // Swipe right on the nav to dock it. Kept small so a scroll or a fumbled tap
-  // does not send the whole bar away — 60 px horizontal with a low vertical
-  // tolerance is the usual "I meant to swipe" threshold.
-  const touchRef = useRef({ x: 0, y: 0, active: false })
+  // Live swipe. The bar follows the finger to the right while the user drags
+  // and fades as it goes; released past the halfway mark it docks, otherwise
+  // it springs back. Vertical dominance cancels the gesture, so a scroll never
+  // steals the nav.
+  const navRef = useRef(null)
+  const dragRef = useRef({ x: 0, y: 0, dx: 0, active: false, cancelled: false })
+
   function onTouchStart(e) {
     const t = e.touches[0]
-    touchRef.current = { x: t.clientX, y: t.clientY, active: true }
+    dragRef.current = { x: t.clientX, y: t.clientY, dx: 0, active: true, cancelled: false }
+    if (navRef.current) navRef.current.style.transition = 'none'
   }
-  function onTouchEnd(e) {
-    if (!touchRef.current.active) return
-    touchRef.current.active = false
-    const t = e.changedTouches[0]
-    const dx = t.clientX - touchRef.current.x
-    const dy = Math.abs(t.clientY - touchRef.current.y)
-    if (dx > 60 && dy < 40) {
+
+  function onTouchMove(e) {
+    const d = dragRef.current
+    if (!d.active || d.cancelled) return
+    const t = e.touches[0]
+    const dx = t.clientX - d.x
+    const dy = t.clientY - d.y
+    if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) {
+      d.cancelled = true
+      if (navRef.current) {
+        navRef.current.style.transition = ''
+        navRef.current.style.transform = ''
+        navRef.current.style.opacity = ''
+      }
+      return
+    }
+    if (dx > 0 && navRef.current) {
+      d.dx = dx
+      navRef.current.style.transform = `translateX(${dx}px)`
+      navRef.current.style.opacity = String(Math.max(0.35, 1 - dx / 260))
+    }
+  }
+
+  function onTouchEnd() {
+    const d = dragRef.current
+    if (!d.active) return
+    d.active = false
+    if (navRef.current) {
+      navRef.current.style.transition = ''
+      navRef.current.style.transform = ''
+      navRef.current.style.opacity = ''
+    }
+    if (!d.cancelled && d.dx > 90) {
       setOpen(false)
       setHidden(true)
     }
@@ -122,11 +152,13 @@ export default function BottomNav({ activeTab, onTabChange }) {
 
       {/* ── Main nav pill ── */}
       <nav
+        ref={navRef}
         className={`${styles.nav} ${hidden ? styles.navHidden : ''}`}
         role="navigation"
         aria-label="Основна навигация"
         aria-hidden={hidden}
         onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         {LEFT_TABS.map(tab => (

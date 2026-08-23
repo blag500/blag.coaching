@@ -274,13 +274,8 @@ export default function Training({ onMenuOpen }) {
     return (
       <div className={styles.page}>
         <AppHeader
-          onMenuOpen={onMenuOpen}
+          onBack={() => setEditing(false)}
           title="ТРЕНИРОВКА"
-          action={
-            <button className={styles.editBtn} onClick={() => setEditing(false)} type="button">
-              ✕ ОТКАЗ
-            </button>
-          }
         />
         <TrainingEditor
           initialPlan={isOldFormat(profile?.training_plan) ? null : profile?.training_plan}
@@ -343,7 +338,10 @@ export default function Training({ onMenuOpen }) {
   if (view === 'exercise' && exercise) {
     return (
       <div className={styles.page}>
-        <AppHeader onMenuOpen={onMenuOpen} title="ПРОГРЕС" />
+        <AppHeader
+          onBack={() => { setExercise(null); setView('history') }}
+          title="ПРОГРЕС"
+        />
         <ExerciseStats
           name={exercise}
           sessions={sessions}
@@ -359,13 +357,8 @@ export default function Training({ onMenuOpen }) {
     return (
       <div className={styles.page}>
         <AppHeader
-          onMenuOpen={onMenuOpen}
+          onBack={() => setView('home')}
           title="ДНЕВНИК"
-          action={
-            <button className={styles.editBtn} onClick={() => setView('home')} type="button">
-              НАЗАД
-            </button>
-          }
         />
         <SessionHistory
           sessions={sessions}
@@ -391,13 +384,8 @@ export default function Training({ onMenuOpen }) {
     return (
       <div className={styles.page}>
         <AppHeader
-          onMenuOpen={onMenuOpen}
+          onBack={() => setView('home')}
           title="ПРОГРЕСИЯ"
-          action={
-            <button className={styles.editBtn} onClick={() => setView('home')} type="button">
-              НАЗАД
-            </button>
-          }
         />
         <ProgressionView onClose={() => setView('home')} blocks={blocks} />
       </div>
@@ -411,7 +399,7 @@ export default function Training({ onMenuOpen }) {
     return (
       <div className={styles.page}>
         <AppHeader
-          onMenuOpen={onMenuOpen}
+          onBack={() => setView('home')}
           title="ЛОГ"
           action={
             <button className={styles.editBtn} onClick={() => setView('home')} type="button">
