@@ -491,24 +491,57 @@ export default function Training({ onMenuOpen }) {
         ) : null}
       />
 
-      {/* Sub-tabs. The home page grew into three unrelated readings — today's
-          decision, the week's shape, and the body's state. Stacking them made
-          the screen a scroll test; separating them lets each be arrived at. */}
-      <div className={styles.pillBar} role="tablist">
+      {/* Sub-tabs — pictogram-only segmented control. The three views are what
+          they picture: a target for today's decision, a bar chart for the
+          week, a body for the body. Labels are still on aria-label for
+          screen readers and long-press tooltips. */}
+      <div className={styles.segmented} role="tablist">
         {[
-          { id: 'today', label: 'ДНЕС' },
-          { id: 'week',  label: 'СЕДМИЦА' },
-          { id: 'body',  label: 'ТЯЛО' },
+          {
+            id: 'today', label: 'Днес',
+            icon: (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+                   strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="5" />
+                <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+              </svg>
+            ),
+          },
+          {
+            id: 'week', label: 'Седмица',
+            icon: (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+                   strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="5"  y1="20" x2="5"  y2="14" />
+                <line x1="10" y1="20" x2="10" y2="9" />
+                <line x1="15" y1="20" x2="15" y2="12" />
+                <line x1="20" y1="20" x2="20" y2="6" />
+              </svg>
+            ),
+          },
+          {
+            id: 'body', label: 'Тяло',
+            icon: (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+                   strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="4.5" r="2.2" />
+                <path d="M8 10 Q12 8 16 10 L15 15 L13 15 L13 21 L11 21 L11 15 L9 15 Z" />
+              </svg>
+            ),
+          },
         ].map(t => (
           <button
             key={t.id}
-            className={`${styles.pill} ${homeTab === t.id ? styles.activePill : ''}`}
+            className={`${styles.segment} ${homeTab === t.id ? styles.segmentActive : ''}`}
             onClick={() => setHomeTab(t.id)}
             role="tab"
             aria-selected={homeTab === t.id}
+            aria-label={t.label}
+            title={t.label}
             type="button"
           >
-            {t.label}
+            {t.icon}
           </button>
         ))}
       </div>
