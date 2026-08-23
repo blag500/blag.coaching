@@ -20,16 +20,45 @@ function dayLabel(dateIso) {
  * A day's target is a decision about the week, not a rule about the day. One
  * cheat Friday does not have to break the run — the excess can be spread
  * across the days that follow, and the same maths in reverse tells someone in
- * a surplus how much to add to catch up. This is that maths, in one place,
- * user-driven: they pick how many days to spread across, the tool does the
- * arithmetic.
+ * a surplus how much to add to catch up. The picker snaps to the days left
+ * until Sunday because the week is what the average is over.
  */
 export default function CalorieBalancer() {
-  const { user, profile } = useAuth()
+  const { user, profile, updateProfile } = useAuth()
   const target = profile?.calories ?? 0
-  const [days, setDays] = useState([])       // last WINDOW_DAYS days [{ date, kcal }]
+  const [days, setDays] = useState([])
   const [loading, setLoading] = useState(true)
-  const [spread, setSpread] = useState(3)    // how many next-days to spread the delta over
+  const [applying, setApplying] = useState(false)
+  const [applied, setApplied] = useState(false)
+
+  // From today to Sunday, inclusive. Sunday closes the week, so on Sunday the
+  // picker offers only today.
+  const remaining = useMemo(() => {
+    const dow = new Date().getDay()
+    return dow === 0 ? 1 : 8 - dow
+  }, [])
+
+  const upcoming = useMemo(() => {
+    const out = []
+    for (let i = 0; i < remaining; i++) {
+      const d = new Date()
+      d.setDate(d.getDate() + i)
+      out.push({
+        idx: i + 1,
+        label: DAY_NAMES[d.getDay()],
+        day: d.getDate(),
+        isToday: i === 0,
+      })
+    }
+    return out
+  }, [remaining])
+
+  const [spread, setSpread] = useState(() => Math.min(3, remaining))
+
+  useEffect(() => {
+    if (spread > remaining) setSpread(remaining)
+    if (spread < 1) setSpread(1)
+  }, [remaining, spread])
 
   useEffect(() => {
     if (!user) return
@@ -55,9 +84,6 @@ export default function CalorieBalancer() {
 
   const analysis = useMemo(() => {
     if (!target) return null
-    // Delta only counts days that had food logged — an empty day is usually
-    // "did not log", not "ate zero", and pretending it was zero would tell
-    // someone in a cut that they are 2 000 kcal ahead when they are not.
     const eaten = days.filter(d => d.kcal > 0)
     if (!eaten.length) return { delta: 0, eaten: 0, avg: 0 }
     const totalActual = eaten.reduce((s, d) => s + d.kcal, 0)
@@ -66,6 +92,22 @@ export default function CalorieBalancer() {
     const avg = Math.round(totalActual / eaten.length)
     return { delta, eaten: eaten.length, avg, totalActual, totalTarget }
   }, [days, target])
+
+  async function applyNewTarget() {
+    if (!analysis || !target) return
+    setApplying(true)
+    const newTarget = Math.max(0, target - Math.round(analysis.delta / spread))
+    const ratio = target > 0 ? newTarget / target : 1
+    await updateProfile({
+      calories: newTarget,
+      protein: Math.round((profile?.protein ?? 0) * ratio),
+      carbs:   Math.round((profile?.carbs   ?? 0) * ratio),
+      fat:     Math.round((profile?.fat     ?? 0) * ratio),
+    })
+    setApplying(false)
+    setApplied(true)
+    setTimeout(() => setApplied(false), 2200)
+  }
 
   if (!target) {
     return (
@@ -78,10 +120,7 @@ export default function CalorieBalancer() {
     )
   }
 
-  if (loading) {
-    return <p className={styles.empty}>...</p>
-  }
-
+  if (loading) return <p className={styles.empty}>...</p>
   if (!analysis) return null
 
   const perDay = Math.round(analysis.delta / spread)
@@ -95,7 +134,6 @@ export default function CalorieBalancer() {
       <h3 className={styles.title}>БАЛАНС НА СЕДМИЦАТА</h3>
       <p className={styles.sub}>Цел за ден: {target.toLocaleString('bg-BG')} ккал</p>
 
-      {/* Bar chart of the last seven days against the target line. */}
       <div className={styles.chart} style={{ '--target-h': `${(target / max) * 100}%` }}>
         {days.map(d => {
           const h = (d.kcal / max) * 100
@@ -138,50 +176,61 @@ export default function CalorieBalancer() {
             <p className={styles.perfect}>Точно на целта — няма какво да балансираш.</p>
           ) : (
             <>
-              <div className={styles.controlLabel}>
-                Разпредели корекцията в
-                <span className={styles.controlValue}> {spread} {spread === 1 ? 'ден' : 'дни'}</span>
+              {/* Segmented day picker — one segment per day left until Sunday,
+                  labelled with the day-of-week. Tapping a segment picks how
+                  far the correction spreads; everything up to it fills. */}
+              <div className={styles.pickerLabel}>
+                Разпредели корекцията до <strong>неделя</strong>
               </div>
-              <input
-                type="range"
-                min="1"
-                max="14"
-                value={spread}
-                onChange={e => setSpread(parseInt(e.target.value, 10))}
-                className={styles.slider}
-                aria-label="Брой дни за разпределяне"
-              />
+              <div className={styles.picker} role="radiogroup" aria-label="Дни за разпределяне">
+                {upcoming.map(day => {
+                  const on = spread >= day.idx
+                  return (
+                    <button
+                      key={day.idx}
+                      type="button"
+                      role="radio"
+                      aria-checked={spread === day.idx}
+                      className={`${styles.pickerDay} ${on ? styles.pickerDayOn : ''} ${spread === day.idx ? styles.pickerDayEdge : ''}`}
+                      onClick={() => setSpread(day.idx)}
+                    >
+                      <span className={styles.pickerLbl}>{day.label}</span>
+                      <span className={styles.pickerNum}>{day.day}</span>
+                      {day.isToday && <span className={styles.pickerToday}>днес</span>}
+                    </button>
+                  )
+                })}
+              </div>
 
               <div className={styles.suggestion}>
-                {isOver ? (
-                  <>
-                    <p className={styles.suggestionText}>
-                      Изяде <strong>{analysis.delta.toLocaleString('bg-BG')} ккал</strong> над
-                      целта. За да върнеш седмичната средна на място, следващите
-                      {' '}<strong>{spread}</strong> дни поеми по:
-                    </p>
-                    <p className={styles.suggestionValue}>
-                      {suggested.toLocaleString('bg-BG')} ккал / ден
-                    </p>
-                    <p className={styles.suggestionHint}>
-                      ({perDay > 0 ? '–' : '+'}{Math.abs(perDay).toLocaleString('bg-BG')} ккал спрямо обичайните {target.toLocaleString('bg-BG')})
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className={styles.suggestionText}>
-                      Изяде <strong>{Math.abs(analysis.delta).toLocaleString('bg-BG')} ккал</strong> под
-                      целта. За да наваксаш, следващите
-                      {' '}<strong>{spread}</strong> дни поеми по:
-                    </p>
-                    <p className={styles.suggestionValue}>
-                      {suggested.toLocaleString('bg-BG')} ккал / ден
-                    </p>
-                    <p className={styles.suggestionHint}>
-                      (+{Math.abs(perDay).toLocaleString('bg-BG')} ккал спрямо обичайните {target.toLocaleString('bg-BG')})
-                    </p>
-                  </>
-                )}
+                <p className={styles.suggestionText}>
+                  {isOver ? (
+                    <>Изяде <strong>{analysis.delta.toLocaleString('bg-BG')} ккал</strong> над
+                    целта. Следващите <strong>{spread}</strong> {spread === 1 ? 'ден' : 'дни'} поеми по:</>
+                  ) : (
+                    <>Изяде <strong>{Math.abs(analysis.delta).toLocaleString('bg-BG')} ккал</strong> под
+                    целта. Следващите <strong>{spread}</strong> {spread === 1 ? 'ден' : 'дни'} поеми по:</>
+                  )}
+                </p>
+                <p className={styles.suggestionValue}>
+                  {suggested.toLocaleString('bg-BG')} ккал / ден
+                </p>
+                <p className={styles.suggestionHint}>
+                  ({perDay > 0 ? '−' : '+'}{Math.abs(perDay).toLocaleString('bg-BG')} ккал спрямо обичайните {target.toLocaleString('bg-BG')})
+                </p>
+
+                <button
+                  type="button"
+                  className={`${styles.applyBtn} ${applied ? styles.applyBtnDone : ''}`}
+                  onClick={applyNewTarget}
+                  disabled={applying || applied}
+                >
+                  {applied ? '✓ Приложено' : applying ? '...' : 'Приложи като нова цел'}
+                </button>
+                <p className={styles.applyHint}>
+                  Ще обнови дневната ти цел и макросите пропорционално. Можеш
+                  да върнеш обратно от Калкулатора по всяко време.
+                </p>
               </div>
             </>
           )}
