@@ -470,10 +470,10 @@
 /* ── Home: sections ── */
 
 .section {
-  margin-top: 20px;
+  margin-top: 28px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .sectionHead {

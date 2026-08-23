@@ -591,12 +591,14 @@ export default function Training({ onMenuOpen }) {
             <WeeklyReport sessions={sessions} goal={goal} />
           </section>
 
-          <TrainingDashboard
-            sessions={sessions}
-            stats={stats}
-            toBeat={toBeat}
-            onOpenSession={() => openSession()}
-          />
+          <section className={styles.section}>
+            <TrainingDashboard
+              sessions={sessions}
+              stats={stats}
+              toBeat={toBeat}
+              onOpenSession={() => openSession()}
+            />
+          </section>
         </>
       )}
 
