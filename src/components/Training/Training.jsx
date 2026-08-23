@@ -12,6 +12,7 @@ import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import MuscleStatus from './MuscleStatus'
 import MuscleMap from './MuscleMap'
 import WeeklyReport from './WeeklyReport'
+import MonthCalendar from './MonthCalendar'
 import TrainingDashboard from './TrainingDashboard'
 import SessionHistory from './SessionHistory'
 import ExerciseStats from './ExerciseStats'
@@ -710,6 +711,11 @@ export default function Training({ onMenuOpen }) {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>СЕДМИЧЕН ДОКЛАД</h2>
             <WeeklyReport sessions={sessions} goal={goal} />
+          </section>
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>КАЛЕНДАР</h2>
+            <MonthCalendar completions={completions} blocks={blocks ?? []} />
           </section>
 
           <section className={styles.section}>
