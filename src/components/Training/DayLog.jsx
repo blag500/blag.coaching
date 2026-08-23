@@ -507,38 +507,40 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       aria-label={`${ex.name}, серия ${i + 1}, по-малко тегло`}
                     >−</button>
 
-                    <label className={styles.field}>
-                      <input
-                        className={styles.input}
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*[.,]?[0-9]*"
-                        value={r.weight}
-                        placeholder={prev ? String(prev.weight) : 'кг'}
-                        onChange={e => {
-                          // Digits, comma and dot only — the Bulgarian decimal
-                          // key gives a comma, and the international one a dot.
-                          const v = e.target.value.replace(/[^\d.,]/g, '')
-                          edit(ex.name, i, 'weight', v)
-                        }}
-                        onBlur={() => blur(ex.name, i)}
-                        aria-label={`${ex.name}, серия ${i + 1}, килограми`}
-                      />
-                    </label>
+                    <input
+                      className={styles.input}
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      inputMode="decimal"
+                      value={r.weight}
+                      placeholder={prev ? String(prev.weight) : 'кг'}
+                      onChange={e => edit(ex.name, i, 'weight', e.target.value)}
+                      onBlur={() => blur(ex.name, i)}
+                      aria-label={`${ex.name}, серия ${i + 1}, килограми`}
+                    />
 
                     <button
                       type="button" className={styles.step} tabIndex={-1}
                       onClick={() => bump(ex.name, i, +1)}
                       aria-label={`${ex.name}, серия ${i + 1}, повече тегло`}
                     >+</button>
-
-                    <button
-                      type="button" className={styles.halfBtn} tabIndex={-1}
-                      onClick={() => toggleHalf(ex.name, i)}
-                      aria-label={`${ex.name}, серия ${i + 1}, половин плоча`}
-                      title="Половин плоча (тап)"
-                    >½</button>
                   </div>
+
+                  {(() => {
+                    const has = /[.,]5\s*$/.test(String(r.weight))
+                    const empty = String(r.weight).trim() === ''
+                    return (
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className={`${styles.halfBtn} ${has ? styles.halfBtnOn : ''} ${empty ? styles.halfBtnDim : ''}`}
+                        onClick={() => toggleHalf(ex.name, i)}
+                        aria-label={`${ex.name}, серия ${i + 1}, половин плоча`}
+                        title="+½ кг"
+                      >½</button>
+                    )
+                  })()}
 
                   <span className={styles.times}>×</span>
 

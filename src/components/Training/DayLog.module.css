@@ -517,18 +517,17 @@
   pointer-events: none;
 }
 
-/* Half-plate toggle. Narrow because it sits inside the stepper row and must
-   not eat the width of the weight field; obvious enough to find at a glance
-   because iOS numpads inside the app give no decimal key. */
+/* Half-plate toggle. Text-only ghost chip, quiet by default so it does not
+   compete with the number, lights up amber when the weight has .5, dims
+   further when the field is still empty — nothing to toggle yet. */
 .halfBtn {
   flex-shrink: 0;
-  width: 26px;
   height: 34px;
-  padding: 0;
+  padding: 0 8px;
   background: transparent;
-  border: 1px dashed rgba(var(--accent-rgb), 0.35);
+  border: none;
   border-radius: var(--r-sm);
-  color: var(--accent);
+  color: rgba(var(--accent-rgb), 0.55);
   font-family: var(--font-heading);
   font-size: 14px;
   line-height: 1;
@@ -537,6 +536,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 2px;
+  transition: color 150ms, background 150ms;
 }
-.halfBtn:active { background: rgba(var(--accent-rgb), 0.14); border-style: solid; }
+.halfBtn:active { background: rgba(var(--accent-rgb), 0.12); }
+.halfBtnOn {
+  color: var(--bg);
+  background: var(--accent);
+}
+.halfBtnDim { opacity: 0.35; }
