@@ -50,6 +50,31 @@ export function classifyMuscle(label = '') {
 }
 
 /**
+ * The muscle groups a block touches, in one place.
+ *
+ * If the editor has stored explicit groups on the block, those win — a user
+ * calling their block "Ден 1" and ticking ГРЪБ and ЕКСТРА is unambiguous, and
+ * the label-based classifier would have returned null for that name and left
+ * the mannequin dark. When no explicit groups are set (older plans), fall
+ * back to what the label and any free-text muscle notes suggest.
+ */
+export function resolveGroups(block) {
+  if (!block) return []
+  if (Array.isArray(block.groups) && block.groups.length) {
+    return block.groups.filter(g => g in RECOVERY_H)
+  }
+  const out = new Set()
+  const fromLabel = classifyMuscle(block.label)
+  if (fromLabel === 'full') for (const g of Object.keys(RECOVERY_H)) out.add(g)
+  else if (fromLabel) out.add(fromLabel)
+  for (const m of block.muscles ?? []) {
+    const g = classifyMuscle(m)
+    if (g && g !== 'full') out.add(g)
+  }
+  return [...out]
+}
+
+/**
  * How much the day's soreness holds everything back.
  *
  * Soreness is reported for the body, not per muscle, so it cannot slow one
@@ -72,13 +97,20 @@ export function sorenessDamping(soreness) {
  *
  * `soreness` is today's check-in answer, if there is one.
  */
-export function muscleRecovery(workouts = [], now = Date.now(), soreness = null) {
+export function muscleRecovery(workouts = [], now = Date.now(), soreness = null, groupsByLabel = null) {
   const lastMs = {}
   for (const w of workouts) {
-    const g = classifyMuscle(w.block_label)
-    if (!g) continue
+    let groups
+    if (groupsByLabel && groupsByLabel[w.block_label]?.length) {
+      groups = groupsByLabel[w.block_label]
+    } else {
+      const g = classifyMuscle(w.block_label)
+      groups = g && g !== 'full' ? [g] : []
+    }
     const ms = new Date(w.completed_date).getTime()
-    if (!lastMs[g] || ms > lastMs[g]) lastMs[g] = ms
+    for (const g of groups) {
+      if (!lastMs[g] || ms > lastMs[g]) lastMs[g] = ms
+    }
   }
 
   const damp = sorenessDamping(soreness)
@@ -121,15 +153,11 @@ const UNKNOWN_H = 48
  * app does not understand that they were fully recovered, every single day.
  */
 export function blockReadiness(block, recovery, lastDoneByLabel = {}, now = Date.now()) {
-  const groups = new Set()
-  const fromLabel = classifyMuscle(block.label)
-  if (fromLabel && fromLabel !== 'full') groups.add(fromLabel)
-  for (const m of block.muscles ?? []) {
-    const g = classifyMuscle(m)
-    if (g && g !== 'full') groups.add(g)
-  }
+  const groups = new Set(resolveGroups(block))
   // A full-body day is held back by whichever group is furthest from ready.
-  if (fromLabel === 'full') for (const g of Object.keys(RECOVERY_H)) groups.add(g)
+  if (!groups.size && classifyMuscle(block.label) === 'full') {
+    for (const g of Object.keys(RECOVERY_H)) groups.add(g)
+  }
 
   if (groups.size) {
     let worst = { pct: 101, group: null }

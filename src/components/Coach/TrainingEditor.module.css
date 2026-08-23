@@ -264,3 +264,48 @@
   cursor: default;
 }
 
+
+/* Group chips — the binding to the mannequin, in four taps or fewer. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  transition: border-color 200ms var(--ease-out), background 200ms var(--ease-out);
+}
+
+.chipsEmpty {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.06);
+}
+
+.chip {
+  padding: 7px 12px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 150ms, background 150ms, border-color 150ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chipOn {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.28);
+}
+
+.needsPick {
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 11px;
+  margin-left: 6px;
+}

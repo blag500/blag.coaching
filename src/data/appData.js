@@ -139,6 +139,7 @@ export const DEFAULT_TRAINING_BLOCKS = [
     id: '0',
     label: 'Upper A',
     isRest: false,
+    groups: ['upper', 'pull', 'extra'],
     muscles: ['Гърди', 'Гръб', 'Рамене', 'Ръце'],
     exercises: [
       { id: '0-0', name: 'Лежанка с щанга',             sets: '4', reps: '6–8'  },
@@ -153,6 +154,7 @@ export const DEFAULT_TRAINING_BLOCKS = [
     id: '1',
     label: 'Lower A',
     isRest: false,
+    groups: ['lower', 'extra'],
     muscles: ['Квадрицепси', 'Задно бедро', 'Глутеус', 'Прасци'],
     exercises: [
       { id: '1-0', name: 'Клек с щанга',          sets: '4', reps: '6–8'  },
@@ -166,6 +168,7 @@ export const DEFAULT_TRAINING_BLOCKS = [
     id: '2',
     label: 'Upper B',
     isRest: false,
+    groups: ['upper', 'pull', 'extra'],
     muscles: ['Гърди', 'Гръб', 'Рамене', 'Ръце'],
     exercises: [
       { id: '2-0', name: 'Прес с дъмбели за рамене',  sets: '4', reps: '8–10' },
@@ -179,6 +182,7 @@ export const DEFAULT_TRAINING_BLOCKS = [
     id: '3',
     label: 'Lower B',
     isRest: false,
+    groups: ['lower', 'extra'],
     muscles: ['Квадрицепси', 'Задно бедро', 'Глутеус', 'Прасци'],
     exercises: [
       { id: '3-0', name: 'Мъртва тяга',              sets: '4', reps: '4–6'                },
@@ -192,6 +196,7 @@ export const DEFAULT_TRAINING_BLOCKS = [
     id: '4',
     label: 'Почивка / Кардио',
     isRest: true,
+    groups: [],
     muscles: [],
     exercises: [
       { id: '4-0', name: 'Бягане / Колело / Плуване', sets: '1', reps: '30–45 мин' },

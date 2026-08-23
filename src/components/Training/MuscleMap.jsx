@@ -117,10 +117,13 @@ function BodyView({ side, bodyState }) {
   return <div ref={ref} className={styles.chart} />
 }
 
-export default function MuscleMap({ recovery, sessions = [], completions = [] }) {
+export default function MuscleMap({ recovery, sessions = [], completions = [], groupsByLabel = null }) {
   const [mode, setMode] = useState('recovery')
 
-  const stats = useMemo(() => muscleStats(sessions, completions), [sessions, completions])
+  const stats = useMemo(
+    () => muscleStats(sessions, completions, Date.now(), groupsByLabel),
+    [sessions, completions, groupsByLabel],
+  )
   const ctx = useMemo(() => ({
     maxVolume7: Math.max(...Object.values(stats).map(s => s.volume7 || 0), 1),
   }), [stats])

@@ -1,5 +1,11 @@
 import { classifyMuscle } from './recovery'
 
+function groupsForLabel(label, groupsByLabel) {
+  if (groupsByLabel && groupsByLabel[label]?.length) return groupsByLabel[label]
+  const g = classifyMuscle(label)
+  return g && g !== 'full' ? [g] : []
+}
+
 const DAY = 86_400_000
 
 /**
@@ -9,7 +15,7 @@ const DAY = 86_400_000
  * touches two groups splits its volume between them; the alternative is
  * counting one workout as two, which reads as twice the work done.
  */
-export function muscleStats(sessions = [], completions = [], now = Date.now()) {
+export function muscleStats(sessions = [], completions = [], now = Date.now(), groupsByLabel = null) {
   const out = { upper: {}, lower: {}, pull: {}, extra: {} }
   for (const g of Object.keys(out)) {
     out[g] = { daysSince: null, volume7: 0, pr7: 0, recent14: 0, prior14: 0, overload: null }
@@ -18,10 +24,12 @@ export function muscleStats(sessions = [], completions = [], now = Date.now()) {
   const daysAgo = d => Math.round((now - new Date(d + 'T12:00:00').getTime()) / DAY)
 
   for (const c of completions) {
-    const g = classifyMuscle(c.block_label)
-    if (!g || g === 'full') continue
-    const d = daysAgo(c.completed_date)
-    if (out[g].daysSince == null || d < out[g].daysSince) out[g].daysSince = d
+    const gs = groupsForLabel(c.block_label, groupsByLabel)
+    for (const g of gs) {
+      if (!(g in out)) continue
+      const d = daysAgo(c.completed_date)
+      if (out[g].daysSince == null || d < out[g].daysSince) out[g].daysSince = d
+    }
   }
 
   const cut7  = new Date(now - 7  * DAY).toISOString().slice(0, 10)
@@ -29,9 +37,8 @@ export function muscleStats(sessions = [], completions = [], now = Date.now()) {
   const cut28 = new Date(now - 28 * DAY).toISOString().slice(0, 10)
 
   for (const s of sessions) {
-    const groups = (s.labels || [])
-      .map(classifyMuscle)
-      .filter(g => g && g !== 'full')
+    const groups = [...new Set((s.labels || []).flatMap(l => groupsForLabel(l, groupsByLabel)))]
+      .filter(g => g in out)
     if (!groups.length) continue
 
     const share = 1 / groups.length

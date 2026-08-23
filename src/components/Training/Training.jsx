@@ -15,7 +15,7 @@ import WeeklyReport from './WeeklyReport'
 import TrainingDashboard from './TrainingDashboard'
 import SessionHistory from './SessionHistory'
 import ExerciseStats from './ExerciseStats'
-import { muscleRecovery, blockReadiness, RECOVERY_H } from '../../utils/recovery'
+import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups } from '../../utils/recovery'
 import { trainingStats, agoLabel, bigNum, iso, dayDate, MONTHS_SHORT } from '../../utils/training'
 import styles from './Training.module.css'
 
@@ -129,7 +129,15 @@ export default function Training({ onMenuOpen }) {
   // had their hours — 48 for upper and back, 72 for legs. Ties go to whichever
   // has been left alone longer, which restores sensible rotation between two
   // equally rested blocks.
-  const recovery = muscleRecovery(completions, Date.now(), soreness)
+  // Label → groups. Explicit group ticks in the editor beat the label-based
+  // classifier, so a "Ден 1" block still lights up the mannequin.
+  const groupsByLabel = useMemo(() => {
+    const out = {}
+    for (const b of blocks ?? []) out[b.label] = resolveGroups(b)
+    return out
+  }, [blocks])
+
+  const recovery = muscleRecovery(completions, Date.now(), soreness, groupsByLabel)
   const ranked = trainable
     .map(b => ({ block: b, ...blockReadiness(b, recovery, lastDone) }))
     .sort((a, b) =>
@@ -692,7 +700,7 @@ export default function Training({ onMenuOpen }) {
       {homeTab === 'body' && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>МУСКУЛНИ ГРУПИ</h2>
-          <MuscleMap recovery={recovery} sessions={sessions} completions={completions} />
+          <MuscleMap recovery={recovery} sessions={sessions} completions={completions} groupsByLabel={groupsByLabel} />
           <MuscleStatus completions={completions} recovery={recovery} />
         </section>
       )}

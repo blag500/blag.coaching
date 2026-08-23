@@ -2,11 +2,19 @@ import { useState } from 'react'
 import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
 import styles from './TrainingEditor.module.css'
 
+const GROUP_OPTIONS = [
+  { id: 'upper', label: 'ГОРНА', hint: 'гърди · рамене · трицепс' },
+  { id: 'pull',  label: 'ГРЪБ',  hint: 'лат · бицепс' },
+  { id: 'lower', label: 'ДОЛНА', hint: 'крака · глутеус' },
+  { id: 'extra', label: 'ЕКСТРА', hint: 'корем · предмишница · прасци · трапец' },
+]
+
 function freshBlock(pos) {
   return {
     id: String(Date.now() + pos),
     label: '',
     isRest: false,
+    groups: [],
     muscles: [],
     exercises: [],
   }
@@ -94,6 +102,16 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
     updateBlock(blockId, 'muscles', muscles)
   }
 
+  function toggleGroup(blockId, groupId) {
+    setBlocks(prev => prev.map(b => {
+      if (b.id !== blockId) return b
+      const current = new Set(Array.isArray(b.groups) ? b.groups : [])
+      if (current.has(groupId)) current.delete(groupId)
+      else current.add(groupId)
+      return { ...b, groups: [...current] }
+    }))
+  }
+
   return (
     <div className={styles.wrap}>
       {blocks.map((block, idx) => {
@@ -142,18 +160,33 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                   />
                 </div>
 
-                {!block.isRest && (
-                  <div className={styles.fieldRow}>
-                    <label className={styles.fieldLabel}>Мускулни групи (разделени със запетая)</label>
-                    <input
-                      className={styles.fieldInput}
-                      type="text"
-                      placeholder="напр. Гърди, Гръб, Рамене"
-                      value={muscleRaw[block.id] ?? block.muscles.join(', ')}
-                      onChange={e => updateMuscles(block.id, e.target.value)}
-                    />
-                  </div>
-                )}
+                {!block.isRest && (() => {
+                  const chosen = new Set(Array.isArray(block.groups) ? block.groups : [])
+                  const empty = chosen.size === 0
+                  return (
+                    <div className={styles.fieldRow}>
+                      <label className={styles.fieldLabel}>
+                        Мускулни групи за манекена
+                        {empty && (
+                          <span className={styles.needsPick}> · трябва избор</span>
+                        )}
+                      </label>
+                      <div className={`${styles.chips} ${empty ? styles.chipsEmpty : ''}`}>
+                        {GROUP_OPTIONS.map(g => (
+                          <button
+                            key={g.id}
+                            type="button"
+                            className={`${styles.chip} ${chosen.has(g.id) ? styles.chipOn : ''}`}
+                            onClick={() => toggleGroup(block.id, g.id)}
+                            title={g.hint}
+                          >
+                            {g.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
 
                 {!block.isRest && (
                   <div className={styles.exList}>
