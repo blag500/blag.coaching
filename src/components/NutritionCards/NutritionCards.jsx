@@ -8,7 +8,7 @@ import DatePicker from '../DatePicker/DatePicker'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import NutritionProgress from './NutritionProgress'
-import ActivityLog from './ActivityLog'
+import CalorieBalancer from './CalorieBalancer'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
 import { defaultMeal } from '../FoodLogger/meals'
@@ -134,13 +134,16 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           </svg>
         </button>
         <button
-          className={`${styles.toggleBtn} ${view === 'activity' ? styles.toggleActive : ''}`}
-          onClick={() => setView('activity')}
+          className={`${styles.toggleBtn} ${view === 'balance' ? styles.toggleActive : ''}`}
+          onClick={() => setView('balance')}
           type="button"
-          aria-label="Активност"
+          aria-label="Баланс на калориите"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            <line x1="12" y1="3" x2="12" y2="21" />
+            <line x1="6" y1="21" x2="18" y2="21" />
+            <path d="M4 11l3-6 3 6a3 3 0 0 1-6 0z" />
+            <path d="M14 11l3-6 3 6a3 3 0 0 1-6 0z" />
           </svg>
         </button>
       </div>
@@ -210,12 +213,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           )}
         </>
       ) : (
-        <ActivityLog
-          activities={activities}
-          totalKcalBurned={totalKcalBurned}
-          onAdd={addActivity}
-          onRemove={removeActivity}
-        />
+        <CalorieBalancer />
       )}
 
       {showBuilder && (
