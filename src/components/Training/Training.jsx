@@ -707,26 +707,17 @@ export default function Training({ onMenuOpen }) {
       )}
 
       {homeTab === 'week' && (
-        <>
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>СЕДМИЧЕН ДОКЛАД</h2>
-            <WeeklyReport sessions={sessions} goal={goal} />
-          </section>
-
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>КАЛЕНДАР</h2>
-            <MonthCalendar completions={completions} blocks={blocks ?? []} />
-          </section>
-
-          <section className={styles.section}>
-            <TrainingDashboard
-              sessions={sessions}
-              stats={stats}
-              toBeat={toBeat}
-              onOpenSession={() => openSession()}
-            />
-          </section>
-        </>
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>СЕДМИЧЕН ДОКЛАД</h2>
+          <WeeklyReport sessions={sessions} goal={goal} />
+          <MonthCalendar completions={completions} blocks={blocks ?? []} />
+          <TrainingDashboard
+            sessions={sessions}
+            stats={stats}
+            toBeat={toBeat}
+            onOpenSession={() => openSession()}
+          />
+        </section>
       )}
 
       {homeTab === 'body' && (
