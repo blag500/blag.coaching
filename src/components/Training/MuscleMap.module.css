@@ -3,10 +3,10 @@
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
   border-radius: var(--r-md);
-  padding: 12px 12px 14px;
+  padding: 10px 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .filterBar {
@@ -22,13 +22,13 @@
 
 .filter {
   flex-shrink: 0;
-  padding: 7px 12px;
+  padding: 6px 11px;
   border-radius: var(--r-lg);
   border: 1px solid var(--panel-border);
   background: transparent;
   color: var(--muted);
   font-family: var(--font-heading);
-  font-size: 11px;
+  font-size: 10.5px;
   letter-spacing: 0.08em;
   white-space: nowrap;
   cursor: pointer;
@@ -59,7 +59,7 @@
 
 .chart {
   width: 100%;
-  max-width: 150px;
+  max-width: 128px;
   display: flex;
   justify-content: center;
 }
@@ -79,11 +79,11 @@
 
 .hint {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--muted);
   margin: 0;
-  padding: 8px 4px 0;
+  padding: 6px 4px 0;
   border-top: 1px solid var(--border);
   text-align: center;
-  line-height: 1.45;
+  line-height: 1.4;
 }

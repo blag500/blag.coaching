@@ -1,10 +1,10 @@
 /* ── Main nav pill ── */
 .nav {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  bottom: calc(env(safe-area-inset-bottom) + 10px);
   left: 12px;
   right: 12px;
-  height: 68px;
+  height: 56px;
   background: rgba(var(--bg-rgb), 0.52);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
@@ -16,13 +16,70 @@
   z-index: 100;
   padding: 0 4px;
   overflow: visible;
-  /* No transform and no will-change here on purpose. Both promote this fixed
-     bar to its own compositor layer, and on mobile that layer lags the viewport
-     during momentum scroll and while the browser's address bar slides in and
-     out — the bar appears to drift instead of staying pinned. Plain position:
-     fixed is what keeps it still. The backdrop-filter below still composites on
-     its own. */
+  transition: transform 320ms var(--ease-out), opacity 220ms var(--ease-out);
 }
+
+/* Docked away to the right. translateX is fine here — the bar is not on
+   screen while animating, so any compositor lag is invisible. */
+.navHidden {
+  transform: translateX(calc(100% + 24px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The peek — a small handle pinned to the right edge that brings the bar back
+   when the user is done with the extra screen space. */
+.peek {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 28px);
+  right: 0;
+  width: 24px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: none;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  background: rgba(var(--bg-rgb), 0.66);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(24px);
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out), transform 280ms var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.peek.peekOn {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* The dock button that lives at the right end of the nav — swipe hint made
+   tappable, in case anyone reaches for it before finding the gesture. */
+.dockHandle {
+  flex-shrink: 0;
+  width: 20px;
+  height: 44px;
+  background: none;
+  border: none;
+  color: rgba(242, 232, 207, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 150ms var(--ease-out);
+}
+.dockHandle:active { color: var(--accent); }
 
 .tab {
   flex: 1;
@@ -30,16 +87,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   background: none;
   border: none;
   color: rgba(242, 232, 207, 0.45);
   transition: color 200ms var(--ease-out);
-  padding: 8px 2px;
+  padding: 6px 2px;
   position: relative;
   border-radius: var(--r-xl);
   cursor: pointer;
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .tab:active {
@@ -71,8 +128,8 @@
 .tab::after { display: none; }
 
 .iconWrap {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -112,13 +169,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
+  width: 52px;
   position: relative;
 }
 
 .fabCenter {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--accent-metal-coin);
   color: #241B0C;
@@ -127,7 +184,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -24px;
+  margin-top: -20px;
   box-shadow:
     0 4px 18px rgba(var(--accent-rgb), 0.50),
     0 0 0 3px rgba(var(--bg-rgb), 0.80);

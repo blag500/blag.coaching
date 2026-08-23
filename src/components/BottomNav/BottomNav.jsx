@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useWaterLog } from '../../hooks/useWaterLog'
 import styles from './BottomNav.module.css'
@@ -55,13 +55,40 @@ const ACTIONS = [
   { id: 'training', emoji: '💪',  label: 'Тренировка', tab: 'training'  },
 ]
 
+const HIDDEN_KEY = 'blag_nav_hidden'
+
 export default function BottomNav({ activeTab, onTabChange }) {
   const { t } = useSettings()
   const { add: addWater } = useWaterLog()
   const [open, setOpen] = useState(false)
   const [waterFlash, setWaterFlash] = useState(false)
+  const [hidden, setHidden] = useState(() => localStorage.getItem(HIDDEN_KEY) === '1')
 
   useEffect(() => { setOpen(false) }, [activeTab])
+
+  useEffect(() => {
+    localStorage.setItem(HIDDEN_KEY, hidden ? '1' : '0')
+  }, [hidden])
+
+  // Swipe right on the nav to dock it. Kept small so a scroll or a fumbled tap
+  // does not send the whole bar away — 60 px horizontal with a low vertical
+  // tolerance is the usual "I meant to swipe" threshold.
+  const touchRef = useRef({ x: 0, y: 0, active: false })
+  function onTouchStart(e) {
+    const t = e.touches[0]
+    touchRef.current = { x: t.clientX, y: t.clientY, active: true }
+  }
+  function onTouchEnd(e) {
+    if (!touchRef.current.active) return
+    touchRef.current.active = false
+    const t = e.changedTouches[0]
+    const dx = t.clientX - touchRef.current.x
+    const dy = Math.abs(t.clientY - touchRef.current.y)
+    if (dx > 60 && dy < 40) {
+      setOpen(false)
+      setHidden(true)
+    }
+  }
 
   function handleAction(action) {
     setOpen(false)
@@ -79,8 +106,29 @@ export default function BottomNav({ activeTab, onTabChange }) {
     <>
       {open && <div className={styles.backdrop} onClick={() => setOpen(false)} aria-hidden="true" />}
 
+      {/* Docked peek — the way back when the bar is hidden */}
+      <button
+        className={`${styles.peek} ${hidden ? styles.peekOn : ''}`}
+        onClick={() => setHidden(false)}
+        aria-label="Покажи навигацията"
+        type="button"
+        tabIndex={hidden ? 0 : -1}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="15 6 9 12 15 18" />
+        </svg>
+      </button>
+
       {/* ── Main nav pill ── */}
-      <nav className={styles.nav} role="navigation" aria-label="Основна навигация">
+      <nav
+        className={`${styles.nav} ${hidden ? styles.navHidden : ''}`}
+        role="navigation"
+        aria-label="Основна навигация"
+        aria-hidden={hidden}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         {LEFT_TABS.map(tab => (
           <button
             key={tab.id}
@@ -119,7 +167,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
             aria-label="Бързо добави"
             aria-expanded={open}
           >
-            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" aria-hidden="true">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5"  y1="12" x2="19" y2="12" />
             </svg>
@@ -138,6 +186,19 @@ export default function BottomNav({ activeTab, onTabChange }) {
             <span className={styles.label}>{t(tab.key)}</span>
           </button>
         ))}
+
+        {/* Small dock handle — tap or swipe right to hide the bar */}
+        <button
+          className={styles.dockHandle}
+          onClick={() => setHidden(true)}
+          type="button"
+          aria-label="Скрий навигацията"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+               strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+        </button>
       </nav>
     </>
   )
