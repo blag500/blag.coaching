@@ -323,13 +323,27 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
                 {group.items.length > 0 && (
                   <span className={styles.mealTotals}>
                     <span className={`${styles.macro} ${styles.macroP}`} title="Протеин">
-                      <span className={styles.macroLetter}>П</span>{protein}
+                      <svg className={styles.macroIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M6 14 L2 18 M9 17 L5 21 M4 16 L8 12" />
+                        <ellipse cx="15" cy="9" rx="6" ry="5" transform="rotate(-30 15 9)" />
+                      </svg>
+                      {protein}
                     </span>
                     <span className={`${styles.macro} ${styles.macroC}`} title="Въглехидрати">
-                      <span className={styles.macroLetter}>В</span>{carbs}
+                      <svg className={styles.macroIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 21 L12 4" />
+                        <path d="M12 8 Q6 8 6 4 Q11 4 12 8 Z" />
+                        <path d="M12 8 Q18 8 18 4 Q13 4 12 8 Z" />
+                        <path d="M12 14 Q6 14 6 10 Q11 10 12 14 Z" />
+                        <path d="M12 14 Q18 14 18 10 Q13 10 12 14 Z" />
+                      </svg>
+                      {carbs}
                     </span>
                     <span className={`${styles.macro} ${styles.macroF}`} title="Мазнини">
-                      <span className={styles.macroLetter}>М</span>{fat}
+                      <svg className={styles.macroIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 3 C7 9 5 12 5 15 A7 7 0 0 0 19 15 C19 12 17 9 12 3 Z" />
+                      </svg>
+                      {fat}
                     </span>
                     <span className={styles.mealKcal}>{kcal} ккал</span>
                   </span>

@@ -619,35 +619,36 @@
   opacity: 0.75;
 }
 
-/* Meal totals — protein/carbs/fat chips next to the kcal on each meal head. */
+/* Meal totals — protein/carbs/fat chips next to the kcal on each meal head.
+   Quiet on purpose so the calorie number stays the loudest thing on the row. */
 .mealTotals {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: nowrap;
 }
 
 .macro {
   font-family: var(--font-body);
-  font-size: 11px;
-  line-height: 1;
-  padding: 3px 6px;
-  border-radius: var(--r-sm);
-  background: rgba(255, 255, 255, 0.04);
-  display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
-  color: var(--text);
-}
-
-.macroLetter {
-  font-family: var(--font-heading);
   font-size: 10px;
-  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 2px 5px 2px 4px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: rgba(242, 232, 207, 0.55);
   opacity: 0.85;
-  margin-right: 2px;
 }
 
-.macroP { color: var(--macro-protein, #EF9A9A); }
-.macroC { color: var(--macro-carbs,   #FFD54F); }
-.macroF { color: var(--macro-fat,     #90CAF9); }
+.macroIcon {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.macroP { color: rgba(239, 154, 154, 0.75); }
+.macroC { color: rgba(255, 213, 79,  0.75); }
+.macroF { color: rgba(144, 202, 249, 0.75); }
