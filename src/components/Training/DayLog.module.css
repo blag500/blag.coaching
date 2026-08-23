@@ -516,3 +516,27 @@
   line-height: 1;
   pointer-events: none;
 }
+
+/* Half-plate toggle. Narrow because it sits inside the stepper row and must
+   not eat the width of the weight field; obvious enough to find at a glance
+   because iOS numpads inside the app give no decimal key. */
+.halfBtn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 1px dashed rgba(var(--accent-rgb), 0.35);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+}
+.halfBtn:active { background: rgba(var(--accent-rgb), 0.14); border-style: solid; }

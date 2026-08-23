@@ -357,6 +357,28 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     schedule(name, i)
   }
 
+  /** Half plate on and off. iOS numpads in the app do not carry a comma or a
+   *  dot, so decimals cannot be typed at all — a tap does what the keyboard
+   *  will not, and toggles instead of adding so it never gets stuck at 62.5. */
+  function toggleHalf(name, i) {
+    setRows(prev => {
+      const sets = prev[name]
+      const r = sets[i]
+      const prevR = echo(sets, i, name)
+      const norm = v => parseFloat(String(v ?? '').replace(',', '.')) || 0
+      const empty = String(r.weight).trim() === ''
+      const base = empty ? norm(prevR?.weight) : norm(r.weight)
+      const hasHalf = Math.abs(base - Math.floor(base) - 0.5) < 0.01
+      const next = hasHalf ? Math.floor(base) : base + 0.5
+      const reps = empty && String(r.reps).trim() === '' ? (prevR?.reps ?? r.reps) : r.reps
+      return {
+        ...prev,
+        [name]: sets.map((x, j) => (j === i ? { ...x, weight: String(next), reps } : x)),
+      }
+    })
+    schedule(name, i)
+  }
+
   /** Carry the last set here whole — the same load and reps, no change. The
    *  stepper is for when there is a change; this is for when there is not. */
   function repeat(name, i) {
@@ -560,6 +582,13 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       onClick={() => bump(ex.name, i, +1)}
                       aria-label={`${ex.name}, серия ${i + 1}, повече тегло`}
                     >+</button>
+
+                    <button
+                      type="button" className={styles.halfBtn} tabIndex={-1}
+                      onClick={() => toggleHalf(ex.name, i)}
+                      aria-label={`${ex.name}, серия ${i + 1}, половин плоча`}
+                      title="Половин плоча (тап)"
+                    >½</button>
                   </div>
 
                   <span className={styles.times}>×</span>
