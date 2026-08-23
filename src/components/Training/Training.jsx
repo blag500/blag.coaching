@@ -548,35 +548,53 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'today' && (
         <>
-          {/* The today card is now just the header — no start button, because
-              the log itself is right below it. Two taps to record a set
-              instead of three, and the block name still says what today is. */}
+          {/* Which block to log. The due one is preselected — most days that's
+              the answer — but any block on the plan is one tap away, so a
+              "не днес този" is not a fight with the app. */}
+          <div className={styles.pillBar} role="tablist">
+            {blocks.map(block => (
+              <button
+                key={block.id}
+                className={`${styles.pill} ${selectedId === block.id ? styles.activePill : ''}`}
+                onClick={() => {
+                  userPicked.current = true
+                  setSelectedId(block.id)
+                  setLogDate(todayStr)
+                  setJustMarked(false)
+                }}
+                role="tab"
+                aria-selected={selectedId === block.id}
+                type="button"
+              >
+                {block.label}
+              </button>
+            ))}
+          </div>
+
           <section className={styles.today}>
             <span className={styles.todayEyebrow}>
               {last ? `Последна тренировка ${agoLabel(last.date)}` : 'Още нищо не е логнато'}
             </span>
-            <h2 className={styles.todayTitle}>{dueBlock?.label ?? 'Почивка'}</h2>
+            <h2 className={styles.todayTitle}>{selectedBlock?.label ?? 'Почивка'}</h2>
 
-            {dueEntry && dueEntry.basis !== 'never' && (
+            {selRec && selRec.basis !== 'never' && (
               <span className={[
                 styles.todayState,
-                dueEntry.pct >= 80 ? styles.todayReady : styles.todayWait,
+                selRec.pct >= 80 ? styles.todayReady : styles.todayWait,
               ].join(' ')}>
                 <span className={styles.recoveryDot} />
-                {dueEntry.pct >= 80
+                {selRec.pct >= 80
                   ? 'По часовник — готова'
-                  : `≈ ${dueEntry.pct}% възстановена`}
+                  : `≈ ${selRec.pct}% възстановена`}
               </span>
             )}
           </section>
 
-          {/* Inline log for today's due block. The old workflow was tap →
-              new page → log; this is just: log. */}
-          {dueBlock && !isRestBlock(dueBlock) && logDate === todayStr && (
+          {selectedBlock && !isRestBlock(selectedBlock) && (
             <>
               <DayLog
                 date={todayStr}
-                blockLabels={[dueBlock.label]}
+                blockLabels={[selectedBlock.label]}
                 blocks={blocks}
                 onLogged={handleLogged}
               />
@@ -584,31 +602,35 @@ export default function Training({ onMenuOpen }) {
               <button
                 className={[
                   styles.markDoneBtn,
-                  (dueBlock.exercises?.length ?? 0) > 0 &&
-                    dueBlock.exercises.every(e => lifts[e.name]?.today)
+                  (selectedBlock.exercises?.length ?? 0) > 0 &&
+                    selectedBlock.exercises.every(e => lifts[e.name]?.today)
                     ? styles.markDoneReady : '',
-                  completions.some(c => c.completed_date === todayStr && c.block_label === dueBlock.label) || justMarked
+                  completions.some(c => c.completed_date === todayStr && c.block_label === selectedBlock.label) || justMarked
                     ? styles.markDoneDone : '',
                 ].join(' ')}
                 onClick={() => {
-                  // Route through the existing handler by aligning the state
-                  // it reads. Keeps one code path for marking a session done.
-                  setSelectedId(dueBlock.id)
-                  userPicked.current = true
                   setLogDate(todayStr)
                   handleMarkDone()
                 }}
                 disabled={
                   marking ||
-                  completions.some(c => c.completed_date === todayStr && c.block_label === dueBlock.label)
+                  completions.some(c => c.completed_date === todayStr && c.block_label === selectedBlock.label)
                 }
                 type="button"
               >
-                {completions.some(c => c.completed_date === todayStr && c.block_label === dueBlock.label) || justMarked
+                {completions.some(c => c.completed_date === todayStr && c.block_label === selectedBlock.label) || justMarked
                   ? '✓ Отбелязано за днес!'
                   : marking ? '...' : '✓ Маркирай като готово'}
               </button>
             </>
+          )}
+
+          {selectedBlock && isRestBlock(selectedBlock) && (
+            <div className={styles.restCard}>
+              <span className={styles.restIcon}>🛌</span>
+              <p className={styles.restTitle}>Почивка</p>
+              <p className={styles.restSub}>Сън · Хидратация · Мобилити</p>
+            </div>
           )}
 
           {/* The last few sessions live with today, because "what did I do
