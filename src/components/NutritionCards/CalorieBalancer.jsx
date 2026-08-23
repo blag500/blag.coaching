@@ -149,7 +149,7 @@ export default function CalorieBalancer() {
                 <div className={styles.targetLine} />
               </div>
               <span className={styles.colLabel}>{dayLabel(d.date)}</span>
-              <span className={styles.colVal}>{d.kcal ? Math.round(d.kcal / 100) * 100 : '·'}</span>
+              <span className={styles.colVal}>{d.kcal ? d.kcal.toLocaleString('bg-BG') : '·'}</span>
             </div>
           )
         })}
@@ -176,47 +176,48 @@ export default function CalorieBalancer() {
             <p className={styles.perfect}>Точно на целта — няма какво да балансираш.</p>
           ) : (
             <>
-              {/* Segmented day picker — one segment per day left until Sunday,
-                  labelled with the day-of-week. Tapping a segment picks how
-                  far the correction spreads; everything up to it fills. */}
-              <div className={styles.pickerLabel}>
-                Разпредели корекцията до <strong>неделя</strong>
-              </div>
-              <div className={styles.picker} role="radiogroup" aria-label="Дни за разпределяне">
-                {upcoming.map(day => {
-                  const on = spread >= day.idx
-                  return (
-                    <button
-                      key={day.idx}
-                      type="button"
-                      role="radio"
-                      aria-checked={spread === day.idx}
-                      className={`${styles.pickerDay} ${on ? styles.pickerDayOn : ''} ${spread === day.idx ? styles.pickerDayEdge : ''}`}
-                      onClick={() => setSpread(day.idx)}
-                    >
-                      <span className={styles.pickerLbl}>{day.label}</span>
-                      <span className={styles.pickerNum}>{day.day}</span>
-                      {day.isToday && <span className={styles.pickerToday}>днес</span>}
-                    </button>
-                  )
-                })}
+              {/* Slider with a tick per day left until Sunday — the drag beats
+                  a row of buttons because the "how many days" question is a
+                  continuous choice, and the ticks say what each stop means
+                  without pinning the finger to a chip. */}
+              <div className={styles.sliderWrap}>
+                {remaining > 1 ? (
+                  <>
+                    <input
+                      type="range"
+                      min="1"
+                      max={remaining}
+                      step="1"
+                      value={spread}
+                      onChange={e => setSpread(parseInt(e.target.value, 10))}
+                      className={styles.slider}
+                      aria-label="Дни за разпределяне"
+                      style={{ '--fill': `${((spread - 1) / Math.max(1, remaining - 1)) * 100}%` }}
+                    />
+                    <div className={styles.ticks}>
+                      {upcoming.map(day => (
+                        <button
+                          key={day.idx}
+                          type="button"
+                          onClick={() => setSpread(day.idx)}
+                          className={`${styles.tick} ${spread >= day.idx ? styles.tickOn : ''} ${spread === day.idx ? styles.tickEdge : ''}`}
+                        >
+                          <span className={styles.tickLbl}>{day.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className={styles.lastDay}>Днес е неделя — само за днес</p>
+                )}
               </div>
 
               <div className={styles.suggestion}>
-                <p className={styles.suggestionText}>
-                  {isOver ? (
-                    <>Изяде <strong>{analysis.delta.toLocaleString('bg-BG')} ккал</strong> над
-                    целта. Следващите <strong>{spread}</strong> {spread === 1 ? 'ден' : 'дни'} поеми по:</>
-                  ) : (
-                    <>Изяде <strong>{Math.abs(analysis.delta).toLocaleString('bg-BG')} ккал</strong> под
-                    целта. Следващите <strong>{spread}</strong> {spread === 1 ? 'ден' : 'дни'} поеми по:</>
-                  )}
-                </p>
                 <p className={styles.suggestionValue}>
-                  {suggested.toLocaleString('bg-BG')} ккал / ден
+                  {suggested.toLocaleString('bg-BG')} <span className={styles.suggestionUnit}>ккал / ден</span>
                 </p>
-                <p className={styles.suggestionHint}>
-                  ({perDay > 0 ? '−' : '+'}{Math.abs(perDay).toLocaleString('bg-BG')} ккал спрямо обичайните {target.toLocaleString('bg-BG')})
+                <p className={styles.suggestionMeta}>
+                  за {spread} {spread === 1 ? 'ден' : 'дни'} · {perDay > 0 ? '−' : '+'}{Math.abs(perDay).toLocaleString('bg-BG')} спрямо {target.toLocaleString('bg-BG')}
                 </p>
 
                 <button
@@ -227,10 +228,6 @@ export default function CalorieBalancer() {
                 >
                   {applied ? '✓ Приложено' : applying ? '...' : 'Приложи като нова цел'}
                 </button>
-                <p className={styles.applyHint}>
-                  Ще обнови дневната ти цел и макросите пропорционално. Можеш
-                  да върнеш обратно от Калкулатора по всяко време.
-                </p>
               </div>
             </>
           )}
