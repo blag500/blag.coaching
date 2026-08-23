@@ -698,7 +698,17 @@ export default function Training({ onMenuOpen }) {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>СЕДМИЧЕН ДОКЛАД</h2>
           <WeeklyReport sessions={sessions} goal={goal} />
-          <MonthCalendar completions={completions} blocks={blocks ?? []} />
+          <MonthCalendar
+            completions={completions}
+            blocks={blocks ?? []}
+            onOpenDay={date => {
+              const s = sessions.find(x => x.date === date)
+              const label = s?.labels[0]
+                ?? blocks?.find(b => b.exercises?.some(e => s?.exercises?.has(e.name)))?.label
+                ?? null
+              openSession(date, label)
+            }}
+          />
           <TrainingDashboard
             sessions={sessions}
             stats={stats}

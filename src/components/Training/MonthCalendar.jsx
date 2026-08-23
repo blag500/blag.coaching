@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
-import { resolveGroups } from '../../utils/recovery'
-import { MONTHS_SHORT, dayDate, iso, mondayOf } from '../../utils/training'
+import { MONTHS_SHORT, iso } from '../../utils/training'
 import styles from './MonthCalendar.module.css'
 
 const MONTHS_FULL = [
@@ -9,29 +8,45 @@ const MONTHS_FULL = [
 ]
 const DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
-const GROUP_COLOR = {
-  upper: '#FFB74D',
-  pull:  '#EF9A9A',
-  lower: '#90CAF9',
-  extra: '#A5D6A7',
+// One shade per plan variation. Assignment is deterministic by label so a
+// block keeps its colour from one month to the next; the palette has enough
+// steps that a five-day split still has five distinct dots.
+const PALETTE = [
+  '#FFB74D', '#90CAF9', '#A5D6A7', '#CE93D8',
+  '#EF9A9A', '#FFD54F', '#80DEEA', '#FFAB91',
+]
+
+function hashLabel(s = '') {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = ((h * 31) + s.charCodeAt(i)) & 0x7fffffff
+  return h
 }
 
 /**
- * Month grid with a coloured dot per completed block per day. The dots come
- * from workout_completions — the "Готово" tick — and their colour comes from
- * the block's groups, so a glance at the month says which halves of the body
- * a week actually covered.
+ * Month grid with a coloured dot per completed block per day, one distinct
+ * colour per plan variation. Tap a day and its completions expand below the
+ * grid — which block, and a link into the day's log.
  */
-export default function MonthCalendar({ completions = [], blocks = [] }) {
+export default function MonthCalendar({ completions = [], blocks = [], onOpenDay }) {
   const [cursor, setCursor] = useState(() => {
     const d = new Date()
     return { y: d.getFullYear(), m: d.getMonth() }
   })
+  const [picked, setPicked] = useState(null)
 
-  const groupsByLabel = useMemo(() => {
-    const out = {}
-    for (const b of blocks) out[b.label] = resolveGroups(b)
-    return out
+  // A palette entry per block label the user has. Rest blocks are grey; a
+  // completion that names a block no longer in the plan still gets a stable
+  // colour from the same hash.
+  const colorFor = useMemo(() => {
+    const map = new Map()
+    for (const b of blocks) {
+      if (b.isRest || /почивк/i.test(b.label)) {
+        map.set(b.label, 'rgba(255,255,255,0.35)')
+      } else {
+        map.set(b.label, PALETTE[hashLabel(b.label) % PALETTE.length])
+      }
+    }
+    return label => map.get(label) ?? PALETTE[hashLabel(label) % PALETTE.length]
   }, [blocks])
 
   const byDate = useMemo(() => {
@@ -46,8 +61,7 @@ export default function MonthCalendar({ completions = [], blocks = [] }) {
 
   const { firstDayIdx, daysInMonth } = useMemo(() => {
     const first = new Date(cursor.y, cursor.m, 1)
-    // Monday = 0 for us; JS getDay: 0 = Sunday.
-    const idx = (first.getDay() + 6) % 7
+    const idx = (first.getDay() + 6) % 7   // Monday-first
     const days = new Date(cursor.y, cursor.m + 1, 0).getDate()
     return { firstDayIdx: idx, daysInMonth: days }
   }, [cursor.y, cursor.m])
@@ -66,6 +80,15 @@ export default function MonthCalendar({ completions = [], blocks = [] }) {
   for (let i = 0; i < firstDayIdx; i++) cells.push(null)
   for (let d = 1; d <= daysInMonth; d++) cells.push(d)
   while (cells.length % 7 !== 0) cells.push(null)
+
+  const pickedList = picked ? (byDate.get(picked) ?? []) : []
+  // Blocks with any activity, for the legend — showing the whole plan even on
+  // months you've missed would say "here are 5 things you didn't do".
+  const usedLabels = useMemo(() => {
+    const seen = new Set()
+    for (const c of completions) seen.add(c.block_label)
+    return [...seen]
+  }, [completions])
 
   return (
     <div className={styles.wrap}>
@@ -92,44 +115,77 @@ export default function MonthCalendar({ completions = [], blocks = [] }) {
           if (d == null) return <span key={`e-${i}`} className={styles.empty} />
           const dateIso = `${cursor.y}-${String(cursor.m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
           const done = byDate.get(dateIso) ?? []
-          // Deduplicate colours so a session ticked twice doesn't triple-dot.
-          const colours = [...new Set(
-            done.flatMap(c => (groupsByLabel[c.block_label] ?? []).map(g => GROUP_COLOR[g]))
-          )].filter(Boolean).slice(0, 4)
+          // Dedup by label so the same completion never plots twice.
+          const labels = [...new Set(done.map(c => c.block_label))].slice(0, 4)
           const isToday = dateIso === todayStr
+          const isPicked = dateIso === picked
           return (
-            <div
+            <button
               key={dateIso}
-              className={`${styles.cell} ${isToday ? styles.today : ''} ${done.length ? styles.hasWork : ''}`}
-              title={done.length ? done.map(c => c.block_label).join(' · ') : ''}
+              type="button"
+              className={`${styles.cell} ${isToday ? styles.today : ''} ${done.length ? styles.hasWork : ''} ${isPicked ? styles.picked : ''}`}
+              onClick={() => setPicked(p => p === dateIso ? null : dateIso)}
+              aria-label={done.length ? `${d} ${MONTHS_SHORT[cursor.m]} · ${labels.join(', ')}` : `${d} ${MONTHS_SHORT[cursor.m]}`}
             >
               <span className={styles.dayNum}>{d}</span>
-              {colours.length > 0 && (
+              {labels.length > 0 && (
                 <span className={styles.dots}>
-                  {colours.map((col, j) => (
-                    <span key={j} className={styles.dot} style={{ background: col }} />
+                  {labels.map(l => (
+                    <span key={l} className={styles.dot} style={{ background: colorFor(l) }} />
                   ))}
                 </span>
               )}
-            </div>
+            </button>
           )
         })}
       </div>
 
-      <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span className={styles.dot} style={{ background: GROUP_COLOR.upper }} /> ГОРНА
-        </span>
-        <span className={styles.legendItem}>
-          <span className={styles.dot} style={{ background: GROUP_COLOR.pull }} /> ГРЪБ
-        </span>
-        <span className={styles.legendItem}>
-          <span className={styles.dot} style={{ background: GROUP_COLOR.lower }} /> ДОЛНА
-        </span>
-        <span className={styles.legendItem}>
-          <span className={styles.dot} style={{ background: GROUP_COLOR.extra }} /> ЕКСТРА
-        </span>
-      </div>
+      {/* Selected day — the block names in full, with an entry point back into
+          the log for that day if the parent wants one. */}
+      {picked && (
+        <div className={styles.picked_panel}>
+          <div className={styles.picked_head}>
+            <span className={styles.picked_date}>
+              {new Date(picked + 'T12:00:00').toLocaleDateString('bg-BG', {
+                weekday: 'long', day: 'numeric', month: 'long',
+              })}
+            </span>
+            <button
+              type="button"
+              className={styles.picked_close}
+              onClick={() => setPicked(null)}
+              aria-label="Затвори"
+            >✕</button>
+          </div>
+          {pickedList.length === 0 ? (
+            <p className={styles.picked_empty}>Няма отчетена тренировка.</p>
+          ) : (
+            <ul className={styles.picked_list}>
+              {pickedList.map((c, i) => (
+                <li key={i} className={styles.picked_row}>
+                  <span className={styles.picked_swatch} style={{ background: colorFor(c.block_label) }} />
+                  <span className={styles.picked_label}>{c.block_label}</span>
+                </li>
+              ))}
+              {onOpenDay && (
+                <button type="button" className={styles.picked_open} onClick={() => onOpenDay(picked)}>
+                  Отвори в дневника →
+                </button>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {usedLabels.length > 0 && (
+        <div className={styles.legend}>
+          {usedLabels.map(l => (
+            <span key={l} className={styles.legendItem}>
+              <span className={styles.dot} style={{ background: colorFor(l) }} /> {l}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
