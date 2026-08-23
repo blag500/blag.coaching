@@ -9,50 +9,49 @@ const MODES = [
   { id: 'volume',      label: 'ОБЕМ 7Д',   hint: 'По-плътно = повече обем за последните седем дни.' },
 ]
 
+// Solid group colours — no opacity, no shading. The dark divider lines between
+// two muscles of the same colour are what say "these are two muscles"; a fill
+// at 80% opacity just makes the shape look faded.
 function colorFor(mode, group, recovery, stats, ctx) {
   const rec = recovery?.[group]
   const s   = stats?.[group] ?? {}
-  const NONE = 'rgba(255,255,255,0.05)'
+  const NONE = '#26221a'   // dark neutral for untrained — reads as body colour
 
   if (mode === 'recovery') {
     if (!rec?.trained) return NONE
-    const a = 0.55 + rec.pct / 260
-    if (rec.pct >= 80) return `rgba(129,199,132,${a})`
-    if (rec.pct >= 50) return `rgba(255,183,77,${a})`
-    return `rgba(239,83,80,${0.6 + (100 - rec.pct) / 300})`
+    if (rec.pct >= 80) return '#7BC97F'
+    if (rec.pct >= 50) return '#FFB74D'
+    return '#EF5350'
   }
   if (mode === 'lastTrained') {
     if (s.daysSince == null) return NONE
-    const d = s.daysSince
-    if (d <= 2) return `rgba(129,199,132,${0.55 + d * 0.1})`
-    if (d <= 6) return `rgba(255,183,77,${0.55 + (d - 3) * 0.1})`
-    return `rgba(239,83,80,${Math.min(1, 0.65 + (d - 7) * 0.04)})`
+    if (s.daysSince <= 2) return '#7BC97F'
+    if (s.daysSince <= 6) return '#FFB74D'
+    return '#EF5350'
   }
   if (mode === 'overload') {
     if (s.overload == null) return NONE
-    if (s.overload >  0.05) return `rgba(129,199,132,${Math.min(1, 0.55 + s.overload * 0.8)})`
-    if (s.overload < -0.05) return `rgba(239,83,80,${Math.min(1, 0.55 - s.overload * 0.8)})`
-    return 'rgba(255,183,77,0.55)'
+    if (s.overload >  0.05) return '#7BC97F'
+    if (s.overload < -0.05) return '#EF5350'
+    return '#FFB74D'
   }
   if (mode === 'volume') {
     if (!s.volume7) return NONE
     const ratio = ctx.maxVolume7 > 0 ? s.volume7 / ctx.maxVolume7 : 0
-    return `rgba(255,183,77,${0.35 + ratio * 0.6})`
+    if (ratio > 0.66) return '#FFB74D'
+    if (ratio > 0.33) return '#C79150'
+    return '#7A5F3C'
   }
   return NONE
 }
 
-const SIL  = 'rgba(14,12,8,0.85)'
-const OUT  = 'rgba(255,255,255,0.28)'
-const DIV  = 'rgba(0,0,0,0.5)'
-const SW   = 1.2
+const OUT  = 'rgba(255,255,255,0.42)'
+const DIV  = 'rgba(0,0,0,0.55)'
+const HEAD_FILL = '#1a1610'
+const SW   = 1.4
 
-// A single closed path that traces head, neck, one arm, the torso's V, the
-// leg, across the crotch, and back up the other side. One continuous outline
-// beats stacked parts because there are no gaps where an arm meets a torso —
-// the shoulder curves into the bicep the way a body does. Wide at the delts
-// (x≈18), narrow at the waist (x≈62), wide again at the hips: that is the
-// V that was missing.
+// One closed silhouette per view. Wide at delts (x≈18), narrow at waist (x≈62),
+// wide again at hips — the V that the earlier drafts kept losing.
 const BODY_OUTLINE = `
   M 85 10
   Q 62 10 62 34
@@ -62,21 +61,21 @@ const BODY_OUTLINE = `
   Q 22 82 18 104
   Q 14 138 20 172
   Q 16 210 22 250
-  Q 24 288 34 306
-  Q 44 312 48 302
-  Q 50 280 44 250
-  Q 48 212 42 178
-  Q 52 142 52 116
-  Q 56 108 62 108
-  Q 60 138 62 168
-  Q 64 200 66 226
-  Q 58 254 50 268
-  Q 42 306 46 360
-  Q 40 412 46 456
-  Q 42 486 50 500
-  L 60 508
-  L 78 512
-  Q 84 512 84 500
+  Q 24 288 34 308
+  Q 44 314 50 306
+  Q 52 282 48 250
+  Q 52 212 46 178
+  Q 54 142 54 116
+  Q 58 108 62 108
+  Q 60 138 64 168
+  Q 66 200 68 226
+  Q 60 254 52 268
+  Q 44 306 48 360
+  Q 42 412 48 456
+  Q 44 486 52 502
+  L 60 510
+  L 80 514
+  Q 84 514 84 502
   Q 82 484 82 458
   Q 78 416 80 372
   Q 82 328 84 288
@@ -84,21 +83,21 @@ const BODY_OUTLINE = `
   L 86 262
   Q 88 328 90 372
   Q 92 416 88 458
-  Q 88 484 86 500
-  Q 86 512 92 512
-  L 110 508
-  L 120 500
-  Q 128 486 124 456
-  Q 130 412 124 360
-  Q 128 306 120 268
-  Q 112 254 104 226
-  Q 106 200 108 168
+  Q 88 484 86 502
+  Q 86 514 90 514
+  L 110 510
+  L 118 502
+  Q 126 486 122 456
+  Q 128 412 122 360
+  Q 126 306 118 268
+  Q 110 254 102 226
+  Q 104 200 106 168
   Q 110 138 108 108
-  Q 114 108 118 116
-  Q 118 142 128 178
-  Q 122 212 126 250
-  Q 120 280 122 302
-  Q 126 312 136 306
+  Q 112 108 116 116
+  Q 116 142 124 178
+  Q 118 212 122 250
+  Q 118 282 120 306
+  Q 126 314 136 308
   Q 146 288 148 250
   Q 154 210 150 172
   Q 156 138 152 104
@@ -111,85 +110,68 @@ const BODY_OUTLINE = `
 `
 
 /**
- * Right-half front muscles. Left half is a mirror around x=85, drawn by
- * wrapping the same group in scale(-1,1) translate(-170,0) — one source of
- * truth per muscle so the two sides cannot drift apart.
+ * The right half of the FRONT body. Muscles tile the silhouette from the
+ * centreline outward, so every square millimetre inside the outline is claimed
+ * by some group — no dark stripes leaking through between shapes. The left
+ * half is a mirror around x = 85, done once with scale(-1,1) translate(-170,0).
  */
 function FrontRightMuscles({ c }) {
   return (
     <g>
-      {/* Trap slope from neck to shoulder (extra) */}
-      <path d="M85 66 Q100 70 118 84 L110 92 Q96 86 85 86 Z"
-            fill={c.extra} opacity="0.82" />
+      {/* Trap slope from neck out to shoulder cap (extra) */}
+      <path d="M85 66 Q100 68 118 82 L108 92 L85 90 Z" fill={c.extra} />
 
-      {/* Deltoid — anterior head, the front cap (upper) */}
-      <path d="M110 92 Q128 100 132 122 Q130 140 118 144 Q104 138 100 122 Q100 106 106 92 Z"
-            fill={c.upper} opacity="0.96" />
-      {/* Deltoid — lateral head, the shoulder ball (upper) */}
-      <path d="M132 122 Q142 148 134 172 Q120 176 112 160 Q110 142 116 130 Z"
-            fill={c.upper} opacity="0.9" />
+      {/* Deltoid — one large cap around the shoulder joint (upper) */}
+      <path d="M108 92 Q132 100 144 128 Q140 158 122 170 Q108 164 102 140 Q100 112 108 92 Z"
+            fill={c.upper} />
 
       {/* Pectoralis major — one big shield per side (upper) */}
-      <path d="M92 92 Q112 96 122 116 Q126 148 118 168 Q102 172 92 168 Z"
-            fill={c.upper} opacity="0.98" />
-      {/* Lower pec fold */}
-      <path d="M94 164 Q108 172 120 166" stroke={DIV} strokeWidth="1" fill="none" />
+      <path d="M85 90 Q108 96 122 122 Q122 156 110 172 Q94 174 85 170 Z" fill={c.upper} />
 
-      {/* Serratus anterior — three slips under the armpit (extra) */}
-      <path d="M122 158 L130 164 M122 170 L132 176 M122 182 L130 188"
-            stroke={c.extra} strokeWidth="2.2" strokeLinecap="round" opacity="0.9" />
+      {/* Serratus slips under armpit (extra) */}
+      <path d="M118 168 L128 174 L118 178 L128 184 L118 188 L126 194"
+            stroke={c.extra} strokeWidth="3.5" strokeLinecap="round" fill="none" />
 
-      {/* Biceps — long head, outer bulge (pull) */}
-      <path d="M138 148 Q150 184 142 224 Q128 226 122 200 Q124 168 132 148 Z"
-            fill={c.pull} opacity="0.94" />
-      {/* Biceps — short head, inner bulge (pull) */}
-      <path d="M124 152 Q116 184 124 224 Q134 224 132 200 Q132 172 128 152 Z"
-            fill={c.pull} opacity="0.82" />
+      {/* Biceps — fills the upper arm (pull) */}
+      <path d="M122 170 Q148 190 148 226 Q138 240 122 234 Q114 202 118 170 Z" fill={c.pull} />
 
-      {/* Forearm — brachioradialis + flexor mass (extra) */}
-      <path d="M140 232 Q152 268 142 306 Q128 310 124 282 Q122 252 132 232 Z"
-            fill={c.extra} opacity="0.9" />
-      <path d="M126 236 Q124 264 128 288 Q132 306 132 306 L132 236 Z"
-            fill={c.extra} opacity="0.72" />
+      {/* Forearm — fills lower arm from elbow to wrist (extra) */}
+      <path d="M122 234 Q150 250 148 302 Q136 316 124 310 Q114 272 118 234 Z" fill={c.extra} />
 
-      {/* Rectus abdominis — right column, three blocks (extra) */}
-      <path d="M87 178 Q102 182 104 194 L104 206 Q94 208 87 206 Z"
-            fill={c.extra} opacity="0.92" />
-      <path d="M87 210 L104 210 L104 226 Q95 228 87 226 Z"
-            fill={c.extra} opacity="0.92" />
-      <path d="M87 230 L104 230 Q104 246 100 258 Q92 258 87 254 Z"
-            fill={c.extra} opacity="0.92" />
+      {/* Rectus abdominis — one big block for the right column (extra) */}
+      <path d="M85 172 L108 172 Q112 220 108 262 L85 262 Z" fill={c.extra} />
 
-      {/* Oblique (extra) */}
-      <path d="M104 184 Q112 218 108 256 L118 254 Q122 216 116 184 Z"
-            fill={c.extra} opacity="0.78" />
+      {/* Oblique — the side flank between abs and lat/hip (extra) */}
+      <path d="M108 172 Q118 220 116 264 Q124 240 122 200 Q120 180 118 172 Z" fill={c.extra} />
 
-      {/* Inguinal V — that diagonal from hip to pubis */}
-      <path d="M116 260 L94 282" stroke={DIV} strokeWidth="1.2" fill="none" />
+      {/* Quadriceps — the big outer thigh muscle mass (lower) */}
+      <path d="M85 268 L118 268 Q132 320 128 410 L108 412 Q98 340 95 268 Z" fill={c.lower} />
+      {/* Vastus medialis — the inner-knee teardrop (lower, brighter shade via layer) */}
+      <path d="M85 380 Q92 402 100 416 L118 416 Q114 400 108 380 Z" fill={c.lower} />
 
-      {/* Quadriceps — rectus femoris (middle head, lower) */}
-      <path d="M88 288 Q92 340 92 400 L104 400 Q106 340 102 288 Z"
-            fill={c.lower} opacity="0.94" />
-      {/* Vastus lateralis — outer sweep (lower) */}
-      <path d="M106 292 Q124 340 122 400 L136 396 Q138 340 128 290 Z"
-            fill={c.lower} opacity="0.9" />
-      {/* Vastus medialis — inner-knee teardrop (lower) */}
-      <path d="M85 372 Q90 398 96 412 L110 412 Q108 396 104 372 Z"
-            fill={c.lower} opacity="0.98" />
-      {/* Sartorius — diagonal band */}
-      <path d="M108 292 L86 412" stroke={DIV} strokeWidth="0.9" fill="none" />
-      {/* Divider between rectus and vastus lateralis */}
-      <path d="M108 294 Q112 348 118 400" stroke={DIV} strokeWidth="0.7" fill="none" />
+      {/* Tibialis + calf front — fills the shin (extra) */}
+      <path d="M85 430 L118 430 Q120 470 116 502 L88 502 Z" fill={c.extra} />
 
+      {/* ── Anatomical divider lines ── */}
+      {/* Sternum / linea alba (drawn on centreline in the main render) */}
+      {/* Pec lower fold */}
+      <path d="M92 162 Q108 172 122 164" stroke={DIV} strokeWidth="1.2" fill="none" />
+      {/* Ab row dividers */}
+      <path d="M85 196 L108 196" stroke={DIV} strokeWidth="1.2" fill="none" />
+      <path d="M85 220 L108 220" stroke={DIV} strokeWidth="1.2" fill="none" />
+      <path d="M85 244 L108 244" stroke={DIV} strokeWidth="1.2" fill="none" />
+      {/* Ab / oblique divider */}
+      <path d="M108 172 L108 260" stroke={DIV} strokeWidth="1" fill="none" />
+      {/* Delt / pec seam */}
+      <path d="M108 92 Q112 130 122 168" stroke={DIV} strokeWidth="1.1" fill="none" />
+      {/* Bicep long / short seam */}
+      <path d="M132 172 Q132 200 132 232" stroke={DIV} strokeWidth="0.9" fill="none" />
+      {/* Inguinal V */}
+      <path d="M118 264 L88 288" stroke={DIV} strokeWidth="1.3" fill="none" />
+      {/* Quad head seam */}
+      <path d="M104 272 Q110 340 114 410" stroke={DIV} strokeWidth="0.9" fill="none" />
       {/* Knee cap */}
-      <ellipse cx="102" cy="420" rx="10" ry="6" fill="none" stroke={OUT} strokeWidth="0.9" />
-
-      {/* Tibialis anterior — shin (extra) */}
-      <path d="M92 432 Q94 468 96 498 L108 498 Q110 468 106 432 Z"
-            fill={c.extra} opacity="0.84" />
-      {/* Peroneus stripe (extra) */}
-      <path d="M118 434 Q122 466 120 496 L124 496 Q124 466 122 434 Z"
-            fill={c.extra} opacity="0.7" />
+      <ellipse cx="103" cy="422" rx="11" ry="6" fill="none" stroke={OUT} strokeWidth="1" />
     </g>
   )
 }
@@ -197,69 +179,53 @@ function FrontRightMuscles({ c }) {
 function BackRightMuscles({ c }) {
   return (
     <g>
-      {/* Trap upper wing (extra) */}
-      <path d="M85 66 L118 84 Q122 106 112 128 L96 132 L85 130 Z"
-            fill={c.extra} opacity="0.9" />
-      {/* Trap mid band (extra) */}
-      <path d="M96 132 L112 128 Q116 148 108 168 L96 168 Z"
-            fill={c.extra} opacity="0.82" />
-      {/* Trap lower descending fibres (extra) */}
-      <path d="M96 168 L108 168 L88 200 Z"
-            fill={c.extra} opacity="0.72" />
+      {/* Trapezius upper wing (extra) */}
+      <path d="M85 66 L118 84 Q124 108 118 132 L108 138 L85 138 Z" fill={c.extra} />
+      {/* Trapezius mid band (extra) */}
+      <path d="M85 138 L108 138 Q112 158 106 170 L85 170 Z" fill={c.extra} />
 
-      {/* Rear deltoid (upper) */}
-      <path d="M108 92 Q130 104 134 128 Q130 148 116 152 Q102 146 100 128 Q102 112 108 92 Z"
-            fill={c.upper} opacity="0.95" />
-      {/* Infraspinatus — rear shoulder fan (upper) */}
-      <path d="M110 152 Q108 176 120 184 Q130 176 128 156 Z"
-            fill={c.upper} opacity="0.74" />
+      {/* Rear deltoid — one cap around the shoulder (upper) */}
+      <path d="M108 92 Q132 100 144 128 Q140 158 122 170 Q106 162 102 140 Q104 108 108 92 Z"
+            fill={c.upper} />
 
-      {/* Latissimus dorsi — the wing (pull) */}
-      <path d="M108 148 Q136 196 130 254 L96 254 L96 174 Q102 158 108 148 Z"
-            fill={c.pull} opacity="0.96" />
+      {/* Latissimus dorsi — the huge wing (pull) */}
+      <path d="M108 138 Q140 190 132 262 L85 262 L85 170 L106 170 Z" fill={c.pull} />
 
-      {/* Rhomboid crease along spine */}
-      <path d="M85 128 L85 200" stroke={DIV} strokeWidth="1" fill="none" />
-
-      {/* Triceps — long head, innermost (upper) */}
-      <path d="M132 148 Q144 184 140 226 Q128 228 124 200 Q124 172 130 148 Z"
-            fill={c.upper} opacity="0.94" />
-      {/* Triceps — lateral head, outer (upper) */}
-      <path d="M142 158 Q152 188 146 224 Q140 226 136 204 Q136 180 140 158 Z"
-            fill={c.upper} opacity="0.86" />
+      {/* Triceps — fills back of upper arm (upper) */}
+      <path d="M122 170 Q150 200 148 240 Q138 250 122 244 Q114 208 118 170 Z" fill={c.upper} />
 
       {/* Forearm extensors (extra) */}
-      <path d="M140 232 Q152 268 142 306 Q128 310 124 282 Q122 252 132 232 Z"
-            fill={c.extra} opacity="0.9" />
-      <path d="M126 236 Q124 264 128 288 L132 306 L132 236 Z"
-            fill={c.extra} opacity="0.72" />
+      <path d="M122 244 Q150 260 148 302 Q136 316 124 310 Q114 278 118 244 Z" fill={c.extra} />
 
-      {/* Erector spinae — thick column down the spine (extra) */}
-      <path d="M86 196 L96 196 L96 268 L86 268 Z"
-            fill={c.extra} opacity="0.8" />
+      {/* Erector spinae — narrow column down centre spine (extra) */}
+      <path d="M85 200 L96 200 L96 262 L85 262 Z" fill={c.extra} />
 
       {/* Gluteus maximus (lower) */}
-      <path d="M86 272 L122 272 Q136 300 126 322 L86 324 Z"
-            fill={c.lower} opacity="0.96" />
+      <path d="M85 266 L120 266 Q134 296 124 322 L85 322 Z" fill={c.lower} />
 
-      {/* Hamstrings — biceps femoris (outer, lower) */}
-      <path d="M116 328 Q130 372 124 412 L112 412 Q108 372 106 328 Z"
-            fill={c.lower} opacity="0.92" />
-      {/* Hamstrings — semi (inner, lower) */}
-      <path d="M86 330 Q90 372 96 412 L108 412 Q108 372 104 330 Z"
-            fill={c.lower} opacity="0.86" />
+      {/* Hamstrings — fills back of thigh (lower) */}
+      <path d="M85 326 L124 326 Q128 372 122 416 L92 416 Q88 372 85 326 Z" fill={c.lower} />
+
+      {/* Gastrocnemius — fills back of calf (extra) */}
+      <path d="M85 430 L120 430 Q122 470 116 502 L92 502 Q88 470 85 430 Z" fill={c.extra} />
+
+      {/* ── Divider lines ── */}
+      {/* Trap upper/mid seam */}
+      <path d="M85 138 L108 138" stroke={DIV} strokeWidth="1.1" fill="none" />
+      {/* Lat / trap seam */}
+      <path d="M108 138 Q118 176 130 218" stroke={DIV} strokeWidth="1" fill="none" />
+      {/* Spine crease */}
+      <path d="M85 138 L85 262" stroke={DIV} strokeWidth="1.2" fill="none" />
+      {/* Tricep three-head hint */}
+      <path d="M132 176 Q134 208 130 240" stroke={DIV} strokeWidth="0.9" fill="none" />
+      {/* Glute crease */}
+      <path d="M85 324 Q104 320 124 324" stroke={DIV} strokeWidth="1.1" fill="none" />
+      {/* Ham inner/outer seam */}
+      <path d="M108 328 L108 414" stroke={DIV} strokeWidth="0.9" fill="none" />
       {/* Popliteal fossa (knee back) */}
-      <path d="M88 420 Q108 424 124 420" stroke={OUT} strokeWidth="0.8" fill="none" />
-
-      {/* Gastrocnemius — medial head (extra) */}
-      <path d="M88 432 Q92 466 96 496 L108 496 Q106 466 104 432 Z"
-            fill={c.extra} opacity="0.96" />
-      {/* Gastrocnemius — lateral head (extra) */}
-      <path d="M110 432 Q124 466 118 494 L108 496 Q108 466 108 432 Z"
-            fill={c.extra} opacity="0.88" />
-      {/* Soleus (extra) */}
-      <path d="M92 498 Q98 512 106 516 L118 516 Q122 512 118 498 Z"
-            fill={c.extra} opacity="0.78" />
+      <path d="M88 422 Q108 428 124 422" stroke={OUT} strokeWidth="1" fill="none" />
+      {/* Gastroc two-head seam */}
+      <path d="M108 432 L108 500" stroke={DIV} strokeWidth="0.9" fill="none" />
     </g>
   )
 }
@@ -280,15 +246,6 @@ export default function MuscleMap({ recovery, sessions = [], completions = [] })
   }
 
   const activeHint = MODES.find(m => m.id === mode)?.hint
-
-  const body = (
-    <>
-      {/* Whole silhouette in one continuous curve */}
-      <path d={BODY_OUTLINE} fill={SIL} stroke={OUT} strokeWidth={SW} />
-      {/* Sternum + linea alba divider, drawn on the centreline */}
-      <line x1="85" y1="92" x2="85" y2="258" stroke={DIV} strokeWidth="1.2" />
-    </>
-  )
 
   return (
     <div className={styles.wrap}>
@@ -311,21 +268,32 @@ export default function MuscleMap({ recovery, sessions = [], completions = [] })
 
         {/* ═════════ FRONT ═════════ */}
         <g>
-          {body}
+          {/* Body silhouette base — a subtle dark fill so hands/feet/head read
+              as body and any tiny uncovered sliver still looks like skin
+              rather than a hole. */}
+          <path d={BODY_OUTLINE} fill="#26221a" stroke={OUT} strokeWidth={SW} />
+          {/* Muscles go on top, both sides */}
           <FrontRightMuscles c={c} />
           <g transform="matrix(-1 0 0 1 170 0)">
             <FrontRightMuscles c={c} />
           </g>
+          {/* Centre-line dividers (sternum + linea alba) */}
+          <line x1="85" y1="92" x2="85" y2="262" stroke={DIV} strokeWidth="1.4" />
+          {/* Head circle drawn last so it sits above any muscle tint */}
+          <circle cx="85" cy="34" r="22" fill={HEAD_FILL} stroke={OUT} strokeWidth={SW} />
           <text x="85" y="548" textAnchor="middle" className={styles.caption}>ПРЕДНА</text>
         </g>
 
         {/* ═════════ BACK ═════════ */}
         <g transform="translate(170 0)">
-          <path d={BODY_OUTLINE} fill={SIL} stroke={OUT} strokeWidth={SW} />
+          <path d={BODY_OUTLINE} fill="#26221a" stroke={OUT} strokeWidth={SW} />
           <BackRightMuscles c={c} />
           <g transform="matrix(-1 0 0 1 170 0)">
             <BackRightMuscles c={c} />
           </g>
+          {/* Spine centre-line */}
+          <line x1="85" y1="66" x2="85" y2="262" stroke={DIV} strokeWidth="1.4" />
+          <circle cx="85" cy="34" r="22" fill={HEAD_FILL} stroke={OUT} strokeWidth={SW} />
           <text x="85" y="548" textAnchor="middle" className={styles.caption}>ЗАДНА</text>
         </g>
       </svg>
