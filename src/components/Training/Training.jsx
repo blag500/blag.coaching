@@ -137,7 +137,33 @@ export default function Training({ onMenuOpen }) {
     return out
   }, [blocks])
 
-  const recovery = muscleRecovery(completions, Date.now(), soreness, groupsByLabel)
+  // Sessions logged today count as training even without the "Готово" tick —
+  // the mannequin was pretending a session did not happen until a completion
+  // row appeared, and that is not the promise the app makes. Any exercise
+  // logged that also lives in a block adds that block as an implicit
+  // completion, so recovery, "last trained" and every other read of the day
+  // are honest without needing the extra tap.
+  const enrichedCompletions = useMemo(() => {
+    if (!blocks?.length) return completions
+    const known = new Set(completions.map(c => `${c.completed_date}|${c.block_label}`))
+    const extra = []
+    for (const s of sessions) {
+      if (!s.setCount) continue
+      const seenLabelsToday = new Set(s.labels || [])
+      for (const b of blocks) {
+        if (seenLabelsToday.has(b.label)) continue
+        const touches = b.exercises?.some(e => s.exercises?.has?.(e.name))
+        if (!touches) continue
+        const key = `${s.date}|${b.label}`
+        if (known.has(key)) continue
+        extra.push({ completed_date: s.date, block_label: b.label })
+        known.add(key)
+      }
+    }
+    return extra.length ? [...completions, ...extra] : completions
+  }, [sessions, completions, blocks])
+
+  const recovery = muscleRecovery(enrichedCompletions, Date.now(), soreness, groupsByLabel)
   const ranked = trainable
     .map(b => ({ block: b, ...blockReadiness(b, recovery, lastDone) }))
     .sort((a, b) =>
@@ -700,7 +726,7 @@ export default function Training({ onMenuOpen }) {
       {homeTab === 'body' && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>МУСКУЛНИ ГРУПИ</h2>
-          <MuscleMap recovery={recovery} sessions={sessions} completions={completions} groupsByLabel={groupsByLabel} />
+          <MuscleMap recovery={recovery} sessions={sessions} completions={enrichedCompletions} groupsByLabel={groupsByLabel} />
           <MuscleStatus completions={completions} recovery={recovery} />
         </section>
       )}
