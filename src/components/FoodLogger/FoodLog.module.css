@@ -643,11 +643,13 @@
 }
 
 .macroIcon {
-  width: 11px;
-  height: 11px;
+  width: 13px;
+  height: 13px;
   flex-shrink: 0;
   opacity: 0.75;
 }
+
+.macro svg { opacity: 0.85; }
 
 .macroP { color: rgba(239, 154, 154, 0.75); }
 .macroC { color: rgba(255, 213, 79,  0.75); }
