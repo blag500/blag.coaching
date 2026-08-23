@@ -11,7 +11,7 @@
 // Forearms, traps and neck take small loads and recover fastest, which is why
 // they can be trained beside anything else — that is the point of an accessory
 // day, and a 48-hour window would have kept locking it out.
-export const RECOVERY_H = { upper: 48, lower: 72, pull: 48, extra: 24 }
+export const RECOVERY_H = { upper: 48, lower: 72, pull: 48, extra: 36 }
 
 export const GROUP_LABELS = {
   upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ГРЪБ', extra: 'ЕКСТРА',
@@ -31,7 +31,7 @@ export const GROUP_COLORS = {
 // contains nothing the others match but "врат" and "корем" would otherwise fall
 // through to nothing at all.
 const PATTERNS = {
-  extra: /предмишн|forearm|трапец|trap|врат|neck|корем|abs|коремни|прасц|калф|calf/,
+  extra: /екстра|extra|аксесо|accessor|предмишн|forearm|трапец|trap|врат|neck|корем|abs|коремни|прасц|калф|calf/,
   upper: /горн|upper|гърди|гръден|chest|пуш|push|бутан|рам|shoulder|делт|трицеп|tricep/,
   lower: /долн|lower|крак|leg|бедр|глутеу|седалищ|прасец|quad|ham|клек|squat/,
   pull:  /пул|pull|дърпан|гръб|back|бицеп|bicep|ръц|arm|лат/,
