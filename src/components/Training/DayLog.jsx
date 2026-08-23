@@ -35,43 +35,6 @@ function prevSet(sets, i) {
   return null
 }
 
-/**
- * A small square beside the exercise: the photo if there is one, a camera if
- * there is not. Tapping a photo opens it; tapping the empty square adds one.
- */
-function ExerciseThumb({ name, url, busy, onPick, onZoom, hint }) {
-  const id = `ph-${name.replace(/\W+/g, '')}`
-  if (url) {
-    return (
-      <button
-        type="button"
-        className={styles.thumb}
-        onClick={() => onZoom({ url, name })}
-        aria-label={`Виж ${name}`}
-      >
-        <img src={url} alt="" className={styles.thumbImg} />
-        {/* On a folded exercise the row reads as one closed thing, so the
-            picture needs to say it is still worth pressing. */}
-        {hint && <span className={styles.thumbHint} aria-hidden="true">⤢</span>}
-      </button>
-    )
-  }
-  return (
-    <>
-      <input
-        id={id}
-        type="file"
-        accept="image/*"
-        className={styles.fileInput}
-        onChange={e => { const f = e.target.files?.[0]; if (f) onPick(f); e.target.value = '' }}
-      />
-      <label htmlFor={id} className={`${styles.thumb} ${styles.thumbEmpty}`} title={`Снимка на ${name}`}>
-        {busy ? '…' : '▢'}
-      </label>
-    </>
-  )
-}
-
 /** What a finished exercise says on its one line, once it is folded away. */
 function summarise(sets) {
   const done = sets.filter(s => s.id && s.weight !== '')
@@ -110,8 +73,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const [swap, setSwap] = useState({})   // planned name → what stood in, today
   const [editing, setEditing] = useState(null)
   const [open, setOpen] = useState({})   // explicit fold state, overrides default
-  const { byName: photos, upload } = useExercisePhotos()
-  const [uploading, setUploading] = useState(null)
+  const { byName: photos } = useExercisePhotos()
   const [zoom, setZoom] = useState(null)
 
   // Autosave reads the newest values from a ref: a debounced call fired from a
@@ -439,25 +401,24 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
         const shown  = swap[ex.name] || ex.name
         const pace   = setPace(sets.filter(s => s.id))
 
+        // Photo attached in the editor, if any — quiet thumbnail that opens
+        // into a lightbox on tap. No upload UI here; that lives with the plan.
+        const photoUrl = photos[shown]
+        const thumb = photoUrl ? (
+          <button
+            type="button"
+            className={styles.thumb}
+            onClick={() => setZoom({ url: photoUrl, name: shown })}
+            aria-label={`Виж ${shown}`}
+          >
+            <img src={photoUrl} alt="" className={styles.thumbImg} />
+          </button>
+        ) : null
+
         if (!isOpen) {
           return (
-            /* Two targets, not one: the picture opens the picture, the rest
-               opens the exercise. A container div rather than a button around
-               them, because a button inside a button is not valid markup and
-               browsers take it apart — the taps would land unpredictably. */
             <div key={`${ex.block}-${ex.name}`} className={styles.folded}>
-              <ExerciseThumb
-                name={shown}
-                url={photos[shown]}
-                busy={uploading === ex.name}
-                hint
-                onPick={async file => {
-                  setUploading(ex.name)
-                  await upload(shown, file)
-                  setUploading(null)
-                }}
-                onZoom={setZoom}
-              />
+              {thumb}
               <button
                 type="button"
                 className={styles.foldedMain}
@@ -474,19 +435,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
         return (
           <div key={`${ex.block}-${ex.name}`} className={styles.exercise}>
             <div className={styles.head}>
-              {/* The picture, where the name alone is not enough. Only in the
-                  open exercise: on every row at once it was decoration. */}
-              <ExerciseThumb
-                name={shown}
-                url={photos[shown]}
-                busy={uploading === ex.name}
-                onPick={async file => {
-                  setUploading(ex.name)
-                  await upload(shown, file)
-                  setUploading(null)
-                }}
-                onZoom={setZoom}
-              />
+              {thumb}
               <span className={styles.nameWrap}>
                 <span className={styles.name}>{shown}</span>
                 <button

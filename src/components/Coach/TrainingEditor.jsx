@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
+import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import styles from './TrainingEditor.module.css'
 
 const GROUP_OPTIONS = [
@@ -48,6 +49,8 @@ function defaultBlocks(initialPlan) {
 export default function TrainingEditor({ initialPlan, onSave, saving }) {
   const [blocks, setBlocks] = useState(() => defaultBlocks(initialPlan))
   const [openId, setOpenId] = useState(null)
+  const { byName: photos, upload } = useExercisePhotos()
+  const [uploading, setUploading] = useState(null)
   // The muscle field keeps the raw text the user is typing. Deriving the input's
   // value from the parsed array ate the comma the instant it was typed (the
   // empty trailing segment was filtered away), so a comma could never be typed.
@@ -190,38 +193,74 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
 
                 {!block.isRest && (
                   <div className={styles.exList}>
-                    {block.exercises.map((ex, i) => (
-                      <div key={ex.id} className={styles.exRow}>
-                        <span className={styles.exNum}>{i + 1}</span>
-                        <input
-                          className={`${styles.exInput} ${styles.exName}`}
-                          type="text"
-                          placeholder="Упражнение"
-                          value={ex.name}
-                          onChange={e => updateExercise(block.id, ex.id, 'name', e.target.value)}
-                        />
-                        <input
-                          className={`${styles.exInput} ${styles.exSets}`}
-                          type="text"
-                          placeholder="Сер."
-                          value={ex.sets}
-                          onChange={e => updateExercise(block.id, ex.id, 'sets', e.target.value)}
-                        />
-                        <input
-                          className={`${styles.exInput} ${styles.exReps}`}
-                          type="text"
-                          placeholder="Повт."
-                          value={ex.reps}
-                          onChange={e => updateExercise(block.id, ex.id, 'reps', e.target.value)}
-                        />
-                        <button
-                          className={styles.exRemove}
-                          onClick={() => removeExercise(block.id, ex.id)}
-                          type="button"
-                          aria-label="Изтрий упражнение"
-                        >×</button>
-                      </div>
-                    ))}
+                    {block.exercises.map((ex, i) => {
+                      const inputId = `ph-${block.id}-${ex.id}`
+                      const url = ex.name ? photos[ex.name] : null
+                      const busy = uploading === `${block.id}-${ex.id}`
+                      return (
+                        <div key={ex.id} className={styles.exRow}>
+                          <span className={styles.exNum}>{i + 1}</span>
+
+                          {/* Photo lives with the exercise now — one place per
+                              lift, not a camera icon on every set. Empty name
+                              disables it, since photos are keyed by name. */}
+                          <input
+                            id={inputId}
+                            type="file"
+                            accept="image/*"
+                            className={styles.fileInput}
+                            disabled={!ex.name}
+                            onChange={async e => {
+                              const f = e.target.files?.[0]
+                              e.target.value = ''
+                              if (!f || !ex.name) return
+                              setUploading(`${block.id}-${ex.id}`)
+                              await upload(ex.name, f)
+                              setUploading(null)
+                            }}
+                          />
+                          <label
+                            htmlFor={inputId}
+                            className={`${styles.exThumb} ${url ? styles.exThumbHas : ''} ${!ex.name ? styles.exThumbDisabled : ''}`}
+                            title={ex.name ? `Снимка на ${ex.name}` : 'Кръсти упражнението първо'}
+                          >
+                            {busy
+                              ? '…'
+                              : url
+                                ? <img src={url} alt="" className={styles.exThumbImg} />
+                                : '📷'}
+                          </label>
+
+                          <input
+                            className={`${styles.exInput} ${styles.exName}`}
+                            type="text"
+                            placeholder="Упражнение"
+                            value={ex.name}
+                            onChange={e => updateExercise(block.id, ex.id, 'name', e.target.value)}
+                          />
+                          <input
+                            className={`${styles.exInput} ${styles.exSets}`}
+                            type="text"
+                            placeholder="Сер."
+                            value={ex.sets}
+                            onChange={e => updateExercise(block.id, ex.id, 'sets', e.target.value)}
+                          />
+                          <input
+                            className={`${styles.exInput} ${styles.exReps}`}
+                            type="text"
+                            placeholder="Повт."
+                            value={ex.reps}
+                            onChange={e => updateExercise(block.id, ex.id, 'reps', e.target.value)}
+                          />
+                          <button
+                            className={styles.exRemove}
+                            onClick={() => removeExercise(block.id, ex.id)}
+                            type="button"
+                            aria-label="Изтрий упражнение"
+                          >×</button>
+                        </div>
+                      )
+                    })}
                     <button
                       className={styles.addExBtn}
                       onClick={() => addExercise(block.id)}
