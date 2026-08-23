@@ -416,7 +416,7 @@ export default function Training({ onMenuOpen }) {
             ].join(' ')}>
               <span className={styles.recoveryDot} />
               {selRec.pct >= 80
-                ? 'Възстановена и готова'
+                ? 'По часовник — готова'
                 : selRec.basis === 'block'
                   /* No muscle group was recognised in the label, so the claim is
                      narrowed to what is actually known: when this block itself
@@ -548,7 +548,9 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'today' && (
         <>
-          {/* What to train, and the one tap that starts it. */}
+          {/* The today card is now just the header — no start button, because
+              the log itself is right below it. Two taps to record a set
+              instead of three, and the block name still says what today is. */}
           <section className={styles.today}>
             <span className={styles.todayEyebrow}>
               {last ? `Последна тренировка ${agoLabel(last.date)}` : 'Още нищо не е логнато'}
@@ -562,22 +564,52 @@ export default function Training({ onMenuOpen }) {
               ].join(' ')}>
                 <span className={styles.recoveryDot} />
                 {dueEntry.pct >= 80
-                  ? 'Възстановена и готова'
-                  : `${dueEntry.pct}% възстановена`}
+                  ? 'По часовник — готова'
+                  : `≈ ${dueEntry.pct}% възстановена`}
               </span>
             )}
-
-            {dueBlock?.exercises?.length > 0 && (
-              <span className={styles.todayPreview}>
-                {dueBlock.exercises.slice(0, 3).map(e => e.name).join(' · ')}
-                {dueBlock.exercises.length > 3 ? ` · +${dueBlock.exercises.length - 3}` : ''}
-              </span>
-            )}
-
-            <button type="button" className={styles.startBtn} onClick={() => openSession()}>
-              ЗАПОЧНИ ТРЕНИРОВКА
-            </button>
           </section>
+
+          {/* Inline log for today's due block. The old workflow was tap →
+              new page → log; this is just: log. */}
+          {dueBlock && !isRestBlock(dueBlock) && logDate === todayStr && (
+            <>
+              <DayLog
+                date={todayStr}
+                blockLabels={[dueBlock.label]}
+                blocks={blocks}
+                onLogged={handleLogged}
+              />
+
+              <button
+                className={[
+                  styles.markDoneBtn,
+                  (dueBlock.exercises?.length ?? 0) > 0 &&
+                    dueBlock.exercises.every(e => lifts[e.name]?.today)
+                    ? styles.markDoneReady : '',
+                  completions.some(c => c.completed_date === todayStr && c.block_label === dueBlock.label) || justMarked
+                    ? styles.markDoneDone : '',
+                ].join(' ')}
+                onClick={() => {
+                  // Route through the existing handler by aligning the state
+                  // it reads. Keeps one code path for marking a session done.
+                  setSelectedId(dueBlock.id)
+                  userPicked.current = true
+                  setLogDate(todayStr)
+                  handleMarkDone()
+                }}
+                disabled={
+                  marking ||
+                  completions.some(c => c.completed_date === todayStr && c.block_label === dueBlock.label)
+                }
+                type="button"
+              >
+                {completions.some(c => c.completed_date === todayStr && c.block_label === dueBlock.label) || justMarked
+                  ? '✓ Отбелязано за днес!'
+                  : marking ? '...' : '✓ Маркирай като готово'}
+              </button>
+            </>
+          )}
 
           {/* The last few sessions live with today, because "what did I do
               yesterday" is a today question, not a weekly report. */}

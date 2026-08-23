@@ -285,11 +285,14 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     // so the substitute builds its own history and the planned lift knows why
     // it has a gap that week.
     const done = swapRef.current[name] || name
+    // Bulgarian iOS decimal keys deliver a comma; parseFloat treats "60,5" as
+    // 60. Normalising before parsing is what lets a half plate save.
+    const parsedWeight = parseFloat(String(r.weight).replace(',', '.')) || 0
     const payload = {
       user_id: user.id,
       date,
       exercise_name: done,
-      weight: parseFloat(r.weight) || 0,
+      weight: parsedWeight,
       reps:   parseInt(r.reps) || null,
       sets:   1,
       set_index: i,
@@ -341,8 +344,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       const sets = prev[name]
       const r = sets[i]
       const prevR = echo(sets, i, name)
+      const norm = v => parseFloat(String(v ?? '').replace(',', '.')) || 0
       const empty = String(r.weight).trim() === ''
-      const base = empty ? (parseFloat(prevR?.weight) || 0) : (parseFloat(r.weight) || 0)
+      const base = empty ? norm(prevR?.weight) : norm(r.weight)
       const next = Math.max(0, Math.round((base + dir * STEP) * 2) / 2)
       const reps = empty && String(r.reps).trim() === '' ? (prevR?.reps ?? r.reps) : r.reps
       return {
@@ -535,10 +539,17 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                     <label className={styles.field}>
                       <input
                         className={styles.input}
-                        type="number" min="0" step="0.5" inputMode="decimal"
+                        type="text"
+                        inputMode="decimal"
+                        pattern="[0-9]*[.,]?[0-9]*"
                         value={r.weight}
                         placeholder={prev ? String(prev.weight) : 'кг'}
-                        onChange={e => edit(ex.name, i, 'weight', e.target.value)}
+                        onChange={e => {
+                          // Digits, comma and dot only — the Bulgarian decimal
+                          // key gives a comma, and the international one a dot.
+                          const v = e.target.value.replace(/[^\d.,]/g, '')
+                          edit(ex.name, i, 'weight', v)
+                        }}
                         onBlur={() => blur(ex.name, i)}
                         aria-label={`${ex.name}, серия ${i + 1}, килограми`}
                       />
