@@ -138,12 +138,12 @@ export default function Training({ onMenuOpen }) {
     return out
   }, [blocks])
 
-  // Sessions logged today count as training even without the "Готово" tick —
-  // the mannequin was pretending a session did not happen until a completion
-  // row appeared, and that is not the promise the app makes. Any exercise
-  // logged that also lives in a block adds that block as an implicit
-  // completion, so recovery, "last trained" and every other read of the day
-  // are honest without needing the extra tap.
+  // Sessions logged today count as training even without the "Готово" tick.
+  // A logged day adds AT MOST one implicit completion — the block whose
+  // exercise list best overlaps what was actually done. Adding every block
+  // that shares any exercise (Bench Press lives in Upper A and Upper B)
+  // used to plant two completions from one session, doubling the recovery
+  // signal for shared groups.
   const enrichedCompletions = useMemo(() => {
     if (!blocks?.length) return completions
     const known = new Set(completions.map(c => `${c.completed_date}|${c.block_label}`))
@@ -151,14 +151,21 @@ export default function Training({ onMenuOpen }) {
     for (const s of sessions) {
       if (!s.setCount) continue
       const seenLabelsToday = new Set(s.labels || [])
+      let best = null
+      let bestScore = 0
       for (const b of blocks) {
         if (seenLabelsToday.has(b.label)) continue
-        const touches = b.exercises?.some(e => s.exercises?.has?.(e.name))
-        if (!touches) continue
-        const key = `${s.date}|${b.label}`
-        if (known.has(key)) continue
-        extra.push({ completed_date: s.date, block_label: b.label })
-        known.add(key)
+        if (!b.exercises?.length) continue
+        let score = 0
+        for (const e of b.exercises) if (s.exercises?.has?.(e.name)) score += 1
+        if (score > bestScore) { bestScore = score; best = b }
+      }
+      if (best && bestScore > 0) {
+        const key = `${s.date}|${best.label}`
+        if (!known.has(key)) {
+          extra.push({ completed_date: s.date, block_label: best.label })
+          known.add(key)
+        }
       }
     }
     return extra.length ? [...completions, ...extra] : completions
