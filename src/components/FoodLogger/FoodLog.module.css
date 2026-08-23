@@ -618,3 +618,36 @@
   color: var(--accent);
   opacity: 0.75;
 }
+
+/* Meal totals — protein/carbs/fat chips next to the kcal on each meal head. */
+.mealTotals {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.macro {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.04);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: var(--text);
+}
+
+.macroLetter {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  margin-right: 2px;
+}
+
+.macroP { color: var(--macro-protein, #EF9A9A); }
+.macroC { color: var(--macro-carbs,   #FFD54F); }
+.macroF { color: var(--macro-fat,     #90CAF9); }

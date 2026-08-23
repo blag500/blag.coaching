@@ -311,13 +311,29 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
           subtotal and a + that targets it for the next add. Empty sections stay,
           so the four meals are always there to add into. */}
       {groups.map((group, gi) => {
-        const kcal = Math.round(group.items.reduce((s, e) => s + (e.kcal || 0), 0))
+        const kcal    = Math.round(group.items.reduce((s, e) => s + (e.kcal    || 0), 0))
+        const protein = Math.round(group.items.reduce((s, e) => s + (e.protein || 0), 0))
+        const carbs   = Math.round(group.items.reduce((s, e) => s + (e.carbs   || 0), 0))
+        const fat     = Math.round(group.items.reduce((s, e) => s + (e.fat     || 0), 0))
         return (
           <section key={group.id} className={styles.mealGroup}>
             <div className={styles.mealHead}>
               <span className={styles.mealName}>{group.label}</span>
               <span className={styles.mealHeadRight}>
-                {group.items.length > 0 && <span className={styles.mealKcal}>{kcal} ккал</span>}
+                {group.items.length > 0 && (
+                  <span className={styles.mealTotals}>
+                    <span className={`${styles.macro} ${styles.macroP}`} title="Протеин">
+                      <span className={styles.macroLetter}>П</span>{protein}
+                    </span>
+                    <span className={`${styles.macro} ${styles.macroC}`} title="Въглехидрати">
+                      <span className={styles.macroLetter}>В</span>{carbs}
+                    </span>
+                    <span className={`${styles.macro} ${styles.macroF}`} title="Мазнини">
+                      <span className={styles.macroLetter}>М</span>{fat}
+                    </span>
+                    <span className={styles.mealKcal}>{kcal} ккал</span>
+                  </span>
+                )}
                 {!group.legacy && onAddRaw && (
                   <button
                     className={styles.mealAdd}
