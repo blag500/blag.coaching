@@ -29,6 +29,31 @@ export async function registerPushSubscription(userId) {
     { user_id: userId, endpoint: sub.endpoint, subscription: sub.toJSON() },
     { onConflict: 'endpoint' }
   )
+
+  // Reinstalling the PWA leaves a fresh endpoint under the same push service
+  // (web.push.apple.com for iOS, fcm.googleapis.com for Chrome) — same device,
+  // different subscription. Nothing revokes the old one, so send-push keeps
+  // firing 2 or 3 notifications per event. Deleting other subscriptions from
+  // this user with the same push-service origin keeps at most one per browser
+  // family, which is what a person means when they see "my phone" here. Cross-
+  // browser stays separate: Safari and Chrome use different origins.
+  try {
+    const origin = new URL(sub.endpoint).origin
+    const { data: mine } = await supabase
+      .from('push_subscriptions')
+      .select('id, endpoint')
+      .eq('user_id', userId)
+    const stale = (mine ?? [])
+      .filter(row => row.endpoint !== sub.endpoint)
+      .filter(row => {
+        try { return new URL(row.endpoint).origin === origin }
+        catch { return false }
+      })
+      .map(row => row.id)
+    if (stale.length) {
+      await supabase.from('push_subscriptions').delete().in('id', stale)
+    }
+  } catch { /* cleanup is a nice-to-have — never block registration */ }
 }
 
 export function usePushNotifications() {
