@@ -386,6 +386,104 @@
 
 
 
+/* Split picker — the "днес" tab's first view, before you commit to a block.
+   Rows carry the name, when you last did it, and how recovered it is; tap
+   opens the session view. The due block gets a subtle golden edge so the eye
+   lands on it without a "препоръчано" chip. */
+.blockList {
+  list-style: none;
+  margin: 4px 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blockRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 150ms, transform 100ms;
+}
+.blockRow:active { transform: scale(0.99); }
+
+.blockRowDue {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: var(--panel-shadow), 0 0 30px -12px rgba(var(--accent-rgb), 0.5);
+}
+
+.blockRowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.blockRowName {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.blockRowMeta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.blockRowState {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.blockRowReady {
+  background: rgba(129, 199, 132, 0.14);
+  color: #81C784;
+}
+.blockRowWait {
+  background: rgba(255, 183, 77, 0.14);
+  color: var(--accent);
+}
+
+.blockRowChev {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.sessionBack {
+  align-self: flex-start;
+  padding: 8px 12px 8px 4px;
+  margin: 4px 0 4px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 150ms;
+}
+.sessionBack:active { color: var(--accent); }
+
 /* Progression, as a place on the page rather than a link in the header. */
 .progressionEntry {
   width: 100%;

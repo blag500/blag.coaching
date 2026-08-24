@@ -75,6 +75,10 @@ export default function Training({ onMenuOpen }) {
   const [homeTab, setHomeTab]           = useState('today')
   const [exercise, setExercise]         = useState(null)
   const [selectedId, setSelectedId]     = useState(blocks?.[0]?.id ?? '0')
+  // When null, "днес" shows the split picker. Set to a block id and the tab
+  // enters that block's session view — a single question at a time, from the
+  // moment you tap into it to the moment the log is done.
+  const [sessionBlockId, setSessionBlockId] = useState(null)
   const [editing, setEditing]           = useState(false)
   const [savingPlan, setSavingPlan]     = useState(false)
   const [soreness, setSoreness]         = useState(null)
@@ -582,30 +586,77 @@ export default function Training({ onMenuOpen }) {
         ))}
       </div>
 
-      {homeTab === 'today' && (
+      {homeTab === 'today' && !sessionBlockId && (
         <>
-          {/* Which block to log. The due one is preselected — most days that's
-              the answer — but any block on the plan is one tap away, so a
-              "не днес този" is not a fight with the app. */}
-          <div className={styles.pillBar} role="tablist">
-            {blocks.map(block => (
-              <button
-                key={block.id}
-                className={`${styles.pill} ${selectedId === block.id ? styles.activePill : ''}`}
-                onClick={() => {
-                  userPicked.current = true
-                  setSelectedId(block.id)
-                  setLogDate(todayStr)
-                  setJustMarked(false)
-                }}
-                role="tab"
-                aria-selected={selectedId === block.id}
-                type="button"
-              >
-                {block.label}
-              </button>
-            ))}
-          </div>
+          {/* The whole split, as a list of rows. Each row carries what makes a
+              block choosable at a glance: name, recovery state, how long since
+              you last did it. Tap opens the session view — no inline expansion
+              beats a proper page for something you'll spend the next 45
+              minutes inside. */}
+          <ul className={styles.blockList}>
+            {blocks.map(block => {
+              const rec  = blockReadiness(block, recovery, lastDone)
+              const last = lastDone[block.label]
+              const isDue = dueBlock?.id === block.id
+              const isRest = isRestBlock(block)
+              return (
+                <li key={block.id}>
+                  <button
+                    type="button"
+                    className={`${styles.blockRow} ${isDue ? styles.blockRowDue : ''}`}
+                    onClick={() => {
+                      userPicked.current = true
+                      setSelectedId(block.id)
+                      setSessionBlockId(block.id)
+                      setLogDate(todayStr)
+                      setJustMarked(false)
+                    }}
+                  >
+                    <span className={styles.blockRowBody}>
+                      <span className={styles.blockRowName}>{block.label}</span>
+                      <span className={styles.blockRowMeta}>
+                        {isRest
+                          ? 'Почивка · сън, хидратация, мобилити'
+                          : last
+                            ? `Последно ${agoLabel(last)}`
+                            : 'Още нищо не е логнато'}
+                      </span>
+                    </span>
+                    {!isRest && rec.basis !== 'never' && (
+                      <span className={[
+                        styles.blockRowState,
+                        rec.pct >= 80 ? styles.blockRowReady : styles.blockRowWait,
+                      ].join(' ')}>
+                        {rec.pct >= 80 ? 'готова' : `${rec.pct}%`}
+                      </span>
+                    )}
+                    <span className={styles.blockRowChev}>›</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+
+          <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
+            <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
+            <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
+          </button>
+        </>
+      )}
+
+      {homeTab === 'today' && sessionBlockId && (
+        <>
+          {/* Session view — one block, opened. Back returns to the picker.
+              The green per-set ticks handle marking; the implicit-completion
+              logic promotes the session to a full "done" once enough sets are
+              in, so no separate "маркирай готово" button lives here anymore. */}
+          <button
+            type="button"
+            className={styles.sessionBack}
+            onClick={() => setSessionBlockId(null)}
+          >
+            ← Списък
+          </button>
 
           <section className={styles.today}>
             <span className={styles.todayEyebrow}>
@@ -627,38 +678,12 @@ export default function Training({ onMenuOpen }) {
           </section>
 
           {selectedBlock && !isRestBlock(selectedBlock) && (
-            <>
-              <DayLog
-                date={todayStr}
-                blockLabels={[selectedBlock.label]}
-                blocks={blocks}
-                onLogged={handleLogged}
-              />
-
-              <button
-                className={[
-                  styles.markDoneBtn,
-                  (selectedBlock.exercises?.length ?? 0) > 0 &&
-                    selectedBlock.exercises.every(e => lifts[e.name]?.today)
-                    ? styles.markDoneReady : '',
-                  completions.some(c => c.completed_date === todayStr && c.block_label === selectedBlock.label) || justMarked
-                    ? styles.markDoneDone : '',
-                ].join(' ')}
-                onClick={() => {
-                  setLogDate(todayStr)
-                  handleMarkDone()
-                }}
-                disabled={
-                  marking ||
-                  completions.some(c => c.completed_date === todayStr && c.block_label === selectedBlock.label)
-                }
-                type="button"
-              >
-                {completions.some(c => c.completed_date === todayStr && c.block_label === selectedBlock.label) || justMarked
-                  ? '✓ Отбелязано за днес!'
-                  : marking ? '...' : '✓ Маркирай като готово'}
-              </button>
-            </>
+            <DayLog
+              date={todayStr}
+              blockLabels={[selectedBlock.label]}
+              blocks={blocks}
+              onLogged={handleLogged}
+            />
           )}
 
           {selectedBlock && isRestBlock(selectedBlock) && (
@@ -668,11 +693,6 @@ export default function Training({ onMenuOpen }) {
               <p className={styles.restSub}>Сън · Хидратация · Мобилити</p>
             </div>
           )}
-
-          <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
-            <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
-            <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
-          </button>
         </>
       )}
 
