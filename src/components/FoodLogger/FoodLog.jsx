@@ -352,7 +352,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
             </div>
             {group.items.length > 0 ? (
               <ul className={styles.list}>
-                {group.items.map((entry, i) => renderEntry(entry, gi * 100 + i))}
+                {group.items.map((entry, i) => renderEntry(entry, i))}
               </ul>
             ) : (
               <p className={styles.mealEmpty}>–</p>
