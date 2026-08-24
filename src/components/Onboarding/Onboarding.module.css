@@ -267,7 +267,62 @@
   color: var(--muted);
 }
 
-/* Gender toggle */
+/* Gender — big cards, one question per screen. The figure is coloured with the
+   theme accent so nothing on the page belongs to a different alphabet. */
+.genderGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.genderCard {
+  aspect-ratio: 3 / 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 12px 16px;
+  background: var(--surface-1);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  color: rgba(242, 232, 207, 0.35);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 180ms, color 180ms, background 180ms, box-shadow 180ms;
+}
+
+.genderCardActive {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  color: var(--accent);
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.12) 0%,
+    rgba(200, 160, 90, 0.04) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.22),
+    0 0 30px -12px rgba(var(--accent-rgb), 0.5);
+}
+
+.genderFigure {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+.genderFigure svg {
+  width: 60%;
+  height: 100%;
+  max-height: 180px;
+}
+
+.genderLabel {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  color: var(--text);
+}
+
+/* Gender toggle (legacy — kept for other screens that still use it) */
 .toggle {
   display: flex;
   gap: 8px;

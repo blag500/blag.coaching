@@ -1,172 +1,104 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import AvatarPicker from './AvatarPicker'
-import { GOAL_ICON, CheckIcon, TargetIcon } from './StepIcons'
+import WeightScroller from './WeightScroller'
+import { GOAL_ICON, CheckIcon } from './StepIcons'
 import styles from './Onboarding.module.css'
 
-const TOTAL_STEPS_SELF  = 5
-const TOTAL_STEPS_COACH = 4
-
-const ACTIVITY_OPTIONS = [
-  { id: 'sedentary',   label: 'Заседнал',         desc: 'Офис работа, малко или никакво движение', mult: 1.2   },
-  { id: 'light',       label: 'Леко активен',      desc: '1–2 пъти спорт на седмица',              mult: 1.375 },
-  { id: 'moderate',    label: 'Умерено активен',   desc: '3–5 пъти спорт на седмица',              mult: 1.55  },
-  { id: 'active',      label: 'Много активен',     desc: '6–7 пъти спорт на седмица',              mult: 1.725 },
-  { id: 'very_active', label: 'Изключително акт.', desc: 'Физическа работа + ежедневен спорт',     mult: 1.9   },
-]
-
 const GOAL_OPTIONS = [
-  { id: 'cut',      label: 'ИЗГАРЯНЕ',    desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
-  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  desc: 'Запазване на теглото',        kcalDelta: 0    },
-  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
+  { id: 'cut',      label: 'ИЗГАРЯНЕ',    desc: 'Намаляване на мастна тъкан' },
+  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  desc: 'Запазване на теглото'        },
+  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   desc: 'Изграждане на мускулна маса' },
 ]
 
-function calcMacros({ gender, age, height_cm, weight_kg, activity_level, goal }) {
-  const bmr = gender === 'male'
-    ? 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
-    : 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
-  const mult     = ACTIVITY_OPTIONS.find(a => a.id === activity_level)?.mult ?? 1.55
-  const delta    = GOAL_OPTIONS.find(g => g.id === goal)?.kcalDelta ?? 0
-  const calories = Math.round(bmr * mult + delta)
-  const protein  = Math.round(weight_kg * 2)
-  const fat      = Math.round((calories * 0.25) / 9)
-  const carbs    = Math.round((calories - protein * 4 - fat * 9) / 4)
-  return { calories, protein, carbs: Math.max(carbs, 0), fat }
+/* Big flat body silhouettes for the gender step. Kept as inline SVG so they
+   tint with currentColor and never need a network round-trip on first paint. */
+function ManFigure() {
+  return (
+    <svg viewBox="0 0 120 160" fill="currentColor" aria-hidden="true">
+      <circle cx="60" cy="30" r="18" />
+      <path d="M30 70c0-14 12-24 30-24s30 10 30 24v10H30V70z" />
+      <path d="M22 78h18v40l-8 22h-8l-2-22V78z" />
+      <path d="M98 78H80v40l8 22h8l2-22V78z" />
+      <path d="M42 82h36v50l-4 26H60l-4-6-4 6H46l-4-26V82z" opacity="0.85" />
+    </svg>
+  )
 }
 
-// Typical starting values. Pre-filling turns "fill this in from scratch" into
-// "check and adjust", which is a far easier task — and the numbers stay visible
-// on the macros step, so nothing is decided behind the user's back.
-const DEFAULTS = { age: '', height_cm: '', weight_kg: '' }
+function WomanFigure() {
+  return (
+    <svg viewBox="0 0 120 160" fill="currentColor" aria-hidden="true">
+      <circle cx="60" cy="28" r="16" />
+      <path d="M40 62c0-10 9-18 20-18s20 8 20 18v14H40V62z" />
+      <path d="M32 78h56l-6 32H38l-6-32z" opacity="0.85" />
+      <path d="M42 108h36l-10 50H52l-10-50z" />
+      <path d="M46 158h10l2-14h4l2 14h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
   const { profile, completeOnboarding, signOut } = useAuth()
   const knownName = (profile?.name ?? '').trim()
 
-  // The name was already given at signup, so don't ask for it twice.
+  // Name is already captured at signup, so skip that step when we have it.
   const [step, setStep]   = useState(knownName ? 2 : 1)
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
   const [submitted, setSubmitted] = useState(false)
 
   const [form, setForm] = useState({
-    name: knownName, goal: 'maintain',
-    gender: 'male', ...DEFAULTS, target_weight: DEFAULTS.weight_kg,
-    activity_level: 'moderate',
-    calories: '', protein: '', carbs: '', fat: '',
+    name:      knownName,
+    goal:      'maintain',
+    gender:    'male',
+    weight_kg: 75,
   })
+
+  const totalSteps = 4
 
   function set(field, val) {
     setForm(prev => ({ ...prev, [field]: val }))
   }
 
-  // Choosing a goal implies a direction for the target weight, so move it with
-  // them instead of making them work it out.
-  function setGoal(goal) {
-    setForm(prev => {
-      const w = parseFloat(prev.weight_kg)
-      if (!w) return { ...prev, goal }
-      const shift = goal === 'cut' ? -5 : goal === 'bulk' ? 4 : 0
-      return { ...prev, goal, target_weight: String(Math.round(w + shift)) }
-    })
-  }
-
-  function computeAndAdvance() {
-    const macros = calcMacros({
-      gender:         form.gender,
-      age:            parseInt(form.age),
-      height_cm:      parseFloat(form.height_cm),
-      weight_kg:      parseFloat(form.weight_kg),
-      activity_level: form.activity_level,
-      goal:           form.goal,
-    })
-    setForm(prev => ({ ...prev, ...macros }))
-    setStep(5)
-  }
-
   function next() {
     setError('')
     if (step === 1 && !form.name.trim()) { setError('Въведи името си'); return }
-    if (step === 3) {
-      if (!form.age || !form.height_cm || !form.weight_kg) {
-        setError('Попълни всички полета'); return
-      }
-    }
-    if (step === 4) {
-      if (isCoachingIntake) { handleCoachingSubmit(); return }
-      computeAndAdvance(); return
+    if (step === totalSteps) {
+      if (isCoachingIntake) handleCoachingSubmit()
+      else handleFinish()
+      return
     }
     setStep(s => s + 1)
-  }
-
-  async function handleCoachingSubmit() {
-    setSaving(true)
-    setError('')
-    // Calculated targets, not zeroes. The application waits for the coach, but
-    // the app does not — an empty day with 0 kcal targets is unusable, and the
-    // coach overwrites these the moment he sets the real plan.
-    const macros = calcMacros({
-      gender:         form.gender,
-      age:            parseInt(form.age),
-      height_cm:      parseFloat(form.height_cm),
-      weight_kg:      parseFloat(form.weight_kg),
-      activity_level: form.activity_level,
-      goal:           form.goal,
-    })
-    const { error: err } = await completeOnboarding({
-      name:           form.name.trim(),
-      goal:           form.goal,
-      gender:         form.gender,
-      age:            parseInt(form.age)         || null,
-      height_cm:      parseFloat(form.height_cm) || null,
-      weight_kg:      parseFloat(form.weight_kg) || null,
-      target_weight:  parseFloat(form.target_weight) || null,
-      activity_level: form.activity_level,
-      ...macros,
-    })
-    setSaving(false)
-    if (err) setError(err.message)
-    else setSubmitted(true)
   }
 
   async function handleFinish() {
     setSaving(true)
     setError('')
+    // No macros here — profile starts bare. The nutrition tab invites the
+    // client to set targets when they open it, so nothing that needs a decision
+    // stands between signup and the first useful screen.
     const { error: err } = await completeOnboarding({
-      name:           form.name.trim(),
-      goal:           form.goal,
-      gender:         form.gender,
-      age:            parseInt(form.age)         || null,
-      height_cm:      parseFloat(form.height_cm) || null,
-      weight_kg:      parseFloat(form.weight_kg) || null,
-      target_weight:  parseFloat(form.target_weight) || null,
-      activity_level: form.activity_level,
-      calories:       parseInt(form.calories),
-      protein:        parseInt(form.protein),
-      carbs:          parseInt(form.carbs),
-      fat:            parseInt(form.fat),
+      name:      form.name.trim(),
+      goal:      form.goal,
+      gender:    form.gender,
+      weight_kg: form.weight_kg,
     })
     if (err) { setError(err.message); setSaving(false) }
   }
 
-  const totalSteps = isCoachingIntake ? TOTAL_STEPS_COACH : TOTAL_STEPS_SELF
-
-  // What the calorie target implies for the scale, measured against maintenance
-  // (bmr × the chosen activity multiplier), so a client who hand-edits the
-  // calories on the macros step sees the projection follow. One kilogram of body
-  // mass is worth roughly 7700 kcal, spread over the seven days of a week.
-  const wAge  = parseInt(form.age) || 0
-  const wH    = parseFloat(form.height_cm) || 0
-  const wW    = parseFloat(form.weight_kg) || 0
-  const bmrNow = form.gender === 'male'
-    ? 10 * wW + 6.25 * wH - 5 * wAge + 5
-    : 10 * wW + 6.25 * wH - 5 * wAge - 161
-  const wMult = ACTIVITY_OPTIONS.find(a => a.id === form.activity_level)?.mult ?? 1.55
-  const maintenanceKcal = Math.round(bmrNow * wMult)
-  const currentKcal     = parseInt(form.calories) || maintenanceKcal
-  const weeklyKg  = ((currentKcal - maintenanceKcal) * 7) / 7700
-  const weeklyAbs = Math.abs(weeklyKg)
-  const weeklyDir = weeklyAbs < 0.03 ? 'hold' : weeklyKg > 0 ? 'up' : 'down'
+  async function handleCoachingSubmit() {
+    setSaving(true)
+    setError('')
+    const { error: err } = await completeOnboarding({
+      name:      form.name.trim(),
+      goal:      form.goal,
+      gender:    form.gender,
+      weight_kg: form.weight_kg,
+    })
+    setSaving(false)
+    if (err) setError(err.message)
+    else setSubmitted(true)
+  }
 
   if (submitted) {
     return (
@@ -199,8 +131,6 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
           ← Смени план
         </button>
       )}
-      {/* Progress. The first mark is the account they already created — nobody
-          should be looking at an empty bar before they have even started. */}
       <div className={styles.progressBar}>
         {Array.from({ length: totalSteps + 1 }, (_, i) => (
           <div
@@ -211,16 +141,12 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
       </div>
 
       <div className={styles.content}>
-        {/* Step 1 — Name */}
+        {/* Step 1 — Name (only when we don't already have it) */}
         {step === 1 && (
           <div className={styles.stepWrap}>
             <h1 className={styles.heading}>ДОБРЕ ДОШЪЛ</h1>
-            <p className={styles.sub}>Нека настроим профила ти за 2 минути.</p>
-
-            {/* The face goes on first — the coach reviewing the intake sees a
-                person rather than an initial. */}
+            <p className={styles.sub}>Нека настроим профила ти за минута.</p>
             <AvatarPicker />
-
             <label className={styles.label}>Как се казваш?</label>
             <input
               className={styles.input}
@@ -238,7 +164,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
         {step === 2 && (
           <div className={styles.stepWrap}>
             <h1 className={styles.heading}>КАКВА Е ЦЕЛТА ТИ?</h1>
-            <p className={styles.sub}>Това определя твоя калориен баланс.</p>
+            <p className={styles.sub}>Насочва препоръките, не заковава нищо.</p>
             <div className={styles.goalGrid}>
               {GOAL_OPTIONS.map(g => {
                 const Icon = GOAL_ICON[g.id]
@@ -246,7 +172,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
                   <button
                     key={g.id}
                     className={`${styles.goalCard} ${form.goal === g.id ? styles.goalCardActive : ''}`}
-                    onClick={() => setGoal(g.id)}
+                    onClick={() => set('goal', g.id)}
                     type="button"
                   >
                     <span className={styles.goalIcon}><Icon /></span>
@@ -261,141 +187,48 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
           </div>
         )}
 
-        {/* Step 3 — Body stats */}
+        {/* Step 3 — Gender, one question one screen. Two big glass cards, the
+            figure tinted with the accent — tap picks and lifts. */}
         {step === 3 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>ТЯЛОТО ТИ</h1>
-            <p className={styles.sub}>Нужно за точно изчисляване на калориите.</p>
-
-            <label className={styles.label}>Пол</label>
-            <div className={styles.toggle}>
-              {[{ id: 'male', label: '♂ МЪЖ' }, { id: 'female', label: '♀ ЖЕНА' }].map(g => (
-                <button
-                  key={g.id}
-                  className={`${styles.toggleBtn} ${form.gender === g.id ? styles.toggleBtnActive : ''}`}
-                  onClick={() => set('gender', g.id)}
-                  type="button"
-                >{g.label}</button>
-              ))}
-            </div>
-
-            <div className={styles.statsRow}>
-              <div className={styles.statField}>
-                <label className={styles.label}>Възраст</label>
-                <input className={styles.input} type="number" min="10" max="100"
-                  placeholder="" value={form.age} onChange={e => set('age', e.target.value)} />
-              </div>
-              <div className={styles.statField}>
-                <label className={styles.label}>Ръст (cm)</label>
-                <input className={styles.input} type="number" min="100" max="250"
-                  placeholder="" value={form.height_cm} onChange={e => set('height_cm', e.target.value)} />
-              </div>
-            </div>
-
-            <div className={styles.statsRow}>
-              <div className={styles.statField}>
-                <label className={styles.label}>Тегло сега (kg)</label>
-                <input className={styles.input} type="number" min="30" max="300"
-                  placeholder="" value={form.weight_kg} onChange={e => set('weight_kg', e.target.value)} />
-              </div>
-              <div className={styles.statField}>
-                <label className={styles.label}>Цел. тегло (kg)</label>
-                <input className={styles.input} type="number" min="30" max="300"
-                  placeholder="" value={form.target_weight} onChange={e => set('target_weight', e.target.value)} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 4 — Activity */}
-        {step === 4 && (
-          <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>АКТИВНОСТ</h1>
-            <p className={styles.sub}>Колко активен си извън тренировките?</p>
-            <div className={styles.activityList}>
-              {ACTIVITY_OPTIONS.map(a => (
-                <button
-                  key={a.id}
-                  className={`${styles.activityRow} ${form.activity_level === a.id ? styles.activityRowActive : ''}`}
-                  onClick={() => set('activity_level', a.id)}
-                  type="button"
-                >
-                  <div className={styles.activityLabel}>{a.label}</div>
-                  <div className={styles.activityDesc}>{a.desc}</div>
-                  {form.activity_level === a.id && <div className={styles.activityCheck}>✓</div>}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 5 — Macros preview */}
-        {step === 5 && (
-          <div className={styles.stepWrap}>
-            <span className={styles.stepIcon}><TargetIcon /></span>
-            <h1 className={styles.heading}>ТВОИТЕ МАКРОСИ</h1>
-            <p className={styles.sub}>Изчислени по твоите данни. Можеш да ги промениш по-късно.</p>
-
-            <div className={styles.projection}>
-              <span className={styles.projectionLabel}>ОЧАКВАНА ПРОМЯНА</span>
-              {weeklyDir === 'hold' ? (
-                <span className={styles.projectionValue}>Теглото се задържа</span>
-              ) : (
-                <span className={styles.projectionValue}>
-                  ≈ {Number(weeklyAbs.toFixed(2))} кг
-                  <span className={styles.projectionDir}>
-                    {weeklyDir === 'down' ? ' надолу' : ' нагоре'} / седмица
-                  </span>
-                </span>
-              )}
-            </div>
-
-            <div className={styles.macroGrid}>
-              {[
-                { key: 'calories', label: 'ККАЛ',    color: '#F06292' },
-                { key: 'protein',  label: 'ПРОТЕИН', color: 'var(--macro-protein)' },
-                { key: 'carbs',    label: 'ВЪГЛ',    color: 'var(--macro-carbs)' },
-                { key: 'fat',      label: 'МАЗН',    color: 'var(--accent)' },
-              ].map(m => (
-                <div key={m.key} className={styles.macroCard} style={{ borderColor: `${m.color}40` }}>
-                  <label className={styles.macroLabel} style={{ color: m.color }}>{m.label}</label>
-                  <input
-                    className={styles.macroInput}
-                    type="number" min="0"
-                    value={form[m.key]}
-                    onChange={e => set(m.key, e.target.value)}
-                    style={{ color: m.color }}
-                  />
-                  {m.key !== 'calories' && <span className={styles.macroUnit}>g</span>}
-                </div>
-              ))}
-            </div>
-            <p className={styles.macroNote}>
-              {GOAL_OPTIONS.find(g => g.id === form.goal)?.desc}
-              {' · '}
-              {ACTIVITY_OPTIONS.find(a => a.id === form.activity_level)?.label}
-            </p>
-            {/* The figures behind the numbers, so a pre-filled default is never
-                something the user only discovers later. */}
-            <p className={styles.macroNote} style={{ opacity: 0.65, marginTop: 6 }}>
-              Сметнато за {form.age} г. · {form.height_cm} см · {form.weight_kg} кг
-              {' · '}
+            <h1 className={styles.heading}>ТИ СИ</h1>
+            <p className={styles.sub}>Настройва манекена и препоръките за възстановяване.</p>
+            <div className={styles.genderGrid}>
               <button
                 type="button"
-                onClick={() => setStep(3)}
-                style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer',
-                         color: 'var(--accent)', font: 'inherit', textDecoration: 'underline' }}
+                className={`${styles.genderCard} ${form.gender === 'male' ? styles.genderCardActive : ''}`}
+                onClick={() => set('gender', 'male')}
               >
-                поправи
+                <span className={styles.genderFigure}><ManFigure /></span>
+                <span className={styles.genderLabel}>МЪЖ</span>
               </button>
-            </p>
+              <button
+                type="button"
+                className={`${styles.genderCard} ${form.gender === 'female' ? styles.genderCardActive : ''}`}
+                onClick={() => set('gender', 'female')}
+              >
+                <span className={styles.genderFigure}><WomanFigure /></span>
+                <span className={styles.genderLabel}>ЖЕНА</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4 — Weight scroller. One number, easy to move, no keyboard. */}
+        {step === 4 && (
+          <div className={styles.stepWrap}>
+            <h1 className={styles.heading}>ТЕГЛО СЕГА</h1>
+            <p className={styles.sub}>Стартова точка за графиката. Можеш да го променяш всеки ден.</p>
+            <WeightScroller
+              value={form.weight_kg}
+              onChange={v => set('weight_kg', v)}
+            />
           </div>
         )}
 
         {error && <p className={styles.error}>{error}</p>}
       </div>
 
-      {/* Navigation */}
       <div className={styles.nav}>
         {step > 1 && (
           <button className={styles.backBtn} onClick={() => setStep(s => s - 1)} type="button">
@@ -411,7 +244,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
             {saving ? 'ИЗПРАЩА...' : 'ИЗПРАТИ ЗАЯВКАТА →'}
           </button>
         ) : (
-          <button className={styles.nextBtn} onClick={handleFinish} disabled={saving} type="button">
+          <button className={styles.nextBtn} onClick={next} disabled={saving} type="button">
             {saving ? 'ЗАПИСВА...' : 'ЗАПОЧНИ →'}
           </button>
         )}
