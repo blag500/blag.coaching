@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Confetti from './Confetti'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './MacroScale.module.css'
@@ -31,6 +31,14 @@ function state(key, val, target) {
 export default function MacroScale({ macros, label, log = [], t }) {
   const [burst, setBurst] = useState(0)
   const [back, setBack] = useState(false)
+  // First-paint pour: bars render at 0 for one frame, then transition to their
+  // target width. Only on mount — subsequent macro updates use the same
+  // width-transition without the flourish.
+  const [poured, setPoured] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setPoured(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   const rows    = macros.map(m => ({ ...m, state: state(m.key, m.val, m.target) }))
   const allHit  = rows.length > 0 && rows.every(r => r.state === 'hit')
@@ -64,7 +72,7 @@ export default function MacroScale({ macros, label, log = [], t }) {
       </div>
 
       <div className={styles.rows}>
-        {rows.map(m => {
+        {rows.map((m, i) => {
           const pct = m.target > 0 ? Math.min(m.val / m.target, 1) : 0
           const colour = m.state === 'over' ? '#ef5350' : m.color
           return (
@@ -78,7 +86,13 @@ export default function MacroScale({ macros, label, log = [], t }) {
               <div className={styles.track}>
                 <div
                   className={`${styles.fill} ${m.state === 'hit' ? styles.fillHit : ''}`}
-                  style={{ width: `${pct * 100}%`, background: colour, '--glow': colour }}
+                  style={{
+                    width: poured ? `${pct * 100}%` : '0%',
+                    background: colour,
+                    '--glow': colour,
+                    // Staggered so the four bars pour in a wave, not in unison.
+                    transitionDelay: poured ? `${i * 80}ms` : '0ms',
+                  }}
                 />
                 {/* Where the band opens, so the bar shows what it is aiming at
                     rather than only how far along it is. */}

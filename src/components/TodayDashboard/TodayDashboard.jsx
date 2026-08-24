@@ -190,6 +190,23 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
     setWaterBurst(b => b + 1)
   }, [waterFull])
 
+  // ── Water drop ripple ──
+  // Which glass to ring — set to the newest full drop's index for a beat, then
+  // cleared. Reads as a "plop" landing in the row, not as every drop pulsing.
+  const [rippleIdx, setRippleIdx] = useState(null)
+  const prevGlasses = useRef(glasses)
+
+  useEffect(() => {
+    if (glasses > prevGlasses.current) {
+      const idx = glasses - 1
+      setRippleIdx(idx)
+      const t = setTimeout(() => setRippleIdx(null), 720)
+      prevGlasses.current = glasses
+      return () => clearTimeout(t)
+    }
+    prevGlasses.current = glasses
+  }, [glasses])
+
   // ── Badge detection ──
   const [badgeQueue, setBadgeQueue] = useState([])
   const prevCal   = useRef(false)
@@ -300,7 +317,14 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
       </span>
       <div className={styles.waterGlasses}>
         {Array.from({ length: waterTarget }, (_, i) => (
-          <span key={i} className={`${styles.waterDrop} ${i < glasses ? styles.waterDropFull : ''}`} />
+          <span
+            key={i}
+            className={[
+              styles.waterDrop,
+              i < glasses ? styles.waterDropFull : '',
+              i === rippleIdx ? styles.waterDropRipple : '',
+            ].join(' ')}
+          />
         ))}
       </div>
       <div className={styles.waterActions}>

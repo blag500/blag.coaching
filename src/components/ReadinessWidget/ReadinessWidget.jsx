@@ -23,8 +23,20 @@ function ReadinessRing({ score, label, provisional }) {
   // on Today, on the recovery screen, and once per client for the coach.
   const uid = useId().replace(/:/g, '')
 
+  // A "лит" state above 80 turns the outer breathing glow on. Below that the
+  // ring stays quiet — a soft heartbeat is a reward, not decoration.
+  const glow = score !== null && !provisional && score >= 80
+    ? { color, mode: 'strong' }
+    : score !== null && !provisional && score >= 55
+      ? { color, mode: 'soft' }
+      : null
+
   return (
-    <div className={styles.ringWrap}>
+    <div
+      className={styles.ringWrap}
+      data-glow={glow?.mode ?? 'off'}
+      style={glow ? { '--glow-color': glow.color } : undefined}
+    >
       <svg viewBox="0 0 100 100" width="110" height="110" aria-hidden="true">
         <defs>
           {/* Lit from the top left, like every card on the screen. */}
