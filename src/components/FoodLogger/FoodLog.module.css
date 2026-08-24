@@ -155,6 +155,8 @@
 /* A meal section: its own quiet header over the rows that belong to it. */
 .mealGroup {
   margin-top: 14px;
+  padding: 6px 4px 12px;
+  min-height: 72px;
   border-radius: var(--r-md);
   transition: background 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
 }
@@ -163,8 +165,8 @@
    the drop target is unambiguous — no arrow, no chip, just the frame it will
    land into. */
 .mealGroupHover {
-  background: rgba(var(--accent-rgb), 0.06);
-  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.4);
+  background: rgba(var(--accent-rgb), 0.08);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.5);
 }
 
 /* When a row is being carried, it stays under the finger via a JS transform

@@ -86,6 +86,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     el.style.animation = 'none'
     el.style.transition = 'none'
     el.style.willChange = 'transform'
+    // The dragged row must ignore hit tests, or elementFromPoint keeps
+    // returning it (with z-index: 20 it's always on top of what's under the
+    // finger) and the drop meal reads as the one you already came from.
+    el.style.pointerEvents = 'none'
     const slotTop = el.getBoundingClientRect().top
     drag.current = { entry, grabY: e.clientY - slotTop, slotTop }
     dragIdRef.current = entry.id
@@ -128,6 +132,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         el.style.transition = 'transform 180ms cubic-bezier(.2,.7,.3,1)'
         el.style.transform = ''
         el.style.willChange = ''
+        el.style.pointerEvents = ''
         // Restore the entrance-animation slot after the settle transition ends.
         setTimeout(() => { if (el) el.style.animation = '' }, 220)
       }
