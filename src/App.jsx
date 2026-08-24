@@ -58,7 +58,17 @@ function AppShell() {
   // How far the side navigation has been pulled out by a finger, or null when
   // no drag is in progress and the stylesheet is in charge of its position.
   const [drawerDrag, setDrawerDrag] = useState(null)
-  const [landingSeen, setLandingSeen] = useState(false)
+  // Skip the landing pitch for anyone who already installed the PWA — that
+  // page is a shopfront for people arriving at the website, not for someone
+  // who tapped the app icon on their home screen. Both the standalone media
+  // query and iOS's legacy navigator.standalone are checked because Safari
+  // still uses the older flag inside home-screen PWAs.
+  const [landingSeen, setLandingSeen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches
+      || window.navigator.standalone === true
+    return !!standalone
+  })
   // Set to the client's name (armed) the instant the self-serve flow finishes,
   // so the success screen stands in front of the tabs for one deliberate beat.
   // null = not finishing; '' = finishing but nameless.
