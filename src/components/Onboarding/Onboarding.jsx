@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { registerPushSubscription } from '../../hooks/usePushNotifications'
 import AvatarPicker from './AvatarPicker'
 import WeightScroller from './WeightScroller'
 import { GOAL_ICON, CheckIcon } from './StepIcons'
@@ -38,7 +39,7 @@ function WomanFigure() {
 }
 
 export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
-  const { profile, completeOnboarding, signOut } = useAuth()
+  const { profile, session, completeOnboarding, signOut } = useAuth()
   const knownName = (profile?.name ?? '').trim()
 
   // Name is already captured at signup, so skip that step when we have it.
@@ -54,7 +55,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
     weight_kg: 75,
   })
 
-  const totalSteps = 4
+  const totalSteps = 5
 
   function set(field, val) {
     setForm(prev => ({ ...prev, [field]: val }))
@@ -71,6 +72,14 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
     setStep(s => s + 1)
   }
 
+  /** Notification step's primary button — ask, then finish. If they answer
+   *  denied, we still let them into the app on the same button press. */
+  async function allowThenFinish() {
+    await requestNotifications()
+    if (isCoachingIntake) handleCoachingSubmit()
+    else handleFinish()
+  }
+
   async function handleFinish() {
     setSaving(true)
     setError('')
@@ -84,6 +93,28 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
       weight_kg: form.weight_kg,
     })
     if (err) { setError(err.message); setSaving(false) }
+  }
+
+  const [notifyState, setNotifyState] = useState('idle') // 'idle' | 'granted' | 'denied' | 'unsupported'
+
+  /** Native browser prompt, right here — asked at the moment the client just
+   *  agreed to a habit-forming product, which is the moment they're most likely
+   *  to say yes. If the browser doesn't support push, quietly move on rather
+   *  than block the flow. */
+  async function requestNotifications() {
+    if (!('Notification' in window)) {
+      setNotifyState('unsupported')
+      return
+    }
+    try {
+      const perm = await Notification.requestPermission()
+      setNotifyState(perm === 'granted' ? 'granted' : 'denied')
+      if (perm === 'granted' && session?.user?.id) {
+        registerPushSubscription(session.user.id).catch(() => {})
+      }
+    } catch {
+      setNotifyState('denied')
+    }
   }
 
   async function handleCoachingSubmit() {
@@ -226,27 +257,77 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
           </div>
         )}
 
+        {/* Step 5 — Notifications. Asked once at the point of highest yes. */}
+        {step === 5 && (
+          <div className={styles.stepWrap}>
+            <h1 className={styles.heading}>НАПОМНЯНИЯ</h1>
+            <p className={styles.sub}>
+              За тренировките, храненията и когато треньорът пише — да не се
+              разчита само на паметта ти.
+            </p>
+            <div className={styles.notifyHero} aria-hidden="true">
+              <span className={styles.notifyBell}>
+                <svg viewBox="0 0 64 64" fill="currentColor">
+                  <path d="M32 8c-2.2 0-4 1.8-4 4v2.5C20.6 16.6 15 23.4 15 31.5V40l-4 6v3h42v-3l-4-6v-8.5c0-8.1-5.6-14.9-13-17V12c0-2.2-1.8-4-4-4zM26 53a6 6 0 0 0 12 0H26z"/>
+                </svg>
+              </span>
+              <span className={styles.notifyBadge} aria-hidden="true" />
+            </div>
+            {notifyState === 'granted' && (
+              <p className={styles.notifyDone}>Готово — вече ще получаваш известия.</p>
+            )}
+            {notifyState === 'denied' && (
+              <p className={styles.notifyMuted}>Отказано. Можеш да включиш по-късно от настройките на браузъра.</p>
+            )}
+            {notifyState === 'unsupported' && (
+              <p className={styles.notifyMuted}>Този браузър не поддържа push известия.</p>
+            )}
+          </div>
+        )}
+
         {error && <p className={styles.error}>{error}</p>}
       </div>
 
       <div className={styles.nav}>
-        {step > 1 && (
+        {step > 1 && step < totalSteps && (
           <button className={styles.backBtn} onClick={() => setStep(s => s - 1)} type="button">
             ← НАЗАД
           </button>
         )}
-        {step < totalSteps ? (
+        {step < totalSteps && (
           <button className={styles.nextBtn} onClick={next} type="button">
             НАПРЕД →
           </button>
-        ) : isCoachingIntake ? (
-          <button className={styles.nextBtn} onClick={next} disabled={saving} type="button">
-            {saving ? 'ИЗПРАЩА...' : 'ИЗПРАТИ ЗАЯВКАТА →'}
-          </button>
-        ) : (
-          <button className={styles.nextBtn} onClick={next} disabled={saving} type="button">
-            {saving ? 'ЗАПИСВА...' : 'ЗАПОЧНИ →'}
-          </button>
+        )}
+        {/* Step 5 is the notification prompt — the primary asks for permission
+            and enters the app; the secondary is a soft skip. */}
+        {step === totalSteps && (
+          <div className={styles.notifyActions}>
+            <button
+              className={styles.nextBtn}
+              onClick={notifyState === 'idle' ? allowThenFinish : next}
+              disabled={saving}
+              type="button"
+            >
+              {saving
+                ? 'ЗАПИСВА...'
+                : notifyState === 'idle'
+                  ? 'РАЗРЕШИ И ЗАПОЧНИ'
+                  : isCoachingIntake
+                    ? 'ИЗПРАТИ ЗАЯВКАТА →'
+                    : 'ЗАПОЧНИ →'}
+            </button>
+            {notifyState === 'idle' && (
+              <button
+                className={styles.notifySkip}
+                onClick={next}
+                disabled={saving}
+                type="button"
+              >
+                не сега
+              </button>
+            )}
+          </div>
         )}
       </div>
 

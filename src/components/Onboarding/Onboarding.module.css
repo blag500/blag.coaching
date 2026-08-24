@@ -267,6 +267,85 @@
   color: var(--muted);
 }
 
+/* Notifications step — big bell centrepiece, glass in the accent, red badge in
+   the corner echoing the OS-level unread dot people already know from Stronger
+   & co. Kept quiet: the ask matters, not the illustration. */
+.notifyHero {
+  position: relative;
+  align-self: center;
+  width: 176px;
+  height: 176px;
+  margin: 8px 0 12px;
+}
+
+.notifyBell {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to bottom,
+    rgba(200, 160, 90, 0.14) 0%,
+    rgba(200, 160, 90, 0.04) 100%);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 200, 0.22),
+    0 0 60px -16px rgba(var(--accent-rgb), 0.55);
+}
+
+.notifyBell svg { width: 96px; height: 96px; }
+
+.notifyBadge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #EF5350;
+  box-shadow:
+    0 0 24px -4px rgba(239, 83, 80, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.notifyDone {
+  text-align: center;
+  color: #7BC97F;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  margin: 0;
+}
+.notifyMuted {
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.notifyActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.notifySkip {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  padding: 6px 0;
+  cursor: pointer;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0.75;
+}
+.notifySkip:hover, .notifySkip:active { opacity: 1; }
+
 /* Gender — big cards, one question per screen. The figure is coloured with the
    theme accent so nothing on the page belongs to a different alphabet. */
 .genderGrid {
