@@ -23,20 +23,28 @@ function ReadinessRing({ score, label, provisional }) {
   // on Today, on the recovery screen, and once per client for the coach.
   const uid = useId().replace(/:/g, '')
 
-  // A "лит" state above 80 turns the outer breathing glow on. Below that the
-  // ring stays quiet — a soft heartbeat is a reward, not decoration.
-  const glow = score !== null && !provisional && score >= 80
-    ? { color, mode: 'strong' }
-    : score !== null && !provisional && score >= 55
-      ? { color, mode: 'soft' }
-      : null
+  // Path along the score arc, so a moving light can ride it. The arc starts at
+  // 12 o'clock (rotated -90°) and sweeps clockwise by pct of a full turn.
+  // A single-arc path is enough up to a half turn; over that, largeArc kicks in.
+  const arcPath = (() => {
+    if (score === null || pct <= 0) return null
+    const cx = 50, cy = 50
+    // Almost-full arcs cannot close on themselves in one A-command — draw two
+    // halves so the light doesn't skip when the score sits near 100.
+    if (pct >= 0.999) {
+      return `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${r} ${r} 0 0 1 ${cx} ${cy - r}`
+    }
+    const angle = -Math.PI / 2 + pct * Math.PI * 2
+    const x2 = cx + r * Math.cos(angle)
+    const y2 = cy + r * Math.sin(angle)
+    const large = pct > 0.5 ? 1 : 0
+    return `M ${cx} ${cy - r} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`
+  })()
+
+  const flowing = score !== null && !provisional && score >= 55
 
   return (
-    <div
-      className={styles.ringWrap}
-      data-glow={glow?.mode ?? 'off'}
-      style={glow ? { '--glow-color': glow.color } : undefined}
-    >
+    <div className={styles.ringWrap}>
       <svg viewBox="0 0 100 100" width="110" height="110" aria-hidden="true">
         <defs>
           {/* Lit from the top left, like every card on the screen. */}
@@ -48,6 +56,12 @@ function ReadinessRing({ score, label, provisional }) {
           <filter id={`${uid}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="3.4" />
           </filter>
+          {/* Halo the moving light so it reads as a cell of blood through a
+              vein, not a pixel on a wire. */}
+          <filter id={`${uid}-photon`} x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="1.6" />
+          </filter>
+          {arcPath && <path id={`${uid}-arc`} d={arcPath} />}
         </defs>
 
         {/* The arc again, blurred, underneath — so the colour spills onto the
@@ -88,6 +102,25 @@ function ReadinessRing({ score, label, provisional }) {
           stroke={`url(#${uid}-sheen)`} strokeWidth={sw / 2} />
         <circle cx="50" cy="50" r={r - sw / 4} fill="none"
           stroke="#000" strokeOpacity="0.22" strokeWidth={sw / 2} />
+
+        {/* The moving light — a bright cell running along the arc. Two dots,
+            the second smaller and trailing, so it reads as motion with a hint
+            of tail rather than a rolling ball. Only when the ring is earning
+            it (score ≥ 55 and not provisional). */}
+        {flowing && arcPath && (
+          <>
+            <circle r="2.4" fill="#fff" filter={`url(#${uid}-photon)`} opacity="0.95">
+              <animateMotion dur="2.6s" repeatCount="indefinite" rotate="auto">
+                <mpath href={`#${uid}-arc`} />
+              </animateMotion>
+            </circle>
+            <circle r="1.4" fill="#fff" opacity="0.7">
+              <animateMotion dur="2.6s" repeatCount="indefinite" begin="-0.12s">
+                <mpath href={`#${uid}-arc`} />
+              </animateMotion>
+            </circle>
+          </>
+        )}
         {/* Oswald, not Bebas — Bebas ships no Cyrillic and this sat on a
             fallback font ever since the heading face was swapped. */}
         <text x="50" y="46" textAnchor="middle" fill={color}
