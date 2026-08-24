@@ -167,40 +167,44 @@
   box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.4);
 }
 
+/* When a row is being carried, it stays under the finger via a JS transform
+   that must never be animated (see FoodLog.jsx). Only the visuals change here:
+   a lit border, a heavier shadow, and it lifts above the sibling rows. */
 .entryDragging {
-  opacity: 0.35;
-  transform: scale(0.98);
-  transition: opacity 120ms, transform 120ms;
+  z-index: 20;
+  position: relative;
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
 }
 
-/* Ghost — sits on top of everything and glides with the finger. */
-.dragGhost {
-  position: fixed;
-  z-index: 9999;
-  pointer-events: none;
-  padding: 10px 12px;
-  background: var(--panel-bg);
-  border: 1px solid rgba(var(--accent-rgb), 0.45);
-  border-radius: var(--r-md);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    inset 0 1px 0 rgba(255, 236, 200, 0.15);
+/* Three quiet bars on the left — the universal "this moves". Same character
+   as the dashboard-cards grip, so a person who arranges Днес already knows
+   what to do when they see it here. */
+.entryGrip {
+  flex-shrink: 0;
+  width: 12px;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  transform: rotate(-1.2deg);
+  opacity: 0.35;
+  margin-right: 4px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
-.dragGhostName {
-  font-size: 12px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.entryGrip span {
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--muted);
 }
-.dragGhostMeta {
-  font-size: 11px;
-  color: var(--muted);
+
+/* Whole row is the drag target, but a hold that selects text is the gesture
+   failing — and on iOS it also raises the copy callout. */
+.entry {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mealGroup:first-of-type {

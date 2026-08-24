@@ -43,13 +43,24 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   const [lightboxUrl,  setLightboxUrl]  = useState(null)
   const [quickMeal,    setQuickMeal]    = useState(null)  // section + → history sheet
 
-  // Drag-to-move-meal state. `drag` is the row being carried; `hoverMeal` is
-  // the meal id the finger is currently over. A pointerdown arms the drag
-  // (long-press OR ≥6px movement), then a ghost follows the finger until
-  // release. Drop over a meal section commits a meal_type change via onEdit.
-  const [drag, setDrag] = useState(null)          // { entry, x, y, dx, dy, w, h }
+  // Drag-to-move-meal — same recipe as the dashboard-cards reorder: a
+  // long-press separates "pick this up" from "scroll the page", then the row
+  // itself follows the finger via transform (no ghost), and drop over another
+  // meal section changes meal_type. The hold is abandoned the moment the
+  // finger travels, so a scroll that starts on a row is still a scroll.
+  const HOLD_MS = 220
+  const SCROLL_CANCEL_PX = 8
+
+  const [dragId, setDragId] = useState(null)
   const [hoverMeal, setHoverMeal] = useState(null)
-  const dragArmRef = useRef(null)                 // { entry, x, y, timer, activated, w, h }
+  const rowEls = useRef(new Map())     // entry id → element
+  const hold  = useRef(null)           // pending long-press { timer, x, y }
+  const drag  = useRef(null)           // live drag { entry, startY, grabY }
+  const dragIdRef = useRef(null)
+
+  function cancelHold() {
+    if (hold.current) { clearTimeout(hold.current.timer); hold.current = null }
+  }
 
   function findMealAt(x, y) {
     const el = document.elementFromPoint(x, y)
@@ -58,69 +69,68 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     return zone?.getAttribute('data-drop-meal') ?? null
   }
 
-  function activateDrag(clientX, clientY) {
-    const a = dragArmRef.current
-    if (!a || a.activated) return
-    a.activated = true
-    setDrag({
-      entry: a.entry,
-      x: clientX, y: clientY,
-      dx: clientX - a.x, dy: clientY - a.y,
-      w: a.w, h: a.h,
-    })
-    // Prevent iOS text-selection callout mid-drag.
-    document.body.style.userSelect = 'none'
-    document.body.style.webkitUserSelect = 'none'
-  }
-
   function onEntryPointerDown(e, entry) {
     if (editingId != null) return
-    if (e.pointerType === 'mouse' && e.button !== 0) return
-    const rect = e.currentTarget.getBoundingClientRect()
-    dragArmRef.current = {
-      entry,
-      x: e.clientX, y: e.clientY,
-      w: rect.width, h: rect.height,
-      activated: false,
-      timer: setTimeout(() => activateDrag(e.clientX, e.clientY), 380),
+    if (e.button != null && e.button !== 0) return
+    // Buttons inside the row (× remove, edit) stay tap-only.
+    if (e.target.closest('button')) return
+    cancelHold()
+    const x = e.clientX, y = e.clientY
+    hold.current = {
+      x, y,
+      timer: setTimeout(() => {
+        hold.current = null
+        const el = rowEls.current.get(entry.id)
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        drag.current = { entry, startY: y, grabY: y - rect.top, top: rect.top }
+        dragIdRef.current = entry.id
+        setDragId(entry.id)
+      }, HOLD_MS),
     }
   }
 
   useEffect(() => {
     function onMove(e) {
-      const a = dragArmRef.current
-      if (!a) return
-      if (!a.activated) {
-        // Movement threshold beats the long-press timer.
-        const dx = e.clientX - a.x
-        const dy = e.clientY - a.y
-        if (Math.hypot(dx, dy) < 8) return
-        clearTimeout(a.timer)
-        activateDrag(e.clientX, e.clientY)
+      // Still deciding whether this is a drag or a scroll.
+      if (hold.current) {
+        const dx = Math.abs(e.clientX - hold.current.x)
+        const dy = Math.abs(e.clientY - hold.current.y)
+        if (dx > SCROLL_CANCEL_PX || dy > SCROLL_CANCEL_PX) cancelHold()
+        return
       }
-      if (dragArmRef.current?.activated) {
-        e.preventDefault()
-        setDrag(d => d && { ...d, x: e.clientX, y: e.clientY })
-        setHoverMeal(findMealAt(e.clientX, e.clientY))
-      }
+      const d = drag.current
+      if (!d) return
+      const el = rowEls.current.get(d.entry.id)
+      if (!el) return
+      // Fresh viewport top of where the row belongs (undo current transform).
+      const rect = el.getBoundingClientRect()
+      const currentTransform = new DOMMatrixReadOnly(getComputedStyle(el).transform)
+      const slotTop = rect.top - currentTransform.m42
+      const shift = (e.clientY - d.grabY) - slotTop
+      el.style.transition = 'none'
+      el.style.transform = `translateY(${shift}px)`
+      setHoverMeal(findMealAt(e.clientX, e.clientY))
     }
     function onUp(e) {
-      const a = dragArmRef.current
-      if (!a) return
-      clearTimeout(a.timer)
-      if (a.activated) {
-        const target = findMealAt(e.clientX, e.clientY)
-        if (target && target !== a.entry.meal_type && target !== '_other') {
-          onEdit?.(a.entry.id, { meal_type: target })
-        }
-        document.body.style.userSelect = ''
-        document.body.style.webkitUserSelect = ''
+      cancelHold()
+      const d = drag.current
+      if (!d) { setHoverMeal(null); return }
+      const el = rowEls.current.get(d.entry.id)
+      if (el) {
+        el.style.transition = 'transform 180ms cubic-bezier(.2,.7,.3,1)'
+        el.style.transform = ''
       }
-      dragArmRef.current = null
-      setDrag(null)
+      const target = findMealAt(e.clientX, e.clientY)
+      if (target && target !== '_other' && target !== d.entry.meal_type) {
+        onEdit?.(d.entry.id, { meal_type: target })
+      }
+      drag.current = null
+      dragIdRef.current = null
+      setDragId(null)
       setHoverMeal(null)
     }
-    window.addEventListener('pointermove', onMove, { passive: false })
+    window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
     return () => {
@@ -129,6 +139,15 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       window.removeEventListener('pointercancel', onUp)
     }
   }, [onEdit])
+
+  // Refuse touchmove while a drag is live so the page can't scroll under it.
+  // touch-action cannot flip mid-gesture, so this is the only path.
+  useEffect(() => {
+    if (!dragId) return
+    const block = e => e.preventDefault()
+    window.addEventListener('touchmove', block, { passive: false })
+    return () => window.removeEventListener('touchmove', block)
+  }, [dragId])
 
   const photoInputRef  = useRef()
   const photoTargetRef = useRef(null)  // which entry id the next pick targets
@@ -295,10 +314,17 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     ) : (
       <li
         key={entry.id}
-        className={`${styles.entry} ${drag?.entry?.id === entry.id ? styles.entryDragging : ''}`}
+        ref={el => {
+          if (el) rowEls.current.set(entry.id, el)
+          else rowEls.current.delete(entry.id)
+        }}
+        className={`${styles.entry} ${dragId === entry.id ? styles.entryDragging : ''}`}
         style={{ '--i': i }}
         onPointerDown={e => onEntryPointerDown(e, entry)}
       >
+        <span className={styles.entryGrip} aria-hidden="true">
+          <span /><span /><span />
+        </span>
         {/* Meal photo: thumbnail on left side if present */}
         {entry.photo_url && (
           <button
@@ -411,7 +437,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         return (
           <section
             key={group.id}
-            className={`${styles.mealGroup} ${hoverMeal === group.id && drag && drag.entry.meal_type !== group.id ? styles.mealGroupHover : ''}`}
+            className={`${styles.mealGroup} ${hoverMeal === group.id && dragId && drag.current?.entry?.meal_type !== group.id ? styles.mealGroupHover : ''}`}
             data-drop-meal={group.legacy ? '_other' : group.id}
           >
             <div className={styles.mealHead}>
@@ -477,24 +503,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         </div>
       )}
 
-      {/* Ghost — a fixed-position card that follows the finger. Sized to the
-          original so the pick reads as "the same row lifted", not a new pill
-          appearing under the touch. */}
-      {drag && (
-        <div
-          className={styles.dragGhost}
-          style={{
-            left: drag.x - drag.dx,
-            top:  drag.y - drag.dy,
-            width: drag.w,
-          }}
-        >
-          <span className={styles.dragGhostName}>{drag.entry.name}</span>
-          <span className={styles.dragGhostMeta}>
-            {drag.entry.grams}g · {Math.round(drag.entry.kcal || 0)} ккал
-          </span>
-        </div>
-      )}
     </div>
   )
 }
