@@ -104,6 +104,24 @@ export function AuthProvider({ children }) {
     return true
   }
 
+  /* An escape hatch that side-steps every mode-specific dead end: a one-time
+     link to the address that logs the recipient in on click. Used when the
+     confirmation email never arrived, when the password was forgotten, and
+     when the session that started in onboarding expired before the flow was
+     done — magic-link works in all three because it doesn't care about any of
+     them. Supabase treats the click as an auth event, so AppShell's usual
+     onboarding-done gate takes over from there and the client picks up where
+     they stopped. */
+  async function signInWithMagicLink(email) {
+    setAuthError(null)
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    })
+    if (error) { setAuthError(error.message); return false }
+    return true
+  }
+
   async function signUp(email, password, name) {
     setAuthError(null)
 
@@ -503,6 +521,7 @@ export function AuthProvider({ children }) {
       resetPassword,
       checkEmailStatus,
       resendConfirmation,
+      signInWithMagicLink,
       signOut,
       refreshProfile,
       updateProfile,

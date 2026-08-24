@@ -87,79 +87,22 @@
   opacity: 1;
 }
 
-/* Brand */
+/* Brand — a single quiet wordmark. Same visual weight as an onboarding heading,
+   so the auth screen doesn't shout while the onboarding whispers. */
 .brand {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.armsRow {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 100%;
-  gap: clamp(2px, 1.5vw, 10px);
-}
-
-.armLeft,
-.armRight {
-  flex: 0 0 auto;
-  width: clamp(40px, 13vw, 64px);
-  height: clamp(68px, 22vw, 108px);
-  background-image: url('/arms-hi.webp');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.armLeft {
-  transform: scaleX(-1);
-}
-
-/* Sized by the word, not by the row. Stretched to fill it, the wordmark pushed
-   the two arms out to the edges of the screen and the three stopped reading as
-   one mark. */
-.brandCenter {
-  flex: 0 1 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
+  padding: 4px 0 4px;
 }
 
 .brandName {
   font-family: var(--font-heading);
-  font-size: clamp(36px, 12vw, 54px);
-  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
   line-height: 1;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
-  color: #C8A05A;
-  background-image: linear-gradient(
-    177deg,
-    #6B4A1E 0%,
-    #C8A05A 22%,
-    #F8E8B8 44%,
-    #B08A45 58%,
-    #E4CE94 74%,
-    #7A5726 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.brandTagline {
-  font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  text-indent: 0.32em;
-  color: var(--muted);
-  opacity: 0.7;
-  margin: 0;
+  color: var(--accent);
+  opacity: 0.9;
 }
 
 /* Mode toggle */
@@ -405,6 +348,21 @@
 }
 
 .forgotLink:hover { opacity: 1; }
+.forgotLink:disabled { opacity: 0.4; cursor: default; }
+
+.altActions {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.altSep {
+  color: var(--muted);
+  opacity: 0.4;
+  font-family: var(--font-body);
+  font-size: 12px;
+}
 
 .resetIntro {
   font-family: var(--font-body);

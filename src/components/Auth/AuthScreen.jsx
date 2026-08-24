@@ -14,7 +14,7 @@ function GoogleIcon() {
 }
 
 export default function AuthScreen({ onBack, initialMode = 'login', initialEmail = '' }) {
-  const { signIn, signUp, signInWithGoogle, resetPassword, checkEmailStatus, resendConfirmation, authError } = useAuth()
+  const { signIn, signUp, signInWithGoogle, resetPassword, checkEmailStatus, resendConfirmation, signInWithMagicLink, authError } = useAuth()
   const [mode, setMode]         = useState(initialMode) // 'login' | 'register' | 'reset'
   const [email, setEmail]       = useState(initialEmail)
   const [password, setPassword] = useState('')
@@ -22,6 +22,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
   const [info, setInfo]         = useState('')
   const [stuck, setStuck]       = useState(false)   // account exists but login failed
   const [resending, setResending] = useState(false)
+  const [linking, setLinking]   = useState(false)
   const passwordRef = useRef(null)
 
   async function handleSubmit(e) {
@@ -71,20 +72,28 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     }
   }
 
+  async function handleMagicLink() {
+    if (!email) { setInfo('Първо въведи имейла си.'); return }
+    setLinking(true)
+    const ok = await signInWithMagicLink(email)
+    setLinking(false)
+    if (ok) {
+      setStuck(false)
+      setInfo('Изпратихме еднократен линк за вход на ' + email + '. Отвори го и влизаш директно.')
+    }
+  }
+
   function switchMode(m) { setMode(m); setInfo(''); setStuck(false) }
 
   return (
     <div className={styles.screen}>
       <div className={styles.inner}>
+        {/* Quiet wordmark. The maximal metal-gold logo on this page reads as an
+            advert screaming for attention when the job of the screen is one calm
+            question: are you a returning client or a new one. Same character as
+            the onboarding, so the two screens feel like the same room. */}
         <div className={styles.brand}>
-          <div className={styles.armsRow}>
-            <div className={styles.armLeft} aria-hidden="true" />
-            <div className={styles.brandCenter}>
-              <span className={styles.brandName}>BLAG</span>
-              <p className={styles.brandTagline}>BE BLAG, BE BETTER</p>
-            </div>
-            <div className={styles.armRight} aria-hidden="true" />
-          </div>
+          <span className={styles.brandName}>BLAG</span>
         </div>
 
         {mode !== 'reset' && (
@@ -153,23 +162,32 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           </button>
 
           {/* The way out of the locked door: this address has an account, but the
-              password wouldn't open it. Almost always an unconfirmed email, so
-              resending is offered first; a forgotten password is the other half. */}
+              password wouldn't open it. Almost always an unconfirmed email — but
+              the confirmation-resend is silently rate-limited by Supabase, so the
+              magic-link goes first: one email, one click, in you go. */}
           {stuck && (
             <div className={styles.recover}>
               <p className={styles.recoverText}>
-                Този имейл вече има акаунт, но входът не мина. Ако още не си
-                потвърдил имейла си, изпрати линка отново. Ако си забравил
-                паролата — създай нова.
+                Този имейл има акаунт, но входът не мина. Най-бързият път е
+                еднократен линк — влизаш директно, без парола и без
+                потвърждение.
               </p>
               <div className={styles.recoverActions}>
                 <button
                   className={styles.recoverPrimary}
+                  onClick={handleMagicLink}
+                  disabled={linking}
+                  type="button"
+                >
+                  {linking ? '...' : 'Изпрати ми линк за вход'}
+                </button>
+                <button
+                  className={styles.recoverSecondary}
                   onClick={handleResend}
                   disabled={resending}
                   type="button"
                 >
-                  {resending ? '...' : 'Изпрати отново потвърждение'}
+                  {resending ? '...' : 'Или изпрати ново потвърждение на имейла'}
                 </button>
                 <button
                   className={styles.recoverSecondary}
@@ -184,9 +202,20 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
         </form>
 
         {mode === 'login' && (
-          <button className={styles.forgotLink} onClick={() => switchMode('reset')} type="button">
-            Забравена парола?
-          </button>
+          <div className={styles.altActions}>
+            <button
+              className={styles.forgotLink}
+              onClick={handleMagicLink}
+              disabled={linking}
+              type="button"
+            >
+              {linking ? 'Изпращам…' : 'Изпрати ми линк за вход'}
+            </button>
+            <span className={styles.altSep}>·</span>
+            <button className={styles.forgotLink} onClick={() => switchMode('reset')} type="button">
+              Забравена парола?
+            </button>
+          </div>
         )}
 
         {mode === 'reset' && (
