@@ -87,22 +87,98 @@
   opacity: 1;
 }
 
-/* Brand — a single quiet wordmark. Same visual weight as an onboarding heading,
-   so the auth screen doesn't shout while the onboarding whispers. */
+/* Brand — the splash's exact lockup, held still. Arms give way to the name
+   (same fluid rules the splash uses), tagline is set in the same brushed-gold
+   as the wordmark so the whole thing reads as one mark. Bounded a bit smaller
+   on this screen because a form sits under it and the arms shouldn't outrank
+   the fields. */
 .brand {
   display: flex;
   justify-content: center;
   padding: 4px 0 4px;
 }
 
+.armsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.armLeft,
+.armRight {
+  flex: 0 0 auto;
+  width: clamp(58px, 18vw, 96px);
+  height: clamp(96px, 30vw, 158px);
+  background-image: url('/arms-hi.webp');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.armLeft { transform: scaleX(-1); }
+
+.brandCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 0 6px;
+  min-width: 0;
+}
+
 .brandName {
+  margin: 0;
   font-family: var(--font-heading);
-  font-size: 22px;
-  letter-spacing: 0.28em;
-  text-indent: 0.28em;
+  font-size: clamp(20px, 6vw, 34px);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
   line-height: 1;
-  color: var(--accent);
-  opacity: 0.9;
+  color: #C8A05A;
+  background-image: linear-gradient(
+    177deg,
+    #6B4A1E 0%,
+    #C8A05A 22%,
+    #F8E8B8 44%,
+    #B08A45 58%,
+    #E4CE94 74%,
+    #7A5726 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brandDivider {
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #C8A05A, transparent);
+}
+
+.brandTagline {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  line-height: 1.9;
+  color: #C8A05A;
+  background-image: linear-gradient(
+    177deg,
+    #6B4A1E 0%,
+    #C8A05A 22%,
+    #F8E8B8 44%,
+    #B08A45 58%,
+    #E4CE94 74%,
+    #7A5726 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Mode toggle */
@@ -111,28 +187,39 @@
   gap: 8px;
 }
 
+/* Segmented feel, not two big boxes. The bar under the active label is the only
+   thing that moves — no filled pill, no border you have to read as a shape. */
 .toggleBtn {
   flex: 1;
-  padding: 13px 10px;
-  border-radius: var(--r-md);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-  background: transparent;
+  padding: 10px 8px 12px;
+  border: none;
+  background: none;
   font-family: var(--font-heading);
-  font-size: 14px;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.16em;
   color: var(--muted);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  position: relative;
+  transition: color 0.18s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.toggleBtn.toggleActive {
-  border-color: rgba(var(--accent-rgb), 0.65);
-  background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.18) 0%,
-    rgba(200, 160, 90, 0.06) 100%);
-  color: var(--accent);
+.toggleBtn::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 2px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 220ms var(--ease-out);
 }
+
+.toggleBtn.toggleActive { color: var(--accent); }
+.toggleBtn.toggleActive::after { transform: scaleX(1); }
 
 /* Form */
 .form {
@@ -257,24 +344,26 @@
 .recoverSecondary:active,
 .recoverSecondary:hover { color: var(--text); }
 
+/* Pill, not a slab. The rectangle-with-serious-caps reads as a bank form; a
+   softer capsule with less padding says press this and move on. */
 .submit {
-  width: 100%;
-  padding: 17px;
-  border-radius: var(--r-md);
+  align-self: center;
+  min-width: 60%;
+  padding: 12px 28px;
+  border-radius: 999px;
   border: 1px solid rgba(var(--accent-rgb), 0.55);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.18) 0%,
-    rgba(200, 160, 90, 0.06) 100%);
+    rgba(200, 160, 90, 0.16) 0%,
+    rgba(200, 160, 90, 0.05) 100%);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: var(--accent);
   font-family: var(--font-heading);
-  font-size: 17px;
+  font-size: 14px;
   letter-spacing: 0.14em;
-  text-shadow: 0 1px 10px rgba(0,0,0,0.5);
   cursor: pointer;
   transition: background 180ms, border-color 180ms;
-  margin-top: 4px;
+  margin-top: 6px;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -309,21 +398,22 @@
   color: var(--muted);
 }
 
-/* Google button */
+/* Google button — the same pill language as submit, half-strength so the
+   primary path stays primary. */
 .googleBtn {
-  width: 100%;
-  display: flex;
+  align-self: center;
+  min-width: 60%;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 16px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  border-radius: var(--r-md);
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
   -webkit-tap-highlight-color: transparent;

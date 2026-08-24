@@ -88,12 +88,20 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
   return (
     <div className={styles.screen}>
       <div className={styles.inner}>
-        {/* Quiet wordmark. The maximal metal-gold logo on this page reads as an
-            advert screaming for attention when the job of the screen is one calm
-            question: are you a returning client or a new one. Same character as
-            the onboarding, so the two screens feel like the same room. */}
+        {/* The splash's own lockup, minus the choreography. Same arms, same
+            brushed-gold BLAG, same two-line tagline — sized off the splash's
+            proportions rather than the earlier auth's, where BLAG had grown
+            past the arms and started shouting. */}
         <div className={styles.brand}>
-          <span className={styles.brandName}>BLAG</span>
+          <div className={styles.armsRow}>
+            <div className={styles.armLeft} aria-hidden="true" />
+            <div className={styles.brandCenter}>
+              <h1 className={styles.brandName}>BLAG</h1>
+              <div className={styles.brandDivider} aria-hidden="true" />
+              <p className={styles.brandTagline}>Be blag,<br />Be better</p>
+            </div>
+            <div className={styles.armRight} aria-hidden="true" />
+          </div>
         </div>
 
         {mode !== 'reset' && (
