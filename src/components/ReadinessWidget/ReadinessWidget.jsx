@@ -23,25 +23,9 @@ function ReadinessRing({ score, label, provisional }) {
   // on Today, on the recovery screen, and once per client for the coach.
   const uid = useId().replace(/:/g, '')
 
-  // Path along the score arc, so a moving light can ride it. The arc starts at
-  // 12 o'clock (rotated -90°) and sweeps clockwise by pct of a full turn.
-  // A single-arc path is enough up to a half turn; over that, largeArc kicks in.
-  const arcPath = (() => {
-    if (score === null || pct <= 0) return null
-    const cx = 50, cy = 50
-    // Almost-full arcs cannot close on themselves in one A-command — draw two
-    // halves so the light doesn't skip when the score sits near 100.
-    if (pct >= 0.999) {
-      return `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${r} ${r} 0 0 1 ${cx} ${cy - r}`
-    }
-    const angle = -Math.PI / 2 + pct * Math.PI * 2
-    const x2 = cx + r * Math.cos(angle)
-    const y2 = cy + r * Math.sin(angle)
-    const large = pct > 0.5 ? 1 : 0
-    return `M ${cx} ${cy - r} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`
-  })()
-
-  const flowing = score !== null && !provisional && score >= 55
+  // Alive when the score is genuine (not provisional) and worth celebrating.
+  // Under 55 the heart stays quiet — this is a signal, not decoration.
+  const alive = score !== null && !provisional && score >= 55
 
   return (
     <div className={styles.ringWrap}>
@@ -56,13 +40,28 @@ function ReadinessRing({ score, label, provisional }) {
           <filter id={`${uid}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="3.4" />
           </filter>
-          {/* Halo the moving light so it reads as a cell of blood through a
-              vein, not a pixel on a wire. */}
-          <filter id={`${uid}-photon`} x="-200%" y="-200%" width="500%" height="500%">
-            <feGaussianBlur stdDeviation="1.6" />
-          </filter>
-          {arcPath && <path id={`${uid}-arc`} d={arcPath} />}
         </defs>
+
+        {/* Heartbeat waves — three concentric rings emanating out from the
+            score arc, staggered so a wave is always in flight. Cast in the
+            score's own colour, so the pulse stays consistent with the state
+            of the ring rather than reading as decorative overlay. */}
+        {alive && (
+          <g style={{ transformOrigin: 'center', transformBox: 'fill-box' }}>
+            {[0, 1, 2].map(i => (
+              <circle
+                key={i}
+                cx="50" cy="50" r={r}
+                fill="none" stroke={color} strokeWidth="1.6"
+                style={{
+                  transformOrigin: '50px 50px',
+                  animation: `readinessPulse 2.4s cubic-bezier(0.22, 0.7, 0.28, 1) ${i * 0.8}s infinite`,
+                  opacity: 0,
+                }}
+              />
+            ))}
+          </g>
+        )}
 
         {/* The arc again, blurred, underneath — so the colour spills onto the
             card the way a lit edge does instead of stopping at the stroke. */}
@@ -103,24 +102,6 @@ function ReadinessRing({ score, label, provisional }) {
         <circle cx="50" cy="50" r={r - sw / 4} fill="none"
           stroke="#000" strokeOpacity="0.22" strokeWidth={sw / 2} />
 
-        {/* The moving light — a bright cell running along the arc. Two dots,
-            the second smaller and trailing, so it reads as motion with a hint
-            of tail rather than a rolling ball. Only when the ring is earning
-            it (score ≥ 55 and not provisional). */}
-        {flowing && arcPath && (
-          <>
-            <circle r="2.4" fill="#fff" filter={`url(#${uid}-photon)`} opacity="0.95">
-              <animateMotion dur="2.6s" repeatCount="indefinite" rotate="auto">
-                <mpath href={`#${uid}-arc`} />
-              </animateMotion>
-            </circle>
-            <circle r="1.4" fill="#fff" opacity="0.7">
-              <animateMotion dur="2.6s" repeatCount="indefinite" begin="-0.12s">
-                <mpath href={`#${uid}-arc`} />
-              </animateMotion>
-            </circle>
-          </>
-        )}
         {/* Oswald, not Bebas — Bebas ships no Cyrillic and this sat on a
             fallback font ever since the heading face was swapped. */}
         <text x="50" y="46" textAnchor="middle" fill={color}
