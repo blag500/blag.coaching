@@ -80,6 +80,12 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     cancelHold()
     const el = rowEls.current.get(entry.id)
     if (!el) return
+    // Kill the itemIn entrance animation and any leftover transition —
+    // both would fight the JS transform frame-by-frame and the row would
+    // just sit still. willChange keeps the compositor's layer warm.
+    el.style.animation = 'none'
+    el.style.transition = 'none'
+    el.style.willChange = 'transform'
     const slotTop = el.getBoundingClientRect().top
     drag.current = { entry, grabY: e.clientY - slotTop, slotTop }
     dragIdRef.current = entry.id
@@ -121,6 +127,9 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       if (el) {
         el.style.transition = 'transform 180ms cubic-bezier(.2,.7,.3,1)'
         el.style.transform = ''
+        el.style.willChange = ''
+        // Restore the entrance-animation slot after the settle transition ends.
+        setTimeout(() => { if (el) el.style.animation = '' }, 220)
       }
       const target = findMealAt(e.clientX, e.clientY)
       if (target && target !== '_other' && target !== d.entry.meal_type) {
