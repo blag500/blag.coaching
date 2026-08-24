@@ -60,17 +60,35 @@ export function classifyMuscle(label = '') {
  */
 export function resolveGroups(block) {
   if (!block) return []
-  if (Array.isArray(block.groups) && block.groups.length) {
-    return block.groups.filter(g => g in RECOVERY_H)
-  }
   const out = new Set()
+
+  // Explicit groups still lead — the coach ticked them on purpose.
+  if (Array.isArray(block.groups) && block.groups.length) {
+    for (const g of block.groups) if (g in RECOVERY_H) out.add(g)
+  }
+
+  // Label — "Upper A" catches upper, but an old plan without explicit groups
+  // needs more than a single classification. Kept as a hint, not the sole
+  // source: an Upper A that actually holds pull-ups touches pull whether the
+  // label says so or not.
   const fromLabel = classifyMuscle(block.label)
   if (fromLabel === 'full') for (const g of Object.keys(RECOVERY_H)) out.add(g)
   else if (fromLabel) out.add(fromLabel)
+
+  // Free-text muscle notes on the block, if any.
   for (const m of block.muscles ?? []) {
     const g = classifyMuscle(m)
     if (g && g !== 'full') out.add(g)
   }
+
+  // Union in whatever the exercises themselves imply. A plan that predates
+  // the `groups` field still lights the mannequin correctly because a Lat
+  // Pulldown drags the pull group in even when nobody said so.
+  for (const ex of block.exercises ?? []) {
+    const g = classifyMuscle(ex.name || '')
+    if (g && g !== 'full') out.add(g)
+  }
+
   return [...out]
 }
 
