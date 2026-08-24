@@ -39,7 +39,7 @@ const MACRO_COLORS = {
 
 export default function Profile({ onMenuOpen }) {
   const { profile, user, updateProfile, signOut } = useAuth()
-  const { theme, setTheme, lang, setLang, t } = useSettings()
+  const { theme, setTheme, lang, setLang, restTimer, setRestTimer, t } = useSettings()
   const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
   const history = useHabitHistory()
   /* profiles.target_weight, not localStorage.
@@ -574,6 +574,21 @@ export default function Profile({ onMenuOpen }) {
               className={`${styles.toggleBtn} ${lang === 'en' ? styles.toggleBtnActive : ''}`}
               onClick={() => setLang('en')}
             >EN</button>
+          </div>
+        </div>
+        <div className={styles.settingsRow}>
+          <span className={styles.settingsLabel}>Таймер за почивка</span>
+          <div className={styles.toggleGroup}>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${restTimer ? styles.toggleBtnActive : ''}`}
+              onClick={() => setRestTimer(true)}
+            >Вкл.</button>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${!restTimer ? styles.toggleBtnActive : ''}`}
+              onClick={() => setRestTimer(false)}
+            >Изкл.</button>
           </div>
         </div>
       </section>

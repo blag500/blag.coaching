@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import { setPace, formatPace } from '../../utils/setPace'
 import styles from './DayLog.module.css'
@@ -64,6 +65,7 @@ function summarise(sets) {
  */
 export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const { user } = useAuth()
+  const { restTimer } = useSettings()
   const [rows, setRows] = useState({})   // planned name → [{ id, weight, reps }]
   const [lastSess, setLastSess] = useState({}) // planned name → last session's sets
   const [rest, setRest] = useState(null) // { name, since } — the running rest clock
@@ -183,8 +185,10 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     return () => clearInterval(id)
   }, [rest?.since])
 
-  /** A finished set starts the clock over. */
+  /** A finished set starts the clock over — unless the user turned the rest
+   *  timer off in Profile, in which case saved sets stay quiet. */
   function startRest(name) {
+    if (!restTimer) return
     buzzedRef.current = false
     setNow(Date.now())
     setRest({ name, since: Date.now() })
@@ -528,27 +532,6 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       aria-label={`${ex.name}, серия ${i + 1}, повече тегло`}
                     >+</button>
                   </div>
-
-                  {(() => {
-                    // Once a decimal separator is typed the user has taken over
-                    // — the shortcut is a keyboard replacement, not a duplicate
-                    // input; keeping it visible next to their own entry reads as
-                    // clutter and invites a double-tap that just toggles their
-                    // number.
-                    const hasDecimal = /[.,]/.test(String(r.weight))
-                    if (hasDecimal) return null
-                    const empty = String(r.weight).trim() === ''
-                    return (
-                      <button
-                        type="button"
-                        tabIndex={-1}
-                        className={`${styles.halfBtn} ${empty ? styles.halfBtnDim : ''}`}
-                        onClick={() => toggleHalf(ex.name, i)}
-                        aria-label={`${ex.name}, серия ${i + 1}, половин плоча`}
-                        title="+½ кг"
-                      >½</button>
-                    )
-                  })()}
 
                   <span className={styles.times}>×</span>
 
