@@ -386,10 +386,121 @@
 
 
 
-/* Split picker — the "днес" tab's first view, before you commit to a block.
-   Rows carry the name, when you last did it, and how recovered it is; tap
-   opens the session view. The due block gets a subtle golden edge so the eye
-   lands on it without a "препоръчано" chip. */
+/* Split index — a WOVE-inspired chapter list. A thin spine on the left runs
+   through every entry, each carrying a two-digit number, a big-typography
+   name, and a single quiet line of meta. Only the due chapter wears full
+   colour; the rest wait their turn. No chips, no bars, no icons — the
+   typography does the whole job. */
+.splitIndex {
+  list-style: none;
+  margin: 4px 0 24px;
+  padding: 0;
+  position: relative;
+  --spine: 30px;
+}
+
+/* The spine — a hairline down the left, dotted at each chapter. */
+.splitIndex::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--spine) - 1px);
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 12%,
+    rgba(255, 255, 255, 0.08) 88%,
+    transparent 100%);
+}
+
+.chapter {
+  position: relative;
+  padding: 0;
+}
+
+.chapter + .chapter { margin-top: 2px; }
+
+/* Dot on the spine — quiet by default, lit for the due chapter. */
+.chapter::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--spine) - 3.5px);
+  top: 28px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  transition: background 200ms, box-shadow 200ms;
+  z-index: 1;
+}
+
+.chapterDue::before {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.16), 0 0 14px rgba(var(--accent-rgb), 0.5);
+}
+
+.chapterHit {
+  width: 100%;
+  display: grid;
+  grid-template-columns: calc(var(--spine) + 22px) 1fr;
+  gap: 6px;
+  align-items: baseline;
+  padding: 18px 4px 18px 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0.45;
+  transition: opacity 200ms;
+}
+.chapterHit:active { transform: none; }
+.chapterDue .chapterHit { opacity: 1; }
+.chapterRest .chapterHit { opacity: 0.32; }
+
+.chapterNo {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  padding-left: 2px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.chapterDue .chapterNo { color: var(--accent); }
+
+.chapterText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.chapterName {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chapterDue .chapterName { color: var(--text); }
+
+.chapterMeta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* Kept in case something still references it — the old bar-and-chip picker,
+   dead code below. Removed from the JSX above. */
 .blockList {
   list-style: none;
   margin: 4px 0 20px;

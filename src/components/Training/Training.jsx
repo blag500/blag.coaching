@@ -642,28 +642,29 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'today' && !sessionBlockId && (
         <>
-          {/* The whole split, as a list of rows. Each row carries what makes a
-              block choosable at a glance: name, recovery state, how long since
-              you last did it. Tap opens the session view — no inline expansion
-              beats a proper page for something you'll spend the next 45
-              minutes inside. */}
-          <ul className={styles.blockList}>
-            {blocks.map(block => {
+          {/* Split index — a WOVE-style chapter list. One number per block on
+              a thin spine, big-typography name to the right, a single line of
+              meta beneath. The due block wears full colour; the rest quietly
+              wait their turn. Tap a chapter to open the session view. */}
+          <ol className={styles.splitIndex}>
+            {blocks.map((block, i) => {
               const rec  = blockReadiness(block, recovery, lastDone)
               const last = lastDone[block.label]
               const isDue = dueBlock?.id === block.id
               const isRest = isRestBlock(block)
-              // Which broad groups this block hits, in the order resolveGroups
-              // returns them — first one becomes the "primary" (icon + colour
-               // bar), the rest fill the flavour dots under the name.
-              const groups = isRest ? [] : (groupsByLabel[block.label] ?? [])
-              const primary = groups[0] ?? 'upper'
+              const meta = isRest
+                ? 'Почивка · сън, хидратация, мобилити'
+                : last
+                  ? `Последно ${agoLabel(last)} · ${rec.pct >= 80 ? 'готова' : rec.pct + '% възст.'}`
+                  : (rec.pct >= 80 ? 'Готова — още не си я логвал' : 'Още не си я логвал')
               return (
-                <li key={block.id}>
+                <li
+                  key={block.id}
+                  className={`${styles.chapter} ${isDue ? styles.chapterDue : ''} ${isRest ? styles.chapterRest : ''}`}
+                >
                   <button
                     type="button"
-                    className={`${styles.blockRow} ${isDue ? styles.blockRowDue : ''}`}
-                    style={!isRest ? { '--block-accent': GROUP_COLORS[primary] } : undefined}
+                    className={styles.chapterHit}
                     onClick={() => {
                       userPicked.current = true
                       setSelectedId(block.id)
@@ -672,46 +673,16 @@ export default function Training({ onMenuOpen }) {
                       setJustMarked(false)
                     }}
                   >
-                    <span className={`${styles.blockRowBar} ${isRest ? styles.blockRowBarRest : ''}`} aria-hidden="true" />
-                    <span className={`${styles.blockRowIcon} ${isRest ? styles.blockRowIconRest : ''}`}>
-                      {isRest ? BLOCK_ICONS.rest : (BLOCK_ICONS[primary] ?? BLOCK_ICONS.upper)}
+                    <span className={styles.chapterNo}>{String(i + 1).padStart(2, '0')}</span>
+                    <span className={styles.chapterText}>
+                      <span className={styles.chapterName}>{block.label}</span>
+                      <span className={styles.chapterMeta}>{meta}</span>
                     </span>
-                    <span className={styles.blockRowBody}>
-                      <span className={styles.blockRowName}>{block.label}</span>
-                      <span className={styles.blockRowMeta}>
-                        {isRest
-                          ? 'Почивка · сън, хидратация, мобилити'
-                          : last
-                            ? `Последно ${agoLabel(last)}`
-                            : 'Още нищо не е логнато'}
-                      </span>
-                      {groups.length > 1 && (
-                        <span className={styles.blockRowDots}>
-                          {groups.map(g => (
-                            <span
-                              key={g}
-                              className={styles.blockRowDot}
-                              style={{ background: GROUP_COLORS[g] }}
-                              title={GROUP_LABELS[g]}
-                            />
-                          ))}
-                        </span>
-                      )}
-                    </span>
-                    {!isRest && rec.basis !== 'never' && (
-                      <span className={[
-                        styles.blockRowState,
-                        rec.pct >= 80 ? styles.blockRowReady : styles.blockRowWait,
-                      ].join(' ')}>
-                        {rec.pct >= 80 ? 'готова' : `${rec.pct}%`}
-                      </span>
-                    )}
-                    <span className={styles.blockRowChev}>›</span>
                   </button>
                 </li>
               )
             })}
-          </ul>
+          </ol>
 
           <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
             <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
