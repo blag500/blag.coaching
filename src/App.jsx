@@ -218,13 +218,13 @@ function AppShell() {
     // PRO is the coached tier — set by the coach directly in the DB.
     // Everyone else goes through the self-serve flow which ends with the coach upsell.
     const coached = profile.plan === 'pro' || profile.plan === 'coaching'
-    return coached
-      ? <Onboarding isCoachingIntake />
-      : <CalorieCalculator
-          isOnboarding
-          onComplete={name => setOnboardName(name || '')}
-          onError={() => setOnboardName(null)}
-        />
+    return (
+      <Onboarding
+        isCoachingIntake={coached}
+        onComplete={name => setOnboardName(name || '')}
+        onError={() => setOnboardName(null)}
+      />
+    )
   }
 
   // Nothing is sold by card here. PRO is arranged with the coach, who approves

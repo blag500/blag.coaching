@@ -1,16 +1,95 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { registerPushSubscription } from '../../hooks/usePushNotifications'
+import { supabase } from '../../lib/supabase'
 import AvatarPicker from './AvatarPicker'
 import WeightScroller from './WeightScroller'
+import CoachOffer from '../CoachOffer/CoachOffer'
 import { GOAL_ICON, CheckIcon } from './StepIcons'
 import styles from './Onboarding.module.css'
 
 const GOAL_OPTIONS = [
-  { id: 'cut',      label: 'ИЗГАРЯНЕ',    desc: 'Намаляване на мастна тъкан' },
-  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  desc: 'Запазване на теглото'        },
-  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   desc: 'Изграждане на мускулна маса' },
+  { id: 'cut',      label: 'ИЗГАРЯНЕ',    desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
+  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  desc: 'Запазване на теглото',        kcalDelta: 0    },
+  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
 ]
+
+/* Activity levels stay a real 5-way question — the multipliers used to size the
+   maintenance target are Mifflin's, so squashing them into three would move
+   the daily calorie ceiling by hundreds. Icons over labels so the row scans as
+   a set of decisions, not a wall of text. */
+const ACTIVITY_OPTIONS = [
+  { id: 'sedentary',   label: 'Заседнал',        desc: 'Офис работа, без спорт',              mult: 1.2,   icon: 'chair' },
+  { id: 'light',       label: 'Леко активен',    desc: '1–2 тренировки на седмица',            mult: 1.375, icon: 'walk'  },
+  { id: 'moderate',    label: 'Умерено активен', desc: '3–5 тренировки на седмица',            mult: 1.55,  icon: 'run'   },
+  { id: 'active',      label: 'Много активен',   desc: '6–7 тренировки на седмица',            mult: 1.725, icon: 'lift'  },
+  { id: 'very_active', label: 'Изключително',    desc: 'Физически труд + ежедневен спорт',     mult: 1.9,   icon: 'bolt'  },
+]
+
+/* Macros derived from weight, gender, activity, goal — the two numbers we don't
+   ask for (age, height) are held at population averages, close enough to feed
+   Mifflin without another two screens of scrollers. A grown-up who cares about
+   the exactness can edit both later on the profile screen. */
+const ASSUMED_AGE       = 30
+const ASSUMED_HEIGHT_M  = 175
+const ASSUMED_HEIGHT_F  = 165
+
+function calcBMR(gender, age, height, weight) {
+  return gender === 'male'
+    ? 10 * weight + 6.25 * height - 5 * age + 5
+    : 10 * weight + 6.25 * height - 5 * age - 161
+}
+
+function macrosFromForm({ gender, weight_kg, activity, goal }) {
+  const height = gender === 'female' ? ASSUMED_HEIGHT_F : ASSUMED_HEIGHT_M
+  const bmr    = calcBMR(gender, ASSUMED_AGE, height, weight_kg)
+  const mult   = ACTIVITY_OPTIONS.find(a => a.id === activity)?.mult ?? 1.55
+  const delta  = GOAL_OPTIONS.find(g => g.id === goal)?.kcalDelta ?? 0
+  const calories = Math.max(1200, Math.round(bmr * mult + delta))
+  const protein  = Math.round(weight_kg * 2)
+  const fat      = Math.round((calories * 0.25) / 9)
+  const carbs    = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4))
+  return { calories, protein, carbs, fat }
+}
+
+const ACTIVITY_ICON = {
+  chair: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 4h12v8H6z" />
+      <path d="M5 12h14" />
+      <path d="M7 12v9M17 12v9" />
+      <path d="M4 21h16" />
+    </svg>
+  ),
+  walk: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="13" cy="4.5" r="1.6" />
+      <path d="M11 21l2-6-3-3 2-5 3 3h3" />
+      <path d="M13 15l-3 6" />
+    </svg>
+  ),
+  run: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="15" cy="4.5" r="1.6" />
+      <path d="M6 20l4-5 2 3 4-5-2-4h4" />
+      <path d="M5 10l4-1" />
+    </svg>
+  ),
+  lift: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9v6" />
+      <path d="M20 9v6" />
+      <path d="M2 11v2" />
+      <path d="M22 11v2" />
+      <path d="M4 12h16" />
+    </svg>
+  ),
+  bolt: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 2L5 14h6l-1 8 8-12h-6l1-8z" />
+    </svg>
+  ),
+}
 
 /* Big flat body silhouettes for the gender step. Kept as inline SVG so they
    tint with currentColor and never need a network round-trip on first paint. */
@@ -38,8 +117,8 @@ function WomanFigure() {
   )
 }
 
-export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
-  const { profile, session, completeOnboarding, signOut } = useAuth()
+export default function Onboarding({ isCoachingIntake = false, onChangePlan, onComplete, onError }) {
+  const { profile, session, completeOnboarding, updateProfile, selectPlan, signOut } = useAuth()
   const knownName = (profile?.name ?? '').trim()
 
   // Name is already captured at signup, so skip that step when we have it.
@@ -47,15 +126,21 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
   const [submitted, setSubmitted] = useState(false)
+  // For self-serve, the final screen is the coach upsell — shown once macros
+  // are saved and the client is technically inside the app.
+  const [showCoachOffer, setShowCoachOffer] = useState(false)
 
   const [form, setForm] = useState({
     name:      knownName,
     goal:      'maintain',
     gender:    'male',
     weight_kg: 75,
+    activity:  'moderate',
   })
 
-  const totalSteps = 5
+  const [notifyState, setNotifyState] = useState('idle')
+
+  const totalSteps = 6 // name, goal, gender, weight, activity, notifications
 
   function set(field, val) {
     setForm(prev => ({ ...prev, [field]: val }))
@@ -65,70 +150,100 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
     setError('')
     if (step === 1 && !form.name.trim()) { setError('Въведи името си'); return }
     if (step === totalSteps) {
-      if (isCoachingIntake) handleCoachingSubmit()
-      else handleFinish()
+      finish()
       return
     }
     setStep(s => s + 1)
   }
 
-  /** Notification step's primary button — ask, then finish. If they answer
-   *  denied, we still let them into the app on the same button press. */
   async function allowThenFinish() {
     await requestNotifications()
-    if (isCoachingIntake) handleCoachingSubmit()
-    else handleFinish()
+    finish()
   }
 
-  async function handleFinish() {
-    setSaving(true)
-    setError('')
-    // No macros here — profile starts bare. The nutrition tab invites the
-    // client to set targets when they open it, so nothing that needs a decision
-    // stands between signup and the first useful screen.
-    const { error: err } = await completeOnboarding({
-      name:      form.name.trim(),
-      goal:      form.goal,
-      gender:    form.gender,
-      weight_kg: form.weight_kg,
-    })
-    if (err) { setError(err.message); setSaving(false) }
-  }
-
-  const [notifyState, setNotifyState] = useState('idle') // 'idle' | 'granted' | 'denied' | 'unsupported'
-
-  /** Native browser prompt, right here — asked at the moment the client just
-   *  agreed to a habit-forming product, which is the moment they're most likely
-   *  to say yes. If the browser doesn't support push, quietly move on rather
-   *  than block the flow. */
   async function requestNotifications() {
-    if (!('Notification' in window)) {
-      setNotifyState('unsupported')
-      return
-    }
+    if (!('Notification' in window)) { setNotifyState('unsupported'); return }
     try {
       const perm = await Notification.requestPermission()
       setNotifyState(perm === 'granted' ? 'granted' : 'denied')
       if (perm === 'granted' && session?.user?.id) {
         registerPushSubscription(session.user.id).catch(() => {})
       }
-    } catch {
-      setNotifyState('denied')
-    }
+    } catch { setNotifyState('denied') }
   }
 
-  async function handleCoachingSubmit() {
+  async function finish() {
+    if (isCoachingIntake) return handleCoachingSubmit()
+    return handleSelfServeFinish()
+  }
+
+  async function handleSelfServeFinish() {
     setSaving(true)
     setError('')
+    const macros = macrosFromForm(form)
+    // Free tier is what self-serve accounts always begin as. The coach upsell
+    // that follows is a *request* — the tier only flips to pro if the client
+    // taps it and the coach later accepts. Flipping it here would move them into
+    // the coaching-intake flow mid-save.
+    await selectPlan('free')
     const { error: err } = await completeOnboarding({
       name:      form.name.trim(),
       goal:      form.goal,
       gender:    form.gender,
       weight_kg: form.weight_kg,
+      activity_level: form.activity,
+      calories:  macros.calories,
+      protein:   macros.protein,
+      carbs:     macros.carbs,
+      fat:       macros.fat,
+    })
+    setSaving(false)
+    if (err) { setError(err.message || 'Грешка при запис. Опитай пак.'); onError?.(); return }
+    setShowCoachOffer(true)
+  }
+
+  async function handleCoachingSubmit() {
+    setSaving(true)
+    setError('')
+    const macros = macrosFromForm(form)
+    const { error: err } = await completeOnboarding({
+      name:      form.name.trim(),
+      goal:      form.goal,
+      gender:    form.gender,
+      weight_kg: form.weight_kg,
+      activity_level: form.activity,
+      calories:  macros.calories,
+      protein:   macros.protein,
+      carbs:     macros.carbs,
+      fat:       macros.fat,
     })
     setSaving(false)
     if (err) setError(err.message)
     else setSubmitted(true)
+  }
+
+  /** Coach upsell handlers — the client already technically finished the
+   *  onboarding at this point (macros saved, onboarding_done=true), so the
+   *  callback into App.jsx lets it arm the success screen while the coach
+   *  request pushes in the background. */
+  async function handleCoachAccept() {
+    setSaving(true)
+    setError('')
+    onComplete?.(form.name.trim())
+    await updateProfile({ plan_pending: true })
+    const coachId = profile?.coach_id
+    if (coachId) {
+      supabase.functions.invoke('send-push', {
+        body: {
+          toUserId: coachId,
+          title: 'Нова заявка за треньор',
+          body: `${form.name.trim() || profile?.email || 'Нов клиент'} иска безплатна тренировка`,
+        },
+      }).catch(() => {})
+    }
+  }
+  function handleCoachSkip() {
+    onComplete?.(form.name.trim())
   }
 
   if (submitted) {
@@ -155,6 +270,17 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
     )
   }
 
+  if (showCoachOffer) {
+    return (
+      <CoachOffer
+        saving={saving}
+        error={error}
+        onWrite={handleCoachAccept}
+        onSkip={handleCoachSkip}
+      />
+    )
+  }
+
   return (
     <div className={styles.page}>
       {onChangePlan && (
@@ -172,7 +298,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
       </div>
 
       <div className={styles.content}>
-        {/* Step 1 — Name (only when we don't already have it) */}
+        {/* Step 1 — Name */}
         {step === 1 && (
           <div className={styles.stepWrap}>
             <h1 className={styles.heading}>ДОБРЕ ДОШЪЛ</h1>
@@ -218,8 +344,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
           </div>
         )}
 
-        {/* Step 3 — Gender, one question one screen. Two big glass cards, the
-            figure tinted with the accent — tap picks and lifts. */}
+        {/* Step 3 — Gender */}
         {step === 3 && (
           <div className={styles.stepWrap}>
             <h1 className={styles.heading}>ТИ СИ</h1>
@@ -245,7 +370,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
           </div>
         )}
 
-        {/* Step 4 — Weight scroller. One number, easy to move, no keyboard. */}
+        {/* Step 4 — Weight */}
         {step === 4 && (
           <div className={styles.stepWrap}>
             <h1 className={styles.heading}>ТЕГЛО СЕГА</h1>
@@ -257,8 +382,32 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
           </div>
         )}
 
-        {/* Step 5 — Notifications. Asked once at the point of highest yes. */}
+        {/* Step 5 — Activity */}
         {step === 5 && (
+          <div className={styles.stepWrap}>
+            <h1 className={styles.heading}>АКТИВНОСТ</h1>
+            <p className={styles.sub}>Извън тренировките — колко се движиш през деня.</p>
+            <div className={styles.activityGrid}>
+              {ACTIVITY_OPTIONS.map(a => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className={`${styles.activityCard} ${form.activity === a.id ? styles.activityCardActive : ''}`}
+                  onClick={() => set('activity', a.id)}
+                >
+                  <span className={styles.activityIcon}>{ACTIVITY_ICON[a.icon]}</span>
+                  <span className={styles.activityBody}>
+                    <span className={styles.activityLabel}>{a.label}</span>
+                    <span className={styles.activityDesc}>{a.desc}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 6 — Notifications */}
+        {step === 6 && (
           <div className={styles.stepWrap}>
             <h1 className={styles.heading}>НАПОМНЯНИЯ</h1>
             <p className={styles.sub}>
@@ -299,8 +448,6 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan }) {
             НАПРЕД →
           </button>
         )}
-        {/* Step 5 is the notification prompt — the primary asks for permission
-            and enters the app; the secondary is a soft skip. */}
         {step === totalSteps && (
           <div className={styles.notifyActions}>
             <button
