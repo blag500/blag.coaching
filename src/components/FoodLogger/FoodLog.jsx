@@ -69,28 +69,24 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     return zone?.getAttribute('data-drop-meal') ?? null
   }
 
-  function onEntryPointerDown(e, entry) {
+  /** Pointer down on the grip starts a drag immediately — the whole point of
+   *  a visible handle is that its meaning is unambiguous. The rest of the row
+   *  keeps its taps for edit/remove/photo. */
+  function onGripPointerDown(e, entry) {
     if (editingId != null) return
     if (e.button != null && e.button !== 0) return
-    // Buttons inside the row (× remove, edit) stay tap-only.
-    if (e.target.closest('button')) return
+    e.preventDefault()
+    e.stopPropagation()
     cancelHold()
-    const x = e.clientX, y = e.clientY
-    hold.current = {
-      x, y,
-      timer: setTimeout(() => {
-        hold.current = null
-        const el = rowEls.current.get(entry.id)
-        if (!el) return
-        // Snapshot the slot top NOW, before any transform is applied — every
-        // subsequent shift is measured against this reading. Avoids reading
-        // the CSSmatrix mid-drag, which iOS Safari answered inconsistently.
-        const slotTop = el.getBoundingClientRect().top
-        drag.current = { entry, grabY: y - slotTop, slotTop }
-        dragIdRef.current = entry.id
-        setDragId(entry.id)
-      }, HOLD_MS),
-    }
+    const el = rowEls.current.get(entry.id)
+    if (!el) return
+    const slotTop = el.getBoundingClientRect().top
+    drag.current = { entry, grabY: e.clientY - slotTop, slotTop }
+    dragIdRef.current = entry.id
+    setDragId(entry.id)
+    // Some iOS PWAs stop firing pointermove on window if the source element
+    // hadn't captured — captureEvents on the grip keeps them coming.
+    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch { /* ignore */ }
   }
 
   // Live handlers held in a ref so we can attach the window listeners ONCE.
@@ -325,9 +321,13 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         }}
         className={`${styles.entry} ${dragId === entry.id ? styles.entryDragging : ''}`}
         style={{ '--i': i }}
-        onPointerDown={e => onEntryPointerDown(e, entry)}
       >
-        <span className={styles.entryGrip} aria-hidden="true">
+        <span
+          className={styles.entryGrip}
+          onPointerDown={e => onGripPointerDown(e, entry)}
+          aria-label="Влачи, за да преместиш"
+          role="button"
+        >
           <span /><span /><span />
         </span>
         {/* Meal photo: thumbnail on left side if present */}
