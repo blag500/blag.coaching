@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import CopyPreviousDay from './CopyPreviousDay'
 import QuickAddSheet from './QuickAddSheet'
 import { MEALS, MEAL_LABEL } from './meals'
@@ -42,6 +42,93 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   const [uploadingId,  setUploadingId]  = useState(null)
   const [lightboxUrl,  setLightboxUrl]  = useState(null)
   const [quickMeal,    setQuickMeal]    = useState(null)  // section + → history sheet
+
+  // Drag-to-move-meal state. `drag` is the row being carried; `hoverMeal` is
+  // the meal id the finger is currently over. A pointerdown arms the drag
+  // (long-press OR ≥6px movement), then a ghost follows the finger until
+  // release. Drop over a meal section commits a meal_type change via onEdit.
+  const [drag, setDrag] = useState(null)          // { entry, x, y, dx, dy, w, h }
+  const [hoverMeal, setHoverMeal] = useState(null)
+  const dragArmRef = useRef(null)                 // { entry, x, y, timer, activated, w, h }
+
+  function findMealAt(x, y) {
+    const el = document.elementFromPoint(x, y)
+    if (!el) return null
+    const zone = el.closest('[data-drop-meal]')
+    return zone?.getAttribute('data-drop-meal') ?? null
+  }
+
+  function activateDrag(clientX, clientY) {
+    const a = dragArmRef.current
+    if (!a || a.activated) return
+    a.activated = true
+    setDrag({
+      entry: a.entry,
+      x: clientX, y: clientY,
+      dx: clientX - a.x, dy: clientY - a.y,
+      w: a.w, h: a.h,
+    })
+    // Prevent iOS text-selection callout mid-drag.
+    document.body.style.userSelect = 'none'
+    document.body.style.webkitUserSelect = 'none'
+  }
+
+  function onEntryPointerDown(e, entry) {
+    if (editingId != null) return
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    dragArmRef.current = {
+      entry,
+      x: e.clientX, y: e.clientY,
+      w: rect.width, h: rect.height,
+      activated: false,
+      timer: setTimeout(() => activateDrag(e.clientX, e.clientY), 380),
+    }
+  }
+
+  useEffect(() => {
+    function onMove(e) {
+      const a = dragArmRef.current
+      if (!a) return
+      if (!a.activated) {
+        // Movement threshold beats the long-press timer.
+        const dx = e.clientX - a.x
+        const dy = e.clientY - a.y
+        if (Math.hypot(dx, dy) < 8) return
+        clearTimeout(a.timer)
+        activateDrag(e.clientX, e.clientY)
+      }
+      if (dragArmRef.current?.activated) {
+        e.preventDefault()
+        setDrag(d => d && { ...d, x: e.clientX, y: e.clientY })
+        setHoverMeal(findMealAt(e.clientX, e.clientY))
+      }
+    }
+    function onUp(e) {
+      const a = dragArmRef.current
+      if (!a) return
+      clearTimeout(a.timer)
+      if (a.activated) {
+        const target = findMealAt(e.clientX, e.clientY)
+        if (target && target !== a.entry.meal_type && target !== '_other') {
+          onEdit?.(a.entry.id, { meal_type: target })
+        }
+        document.body.style.userSelect = ''
+        document.body.style.webkitUserSelect = ''
+      }
+      dragArmRef.current = null
+      setDrag(null)
+      setHoverMeal(null)
+    }
+    window.addEventListener('pointermove', onMove, { passive: false })
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
+  }, [onEdit])
 
   const photoInputRef  = useRef()
   const photoTargetRef = useRef(null)  // which entry id the next pick targets
@@ -206,7 +293,12 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         </div>
       </li>
     ) : (
-      <li key={entry.id} className={styles.entry} style={{ '--i': i }}>
+      <li
+        key={entry.id}
+        className={`${styles.entry} ${drag?.entry?.id === entry.id ? styles.entryDragging : ''}`}
+        style={{ '--i': i }}
+        onPointerDown={e => onEntryPointerDown(e, entry)}
+      >
         {/* Meal photo: thumbnail on left side if present */}
         {entry.photo_url && (
           <button
@@ -317,7 +409,11 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         const carbs   = Math.round(group.items.reduce((s, e) => s + (e.carbs   || 0), 0))
         const fat     = Math.round(group.items.reduce((s, e) => s + (e.fat     || 0), 0))
         return (
-          <section key={group.id} className={styles.mealGroup}>
+          <section
+            key={group.id}
+            className={`${styles.mealGroup} ${hoverMeal === group.id && drag && drag.entry.meal_type !== group.id ? styles.mealGroupHover : ''}`}
+            data-drop-meal={group.legacy ? '_other' : group.id}
+          >
             <div className={styles.mealHead}>
               <span className={styles.mealName}>{group.label}</span>
               <span className={styles.mealHeadRight}>
@@ -378,6 +474,25 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         <div className={styles.lightbox} onClick={() => setLightboxUrl(null)}>
           <img src={lightboxUrl} className={styles.lightboxImg} alt="Ястие" />
           <button type="button" className={styles.lightboxClose} onClick={() => setLightboxUrl(null)} aria-label="Затвори">×</button>
+        </div>
+      )}
+
+      {/* Ghost — a fixed-position card that follows the finger. Sized to the
+          original so the pick reads as "the same row lifted", not a new pill
+          appearing under the touch. */}
+      {drag && (
+        <div
+          className={styles.dragGhost}
+          style={{
+            left: drag.x - drag.dx,
+            top:  drag.y - drag.dy,
+            width: drag.w,
+          }}
+        >
+          <span className={styles.dragGhostName}>{drag.entry.name}</span>
+          <span className={styles.dragGhostMeta}>
+            {drag.entry.grams}g · {Math.round(drag.entry.kcal || 0)} ккал
+          </span>
         </div>
       )}
     </div>
