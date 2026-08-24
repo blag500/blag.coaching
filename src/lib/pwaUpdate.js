@@ -1,66 +1,63 @@
-// iOS Safari (both standalone PWA and in-browser) is stingy about checking for
-// service-worker updates while the app is on screen — it happily runs stale JS
-// for hours, and the fix in the wild is "delete the app and re-add". We work
-// around that from the client:
+import { registerSW } from 'virtual:pwa-register'
+
+// Manual PWA update flow. `registerType: 'prompt'` in vite.config keeps
+// vite-plugin-pwa from reloading on its own — the ceremony is:
 //
-// 1. Poll `registration.update()` every minute while the tab is visible and
-//    every time the user comes back to it (visibilitychange, pageshow, focus).
-//    That's what actually issues a network request for a new sw.js.
-// 2. When a new SW takes control, reload the page once so the running JS
-//    matches the just-installed cache. The sw already calls skipWaiting +
-//    clients.claim on activate, so controllerchange fires as soon as the new
-//    worker is ready — no user tap needed.
-//
-// The one-shot flag guards against reload loops if the browser fires
-// controllerchange twice around navigation.
+// 1. `registerSW({ immediate: true })` installs the SW on first visit.
+// 2. A minute-heartbeat and every visibility/focus/pageshow calls
+//    `registration.update()` — that's what actually fetches sw.js. iOS Safari
+//    does not do this on its own while a PWA sits on screen; without the poll
+//    users end up in the "delete and re-add" loop we're avoiding.
+// 3. When a new SW finishes installing and enters "waiting", vite fires
+//    `onNeedRefresh`. We dispatch a window event that the UpdateBanner listens
+//    to; the tap on that banner calls `updateSW(true)`, which posts
+//    SKIP_WAITING and reloads once the new SW takes control.
+
+let updateSWHandle = null
 
 export function setupPwaAutoUpdate() {
   if (!('serviceWorker' in navigator)) return
 
-  // Only reload on an actual UPDATE — first-ever install also fires
-  // controllerchange and would otherwise refresh the very first visit.
-  const hadController = !!navigator.serviceWorker.controller
-  let reloading = false
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController || reloading) return
-    reloading = true
-    window.location.reload()
-  })
+  updateSWHandle = registerSW({
+    immediate: true,
+    onNeedRefresh() {
+      window.dispatchEvent(new CustomEvent('pwa:need-refresh'))
+    },
+    onRegisteredSW(_swUrl, registration) {
+      if (!registration) return
 
-  navigator.serviceWorker.getRegistration().then(reg => {
-    if (!reg) return
+      const check = () => { registration.update().catch(() => {}) }
 
-    const check = () => { reg.update().catch(() => {}) }
-
-    // A slow-and-steady heartbeat while the tab is in the foreground. One
-    // minute is short enough to catch a deploy within a session, long enough
-    // to stay off the network radar.
-    let timer = null
-    const startPolling = () => {
-      if (timer) return
-      timer = setInterval(check, 60_000)
-    }
-    const stopPolling = () => {
-      if (!timer) return
-      clearInterval(timer)
-      timer = null
-    }
-
-    if (document.visibilityState === 'visible') startPolling()
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        check()
-        startPolling()
-      } else {
-        stopPolling()
+      let timer = null
+      const startPolling = () => {
+        if (timer) return
+        timer = setInterval(check, 60_000)
       }
-    })
+      const stopPolling = () => {
+        if (!timer) return
+        clearInterval(timer)
+        timer = null
+      }
 
-    // pageshow fires when iOS restores a PWA from the back-forward cache —
-    // that is precisely the moment the app has been dormant and might be on
-    // yesterday's build.
-    window.addEventListener('pageshow', check)
-    window.addEventListener('focus', check)
+      if (document.visibilityState === 'visible') startPolling()
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          check()
+          startPolling()
+        } else {
+          stopPolling()
+        }
+      })
+
+      window.addEventListener('pageshow', check)
+      window.addEventListener('focus', check)
+    },
   })
+}
+
+/** Called by the UpdateBanner's tap — activates the waiting SW and reloads. */
+export function reloadWithNewSW() {
+  if (updateSWHandle) return updateSWHandle(true)
+  window.location.reload()
 }

@@ -2,8 +2,9 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst } from 'workbox-strategies'
 
-// Always skip waiting — take control immediately on new install
-self.addEventListener('install', () => self.skipWaiting())
+// Don't skipWaiting on install — the client shows a banner and calls
+// SKIP_WAITING from the tap, so the user sees the update coming rather than
+// being reloaded mid-thought.
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
 
 self.addEventListener('message', event => {

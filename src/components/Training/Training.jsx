@@ -153,14 +153,20 @@ export default function Training({ onMenuOpen }) {
       const seenLabelsToday = new Set(s.labels || [])
       let best = null
       let bestScore = 0
+      let bestNeed = 0
       for (const b of blocks) {
         if (seenLabelsToday.has(b.label)) continue
         if (!b.exercises?.length) continue
         let score = 0
         for (const e of b.exercises) if (s.exercises?.has?.(e.name)) score += 1
-        if (score > bestScore) { bestScore = score; best = b }
+        if (score > bestScore) { bestScore = score; best = b; bestNeed = b.exercises.length }
       }
-      if (best && bestScore > 0) {
+      // Two overlapping lifts, or at least half the block — one stray exercise
+      // from a bigger block is exploration, not a completed session, and the
+      // old "any overlap counts" turned every Machine flys log into an implicit
+      // Upper A and dragged that group's recovery clock forward by a day.
+      const enough = best && (bestScore >= 2 || bestScore * 2 >= bestNeed)
+      if (enough) {
         const key = `${s.date}|${best.label}`
         if (!known.has(key)) {
           extra.push({ completed_date: s.date, block_label: best.label })
@@ -663,37 +669,6 @@ export default function Training({ onMenuOpen }) {
             </div>
           )}
 
-          {/* The last few sessions live with today, because "what did I do
-              yesterday" is a today question, not a weekly report. */}
-          <section className={styles.section}>
-            <div className={styles.sectionHead}>
-              <h2 className={styles.sectionTitle}>ДНЕВНИК</h2>
-              <button type="button" className={styles.seeAll} onClick={() => setView('history')}>
-                всички {sessions.length} ›
-              </button>
-            </div>
-
-            {sessions.length === 0 ? (
-              <p className={styles.sectionEmpty}>Първата логната серия отваря дневника.</p>
-            ) : (
-              <ul className={styles.recent}>
-                {sessions.slice(0, 3).map(s => (
-                  <li key={s.date}>
-                    <button type="button" className={styles.recentRow} onClick={() => setView('history')}>
-                      <span className={styles.recentDate}>
-                        {dayDate(s.date).getDate()} {MONTHS_SHORT[dayDate(s.date).getMonth()].toLowerCase()}
-                      </span>
-                      <span className={styles.recentName}>{s.title}</span>
-                      <span className={styles.recentMeta}>
-                        {s.volume > 0 ? `${bigNum(s.volume)} кг` : `${s.setCount} серии`}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
           <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
             <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
             <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
@@ -716,6 +691,36 @@ export default function Training({ onMenuOpen }) {
               openSession(date, label)
             }}
           />
+
+          {/* Diary lives with the week overview — the "what did I do lately"
+              question belongs where the calendar and grade card already are,
+              not stuck between the day-log and the progression link. */}
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>ДНЕВНИК</h2>
+            <button type="button" className={styles.seeAll} onClick={() => setView('history')}>
+              всички {sessions.length} ›
+            </button>
+          </div>
+          {sessions.length === 0 ? (
+            <p className={styles.sectionEmpty}>Първата логната серия отваря дневника.</p>
+          ) : (
+            <ul className={styles.recent}>
+              {sessions.slice(0, 5).map(s => (
+                <li key={s.date}>
+                  <button type="button" className={styles.recentRow} onClick={() => setView('history')}>
+                    <span className={styles.recentDate}>
+                      {dayDate(s.date).getDate()} {MONTHS_SHORT[dayDate(s.date).getMonth()].toLowerCase()}
+                    </span>
+                    <span className={styles.recentName}>{s.title}</span>
+                    <span className={styles.recentMeta}>
+                      {s.volume > 0 ? `${bigNum(s.volume)} кг` : `${s.setCount} серии`}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <TrainingDashboard
             sessions={sessions}
             stats={stats}

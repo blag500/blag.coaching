@@ -40,6 +40,7 @@ const GROUP_MUSCLES = {
   extra: [
     'traps-upper-left','traps-mid-left','traps-lower-left',
     'traps-upper-right','traps-mid-right','traps-lower-right',
+    'neck-left','neck-right','nape',
     'forearm-left','forearm-right',
     'forearm-flexors-left','forearm-extensors-left',
     'forearm-flexors-right','forearm-extensors-right',

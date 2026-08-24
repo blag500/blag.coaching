@@ -82,13 +82,6 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
   while (cells.length % 7 !== 0) cells.push(null)
 
   const pickedList = picked ? (byDate.get(picked) ?? []) : []
-  // Blocks with any activity, for the legend — showing the whole plan even on
-  // months you've missed would say "here are 5 things you didn't do".
-  const usedLabels = useMemo(() => {
-    const seen = new Set()
-    for (const c of completions) seen.add(c.block_label)
-    return [...seen]
-  }, [completions])
 
   return (
     <div className={styles.wrap}>
@@ -177,15 +170,6 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
         </div>
       )}
 
-      {usedLabels.length > 0 && (
-        <div className={styles.legend}>
-          {usedLabels.map(l => (
-            <span key={l} className={styles.legendItem}>
-              <span className={styles.dot} style={{ background: colorFor(l) }} /> {l}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
