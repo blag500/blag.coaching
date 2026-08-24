@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import { useExerciseMap } from '../../hooks/useExerciseMap'
-import { GROUP_LABELS } from '../../utils/recovery'
+import { FINE_MUSCLES } from '../../utils/recovery'
 import { setPace, formatPace } from '../../utils/setPace'
 import styles from './DayLog.module.css'
 
@@ -519,17 +519,17 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                   <div className={styles.swapGroups}>
                     <span className={styles.swapGroupsLabel}>Мускулна група</span>
                     <div className={styles.swapGroupChips}>
-                      {Object.entries(GROUP_LABELS).map(([g, lbl]) => (
+                      {FINE_MUSCLES.map(m => (
                         <button
-                          key={g}
+                          key={m.id}
                           type="button"
-                          className={`${styles.groupChip} ${currentGroup === g ? styles.groupChipOn : ''}`}
+                          className={`${styles.groupChip} ${currentGroup === m.id ? styles.groupChipOn : ''}`}
                           onClick={() => {
-                            if (currentGroup === g) clearExerciseGroup(tagName)
-                            else setExerciseGroup(tagName, g)
+                            if (currentGroup === m.id) clearExerciseGroup(tagName)
+                            else setExerciseGroup(tagName, m.id)
                           }}
                         >
-                          {lbl}
+                          {m.label}
                         </button>
                       ))}
                     </div>

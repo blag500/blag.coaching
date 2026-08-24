@@ -17,6 +17,39 @@ export const GROUP_LABELS = {
   upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ГРЪБ', extra: 'ЕКСТРА',
 }
 
+/**
+ * Fine-grained muscle vocabulary used by the exercise tagger — the pencil at
+ * the row lets the user say "this is гърди" rather than "this is ГОРНА",
+ * which is what people actually think in. Each fine muscle carries the broad
+ * group it belongs to; recovery and the mannequin still work on the 4-group
+ * axis, so tagging fine translates to broad without the rest of the app
+ * needing to know.
+ */
+export const FINE_MUSCLES = [
+  { id: 'chest',      label: 'Гърди',       broad: 'upper' },
+  { id: 'shoulders',  label: 'Рамо',        broad: 'upper' },
+  { id: 'triceps',    label: 'Трицепс',     broad: 'upper' },
+  { id: 'back',       label: 'Гръб',        broad: 'pull'  },
+  { id: 'biceps',     label: 'Бицепс',      broad: 'pull'  },
+  { id: 'quads',      label: 'Квадрицепс',  broad: 'lower' },
+  { id: 'hamstrings', label: 'Задно бедро', broad: 'lower' },
+  { id: 'glutes',     label: 'Глутеус',     broad: 'lower' },
+  { id: 'calves',     label: 'Прасци',      broad: 'extra' },
+  { id: 'abs',        label: 'Корем',       broad: 'extra' },
+  { id: 'forearms',   label: 'Предмишница', broad: 'extra' },
+  { id: 'traps',      label: 'Трапец',      broad: 'extra' },
+]
+
+const FINE_TO_BROAD = Object.fromEntries(FINE_MUSCLES.map(m => [m.id, m.broad]))
+
+/** Translate a stored tag (fine muscle id, or a legacy broad group id) into
+ *  the broad-group axis the rest of the app runs on. */
+export function tagToBroad(tag) {
+  if (!tag) return null
+  if (tag in RECOVERY_H) return tag        // legacy broad tag
+  return FINE_TO_BROAD[tag] ?? null
+}
+
 export const GROUP_COLORS = {
   upper: 'var(--accent)',
   lower: 'var(--macro-carbs)',
@@ -83,13 +116,12 @@ export function resolveGroups(block, exerciseMap = null) {
 
   // Union in whatever the exercises themselves imply. Explicit user tags from
   // the exerciseMap win over the regex classifier — a lift the user has
-  // labelled "belongs to ГОРНА" trumps a name the classifier does not
-  // recognise. Predates the `groups` field, so a plan that never had one
-  // still lights the mannequin correctly.
+  // labelled "belongs to гърди" (fine) trumps a name the classifier does not
+  // recognise. Fine tags are translated to the broad group they belong to.
   for (const ex of block.exercises ?? []) {
     const name = ex.name || ''
-    const tagged = exerciseMap?.[name]
-    if (tagged && tagged in RECOVERY_H) { out.add(tagged); continue }
+    const broad = tagToBroad(exerciseMap?.[name])
+    if (broad) { out.add(broad); continue }
     const g = classifyMuscle(name)
     if (g && g !== 'full') out.add(g)
   }
