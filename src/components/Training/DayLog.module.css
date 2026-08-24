@@ -65,34 +65,76 @@
   flex-shrink: 0;
 }
 
+/* One grid, one gap, five columns — headers and rows share it so the
+   numbers under Кг and Повт. line up down the page instead of drifting. */
+.gridHead,
 .setRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 20px 64px 1fr 1fr 36px;
   align-items: center;
   gap: 8px;
-  padding: 3px 0;
 }
 
-.setNo {
-  width: 14px;
-  flex-shrink: 0;
+.gridHead {
+  padding: 2px 0 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 2px;
+}
+.hSet, .hPrev, .hVal, .hCheck {
   font-family: var(--font-body);
   font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(242, 232, 207, 0.35);
+  text-align: center;
+}
+.hPrev { text-align: left; padding-left: 4px; }
+
+.setRow { padding: 3px 0; }
+
+.setNo {
+  font-family: var(--font-body);
+  font-size: 12px;
   color: rgba(242, 232, 207, 0.35);
   text-align: center;
 }
 
-/* A saved set steps back: the row you are working on should be the loud one. */
+/* A saved set steps back a touch, keeps its own tint so the eye can find the
+   next empty row quickly. */
 .setDone .setNo { color: rgba(var(--accent-rgb), 0.75); }
-.setDone .stepper,
 .setDone .field {
-  border-color: rgba(var(--accent-rgb), 0.35);
+  border-color: rgba(var(--accent-rgb), 0.28);
   background: linear-gradient(180deg,
-    rgba(200, 160, 90, 0.08) 0%,
+    rgba(200, 160, 90, 0.06) 0%,
     rgba(200, 160, 90, 0.02) 100%);
 }
 
+.prevChip {
+  background: none;
+  border: none;
+  padding: 4px 4px;
+  color: rgba(242, 232, 207, 0.5);
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: var(--r-sm);
+  transition: color 120ms, background 120ms;
+}
+.prevChip:not(:disabled):active {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+.prevChip:disabled {
+  cursor: default;
+  color: rgba(242, 232, 207, 0.2);
+}
+
 .field {
-  flex: 1;
   min-width: 0;
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -102,10 +144,14 @@
   justify-content: center;
   transition: border-color 150ms, background 150ms;
 }
+.field:focus-within {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  background: rgba(var(--accent-rgb), 0.04);
+}
 
 .input {
   width: 100%;
-  padding: 9px 6px;
+  padding: 10px 6px;
   background: transparent;
   border: none;
   color: var(--text);
@@ -116,48 +162,41 @@
   min-width: 0;
 }
 
-.field:focus-within { border-color: rgba(var(--accent-rgb), 0.55); }
-
-/* − load + : the weight, wrapped in a single pill so the whole control reads
-   as one thing. Bare buttons on the ends, one shared background — instead of
-   three little boxes with borders between them. */
-.stepper {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: stretch;
-  background: var(--surface-2);
+/* Per-set tick — grey square until the set is on record, then green. Reads as
+   a checkbox column, same as the Stronger table it borrows the shape from. */
+.checkBtn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
-  overflow: hidden;
-  transition: border-color 150ms, background 150ms;
-}
-.stepper:focus-within { border-color: rgba(var(--accent-rgb), 0.55); }
-.stepper .input {
-  flex: 1;
-  padding: 9px 4px;
-}
-
-.step {
-  flex-shrink: 0;
-  width: 32px;
-  padding: 0;
-  background: none;
-  border: none;
-  color: rgba(var(--accent-rgb), 0.75);
+  background: var(--surface-2);
+  color: transparent;
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: 15px;
   line-height: 1;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: background 150ms, border-color 150ms, color 150ms, transform 100ms;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 100ms, color 100ms;
 }
-.step:active {
-  background: rgba(var(--accent-rgb), 0.14);
-  color: var(--accent);
+.checkBtn:active { transform: scale(0.92); }
+
+.checkOn {
+  background: linear-gradient(180deg,
+    rgba(123, 201, 127, 0.35) 0%,
+    rgba(123, 201, 127, 0.15) 100%);
+  border-color: rgba(123, 201, 127, 0.6);
+  color: #7BC97F;
+}
+
+.checkFlash { animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes checkPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
 }
 
 /* Sits where the save tick sits, so an empty row is never wider than a full

@@ -493,26 +493,42 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
               </div>
             )}
 
+            {sets.length > 0 && (
+              <div className={styles.gridHead} aria-hidden="true">
+                <span className={styles.hSet}>#</span>
+                <span className={styles.hPrev}>Пред.</span>
+                <span className={styles.hVal}>Кг</span>
+                <span className={styles.hVal}>Повт.</span>
+                <span className={styles.hCheck}>✓</span>
+              </div>
+            )}
+
             {sets.map((r, i) => {
               const key = `${ex.name}-${i}`
               const empty = String(r.weight).trim() === ''
-              // What this row would repeat — the set above today, or last
-              // session's. Drives the ghost load, the ghost reps, and the
-              // one-tap carry at the end of an empty row.
+              // The set we would echo — either the row above today, or last
+              // session's. Shown as a chip in the "Пред." column; tapping it on
+              // an empty row copies the numbers over in one move.
               const prev = empty ? echo(sets, i, ex.name) : null
+              const prevLabel = prev
+                ? `${prev.weight}${prev.reps != null ? ` × ${prev.reps}` : ''}`
+                : '−'
               return (
                 <div key={i} className={`${styles.setRow} ${r.id ? styles.setDone : ''}`}>
                   <span className={styles.setNo}>{i + 1}</span>
 
-                  {/* − load + : the plate stepper. On an empty row the first
-                      press also carries the set above, so it doubles as repeat. */}
-                  <div className={styles.stepper}>
-                    <button
-                      type="button" className={styles.step} tabIndex={-1}
-                      onClick={() => bump(ex.name, i, -1)}
-                      aria-label={`${ex.name}, серия ${i + 1}, по-малко тегло`}
-                    >−</button>
+                  <button
+                    type="button"
+                    className={styles.prevChip}
+                    onClick={prev ? () => repeat(ex.name, i) : undefined}
+                    disabled={!prev}
+                    tabIndex={-1}
+                    title={prev ? 'Повтори предната серия' : ''}
+                  >
+                    {prevLabel}
+                  </button>
 
+                  <div className={styles.field}>
                     <input
                       className={styles.input}
                       type="number"
@@ -520,22 +536,14 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       min="0"
                       inputMode="decimal"
                       value={r.weight}
-                      placeholder={prev ? String(prev.weight) : 'кг'}
+                      placeholder={prev ? String(prev.weight) : ''}
                       onChange={e => edit(ex.name, i, 'weight', e.target.value)}
                       onBlur={() => blur(ex.name, i)}
                       aria-label={`${ex.name}, серия ${i + 1}, килограми`}
                     />
-
-                    <button
-                      type="button" className={styles.step} tabIndex={-1}
-                      onClick={() => bump(ex.name, i, +1)}
-                      aria-label={`${ex.name}, серия ${i + 1}, повече тегло`}
-                    >+</button>
                   </div>
 
-                  <span className={styles.times}>×</span>
-
-                  <label className={styles.field}>
+                  <div className={styles.field}>
                     <input
                       className={styles.input}
                       type="number" min="0" step="1" inputMode="numeric"
@@ -545,23 +553,22 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       onBlur={() => blur(ex.name, i)}
                       aria-label={`${ex.name}, серия ${i + 1}, повторения`}
                     />
-                  </label>
+                  </div>
 
-                  {/* An empty row that has something to repeat offers it in one
-                      tap; otherwise the slot just answers whether the set is on
-                      record, since saving is automatic. */}
-                  {empty && prev ? (
-                    <button
-                      type="button" className={styles.repeat}
-                      onClick={() => repeat(ex.name, i)}
-                      aria-label={`Повтори ${prev.weight}кг × ${prev.reps ?? '?'}`}
-                      title="Повтори предната серия"
-                    >⟳</button>
-                  ) : (
-                    <span className={`${styles.mark} ${saved === key ? styles.markFlash : ''}`}>
-                      {saved === key ? '✓' : r.id ? '·' : ''}
-                    </span>
-                  )}
+                  {/* Per-set tick: reads the state (green when the row is on
+                      record). Tap commits whatever is in the fields — a
+                      keyboard-shy pattern the auto-save already covers on blur,
+                      but a visible action anchors the row for people who like
+                      to press something. */}
+                  <button
+                    type="button"
+                    className={`${styles.checkBtn} ${r.id ? styles.checkOn : ''} ${saved === key ? styles.checkFlash : ''}`}
+                    onClick={() => blur(ex.name, i)}
+                    aria-label={r.id ? 'Записано' : 'Отбележи серията'}
+                    tabIndex={-1}
+                  >
+                    {r.id ? '✓' : ''}
+                  </button>
                 </div>
               )
             })}
