@@ -62,11 +62,20 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     if (hold.current) { clearTimeout(hold.current.timer); hold.current = null }
   }
 
+  /** Which meal is under the finger, skipping the dragged row itself. Uses
+   *  `elementsFromPoint` (the whole stack under the point) instead of the
+   *  single top-most element, so a translated row sitting at z-index 20 does
+   *  not always answer "you are still over your own meal". */
   function findMealAt(x, y) {
-    const el = document.elementFromPoint(x, y)
-    if (!el) return null
-    const zone = el.closest('[data-drop-meal]')
-    return zone?.getAttribute('data-drop-meal') ?? null
+    const draggingEl = dragIdRef.current ? rowEls.current.get(dragIdRef.current) : null
+    const stack = document.elementsFromPoint?.(x, y) || [document.elementFromPoint(x, y)]
+    for (const el of stack) {
+      if (!el) continue
+      if (draggingEl && (el === draggingEl || draggingEl.contains(el))) continue
+      const zone = el.closest?.('[data-drop-meal]')
+      if (zone) return zone.getAttribute('data-drop-meal')
+    }
+    return null
   }
 
   /** Pointer down on the grip starts a drag immediately — the whole point of
@@ -86,10 +95,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     el.style.animation = 'none'
     el.style.transition = 'none'
     el.style.willChange = 'transform'
-    // The dragged row must ignore hit tests, or elementFromPoint keeps
-    // returning it (with z-index: 20 it's always on top of what's under the
-    // finger) and the drop meal reads as the one you already came from.
-    el.style.pointerEvents = 'none'
     const slotTop = el.getBoundingClientRect().top
     drag.current = { entry, grabY: e.clientY - slotTop, slotTop }
     dragIdRef.current = entry.id
@@ -132,7 +137,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         el.style.transition = 'transform 180ms cubic-bezier(.2,.7,.3,1)'
         el.style.transform = ''
         el.style.willChange = ''
-        el.style.pointerEvents = ''
         // Restore the entrance-animation slot after the settle transition ends.
         setTimeout(() => { if (el) el.style.animation = '' }, 220)
       }
