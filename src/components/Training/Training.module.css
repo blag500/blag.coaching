@@ -132,37 +132,40 @@
 
 /* Sub-tab segmented control — the pictogram bar under the app header, with an
    amber active pane that spans the full slot height. */
+/* Same shape as the nutrition tab bar — one segmented control across the app
+   so tabs never change their height between screens. */
 .segmented {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 4px;
-  padding: 5px;
-  background: rgba(20, 17, 11, 0.55);
+  padding: 4px;
+  background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: var(--r-lg);
-  margin: 4px 0 20px;
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-md);
+  margin: 4px 0 16px;
 }
 
 .segment {
-  height: 46px;
+  flex: 1;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: none;
   border: none;
-  color: rgba(242, 232, 207, 0.42);
+  color: var(--muted);
   cursor: pointer;
-  border-radius: calc(var(--r-lg) - 5px);
-  transition: color 180ms var(--ease-out), background 180ms var(--ease-out);
+  border-radius: var(--r-sm);
+  transition: background 180ms var(--ease-out), color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
-.segment svg { width: 22px; height: 22px; }
+.segment svg { width: 18px; height: 18px; }
 
 .segmentActive {
   background: var(--accent);
   color: var(--bg);
-  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.32), 0 2px 6px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 2px 12px rgba(var(--accent-rgb), 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .segment:active { transform: scale(0.96); }
