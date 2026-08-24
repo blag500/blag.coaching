@@ -324,6 +324,61 @@
   color: var(--accent);
 }
 
+/* Group tagger — sits under the swap input so both live decisions (what did I
+   do, which muscle does it belong to) are made in one place. Tap toggles the
+   tag; the map remembers, so the next time this same name appears it will
+   already be classified. */
+.swapPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+
+.swapGroups {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 2px;
+}
+
+.swapGroupsLabel {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.swapGroupChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.groupChip {
+  padding: 5px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 150ms, color 150ms, background 150ms;
+}
+
+.groupChipOn {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  color: var(--accent);
+  background: linear-gradient(180deg,
+    rgba(200, 160, 90, 0.14) 0%,
+    rgba(200, 160, 90, 0.04) 100%);
+}
+
 /* ── Exercise photo ───────────────────────────────────────────────────── */
 
 .thumb {

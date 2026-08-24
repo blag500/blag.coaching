@@ -4,6 +4,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
+import { useExerciseMap } from '../../hooks/useExerciseMap'
+import { GROUP_LABELS } from '../../utils/recovery'
 import { setPace, formatPace } from '../../utils/setPace'
 import styles from './DayLog.module.css'
 
@@ -88,6 +90,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     catch { /* quota — the fold state is a nice-to-have */ }
   }, [open, openKey])
   const { byName: photos } = useExercisePhotos()
+  const { map: exerciseMap, setGroup: setExerciseGroup, clearGroup: clearExerciseGroup } = useExerciseMap()
   const [zoom, setZoom] = useState(null)
 
   // Autosave reads the newest values from a ref: a debounced call fired from a
@@ -482,28 +485,58 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
               <span className={styles.swapNote}>вместо {ex.name} · само за днес</span>
             )}
 
-            {editing === ex.name && (
-              <div className={styles.swapRow}>
-                <input
-                  className={styles.swapInput}
-                  value={swap[ex.name] ?? ''}
-                  placeholder={ex.name}
-                  onChange={e => setSwap(p => ({ ...p, [ex.name]: e.target.value }))}
-                  aria-label="Какво направи вместо него"
-                  autoFocus
-                />
-                <button type="button" className={styles.swapDone} onClick={() => setEditing(null)}>
-                  Готово
-                </button>
-                {swap[ex.name] && (
-                  <button
-                    type="button"
-                    className={styles.swapReset}
-                    onClick={() => { setSwap(p => ({ ...p, [ex.name]: '' })); setEditing(null) }}
-                  >Върни</button>
-                )}
-              </div>
-            )}
+            {editing === ex.name && (() => {
+              // The name whose group tag we're editing — the substitute if the
+              // user typed one, otherwise the planned lift. Group chips beneath
+              // let them tell the app "this belongs to ГОРНА / ГРЪБ / ДОЛНА /
+              // ЕКСТРА" so the mannequin and per-group stats stay right even
+              // when the exercise name isn't recognised or drifts spellings.
+              const tagName = (swap[ex.name] || ex.name).trim()
+              const currentGroup = exerciseMap[tagName]
+              return (
+                <div className={styles.swapPanel}>
+                  <div className={styles.swapRow}>
+                    <input
+                      className={styles.swapInput}
+                      value={swap[ex.name] ?? ''}
+                      placeholder={ex.name}
+                      onChange={e => setSwap(p => ({ ...p, [ex.name]: e.target.value }))}
+                      aria-label="Какво направи вместо него"
+                      autoFocus
+                    />
+                    <button type="button" className={styles.swapDone} onClick={() => setEditing(null)}>
+                      Готово
+                    </button>
+                    {swap[ex.name] && (
+                      <button
+                        type="button"
+                        className={styles.swapReset}
+                        onClick={() => { setSwap(p => ({ ...p, [ex.name]: '' })); setEditing(null) }}
+                      >Върни</button>
+                    )}
+                  </div>
+
+                  <div className={styles.swapGroups}>
+                    <span className={styles.swapGroupsLabel}>Мускулна група</span>
+                    <div className={styles.swapGroupChips}>
+                      {Object.entries(GROUP_LABELS).map(([g, lbl]) => (
+                        <button
+                          key={g}
+                          type="button"
+                          className={`${styles.groupChip} ${currentGroup === g ? styles.groupChipOn : ''}`}
+                          onClick={() => {
+                            if (currentGroup === g) clearExerciseGroup(tagName)
+                            else setExerciseGroup(tagName, g)
+                          }}
+                        >
+                          {lbl}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
 
             {sets.length > 0 && (
               <div className={styles.gridHead} aria-hidden="true">

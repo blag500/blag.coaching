@@ -58,7 +58,7 @@ export function classifyMuscle(label = '') {
  * the mannequin dark. When no explicit groups are set (older plans), fall
  * back to what the label and any free-text muscle notes suggest.
  */
-export function resolveGroups(block) {
+export function resolveGroups(block, exerciseMap = null) {
   if (!block) return []
   const out = new Set()
 
@@ -81,11 +81,16 @@ export function resolveGroups(block) {
     if (g && g !== 'full') out.add(g)
   }
 
-  // Union in whatever the exercises themselves imply. A plan that predates
-  // the `groups` field still lights the mannequin correctly because a Lat
-  // Pulldown drags the pull group in even when nobody said so.
+  // Union in whatever the exercises themselves imply. Explicit user tags from
+  // the exerciseMap win over the regex classifier — a lift the user has
+  // labelled "belongs to ГОРНА" trumps a name the classifier does not
+  // recognise. Predates the `groups` field, so a plan that never had one
+  // still lights the mannequin correctly.
   for (const ex of block.exercises ?? []) {
-    const g = classifyMuscle(ex.name || '')
+    const name = ex.name || ''
+    const tagged = exerciseMap?.[name]
+    if (tagged && tagged in RECOVERY_H) { out.add(tagged); continue }
+    const g = classifyMuscle(name)
     if (g && g !== 'full') out.add(g)
   }
 

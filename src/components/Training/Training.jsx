@@ -8,6 +8,7 @@ import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
 import { useLastLifts } from '../../hooks/useLastLifts'
+import { useExerciseMap } from '../../hooks/useExerciseMap'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import MuscleStatus from './MuscleStatus'
 import MuscleMap from './MuscleMap'
@@ -134,13 +135,18 @@ export default function Training({ onMenuOpen }) {
   // had their hours — 48 for upper and back, 72 for legs. Ties go to whichever
   // has been left alone longer, which restores sensible rotation between two
   // equally rested blocks.
+  // Per-exercise group tags typed at the swap pencil — one place the app
+  // trusts what the user said the movement belongs to over what the string
+  // looks like.
+  const exerciseMap = useExerciseMap().map
+
   // Label → groups. Explicit group ticks in the editor beat the label-based
   // classifier, so a "Ден 1" block still lights up the mannequin.
   const groupsByLabel = useMemo(() => {
     const out = {}
-    for (const b of blocks ?? []) out[b.label] = resolveGroups(b)
+    for (const b of blocks ?? []) out[b.label] = resolveGroups(b, exerciseMap)
     return out
-  }, [blocks])
+  }, [blocks, exerciseMap])
 
   // Sessions logged today count as training even without the "Готово" tick.
   // A logged day adds AT MOST one implicit completion — the block whose
