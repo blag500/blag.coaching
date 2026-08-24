@@ -182,12 +182,15 @@
    what to do when they see it here. */
 .entryGrip {
   flex-shrink: 0;
-  width: 12px;
+  width: 24px;
+  padding: 2px 6px 2px 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 3px;
-  opacity: 0.35;
-  margin-right: 4px;
+  opacity: 0.4;
+  cursor: grab;
+  touch-action: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -197,6 +200,7 @@
   border-radius: 1px;
   background: var(--muted);
 }
+.entryGrip:active { cursor: grabbing; opacity: 0.7; }
 
 /* Whole row is the drag target, but a hold that selects text is the gesture
    failing — and on iOS it also raises the copy callout. */

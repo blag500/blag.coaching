@@ -82,13 +82,22 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         hold.current = null
         const el = rowEls.current.get(entry.id)
         if (!el) return
-        const rect = el.getBoundingClientRect()
-        drag.current = { entry, startY: y, grabY: y - rect.top, top: rect.top }
+        // Snapshot the slot top NOW, before any transform is applied — every
+        // subsequent shift is measured against this reading. Avoids reading
+        // the CSSmatrix mid-drag, which iOS Safari answered inconsistently.
+        const slotTop = el.getBoundingClientRect().top
+        drag.current = { entry, grabY: y - slotTop, slotTop }
         dragIdRef.current = entry.id
         setDragId(entry.id)
       }, HOLD_MS),
     }
   }
+
+  // Live handlers held in a ref so we can attach the window listeners ONCE.
+  // `onEdit` is a fresh function every render (bound to updateEntry from a
+  // hook), and re-adding the listeners every render kept losing drags mid-way.
+  const onEditRef = useRef(onEdit)
+  onEditRef.current = onEdit
 
   useEffect(() => {
     function onMove(e) {
@@ -103,11 +112,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       if (!d) return
       const el = rowEls.current.get(d.entry.id)
       if (!el) return
-      // Fresh viewport top of where the row belongs (undo current transform).
-      const rect = el.getBoundingClientRect()
-      const currentTransform = new DOMMatrixReadOnly(getComputedStyle(el).transform)
-      const slotTop = rect.top - currentTransform.m42
-      const shift = (e.clientY - d.grabY) - slotTop
+      const shift = (e.clientY - d.grabY) - d.slotTop
       el.style.transition = 'none'
       el.style.transform = `translateY(${shift}px)`
       setHoverMeal(findMealAt(e.clientX, e.clientY))
@@ -123,7 +128,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       }
       const target = findMealAt(e.clientX, e.clientY)
       if (target && target !== '_other' && target !== d.entry.meal_type) {
-        onEdit?.(d.entry.id, { meal_type: target })
+        onEditRef.current?.(d.entry.id, { meal_type: target })
       }
       drag.current = null
       dragIdRef.current = null
@@ -138,7 +143,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
-  }, [onEdit])
+  }, [])
 
   // Refuse touchmove while a drag is live so the page can't scroll under it.
   // touch-action cannot flip mid-gesture, so this is the only path.
