@@ -404,7 +404,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 14px;
+  padding: 14px 14px 14px 10px;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
@@ -412,14 +412,66 @@
   color: var(--text);
   cursor: pointer;
   text-align: left;
+  position: relative;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   transition: border-color 150ms, transform 100ms;
+  /* Fallback accent when the JSX doesn't provide one (rest blocks etc.). */
+  --block-accent: rgba(255, 255, 255, 0.18);
 }
 .blockRow:active { transform: scale(0.99); }
 
 .blockRowDue {
   border-color: rgba(var(--accent-rgb), 0.55);
   box-shadow: var(--panel-shadow), 0 0 30px -12px rgba(var(--accent-rgb), 0.5);
+}
+
+/* Left-edge colour bar — the group palette on the row's frame. */
+.blockRowBar {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 3px;
+  margin: -14px 0;
+  border-radius: 3px;
+  background: var(--block-accent);
+  opacity: 0.9;
+}
+.blockRowBarRest { opacity: 0.35; }
+
+/* Pictogram in a glass coin, tinted with the block's accent. */
+.blockRowIcon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--block-accent);
+  border: 1px solid color-mix(in srgb, var(--block-accent) 45%, transparent);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--block-accent) 18%, transparent) 0%,
+    color-mix(in srgb, var(--block-accent) 4%, transparent) 100%);
+}
+.blockRowIcon svg { width: 18px; height: 18px; }
+
+.blockRowIconRest {
+  color: rgba(242, 232, 207, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Small colour dots under the name showing every group the block hits — reads
+   as a "flavour" of the block without a legend. Hidden when only one group. */
+.blockRowDots {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.blockRowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0.85;
 }
 
 .blockRowBody {

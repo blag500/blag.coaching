@@ -17,7 +17,7 @@ import MonthCalendar from './MonthCalendar'
 import TrainingDashboard from './TrainingDashboard'
 import SessionHistory from './SessionHistory'
 import ExerciseStats from './ExerciseStats'
-import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups } from '../../utils/recovery'
+import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups, GROUP_COLORS, GROUP_LABELS } from '../../utils/recovery'
 import { trainingStats, agoLabel, bigNum, iso, dayDate, MONTHS_SHORT } from '../../utils/training'
 import styles from './Training.module.css'
 
@@ -47,6 +47,54 @@ function getBlocks(plan) {
 }
 
 const isRestBlock = b => !!b && (b.isRest || (b.label || '').toUpperCase().includes('ПОЧИВК'))
+
+/** One pictogram per broad group + a rest icon, drawn as inline SVGs so they
+ *  tint with the row's accent colour (currentColor) and never cost a network
+ *  fetch. */
+const BLOCK_ICONS = {
+  // Dumbbell — chest / shoulders / triceps push work.
+  upper: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2"  y="9"  width="3"  height="6" rx="1" />
+      <rect x="5"  y="10" width="2"  height="4" rx="0.5" />
+      <line x1="7" y1="12" x2="17" y2="12" />
+      <rect x="17" y="10" width="2"  height="4" rx="0.5" />
+      <rect x="19" y="9"  width="3"  height="6" rx="1" />
+    </svg>
+  ),
+  // Pull-down — back / biceps.
+  pull: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="4" y1="4"  x2="20" y2="4" />
+      <line x1="7" y1="4"  x2="7"  y2="10" />
+      <line x1="17" y1="4" x2="17" y2="10" />
+      <path d="M7 10 L12 14 L17 10" />
+      <line x1="12" y1="14" x2="12" y2="20" />
+    </svg>
+  ),
+  // Squat figure — legs / glutes.
+  lower: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="4.5" r="1.6" />
+      <line x1="12" y1="6.5" x2="12" y2="11" />
+      <path d="M12 11 L8 15 L8 20" />
+      <path d="M12 11 L16 15 L16 20" />
+      <line x1="6" y1="9" x2="18" y2="9" />
+    </svg>
+  ),
+  // Lightning — accessory / extra.
+  extra: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M13 2 L5 14 h6 l-1 8 8-12 h-6 l1-8 z" />
+    </svg>
+  ),
+  // Moon — rest.
+  rest: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 15A8 8 0 1 1 9 4a7 7 0 0 0 11 11z" />
+    </svg>
+  ),
+}
 
 /**
  * The training tab.
@@ -605,11 +653,17 @@ export default function Training({ onMenuOpen }) {
               const last = lastDone[block.label]
               const isDue = dueBlock?.id === block.id
               const isRest = isRestBlock(block)
+              // Which broad groups this block hits, in the order resolveGroups
+              // returns them — first one becomes the "primary" (icon + colour
+               // bar), the rest fill the flavour dots under the name.
+              const groups = isRest ? [] : (groupsByLabel[block.label] ?? [])
+              const primary = groups[0] ?? 'upper'
               return (
                 <li key={block.id}>
                   <button
                     type="button"
                     className={`${styles.blockRow} ${isDue ? styles.blockRowDue : ''}`}
+                    style={!isRest ? { '--block-accent': GROUP_COLORS[primary] } : undefined}
                     onClick={() => {
                       userPicked.current = true
                       setSelectedId(block.id)
@@ -618,6 +672,10 @@ export default function Training({ onMenuOpen }) {
                       setJustMarked(false)
                     }}
                   >
+                    <span className={`${styles.blockRowBar} ${isRest ? styles.blockRowBarRest : ''}`} aria-hidden="true" />
+                    <span className={`${styles.blockRowIcon} ${isRest ? styles.blockRowIconRest : ''}`}>
+                      {isRest ? BLOCK_ICONS.rest : (BLOCK_ICONS[primary] ?? BLOCK_ICONS.upper)}
+                    </span>
                     <span className={styles.blockRowBody}>
                       <span className={styles.blockRowName}>{block.label}</span>
                       <span className={styles.blockRowMeta}>
@@ -627,6 +685,18 @@ export default function Training({ onMenuOpen }) {
                             ? `Последно ${agoLabel(last)}`
                             : 'Още нищо не е логнато'}
                       </span>
+                      {groups.length > 1 && (
+                        <span className={styles.blockRowDots}>
+                          {groups.map(g => (
+                            <span
+                              key={g}
+                              className={styles.blockRowDot}
+                              style={{ background: GROUP_COLORS[g] }}
+                              title={GROUP_LABELS[g]}
+                            />
+                          ))}
+                        </span>
+                      )}
                     </span>
                     {!isRest && rec.basis !== 'never' && (
                       <span className={[
