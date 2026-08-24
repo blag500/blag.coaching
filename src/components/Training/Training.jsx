@@ -678,12 +678,46 @@ export default function Training({ onMenuOpen }) {
           </section>
 
           {selectedBlock && !isRestBlock(selectedBlock) && (
-            <DayLog
-              date={todayStr}
-              blockLabels={[selectedBlock.label]}
-              blocks={blocks}
-              onLogged={handleLogged}
-            />
+            <>
+              <DayLog
+                date={todayStr}
+                blockLabels={[selectedBlock.label]}
+                blocks={blocks}
+                onLogged={handleLogged}
+              />
+
+              {/* Explicit "I'm done" — greens up when every planned lift has a
+                  set on record, disables once the day already has this block
+                  marked. Implicit completion still runs in the background for
+                  people who forget to tap; this is the deliberate signal. */}
+              {(() => {
+                const already = completions.some(
+                  c => c.completed_date === todayStr && c.block_label === selectedBlock.label
+                )
+                const allLogged = (selectedBlock.exercises?.length ?? 0) > 0 &&
+                  selectedBlock.exercises.every(e => lifts[e.name]?.today)
+                const done = already || justMarked
+                return (
+                  <button
+                    type="button"
+                    className={[
+                      styles.markDoneBtn,
+                      allLogged ? styles.markDoneReady : '',
+                      done ? styles.markDoneDone : '',
+                    ].join(' ')}
+                    onClick={() => {
+                      setLogDate(todayStr)
+                      handleMarkDone()
+                    }}
+                    disabled={marking || already}
+                  >
+                    {done
+                      ? '✓ Логната тренировка!'
+                      : marking ? '...' : '✓ Логни тренировката'}
+                  </button>
+                )
+              })()}
+            </>
           )}
 
           {selectedBlock && isRestBlock(selectedBlock) && (
