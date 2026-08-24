@@ -4,7 +4,11 @@ import { useAuth } from '../../contexts/AuthContext'
 import styles from './CalorieBalancer.module.css'
 
 const DAY = 86_400_000
-const WINDOW_DAYS = 7
+
+// ±5% of the week's target counts as on-plan. Below that the delta is inside
+// logging noise (mis-weighed portion, rounded macros in a recipe) — offering
+// a target adjustment for that noise trains the wrong behaviour.
+const TOLERANCE = 0.05
 
 const DAY_NAMES = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
@@ -12,6 +16,15 @@ function iso(d) { return new Date(d).toISOString().slice(0, 10) }
 function dayLabel(dateIso) {
   const d = new Date(dateIso + 'T12:00:00')
   return `${DAY_NAMES[d.getDay()]} ${d.getDate()}`
+}
+
+/** Monday of the current week (Monday-first, Sunday closes). */
+function mondayOfThisWeek() {
+  const d = new Date()
+  const dow = d.getDay() || 7
+  d.setHours(12, 0, 0, 0)
+  d.setDate(d.getDate() - (dow - 1))
+  return d
 }
 
 /**
@@ -62,7 +75,8 @@ export default function CalorieBalancer() {
 
   useEffect(() => {
     if (!user) return
-    const since = iso(Date.now() - (WINDOW_DAYS - 1) * DAY)
+    const monday = mondayOfThisWeek()
+    const since = iso(monday)
     setLoading(true)
     supabase
       .from('food_logs')
@@ -70,9 +84,14 @@ export default function CalorieBalancer() {
       .eq('user_id', user.id)
       .gte('date', since)
       .then(({ data }) => {
+        // The week always paints seven bars — Monday through Sunday — so the
+        // frame stays the same shape as the week progresses. Days past today
+        // are empty placeholders; on Monday morning every column reads "·"
+        // until the first meal lands.
         const per = new Map()
-        for (let i = WINDOW_DAYS - 1; i >= 0; i--) {
-          per.set(iso(Date.now() - i * DAY), 0)
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(monday); d.setDate(d.getDate() + i)
+          per.set(iso(d), 0)
         }
         for (const r of data ?? []) {
           if (per.has(r.date)) per.set(r.date, per.get(r.date) + (r.kcal || 0))
@@ -85,12 +104,13 @@ export default function CalorieBalancer() {
   const analysis = useMemo(() => {
     if (!target) return null
     const eaten = days.filter(d => d.kcal > 0)
-    if (!eaten.length) return { delta: 0, eaten: 0, avg: 0 }
+    if (!eaten.length) return { delta: 0, eaten: 0, avg: 0, withinTolerance: true }
     const totalActual = eaten.reduce((s, d) => s + d.kcal, 0)
     const totalTarget = eaten.length * target
     const delta = totalActual - totalTarget
     const avg = Math.round(totalActual / eaten.length)
-    return { delta, eaten: eaten.length, avg, totalActual, totalTarget }
+    const withinTolerance = Math.abs(delta) <= totalTarget * TOLERANCE
+    return { delta, eaten: eaten.length, avg, totalActual, totalTarget, withinTolerance }
   }, [days, target])
 
   async function applyNewTarget() {
@@ -172,8 +192,11 @@ export default function CalorieBalancer() {
             </div>
           </div>
 
-          {analysis.delta === 0 ? (
-            <p className={styles.perfect}>Точно на целта — няма какво да балансираш.</p>
+          {analysis.withinTolerance ? (
+            <p className={styles.perfect}>
+              В рамките на ±5% от целта — това е шумът от мерене на порции, не
+              нещо за балансиране.
+            </p>
           ) : (
             <>
               {/* Slider with a tick per day left until Sunday — the drag beats
