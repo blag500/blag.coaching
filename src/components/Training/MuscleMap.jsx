@@ -9,7 +9,7 @@ import styles from './MuscleMap.module.css'
 
 const MODES = [
   { id: 'recovery',    label: 'ВЪЗСТ.',    hint: 'По-плътно = прясно тренирана (още се възстановява).' },
-  { id: 'lastTrained', label: 'ПОСЛЕДНО',  hint: 'По-плътно = отдавна не си я тренирал.' },
+  { id: 'lastTrained', label: 'ПОСЛЕДНО',  hint: 'По-плътно = скоро си я тренирал.' },
   { id: 'overload',    label: 'ПРОГРЕСИЯ', hint: 'По-плътно = по-голямо покачване на обема спрямо предишните две седмици.' },
   { id: 'volume',      label: 'ОБЕМ 7Д',   hint: 'По-плътно = повече обем за последните седем дни.' },
 ]
@@ -71,8 +71,10 @@ function intensityFor(mode, group, recovery, stats, ctx) {
     return Math.max(0, Math.round(10 - rec.pct / 10))
   }
   if (mode === 'lastTrained') {
+    // "Recent" reads brighter — trained today = full, trained 10+ days ago =
+    // faded to nothing. Reads the way the tab is named.
     if (s.daysSince == null) return 0
-    return Math.min(10, s.daysSince)
+    return Math.max(0, 10 - Math.min(10, s.daysSince))
   }
   if (mode === 'overload') {
     if (s.overload == null) return 0
