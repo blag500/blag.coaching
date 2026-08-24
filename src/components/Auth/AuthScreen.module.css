@@ -120,7 +120,7 @@
 .armLeft { transform: scaleX(-1); }
 
 .brandCenter {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;

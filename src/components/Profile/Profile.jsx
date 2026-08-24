@@ -59,6 +59,23 @@ export default function Profile({ onMenuOpen }) {
   const [weightError, setWeightError] = useState('')
   const [targetSaved, setTargetSaved] = useState(false)
 
+  const [pwOpen, setPwOpen]           = useState(false)
+  const [pwValue, setPwValue]         = useState('')
+  const [pwSaving, setPwSaving]       = useState(false)
+  const [pwStatus, setPwStatus]       = useState('') // '' | 'saved' | 'err:<msg>'
+
+  async function handlePasswordSave() {
+    setPwStatus('')
+    if (pwValue.length < 6) { setPwStatus('err:Поне 6 знака.'); return }
+    setPwSaving(true)
+    const { error } = await supabase.auth.updateUser({ password: pwValue })
+    setPwSaving(false)
+    if (error) { setPwStatus('err:' + (error.message || 'Грешка')); return }
+    setPwValue('')
+    setPwStatus('saved')
+    setTimeout(() => { setPwStatus(''); setPwOpen(false) }, 1800)
+  }
+
   // Pre-fill once today's entry loads from DB (useState runs before fetch completes)
   useEffect(() => {
     if (todayEntry) setWeightInput(String(todayEntry.kg))
@@ -559,6 +576,56 @@ export default function Profile({ onMenuOpen }) {
             >EN</button>
           </div>
         </div>
+      </section>
+
+      {/* Password change — lives here rather than on the auth screen, where a
+          "forgotten password" flow was competing with the magic-link login.
+          Anyone in the app is already signed in; supabase.auth.updateUser
+          accepts the new password against the current session, no old one
+          needed. */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>ПАРОЛА</h2>
+        {!pwOpen ? (
+          <button
+            className={styles.pwOpenBtn}
+            onClick={() => setPwOpen(true)}
+            type="button"
+          >
+            Смени парола
+          </button>
+        ) : (
+          <div className={styles.pwForm}>
+            <input
+              type="password"
+              className={styles.pwInput}
+              value={pwValue}
+              onChange={e => { setPwValue(e.target.value); if (pwStatus.startsWith('err')) setPwStatus('') }}
+              placeholder="Нова парола (мин. 6 знака)"
+              autoComplete="new-password"
+              minLength={6}
+            />
+            <div className={styles.pwActions}>
+              <button
+                className={`${styles.pwSaveBtn} ${pwStatus === 'saved' ? styles.pwSaveBtnSaved : ''}`}
+                onClick={handlePasswordSave}
+                disabled={pwSaving || pwValue.length < 6}
+                type="button"
+              >
+                {pwSaving ? '...' : pwStatus === 'saved' ? '✓ Сменена' : 'Запази'}
+              </button>
+              <button
+                className={styles.pwCancelBtn}
+                onClick={() => { setPwOpen(false); setPwValue(''); setPwStatus('') }}
+                type="button"
+              >
+                Отказ
+              </button>
+            </div>
+            {pwStatus.startsWith('err') && (
+              <p className={styles.pwError}>{pwStatus.slice(4)}</p>
+            )}
+          </div>
+        )}
       </section>
 
       <section className={styles.card}>

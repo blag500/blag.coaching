@@ -197,33 +197,20 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
                 >
                   {resending ? '...' : 'Или изпрати ново потвърждение на имейла'}
                 </button>
-                <button
-                  className={styles.recoverSecondary}
-                  onClick={() => switchMode('reset')}
-                  type="button"
-                >
-                  Забравена парола
-                </button>
               </div>
             </div>
           )}
         </form>
 
         {mode === 'login' && (
-          <div className={styles.altActions}>
-            <button
-              className={styles.forgotLink}
-              onClick={handleMagicLink}
-              disabled={linking}
-              type="button"
-            >
-              {linking ? 'Изпращам…' : 'Изпрати ми линк за вход'}
-            </button>
-            <span className={styles.altSep}>·</span>
-            <button className={styles.forgotLink} onClick={() => switchMode('reset')} type="button">
-              Забравена парола?
-            </button>
-          </div>
+          <button
+            className={styles.forgotLink}
+            onClick={handleMagicLink}
+            disabled={linking}
+            type="button"
+          >
+            {linking ? 'Изпращам…' : 'Изпрати ми линк за вход'}
+          </button>
         )}
 
         {mode === 'reset' && (
