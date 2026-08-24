@@ -74,7 +74,19 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const [saved, setSaved] = useState(null)
   const [swap, setSwap] = useState({})   // planned name → what stood in, today
   const [editing, setEditing] = useState(null)
-  const [open, setOpen] = useState({})   // explicit fold state, overrides default
+  // Explicit fold state, overrides the default. Persisted per date in
+  // localStorage so leaving the block for the split picker and coming back
+  // keeps the exercises the user just folded folded, instead of unfolding
+  // everything on remount.
+  const openKey = `blag_daylog_open_${date}`
+  const [open, setOpen] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(openKey) || '{}') }
+    catch { return {} }
+  })
+  useEffect(() => {
+    try { localStorage.setItem(openKey, JSON.stringify(open)) }
+    catch { /* quota — the fold state is a nice-to-have */ }
+  }, [open, openKey])
   const { byName: photos } = useExercisePhotos()
   const [zoom, setZoom] = useState(null)
 
