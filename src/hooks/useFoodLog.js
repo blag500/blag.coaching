@@ -9,14 +9,29 @@ export function todayStr() {
 // A tiny per-day, per-user cache so re-opening the tab does not flash an empty
 // log while the network round-trips. The initial state is seeded from it, and
 // every successful fetch writes back — stale-while-revalidate for one screen.
+//
+// The AuthProvider resolves `user` asynchronously, so on first mount uid is
+// undefined and the cache key would miss. We stamp the last-known uid on every
+// successful write and fall back to it on read, which lets the very first paint
+// after cold boot still show yesterday's meals instead of an empty page.
 const CACHE_KEY = (uid, date) => `blag_food_log_${uid || 'anon'}_${date}`
+const LAST_UID_KEY = 'blag_food_log_last_uid'
+function resolveUid(uid) {
+  if (uid) return uid
+  try { return localStorage.getItem(LAST_UID_KEY) || null } catch { return null }
+}
 function readCache(uid, date) {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY(uid, date)) || '[]') }
+  const key = resolveUid(uid)
+  if (!key) return []
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY(key, date)) || '[]') }
   catch { return [] }
 }
 function writeCache(uid, date, log) {
-  try { localStorage.setItem(CACHE_KEY(uid, date), JSON.stringify(log)) }
-  catch { /* quota / private mode — silent, cache is a nice-to-have */ }
+  if (!uid) return
+  try {
+    localStorage.setItem(CACHE_KEY(uid, date), JSON.stringify(log))
+    localStorage.setItem(LAST_UID_KEY, uid)
+  } catch { /* quota / private mode — silent, cache is a nice-to-have */ }
 }
 
 export function useFoodLog() {
