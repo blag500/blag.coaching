@@ -592,6 +592,24 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                   {formatPace(pace)} между сериите
                 </span>
               ) : null}
+
+              {/* Explicit "done with this lift" — folds the card so the eye
+                  moves to the next one. Appears as soon as anything is logged;
+                  tapping it while a set has both weight and reps also stops the
+                  rest clock, because staying on the row implies more sets and
+                  leaving it does not. */}
+              {doneCount > 0 && (
+                <button
+                  type="button"
+                  className={styles.doneLift}
+                  onClick={() => {
+                    setRest(null)
+                    setOpen(p => ({ ...p, [ex.name]: false }))
+                  }}
+                >
+                  ✓ Готов
+                </button>
+              )}
             </div>
           </div>
         )
