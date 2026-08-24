@@ -77,6 +77,13 @@ export default function BottomNav({ activeTab, onTabChange }) {
   const navRef = useRef(null)
   const dragRef = useRef({ x: 0, y: 0, dx: 0, active: false, cancelled: false })
 
+  function clearNavInline() {
+    if (!navRef.current) return
+    navRef.current.style.transition = ''
+    navRef.current.style.transform = ''
+    navRef.current.style.opacity = ''
+  }
+
   function onTouchStart(e) {
     const t = e.touches[0]
     dragRef.current = { x: t.clientX, y: t.clientY, dx: 0, active: true, cancelled: false }
@@ -91,11 +98,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
     const dy = t.clientY - d.y
     if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) {
       d.cancelled = true
-      if (navRef.current) {
-        navRef.current.style.transition = ''
-        navRef.current.style.transform = ''
-        navRef.current.style.opacity = ''
-      }
+      clearNavInline()
       return
     }
     if (dx > 0 && navRef.current) {
@@ -109,14 +112,70 @@ export default function BottomNav({ activeTab, onTabChange }) {
     const d = dragRef.current
     if (!d.active) return
     d.active = false
-    if (navRef.current) {
-      navRef.current.style.transition = ''
-      navRef.current.style.transform = ''
-      navRef.current.style.opacity = ''
-    }
+    clearNavInline()
     if (!d.cancelled && d.dx > 90) {
       setOpen(false)
       setHidden(true)
+    }
+  }
+
+  // Peek → drag left to pull the nav back with the finger. The nav is prepped
+  // at its docked position (translateX past the right edge) and the delta from
+  // the touch shifts it toward home. Release past a third of the pull commits
+  // the unhide, otherwise it springs back into the dock.
+  const peekDragRef = useRef({ x: 0, y: 0, dx: 0, active: false, cancelled: false, width: 0 })
+
+  function primeNavForPull() {
+    if (!navRef.current) return 0
+    const width = navRef.current.offsetWidth + 24
+    navRef.current.style.transition = 'none'
+    navRef.current.style.pointerEvents = 'none'
+    navRef.current.style.transform = `translateX(${width}px)`
+    navRef.current.style.opacity = '0'
+    // Force the browser to see the docked frame before we start pulling, or the
+    // first move would animate from wherever the class had it a tick ago.
+    void navRef.current.offsetWidth
+    return width
+  }
+
+  function onPeekTouchStart(e) {
+    const t = e.touches[0]
+    const width = primeNavForPull()
+    peekDragRef.current = { x: t.clientX, y: t.clientY, dx: 0, active: true, cancelled: false, width }
+  }
+
+  function onPeekTouchMove(e) {
+    const d = peekDragRef.current
+    if (!d.active || d.cancelled) return
+    const t = e.touches[0]
+    const dx = t.clientX - d.x
+    const dy = t.clientY - d.y
+    if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) {
+      d.cancelled = true
+      clearNavInline()
+      if (navRef.current) navRef.current.style.pointerEvents = ''
+      return
+    }
+    if (dx < 0 && navRef.current) {
+      d.dx = dx
+      const remaining = Math.max(0, d.width + dx)
+      navRef.current.style.transform = `translateX(${remaining}px)`
+      const progress = Math.min(1, -dx / d.width)
+      navRef.current.style.opacity = String(0.15 + progress * 0.85)
+    }
+  }
+
+  function onPeekTouchEnd(e) {
+    const d = peekDragRef.current
+    if (!d.active) return
+    d.active = false
+    const pulled = -d.dx
+    const commit = !d.cancelled && pulled > d.width / 3
+    clearNavInline()
+    if (navRef.current) navRef.current.style.pointerEvents = ''
+    if (commit) {
+      setHidden(false)
+      e.preventDefault?.()
     }
   }
 
@@ -140,6 +199,9 @@ export default function BottomNav({ activeTab, onTabChange }) {
       <button
         className={`${styles.peek} ${hidden ? styles.peekOn : ''}`}
         onClick={() => setHidden(false)}
+        onTouchStart={onPeekTouchStart}
+        onTouchMove={onPeekTouchMove}
+        onTouchEnd={onPeekTouchEnd}
         aria-label="Покажи навигацията"
         type="button"
         tabIndex={hidden ? 0 : -1}

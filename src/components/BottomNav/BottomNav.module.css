@@ -16,7 +16,9 @@
   z-index: 100;
   padding: 0 4px;
   overflow: visible;
-  transition: transform 320ms var(--ease-out), opacity 220ms var(--ease-out);
+  transition:
+    transform 460ms cubic-bezier(0.22, 1.2, 0.36, 1),
+    opacity   360ms cubic-bezier(0.22, 1.0, 0.36, 1);
 }
 
 /* Docked away to the right. translateX is fine here — the bar is not on
