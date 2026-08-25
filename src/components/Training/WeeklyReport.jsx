@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { mondayOf, iso, dayDate, bigNum, MONTHS_SHORT } from '../../utils/training'
+import { iso, bigNum, MONTHS_SHORT } from '../../utils/training'
 import { classifyMuscle, RECOVERY_H } from '../../utils/recovery'
 import styles from './WeeklyReport.module.css'
 
@@ -48,14 +48,21 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
   const [flipped, setFlipped] = useState(false)
 
   const report = useMemo(() => {
-    const weekStart = mondayOf(now)
-    const prevStart = new Date(weekStart); prevStart.setDate(prevStart.getDate() - 7)
-    const weekIso = iso(weekStart)
+    // Rolling 7-day window ending today. Calendar-week comparisons were
+    // punishing Tuesday runs against Sunday-complete last weeks — every mid-
+    // week look at the card read F even when the trailing 7 days were
+    // actually on pace. A sliding window is always a full seven days on both
+    // sides and the score means the same thing every day of the week.
+    const today   = new Date(now); today.setHours(0, 0, 0, 0)
+    const thisStart = new Date(today); thisStart.setDate(thisStart.getDate() - 6)
+    const prevStart = new Date(today); prevStart.setDate(prevStart.getDate() - 13)
+    const thisIso = iso(thisStart)
     const prevIso = iso(prevStart)
+    const cutIso  = iso(thisStart)
     const todayIso = iso(now)
 
-    const inThis = s => s.date >= weekIso && s.date <= todayIso
-    const inPrev = s => s.date >= prevIso && s.date < weekIso
+    const inThis = s => s.date >= thisIso && s.date <= todayIso
+    const inPrev = s => s.date >= prevIso && s.date <  cutIso
 
     const trained = sessions.filter(s => s.setCount > 0 || !/почивк/i.test(s.title))
     const thisWk = trained.filter(inThis)
@@ -140,11 +147,11 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
       lifts,
       subs: [
         { key: 'consistency', label: 'ПОСЛЕДОВАТЕЛНОСТ', letter: grade(consist),
-          note: `${thisWk.length} от ${goal} тренировки тази седмица` },
+          note: `${thisWk.length} от ${goal} тренировки за 7 дни` },
         { key: 'volume', label: 'ОБЕМ', letter: grade(vol),
           note: prevVol > 0
-            ? `${volDelta >= 0 ? '+' : ''}${volDelta}% спрямо миналата седмица`
-            : thisVol > 0 ? `${bigNum(thisVol)} кг за седмицата` : 'Няма записан обем' },
+            ? `${volDelta >= 0 ? '+' : ''}${volDelta}% спрямо предните 7 дни`
+            : thisVol > 0 ? `${bigNum(thisVol)} кг за 7 дни` : 'Няма записан обем' },
         { key: 'intensity', label: 'ИНТЕНЗИТЕТ', letter: grade(intens),
           note: prs === 0 ? 'Няма нови рекорди' : `${prs} нови ${prs === 1 ? 'рекорд' : 'рекорда'}` },
         { key: 'recovery', label: 'ВЪЗСТАНОВЯВАНЕ', letter: grade(recov),
@@ -152,7 +159,7 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
             ? 'Всяка група беше готова, когато я тренира'
             : `${earlyHits} ${earlyHits === 1 ? 'тренировка' : 'тренировки'} преди пълно възстановяване` },
       ],
-      dateLabel: `${weekStart.getDate()} ${MONTHS_SHORT[weekStart.getMonth()].toUpperCase()}`,
+      dateLabel: `${thisStart.getDate()} ${MONTHS_SHORT[thisStart.getMonth()].toUpperCase()} → ${today.getDate()} ${MONTHS_SHORT[today.getMonth()].toUpperCase()}`,
     }
   }, [sessions, goal, now])
 
@@ -174,7 +181,7 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
       {/* ── Front ── */}
       <div className={`${styles.face} ${styles.front}`}>
         <div className={styles.topRow}>
-          <span className={styles.eyebrow}>СЕДМИЧЕН ДОКЛАД</span>
+          <span className={styles.eyebrow}>ПОСЛЕДНИ 7 ДНИ</span>
           <div className={styles.stats}>
             <div className={styles.stat}>
               <span className={styles.statVal}>{report.prs}</span>

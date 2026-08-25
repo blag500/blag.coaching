@@ -779,7 +779,7 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'week' && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>СЕДМИЧЕН ДОКЛАД</h2>
+          <h2 className={styles.sectionTitle}>ПОСЛЕДНИ 7 ДНИ</h2>
           <WeeklyReport sessions={sessions} goal={goal} />
           <MonthCalendar
             completions={completions}
