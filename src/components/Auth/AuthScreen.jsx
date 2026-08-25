@@ -102,15 +102,6 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
 
   return (
     <div className={styles.screen}>
-      {/* Lockup зад картата — ръцете и BLAG като на сплаша, без COACHING.
-          Картата ляга отгоре и приглушава средата, така лого-то не стои голо,
-          а служи като плаваща подложка. */}
-      <div className={styles.lockup} aria-hidden="true">
-        <div className={styles.armLeft} />
-        <div className={styles.wordmark}>BLAG</div>
-        <div className={styles.armRight} />
-      </div>
-
       <div className={styles.card}>
         {onBack && (
           <button
