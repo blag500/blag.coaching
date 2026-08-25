@@ -59,7 +59,11 @@ function WhySheet({ onClose }) {
       {/* Sticky, so it is reachable with the list scrolled anywhere. Back, not
           close: it returns to the screen with the button on it. */}
       <div className={styles.whyFoot}>
-        <button className={styles.back} onClick={onClose} type="button">← НАЗАД</button>
+        <button className={styles.back} onClick={onClose} type="button" aria-label="Назад">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+            <polyline points="15 6 9 12 15 18" />
+          </svg>
+        </button>
       </div>
     </div>,
     document.body,

@@ -333,7 +333,11 @@ function AddMealModal({ onSave, onClose, onUploadPhoto }) {
     <div className={styles.fullScreen}>
       {/* Sticky header */}
       <div className={styles.fullScreenHeader}>
-        <button className={styles.fullScreenBack} onClick={onClose} type="button">← НАЗАД</button>
+        <button className={styles.fullScreenBack} onClick={onClose} type="button" aria-label="Назад">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+            <polyline points="15 6 9 12 15 18" />
+          </svg>
+        </button>
         <span className={styles.fullScreenTitle}>НОВО ЯСТИЕ</span>
       </div>
 

@@ -189,7 +189,11 @@ export default function ExerciseStats({ name, sessions, onBack }) {
   if (!data.length) {
     return (
       <div className={styles.page}>
-        <button type="button" className={styles.back} onClick={onBack}>‹ Назад</button>
+        <button type="button" className={styles.back} onClick={onBack} aria-label="Назад">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+            <polyline points="15 6 9 12 15 18" />
+          </svg>
+        </button>
         <p className={styles.noData}>Няма логнати серии за {name}.</p>
       </div>
     )
@@ -203,7 +207,11 @@ export default function ExerciseStats({ name, sessions, onBack }) {
   return (
     <div className={styles.page}>
       <div className={styles.head}>
-        <button type="button" className={styles.back} onClick={onBack} aria-label="Назад">‹</button>
+        <button type="button" className={styles.back} onClick={onBack} aria-label="Назад">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+            <polyline points="15 6 9 12 15 18" />
+          </svg>
+        </button>
         <h1 className={styles.name}>{name}</h1>
       </div>
 

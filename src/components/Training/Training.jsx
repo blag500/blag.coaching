@@ -577,6 +577,10 @@ export default function Training({ onMenuOpen }) {
     <div className={styles.page}>
       <AppHeader
         onMenuOpen={onMenuOpen}
+        // When a session is open the burger becomes a back arrow — one gesture
+        // to leave the block and return to the split picker, same shape as
+        // every other in-app back button.
+        onBack={homeTab === 'today' && sessionBlockId ? () => setSessionBlockId(null) : undefined}
         title="ТРЕНИРОВКА"
         action={canEdit ? (
           <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
@@ -689,17 +693,9 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'today' && sessionBlockId && (
         <>
-          {/* Session view — one block, opened. Back returns to the picker.
-              The green per-set ticks handle marking; the implicit-completion
-              logic promotes the session to a full "done" once enough sets are
-              in, so no separate "маркирай готово" button lives here anymore. */}
-          <button
-            type="button"
-            className={styles.sessionBack}
-            onClick={() => setSessionBlockId(null)}
-          >
-            ← Списък
-          </button>
+          {/* Session view — one block, opened. Back arrow lives in AppHeader;
+              per-set ticks + implicit completion handle marking, so no big
+              "маркирай готово" button here anymore. */}
 
           <section className={styles.today}>
             <span className={styles.todayEyebrow}>

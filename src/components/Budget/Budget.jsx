@@ -75,7 +75,11 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
     <div className={styles.page}>
       <div className={styles.header}>
         {onBack && (
-          <button className={styles.backBtn} onClick={onBack} type="button">← Назад</button>
+          <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Назад">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+              <polyline points="15 6 9 12 15 18" />
+            </svg>
+          </button>
         )}
         <h1 className={styles.title}>НАСТРОЙКИ</h1>
         <span className={styles.currencyBadge}>{sym}</span>
