@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import DashboardCards from './DashboardCards'
+import HabitsEditor from './HabitsEditor'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
@@ -534,6 +535,19 @@ export default function Profile({ onMenuOpen }) {
       </section>
 
       <NotificationSettings />
+
+      {/* Custom habits — the six defaults are a starting point, not a rule.
+          The list you check off each day is the one you'll actually use, and
+          "8000 стъпки" is not the same target for a runner and someone at a
+          desk job. Editor lives here because habits are how *this* client
+          measures their week. */}
+      <section className={styles.card}>
+        <h2 className={styles.sectionTitle}>НАВИЦИ</h2>
+        <p className={styles.sectionSub}>
+          Твоят собствен списък. Разбъркай, кръсти, махни каквото не е за теб.
+        </p>
+        <HabitsEditor />
+      </section>
 
       {/* Next to the theme and the language, because it is the same kind of
           setting: how the app looks to this person, not what it knows. */}
