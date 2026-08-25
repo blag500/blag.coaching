@@ -152,6 +152,18 @@ export function sorenessDamping(soreness) {
  *
  * `soreness` is today's check-in answer, if there is one.
  */
+/** Parse a plain YYYY-MM-DD string as local noon of that day, in ms since
+ *  epoch. `new Date('YYYY-MM-DD')` parses as UTC midnight — for a client in
+ *  UTC+3 that meant "yesterday" started 3 hours before local midnight plus
+ *  all of today's hours, and Upper A logged yesterday morning read as ~35h
+ *  ago, so 75% recovered when it should have been ~50%. Local noon is a fair
+ *  midpoint for a workout on that date. */
+function dateNoonMs(dateStr) {
+  if (!dateStr) return 0
+  const [y, m, d] = String(dateStr).split('-').map(Number)
+  return new Date(y, (m || 1) - 1, d || 1, 12, 0, 0, 0).getTime()
+}
+
 export function muscleRecovery(workouts = [], now = Date.now(), soreness = null, groupsByLabel = null) {
   const lastMs = {}
   for (const w of workouts) {
@@ -162,7 +174,7 @@ export function muscleRecovery(workouts = [], now = Date.now(), soreness = null,
       const g = classifyMuscle(w.block_label)
       groups = g && g !== 'full' ? [g] : []
     }
-    const ms = new Date(w.completed_date).getTime()
+    const ms = dateNoonMs(w.completed_date)
     for (const g of groups) {
       if (!lastMs[g] || ms > lastMs[g]) lastMs[g] = ms
     }
@@ -225,7 +237,7 @@ export function blockReadiness(block, recovery, lastDoneByLabel = {}, now = Date
 
   const last = lastDoneByLabel[block.label]
   if (!last) return { pct: 100, group: null, basis: 'never' }
-  const hours = (now - new Date(last).getTime()) / 3_600_000
+  const hours = (now - dateNoonMs(last)) / 3_600_000
   return {
     pct: Math.min(100, Math.round((hours / UNKNOWN_H) * 100)),
     group: null,
