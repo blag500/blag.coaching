@@ -379,6 +379,29 @@
     rgba(200, 160, 90, 0.04) 100%);
 }
 
+/* Group dropdown — native select, so iOS gives its own wheel picker and we
+   keep the swap panel to a single line instead of a grid of 12 chips. */
+.swapGroupSelect {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 30px 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23F2E8CF' stroke-opacity='0.5' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.swapGroupSelect:focus { border-color: rgba(var(--accent-rgb), 0.55); }
+.swapGroupSelect option { background: var(--surface-1); color: var(--text); }
+
 /* ── Exercise photo ───────────────────────────────────────────────────── */
 
 .thumb {

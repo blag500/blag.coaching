@@ -518,21 +518,21 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
                   <div className={styles.swapGroups}>
                     <span className={styles.swapGroupsLabel}>Мускулна група</span>
-                    <div className={styles.swapGroupChips}>
+                    <select
+                      className={styles.swapGroupSelect}
+                      value={currentGroup ?? ''}
+                      onChange={e => {
+                        const v = e.target.value
+                        if (!v) clearExerciseGroup(tagName)
+                        else setExerciseGroup(tagName, v)
+                      }}
+                      aria-label="Мускулна група за упражнението"
+                    >
+                      <option value="">— избери —</option>
                       {FINE_MUSCLES.map(m => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          className={`${styles.groupChip} ${currentGroup === m.id ? styles.groupChipOn : ''}`}
-                          onClick={() => {
-                            if (currentGroup === m.id) clearExerciseGroup(tagName)
-                            else setExerciseGroup(tagName, m.id)
-                          }}
-                        >
-                          {m.label}
-                        </button>
+                        <option key={m.id} value={m.id}>{m.label}</option>
                       ))}
-                    </div>
+                    </select>
                   </div>
                 </div>
               )
