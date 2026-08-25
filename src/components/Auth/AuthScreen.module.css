@@ -21,6 +21,13 @@
   );
 }
 
+.langCorner {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  z-index: 30;
+}
+
 .card {
   width: 100%;
   max-width: 380px;

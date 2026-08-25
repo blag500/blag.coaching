@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
+import LangToggle from '../LangToggle/LangToggle'
 import Lessons from './Lessons'
 import DotNav from './DotNav'
 import FrameSheet from './FrameSheet'
@@ -26,7 +27,7 @@ const SECTION_IDS = [
   { id: 'faq',     labelKey: 'landing.nav.faq'     },
 ]
 
-export default function LandingPage({ onContinue, onLogin }) {
+export default function LandingPage({ onLogin }) {
   const { t } = useSettings()
   const [openQ, setOpenQ] = useState(null)
   const [installOpen, setInstallOpen] = useState(false)
@@ -51,7 +52,15 @@ export default function LandingPage({ onContinue, onLogin }) {
           <a href="#lessons" onClick={go('lessons')}>{t('landing.nav.lessons')}</a>
           <a href="#faq"     onClick={go('faq')}>{t('landing.nav.faq')}</a>
         </nav>
+        <LangToggle variant="inline" />
       </header>
+
+      {/* Езиков превключвател за телефони — bar-ът е скрит под 860px, така
+          че посетителят от мобилно устройство иначе няма как да го намери
+          преди да види логин формата. */}
+      <div className={styles.mobileLang}>
+        <LangToggle variant="pill" />
+      </div>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <section className={styles.hero} id="top">
@@ -124,13 +133,28 @@ export default function LandingPage({ onContinue, onLogin }) {
            target="_blank" rel="noopener noreferrer">
           {t('landing.lessonsCta')}
         </a>
-        <p className={styles.quietRow}>
-          <button className={styles.quietCta} onClick={onContinue} type="button">
-            {t('landing.appOnly')}
+
+        {/* Пътят без коуч, изнесен като реални бутони — досегашният тих ред
+            се четеше като бележка под линия и посетителите не забелязваха, че
+            приложението може да се вземе без пакет. Двата бутона наследяват
+            heroCta стъклото, но с по-мек акцент, за да не се бият с основния
+            CTA над тях. */}
+        <div className={styles.altActions}>
+          <button
+            className={`${styles.heroCta} ${styles.altCta}`}
+            onClick={() => setInstallOpen(true)}
+            type="button"
+          >
+            {t('landing.installCta')}
           </button>
-          <span className={styles.quietDot} aria-hidden="true">•</span>
-          <a className={styles.faqLink} href="#faq" onClick={go('faq')}>{t('landing.nav.faq')}</a>
-        </p>
+          <a
+            className={`${styles.heroCta} ${styles.altCta}`}
+            href="#faq"
+            onClick={go('faq')}
+          >
+            {t('landing.faqCta')}
+          </a>
+        </div>
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}

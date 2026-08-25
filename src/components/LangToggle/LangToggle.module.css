@@ -1,0 +1,44 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  user-select: none;
+}
+
+.opt {
+  padding: 6px 8px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 140ms, background 140ms;
+  -webkit-tap-highlight-color: transparent;
+}
+.opt:hover { color: var(--text); }
+.active {
+  color: var(--accent);
+}
+
+.sep {
+  color: var(--muted);
+  opacity: 0.4;
+}
+
+/* Pill вариант — glass chip, за overlay-и. */
+.pill {
+  padding: 2px 4px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.pill .opt { padding: 5px 8px; }
+
+/* Inline вариант — без фон, за навигационни барове. */
+.inline .opt { padding: 4px 6px; font-size: 12px; }

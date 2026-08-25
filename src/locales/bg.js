@@ -223,6 +223,8 @@ export default {
   'landing.lessonsHead':  'ще те научи как да:',
   'landing.lessonsCta':   'ПИШИ МИ ЗА БЕЗПЛАТНА ТРЕНИРОВКА',
   'landing.appOnly':      'Или само приложението — без мен',
+  'landing.installCta':   'ИЗТЕГЛИ ПРИЛОЖЕНИЕТО',
+  'landing.faqCta':       'ВЪПРОСИ',
   'landing.faqTitle':     'Това, което хората питат',
   'landing.loginLead':    'Вече ползваш приложението?',
   'landing.loginLink':    'Логни се тук.',

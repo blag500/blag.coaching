@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
+import LangToggle from '../LangToggle/LangToggle'
 import styles from './AuthScreen.module.css'
 
 function GoogleIcon() {
@@ -102,6 +103,9 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
 
   return (
     <div className={styles.screen}>
+      <div className={styles.langCorner}>
+        <LangToggle variant="pill" />
+      </div>
       <div className={styles.card}>
         {onBack && (
           <button

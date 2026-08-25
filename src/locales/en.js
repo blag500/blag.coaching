@@ -222,6 +222,8 @@ export default {
   'landing.lessonsHead':  'will teach you how to:',
   'landing.lessonsCta':   'MESSAGE ME FOR A FREE SESSION',
   'landing.appOnly':      'Or just the app — without me',
+  'landing.installCta':   'DOWNLOAD THE APP',
+  'landing.faqCta':       'FAQ',
   'landing.faqTitle':     'What people ask',
   'landing.loginLead':    'Already using the app?',
   'landing.loginLink':    'Log in here.',
