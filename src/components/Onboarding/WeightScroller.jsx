@@ -1,38 +1,50 @@
-import { useRef } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import styles from './WeightScroller.module.css'
 
+const ROW = 60 // px per row; drives both layout and drag sensitivity
+
 /**
- * A Stronger-style vertical weight picker. Three rows visible — the pick sits
- * in the middle framed by a soft glass pill, the flanking rows show the next
- * step in each direction and are tappable to move by one.
+ * Stronger-style vertical weight picker. A fixed strip of every value from
+ * min..max is rendered once and translated as the value changes, so the number
+ * doesn't teleport — it slides. Three rows are visible at any time: the
+ * current pick in the middle, dimmed neighbours above and below.
  *
- * Drag is honoured too — a downward swipe decrements (the number above rolls
- * into place), an upward swipe increments. Small threshold, generous clamp,
- * no inertia — the goal is a picker that behaves, not a physics toy.
+ * Drag is honoured — a downward swipe decrements (the number above rolls into
+ * place), an upward swipe increments. Buttons on the flanks bump by one.
  */
 export default function WeightScroller({ value, onChange, min = 30, max = 200 }) {
+  const clamp = v => Math.min(max, Math.max(min, v))
+  const set   = v => onChange(clamp(v))
+
   const startY = useRef(null)
   const lastCommit = useRef(value)
-
-  function clamp(v) { return Math.min(max, Math.max(min, v)) }
-  function set(v) { onChange(clamp(v)) }
+  const [dragging, setDragging] = useState(false)
 
   function onTouchStart(e) {
     startY.current = e.touches[0].clientY
     lastCommit.current = value
+    setDragging(true)
   }
   function onTouchMove(e) {
     if (startY.current == null) return
     const dy = e.touches[0].clientY - startY.current
-    const stepPx = 44
-    const steps = -Math.trunc(dy / stepPx) // finger up → increase
+    const steps = -Math.trunc(dy / ROW)
     const target = clamp(lastCommit.current + steps)
     if (target !== value) onChange(target)
   }
-  function onTouchEnd() { startY.current = null }
+  function onTouchEnd() {
+    startY.current = null
+    setDragging(false)
+  }
 
-  const prev = clamp(value - 1)
-  const next = clamp(value + 1)
+  const values = useMemo(() => {
+    const out = []
+    for (let v = min; v <= max; v++) out.push(v)
+    return out
+  }, [min, max])
+
+  // How far the strip has to shift for `value` to sit in the middle slot.
+  const shift = -(value - min) * ROW
 
   return (
     <div
@@ -40,27 +52,53 @@ export default function WeightScroller({ value, onChange, min = 30, max = 200 })
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      role="spinbutton"
+      aria-valuenow={value}
+      aria-valuemin={min}
+      aria-valuemax={max}
     >
       <div className={styles.frame} aria-hidden="true" />
+
       <button
         type="button"
-        className={styles.side}
+        className={styles.bump}
         onClick={() => set(value - 1)}
         aria-label="По-малко"
-      >
-        {prev} kg
-      </button>
-      <div className={styles.pick} role="spinbutton" aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}>
-        {value} <span className={styles.unit}>kg</span>
-      </div>
+        style={{ top: 0 }}
+      />
       <button
         type="button"
-        className={styles.side}
+        className={styles.bump}
         onClick={() => set(value + 1)}
         aria-label="Повече"
-      >
-        {next} kg
-      </button>
+        style={{ bottom: 0 }}
+      />
+
+      <div className={styles.viewport}>
+        <div
+          className={styles.strip}
+          style={{
+            transform: `translateY(${shift}px)`,
+            transition: dragging
+              ? 'transform 90ms linear'
+              : 'transform 260ms cubic-bezier(0.22, 0.9, 0.28, 1)',
+          }}
+        >
+          {values.map(v => {
+            const dist = Math.abs(v - value)
+            const cls =
+              dist === 0 ? styles.rowPick
+              : dist === 1 ? styles.rowNear
+              : dist === 2 ? styles.rowFar
+              : styles.rowHidden
+            return (
+              <div key={v} className={`${styles.row} ${cls}`}>
+                {v} <span className={styles.unit}>kg</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

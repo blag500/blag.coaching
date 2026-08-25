@@ -91,28 +91,36 @@ const ACTIVITY_ICON = {
   ),
 }
 
-/* Big flat body silhouettes for the gender step. Kept as inline SVG so they
-   tint with currentColor and never need a network round-trip on first paint. */
+/* Minimal, single-stroke body silhouettes for the gender step. The difference
+   between the two is drawn — wider shoulders / narrower hips for the male
+   figure, narrower shoulders / hip curve for the female — instead of relying
+   on props like hair or clothing, which read as caricature at a small size.
+   Colour comes from currentColor so the card's accent state tints them. */
 function ManFigure() {
   return (
-    <svg viewBox="0 0 120 160" fill="currentColor" aria-hidden="true">
-      <circle cx="60" cy="30" r="18" />
-      <path d="M30 70c0-14 12-24 30-24s30 10 30 24v10H30V70z" />
-      <path d="M22 78h18v40l-8 22h-8l-2-22V78z" />
-      <path d="M98 78H80v40l8 22h8l2-22V78z" />
-      <path d="M42 82h36v50l-4 26H60l-4-6-4 6H46l-4-26V82z" opacity="0.85" />
+    <svg viewBox="0 0 120 200" aria-hidden="true">
+      <g fill="currentColor">
+        {/* Head */}
+        <circle cx="60" cy="26" r="16" />
+        {/* Neck + shoulders — a strong triangle tapering to the waist */}
+        <path d="M52 44h16v6h6c14 0 24 8 26 22l4 22c1 6-3 10-9 10h-6l-3-24h-2v34h-8v46c0 3-2 5-5 5s-5-2-5-5v-32h-6v32c0 3-2 5-5 5s-5-2-5-5v-46h-8V80h-2l-3 24h-6c-6 0-10-4-9-10l4-22c2-14 12-22 26-22h6v-6z" />
+      </g>
     </svg>
   )
 }
 
 function WomanFigure() {
   return (
-    <svg viewBox="0 0 120 160" fill="currentColor" aria-hidden="true">
-      <circle cx="60" cy="28" r="16" />
-      <path d="M40 62c0-10 9-18 20-18s20 8 20 18v14H40V62z" />
-      <path d="M32 78h56l-6 32H38l-6-32z" opacity="0.85" />
-      <path d="M42 108h36l-10 50H52l-10-50z" />
-      <path d="M46 158h10l2-14h4l2 14h10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <svg viewBox="0 0 120 200" aria-hidden="true">
+      <g fill="currentColor">
+        {/* Head */}
+        <circle cx="60" cy="26" r="15" />
+        {/* Torso with hourglass silhouette — narrower shoulders, cinched
+            waist, flared hips reading as skirt/hip curve. */}
+        <path d="M52 43h16v5h4c12 0 20 8 22 20l3 18c1 5-3 9-8 9h-5l-3-16v10l14 32c1 3-1 6-4 6h-52c-3 0-5-3-4-6l14-32V79l-3 16h-5c-5 0-9-4-8-9l3-18c2-12 10-20 22-20h4v-5z" />
+        {/* Legs — two slim shapes from the hip curve down */}
+        <path d="M46 132h12l-2 52c0 3-2 5-5 5s-5-2-5-5l-4-46zM62 132h12l4 52c0 3-2 5-5 5s-5-2-5-5l-2-46z" opacity="0.9" />
+      </g>
     </svg>
   )
 }
