@@ -447,8 +447,10 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
 
       <div className={styles.nav}>
         {step > 1 && step < totalSteps && (
-          <button className={styles.backBtn} onClick={() => setStep(s => s - 1)} type="button">
-            ← НАЗАД
+          <button className={styles.backBtn} onClick={() => setStep(s => s - 1)} type="button" aria-label="Назад">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+              <polyline points="15 6 9 12 15 18" />
+            </svg>
           </button>
         )}
         {step < totalSteps && (

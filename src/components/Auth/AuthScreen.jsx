@@ -214,8 +214,10 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
         )}
 
         {mode === 'reset' && (
-          <button className={styles.forgotLink} onClick={() => switchMode('login')} type="button">
-            ← Обратно към вход
+          <button className={styles.forgotLink} onClick={() => switchMode('login')} type="button" aria-label="Обратно към вход">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true" style={{ verticalAlign: 'middle' }}>
+              <polyline points="15 6 9 12 15 18" />
+            </svg>
           </button>
         )}
 

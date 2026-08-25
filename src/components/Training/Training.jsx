@@ -607,7 +607,10 @@ export default function Training({ onMenuOpen }) {
             ),
           },
           {
-            id: 'week', label: 'Седмица',
+            /* Bar-chart is the shape people already read as "progress" — it
+               moves from the old "week" tab onto its own dedicated one, so
+               progression stops being a link at the bottom of another page. */
+            id: 'progression', label: 'Прогресия',
             icon: (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
                    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -615,6 +618,19 @@ export default function Training({ onMenuOpen }) {
                 <line x1="10" y1="20" x2="10" y2="9" />
                 <line x1="15" y1="20" x2="15" y2="12" />
                 <line x1="20" y1="20" x2="20" y2="6" />
+              </svg>
+            ),
+          },
+          {
+            /* Was "Седмица" and held the weekly report + calendar + diary +
+               dashboard. Renamed to "Insights" because the tab is really a
+               look-back at what the week produced, not just the calendar. */
+            id: 'insights', label: 'Insights',
+            icon: (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
+                   strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3 L20 7 L20 13 C20 17 16 20 12 21 C8 20 4 17 4 13 L4 7 Z" />
+                <polyline points="9 12 11.5 14.5 15 10.5" />
               </svg>
             ),
           },
@@ -769,7 +785,14 @@ export default function Training({ onMenuOpen }) {
         </>
       )}
 
-      {homeTab === 'week' && (
+      {homeTab === 'progression' && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>ПРОГРЕСИЯ</h2>
+          <ProgressionView blocks={blocks} embedded />
+        </section>
+      )}
+
+      {homeTab === 'insights' && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>ПОСЛЕДНИ 7 ДНИ</h2>
           <WeeklyReport sessions={sessions} goal={goal} />
@@ -820,13 +843,6 @@ export default function Training({ onMenuOpen }) {
             toBeat={toBeat}
             onOpenSession={() => openSession()}
           />
-
-          {/* Progression lives here with the week overview — it's a look-back
-              tool, same neighbourhood as the calendar and the diary. */}
-          <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
-            <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
-            <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
-          </button>
         </section>
       )}
 

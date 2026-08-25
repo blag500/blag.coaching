@@ -491,8 +491,10 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
 
         <div className={s.nav}>
           {step > 1 && (
-            <button className={s.backBtn} onClick={() => setStep(s => s - 1)} type="button">
-              ← НАЗАД
+            <button className={s.backBtn} onClick={() => setStep(s => s - 1)} type="button" aria-label="Назад">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+                <polyline points="15 6 9 12 15 18" />
+              </svg>
             </button>
           )}
           <button className={s.nextBtn} onClick={stepNext} disabled={stepSaving} type="button">

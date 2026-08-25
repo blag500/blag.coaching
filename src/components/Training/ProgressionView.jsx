@@ -314,13 +314,20 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack }) {
 
 // ── Level 0: block list ───────────────────────────────────────────────────────
 
-function BlockList({ blocks, allLogs, onSelectBlock, onClose }) {
+function BlockList({ blocks, allLogs, onSelectBlock, onClose, embedded }) {
   return (
     <div className={styles.wrap}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>ПРОГРЕСИЯ</h2>
-        <button className={styles.closeBtn} onClick={onClose} type="button">✕ Назад</button>
-      </div>
+      {!embedded && (
+        <div className={styles.header}>
+          <h2 className={styles.title}>ПРОГРЕСИЯ</h2>
+          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Затвори">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6"  y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      )}
       <div className={styles.blockGrid}>
         {blocks.map((block, idx) => {
           const total = block.exercises.reduce((sum, ex) => sum + (allLogs[ex.name]?.length ?? 0), 0)
@@ -346,7 +353,7 @@ function BlockList({ blocks, allLogs, onSelectBlock, onClose }) {
 
 // ── Root ─────────────────────────────────────────────────────────────────────
 
-export default function ProgressionView({ onClose, blocks = [] }) {
+export default function ProgressionView({ onClose, blocks = [], embedded = false }) {
   const { user } = useAuth()
   const [allLogsArr, setAllLogsArr]       = useState([])
   const [loading, setLoading]             = useState(true)
@@ -419,6 +426,7 @@ export default function ProgressionView({ onClose, blocks = [] }) {
       allLogs={allLogs}
       onSelectBlock={setSelectedBlock}
       onClose={onClose}
+      embedded={embedded}
     />
   )
 }
