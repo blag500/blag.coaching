@@ -128,6 +128,10 @@ export default function Training({ onMenuOpen }) {
   // enters that block's session view — a single question at a time, from the
   // moment you tap into it to the moment the log is done.
   const [sessionBlockId, setSessionBlockId] = useState(null)
+  // Progression tab inner state, lifted so the AppHeader burger can act as a
+  // back arrow when the user is inside a block or exercise.
+  const [progBlock, setProgBlock] = useState(null)
+  const [progEx,    setProgEx]    = useState(null)
   const [editing, setEditing]           = useState(false)
   const [savingPlan, setSavingPlan]     = useState(false)
   const [soreness, setSoreness]         = useState(null)
@@ -577,10 +581,15 @@ export default function Training({ onMenuOpen }) {
     <div className={styles.page}>
       <AppHeader
         onMenuOpen={onMenuOpen}
-        // When a session is open the burger becomes a back arrow — one gesture
-        // to leave the block and return to the split picker, same shape as
-        // every other in-app back button.
-        onBack={homeTab === 'today' && sessionBlockId ? () => setSessionBlockId(null) : undefined}
+        // When a session or a progression drill-down is open the burger
+        // becomes a back arrow — one gesture per level, same shape as every
+        // other in-app back button.
+        onBack={
+          homeTab === 'today' && sessionBlockId ? () => setSessionBlockId(null) :
+          homeTab === 'progression' && progEx   ? () => setProgEx(null) :
+          homeTab === 'progression' && progBlock ? () => { setProgEx(null); setProgBlock(null) } :
+          undefined
+        }
         title="ТРЕНИРОВКА"
         action={canEdit ? (
           <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
@@ -788,7 +797,15 @@ export default function Training({ onMenuOpen }) {
       {homeTab === 'progression' && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>ПРОГРЕСИЯ</h2>
-          <ProgressionView blocks={blocks} embedded />
+          <ProgressionView
+            blocks={blocks}
+            completions={enrichedCompletions}
+            embedded
+            selectedBlock={progBlock}
+            selectedEx={progEx}
+            onSelectBlock={setProgBlock}
+            onSelectEx={setProgEx}
+          />
         </section>
       )}
 

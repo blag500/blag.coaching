@@ -187,7 +187,7 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
 
 // ── Level 2: progression for one exercise ────────────────────────────────────
 
-function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate }) {
+function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate, embedded }) {
   const [range, setRange] = useState('ALL')
 
   const chronoEntries = useMemo(() => {
@@ -213,9 +213,15 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} type="button">← {blockLabel}</button>
-      </div>
+      {!embedded && (
+        <div className={styles.header}>
+          <button className={styles.backBtn} onClick={onBack} type="button" aria-label={`Обратно към ${blockLabel}`}>
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+              <polyline points="15 6 9 12 15 18" />
+            </svg>
+          </button>
+        </div>
+      )}
       <h3 className={styles.exTitle}>{exerciseName}</h3>
 
       <div className={styles.rangeBar}>
@@ -270,12 +276,41 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
 
 // ── Level 1: exercises within a block ────────────────────────────────────────
 
-function BlockExercises({ block, allLogs, onSelectExercise, onBack }) {
+function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions = [], embedded }) {
+  // Planned exercise names (lowercased for a case-tolerant contains check).
+  const planned = new Set((block.exercises ?? []).map(e => e.name))
+
+  // Dates this block was completed — used to attribute stray exercise logs
+  // to it. If you swapped Preacher curl for "Hammer curl" on a day Upper A
+  // was done, "Hammer curl" belongs here as a substitute lift so its own
+  // progression is discoverable from the block that hosted it.
+  const blockDates = new Set(
+    completions
+      .filter(c => c.block_label === block.label)
+      .map(c => c.completed_date)
+  )
+
+  const substitutes = []
+  if (blockDates.size) {
+    for (const [name, logs] of Object.entries(allLogs)) {
+      if (planned.has(name)) continue
+      if (logs.some(l => blockDates.has(l.date))) {
+        substitutes.push({ name, count: logs.length })
+      }
+    }
+  }
+
   return (
     <div className={styles.wrap}>
-      <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} type="button">← БЛОКОВЕ</button>
-      </div>
+      {!embedded && (
+        <div className={styles.header}>
+          <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Обратно към блокове">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+              <polyline points="15 6 9 12 15 18" />
+            </svg>
+          </button>
+        </div>
+      )}
       <h3 className={styles.blockTitle}>{block.label}</h3>
 
       {/* The block's own answer, before the per-exercise charts: is week eight
@@ -287,26 +322,54 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack }) {
       {block.isRest || block.exercises.length === 0 ? (
         <p className={styles.noData}>Почивен ден — няма упражнения.</p>
       ) : (
-        <div className={styles.exList}>
-          {block.exercises.map((ex, i) => {
-            const count = allLogs[ex.name]?.length ?? 0
-            return (
-              <button
-                key={i}
-                className={styles.exBtn}
-                onClick={() => onSelectExercise(ex.name)}
-                type="button"
-              >
-                <span className={styles.exBtnName}>{ex.name}</span>
-                <span className={styles.exBtnMeta}>
-                  {ex.sets}×{ex.reps}
-                  {count > 0 && <span className={styles.exBtnCount}>{count} записа</span>}
-                </span>
-                <span className={styles.exBtnArrow}>›</span>
-              </button>
-            )
-          })}
-        </div>
+        <>
+          <div className={styles.exList}>
+            {block.exercises.map((ex, i) => {
+              const count = allLogs[ex.name]?.length ?? 0
+              return (
+                <button
+                  key={i}
+                  className={styles.exBtn}
+                  onClick={() => onSelectExercise(ex.name)}
+                  type="button"
+                >
+                  <span className={styles.exBtnName}>{ex.name}</span>
+                  <span className={styles.exBtnMeta}>
+                    {ex.sets}×{ex.reps}
+                    {count > 0 && <span className={styles.exBtnCount}>{count} записа</span>}
+                  </span>
+                  <span className={styles.exBtnArrow}>›</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {substitutes.length > 0 && (
+            <>
+              <h4 className={styles.subsHead}>ЗАМЕНЕНИ УПРАЖНЕНИЯ</h4>
+              <p className={styles.subsHint}>
+                Логвани в дните на този блок, но извън плана — вероятно суапове от моливчето.
+              </p>
+              <div className={styles.exList}>
+                {substitutes.map(s => (
+                  <button
+                    key={s.name}
+                    className={styles.exBtn}
+                    onClick={() => onSelectExercise(s.name)}
+                    type="button"
+                  >
+                    <span className={styles.exBtnName}>{s.name}</span>
+                    <span className={styles.exBtnMeta}>
+                      суап
+                      <span className={styles.exBtnCount}>{s.count} записа</span>
+                    </span>
+                    <span className={styles.exBtnArrow}>›</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   )
@@ -353,12 +416,25 @@ function BlockList({ blocks, allLogs, onSelectBlock, onClose, embedded }) {
 
 // ── Root ─────────────────────────────────────────────────────────────────────
 
-export default function ProgressionView({ onClose, blocks = [], embedded = false }) {
+export default function ProgressionView({
+  onClose, blocks = [], embedded = false,
+  completions = [],
+  // Optional controlled state — Training lifts these so the AppHeader burger
+  // can turn into a back arrow when the user is inside a block/exercise.
+  selectedBlock: selectedBlockProp,
+  selectedEx:    selectedExProp,
+  onSelectBlock: onSelectBlockProp,
+  onSelectEx:    onSelectExProp,
+}) {
   const { user } = useAuth()
   const [allLogsArr, setAllLogsArr]       = useState([])
   const [loading, setLoading]             = useState(true)
-  const [selectedBlock, setSelectedBlock] = useState(null)
-  const [selectedEx, setSelectedEx]       = useState(null)
+  const [innerBlock, setInnerBlock]       = useState(null)
+  const [innerEx,    setInnerEx]          = useState(null)
+  const selectedBlock  = selectedBlockProp !== undefined ? selectedBlockProp : innerBlock
+  const selectedEx     = selectedExProp    !== undefined ? selectedExProp    : innerEx
+  const setSelectedBlock = onSelectBlockProp ?? setInnerBlock
+  const setSelectedEx    = onSelectExProp    ?? setInnerEx
 
   useEffect(() => {
     if (!user) return
@@ -405,6 +481,7 @@ export default function ProgressionView({ onClose, blocks = [], embedded = false
         onBack={() => setSelectedEx(null)}
         onDelete={handleDelete}
         onUpdate={handleUpdate}
+        embedded={embedded}
       />
     )
   }
@@ -416,6 +493,8 @@ export default function ProgressionView({ onClose, blocks = [], embedded = false
         allLogs={allLogs}
         onSelectExercise={setSelectedEx}
         onBack={() => setSelectedBlock(null)}
+        completions={completions}
+        embedded={embedded}
       />
     )
   }

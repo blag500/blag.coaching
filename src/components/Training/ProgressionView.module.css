@@ -113,6 +113,22 @@
   gap: 6px;
 }
 
+.subsHead {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  opacity: 0.75;
+  margin: 20px 0 4px;
+}
+.subsHint {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
 .exBtn {
   display: flex;
   align-items: center;
