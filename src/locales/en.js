@@ -224,6 +224,8 @@ export default {
   'landing.appOnly':      'Or just the app — without me',
   'landing.installCta':   'DOWNLOAD THE APP',
   'landing.faqCta':       'FAQ',
+  'landing.registerCta':  'CREATE ACCOUNT',
+  'landing.registerLead': 'New here?',
   'landing.faqTitle':     'What people ask',
   'landing.loginLead':    'Already using the app?',
   'landing.loginLink':    'Log in here.',

@@ -225,6 +225,8 @@ export default {
   'landing.appOnly':      'Или само приложението — без мен',
   'landing.installCta':   'ИЗТЕГЛИ ПРИЛОЖЕНИЕТО',
   'landing.faqCta':       'ВЪПРОСИ',
+  'landing.registerCta':  'РЕГИСТРИРАЙ СЕ',
+  'landing.registerLead': 'Нов тук?',
   'landing.faqTitle':     'Това, което хората питат',
   'landing.loginLead':    'Вече ползваш приложението?',
   'landing.loginLink':    'Логни се тук.',

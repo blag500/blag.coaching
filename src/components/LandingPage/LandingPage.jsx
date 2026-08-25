@@ -27,7 +27,7 @@ const SECTION_IDS = [
   { id: 'faq',     labelKey: 'landing.nav.faq'     },
 ]
 
-export default function LandingPage({ onLogin }) {
+export default function LandingPage({ onContinue, onLogin }) {
   const { t } = useSettings()
   const [openQ, setOpenQ] = useState(null)
   const [installOpen, setInstallOpen] = useState(false)
@@ -178,6 +178,20 @@ export default function LandingPage({ onLogin }) {
               {!item.demo && openQ === i && <p className={styles.faqA}>{t(item.aKey)}</p>}
             </div>
           ))}
+        </div>
+
+        {/* Пътят за създаване на акаунт, изнесен в дъното на FAQ секцията.
+            Първо за нови (по-топъл CTA), после квайет линкът за връщащи се
+            потребители — това следва естествения обем на трафика. */}
+        <div className={styles.faqCtaRow}>
+          <p className={styles.faqCtaLead}>{t('landing.registerLead')}</p>
+          <button
+            className={`${styles.heroCta} ${styles.altCta} ${styles.registerCta}`}
+            onClick={() => onContinue?.()}
+            type="button"
+          >
+            {t('landing.registerCta')}
+          </button>
         </div>
 
         <button className={styles.loginLink} onClick={onLogin} type="button">

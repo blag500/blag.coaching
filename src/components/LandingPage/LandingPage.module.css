@@ -1170,6 +1170,27 @@
     rgba(255, 255, 255, 0.03) 100%) !important;
 }
 
+/* Регистрационният блок под FAQ — един ред „Нов тук?" отгоре, отдолу
+   бутон в същия .altCta стил. Ясно отделен от логин линка отдолу. */
+.faqCtaRow {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.faqCtaLead {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.registerCta {
+  max-width: 260px;
+}
+
 /* The other way out, deliberately smaller and unlit. It is a real offer and it
    has to be findable, but a second gold slab beside the first would make the
    visitor choose between two equal things instead of taking the one. */
