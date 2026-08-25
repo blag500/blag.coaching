@@ -15,7 +15,15 @@ function interpolate(str, params) {
 
 export function SettingsProvider({ children }) {
   const [theme, setThemeState] = useState(() => localStorage.getItem('blag_theme') || 'glass')
-  const [lang,  setLangState]  = useState(() => localStorage.getItem('blag_lang')  || 'bg')
+  const [lang,  setLangState]  = useState(() => {
+    // Съхранен избор бие браузърния език. Първо посещение без запис пада на
+    // bg само ако браузърът твърди български; иначе английски, за да не
+    // посрещаме глобален трафик на кирилица.
+    const saved = localStorage.getItem('blag_lang')
+    if (saved === 'bg' || saved === 'en') return saved
+    const nav = (typeof navigator !== 'undefined' ? navigator.language : '') || ''
+    return nav.toLowerCase().startsWith('bg') ? 'bg' : 'en'
+  })
   // Rest timer between sets — some people count in their head or just want a
   // quiet log. Default on, opt-out from Profile.
   const [restTimer, setRestTimerState] = useState(() =>

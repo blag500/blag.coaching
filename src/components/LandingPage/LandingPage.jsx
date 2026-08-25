@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import Lessons from './Lessons'
 import DotNav from './DotNav'
 import FrameSheet from './FrameSheet'
@@ -6,58 +7,33 @@ import InstallDemo from './InstallDemo'
 import styles from './LandingPage.module.css'
 
 /**
- * The top of the funnel.
- *
- * Someone arrives from a video knowing a name and nothing else, so the page
- * answers, in the order a stranger asks: what is this, what does it do, how
- * does it work, who is behind it, what does it cost, and what about the thing
- * I am worried about. Then it asks once.
- *
- * Everything on it is checkable. There are no visitor counts and no logged-meal
- * totals: every account in the database today is a test account, and a number
- * that flatters is the first thing a real prospect goes looking to disprove.
+ * The top of the funnel. Someone arrives from a video knowing a name and
+ * nothing else, so the page answers, in order: what is this, what does it do,
+ * how does it work, who is behind it, what does it cost, and what about the
+ * thing I'm worried about. Then it asks once.
  */
 
-const FAQ = [
-  { q: 'Мога ли да го ползвам без Blag Coach?',
-    a: 'Да, и е безплатно. Логваш, следиш, напредваш. Blag Coach е за хората, на които им трябва план по техните конкретни числа, а не само инструмент за записване.' },
-  { q: 'Защо ми е?',
-    a: 'Ако тренираш сам и планираш сам — вероятно не ти е. Blag app е инструментът, Blag Coaching е мозъкът.' },
-  { q: 'Как изглежда коучингът на практика?',
-    a: 'Пишеш ми, гледаме числата от приложението, настройваме плана. Седмичен чек-ин, корекция на макросите и обратна връзка по техника — по реални данни, не по усет. Тренираме заедно.' },
-  /* The one answer that is shown instead of written. Three taps described in a
-     paragraph is a paragraph nobody reads; the same three taps happening on a
-     phone are over before anyone decides whether to pay attention. */
-  { q: 'Трябва ли да го свалям от App Store/Google Play?', demo: true },
+const FAQ_KEYS = [
+  { qKey: 'landing.faq.q1', aKey: 'landing.faq.a1' },
+  { qKey: 'landing.faq.q2', aKey: 'landing.faq.a2' },
+  { qKey: 'landing.faq.q3', aKey: 'landing.faq.a3' },
+  { qKey: 'landing.faq.q4', demo: true },
 ]
 
-/* One place to write the offer. It travels along the bottom of every screen,
-   so whatever it says is the last thing read on the page and the first thing
-   remembered about it. */
-/* The stops on the page, in order — the dot rail reads this and nothing else,
-   so a section added or dropped is one line here. */
-const SECTIONS = [
-  { id: 'top',     label: 'НАЧАЛО' },
-  { id: 'lessons', label: 'УРОЦИ' },
-  { id: 'faq',     label: 'ВЪПРОСИ' },
+const SECTION_IDS = [
+  { id: 'top',     labelKey: 'landing.nav.top'     },
+  { id: 'lessons', labelKey: 'landing.nav.lessons' },
+  { id: 'faq',     labelKey: 'landing.nav.faq'     },
 ]
-
-const OFFER = '−20% от Blag Coaching през първия месец'
-const TICKER = Array.from({ length: 4 }, () => OFFER).join('   ·   ') + '   ·   '
 
 export default function LandingPage({ onContinue, onLogin }) {
-  /* The email is asked for here and carried into the form, so the first field
-     is already filled when they arrive. A field on a landing page that makes
-     you type the same thing again on the next screen is a field that has cost
-     the visitor something and bought them nothing. */
-  const [email, setEmail] = useState('')
-
-  // Only one answer open at a time — five open at once is the wall of text the
-  // accordion exists to prevent.
+  const { t } = useSettings()
   const [openQ, setOpenQ] = useState(null)
-
-  // The install question opens the demo rather than an answer.
   const [installOpen, setInstallOpen] = useState(false)
+
+  const sections = SECTION_IDS.map(s => ({ id: s.id, label: t(s.labelKey) }))
+  const offerLine = t('landing.offer')
+  const ticker = Array.from({ length: 4 }, () => offerLine).join('   ·   ') + '   ·   '
 
   const go = id => e => {
     e.preventDefault()
@@ -67,31 +43,18 @@ export default function LandingPage({ onContinue, onLogin }) {
   return (
     <div className={styles.page}>
 
-      <DotNav sections={SECTIONS} />
+      <DotNav sections={sections} />
 
       {/* ── Bar ────────────────────────────────────────────────────────── */}
       <header className={styles.bar}>
-        {/* The mark lives here now, small, rather than filling the middle of the
-            first screen — the splash has just shown it at full size, and showing
-            it again immediately spends the reveal twice. */}
-        {/* No mark up here. The splash has just shown it at full size and the
-            poster below carries the brand on its own; a third copy in the
-            corner was the app talking over itself. */}
         <nav className={styles.barNav}>
-          <a href="#lessons" onClick={go('lessons')}>УРОЦИ</a>
-          <a href="#faq"     onClick={go('faq')}>ВЪПРОСИ</a>
+          <a href="#lessons" onClick={go('lessons')}>{t('landing.nav.lessons')}</a>
+          <a href="#faq"     onClick={go('faq')}>{t('landing.nav.faq')}</a>
         </nav>
       </header>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
-      {/* The poster, whole and full height, with one thing to do on it. A first
-          screen that asks a single question gets a straighter answer than one
-          that offers a field, two links and three promises at once. */}
       <section className={styles.hero} id="top">
-        {/* A sheet with the print's own proportions, sized to cover the phone
-            and to stand whole on a desktop. Everything written on it is placed
-            in percentages of the sheet, so the words keep their place on the
-            paper instead of drifting across it as the window changes. */}
         <div className={styles.sheet}>
           <img
             className={styles.poster}
@@ -100,9 +63,6 @@ export default function LandingPage({ onContinue, onLogin }) {
             fetchpriority="high"
           />
           <div className={styles.ink}>
-            {/* Two lines, not three. The words are his and stay as they are — only
-                the breaks move: alone on a line the Cyrillic в sat between two
-                Latin words with nothing to belong to. */}
             <h1 className={styles.inkName}>
               Blag Coaching
               <span className={styles.inkAmp}>&amp;</span>
@@ -112,17 +72,10 @@ export default function LandingPage({ onContinue, onLogin }) {
         </div>
         <span className={styles.posterShade} aria-hidden="true" />
 
-        {/* Its own class, not the page's gold slab. On the poster a filled
-            block reads as a sticker somebody put on a print; a frame with the
-            paper showing through belongs to it. The solid one stays further
-            down, where the page has earned the right to ask outright. */}
         <a className={styles.heroCta} href="#lessons" onClick={go('lessons')}>
-          ТРЕНИРАЙ С МЕН
+          {t('landing.heroCta')}
         </a>
 
-        {/* Two pills under the ask, together as wide as it. Same glass, so they
-            read as the button's own footnote rather than a second offer — the
-            channels where the work already lives, one tap away. */}
         <div className={styles.socials}>
           <a
             className={styles.social}
@@ -159,89 +112,59 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       {/* ── What he teaches ────────────────────────────────────────────── */}
       <section className={`${styles.section} ${styles.lessonsSection}`} id="lessons">
-        {/* The same print as the poster — screened from a photograph of him at
-            the same size of dot, inked with the two colours sampled off that
-            sheet, and given its grain. Held far back, because four lines and a
-            heading have to stay the brightest thing here. */}
         <div className={styles.lessonsBg} aria-hidden="true" />
-        {/* Dark where the words are and nowhere else. Turning the picture down
-            until the text was safe turned it down everywhere, including the
-            corners where nothing needed protecting. */}
         <div className={styles.lessonsWash} aria-hidden="true" />
-        {/* The name, lit from inside by a slow sweep across the letters. No ring
-            around it any more and nowhere to press: it stopped being a doorway
-            when the section it opened went away, and a frame on something that
-            does nothing is a promise the page cannot keep. */}
         <span className={styles.markLink}>
           <span className={styles.markText}>THE BLAG COACH</span>
         </span>
-        <h2 className={styles.h2}>ще те научи как да:</h2>
+        <h2 className={styles.h2}>{t('landing.lessonsHead')}</h2>
         <Lessons />
 
-        {/* The ask, immediately under what he teaches. The page used to walk on
-            through a section about him and a price card before it asked for
-            anything; both were saying again, at length, what the five lines
-            above have already said. */}
-        {/* His own account, not the brand one. The brand account has nobody
-            behind it yet, and a message into an empty inbox is worse than no
-            button at all. */}
         <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/niki.blggg"
            target="_blank" rel="noopener noreferrer">
-          ПИШИ МИ ЗА БЕЗПЛАТНА ТРЕНИРОВКА
+          {t('landing.lessonsCta')}
         </a>
-        {/* Both on one line, split by a dot. On its own row underneath, the way
-            on to the questions read as an afterthought; beside the other quiet
-            option it is one of two small things rather than a stray one. It is
-            FAQ and not the whole phrase because the whole phrase wraps. */}
         <p className={styles.quietRow}>
           <button className={styles.quietCta} onClick={onContinue} type="button">
-            Или само приложението — без мен
+            {t('landing.appOnly')}
           </button>
           <span className={styles.quietDot} aria-hidden="true">•</span>
-          <a className={styles.faqLink} href="#faq" onClick={go('faq')}>FAQ</a>
+          <a className={styles.faqLink} href="#faq" onClick={go('faq')}>{t('landing.nav.faq')}</a>
         </p>
       </section>
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}
-      {/* The last thing on the page now. It keeps the closing section's bottom
-          padding so the ticker never lands on the final answer. */}
       <section className={`${styles.section} ${styles.close}`} id="faq">
-        <h2 className={styles.h2}>Това, което хората питат</h2>
+        <h2 className={styles.h2}>{t('landing.faqTitle')}</h2>
 
         <div className={styles.faq}>
-          {FAQ.map((item, i) => (
-            <div key={item.q} className={styles.faqItem}>
+          {FAQ_KEYS.map((item, i) => (
+            <div key={item.qKey} className={styles.faqItem}>
               <button
                 className={styles.faqQ}
                 onClick={() => item.demo ? setInstallOpen(true) : setOpenQ(openQ === i ? null : i)}
                 aria-expanded={item.demo ? undefined : openQ === i}
                 type="button"
               >
-                <span>{item.q}</span>
+                <span>{t(item.qKey)}</span>
                 {item.demo
                   ? <span className={styles.faqPlay} aria-hidden="true">▶</span>
                   : <span className={`${styles.faqMark} ${openQ === i ? styles.faqMarkOpen : ''}`} aria-hidden="true" />}
               </button>
-              {!item.demo && openQ === i && <p className={styles.faqA}>{item.a}</p>}
+              {!item.demo && openQ === i && <p className={styles.faqA}>{t(item.aKey)}</p>}
             </div>
           ))}
         </div>
 
-        {/* The one thing the closing section held that nothing else did. It is
-            not an offer and it does not belong beside the ask, so it sits at the
-            very bottom, where somebody who already has an account will look. */}
         <button className={styles.loginLink} onClick={onLogin} type="button">
-          Вече ползваш приложението? <span className={styles.loginLinkUnder}>Логни се тук.</span>
+          {t('landing.loginLead')} <span className={styles.loginLinkUnder}>{t('landing.loginLink')}</span>
         </button>
       </section>
 
-      {/* A strip along the bottom, always there, always moving.
-          The offer is written once and repeated in the markup only so the loop
-          has no seam — the second copy is hidden from screen readers. */}
       {installOpen && (
         <FrameSheet
-          label="Как се инсталира"
-          lead="Отваряш адреса и го слагаш на началния екран."
+          label={t('landing.installLabel')}
+          lead={t('landing.installLead')}
           onClose={() => setInstallOpen(false)}
         >
           <InstallDemo />
@@ -250,8 +173,8 @@ export default function LandingPage({ onContinue, onLogin }) {
 
       <div className={styles.ticker} role="note">
         <div className={styles.tickerTrack}>
-          <span className={styles.tickerRun}>{TICKER}</span>
-          <span className={styles.tickerRun} aria-hidden="true">{TICKER}</span>
+          <span className={styles.tickerRun}>{ticker}</span>
+          <span className={styles.tickerRun} aria-hidden="true">{ticker}</span>
         </div>
       </div>
     </div>

@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ContactForm.module.css'
 
-const CALL_TIMES = [
-  { id: '8-12',  label: 'Сутринта', sub: '8–12ч'  },
-  { id: '12-16', label: 'Обед',     sub: '12–16ч' },
-  { id: '16-20', label: 'Следобед', sub: '16–20ч' },
-  { id: '20+',   label: 'Вечерта',  sub: '20+ч'   },
+const CALL_KEYS = [
+  { id: '8-12',  labelKey: 'intake.callMorning',   subKey: 'intake.callMorningH'   },
+  { id: '12-16', labelKey: 'intake.callNoon',      subKey: 'intake.callNoonH'      },
+  { id: '16-20', labelKey: 'intake.callAfternoon', subKey: 'intake.callAfternoonH' },
+  { id: '20+',   labelKey: 'intake.callEvening',   subKey: 'intake.callEveningH'   },
 ]
-const PRESET_IDS = CALL_TIMES.map(t => t.id)
+const PRESET_IDS = CALL_KEYS.map(t => t.id)
 
 export default function ContactForm() {
   const { profile, updateProfile } = useAuth()
+  const { t } = useSettings()
   const existing = profile?.intake_call_time || null
   const [name,         setName]         = useState(profile?.name  || '')
   const [phone,        setPhone]        = useState(profile?.phone || '')
@@ -27,8 +29,8 @@ export default function ContactForm() {
   const [error, setError] = useState('')
 
   async function handleSubmit() {
-    if (!name.trim()) { setError('Моля, въведи своето име.'); return }
-    if (!phone.trim()) { setError('Моля, въведи телефонен номер.'); return }
+    if (!name.trim()) { setError(t('intake.errName')); return }
+    if (!phone.trim()) { setError(t('intake.errPhone')); return }
     setError('')
     setSaving(true)
     const updates = { intake_done: true }
@@ -48,46 +50,44 @@ export default function ContactForm() {
     <div className={styles.page}>
       <div className={styles.inner}>
         <div className={styles.brand}>BLAG</div>
-        <p className={styles.eyebrow}>СТЪПКА 2 ОТ 3</p>
-        <h1 className={styles.title}>ТВОИТЕ ДАННИ</h1>
-        <p className={styles.sub}>
-          Треньорът ще се свърже с теб лично преди одобрение.
-        </p>
+        <p className={styles.eyebrow}>{t('intake.eyebrow')}</p>
+        <h1 className={styles.title}>{t('intake.title')}</h1>
+        <p className={styles.sub}>{t('intake.sub')}</p>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="cf-name">Имe <span className={styles.required}>*</span></label>
+          <label className={styles.label} htmlFor="cf-name">{t('intake.name')} <span className={styles.required}>*</span></label>
           <input
             id="cf-name"
             className={styles.input}
             type="text"
             autoComplete="name"
-            placeholder="Иван Иванов"
+            placeholder={t('intake.namePh')}
             value={name}
             onChange={e => setName(e.target.value)}
           />
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="cf-phone">Телефон <span className={styles.required}>*</span></label>
+          <label className={styles.label} htmlFor="cf-phone">{t('intake.phone')} <span className={styles.required}>*</span></label>
           <input
             id="cf-phone"
             className={styles.input}
             type="tel"
             autoComplete="tel"
-            placeholder="+359 88 888 8888"
+            placeholder={t('intake.phonePh')}
             value={phone}
             onChange={e => setPhone(e.target.value)}
           />
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="cf-age">Възраст</label>
+          <label className={styles.label} htmlFor="cf-age">{t('intake.age')}</label>
           <input
             id="cf-age"
             className={`${styles.input} ${styles.inputNarrow}`}
             type="number"
             inputMode="numeric"
-            placeholder="25"
+            placeholder={t('intake.agePh')}
             min="10"
             max="99"
             value={age}
@@ -97,19 +97,19 @@ export default function ContactForm() {
 
         <div className={styles.field}>
           <label className={styles.label}>
-            Кога можем да те потърсим по телефона?
-            <span className={styles.optional}> (по избор)</span>
+            {t('intake.callQ')}
+            <span className={styles.optional}>{t('intake.optional')}</span>
           </label>
           <div className={styles.callTimeGrid}>
-            {CALL_TIMES.map(t => (
+            {CALL_KEYS.map(k => (
               <button
-                key={t.id}
+                key={k.id}
                 type="button"
-                className={`${styles.callChip} ${!customMode && callPreset === t.id ? styles.callChipActive : ''}`}
-                onClick={() => { setCustomMode(false); setCallPreset(prev => prev === t.id ? null : t.id) }}
+                className={`${styles.callChip} ${!customMode && callPreset === k.id ? styles.callChipActive : ''}`}
+                onClick={() => { setCustomMode(false); setCallPreset(prev => prev === k.id ? null : k.id) }}
               >
-                <span className={styles.callChipLabel}>{t.label}</span>
-                <span className={styles.callChipSub}>{t.sub}</span>
+                <span className={styles.callChipLabel}>{t(k.labelKey)}</span>
+                <span className={styles.callChipSub}>{t(k.subKey)}</span>
               </button>
             ))}
             <button
@@ -117,7 +117,7 @@ export default function ContactForm() {
               className={`${styles.callChip} ${styles.callChipCustom} ${customMode ? styles.callChipActive : ''}`}
               onClick={() => setCustomMode(m => !m)}
             >
-              <span className={styles.callChipLabel}>Конкретен час</span>
+              <span className={styles.callChipLabel}>{t('intake.callCustom')}</span>
             </button>
           </div>
           {customMode && (
@@ -132,7 +132,7 @@ export default function ContactForm() {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>Колко дни в седмицата искаш да тренираш?</label>
+          <label className={styles.label}>{t('intake.daysQ')}</label>
           <div className={styles.chips}>
             {[1, 2, 3, 4, 5, 6].map(d => (
               <button
@@ -148,11 +148,11 @@ export default function ContactForm() {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="cf-goal">Какво искаш да постигнеш?</label>
+          <label className={styles.label} htmlFor="cf-goal">{t('intake.goalQ')}</label>
           <textarea
             id="cf-goal"
             className={styles.textarea}
-            placeholder="Напр. искам да отслабна с 10кг до лятото..."
+            placeholder={t('intake.goalPh')}
             rows={3}
             value={goal}
             onChange={e => setGoal(e.target.value)}
@@ -161,13 +161,13 @@ export default function ContactForm() {
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor="cf-notes">
-            Здравни бележки / наранявания
-            <span className={styles.optional}> (по избор)</span>
+            {t('intake.notesQ')}
+            <span className={styles.optional}>{t('intake.optional')}</span>
           </label>
           <textarea
             id="cf-notes"
             className={styles.textarea}
-            placeholder="Напр. болки в коляното, хранителни алергии..."
+            placeholder={t('intake.notesPh')}
             rows={3}
             value={notes}
             onChange={e => setNotes(e.target.value)}
@@ -181,7 +181,7 @@ export default function ContactForm() {
           disabled={saving}
           type="button"
         >
-          {saving ? '...' : 'ИЗПРАТИ'}
+          {saving ? '...' : t('intake.submit')}
         </button>
       </div>
     </div>

@@ -1,19 +1,12 @@
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './InstallDemo.module.css'
 
 /**
  * A phone, showing the one thing nobody knows how to do.
- *
- * "Add to home screen" is three taps and every visitor who has never installed
- * a web app has to be told which three. Told in words it is a paragraph nobody
- * reads; shown on a phone that does it by itself, it is over before anyone
- * decides whether to pay attention.
- *
- * Drawn rather than filmed. A screen recording of an iPhone would be a video to
- * download, would be wrong the week iOS moves the button, and would have to be
- * shot again for Android. This is three states on one CSS timeline, and the
- * whole thing weighs nothing.
+ * Drawn rather than filmed — three states on one CSS timeline.
  */
 export default function InstallDemo() {
+  const { t } = useSettings()
   return (
     <div className={styles.wrap}>
       <div className={styles.phone} aria-hidden="true">
@@ -46,7 +39,7 @@ export default function InstallDemo() {
               <div className={styles.rowDim}><span /><span className={styles.rowBar} /></div>
               <div className={styles.rowHot}>
                 <span className={styles.plus}>+</span>
-                <span className={styles.rowText}>Към „Начален екран"</span>
+                <span className={styles.rowText}>{t('install.sheetRow')}</span>
               </div>
               <div className={styles.rowDim}><span /><span className={styles.rowBar} /></div>
             </div>
@@ -63,13 +56,11 @@ export default function InstallDemo() {
         </div>
       </div>
 
-      {/* The captions run on the same clock as the screens, so the words and the
-          picture are never describing different moments. */}
       <ol className={styles.captions}>
-        <li className={styles.c1}><b>1</b> Отвори blag-coaching.com и натисни бутона за споделяне.</li>
-        <li className={styles.c2}><b>2</b> Избери „Към Начален екран".</li>
-        <li className={styles.c3}><b>3</b> Готово — BLAG стои до другите приложения
-          <span className={styles.wink}> (ама е по-добро ;)</span>
+        <li className={styles.c1}><b>1</b> {t('install.step1')}</li>
+        <li className={styles.c2}><b>2</b> {t('install.step2')}</li>
+        <li className={styles.c3}><b>3</b> {t('install.step3')}
+          <span className={styles.wink}>{t('install.wink')}</span>
         </li>
       </ol>
     </div>

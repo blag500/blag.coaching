@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './FrameSheet.module.css'
 
 /**
@@ -15,6 +16,7 @@ import styles from './FrameSheet.module.css'
  * the window, and this page has several.
  */
 export default function FrameSheet({ label, eyebrow, lead, onClose, children }) {
+  const { t } = useSettings()
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
@@ -35,7 +37,7 @@ export default function FrameSheet({ label, eyebrow, lead, onClose, children }) 
         <div className={styles.body}>{children}</div>
       </div>
 
-      <button type="button" className={styles.close} onClick={onClose} aria-label="Затвори">
+      <button type="button" className={styles.close} onClick={onClose} aria-label={t('landing.close')}>
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
              strokeWidth="1.8" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
       </button>

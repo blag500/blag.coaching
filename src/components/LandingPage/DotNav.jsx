@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './DotNav.module.css'
 
 /**
@@ -13,6 +14,7 @@ import styles from './DotNav.module.css'
  * which section is on screen, and asking it every frame is work nobody sees.
  */
 export default function DotNav({ sections }) {
+  const { t } = useSettings()
   const [active, setActive] = useState(sections[0]?.id)
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function DotNav({ sections }) {
   }, [sections])
 
   return (
-    <nav className={styles.rail} aria-label="Навигация по страницата">
+    <nav className={styles.rail} aria-label={t('landing.pageNavAria')}>
       {sections.map(s => (
         <button
           key={s.id}

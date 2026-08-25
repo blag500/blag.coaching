@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './PendingApproval.module.css'
 
 const ClockIcon = () => (
@@ -11,6 +12,7 @@ const ClockIcon = () => (
 
 export default function PendingApproval() {
   const { profile, signOut, refreshProfile } = useAuth()
+  const { t } = useSettings()
   const [checking, setChecking] = useState(false)
 
   useEffect(() => {
@@ -32,11 +34,8 @@ export default function PendingApproval() {
       <div className={styles.iconWrap}>
         <ClockIcon />
       </div>
-      <h1 className={styles.title}>ОЧАКВА ОДОБРЕНИЕ</h1>
-      <p className={styles.text}>
-        Треньорът получи заявката ти и ще те одобри в рамките на 24 часа.
-        Ще получиш пълен достъп веднага след одобрение.
-      </p>
+      <h1 className={styles.title}>{t('pending.title')}</h1>
+      <p className={styles.text}>{t('pending.text')}</p>
       {profile?.email && (
         <p className={styles.email}>{profile.email}</p>
       )}
@@ -46,14 +45,14 @@ export default function PendingApproval() {
         disabled={checking}
         type="button"
       >
-        {checking ? 'Проверява...' : 'Провери отново'}
+        {checking ? t('pending.checking') : t('pending.checkAgain')}
       </button>
       <button
         className={styles.signOutBtn}
         onClick={signOut}
         type="button"
       >
-        Изход
+        {t('pending.signOut')}
       </button>
     </div>
   )
