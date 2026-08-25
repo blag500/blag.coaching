@@ -272,7 +272,7 @@ function AppShell() {
     protocol:   <PrepProtocol />,
     posing:       <PosingPage />,
     supplements:  <SupplementsPage />,
-    shop:         isCoach ? <ShopPage initialOrderSuccess={!!orderSuccessId} /> : null,
+    shop:         <ShopPage initialOrderSuccess={!!orderSuccessId} />,
     orders:       <OrdersPanel />,
   }
 
