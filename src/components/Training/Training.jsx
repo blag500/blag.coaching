@@ -684,10 +684,6 @@ export default function Training({ onMenuOpen }) {
             })}
           </ol>
 
-          <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
-            <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
-            <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
-          </button>
         </>
       )}
 
@@ -828,6 +824,13 @@ export default function Training({ onMenuOpen }) {
             toBeat={toBeat}
             onOpenSession={() => openSession()}
           />
+
+          {/* Progression lives here with the week overview — it's a look-back
+              tool, same neighbourhood as the calendar and the diary. */}
+          <button type="button" className={styles.progressionEntry} onClick={() => setView('progression')}>
+            <span className={styles.progressionMain}>ПРОГРЕСИЯ</span>
+            <span className={styles.progressionSub}>тежести по упражнение · сравнение по блок</span>
+          </button>
         </section>
       )}
 

@@ -11,22 +11,32 @@
   align-items: stretch;
 }
 
+/* Same glass recipe as other premium cards in the app — panel-* tokens carry
+   the lit top edge and slanted highlight, so these read as the same material
+   as the ring above, not flat panels dropped on a calendar. */
 .card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.025) 0%,
+    rgba(255, 255, 255, 0.005) 100%),
+    var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    var(--panel-shadow);
   border-radius: var(--r-lg);
-  padding: 14px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   text-align: left;
 }
 
 .cardTitle {
   font-family: var(--font-heading);
   font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--muted);
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  opacity: 0.7;
   margin: 0;
   font-weight: 400;
 }
@@ -74,26 +84,27 @@
 .bigStat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  border-radius: var(--r-md);
-  background: var(--surface-2);
+  gap: 4px;
+  padding: 10px 4px 4px;
   flex: 1;
   justify-content: center;
+  align-items: flex-start;
 }
 
 .bigNum {
   font-family: var(--font-heading);
-  font-size: 30px;
+  font-size: 42px;
   line-height: 1;
   color: var(--text);
+  letter-spacing: 0.02em;
 }
 
 .bigLabel {
   font-family: var(--font-body);
   font-size: 9.5px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   color: var(--muted);
+  text-transform: uppercase;
 }
 
 .subStats {
@@ -106,22 +117,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-  padding: 7px 2px;
+  gap: 3px;
+  padding: 8px 2px;
   border-radius: var(--r-sm);
-  background: var(--surface-2);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* The week is the one number that is still moving, so it is the one that is
    lit. The other three are history and should not compete with it. */
 .subStatLive {
-  background: rgba(var(--accent-rgb), 0.13);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  background: linear-gradient(180deg,
+    rgba(200, 160, 90, 0.18) 0%,
+    rgba(200, 160, 90, 0.05) 100%);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.22);
 }
 
 .subNum {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
   color: var(--text);
 }
@@ -130,9 +145,10 @@
 
 .subLabel {
   font-family: var(--font-body);
-  font-size: 8px;
-  letter-spacing: 0.08em;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
   color: var(--muted);
+  text-transform: uppercase;
 }
 
 /* ── Workout to beat ── */
