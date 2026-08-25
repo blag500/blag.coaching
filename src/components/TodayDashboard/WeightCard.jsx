@@ -66,8 +66,8 @@ function trendSummary(weights, todayEntry, t) {
   // is the honest label: "−0,4 кг от 13.08" claims nothing about a month.
   const change = signed(todayEntry.kg - base.kg)
   return spanDays >= WINDOW_DAYS - 5
-    ? `${change} ${t('today.weightOverDays').replace('{n}', WINDOW_DAYS)}`
-    : `${change} ${t('today.weightSince').replace('{date}', shortDate(base.date))}`
+    ? `${change} ${t('today.weightOverDays', { n: WINDOW_DAYS })}`
+    : `${change} ${t('today.weightSince', { date: shortDate(base.date) })}`
 }
 
 export default function WeightCard() {

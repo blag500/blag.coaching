@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './AuthScreen.module.css'
 
 function GoogleIcon() {
@@ -25,6 +26,7 @@ function EyeIcon({ open }) {
 
 export default function AuthScreen({ onBack, initialMode = 'login', initialEmail = '' }) {
   const { signIn, signUp, signInWithGoogle, resetPassword, checkEmailStatus, resendConfirmation, signInWithMagicLink, authError } = useAuth()
+  const { t } = useSettings()
   const [mode, setMode]         = useState(initialMode) // 'login' | 'register' | 'reset'
   const [email, setEmail]       = useState(initialEmail)
   const [password, setPassword] = useState('')
@@ -44,7 +46,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
 
     if (mode === 'reset') {
       const ok = await resetPassword(email)
-      if (ok) setInfo('Изпратихме линк за нова парола. Провери имейла си.')
+      if (ok) setInfo(t('auth.info.resetSent'))
       setLoading(false)
       return
     }
@@ -59,10 +61,10 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
       const res = await signUp(email, password)
       if (res === 'exists') {
         setMode('login')
-        setInfo('Вече имаш акаунт с този имейл. Влез с паролата си.')
+        setInfo(t('auth.info.alreadyRegistered'))
         setTimeout(() => passwordRef.current?.focus(), 60)
       } else if (res) {
-        setInfo('Провери имейла си за потвърждение. Ако не го виждаш — провери папката Спам.')
+        setInfo(t('auth.info.confirmSent'))
       }
     }
 
@@ -75,18 +77,18 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     setResending(false)
     if (ok) {
       setStuck(false)
-      setInfo('Изпратихме нов линк за потвърждение.')
+      setInfo(t('auth.info.resent'))
     }
   }
 
   async function handleMagicLink() {
-    if (!email) { setInfo('Първо въведи имейла си.'); return }
+    if (!email) { setInfo(t('auth.info.needEmail')); return }
     setLinking(true)
     const ok = await signInWithMagicLink(email)
     setLinking(false)
     if (ok) {
       setStuck(false)
-      setInfo('Изпратихме еднократен линк за вход на ' + email + '.')
+      setInfo(t('auth.info.magicSent', { email }))
     }
   }
 
@@ -94,58 +96,58 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
 
   const submitLabel = loading
     ? '...'
-    : mode === 'login'    ? 'Вход'
-    : mode === 'register' ? 'Регистрация'
-    :                       'Изпрати линк'
+    : mode === 'login'    ? t('auth.submit.login')
+    : mode === 'register' ? t('auth.submit.register')
+    :                       t('auth.submit.reset')
 
   return (
     <div className={styles.screen}>
       <div className={styles.card}>
-        {/* Tabs, WWDC-modal shape: big word, thin underline under the active
-            one. The X closes back to landing when the browser has one to go
-            back to; hidden inside a home-screen PWA where there's no landing
-            behind us. */}
-        <div className={styles.tabsRow}>
-          <div className={styles.tabs}>
-            <button
-              type="button"
-              className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
-              onClick={() => switchMode('login')}
-            >
-              Вход
-            </button>
-            <button
-              type="button"
-              className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`}
-              onClick={() => switchMode('register')}
-            >
-              Регистрация
-            </button>
-          </div>
-          {onBack && (
-            <button
-              type="button"
-              className={styles.close}
-              onClick={onBack}
-              aria-label="Затвори"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6"  y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
+        {/* BLAG wordmark stays centered so the header reads as a title, not a
+            control strip. The close X sits absolutely in the corner — its own
+            layer — so it can't push the mark or the tabs off-axis. */}
+        {onBack && (
+          <button
+            type="button"
+            className={styles.close}
+            onClick={onBack}
+            aria-label={t('auth.close')}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6"  y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
+
+        <div className={styles.brand} aria-hidden="true">BLAG</div>
+
+        <div className={styles.tabs}>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
+            onClick={() => switchMode('login')}
+          >
+            {t('auth.tab.login')}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`}
+            onClick={() => switchMode('register')}
+          >
+            {t('auth.tab.register')}
+          </button>
         </div>
 
         {mode === 'reset' && (
           <p className={styles.resetIntro}>
-            Въведи имейла си и ще ти изпратим линк за нова парола.
+            {t('auth.resetIntro')}
           </p>
         )}
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="auth-email">Имейл</label>
+            <label className={styles.label} htmlFor="auth-email">{t('auth.emailLabel')}</label>
             <input
               id="auth-email"
               className={styles.input}
@@ -160,14 +162,14 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
 
           {mode !== 'reset' && (
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="auth-password">Парола</label>
+              <label className={styles.label} htmlFor="auth-password">{t('auth.passwordLabel')}</label>
               <div className={styles.inputWrap}>
                 <input
                   id="auth-password"
                   ref={passwordRef}
                   className={styles.input}
                   type={showPw ? 'text' : 'password'}
-                  placeholder={mode === 'register' ? 'мин. 6 знака' : '••••••••'}
+                  placeholder={mode === 'register' ? t('auth.passwordHintNew') : '••••••••'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
@@ -178,7 +180,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
                   type="button"
                   className={styles.reveal}
                   onClick={() => setShowPw(s => !s)}
-                  aria-label={showPw ? 'Скрий паролата' : 'Покажи паролата'}
+                  aria-label={showPw ? t('auth.hidePassword') : t('auth.showPassword')}
                   tabIndex={-1}
                 >
                   <EyeIcon open={showPw} />
@@ -197,8 +199,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           {stuck && (
             <div className={styles.recover}>
               <p className={styles.recoverText}>
-                Имейлът има акаунт, но входът не мина. Еднократен линк е
-                най-бързият път — без парола, без потвърждение.
+                {t('auth.stuckHint')}
               </p>
               <div className={styles.recoverActions}>
                 <button
@@ -207,7 +208,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
                   disabled={linking}
                   type="button"
                 >
-                  {linking ? '...' : 'Изпрати ми линк за вход'}
+                  {linking ? '...' : t('auth.magicLinkSend')}
                 </button>
                 <button
                   className={styles.recoverSecondary}
@@ -215,7 +216,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
                   disabled={resending}
                   type="button"
                 >
-                  {resending ? '...' : 'Или изпрати ново потвърждение'}
+                  {resending ? '...' : t('auth.resendConfirm')}
                 </button>
               </div>
             </div>
@@ -229,21 +230,19 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
             disabled={linking}
             type="button"
           >
-            {linking ? 'Изпращам…' : 'Изпрати ми линк за вход'}
+            {linking ? t('auth.magicSending') : t('auth.magicLinkSend')}
           </button>
         )}
 
         {mode !== 'reset' && (
-          <div className={styles.socials}>
-            <button
-              type="button"
-              className={styles.socialBtn}
-              onClick={signInWithGoogle}
-              aria-label="Продължи с Google"
-            >
-              <GoogleIcon />
-            </button>
-          </div>
+          <button
+            type="button"
+            className={styles.googleBtn}
+            onClick={signInWithGoogle}
+          >
+            <GoogleIcon />
+            <span>{t('auth.googleLabel')}</span>
+          </button>
         )}
       </div>
     </div>

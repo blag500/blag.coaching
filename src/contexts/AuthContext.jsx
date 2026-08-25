@@ -9,6 +9,28 @@ export function AuthProvider({ children }) {
   const [profile, setProfile]   = useState(null)
   const [authError, setAuthError] = useState(null)
 
+  /* Fires the „нов потребител" известие за OAuth регистранти (Google), които
+     не минават през signUp() и иначе не биха се обявили. Идентификаторът в
+     localStorage държи процеса идемпотентен — един и същ user получава
+     нотификация точно веднъж, независимо колко пъти рестартира сесията. */
+  function maybeNotifyFirstOAuthSignup(user) {
+    try {
+      const provider = user.app_metadata?.provider
+      if (provider !== 'google') return
+      const created = new Date(user.created_at).getTime()
+      // Свежо създаден акаунт — Supabase попълва created_at при първия OAuth
+      // редирект. 10 минути толеранс покриват бавен GET към /callback.
+      if (Number.isNaN(created) || Date.now() - created > 10 * 60 * 1000) return
+      const key = `blag_notified_${user.id}`
+      if (localStorage.getItem(key)) return
+      localStorage.setItem(key, '1')
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || null
+      supabase.functions.invoke('notify-new-registration', {
+        body: { userId: user.id, email: user.email, name },
+      }).catch(() => { localStorage.removeItem(key) })
+    } catch {}
+  }
+
   async function fetchProfile(userId) {
     // maybeSingle, not single: a genuinely missing profile comes back as
     // data=null with NO error, while a flaky network or a token caught
@@ -43,14 +65,19 @@ export function AuthProvider({ children }) {
     // Restore existing session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s)
-      if (s?.user) fetchProfile(s.user.id)
+      if (s?.user) {
+        fetchProfile(s.user.id)
+        maybeNotifyFirstOAuthSignup(s.user)
+      }
     })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
-      if (s?.user) fetchProfile(s.user.id)
-      else setProfile(null)
+      if (s?.user) {
+        fetchProfile(s.user.id)
+        maybeNotifyFirstOAuthSignup(s.user)
+      } else setProfile(null)
     })
 
     return () => subscription.unsubscribe()

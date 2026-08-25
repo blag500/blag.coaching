@@ -38,15 +38,14 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         from: 'Blag Coaching <noreply@blag-coaching.com>',
         to: [COACH_EMAIL],
-        subject: `Нов клиент: ${displayName}`,
+        subject: `Нов потребител: ${displayName}`,
         html: `
           <p>Здравей,</p>
-          <p>Нов клиент се регистрира в <strong>Blag Coaching</strong> и чака твоето одобрение.</p>
+          <p>Нов потребител се регистрира в <strong>Blag Coaching</strong>.</p>
           <table style="border-collapse:collapse;margin:16px 0">
             <tr><td style="padding:4px 12px 4px 0;color:#888">Имейл</td><td><strong>${email}</strong></td></tr>
             ${name ? `<tr><td style="padding:4px 12px 4px 0;color:#888">Име</td><td><strong>${name}</strong></td></tr>` : ''}
           </table>
-          <p>Влез в приложението и одобри акаунта от секция <strong>КЛИЕНТИ → ЧАКАЩИ ОДОБРЕНИЕ</strong>.</p>
         `,
       }),
     }).catch(() => {})
@@ -67,8 +66,8 @@ Deno.serve(async (req) => {
 
     if (subs?.length) {
       const payload = JSON.stringify({
-        title: 'Нов клиент',
-        body: `${name || email} се регистрира и чака одобрение`,
+        title: 'Нов потребител',
+        body: `${name || email} се регистрира`,
       })
       await Promise.allSettled(
         subs.map(row => webpush.sendNotification(row.subscription, payload))

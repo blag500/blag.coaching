@@ -231,8 +231,8 @@ export default function ReadinessWidget({
   const basis = personalised
     ? t('readiness.personal')
     : checkins > 0
-      ? t('readiness.building').replace('{n}', Math.min(checkins, 5))
-      : t('readiness.coverage').replace('{n}', covered)
+      ? t('readiness.building', { n: Math.min(checkins, 5) })
+      : t('readiness.coverage', { n: covered })
 
   // ── The glance version ──────────────────────────────────────────────
   if (!detailed) {
