@@ -131,16 +131,32 @@
      it, so paying for backdrop-filter on fifty of them would spend the GPU on
      an effect nobody can see. Blur stays where things genuinely overlap: the
      header, the tab bar, sheets. */
+  /* Liquid-glass recipe — lifted from the WWDC25 language and the CSS
+     articles that reverse-engineered it. Two moves beyond old glassmorphism:
+     (1) a specular top plus soft bottom-bounce light so the pane reads as a
+     material with a thickness, not a coloured rectangle; (2) hairline side
+     rims so light appears to catch the edge from every angle. A subtle
+     diagonal glaze finishes it. Blur stays opt-in per component because most
+     panels sit on flat page and get nothing from sampling. */
   --panel-bg:
-    linear-gradient(160deg,
-      rgba(255, 255, 255, 0.045) 0%,
-      rgba(255, 255, 255, 0.014) 30%,
-      rgba(0, 0, 0, 0.08) 100%),
+    linear-gradient(158deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.02) 30%,
+      rgba(0, 0, 0, 0.06) 68%,
+      rgba(0, 0, 0, 0.12) 100%),
     var(--surface-1);
-  --panel-border: rgba(255, 255, 255, 0.075);
+  --panel-border: rgba(255, 255, 255, 0.08);
   --panel-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 6px 18px -10px rgba(0, 0, 0, 0.7);
+    /* Top specular — thick line of light like a bevelled edge */
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    /* Bottom bounce light — softer than top, sells the roundness */
+    inset 0 -1px 1px rgba(255, 255, 255, 0.05),
+    /* Side rims — catch the light from both sides */
+    inset 1px 0 1px rgba(255, 255, 255, 0.04),
+    inset -1px 0 1px rgba(255, 255, 255, 0.04),
+    /* Outer diffused drop — soft, wide, low opacity */
+    0 8px 28px -8px rgba(0, 0, 0, 0.55),
+    0 2px 6px -2px rgba(0, 0, 0, 0.35);
 }
 
 /* Glass over a light ground: the pane is tinted by what is behind it, so the
