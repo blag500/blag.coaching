@@ -7,14 +7,12 @@ import CatalogManager from './CatalogManager'
 import styles from './ShopPage.module.css'
 
 const CATEGORIES = [
-  { id: 'all',           label: 'ВСИЧКИ'    },
-  { id: 'protein_powder', label: 'ПРОТЕИН'  },
-  { id: 'bars',          label: 'БАРОВЕ'    },
-  { id: 'cookies',       label: 'КУКИ'      },
-  { id: 'cocoa',         label: 'КАКАО'     },
-  { id: 'supplements',   label: 'ДОБАВКИ'   },
-  { id: 'sweeteners',    label: 'ПОДСЛАД.'  },
-  { id: 'dairy',         label: 'МЛЕЧНИ'    },
+  { id: 'all',         label: 'ВСИЧКИ'    },
+  { id: 'drinks',      label: 'НАПИТКИ'   },
+  { id: 'bars_snacks', label: 'БАРОВЕ'    },
+  { id: 'sandwiches',  label: 'ГОТОВИ'    },
+  { id: 'pantry',      label: 'БАКАЛИЯ'   },
+  { id: 'supplements', label: 'ДОБАВКИ'   },
 ]
 
 function formatPrice(stotinki) {
