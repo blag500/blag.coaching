@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { usePrepProtocol } from '../../hooks/usePrepProtocol'
 import styles from './PrepProtocol.module.css'
 
@@ -35,10 +36,11 @@ function currentWeekDays(weekStart) {
   })
 }
 
-const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+const DAY_LABEL_KEYS = ['daysMon.0','daysMon.1','daysMon.2','daysMon.3','daysMon.4','daysMon.5','daysMon.6']
 
 // ── Setup form ───────────────────────────────────────────────────────
 function PrepSetup({ onSave, profile }) {
+  const { t } = useSettings()
   const today = todayStr()
   const [form, setForm] = useState({
     competition_name: '',
@@ -68,10 +70,10 @@ function PrepSetup({ onSave, profile }) {
   async function handleSave(e) {
     e.preventDefault()
     if (!form.competition_date || !form.target_weight || !form.start_weight) {
-      setError('Попълни датата, началното и целевото тегло'); return
+      setError(t('pp.err.fill')); return
     }
     if (form.competition_date <= today) {
-      setError('Датата на състезанието трябва да е в бъдещето'); return
+      setError(t('pp.err.future')); return
     }
     setSaving(true); setError('')
     const { error: err } = await onSave({
@@ -86,11 +88,11 @@ function PrepSetup({ onSave, profile }) {
     if (err) {
       const msg = err.message || ''
       if (msg.includes('Load failed') || msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-        setError('Мрежова грешка — провери връзката и опитай пак')
+        setError(t('pp.err.network'))
       } else if (msg.includes('schema') || msg.includes('relation') || msg.includes('does not exist')) {
-        setError('Таблицата не е готова — презареди schema кеша в Supabase Dashboard')
+        setError(t('pp.err.schemaCache'))
       } else {
-        setError(msg || 'Грешка при запис')
+        setError(msg || t('pp.err.save'))
       }
     }
   }
@@ -101,23 +103,23 @@ function PrepSetup({ onSave, profile }) {
         <div className={styles.headerBrand}>
           <div className={styles.accentBar} />
           <div>
-            <h1 className={styles.title}>БОДИБИЛДИНГ ПРОТОКОЛ</h1>
-            <p className={styles.subtitle}>Задай целта. Следи прогреса.</p>
+            <h1 className={styles.title}>{t('pp.title')}</h1>
+            <p className={styles.subtitle}>{t('pp.subtitle')}</p>
           </div>
         </div>
       </header>
 
       <form className={styles.setupForm} onSubmit={handleSave}>
         <div className={styles.setupSection}>
-          <label className={styles.label}>СЦЕНАТА</label>
+          <label className={styles.label}>{t('pp.stage')}</label>
           <input className={styles.input} type="text"
-            placeholder="Balkans Classic 2026 (по желание)"
+            placeholder={t('pp.stagePh')}
             value={form.competition_name}
             onChange={e => set('competition_name', e.target.value)} />
         </div>
 
         <div className={styles.setupSection}>
-          <label className={styles.label}>ДАТА НА СЪСТЕЗАНИЕТО</label>
+          <label className={styles.label}>{t('pp.showDate')}</label>
           <input className={styles.input} type="date"
             value={form.competition_date}
             onChange={e => set('competition_date', e.target.value)}
@@ -126,14 +128,14 @@ function PrepSetup({ onSave, profile }) {
 
         <div className={styles.setupGrid}>
           <div className={styles.setupSection}>
-            <label className={styles.label}>ТЕКУЩО ТЕГЛО (кг)</label>
+            <label className={styles.label}>{t('pp.currentWeight')}</label>
             <input className={styles.input} type="number" step="0.1" min="40" max="200"
               placeholder="77.6"
               value={form.start_weight}
               onChange={e => set('start_weight', e.target.value)} required />
           </div>
           <div className={styles.setupSection}>
-            <label className={styles.label}>СЦЕНИЧНО ТЕГЛО (кг)</label>
+            <label className={styles.label}>{t('pp.stageWeight')}</label>
             <input className={styles.input} type="number" step="0.1" min="40" max="200"
               placeholder="75.0"
               value={form.target_weight}
@@ -143,20 +145,20 @@ function PrepSetup({ onSave, profile }) {
 
         <div className={styles.setupSection}>
           <label className={styles.label}>
-            ПОДДЪРЖАЩИ КАЛОРИИ / TDEE
-            {suggestedTDEE && <span className={styles.labelHint}> (изчислено: {suggestedTDEE} ккал)</span>}
+            {t('pp.tdee')}
+            {suggestedTDEE && <span className={styles.labelHint}>{t('pp.tdeeHint', { n: suggestedTDEE })}</span>}
           </label>
           <input className={styles.input} type="number" min="1200" max="6000"
             placeholder={suggestedTDEE ? String(suggestedTDEE) : '2600'}
             value={form.tdee}
             onChange={e => set('tdee', e.target.value)} />
-          <span className={styles.fieldNote}>Нужно за изчисляване на дневните калории по план</span>
+          <span className={styles.fieldNote}>{t('pp.tdeeNote')}</span>
         </div>
 
         {error && <p className={styles.errorMsg}>{error}</p>}
 
         <button className={styles.startBtn} type="submit" disabled={saving}>
-          {saving ? 'СТАРТИРА...' : 'СТАРТИРАЙ ПРЕПА →'}
+          {saving ? t('pp.starting') : t('pp.startPrep')}
         </button>
       </form>
     </div>
@@ -165,6 +167,7 @@ function PrepSetup({ onSave, profile }) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────
 function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onReforecast, profile, onApplyMacros }) {
+  const { t } = useSettings()
   const today = todayStr()
   const [weightInput, setWeightInput]     = useState('')
   const [weightSaved, setWeightSaved]     = useState(false)
@@ -213,7 +216,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
         {plan?.weeksOut != null ? (
           <div className={styles.countdownBlock}>
             <span className={styles.countdownNum}>{plan.weeksOut}</span>
-            <span className={styles.countdownSub}>{plan.weeksOut === 1 ? 'СЕДМИЦА' : 'СЕДМИЦИ'} ДО СЦЕНАТА</span>
+            <span className={styles.countdownSub}>{plan.weeksOut === 1 ? t('pp.week') : t('pp.weeks')} {t('pp.toStage')}</span>
           </div>
         ) : (
           <p className={styles.countdown}>—</p>
@@ -221,7 +224,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
         <p className={styles.compDate}>{fmtDate(prep.competition_date)}</p>
 
         <p className={styles.targetLine}>
-          {prep.start_weight} → {prep.target_weight} кг{plan?.dailyKcal ? ` · ${plan.dailyKcal} ккал/ден` : ''}
+          {prep.start_weight} → {prep.target_weight} {t('unit.kg')}{plan?.dailyKcal ? ` · ${plan.dailyKcal} ${t('unit.kcal')}/${t('bg.perDay').split(' ').pop()}` : ''}
         </p>
       </header>
 
@@ -229,18 +232,17 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {plan?.reforecastNeeded && !reforecastConfirm && (
         <div className={styles.reforecastBanner}>
           <div className={styles.reforecastText}>
-            <strong>Корекция на плана</strong>
+            <strong>{t('pp.reforecastTitle')}</strong>
             <span>
-              Миналата седмица: {plan.reforecastDiff > 0 ? '+' : ''}{plan.reforecastDiff} кг спрямо целта.
-              Да преизчислим оставащите седмици?
+              {t('pp.reforecastBody', { sign: plan.reforecastDiff > 0 ? '+' : '', diff: plan.reforecastDiff })}
             </span>
           </div>
           <div className={styles.reforecastBtns}>
             <button className={styles.reforecastYes} onClick={() => { onReforecast(); setReforecastConfirm(true) }} type="button">
-              ДА
+              {t('pp.yes')}
             </button>
             <button className={styles.reforecastNo} onClick={() => setReforecastConfirm(true)} type="button">
-              НЕ
+              {t('pp.no')}
             </button>
           </div>
         </div>
@@ -249,24 +251,24 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {/* ── This week card ── */}
       {cw && (
         <section className={styles.card}>
-          <div className={styles.cardTitle}>С{cw.number} · {fmtShort(cw.weekStart)}–{fmtShort(cw.weekEnd)}</div>
+          <div className={styles.cardTitle}>{t('pp.wk', { n: cw.number })} · {fmtShort(cw.weekStart)}–{fmtShort(cw.weekEnd)}</div>
 
           <div className={styles.weekMetrics}>
             <div className={styles.metric}>
-              <span className={styles.metricLabel}>СР. ТЕГЛО</span>
+              <span className={styles.metricLabel}>{t('pp.avgWeight')}</span>
               <span className={styles.metricVal}>
-                {cw.avgWeight != null ? `${cw.avgWeight} кг` : '—'}
+                {cw.avgWeight != null ? `${cw.avgWeight} ${t('unit.kg')}` : '—'}
               </span>
             </div>
             <div className={styles.metric}>
-              <span className={styles.metricLabel}>ЦЕЛ</span>
-              <span className={styles.metricVal}>{cw.targetWeight} кг</span>
+              <span className={styles.metricLabel}>{t('pp.goal')}</span>
+              <span className={styles.metricVal}>{cw.targetWeight} {t('unit.kg')}</span>
             </div>
             {cw.avgWeight != null && (
               <div className={styles.metric}>
-                <span className={styles.metricLabel}>РАЗЛИКА</span>
+                <span className={styles.metricLabel}>{t('pp.diff')}</span>
                 <span className={`${styles.metricVal} ${cw.avgWeight > cw.targetWeight ? styles.metricBehind : styles.metricAhead}`}>
-                  {cw.avgWeight > cw.targetWeight ? '+' : ''}{Math.round((cw.avgWeight - cw.targetWeight) * 10) / 10} кг
+                  {cw.avgWeight > cw.targetWeight ? '+' : ''}{Math.round((cw.avgWeight - cw.targetWeight) * 10) / 10} {t('unit.kg')}
                 </span>
               </div>
             )}
@@ -292,12 +294,12 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
             <input
               className={styles.logInput}
               type="number" step="0.1" min="30" max="300"
-              placeholder={todayWeight ? String(todayWeight.kg) : 'Сутрешно тегло (кг)'}
+              placeholder={todayWeight ? String(todayWeight.kg) : t('pp.morningWeightPh')}
               value={weightInput}
               onChange={e => setWeightInput(e.target.value)}
             />
             <button className={`${styles.logBtn} ${weightSaved ? styles.logBtnSaved : ''}`} type="submit">
-              {weightSaved ? '✓' : 'ЗАПИШИ'}
+              {weightSaved ? '✓' : t('pp.record')}
             </button>
           </form>
         </section>
@@ -310,17 +312,17 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
             {weekStats.nutritionPct != null && (
               <div className={styles.statBlock}>
                 <span className={styles.statVal}>{weekStats.nutritionPct}%</span>
-                <span className={styles.statLabel}>хранене</span>
+                <span className={styles.statLabel}>{t('pp.food')}</span>
               </div>
             )}
             <div className={styles.statBlock}>
               <span className={styles.statVal}>{weekStats.trainDays}</span>
-              <span className={styles.statLabel}>тренировки</span>
+              <span className={styles.statLabel}>{t('pp.trainings')}</span>
             </div>
             {weekStats.habitPct != null && (
               <div className={styles.statBlock}>
                 <span className={styles.statVal}>{weekStats.habitPct}%</span>
-                <span className={styles.statLabel}>навици</span>
+                <span className={styles.statLabel}>{t('pp.habits')}</span>
               </div>
             )}
           </div>
@@ -329,10 +331,10 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
 
       {/* ── Macro targets from prep ── */}
       <section className={styles.card}>
-        <div className={styles.cardTitle}>МАКРОСИ</div>
+        <div className={styles.cardTitle}>{t('pp.macros')}</div>
         {!plan?.dailyKcal ? (
           <div className={styles.tdeeSetup}>
-            <p className={styles.tdeeSetupNote}>Задай поддържащите си калории (TDEE), за да се изчислят макросите.</p>
+            <p className={styles.tdeeSetupNote}>{t('pp.tdeeSetupNote')}</p>
             <form className={styles.logForm} onSubmit={async e => {
               e.preventDefault()
               const v = parseInt(tdeeInput)
@@ -349,17 +351,17 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
                 type="number"
                 min="1200"
                 max="6000"
-                placeholder="TDEE (напр. 2600)"
+                placeholder={t('pp.tdeePh')}
                 value={tdeeInput}
                 onChange={e => setTdeeInput(e.target.value)}
               />
               <button className={`${styles.logBtn} ${tdeeSaved ? styles.logBtnSaved : ''}`} type="submit">
-                {tdeeSaved ? '✓' : 'ЗАПАЗИ'}
+                {tdeeSaved ? '✓' : t('pp.save')}
               </button>
             </form>
           </div>
         ) : !profile?.weight_kg ? (
-          <p className={styles.tdeeSetupNote}>Въведи текущото си тегло в Профил, за да се изчислят макросите.</p>
+          <p className={styles.tdeeSetupNote}>{t('pp.weightSetupNote')}</p>
         ) : (
           (() => {
             const m = macrosForKcal(plan.dailyKcal, profile.weight_kg)
@@ -367,10 +369,10 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
               <>
                 <div className={styles.macroRow}>
                   {[
-                    { label: 'ККАЛ',    val: plan.dailyKcal, accent: true },
-                    { label: 'ПРОТЕИН', val: `${m.protein}г` },
-                    { label: 'ВЪГЛ',    val: `${m.carbs}г`  },
-                    { label: 'МАЗН',    val: `${m.fat}г`    },
+                    { label: t('pp.macro.kcal'),    val: plan.dailyKcal, accent: true },
+                    { label: t('pp.macro.protein'), val: `${m.protein}g` },
+                    { label: t('pp.macro.carbs'),   val: `${m.carbs}g`  },
+                    { label: t('pp.macro.fat'),     val: `${m.fat}g`    },
                   ].map(({ label, val, accent }) => (
                     <div key={label} className={styles.macroPill}>
                       <span className={accent ? `${styles.macroPillVal} ${styles.macroPillValAccent}` : styles.macroPillVal}>{val}</span>
@@ -387,7 +389,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
                     setTimeout(() => setMacroApplied(false), 3000)
                   }}
                 >
-                  {macroApplied ? '✓ ЗАПИСАНО В ХРАНЕНЕ' : 'ПРИЛОЖИ КЪМ ХРАНЕНЕ →'}
+                  {macroApplied ? t('pp.macroApplied') : t('pp.macroApply')}
                 </button>
               </>
             )
@@ -398,7 +400,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {/* ── Weekly timeline ── */}
       {plan?.weeks?.length > 0 && (
         <section className={styles.card}>
-          <div className={styles.cardTitle}>СЕДМИЧНА ПРОГРЕСИЯ</div>
+          <div className={styles.cardTitle}>{t('pp.weeklyProgress')}</div>
           <div className={styles.timeline}>
             {[...plan.weeks].reverse().map(week => {
               const isCurrent = cw?.number === week.number
@@ -410,15 +412,15 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
               return (
                 <div key={week.number} className={`${styles.timelineRow} ${isCurrent ? styles.timelineRowCurrent : ''} ${isPast ? styles.timelineRowPast : ''}`}>
                   <div className={styles.timelineWeek}>
-                    <span className={styles.timelineWeekNum}>С{week.number}</span>
+                    <span className={styles.timelineWeekNum}>{t('pp.wk', { n: week.number })}</span>
                     <span className={styles.timelineWeeksOut}>{week.weeksOut} out</span>
                   </div>
                   <div className={styles.timelineDates}>{fmtShort(week.weekStart)}–{fmtShort(week.weekEnd)}</div>
-                  <div className={styles.timelineTarget}>{week.targetWeight} кг</div>
+                  <div className={styles.timelineTarget}>{week.targetWeight} {t('unit.kg')}</div>
                   <div className={styles.timelineActual}>
                     {week.avgWeight != null ? (
                       <span className={diff > 0.2 ? styles.behind : diff < -0.2 ? styles.ahead : styles.onTrack}>
-                        {week.avgWeight} кг
+                        {week.avgWeight} {t('unit.kg')}
                       </span>
                     ) : (
                       <span className={styles.empty}>—</span>
@@ -434,40 +436,40 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {/* ── Protocol notes ── */}
       <section className={styles.card}>
         <div className={styles.cardTitleRow}>
-          <span className={styles.cardTitle}>ПРОТОКОЛ БЕЛЕЖКИ</span>
+          <span className={styles.cardTitle}>{t('pp.notes')}</span>
           <button className={styles.editBtn} onClick={() => setNotesMode(m => !m)} type="button">
-            {notesMode ? 'ОТКАЗ' : 'РЕДАКТИРАЙ'}
+            {notesMode ? t('pp.cancel') : t('pp.edit')}
           </button>
         </div>
 
         {notesMode ? (
           <div className={styles.notesEdit}>
             {[
-              { key: 'cardio_notes',      label: 'КАРДИО' },
-              { key: 'supplement_notes',  label: 'ДОБАВКИ' },
-              { key: 'general_notes',     label: 'БЕЛЕЖКИ' },
+              { key: 'cardio_notes',      label: t('pp.notes.cardio') },
+              { key: 'supplement_notes',  label: t('pp.notes.supp') },
+              { key: 'general_notes',     label: t('pp.notes.general') },
             ].map(({ key, label }) => (
               <div key={key} className={styles.notesField}>
                 <label className={styles.label}>{label}</label>
                 <textarea
                   className={styles.textarea}
                   rows={3}
-                  placeholder={key === 'cardio_notes' ? 'Без кардио / 3×30мин LISS...' : ''}
+                  placeholder={key === 'cardio_notes' ? t('pp.cardioPh') : ''}
                   value={notes[key]}
                   onChange={e => setNotes(p => ({ ...p, [key]: e.target.value }))}
                 />
               </div>
             ))}
             <button className={styles.saveNotesBtn} onClick={saveNotes} type="button">
-              {notesSaved ? '✓ ЗАПАЗЕНО' : 'ЗАПАЗИ'}
+              {notesSaved ? t('pp.notesSaved') : t('pp.save')}
             </button>
           </div>
         ) : (
           <div className={styles.notesView}>
             {[
-              { label: 'Кардио',    val: prep.cardio_notes     },
-              { label: 'Добавки',   val: prep.supplement_notes },
-              { label: 'Бележки',   val: prep.general_notes    },
+              { label: t('pp.notes.cardioR'),  val: prep.cardio_notes     },
+              { label: t('pp.notes.suppR'),    val: prep.supplement_notes },
+              { label: t('pp.notes.generalR'), val: prep.general_notes    },
             ].map(({ label, val }) => val ? (
               <div key={label} className={styles.notesItem}>
                 <span className={styles.notesItemLabel}>{label}:</span>
@@ -475,7 +477,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
               </div>
             ) : null)}
             {!prep.cardio_notes && !prep.supplement_notes && !prep.general_notes && (
-              <p className={styles.notesEmpty}>Добави бележки към протокола →</p>
+              <p className={styles.notesEmpty}>{t('pp.notesEmpty')}</p>
             )}
           </div>
         )}
@@ -485,14 +487,14 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       <section className={styles.card}>
         {!showEnd ? (
           <button className={styles.endBtn} onClick={() => setShowEnd(true)} type="button">
-            Приключи препа
+            {t('pp.endPrep')}
           </button>
         ) : (
           <div className={styles.endConfirm}>
-            <p className={styles.endConfirmText}>Сигурен ли си? Препът ще бъде архивиран.</p>
+            <p className={styles.endConfirmText}>{t('pp.endConfirm')}</p>
             <div className={styles.endConfirmBtns}>
-              <button className={styles.endConfirmYes} onClick={onEnd} type="button">ДА, ПРИКЛЮЧИ</button>
-              <button className={styles.endConfirmNo} onClick={() => setShowEnd(false)} type="button">ОТКАЗ</button>
+              <button className={styles.endConfirmYes} onClick={onEnd} type="button">{t('pp.endYes')}</button>
+              <button className={styles.endConfirmNo} onClick={() => setShowEnd(false)} type="button">{t('pp.endNo')}</button>
             </div>
           </div>
         )}
