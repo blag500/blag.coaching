@@ -414,7 +414,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     label: m.label,
     items: log.filter(e => e.meal_type === m.id),
   }))
-  const other = log.filter(e => !MEAL_LABEL[e.meal_type])
+  const other = log.filter(e => !MEAL_LABEL_KEY[e.meal_type])
   if (other.length) groups.push({ id: '_other', label: 'Друго', items: other, legacy: true })
 
   return (

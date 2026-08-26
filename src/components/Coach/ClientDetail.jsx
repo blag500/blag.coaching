@@ -13,7 +13,7 @@ import ClientReminderSettings from './ClientReminderSettings'
 import SessionHistory from '../Training/SessionHistory'
 import ExerciseStats from '../Training/ExerciseStats'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
-import { MEALS, MEAL_LABEL, defaultMeal } from '../FoodLogger/meals'
+import { MEALS, MEAL_LABEL_KEY, defaultMeal } from '../FoodLogger/meals'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
@@ -710,7 +710,7 @@ function NutritionTab({ client }) {
     label: m.label,
     items: logs.filter(e => e.meal_type === m.id),
   }))
-  const otherLogs = logs.filter(e => !MEAL_LABEL[e.meal_type])
+  const otherLogs = logs.filter(e => !MEAL_LABEL_KEY[e.meal_type])
   if (otherLogs.length) logGroups.push({ id: '_other', label: 'Друго', items: otherLogs })
   const shownLogGroups = logGroups.filter(g => g.items.length > 0)
 

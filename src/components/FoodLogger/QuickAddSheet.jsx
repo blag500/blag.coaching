@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
-import { MEAL_LABEL } from './meals'
+import { mealLabel } from './meals'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './QuickAddSheet.module.css'
 
 /**
@@ -11,6 +12,8 @@ import styles from './QuickAddSheet.module.css'
  * inside one is measured against the transform, not the screen.
  */
 export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
+  const { t } = useSettings()
+  const label = mealLabel(t, meal)
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery]     = useState('')
@@ -62,9 +65,9 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.sheet} onClick={e => e.stopPropagation()} role="dialog" aria-label={`Добави в ${MEAL_LABEL[meal]}`}>
+      <div className={styles.sheet} onClick={e => e.stopPropagation()} role="dialog" aria-label={t('quickAdd.title', { meal: label })}>
         <div className={styles.head}>
-          <span className={styles.title}>Добави в {MEAL_LABEL[meal]}</span>
+          <span className={styles.title}>{t('quickAdd.title', { meal: label })}</span>
           <button className={styles.close} onClick={onClose} type="button" aria-label="Затвори">×</button>
         </div>
 
