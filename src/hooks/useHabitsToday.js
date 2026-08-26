@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { HABITS as DEFAULT_HABITS } from '../data/appData'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -11,10 +10,11 @@ export function useHabitsToday() {
   const { user, profile } = useAuth()
   const [checked, setChecked] = useState({})
 
-  // Use coach-assigned habits if set, otherwise fall back to defaults
+  // Habits are personal — a new client sees an empty list and picks their own
+  // in Profile. „Everyone's habits" was nobody's, so no default seed.
   const habits = (profile?.habits && profile.habits.length > 0)
     ? profile.habits
-    : DEFAULT_HABITS
+    : []
 
   useEffect(() => {
     if (!user) return

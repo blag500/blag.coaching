@@ -162,6 +162,9 @@ export default {
   'auth.err.emailNotConfirmed':  'Confirm your email before signing in.',
   'auth.err.disposableEmail':    'That’s a temporary email. Use a permanent address.',
 
+  'today.habitsEmpty':     'No habits yet.',
+  'today.habitsEmptyCta':  'Set them up →',
+
   // WelcomeOverlay
   'welcome.eyebrow': 'WELCOME TO',
   'welcome.sub':     'Here’s what you can do in the app:',

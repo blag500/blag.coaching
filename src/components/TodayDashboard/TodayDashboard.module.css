@@ -574,6 +574,35 @@
   gap: 10px;
 }
 
+/* Empty state — новият клиент няма seed навици, така че картата вика да
+   отиде в Profile и си ги настрои сам, вместо да чуди какво значат
+   „Вода 2.5L" и „Без захар" в първия си ден. */
+.habitsEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 2px 2px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.habitsEmptyLead {
+  font-size: 13px;
+  color: var(--muted);
+}
+.habitsEmptyCta {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+.habitsEmpty:active .habitsEmptyCta { opacity: 0.7; }
+
 .habitsHead {
   display: flex;
   align-items: baseline;

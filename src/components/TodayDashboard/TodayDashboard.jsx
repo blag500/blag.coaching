@@ -257,7 +257,21 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         another tab to spend four seconds is a nudge most people decline, and
         habits are 20% of the readiness score — the component most often left
         empty precisely because it lived somewhere else. */
-    habits: habits.length > 0 && (
+    habits: habits.length === 0 ? (
+      <div className={styles.habitsCard}>
+        <div className={styles.habitsHead}>
+          <span className={styles.cardLabel}>{t('today.habits')}</span>
+        </div>
+        <button
+          type="button"
+          className={styles.habitsEmpty}
+          onClick={() => onNavigate('profile')}
+        >
+          <span className={styles.habitsEmptyLead}>{t('today.habitsEmpty')}</span>
+          <span className={styles.habitsEmptyCta}>{t('today.habitsEmptyCta')}</span>
+        </button>
+      </div>
+    ) : (
       <div className={`${styles.habitsCard} ${habitsCheer ? styles.habitsCheer : ''}`}>
         {habitsCheer && <Confetti burst={burst} />}
         <div className={styles.habitsHead}>

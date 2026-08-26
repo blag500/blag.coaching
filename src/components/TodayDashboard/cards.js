@@ -17,7 +17,6 @@ export const CARDS = [
   { id: 'water',       label: 'Вода',              hint: 'Чашите за деня' },
   { id: 'macros',      label: 'Макроси',           hint: 'Калории и трите макроса' },
   { id: 'supplements', label: 'Суплементи',        hint: 'Твоят стек, ако има такъв' },
-  { id: 'shop',        label: 'Допълни деня',      hint: 'Предложения при дефицит' },
 ]
 
 export const DEFAULT_ORDER = CARDS.map(c => c.id)

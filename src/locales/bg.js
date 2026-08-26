@@ -163,6 +163,9 @@ export default {
   'auth.err.emailNotConfirmed':  'Потвърди имейла си преди да влезеш.',
   'auth.err.disposableEmail':    'Този имейл е временен. Ползвай постоянен адрес.',
 
+  'today.habitsEmpty':     'Още нямаш навици.',
+  'today.habitsEmptyCta':  'Настрой ги →',
+
   // WelcomeOverlay
   'welcome.eyebrow': 'ДОБРЕ ДОШЪЛ В',
   'welcome.sub':     'Ето какво можеш да правиш в приложението:',
