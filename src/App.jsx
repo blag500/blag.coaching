@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import HelpPage from './pages/HelpPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import NavDrawer from './components/NavDrawer/NavDrawer'
 import NutritionCards from './components/NutritionCards/NutritionCards'
@@ -327,6 +328,17 @@ function AppShell() {
 
 export default function App() {
   if (window.location.pathname === '/help') return <HelpPage />
+  /* Password recovery — линкът от 'забравена парола' писмото носи session
+     token в URL fragment-а и трябва да падне на дедициран екран за нова
+     парола, не на onboarding gate-а на AppShell. Стои вътре в providers
+     защото ползва t() и supabase-js. */
+  if (window.location.pathname === '/reset-password') {
+    return (
+      <SettingsProvider>
+        <ResetPasswordPage />
+      </SettingsProvider>
+    )
+  }
   return (
     <SettingsProvider>
       <AuthProvider>

@@ -56,6 +56,18 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     if (mode === 'login') {
       const ok = await signIn(email, password)
       if (!ok) {
+        /* „Email not confirmed" — акаунтът съществува, паролата дори може
+           да е правилна, но OTP-то никога не е било въведено. Извеждаме
+           директно към verify екрана с нов код, вместо да оставяме клиента
+           с червено съобщение без изход. */
+        if (authError === 'auth.err.emailNotConfirmed') {
+          await resendConfirmation(email)
+          setMode('verify')
+          setOtpCode('')
+          setInfo(t('auth.info.resent'))
+          setLoading(false)
+          return
+        }
         const status = await checkEmailStatus(email)
         if (status === 'taken') setStuck(true)
       }
