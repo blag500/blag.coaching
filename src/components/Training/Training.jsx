@@ -384,16 +384,15 @@ export default function Training({ onMenuOpen }) {
                 disabled={savingPlan}
                 type="button"
               >
-                {savingPlan ? '...' : 'Започни с готова програма'}
+                {savingPlan ? '...' : 'Готова програма'}
               </button>
-              <span className={styles.setupHint}>Upper / Lower · 4 дни</span>
               <button
-                className={styles.setupSecondary}
+                className={styles.setupPrimary}
                 onClick={() => setEditing(true)}
                 disabled={savingPlan}
                 type="button"
               >
-                Създай своя от нулата
+                От нулата
               </button>
             </div>
           </div>

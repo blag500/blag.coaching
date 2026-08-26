@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
+import { createPortal } from 'react-dom'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
+import { FINE_MUSCLES } from '../../utils/recovery'
 import styles from './TrainingEditor.module.css'
 
-const GROUP_OPTIONS = [
-  { id: 'upper', label: 'ГОРНА', hint: 'гърди · рамене · трицепс' },
-  { id: 'pull',  label: 'ГРЪБ',  hint: 'лат · бицепс' },
-  { id: 'lower', label: 'ДОЛНА', hint: 'крака · глутеус' },
-  { id: 'extra', label: 'ЕКСТРА', hint: 'корем · предмишница · прасци · трапец' },
-]
+// Fine-grained muscle chips на блок ниво — заменят стария 4-групов ГОРНА/ГРЪБ/
+// ДОЛНА/ЕКСТРА. resolveGroups() в utils/recovery.js вече транслира fine id-та
+// към широките групи, така че манекенът и recovery clock-ът продължават да
+// работят без промяна.
+const GROUP_OPTIONS = FINE_MUSCLES.map(m => ({
+  id: m.id,
+  label: m.label.toUpperCase(),
+}))
 
 function freshBlock(pos) {
   return {
@@ -19,10 +22,6 @@ function freshBlock(pos) {
     muscles: [],
     exercises: [],
   }
-}
-
-function freshExercise(blockId) {
-  return { id: `${blockId}-${Date.now()}`, name: '', sets: '3', reps: '10' }
 }
 
 function defaultBlocks(initialPlan) {
@@ -39,22 +38,19 @@ function defaultBlocks(initialPlan) {
       }
     })
   }
-  // Deep-copy so DEFAULT_TRAINING_BLOCKS is never mutated by React state updates
-  return DEFAULT_TRAINING_BLOCKS.map(block => ({
-    ...block,
-    exercises: block.exercises.map(ex => ({ ...ex })),
-  }))
+  // От нулата — празен списък. „Готова програма" остава като отделен път от
+  // Training.jsx (applyStarter копира DEFAULT_TRAINING_BLOCKS в профила преди
+  // да отвори editor-а).
+  return []
 }
 
 export default function TrainingEditor({ initialPlan, onSave, saving }) {
   const [blocks, setBlocks] = useState(() => defaultBlocks(initialPlan))
   const [openId, setOpenId] = useState(null)
   const { byName: photos, upload } = useExercisePhotos()
-  const [uploading, setUploading] = useState(null)
-  // The muscle field keeps the raw text the user is typing. Deriving the input's
-  // value from the parsed array ate the comma the instant it was typed (the
-  // empty trailing segment was filtered away), so a comma could never be typed.
-  const [muscleRaw, setMuscleRaw] = useState({})
+  // Modal state — { blockId, exercise } когато редактираме съществуващо, или
+  // { blockId, exercise: null } когато добавяме ново.
+  const [modal, setModal] = useState(null)
 
   function updateBlock(id, field, value) {
     setBlocks(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b))
@@ -78,31 +74,21 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
     if (openId === id) setOpenId(null)
   }
 
-  function addExercise(blockId) {
-    const ex = freshExercise(blockId)
-    setBlocks(prev => prev.map(b =>
-      b.id === blockId ? { ...b, exercises: [...b.exercises, ex] } : b
-    ))
-  }
-
   function removeExercise(blockId, exId) {
     setBlocks(prev => prev.map(b =>
       b.id === blockId ? { ...b, exercises: b.exercises.filter(e => e.id !== exId) } : b
     ))
   }
 
-  function updateExercise(blockId, exId, field, value) {
-    setBlocks(prev => prev.map(b =>
-      b.id === blockId
-        ? { ...b, exercises: b.exercises.map(e => e.id === exId ? { ...e, [field]: value } : e) }
-        : b
-    ))
-  }
-
-  function updateMuscles(blockId, raw) {
-    setMuscleRaw(prev => ({ ...prev, [blockId]: raw }))
-    const muscles = raw.split(',').map(s => s.trim()).filter(Boolean)
-    updateBlock(blockId, 'muscles', muscles)
+  function saveExercise(blockId, ex) {
+    setBlocks(prev => prev.map(b => {
+      if (b.id !== blockId) return b
+      const exists = b.exercises.some(e => e.id === ex.id)
+      const exercises = exists
+        ? b.exercises.map(e => e.id === ex.id ? ex : e)
+        : [...b.exercises, ex]
+      return { ...b, exercises }
+    }))
   }
 
   function toggleGroup(blockId, groupId) {
@@ -194,64 +180,28 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                 {!block.isRest && (
                   <div className={styles.exList}>
                     {block.exercises.map((ex, i) => {
-                      const inputId = `ph-${block.id}-${ex.id}`
                       const url = ex.name ? photos[ex.name] : null
-                      const busy = uploading === `${block.id}-${ex.id}`
+                      const muscle = FINE_MUSCLES.find(m => m.id === ex.muscle)
                       return (
                         <div key={ex.id} className={styles.exRow}>
                           <span className={styles.exNum}>{i + 1}</span>
-
-                          {/* Photo lives with the exercise now — one place per
-                              lift, not a camera icon on every set. Empty name
-                              disables it, since photos are keyed by name. */}
-                          <input
-                            id={inputId}
-                            type="file"
-                            accept="image/*"
-                            className={styles.fileInput}
-                            disabled={!ex.name}
-                            onChange={async e => {
-                              const f = e.target.files?.[0]
-                              e.target.value = ''
-                              if (!f || !ex.name) return
-                              setUploading(`${block.id}-${ex.id}`)
-                              await upload(ex.name, f)
-                              setUploading(null)
-                            }}
-                          />
-                          <label
-                            htmlFor={inputId}
-                            className={`${styles.exThumb} ${url ? styles.exThumbHas : ''} ${!ex.name ? styles.exThumbDisabled : ''}`}
-                            title={ex.name ? `Снимка на ${ex.name}` : 'Кръсти упражнението първо'}
+                          <button
+                            type="button"
+                            className={styles.exCard}
+                            onClick={() => setModal({ blockId: block.id, exercise: ex })}
                           >
-                            {busy
-                              ? '…'
-                              : url
-                                ? <img src={url} alt="" className={styles.exThumbImg} />
-                                : '📷'}
-                          </label>
-
-                          <input
-                            className={`${styles.exInput} ${styles.exName}`}
-                            type="text"
-                            placeholder="Упражнение"
-                            value={ex.name}
-                            onChange={e => updateExercise(block.id, ex.id, 'name', e.target.value)}
-                          />
-                          <input
-                            className={`${styles.exInput} ${styles.exSets}`}
-                            type="text"
-                            placeholder="Сер."
-                            value={ex.sets}
-                            onChange={e => updateExercise(block.id, ex.id, 'sets', e.target.value)}
-                          />
-                          <input
-                            className={`${styles.exInput} ${styles.exReps}`}
-                            type="text"
-                            placeholder="Повт."
-                            value={ex.reps}
-                            onChange={e => updateExercise(block.id, ex.id, 'reps', e.target.value)}
-                          />
+                            <span className={`${styles.exThumb} ${url ? styles.exThumbHas : ''}`}>
+                              {url ? <img src={url} alt="" className={styles.exThumbImg} /> : '📷'}
+                            </span>
+                            <span className={styles.exBody}>
+                              <span className={styles.exName}>{ex.name || '(без име)'}</span>
+                              <span className={styles.exMeta}>
+                                {muscle && <span className={styles.exMuscle}>{muscle.label}</span>}
+                                <span className={styles.exReps}>{ex.sets || '?'} × {ex.reps || '?'}</span>
+                                {ex.note && <span className={styles.exNoteDot} title={ex.note}>·</span>}
+                              </span>
+                            </span>
+                          </button>
                           <button
                             className={styles.exRemove}
                             onClick={() => removeExercise(block.id, ex.id)}
@@ -263,7 +213,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                     })}
                     <button
                       className={styles.addExBtn}
-                      onClick={() => addExercise(block.id)}
+                      onClick={() => setModal({ blockId: block.id, exercise: null })}
                       type="button"
                     >
                       + Добави упражнение
@@ -288,6 +238,112 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
       >
         {saving ? '...' : 'Запази плана'}
       </button>
+
+      {modal && (
+        <ExerciseModal
+          blockId={modal.blockId}
+          exercise={modal.exercise}
+          photos={photos}
+          upload={upload}
+          onCancel={() => setModal(null)}
+          onSave={ex => { saveExercise(modal.blockId, ex); setModal(null) }}
+        />
+      )}
     </div>
+  )
+}
+
+function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) {
+  const isEdit = !!exercise
+  const [name, setName]     = useState(exercise?.name ?? '')
+  const [sets, setSets]     = useState(exercise?.sets ?? '3')
+  const [reps, setReps]     = useState(exercise?.reps ?? '10')
+  const [note, setNote]     = useState(exercise?.note ?? '')
+  const [muscle, setMuscle] = useState(exercise?.muscle ?? '')
+  const [busy, setBusy]     = useState(false)
+  const photoUrl = name ? photos[name] : null
+
+  async function handlePhoto(e) {
+    const f = e.target.files?.[0]
+    e.target.value = ''
+    if (!f || !name.trim()) return
+    setBusy(true)
+    await upload(name.trim(), f)
+    setBusy(false)
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (!name.trim()) return
+    onSave({
+      id:     exercise?.id ?? `${blockId}-${Date.now()}`,
+      name:   name.trim(),
+      sets:   sets.trim() || '3',
+      reps:   reps.trim() || '10',
+      note:   note.trim(),
+      muscle: muscle || null,
+    })
+  }
+
+  return createPortal(
+    <div className={styles.modalOverlay} onClick={onCancel}>
+      <form className={styles.modal} onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
+        <div className={styles.modalHead}>
+          <span className={styles.modalTitle}>{isEdit ? 'Редакция' : 'Ново упражнение'}</span>
+          <button type="button" className={styles.modalClose} onClick={onCancel} aria-label="Затвори">×</button>
+        </div>
+
+        <label className={styles.modalPhoto}>
+          <input type="file" accept="image/*" onChange={handlePhoto} disabled={!name.trim()} />
+          {busy
+            ? <span className={styles.modalPhotoBusy}>…</span>
+            : photoUrl
+              ? <img src={photoUrl} alt="" />
+              : <span className={styles.modalPhotoEmpty}>{name.trim() ? '📷 Добави снимка' : 'Кръсти упражнението, за да добавиш снимка'}</span>}
+        </label>
+
+        <label className={styles.modalField}>
+          <span>Име</span>
+          <input type="text" value={name} onChange={e => setName(e.target.value)}
+                 placeholder="напр. Лежанка с щанга" autoFocus />
+        </label>
+
+        <div className={styles.modalRow}>
+          <label className={styles.modalField}>
+            <span>Серии</span>
+            <input type="text" inputMode="numeric" value={sets} onChange={e => setSets(e.target.value)} />
+          </label>
+          <label className={styles.modalField}>
+            <span>Повторения</span>
+            <input type="text" value={reps} onChange={e => setReps(e.target.value)}
+                   placeholder="напр. 8–10" />
+          </label>
+        </div>
+
+        <label className={styles.modalField}>
+          <span>Мускул</span>
+          <select value={muscle} onChange={e => setMuscle(e.target.value)}>
+            <option value="">(не е зададен)</option>
+            {FINE_MUSCLES.map(m => (
+              <option key={m.id} value={m.id}>{m.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className={styles.modalField}>
+          <span>Бележка</span>
+          <textarea value={note} onChange={e => setNote(e.target.value)} rows={3}
+                    placeholder="Темпо, техника, каденс…" />
+        </label>
+
+        <div className={styles.modalActions}>
+          <button type="button" className={styles.modalCancel} onClick={onCancel}>Отказ</button>
+          <button type="submit" className={styles.modalSave} disabled={!name.trim()}>
+            {isEdit ? 'Запази' : 'Добави'}
+          </button>
+        </div>
+      </form>
+    </div>,
+    document.body,
   )
 }

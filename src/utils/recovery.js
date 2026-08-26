@@ -95,9 +95,15 @@ export function resolveGroups(block, exerciseMap = null) {
   if (!block) return []
   const out = new Set()
 
-  // Explicit groups still lead — the coach ticked them on purpose.
+  // Explicit groups still lead — the coach ticked them on purpose. Fine muscle
+  // ids (chest, biceps, quads…) are translated to the broad axis the recovery
+  // clock runs on, so a block tagged „Гърди + Трицепс" lights up ГОРНА even
+  // though neither of those two chips names the broad group directly.
   if (Array.isArray(block.groups) && block.groups.length) {
-    for (const g of block.groups) if (g in RECOVERY_H) out.add(g)
+    for (const g of block.groups) {
+      const broad = tagToBroad(g)
+      if (broad) out.add(broad)
+    }
   }
 
   // Label — "Upper A" catches upper, but an old plan without explicit groups
