@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePane } from '../SwipePager/PaneContext'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useActivityLog } from '../../hooks/useActivityLog'
 import DatePicker from '../DatePicker/DatePicker'
@@ -17,27 +18,18 @@ import RecipeBuilder from '../FoodLogger/RecipeBuilder'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './NutritionCards.module.css'
 
-const QUOTES = [
-  'Дисциплината е разликата между това, което искаш сега, и това, което искаш най-много.',
-  'Тялото постига това, което умът вярва.',
-  'Не се сравнявай с другите. Сравнявай се с този, който беше вчера.',
-  'Всяка тренировка е инвестиция в следващата.',
-  'Болката е временна. Гордостта е завинаги.',
-  'Успехът е сумата от малките усилия, повтаряни всеки ден.',
-  'Не чакай мотивация. Изгради дисциплина.',
-]
-
-function greeting() {
+function greetingKey() {
   const h = new Date().getHours()
-  if (h >= 5  && h < 12) return 'ДОБРО УТРО'
-  if (h >= 12 && h < 17) return 'ДОБЪР ДЕН'
-  return 'ДОБЪР ВЕЧЕР'
+  if (h >= 5  && h < 12) return 'nutr.greeting.morning'
+  if (h >= 12 && h < 17) return 'nutr.greeting.afternoon'
+  return 'nutr.greeting.evening'
 }
 
 
 export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { chrome: paneChrome } = usePane()
   const { profile } = useAuth()
+  const { t } = useSettings()
   const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { activities, totalKcalBurned, addActivity, removeActivity } = useActivityLog(selectedDate)
   const { distance, refreshing } = usePullToRefresh(refresh)
@@ -86,7 +78,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const showPull  = distance > 4
 
   const firstName = (profile?.name || '').split(' ')[0].toUpperCase()
-  const dailyQuote = QUOTES[new Date().getDay() % QUOTES.length]
+  const dailyQuote = t(`nutr.quote.${new Date().getDay() % 7}`)
 
   return (
     <div className={styles.page}>
@@ -104,7 +96,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
       )}
       <AppHeader
         onMenuOpen={onMenuOpen}
-        eyebrow={greeting()}
+        eyebrow={t(greetingKey())}
         title={firstName || 'BLAG'}
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}
@@ -116,7 +108,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           className={`${styles.toggleBtn} ${view === 'log' ? styles.toggleActive : ''}`}
           onClick={() => setView('log')}
           type="button"
-          aria-label="Хранене"
+          aria-label={t('nutr.toggle.log')}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
             <path d="M3 11l19-9-9 19-2-8-8-2z" />
@@ -126,7 +118,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           className={`${styles.toggleBtn} ${view === 'meals' ? styles.toggleActive : ''}`}
           onClick={() => setView('meals')}
           type="button"
-          aria-label="Библиотека"
+          aria-label={t('nutr.toggle.library')}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -137,7 +129,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           className={`${styles.toggleBtn} ${view === 'balance' ? styles.toggleActive : ''}`}
           onClick={() => setView('balance')}
           type="button"
-          aria-label="Баланс на калориите"
+          aria-label={t('nutr.toggle.balance')}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
             <line x1="12" y1="3" x2="12" y2="21" />
@@ -152,8 +144,8 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
         <button className={styles.setupPrompt} onClick={() => onNavigate?.('explore')} type="button">
           <span className={styles.setupIcon}>🎯</span>
           <div className={styles.setupText}>
-            <span className={styles.setupTitle}>Настрой дневните си макроси</span>
-            <span className={styles.setupDesc}>Изчисли TDEE и протеин за твоята цел →</span>
+            <span className={styles.setupTitle}>{t('nutr.setupTitle')}</span>
+            <span className={styles.setupDesc}>{t('nutr.setupDesc')}</span>
           </div>
         </button>
       )}
@@ -205,7 +197,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
               className={styles.fab}
               onClick={() => setShowBuilder(true)}
               type="button"
-              aria-label="Добави рецепта"
+              aria-label={t('nutr.fab.addRecipe')}
             >
               +
             </button>,

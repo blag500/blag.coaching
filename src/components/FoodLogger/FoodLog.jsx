@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import CopyPreviousDay from './CopyPreviousDay'
 import QuickAddSheet from './QuickAddSheet'
-import { MEALS, MEAL_LABEL } from './meals'
+import { MEALS, MEAL_LABEL_KEY } from './meals'
+import { useSettings } from '../../contexts/SettingsContext'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './FoodLog.module.css'
 
