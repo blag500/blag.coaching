@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './PWAInstallPage.module.css'
 
 export default function PWAInstallPage({ onBack }) {
   const { profile } = useAuth()
+  const { t } = useSettings()
   const isCoach = profile?.role === 'coach'
 
   const [notice,   setNotice]   = useState(false)
@@ -38,22 +40,20 @@ export default function PWAInstallPage({ onBack }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Назад">
+        <button className={styles.backBtn} onClick={onBack} type="button" aria-label={t('pwa.back')}>
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
             <polyline points="15 6 9 12 15 18" />
           </svg>
         </button>
-        <h1 className={styles.title}>СТАТУС</h1>
+        <h1 className={styles.title}>{t('pwa.title')}</h1>
       </header>
 
       <div className={styles.body}>
         {loading ? null : isCoach ? (
           <div className={styles.doneCard}>
-            <div className={styles.doneTitle}>ИЗВЕСТИЕ ЗА АКТУАЛИЗАЦИЯ</div>
+            <div className={styles.doneTitle}>{t('pwa.notice.title')}</div>
             <p className={styles.doneDesc}>
-              {notice
-                ? 'Активно — клиентите виждат банер с молба да опреснят приложението.'
-                : 'Неактивно — никакво известие не се показва на клиентите.'}
+              {notice ? t('pwa.notice.on') : t('pwa.notice.off')}
             </p>
             <button
               className={styles.installBtn}
@@ -62,7 +62,7 @@ export default function PWAInstallPage({ onBack }) {
               disabled={saving}
               type="button"
             >
-              {saving ? '...' : notice ? 'ИЗКЛЮЧИ ИЗВЕСТИЕТО' : 'ПУСНИ ИЗВЕСТИЕ ЗА АКТУАЛИЗАЦИЯ'}
+              {saving ? '...' : notice ? t('pwa.notice.turnOff') : t('pwa.notice.turnOn')}
             </button>
           </div>
         ) : (
@@ -70,23 +70,21 @@ export default function PWAInstallPage({ onBack }) {
             {notice ? (
               <>
                 <div className={styles.doneIcon}>🔄</div>
-                <div className={styles.doneTitle}>НАЛИЧНА Е НОВА ВЕРСИЯ</div>
-                <p className={styles.doneDesc}>
-                  Треньорът е пуснал актуализация. Затвори и отвори приложението отново, за да получиш последната версия.
-                </p>
+                <div className={styles.doneTitle}>{t('pwa.update.available')}</div>
+                <p className={styles.doneDesc}>{t('pwa.update.desc')}</p>
                 <button
                   className={styles.installBtn}
                   onClick={() => window.location.reload()}
                   type="button"
                 >
-                  ОПРЕСНИ СЕГА
+                  {t('pwa.update.refresh')}
                 </button>
               </>
             ) : (
               <>
                 <div className={styles.doneIcon}>✅</div>
-                <div className={styles.doneTitle}>ПРИЛОЖЕНИЕТО Е АКТУАЛНО</div>
-                <p className={styles.doneDesc}>Няма налични актуализации в момента.</p>
+                <div className={styles.doneTitle}>{t('pwa.update.upToDate')}</div>
+                <p className={styles.doneDesc}>{t('pwa.update.none')}</p>
               </>
             )}
           </div>

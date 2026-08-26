@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Welcome.module.css'
 
 const NutritionIcon = () => (
@@ -27,12 +28,13 @@ const DumbbellIcon = () => (
 )
 
 const FEATURES = [
-  { Icon: NutritionIcon, text: 'Персонализиран хранителен план' },
-  { Icon: CheckIcon,     text: 'Дневно проследяване на навиците' },
-  { Icon: DumbbellIcon,  text: 'Upper / Lower тренировъчен сплит' },
+  { Icon: NutritionIcon, textKey: 'wel.f1' },
+  { Icon: CheckIcon,     textKey: 'wel.f2' },
+  { Icon: DumbbellIcon,  textKey: 'wel.f3' },
 ]
 
 export default function Welcome({ onEnter }) {
+  const { t } = useSettings()
   const [leaving, setLeaving] = useState(false)
 
   function handleEnter() {
@@ -47,22 +49,22 @@ export default function Welcome({ onEnter }) {
           <span className={styles.logo}>BLAG</span>
         </div>
 
-        <p className={styles.tagline}>Твоят персонален фитнес коуч</p>
+        <p className={styles.tagline}>{t('wel.tagline')}</p>
 
-        <ul className={styles.features} aria-label="Функции">
+        <ul className={styles.features} aria-label={t('wel.aria')}>
           {FEATURES.map((f, i) => (
-            <li key={f.text} className={styles.feature} style={{ '--fi': i }}>
+            <li key={f.textKey} className={styles.feature} style={{ '--fi': i }}>
               <span className={styles.featureIcon}><f.Icon /></span>
-              <span>{f.text}</span>
+              <span>{t(f.textKey)}</span>
             </li>
           ))}
         </ul>
 
         <button className={styles.cta} onClick={handleEnter}>
-          ВЛЕЗ В ПРИЛОЖЕНИЕТО
+          {t('wel.cta')}
         </button>
 
-        <p className={styles.hint}>Инсталирай като app: Сподели → Добави към началния екран</p>
+        <p className={styles.hint}>{t('wel.hint')}</p>
       </div>
     </div>
   )

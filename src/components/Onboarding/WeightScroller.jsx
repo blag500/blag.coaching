@@ -1,4 +1,5 @@
 import { useRef, useMemo, useState, useEffect } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './WeightScroller.module.css'
 
 const ROW = 60 // px per row; drives both layout and drag sensitivity
@@ -13,6 +14,7 @@ const ROW = 60 // px per row; drives both layout and drag sensitivity
  * place), an upward swipe increments. Buttons on the flanks bump by one.
  */
 export default function WeightScroller({ value, onChange, min = 30, max = 200 }) {
+  const { t } = useSettings()
   const clamp = v => Math.min(max, Math.max(min, v))
   const set   = v => onChange(clamp(v))
 
@@ -63,14 +65,14 @@ export default function WeightScroller({ value, onChange, min = 30, max = 200 })
         type="button"
         className={styles.bump}
         onClick={() => set(value - 1)}
-        aria-label="По-малко"
+        aria-label={t('ob.weight.less')}
         style={{ top: 0 }}
       />
       <button
         type="button"
         className={styles.bump}
         onClick={() => set(value + 1)}
-        aria-label="Повече"
+        aria-label={t('ob.weight.more')}
         style={{ bottom: 0 }}
       />
 

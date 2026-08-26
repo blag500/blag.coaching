@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { registerPushSubscription } from '../../hooks/usePushNotifications'
 import { supabase } from '../../lib/supabase'
 import AvatarPicker from './AvatarPicker'
@@ -9,9 +10,9 @@ import { GOAL_ICON, CheckIcon } from './StepIcons'
 import styles from './Onboarding.module.css'
 
 const GOAL_OPTIONS = [
-  { id: 'cut',      label: 'ИЗГАРЯНЕ',    desc: 'Намаляване на мастна тъкан', kcalDelta: -400 },
-  { id: 'maintain', label: 'ПОДДЪРЖАНЕ',  desc: 'Запазване на теглото',        kcalDelta: 0    },
-  { id: 'bulk',     label: 'ПОКАЧВАНЕ',   desc: 'Изграждане на мускулна маса', kcalDelta: 300  },
+  { id: 'cut',      labelKey: 'ob.goal.cut',      descKey: 'ob.goal.cut.desc',      kcalDelta: -400 },
+  { id: 'maintain', labelKey: 'ob.goal.maintain', descKey: 'ob.goal.maintain.desc', kcalDelta: 0    },
+  { id: 'bulk',     labelKey: 'ob.goal.bulk',     descKey: 'ob.goal.bulk.desc',     kcalDelta: 300  },
 ]
 
 /* Activity levels stay a real 5-way question — the multipliers used to size the
@@ -19,11 +20,11 @@ const GOAL_OPTIONS = [
    the daily calorie ceiling by hundreds. Icons over labels so the row scans as
    a set of decisions, not a wall of text. */
 const ACTIVITY_OPTIONS = [
-  { id: 'sedentary',   label: 'Заседнал',        desc: 'Офис работа, без спорт',              mult: 1.2,   icon: 'chair' },
-  { id: 'light',       label: 'Леко активен',    desc: '1–2 тренировки на седмица',            mult: 1.375, icon: 'walk'  },
-  { id: 'moderate',    label: 'Умерено активен', desc: '3–5 тренировки на седмица',            mult: 1.55,  icon: 'run'   },
-  { id: 'active',      label: 'Много активен',   desc: '6–7 тренировки на седмица',            mult: 1.725, icon: 'lift'  },
-  { id: 'very_active', label: 'Изключително',    desc: 'Физически труд + ежедневен спорт',     mult: 1.9,   icon: 'bolt'  },
+  { id: 'sedentary',   labelKey: 'ob.act.sedentary',   descKey: 'ob.act.sedentary.desc',   mult: 1.2,   icon: 'chair' },
+  { id: 'light',       labelKey: 'ob.act.light',       descKey: 'ob.act.light.desc',       mult: 1.375, icon: 'walk'  },
+  { id: 'moderate',    labelKey: 'ob.act.moderate',    descKey: 'ob.act.moderate.desc',    mult: 1.55,  icon: 'run'   },
+  { id: 'active',      labelKey: 'ob.act.active',      descKey: 'ob.act.active.desc',      mult: 1.725, icon: 'lift' },
+  { id: 'very_active', labelKey: 'ob.act.very_active', descKey: 'ob.act.very_active.desc', mult: 1.9,   icon: 'bolt' },
 ]
 
 /* Macros derived from weight, gender, activity, goal — the two numbers we don't
@@ -127,6 +128,7 @@ function WomanFigure() {
 
 export default function Onboarding({ isCoachingIntake = false, onChangePlan, onComplete, onError }) {
   const { profile, session, completeOnboarding, updateProfile, selectPlan, signOut } = useAuth()
+  const { t } = useSettings()
   const knownName = (profile?.name ?? '').trim()
 
   // Name is already captured at signup, so skip that step when we have it.
@@ -156,7 +158,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
 
   function next() {
     setError('')
-    if (step === 1 && !form.name.trim()) { setError('Въведи името си'); return }
+    if (step === 1 && !form.name.trim()) { setError(t('ob.err.name')); return }
     if (step === totalSteps) {
       finish()
       return
@@ -206,7 +208,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
       fat:       macros.fat,
     })
     setSaving(false)
-    if (err) { setError(err.message || 'Грешка при запис. Опитай пак.'); onError?.(); return }
+    if (err) { setError(err.message || t('ob.err.save')); onError?.(); return }
     setShowCoachOffer(true)
   }
 
@@ -244,8 +246,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
       supabase.functions.invoke('send-push', {
         body: {
           toUserId: coachId,
-          title: 'Нова заявка за треньор',
-          body: `${form.name.trim() || profile?.email || 'Нов клиент'} иска безплатна тренировка`,
+          title: t('ob.push.newIntakeTitle'),
+          body: t('ob.push.newIntakeBody', { name: form.name.trim() || profile?.email || t('ob.push.newClient') }),
         },
       }).catch(() => {})
     }
@@ -260,18 +262,14 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         <div className={styles.content}>
           <div className={styles.stepWrap} style={{ textAlign: 'center', alignItems: 'center' }}>
             <span className={styles.stepIcon}><CheckIcon /></span>
-            <h1 className={styles.heading}>ЗАЯВКАТА Е ИЗПРАТЕНА</h1>
-            <p className={styles.sub}>
-              Треньорът ще прегледа данните ти и ще настрои индивидуален план в рамките на 24 часа.
-            </p>
-            <p className={styles.sub} style={{ marginTop: 12, opacity: 0.6 }}>
-              Ще получиш известие когато планът е готов.
-            </p>
+            <h1 className={styles.heading}>{t('ob.submitted.title')}</h1>
+            <p className={styles.sub}>{t('ob.submitted.body1')}</p>
+            <p className={styles.sub} style={{ marginTop: 12, opacity: 0.6 }}>{t('ob.submitted.body2')}</p>
           </div>
         </div>
         <div className={styles.nav}>
           <button className={styles.nextBtn} onClick={() => window.location.reload()} type="button">
-            ВЛЕЗ В ПРИЛОЖЕНИЕТО →
+            {t('ob.submitted.enter')}
           </button>
         </div>
       </div>
@@ -293,7 +291,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
     <div className={styles.page}>
       {onChangePlan && (
         <button className={styles.backPlan} onClick={onChangePlan} type="button">
-          ← Смени план
+          {t('ob.changePlan')}
         </button>
       )}
       <div className={styles.progressBar}>
@@ -309,14 +307,14 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         {/* Step 1 — Name */}
         {step === 1 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>ДОБРЕ ДОШЪЛ</h1>
-            <p className={styles.sub}>Нека настроим профила ти за минута.</p>
+            <h1 className={styles.heading}>{t('ob.step1.title')}</h1>
+            <p className={styles.sub}>{t('ob.step1.sub')}</p>
             <AvatarPicker />
-            <label className={styles.label}>Как се казваш?</label>
+            <label className={styles.label}>{t('ob.step1.q')}</label>
             <input
               className={styles.input}
               type="text"
-              placeholder="Твоето име"
+              placeholder={t('ob.step1.placeholder')}
               value={form.name}
               onChange={e => set('name', e.target.value)}
               onKeyDown={e => e.key === 'Enter' && next()}
@@ -328,8 +326,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         {/* Step 2 — Goal */}
         {step === 2 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>КАКВА Е ЦЕЛТА ТИ?</h1>
-            <p className={styles.sub}>Насочва препоръките, не заковава нищо.</p>
+            <h1 className={styles.heading}>{t('ob.step2.title')}</h1>
+            <p className={styles.sub}>{t('ob.step2.sub')}</p>
             <div className={styles.goalGrid}>
               {GOAL_OPTIONS.map(g => {
                 const Icon = GOAL_ICON[g.id]
@@ -342,8 +340,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
                   >
                     <span className={styles.goalIcon}><Icon /></span>
                     <span className={styles.goalText}>
-                      <span className={styles.goalLabel}>{g.label}</span>
-                      <span className={styles.goalDesc}>{g.desc}</span>
+                      <span className={styles.goalLabel}>{t(g.labelKey)}</span>
+                      <span className={styles.goalDesc}>{t(g.descKey)}</span>
                     </span>
                   </button>
                 )
@@ -355,8 +353,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         {/* Step 3 — Gender */}
         {step === 3 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>ТИ СИ</h1>
-            <p className={styles.sub}>Настройва манекена и препоръките за възстановяване.</p>
+            <h1 className={styles.heading}>{t('ob.step3.title')}</h1>
+            <p className={styles.sub}>{t('ob.step3.sub')}</p>
             <div className={styles.genderGrid}>
               <button
                 type="button"
@@ -364,7 +362,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
                 onClick={() => set('gender', 'male')}
               >
                 <span className={styles.genderFigure}><ManFigure /></span>
-                <span className={styles.genderLabel}>МЪЖ</span>
+                <span className={styles.genderLabel}>{t('ob.step3.male')}</span>
               </button>
               <button
                 type="button"
@@ -372,7 +370,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
                 onClick={() => set('gender', 'female')}
               >
                 <span className={styles.genderFigure}><WomanFigure /></span>
-                <span className={styles.genderLabel}>ЖЕНА</span>
+                <span className={styles.genderLabel}>{t('ob.step3.female')}</span>
               </button>
             </div>
           </div>
@@ -381,8 +379,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         {/* Step 4 — Weight */}
         {step === 4 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>ТЕГЛО СЕГА</h1>
-            <p className={styles.sub}>Стартова точка за графиката. Можеш да го променяш всеки ден.</p>
+            <h1 className={styles.heading}>{t('ob.step4.title')}</h1>
+            <p className={styles.sub}>{t('ob.step4.sub')}</p>
             <WeightScroller
               value={form.weight_kg}
               onChange={v => set('weight_kg', v)}
@@ -393,8 +391,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         {/* Step 5 — Activity */}
         {step === 5 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>АКТИВНОСТ</h1>
-            <p className={styles.sub}>Извън тренировките — колко се движиш през деня.</p>
+            <h1 className={styles.heading}>{t('ob.step5.title')}</h1>
+            <p className={styles.sub}>{t('ob.step5.sub')}</p>
             <div className={styles.activityGrid}>
               {ACTIVITY_OPTIONS.map(a => (
                 <button
@@ -405,8 +403,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
                 >
                   <span className={styles.activityIcon}>{ACTIVITY_ICON[a.icon]}</span>
                   <span className={styles.activityBody}>
-                    <span className={styles.activityLabel}>{a.label}</span>
-                    <span className={styles.activityDesc}>{a.desc}</span>
+                    <span className={styles.activityLabel}>{t(a.labelKey)}</span>
+                    <span className={styles.activityDesc}>{t(a.descKey)}</span>
                   </span>
                 </button>
               ))}
@@ -417,11 +415,8 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         {/* Step 6 — Notifications */}
         {step === 6 && (
           <div className={styles.stepWrap}>
-            <h1 className={styles.heading}>НАПОМНЯНИЯ</h1>
-            <p className={styles.sub}>
-              За тренировките, храненията и когато треньорът пише — да не се
-              разчита само на паметта ти.
-            </p>
+            <h1 className={styles.heading}>{t('ob.step6.title')}</h1>
+            <p className={styles.sub}>{t('ob.step6.sub')}</p>
             <div className={styles.notifyHero} aria-hidden="true">
               <span className={styles.notifyBell}>
                 <svg viewBox="0 0 64 64" fill="currentColor">
@@ -431,13 +426,13 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
               <span className={styles.notifyBadge} aria-hidden="true" />
             </div>
             {notifyState === 'granted' && (
-              <p className={styles.notifyDone}>Готово — вече ще получаваш известия.</p>
+              <p className={styles.notifyDone}>{t('ob.notify.done')}</p>
             )}
             {notifyState === 'denied' && (
-              <p className={styles.notifyMuted}>Отказано. Можеш да включиш по-късно от настройките на браузъра.</p>
+              <p className={styles.notifyMuted}>{t('ob.notify.denied')}</p>
             )}
             {notifyState === 'unsupported' && (
-              <p className={styles.notifyMuted}>Този браузър не поддържа push известия.</p>
+              <p className={styles.notifyMuted}>{t('ob.notify.unsupported')}</p>
             )}
           </div>
         )}
@@ -447,7 +442,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
 
       <div className={styles.nav}>
         {step > 1 && step < totalSteps && (
-          <button className={styles.backBtn} onClick={() => setStep(s => s - 1)} type="button" aria-label="Назад">
+          <button className={styles.backBtn} onClick={() => setStep(s => s - 1)} type="button" aria-label={t('ob.back')}>
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
               <polyline points="15 6 9 12 15 18" />
             </svg>
@@ -455,7 +450,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         )}
         {step < totalSteps && (
           <button className={styles.nextBtn} onClick={next} type="button">
-            Продължи <span className={styles.nextArrow} aria-hidden="true">→</span>
+            {t('ob.continue')} <span className={styles.nextArrow} aria-hidden="true">→</span>
           </button>
         )}
         {step === totalSteps && (
@@ -467,12 +462,12 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
               type="button"
             >
               {saving
-                ? 'ЗАПИСВА...'
+                ? t('ob.saving')
                 : notifyState === 'idle'
-                  ? 'РАЗРЕШИ И ЗАПОЧНИ'
+                  ? t('ob.notify.allow')
                   : isCoachingIntake
-                    ? 'ИЗПРАТИ ЗАЯВКАТА →'
-                    : 'ЗАПОЧНИ →'}
+                    ? t('ob.submit.coaching')
+                    : t('ob.submit.start')}
             </button>
             {notifyState === 'idle' && (
               <button
@@ -481,14 +476,14 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
                 disabled={saving}
                 type="button"
               >
-                не сега
+                {t('ob.notify.skip')}
               </button>
             )}
           </div>
         )}
       </div>
 
-      <button className={styles.signOutLink} onClick={signOut} type="button">Изход</button>
+      <button className={styles.signOutLink} onClick={signOut} type="button">{t('ob.signOut')}</button>
     </div>
   )
 }

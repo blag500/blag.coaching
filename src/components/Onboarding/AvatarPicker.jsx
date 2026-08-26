@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import AvatarCropper from '../Profile/AvatarCropper'
 import { CameraIcon } from './StepIcons'
@@ -15,6 +16,7 @@ import styles from './Onboarding.module.css'
  * so a step only has to drop <AvatarPicker /> under the heading.
  */
 export default function AvatarPicker() {
+  const { t } = useSettings()
   const { profile, user, updateProfile } = useAuth()
   const inputRef = useRef(null)
   const [cropFile, setCropFile] = useState(null)
@@ -62,14 +64,14 @@ export default function AvatarPicker() {
         className={styles.avatarPick}
         onClick={() => inputRef.current?.click()}
         type="button"
-        aria-label="Добави профилна снимка"
+        aria-label={t('ob.avatar.aria')}
       >
         {url
           ? <img className={styles.avatarImg} src={url} alt="" />
           : <span className={styles.avatarIcon}><CameraIcon /></span>}
         {busy && <span className={styles.avatarBusy} />}
       </button>
-      <p className={styles.avatarHint}>{url ? 'Смени снимката' : 'Добави снимка (по избор)'}</p>
+      <p className={styles.avatarHint}>{url ? t('ob.avatar.change') : t('ob.avatar.add')}</p>
     </>
   )
 }

@@ -1,41 +1,32 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './PaymentWall.module.css'
 
 const PLAN_INFO = {
   pro: {
+    id: 'pro',
     name: 'PRO',
     price: '4.99 €',
-    period: 'на месец',
     accent: '#7E57C2',
-    features: [
-      'Библиотека с ястия',
-      'Умни задачи & известия',
-      'Разширени анализи & графики',
-      'Планиране на хранения',
-      'Приоритетна поддръжка',
-    ],
+    featureKeys: ['pay.pro.f1', 'pay.pro.f2', 'pay.pro.f3', 'pay.pro.f4', 'pay.pro.f5'],
   },
   coaching: {
-    name: 'КОУЧИНГ',
+    id: 'coaching',
+    nameKey: 'pay.coach.name',
     price: '29 €',
-    period: 'на месец',
     accent: 'var(--accent)',
-    features: [
-      'Личен план от треньор',
-      'Директна комуникация',
-      'Седмичен преглед & корекции',
-      'Индивидуални тренировъчни програми',
-      'Неограничени консултации',
-    ],
+    featureKeys: ['pay.coach.f1', 'pay.coach.f2', 'pay.coach.f3', 'pay.coach.f4', 'pay.coach.f5'],
   },
 }
 
 export default function PaymentWall({ onDowngrade }) {
   const { profile, selectPlan } = useAuth()
+  const { t } = useSettings()
   const plan = profile?.plan ?? 'pro'
   const info = PLAN_INFO[plan] ?? PLAN_INFO.pro
+  const planName = info.nameKey ? t(info.nameKey) : info.name
 
   const [loading,        setLoading]        = useState(false)
   const [error,          setError]          = useState(null)
@@ -47,7 +38,7 @@ export default function PaymentWall({ onDowngrade }) {
 
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
-      setError('Не си влязъл в акаунта. Опитай пак.')
+      setError(t('pay.err.noSession'))
       setLoading(false)
       return
     }
@@ -72,11 +63,11 @@ export default function PaymentWall({ onDowngrade }) {
       if (json.url) {
         window.location.href = json.url
       } else {
-        setError(json.error ?? 'Грешка при отваряне на плащане. Опитай пак.')
+        setError(json.error ?? t('pay.err.stripe'))
         setLoading(false)
       }
     } catch {
-      setError('Мрежова грешка — провери връзката и опитай пак.')
+      setError(t('pay.err.network'))
       setLoading(false)
     }
   }
@@ -92,24 +83,22 @@ export default function PaymentWall({ onDowngrade }) {
     return (
       <div className={styles.page}>
         <div className={styles.confirmBox}>
-          <h2 className={styles.confirmTitle}>Сигурен ли си?</h2>
-          <p className={styles.confirmText}>
-            Ще преминеш към безплатния план. Достъпът до {info.name} функциите ще бъде спрян.
-          </p>
+          <h2 className={styles.confirmTitle}>{t('pay.confirm.title')}</h2>
+          <p className={styles.confirmText}>{t('pay.confirm.body', { name: planName })}</p>
           <button
             className={styles.downgradeConfirmBtn}
             onClick={handleDowngradeConfirm}
             disabled={loading}
             type="button"
           >
-            {loading ? '...' : 'Да, мини на безплатен'}
+            {loading ? '...' : t('pay.confirm.yes')}
           </button>
           <button
             className={styles.backLink}
             onClick={() => setConfirmDowngrade(false)}
             type="button"
           >
-            Назад
+            {t('pay.confirm.back')}
           </button>
         </div>
       </div>
@@ -124,18 +113,18 @@ export default function PaymentWall({ onDowngrade }) {
 
       <div className={styles.card} style={{ '--plan-accent': info.accent }}>
         <div className={styles.planHeader}>
-          <span className={styles.planName} style={{ color: info.accent }}>{info.name}</span>
+          <span className={styles.planName} style={{ color: info.accent }}>{planName}</span>
           <div className={styles.priceRow}>
             <span className={styles.price}>{info.price}</span>
-            <span className={styles.period}>/ {info.period}</span>
+            <span className={styles.period}>/ {t('pay.period')}</span>
           </div>
         </div>
 
         <ul className={styles.features}>
-          {info.features.map(f => (
-            <li key={f} className={styles.feature}>
+          {info.featureKeys.map(k => (
+            <li key={k} className={styles.feature}>
               <span className={styles.check} style={{ color: info.accent }}>✓</span>
-              {f}
+              {t(k)}
             </li>
           ))}
         </ul>
@@ -149,12 +138,10 @@ export default function PaymentWall({ onDowngrade }) {
           disabled={loading}
           type="button"
         >
-          {loading ? 'Отваряне на плащане...' : `ПЛАТИ С КАРТА — ${info.price}/м`}
+          {loading ? t('pay.openStripe') : t('pay.cta', { price: info.price })}
         </button>
 
-        <p className={styles.secureNote}>
-          🔒 Сигурно плащане чрез Stripe · Отказ по всяко време
-        </p>
+        <p className={styles.secureNote}>{t('pay.stripeSafe')}</p>
       </div>
 
       <button
@@ -162,7 +149,7 @@ export default function PaymentWall({ onDowngrade }) {
         onClick={() => setConfirmDowngrade(true)}
         type="button"
       >
-        Продължи с безплатния план
+        {t('pay.free')}
       </button>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './PlanSelector.module.css'
 
@@ -7,34 +8,35 @@ const PLANS = {
   free: {
     id: 'free',
     label: 'BLAG',
-    cta: 'ЗАПОЧНИ БЕЗПЛАТНО',
+    ctaKey: 'plan.free.cta',
     ctaStyle: 'free',
     features: [
-      { icon: '🍽', title: 'AI храна + баркод',       sub: 'Логвай за секунди'            },
-      { icon: '🏋', title: 'Тренировъчен дневник',    sub: 'Прогресия и история'          },
-      { icon: '📊', title: 'Тегло, навици, прогрес',  sub: 'Всичко на едно място'        },
-      { icon: '🔔', title: 'Известия',                sub: 'Напомняния по твой график'    },
-      { icon: '♾', title: 'Безплатно завинаги',       sub: 'Без абонамент, без трик'      },
+      { icon: '🍽', titleKey: 'plan.free.f1.title', subKey: 'plan.free.f1.sub' },
+      { icon: '🏋', titleKey: 'plan.free.f2.title', subKey: 'plan.free.f2.sub' },
+      { icon: '📊', titleKey: 'plan.free.f3.title', subKey: 'plan.free.f3.sub' },
+      { icon: '🔔', titleKey: 'plan.free.f4.title', subKey: 'plan.free.f4.sub' },
+      { icon: '♾', titleKey: 'plan.free.f5.title', subKey: 'plan.free.f5.sub' },
     ],
   },
   pro: {
     id: 'pro',
     label: 'BLAG PRO',
-    badge: 'С ТРЕНЬОР',
-    cta: 'КАНДИДАТСТВАЙ ЗА PRO',
+    badgeKey: 'plan.pro.badge',
+    ctaKey: 'plan.pro.cta',
     ctaStyle: 'pro',
     features: [
-      { icon: '✓', title: 'Всичко от BLAG',           sub: 'Пълен достъп до приложението' },
-      { icon: '🎯', title: 'Хранителен план по мярка', sub: 'Съобразен с теб и целта ти'   },
-      { icon: '💪', title: 'Тренировъчна програма',   sub: 'Написана от треньора'          },
-      { icon: '💬', title: 'Директна връзка',          sub: 'Чат с треньора по всяко време' },
-      { icon: '💊', title: 'Суплементация',            sub: 'Протокол за теб'              },
+      { icon: '✓', titleKey: 'plan.pro.f1.title', subKey: 'plan.pro.f1.sub' },
+      { icon: '🎯', titleKey: 'plan.pro.f2.title', subKey: 'plan.pro.f2.sub' },
+      { icon: '💪', titleKey: 'plan.pro.f3.title', subKey: 'plan.pro.f3.sub' },
+      { icon: '💬', titleKey: 'plan.pro.f4.title', subKey: 'plan.pro.f4.sub' },
+      { icon: '💊', titleKey: 'plan.pro.f5.title', subKey: 'plan.pro.f5.sub' },
     ],
   },
 }
 
 export default function PlanSelector({ onSelect, onSaved }) {
   const auth = useAuth()
+  const { t } = useSettings()
   const [selected, setSelected] = useState('free')
   const [loading, setLoading]   = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -47,7 +49,7 @@ export default function PlanSelector({ onSelect, onSaved }) {
     if (onSelect) { onSelect(plan.id); setLoading(false); return }
 
     const { error } = await supabase.rpc('select_plan', { plan_choice: plan.id })
-    if (error) { setLoading(false); setSaveError('Грешка — опитай отново.'); return }
+    if (error) { setLoading(false); setSaveError(t('plan.saveErr')); return }
 
     if (plan.id === 'pro') {
       const coachId = auth.profile?.coach_id
@@ -55,8 +57,8 @@ export default function PlanSelector({ onSelect, onSaved }) {
         supabase.functions.invoke('send-push', {
           body: {
             toUserId: coachId,
-            title: 'Нова заявка за PRO',
-            body: `${auth.profile?.name || auth.profile?.email || 'Нов клиент'} кандидатства за PRO`,
+            title: t('plan.pushProTitle'),
+            body: t('plan.pushProBody', { name: auth.profile?.name || auth.profile?.email || t('ob.push.newClient') }),
           },
         }).catch(() => {})
       }
@@ -71,8 +73,8 @@ export default function PlanSelector({ onSelect, onSaved }) {
     <div className={styles.page}>
       {/* Header */}
       <div className={styles.header}>
-        <p className={styles.greeting}>Добре дошъл</p>
-        <h1 className={styles.heading}>Готов ли си<br />да започнеш?</h1>
+        <p className={styles.greeting}>{t('plan.greeting')}</p>
+        <h1 className={styles.heading}>{t('plan.headingReady')}</h1>
       </div>
 
       {/* Plan bubbles */}
@@ -85,8 +87,8 @@ export default function PlanSelector({ onSelect, onSaved }) {
             type="button"
           >
             <span className={styles.bubbleLabel}>{p.label}</span>
-            {p.badge && selected === p.id && (
-              <span className={styles.bubbleBadge}>{p.badge}</span>
+            {p.badgeKey && selected === p.id && (
+              <span className={styles.bubbleBadge}>{t(p.badgeKey)}</span>
             )}
           </button>
         ))}
@@ -95,14 +97,14 @@ export default function PlanSelector({ onSelect, onSaved }) {
       {/* Features list */}
       <div className={styles.list}>
         <p className={styles.listTitle}>
-          {selected === 'free' ? 'Какво включва' : 'Какво получаваш'}
+          {selected === 'free' ? t('plan.includesFree') : t('plan.includesPro')}
         </p>
         {plan.features.map(f => (
-          <div key={f.title} className={styles.row}>
+          <div key={f.titleKey} className={styles.row}>
             <span className={styles.rowIcon}>{f.icon}</span>
             <div className={styles.rowText}>
-              <span className={styles.rowTitle}>{f.title}</span>
-              <span className={styles.rowSub}>{f.sub}</span>
+              <span className={styles.rowTitle}>{t(f.titleKey)}</span>
+              <span className={styles.rowSub}>{t(f.subKey)}</span>
             </div>
             <span className={styles.rowArrow}>→</span>
           </div>
@@ -114,8 +116,8 @@ export default function PlanSelector({ onSelect, onSaved }) {
         <div className={styles.ctaCardTop}>
           <span className={styles.ctaPlanName}>{plan.label}</span>
           {plan.id === 'free'
-            ? <span className={styles.ctaPrice}>Безплатно</span>
-            : <span className={styles.ctaPrice}>По договаряне</span>
+            ? <span className={styles.ctaPrice}>{t('plan.priceFree')}</span>
+            : <span className={styles.ctaPrice}>{t('plan.priceCustom')}</span>
           }
         </div>
         {saveError && <p className={styles.saveError}>{saveError}</p>}
@@ -125,13 +127,13 @@ export default function PlanSelector({ onSelect, onSaved }) {
           disabled={loading}
           type="button"
         >
-          {loading ? '...' : plan.cta}
+          {loading ? '...' : t(plan.ctaKey)}
         </button>
       </div>
 
       {!onSelect && (
         <button className={styles.signOutLink} onClick={auth.signOut} type="button">
-          Изход
+          {t('plan.signOut')}
         </button>
       )}
     </div>

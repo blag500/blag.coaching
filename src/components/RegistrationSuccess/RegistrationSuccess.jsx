@@ -1,4 +1,5 @@
 import { CheckIcon, TargetIcon } from '../Onboarding/StepIcons'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './RegistrationSuccess.module.css'
 
 /**
@@ -11,6 +12,7 @@ import styles from './RegistrationSuccess.module.css'
  * enter the app a frame before the profile is written.
  */
 export default function RegistrationSuccess({ name, calories, goal, ready, onEnter }) {
+  const { t } = useSettings()
   const first = (name || '').trim().split(/\s+/)[0]
 
   return (
@@ -21,17 +23,14 @@ export default function RegistrationSuccess({ name, calories, goal, ready, onEnt
         <span className={styles.mark}><CheckIcon /></span>
 
         <h1 className={styles.heading}>
-          {first ? `Готов си, ${first}.` : 'Готов си.'}
+          {first ? t('reg.readyName', { name: first }) : t('reg.ready')}
         </h1>
-        <p className={styles.sub}>
-          Профилът ти е настроен и целите ти са изчислени. Приложението вече
-          работи за теб.
-        </p>
+        <p className={styles.sub}>{t('reg.body')}</p>
 
         {ready && calories > 0 && (
           <span className={styles.chip}>
             <span className={styles.chipIcon}><TargetIcon /></span>
-            {calories} ккал дневно{goal ? ` · ${goal}` : ''}
+            {t('reg.kcal', { kcal: calories })}{goal ? ` · ${goal}` : ''}
           </span>
         )}
       </div>
@@ -43,7 +42,7 @@ export default function RegistrationSuccess({ name, calories, goal, ready, onEnt
           disabled={!ready}
           type="button"
         >
-          {ready ? 'КЪМ ПРИЛОЖЕНИЕТО' : 'НАСТРОЙВАМЕ...'}
+          {ready ? t('reg.ctaReady') : t('reg.ctaWait')}
         </button>
       </div>
     </div>
