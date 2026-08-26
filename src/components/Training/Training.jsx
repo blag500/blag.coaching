@@ -240,11 +240,25 @@ export default function Training({ onMenuOpen }) {
   }, [sessions, completions, blocks])
 
   const recovery = muscleRecovery(enrichedCompletions, Date.now(), soreness, groupsByLabel)
+  /* Rotation първо, recovery само на равенство. Старият сорт (pct DESC) даваше
+     „най-възстановения" блок за next, но това се чупи от споделени групи —
+     ако едно упражнение вчера е пипнало extra, всеки блок който също съдържа
+     extra изглежда 37% възстановен, а всъщност самият той не е тренуван от
+     дни. Клиентите очакват split-ът да ротира: „блокът който отдавна не съм
+     правил е следващият", което е това което дясната колона показва. */
   const ranked = trainable
-    .map(b => ({ block: b, ...blockReadiness(b, recovery, lastDone) }))
-    .sort((a, b) =>
-      b.pct - a.pct ||
-      (lastDone[a.block.label] ?? '').localeCompare(lastDone[b.block.label] ?? ''))
+    .map(b => ({ block: b, ...blockReadiness(b, recovery, lastDone), _last: lastDone[b.label] }))
+    .sort((a, b) => {
+      // Никога-невъзстановен блок е „най-стар" → печели.
+      if (!a._last && b._last) return -1
+      if (!b._last && a._last) return 1
+      if (!a._last && !b._last) return 0
+      // По-стар lastDone (по-отдавна тренуван) → по-приоритетен.
+      const cmp = a._last.localeCompare(b._last)
+      if (cmp !== 0) return cmp
+      // Равенство по дата → по-възстановения печели.
+      return b.pct - a.pct
+    })
 
   const dueEntry = ranked[0] ?? null
   const dueBlock = dueEntry?.block ?? null
