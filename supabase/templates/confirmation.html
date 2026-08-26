@@ -10,11 +10,17 @@
   install in the wrong context. The {{ .ConfirmationURL }} lives on as a small
   fallback for anyone who prefers a click.
 
-  Email is not a browser: no external CSS, no flexbox, no custom fonts you can
-  rely on. So it is one table, every colour inline, and a system display stack
-  that falls back gracefully where Oswald cannot load. The gold is a flat swatch
-  rather than the app's brushed-metal ramp, because background-clip text is blank
-  in most inboxes.
+  Identity matches the Splash: the arms mark above the BLAG wordmark, the
+  COACHING kicker in the same weight, a hairline gold divider, and the
+  "Be blag, Be better" tagline. `arms-hi.webp` is fetched from the production
+  domain — email cannot embed local assets, and remote images are blocked until
+  the reader taps "Show images", so the design still reads without it (the
+  typography carries the mark on its own).
+
+  No external CSS, no flexbox, no custom fonts we can rely on. One table, every
+  colour inline, a system display stack that falls back gracefully where Oswald
+  cannot load. Brushed-gold gradients are traded for a flat swatch — inline
+  `background-clip: text` renders as empty in most inboxes.
 -->
 <div style="margin:0;padding:0;background:#0C0A06;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0C0A06" style="background:#0C0A06;margin:0;padding:0;">
@@ -23,20 +29,37 @@
 
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;width:100%;">
 
+          <!-- Arms mark — the same silhouette that flanks BLAG on the splash,
+               centred above the wordmark here so a single image reads clean in
+               every inbox. Alt text is empty on purpose: with images off, the
+               typography carries the mark and a stand-in caption would double
+               the wordmark below. -->
+          <tr>
+            <td align="center" style="padding:0 0 12px;">
+              <img src="https://blag-coaching.com/arms-hi.webp" alt="" width="140"
+                   style="display:block;width:140px;max-width:60%;height:auto;border:0;outline:none;text-decoration:none;" />
+            </td>
+          </tr>
+
           <!-- Wordmark -->
           <tr>
-            <td align="center" style="padding:8px 0 6px;">
+            <td align="center" style="padding:4px 0 4px;">
               <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:52px;font-weight:600;letter-spacing:14px;text-indent:14px;color:#E4CE94;line-height:1;">BLAG</div>
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding:0 0 4px;">
-              <div style="width:40px;height:1px;background:#B08A45;line-height:1px;font-size:0;">&nbsp;</div>
+            <td align="center" style="padding:6px 0 4px;">
+              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:20px;font-weight:600;letter-spacing:9px;text-indent:9px;color:#C8A05A;line-height:1;">COACHING</div>
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding:6px 0 30px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:13px;font-weight:400;letter-spacing:9px;text-indent:9px;color:#8A7B5C;line-height:1;">COACHING</div>
+            <td align="center" style="padding:14px 0 8px;">
+              <div style="width:56px;height:1px;background:#B08A45;line-height:1px;font-size:0;">&nbsp;</div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 0 28px;">
+              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:400;letter-spacing:6px;text-indent:6px;color:#8A7B5C;line-height:1;text-transform:uppercase;">Be blag, Be better</div>
             </td>
           </tr>
 
