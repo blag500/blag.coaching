@@ -1,3 +1,4 @@
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './AppHeader.module.css'
 
 /**
@@ -18,18 +19,19 @@ export default function AppHeader({
   avatarBusy = false,
   action = null,
 }) {
+  const { t } = useSettings()
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
         <div className={styles.left}>
           {onBack ? (
-            <button className={styles.menuBtn} onClick={onBack} type="button" aria-label="Назад">
+            <button className={styles.menuBtn} onClick={onBack} type="button" aria-label={t('header.back')}>
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
                 <polyline points="15 6 9 12 15 18" />
               </svg>
             </button>
           ) : (
-            <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label="Меню">
+            <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label={t('header.menu')}>
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
                 <line x1="3" y1="6"  x2="21" y2="6"  />
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -51,7 +53,7 @@ export default function AppHeader({
               className={styles.avatarBtn}
               onClick={onAvatarClick}
               type="button"
-              aria-label={avatarEditable ? 'Смени снимка' : 'Профил'}
+              aria-label={avatarEditable ? t('header.changePhoto') : t('header.profile')}
             >
               {avatarUrl
                 ? <img src={avatarUrl} className={styles.avatarImg} alt="" />

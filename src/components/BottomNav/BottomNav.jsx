@@ -50,9 +50,9 @@ const RIGHT_TABS = [
 ]
 
 const ACTIONS = [
-  { id: 'food',     emoji: '🍽',  label: 'Ядене',      tab: 'nutrition' },
-  { id: 'water',    emoji: '💧',  label: 'Вода +1',    tab: null        },
-  { id: 'training', emoji: '💪',  label: 'Тренировка', tab: 'training'  },
+  { id: 'food',     emoji: '🍽',  labelKey: 'nav.action.food',     tab: 'nutrition' },
+  { id: 'water',    emoji: '💧',  labelKey: 'nav.action.water',    tab: null        },
+  { id: 'training', emoji: '💪',  labelKey: 'nav.action.training', tab: 'training'  },
 ]
 
 const HIDDEN_KEY = 'blag_nav_hidden'
@@ -202,7 +202,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
         onTouchStart={onPeekTouchStart}
         onTouchMove={onPeekTouchMove}
         onTouchEnd={onPeekTouchEnd}
-        aria-label="Покажи навигацията"
+        aria-label={t('nav.showNav')}
         type="button"
         tabIndex={hidden ? 0 : -1}
       >
@@ -217,7 +217,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
         ref={navRef}
         className={`${styles.nav} ${hidden ? styles.navHidden : ''}`}
         role="navigation"
-        aria-label="Основна навигация"
+        aria-label={t('nav.mainNav')}
         aria-hidden={hidden}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -249,7 +249,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                   style={{ animationDelay: `${(ACTIONS.length - 1 - i) * 40}ms` }}
                 >
                   <span className={styles.actionEmoji}>{action.emoji}</span>
-                  <span className={styles.actionLabel}>{action.label}</span>
+                  <span className={styles.actionLabel}>{t(action.labelKey)}</span>
                 </button>
               ))}
             </div>
@@ -258,7 +258,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
             className={`${styles.fabCenter} ${open ? styles.fabOpen : ''}`}
             onClick={() => setOpen(o => !o)}
             type="button"
-            aria-label="Бързо добави"
+            aria-label={t('nav.action.quickAdd')}
             aria-expanded={open}
           >
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" aria-hidden="true">
@@ -286,7 +286,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
           className={styles.dockHandle}
           onClick={() => setHidden(true)}
           type="button"
-          aria-label="Скрий навигацията"
+          aria-label={t('nav.hideNav')}
         >
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
                strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

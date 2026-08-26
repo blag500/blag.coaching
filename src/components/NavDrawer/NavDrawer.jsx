@@ -140,8 +140,7 @@ const SupplementIcon = () => (
 // ── Section definitions ───────────────────────────────────────────
 const CLIENT_SECTIONS = [
   {
-    label: 'ПРОСЛЕДЯВАНЕ',
-    labelEn: 'TRACKING',
+    labelKey: 'drawer.section.tracking',
     tabs: [
       { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
       { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
@@ -152,8 +151,7 @@ const CLIENT_SECTIONS = [
     ],
   },
   {
-    label: 'ПЛАНИРАНЕ',
-    labelEn: 'PLANNING',
+    labelKey: 'drawer.section.planning',
     tabs: [
       { id: 'calendar', key: 'nav.schedule', Icon: CalendarIcon },
       { id: 'tasks',    key: 'nav.tasks',    Icon: TasksIcon    },
@@ -161,8 +159,7 @@ const CLIENT_SECTIONS = [
     ],
   },
   {
-    label: 'РЕСУРСИ',
-    labelEn: 'RESOURCES',
+    labelKey: 'drawer.section.resources',
     tabs: [
       { id: 'chat',    key: 'nav.chat',    Icon: ChatIcon    },
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
@@ -170,16 +167,14 @@ const CLIENT_SECTIONS = [
     ],
   },
   {
-    label: 'БОДИБИЛДИНГ',
-    labelEn: 'BODYBUILDING',
+    labelKey: 'drawer.section.bodybuilding',
     tabs: [
       { id: 'protocol', key: 'nav.protocol', Icon: TrophyIcon },
       { id: 'posing',   key: 'nav.posing',   Icon: PosingIcon },
     ],
   },
   {
-    label: 'ЛИЧНО',
-    labelEn: 'PERSONAL',
+    labelKey: 'drawer.section.personal',
     tabs: [
       { id: 'profile', key: 'nav.profile', Icon: ProfileIcon },
       // The only way in since the shortcut tiles left Днес.
@@ -190,8 +185,7 @@ const CLIENT_SECTIONS = [
 
 const COACH_SECTIONS = [
   {
-    label: 'КЛИЕНТИ',
-    labelEn: 'CLIENTS',
+    labelKey: 'drawer.section.clients',
     tabs: [
       { id: 'clients',  key: 'nav.clients', Icon: ClientsIcon },
       { id: 'orders',   key: 'nav.orders',  Icon: OrdersIcon  },
@@ -200,8 +194,7 @@ const COACH_SECTIONS = [
     ],
   },
   {
-    label: 'МОЕ ПРОСЛЕДЯВАНЕ',
-    labelEn: 'MY TRACKING',
+    labelKey: 'drawer.section.myTracking',
     tabs: [
       { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
       { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
@@ -212,8 +205,7 @@ const COACH_SECTIONS = [
     ],
   },
   {
-    label: 'ПЛАНИРАНЕ',
-    labelEn: 'PLANNING',
+    labelKey: 'drawer.section.planning',
     tabs: [
       { id: 'calendar', key: 'nav.schedule', Icon: CalendarIcon },
       { id: 'tasks',    key: 'nav.tasks',    Icon: TasksIcon    },
@@ -221,24 +213,21 @@ const COACH_SECTIONS = [
     ],
   },
   {
-    label: 'РЕСУРСИ',
-    labelEn: 'RESOURCES',
+    labelKey: 'drawer.section.resources',
     tabs: [
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
       { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
     ],
   },
   {
-    label: 'БОДИБИЛДИНГ',
-    labelEn: 'BODYBUILDING',
+    labelKey: 'drawer.section.bodybuilding',
     tabs: [
       { id: 'protocol', key: 'nav.protocol', Icon: TrophyIcon },
       { id: 'posing',   key: 'nav.posing',   Icon: PosingIcon },
     ],
   },
   {
-    label: 'ЛИЧНО',
-    labelEn: 'PERSONAL',
+    labelKey: 'drawer.section.personal',
     tabs: [
       { id: 'profile', key: 'nav.profile', Icon: ProfileIcon },
     ],
@@ -255,7 +244,7 @@ export default function NavDrawer({
   dragPx = null,
 }) {
   const { profile } = useAuth()
-  const { t, lang } = useSettings()
+  const { t } = useSettings()
   const sections = isCoach ? COACH_SECTIONS : CLIENT_SECTIONS
 
   function handleNav(id) {
@@ -291,11 +280,11 @@ export default function NavDrawer({
         className={`${styles.drawer} ${open ? styles.drawerOpen : ''}`}
         style={drawerStyle}
         role="navigation"
-        aria-label="Меню"
+        aria-label={t('drawer.aria')}
       >
         <div className={styles.header}>
           <span className={styles.brand}>BLAG</span>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Затвори меню" type="button">
+          <button className={styles.closeBtn} onClick={onClose} aria-label={t('drawer.close')} type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" width="18" height="18" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -314,7 +303,7 @@ export default function NavDrawer({
             <div className={styles.userInfo}>
               <span className={styles.userName}>{profile.name || profile.email}</span>
               <span className={styles.userRole}>
-                {isCoach ? (lang === 'en' ? 'COACH' : 'ТРЕНЬОР') : (profile.plan?.toUpperCase() ?? 'CLIENT')}
+                {isCoach ? t('drawer.role.coach') : (profile.plan?.toUpperCase() ?? t('drawer.role.client'))}
               </span>
             </div>
             <span className={styles.userArrow}>→</span>
@@ -323,10 +312,8 @@ export default function NavDrawer({
 
         <div className={styles.nav}>
           {sections.map((section) => (
-            <div key={section.label} className={styles.section}>
-              <div className={styles.sectionLabel}>
-                {lang === 'en' ? section.labelEn : section.label}
-              </div>
+            <div key={section.labelKey} className={styles.section}>
+              <div className={styles.sectionLabel}>{t(section.labelKey)}</div>
               {section.tabs.map((tab) => {
                 const idx = globalIdx++
                 const label = t(tab.key)
