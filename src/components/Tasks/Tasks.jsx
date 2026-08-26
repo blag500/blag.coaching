@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useTasks } from '../../hooks/useTasks'
 import { useTaskSuggestions } from '../../hooks/useTaskSuggestions'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Tasks.module.css'
 
 const TODAY = () => new Date().toISOString().slice(0, 10)
@@ -18,6 +19,7 @@ function getTimeBucket(due_date) {
 export default function Tasks() {
   const { tasks, loading, addTask, toggleTask, deleteTask } = useTasks()
   const { suggestions, dismiss } = useTaskSuggestions()
+  const { t } = useSettings()
   const [text, setText]       = useState('')
   const [dueSlot, setDueSlot] = useState('later')  // 'today' | 'week' | 'later'
   const [highPrio, setHighPrio] = useState(false)
@@ -61,16 +63,16 @@ export default function Tasks() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>ЗАДАЧИ</h1>
+        <h1 className={styles.title}>{t('tasks.title')}</h1>
         {active.length > 0 && (
-          <span className={styles.badge}>{active.length} активни</span>
+          <span className={styles.badge}>{t('tasks.active', { n: active.length })}</span>
         )}
       </div>
 
       {/* Smart suggestions */}
       {suggestions.length > 0 && (
         <div className={styles.suggestionsBlock}>
-          <div className={styles.suggestionsLabel}>💡 ПРЕПОРЪКИ</div>
+          <div className={styles.suggestionsLabel}>{t('tasks.suggestions')}</div>
           {suggestions.map(s => (
             <div key={s.id} className={styles.suggestionCard}>
               <span className={styles.suggestionIcon}>{s.icon}</span>
@@ -79,12 +81,12 @@ export default function Tasks() {
                 className={styles.suggestionAdd}
                 onClick={() => handleAddSuggestion(s)}
                 type="button"
-              >+ ДОБАВИ</button>
+              >{t('tasks.suggestAdd')}</button>
               <button
                 className={styles.suggestionDismiss}
                 onClick={() => dismiss(s.id)}
                 type="button"
-                aria-label="Скрий"
+                aria-label={t('tasks.hide')}
               >×</button>
             </div>
           ))}
@@ -93,19 +95,19 @@ export default function Tasks() {
 
       {/* Time buckets */}
       {todayTasks.length > 0 && (
-        <Section label="ДНЕС" tasks={todayTasks} onToggle={toggleTask} onDelete={deleteTask} />
+        <Section label={t('tasks.today')} tasks={todayTasks} onToggle={toggleTask} onDelete={deleteTask} />
       )}
       {weekTasks.length > 0 && (
-        <Section label="ТАЗИ СЕДМИЦА" tasks={weekTasks} onToggle={toggleTask} onDelete={deleteTask} />
+        <Section label={t('tasks.week')} tasks={weekTasks} onToggle={toggleTask} onDelete={deleteTask} />
       )}
       {laterTasks.length > 0 && (
-        <Section label="ПО-КЪСНО" tasks={laterTasks} onToggle={toggleTask} onDelete={deleteTask} />
+        <Section label={t('tasks.later')} tasks={laterTasks} onToggle={toggleTask} onDelete={deleteTask} />
       )}
 
       {active.length === 0 && suggestions.length === 0 && (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>✓</div>
-          <div>Всичко е готово.<br />Добави нова задача отдолу.</div>
+          <div>{t('tasks.emptyMain')}<br />{t('tasks.emptySub')}</div>
         </div>
       )}
 
@@ -118,7 +120,7 @@ export default function Tasks() {
             type="button"
           >
             <span className={`${styles.doneArrow} ${showDone ? styles.doneArrowOpen : ''}`}>▶</span>
-            ИЗПЪЛНЕНИ
+            {t('tasks.done')}
             <span className={styles.doneBadge}>{done.length}</span>
           </button>
           {showDone && done.map(task => (
@@ -137,7 +139,7 @@ export default function Tasks() {
             ref={inputRef}
             className={styles.input}
             type="text"
-            placeholder="Нова задача..."
+            placeholder={t('tasks.placeholder')}
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
@@ -151,9 +153,9 @@ export default function Tasks() {
         </div>
         <div className={styles.addMeta}>
           {[
-            { id: 'today', label: 'ДНЕС' },
-            { id: 'week',  label: '+7 ДНИ' },
-            { id: 'later', label: 'БЕЗ ДАТА' },
+            { id: 'today', label: t('tasks.slot.today') },
+            { id: 'week',  label: t('tasks.slot.week') },
+            { id: 'later', label: t('tasks.slot.later') },
           ].map(opt => (
             <button
               key={opt.id}
@@ -166,7 +168,7 @@ export default function Tasks() {
             className={`${styles.metaBtn} ${styles.metaBtnPrio} ${highPrio ? styles.metaBtnPrioActive : ''}`}
             onClick={() => setHighPrio(v => !v)}
             type="button"
-          >! ВАЖНО</button>
+          >{t('tasks.important')}</button>
         </div>
       </div>
     </div>
@@ -185,6 +187,7 @@ function Section({ label, tasks, onToggle, onDelete }) {
 }
 
 function TaskRow({ task, onToggle, onDelete }) {
+  const { t } = useSettings()
   const today    = TODAY()
   const isOverdue = task.due_date && task.due_date < today && !task.done
   const isCoach   = !!task.created_by
@@ -215,11 +218,11 @@ function TaskRow({ task, onToggle, onDelete }) {
             <span className={styles.prioDot} />
           )}
           {isCoach && !task.done && (
-            <span className={styles.coachTag}>от треньора</span>
+            <span className={styles.coachTag}>{t('tasks.fromCoach')}</span>
           )}
           {task.due_date && !task.done && (
             <span className={`${styles.dateTag} ${isOverdue ? styles.dateTagOverdue : ''}`}>
-              {isOverdue ? '⚠ ' : ''}{formatDate(task.due_date)}
+              {isOverdue ? '⚠ ' : ''}{formatDate(task.due_date, t)}
             </span>
           )}
         </div>
@@ -229,21 +232,21 @@ function TaskRow({ task, onToggle, onDelete }) {
         className={styles.delBtn}
         onClick={() => onDelete(task.id)}
         type="button"
-        aria-label="Изтрий"
+        aria-label={t('tasks.delete')}
       >×</button>
     </div>
   )
 }
 
-function formatDate(iso) {
+function formatDate(iso, t) {
   const d = new Date(iso + 'T00:00:00')
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const diff = Math.round((d - today) / 86400000)
-  if (diff === 0)  return 'Днес'
-  if (diff === 1)  return 'Утре'
-  if (diff === -1) return 'Вчера'
-  if (diff < 0)    return `${Math.abs(diff)}д закъснение`
-  if (diff <= 7)   return `След ${diff}д`
+  if (diff === 0)  return t('tasks.date.today')
+  if (diff === 1)  return t('tasks.date.tomorrow')
+  if (diff === -1) return t('tasks.date.yesterday')
+  if (diff < 0)    return t('tasks.date.overdueDays', { n: Math.abs(diff) })
+  if (diff <= 7)   return t('tasks.date.inDays', { n: diff })
   return d.toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
 }
