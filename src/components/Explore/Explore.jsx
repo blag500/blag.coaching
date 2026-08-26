@@ -5,13 +5,14 @@ import ShowcasePage from './ShowcasePage'
 import CalorieCalculator from '../CalorieCalculator/CalorieCalculator'
 import PWAInstallPage from '../PWAInstall/PWAInstallPage'
 import AppHeader from '../AppHeader/AppHeader'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Explore.module.css'
 
 const SECTIONS = [
   {
     id: 'calculator',
-    title: 'КАЛОРИЕН КАЛКУЛАТОР',
-    desc: 'TDEE · BMR · ИТМ · Макроси — изчисли дневните си нужди',
+    titleKey: 'exp.calc.title',
+    descKey:  'exp.calc.desc',
     accent: 'var(--accent)',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
@@ -27,8 +28,8 @@ const SECTIONS = [
   },
   {
     id: 'install',
-    title: 'СТАТУС',
-    desc: 'Версия на приложението и известия за актуализации',
+    titleKey: 'exp.status.title',
+    descKey:  'exp.status.desc',
     accent: '#C9A227',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
@@ -40,8 +41,8 @@ const SECTIONS = [
   },
   {
     id: 'showcase',
-    title: 'ВДЪХНОВЕНИЕ',
-    desc: 'Тренировъчни програми и хранене от треньора',
+    titleKey: 'exp.showcase.title',
+    descKey:  'exp.showcase.desc',
     accent: 'var(--accent)',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
@@ -51,8 +52,8 @@ const SECTIONS = [
   },
   {
     id: 'products',
-    title: 'ЕФЕКТИВНИ ПРОДУКТИ',
-    desc: 'Най-добрите източници на протеин — цена, магазин, находки от общността',
+    titleKey: 'exp.efficient.title',
+    descKey:  'exp.efficient.desc',
     accent: '#C9A227',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
@@ -64,8 +65,8 @@ const SECTIONS = [
   },
   {
     id: 'shopping',
-    title: 'СПИСЪК ЗА ПАЗАРУВАНЕ',
-    desc: 'Текущ списък с отметки и история на пазаруванията',
+    titleKey: 'exp.shopping.title',
+    descKey:  'exp.shopping.desc',
     accent: '#C9A227',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
@@ -78,11 +79,12 @@ const SECTIONS = [
 ]
 
 const COMING_SOON = [
-  { title: 'ПРЕДИЗВИКАТЕЛСТВА', desc: '30-дневни предизвикателства и програми' },
-  { title: 'ВИДЕО ТЕХНИКИ', desc: 'Правилна техника за основните упражнения' },
+  { titleKey: 'exp.challenges.title', descKey: 'exp.challenges.desc' },
+  { titleKey: 'exp.video.title',      descKey: 'exp.video.desc' },
 ]
 
 export default function Explore({ onMenuOpen }) {
+  const { t } = useSettings()
   const [page, setPage] = useState(null)
 
   if (page === 'calculator') return <CalorieCalculator onBack={() => setPage(null)} />
@@ -93,7 +95,7 @@ export default function Explore({ onMenuOpen }) {
 
   return (
     <div className={styles.page}>
-      <AppHeader onMenuOpen={onMenuOpen} title="ОТКРИЙ" />
+      <AppHeader onMenuOpen={onMenuOpen} title={t('exp.title')} />
 
       <div className={styles.grid}>
         {SECTIONS.map(s => (
@@ -105,15 +107,15 @@ export default function Explore({ onMenuOpen }) {
           >
             <div className={styles.cardIcon} style={{ color: s.accent }}>{s.icon}</div>
             <div className={styles.cardText}>
-              <span className={styles.cardTitle}>{s.title}</span>
-              <span className={styles.cardDesc}>{s.desc}</span>
+              <span className={styles.cardTitle}>{t(s.titleKey)}</span>
+              <span className={styles.cardDesc}>{t(s.descKey)}</span>
             </div>
             <span className={styles.cardArrow}>›</span>
           </button>
         ))}
 
         {COMING_SOON.map(s => (
-          <div key={s.title} className={`${styles.sectionCard} ${styles.sectionCardSoon}`}>
+          <div key={s.titleKey} className={`${styles.sectionCard} ${styles.sectionCardSoon}`}>
             <div className={styles.cardIcon} style={{ color: 'var(--muted)' }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
@@ -121,10 +123,10 @@ export default function Explore({ onMenuOpen }) {
               </svg>
             </div>
             <div className={styles.cardText}>
-              <span className={styles.cardTitle} style={{ color: 'var(--muted)' }}>{s.title}</span>
-              <span className={styles.cardDesc}>{s.desc}</span>
+              <span className={styles.cardTitle} style={{ color: 'var(--muted)' }}>{t(s.titleKey)}</span>
+              <span className={styles.cardDesc}>{t(s.descKey)}</span>
             </div>
-            <span className={styles.soonBadge}>скоро</span>
+            <span className={styles.soonBadge}>{t('exp.soon')}</span>
           </div>
         ))}
       </div>

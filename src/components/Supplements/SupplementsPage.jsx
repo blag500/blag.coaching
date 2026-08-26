@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useSupplements } from '../../hooks/useSupplements'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './SupplementsPage.module.css'
 
-const TIMING_OPTIONS = [
-  'Сутринта', 'На гладно', 'Преди тренировка',
-  'След тренировка', 'Вечерта', 'Преди сън',
+const TIMING_KEYS = [
+  'supp.time.morning', 'supp.time.fasted', 'supp.time.preTrain',
+  'supp.time.postTrain', 'supp.time.evening', 'supp.time.sleep',
 ]
 
 export default function SupplementsPage() {
   const { supplements, taken, loading, toggle, addSupplement, removeSupplement, takenCount, totalCount, streak, getSupplementStreak } = useSupplements()
+  const { t } = useSettings()
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDose, setNewDose] = useState('')
@@ -34,8 +36,8 @@ export default function SupplementsPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>СУПЛЕМЕНТИ</h1>
-          <p className={styles.subtitle}>ДНЕВЕН СТЕК</p>
+          <h1 className={styles.title}>{t('supp.title')}</h1>
+          <p className={styles.subtitle}>{t('supp.subtitle')}</p>
         </div>
         <div className={styles.headerRight}>
           {streak > 1 && (
@@ -56,8 +58,8 @@ export default function SupplementsPage() {
       <div className={styles.list}>
         {supplements.length === 0 ? (
           <div className={styles.empty}>
-            <p>Стекът е празен.</p>
-            <p className={styles.emptyHint}>Добави суплементи с бутона долу.</p>
+            <p>{t('supp.emptyMain')}</p>
+            <p className={styles.emptyHint}>{t('supp.emptyHint')}</p>
           </div>
         ) : (
           supplements.map(s => {
@@ -68,7 +70,7 @@ export default function SupplementsPage() {
                   className={`${styles.check} ${taken[s.id] ? styles.checkDone : ''}`}
                   onClick={() => toggle(s.id)}
                   type="button"
-                  aria-label={taken[s.id] ? 'Отмени' : 'Маркирай като взет'}
+                  aria-label={taken[s.id] ? t('supp.takenUndo') : t('supp.takenMark')}
                 >
                   {taken[s.id] && <span>✓</span>}
                 </button>
@@ -83,7 +85,7 @@ export default function SupplementsPage() {
                     )}
                   </div>
                 </div>
-                <button className={styles.del} onClick={() => removeSupplement(s.id)} type="button" aria-label="Изтрий">
+                <button className={styles.del} onClick={() => removeSupplement(s.id)} type="button" aria-label={t('supp.delete')}>
                   ×
                 </button>
               </div>
@@ -96,32 +98,35 @@ export default function SupplementsPage() {
         <div className={styles.addForm}>
           <input
             className={styles.input}
-            placeholder="Магнезий бисглицинат"
+            placeholder={t('supp.namePh')}
             value={newName}
             onChange={e => setNewName(e.target.value)}
             autoFocus
           />
           <input
             className={styles.input}
-            placeholder="Доза (напр. 400mg)"
+            placeholder={t('supp.dosePh')}
             value={newDose}
             onChange={e => setNewDose(e.target.value)}
           />
           <div className={styles.timingChips}>
-            {TIMING_OPTIONS.map(t => (
-              <button
-                key={t}
-                type="button"
-                className={`${styles.chip} ${newTiming === t ? styles.chipActive : ''}`}
-                onClick={() => setNewTiming(prev => prev === t ? '' : t)}
-              >
-                {t}
-              </button>
-            ))}
+            {TIMING_KEYS.map(k => {
+              const label = t(k)
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  className={`${styles.chip} ${newTiming === label ? styles.chipActive : ''}`}
+                  onClick={() => setNewTiming(prev => prev === label ? '' : label)}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
           <div className={styles.addActions}>
             <button className={styles.cancelBtn} onClick={() => setShowAdd(false)} type="button">
-              ОТКАЗ
+              {t('supp.cancel')}
             </button>
             <button
               className={styles.saveBtn}
@@ -129,13 +134,13 @@ export default function SupplementsPage() {
               disabled={saving || !newName.trim()}
               type="button"
             >
-              {saving ? '...' : '+ ДОБАВИ'}
+              {saving ? '...' : t('supp.add')}
             </button>
           </div>
         </div>
       ) : (
         <button className={styles.addBtn} onClick={() => setShowAdd(true)} type="button">
-          + ДОБАВИ СУПЛЕМЕНТ
+          {t('supp.addBtn')}
         </button>
       )}
     </div>
