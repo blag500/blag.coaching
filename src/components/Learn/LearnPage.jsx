@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { LEARN_CARDS } from '../../data/learnCards'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './LearnPage.module.css'
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -52,6 +53,7 @@ const CATEGORY_COLORS = {
 
 // ── Main page ─────────────────────────────────────────────────
 export default function LearnPage() {
+  const { t } = useSettings()
   const { user } = useAuth()
   const [phase,       setPhase]       = useState('loading')  // 'loading' | 'quiz' | 'history'
   const [todayResult, setTodayResult] = useState(null)
@@ -115,7 +117,7 @@ export default function LearnPage() {
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <h1 className={styles.title}>ЗНАНИЯ</h1>
+          <h1 className={styles.title}>{t('learn.title')}</h1>
         </header>
         <div className={styles.loadingSpinner} />
       </div>
@@ -137,6 +139,7 @@ export default function LearnPage() {
 
 // ── LearnDeck ─────────────────────────────────────────────────
 function LearnDeck({ savedProgress, onComplete }) {
+  const { t } = useSettings()
   const cardMap = Object.fromEntries(LEARN_CARDS.map(c => [c.id, c]))
 
   const [cards] = useState(() => {
@@ -295,11 +298,11 @@ function LearnDeck({ savedProgress, onComplete }) {
           {showExplain && (
             <div className={`${styles.explain} ${isCorrect ? styles.explainOk : styles.explainFail}`}>
               <p className={styles.explainVerdict}>
-                {isCorrect ? '✓ Правилно!' : '✗ Не съвсем'}
+                {isCorrect ? t('learn.correct') : t('learn.wrong')}
               </p>
               <p className={styles.explainText}>{card.explanation}</p>
               <button className={styles.nextBtn} onClick={goNext} type="button">
-                {index + 1 < cards.length ? 'Следваща  →' : 'Резултат  →'}
+                {index + 1 < cards.length ? t('learn.next') : t('learn.result')}
               </button>
             </div>
           )}
@@ -307,7 +310,7 @@ function LearnDeck({ savedProgress, onComplete }) {
       </div>
 
       {showExplain && (
-        <p className={styles.swipeHint}>Плъзни или натисни за следваща</p>
+        <p className={styles.swipeHint}>{t('learn.swipeHint')}</p>
       )}
     </div>
   )
@@ -315,6 +318,7 @@ function LearnDeck({ savedProgress, onComplete }) {
 
 // ── HistoryView ───────────────────────────────────────────────
 function HistoryView({ todayResult, history, onReplay }) {
+  const { t } = useSettings()
   const today = todayStr()
 
   // Today's percentage
@@ -357,7 +361,7 @@ function HistoryView({ todayResult, history, onReplay }) {
         <h1 className={styles.title}>ЗНАНИЯ</h1>
         {streak > 0 && (
           <div className={styles.streakBadge}>
-            🔥 {streak} {streak === 1 ? 'ден' : streak < 5 ? 'дни' : 'дни'}
+            🔥 {streak} {streak === 1 ? t('learn.day.one') : t('learn.day.many')}
           </div>
         )}
       </header>
@@ -366,13 +370,13 @@ function HistoryView({ todayResult, history, onReplay }) {
       {todayResult ? (
         <div className={styles.todayCard}>
           <div>
-            <p className={styles.todayLabel}>ДНЕС</p>
+            <p className={styles.todayLabel}>{t('learn.today')}</p>
             <p className={styles.todayScore}>
               {todayResult.correct}
               <span className={styles.todayTotal}>/{todayResult.total}</span>
             </p>
             <p className={styles.todayPctText}>
-              {pct >= 70 ? '✓ Отлично!' : pct >= 50 ? '↑ Добре' : '↻ Повтори'}
+              {pct >= 70 ? t('learn.rating.excellent') : pct >= 50 ? t('learn.rating.good') : t('learn.rating.repeat')}
             </p>
           </div>
           <div
@@ -388,16 +392,16 @@ function HistoryView({ todayResult, history, onReplay }) {
         </div>
       ) : (
         <div className={styles.todayCard}>
-          <p className={styles.noResultText}>Все още не си решавал/а днес.</p>
+          <p className={styles.noResultText}>{t('learn.noResultToday')}</p>
         </div>
       )}
 
       {/* ── 28-day calendar heatmap ── */}
       <div className={styles.sectionWrap}>
-        <p className={styles.sectionLabel}>28-ДНЕВЕН КАЛЕНДАР</p>
+        <p className={styles.sectionLabel}>{t('learn.calendar')}</p>
         <div className={styles.calDowRow}>
-          {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'].map(d => (
-            <span key={d} className={styles.calDow}>{d}</span>
+          {[0,1,2,3,4,5,6].map(i => (
+            <span key={i} className={styles.calDow}>{t(`daysMon.${i}`)}</span>
           ))}
         </div>
         <div className={styles.calGrid}>
@@ -436,14 +440,14 @@ function HistoryView({ todayResult, history, onReplay }) {
       {/* ── Pass rate chart ── */}
       {last7.length >= 2 && (
         <div className={styles.sectionWrap}>
-          <p className={styles.sectionLabel}>ПОСЛЕДНИ {last7.length} СЕСИИ</p>
+          <p className={styles.sectionLabel}>{t('learn.lastSessions', { n: last7.length })}</p>
           <PassRateChart sessions={last7} />
         </div>
       )}
 
       <div className={styles.replayWrap}>
         <button className={styles.replayBtn} onClick={onReplay} type="button">
-          Играй отново
+          {t('learn.playAgain')}
         </button>
       </div>
     </div>
@@ -452,6 +456,7 @@ function HistoryView({ todayResult, history, onReplay }) {
 
 // ── PassRateChart (SVG) ───────────────────────────────────────
 function PassRateChart({ sessions }) {
+  const { t } = useSettings()
   const W = 320, H = 130, PAD_L = 30, PAD_B = 26, PAD_T = 14, PAD_R = 8
   const chartW = W - PAD_L - PAD_R
   const chartH = H - PAD_T - PAD_B
@@ -464,7 +469,7 @@ function PassRateChart({ sessions }) {
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
       className={styles.passChart}
-      aria-label="Графика — резултати от последните сесии"
+      aria-label={t('learn.chartAria')}
     >
       {/* Gridlines */}
       {[0, 50, 100].map(v => {

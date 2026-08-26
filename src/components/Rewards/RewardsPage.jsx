@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { HABITS as DEFAULT_HABITS } from '../../data/appData'
 import styles from './RewardsPage.module.css'
-
-const DAYS_BG   = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
-const MONTHS_BG = ['Януари','Февруари','Март','Април','Май','Юни',
-                   'Юли','Август','Септември','Октомври','Ноември','Декември']
 
 function pad(n) { return String(n).padStart(2, '0') }
 function ds(y, m, d) { return `${y}-${pad(m+1)}-${pad(d)}` }
 
 export default function RewardsPage({ onBack }) {
   const { profile, user } = useAuth()
+  const { t } = useSettings()
   const now = new Date()
   const [year,  setYear]  = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
@@ -100,33 +98,33 @@ export default function RewardsPage({ onBack }) {
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">←</button>
         <div>
-          <h1 className={styles.title}>НАГРАДИ</h1>
-          <p className={styles.subtitle}>Значки за постигнати цели</p>
+          <h1 className={styles.title}>{t('rew.title')}</h1>
+          <p className={styles.subtitle}>{t('rew.subtitle')}</p>
         </div>
       </header>
 
       {/* Stats */}
       <div className={styles.statsRow}>
-        <StatChip emoji="⭐" count={perfectN} label="ПЕРФЕКТНИ" accent />
-        <StatChip emoji="🥗" count={calN}     label="КАЛОРИИ" />
-        <StatChip emoji="✅" count={habN}     label="НАВИЦИ" />
-        <StatChip emoji="💪" count={trN}      label="ТРЕН." />
+        <StatChip emoji="⭐" count={perfectN} label={t('rew.stat.perfect')}  accent />
+        <StatChip emoji="🥗" count={calN}     label={t('rew.stat.calories')} />
+        <StatChip emoji="✅" count={habN}     label={t('rew.stat.habits')} />
+        <StatChip emoji="💪" count={trN}      label={t('rew.stat.training')} />
       </div>
 
       {/* Month nav */}
       <div className={styles.monthNav}>
         <button className={styles.monthBtn} onClick={prevMonth} type="button">‹</button>
-        <span className={styles.monthLabel}>{MONTHS_BG[month]} {year}</span>
+        <span className={styles.monthLabel}>{t(`months.${month}`)} {year}</span>
         <button className={styles.monthBtn} onClick={nextMonth} type="button"
           style={{ opacity: atNow ? 0.25 : 1, pointerEvents: atNow ? 'none' : 'auto' }}>›</button>
       </div>
 
       {loading ? (
-        <p className={styles.empty}>Зарежда...</p>
+        <p className={styles.empty}>{t('chat.loading')}</p>
       ) : (
         <div className={styles.calendar}>
-          {DAYS_BG.map(d => (
-            <div key={d} className={styles.dayHeader}>{d}</div>
+          {[0,1,2,3,4,5,6].map(i => (
+            <div key={i} className={styles.dayHeader}>{t(`daysMon.${i}`)}</div>
           ))}
           {cells.map((day, i) => {
             if (!day) return <div key={`blank-${i}`} />
@@ -159,10 +157,10 @@ export default function RewardsPage({ onBack }) {
 
       {/* Legend */}
       <div className={styles.legend}>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>⭐</span><span className={styles.legendText}>Перфектен ден — всички три цели</span></div>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>🥗</span><span className={styles.legendText}>Калорийна цел постигната</span></div>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>✅</span><span className={styles.legendText}>Всички навици изпълнени</span></div>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>💪</span><span className={styles.legendText}>Тренировка отчетена</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}>⭐</span><span className={styles.legendText}>{t('rew.legend.perfect')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}>🥗</span><span className={styles.legendText}>{t('rew.legend.calories')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}>✅</span><span className={styles.legendText}>{t('rew.legend.habits')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}>💪</span><span className={styles.legendText}>{t('rew.legend.training')}</span></div>
       </div>
     </div>
   )

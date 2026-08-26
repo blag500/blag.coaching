@@ -50,13 +50,13 @@ function CoachChatList({ embedded, onSelect }) {
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </div>
-        <span className={styles.headerName}>ЧАТОВЕ</span>
+        <span className={styles.headerName}>{t('chatp.chats')}</span>
       </div>
       <div className={styles.feed}>
         {loading ? (
-          <p className={styles.empty}>Зарежда...</p>
+          <p className={styles.empty}>{t('chat.loading')}</p>
         ) : clients.length === 0 ? (
-          <p className={styles.empty}>Няма клиенти</p>
+          <p className={styles.empty}>{t('chatp.noClients')}</p>
         ) : clients.map(c => (
           <button
             key={c.id}
@@ -81,6 +81,7 @@ function CoachChatList({ embedded, onSelect }) {
 
 export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedded = false }) {
   const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
+  const { t } = useSettings()
   const [messages, setMessages]       = useState([])
   const [input, setInput]             = useState('')
   const [loading, setLoading]         = useState(true)
@@ -189,14 +190,14 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
 
   async function handleSend() {
     if (!input.trim()) return
-    if (!otherUserId) { setSendError('Треньорът не е намерен — опресни приложението'); return }
+    if (!otherUserId) { setSendError(t('chat.err.noCoach')); return }
     const text = input.trim()
     setInput('')
     setSendError(null)
     const { data, error } = await sendMessage(otherUserId, text)
     if (error || !data) {
       setInput(text)
-      setSendError('Грешка при изпращане — опитай отново')
+      setSendError(t('chat.err.send'))
     } else {
       setMessages(prev => [...prev, data])
     }
@@ -211,14 +212,14 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
     const path = `${user.id}/${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('chat-photos').upload(path, file)
     if (upErr) {
-      setSendError('Грешка при качване на снимката')
+      setSendError(t('chat.err.upload'))
       setUploading(false)
       return
     }
     const { data: { publicUrl } } = supabase.storage.from('chat-photos').getPublicUrl(path)
     const { data, error } = await sendMessage(otherUserId, null, publicUrl)
     if (error || !data) {
-      setSendError('Грешка при изпращане')
+      setSendError(t('chat.err.sendShort'))
     } else {
       setMessages(prev => [...prev, data])
     }
@@ -244,7 +245,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
     )
   }
 
-  const displayName   = otherProfile?.name      || (isCoach ? (selectedClientName || 'Клиент') : 'Треньор')
+  const displayName   = otherProfile?.name      || (isCoach ? (selectedClientName || t('chatp.clientFallback')) : t('chat.coachName'))
   const displayAvatar = otherProfile?.avatar_url || (isCoach ? selectedClientAvatar : null)
   const items = groupByDate(messages)
 
@@ -277,9 +278,9 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
 
       <div className={styles.feed}>
         {loading ? (
-          <p className={styles.empty}>Зарежда...</p>
+          <p className={styles.empty}>{t('chat.loading')}</p>
         ) : messages.length === 0 ? (
-          <p className={styles.empty}>Няма съобщения все още</p>
+          <p className={styles.empty}>{t('chatp.noMsg')}</p>
         ) : (
           items.map(item =>
             item.type === 'separator' ? (
@@ -296,7 +297,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
                     <img
                       src={item.msg.photo_url}
                       className={styles.photoMsg}
-                      alt="снимка"
+                      alt={t('chat.imgAlt')}
                       onClick={() => setLightboxUrl(item.msg.photo_url)}
                     />
                   ) : (
@@ -328,7 +329,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || !otherUserId}
             type="button"
-            aria-label="Изпрати снимка"
+            aria-label={t('chat.sendImg')}
           >
             {uploading ? '…' : (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
@@ -341,7 +342,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
             ref={inputRef}
             className={styles.field}
             type="text"
-            placeholder="Напиши съобщение..."
+            placeholder={t('chat.placeholder')}
             value={input}
             onChange={e => { setInput(e.target.value); if (sendError) setSendError(null) }}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
@@ -351,7 +352,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
             onClick={handleSend}
             disabled={!input.trim()}
             type="button"
-            aria-label="Изпрати"
+            aria-label={t('chatp.send')}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
               <line x1="22" y1="2" x2="11" y2="13"/>
