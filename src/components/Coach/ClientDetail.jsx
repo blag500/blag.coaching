@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import { HABITS } from '../../data/appData'
 const DEFAULT_HABITS = HABITS
@@ -43,6 +44,7 @@ function TrashIcon() {
 
 export default function ClientDetail({ client: initialClient, onBack, onDelete }) {
   const { updateClientProfile, deleteClientProfile, fetchClientFullStats } = useAuth()
+  const { t } = useSettings()
   const [client, setClient] = useState(initialClient)
   const [tab, setTab] = useState('progress')
   const [stats, setStats] = useState(null)
@@ -707,11 +709,11 @@ function NutritionTab({ client }) {
   // to "Друго" so no row is lost. Empty meals draw nothing.
   const logGroups = MEALS.map(m => ({
     id: m.id,
-    label: m.label,
+    label: t(m.labelKey),
     items: logs.filter(e => e.meal_type === m.id),
   }))
   const otherLogs = logs.filter(e => !MEAL_LABEL_KEY[e.meal_type])
-  if (otherLogs.length) logGroups.push({ id: '_other', label: 'Друго', items: otherLogs })
+  if (otherLogs.length) logGroups.push({ id: '_other', label: t('meal.other'), items: otherLogs })
   const shownLogGroups = logGroups.filter(g => g.items.length > 0)
 
   return (
@@ -753,7 +755,7 @@ function NutritionTab({ client }) {
                 className={`${styles.addMealTab} ${addMeal === m.id ? styles.addMealTabActive : ''}`}
                 onClick={() => setAddMeal(m.id)}
               >
-                {m.label}
+                {t(m.labelKey)}
               </button>
             ))}
           </div>

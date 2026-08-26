@@ -1,4 +1,5 @@
 import { MEALS } from './meals'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MealPicker.module.css'
 
 /**
@@ -8,9 +9,10 @@ import styles from './MealPicker.module.css'
  * so a "+" on a section and this picker are the same choice.
  */
 export default function MealPicker({ value, onChange }) {
+  const { t } = useSettings()
   return (
     <div className={styles.row}>
-      <span className={styles.label}>ХРАНЕНЕ</span>
+      <span className={styles.label}>{t('nutr.toggle.log').toUpperCase()}</span>
       <div className={styles.pills}>
         {MEALS.map(m => (
           <button
@@ -19,7 +21,7 @@ export default function MealPicker({ value, onChange }) {
             className={`${styles.pill} ${value === m.id ? styles.pillActive : ''}`}
             onClick={() => onChange(m.id)}
           >
-            {m.label}
+            {t(m.labelKey)}
           </button>
         ))}
       </div>

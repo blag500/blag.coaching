@@ -37,6 +37,7 @@ function TrashIcon() {
 }
 
 export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPhotoUpload, onPhotoRemove, date }) {
+  const { t } = useSettings()
   const [editingId,    setEditingId]    = useState(null)
   const [draft,        setDraft]        = useState({})
   const [lastRemoved,  setLastRemoved]  = useState(null)
@@ -411,11 +412,11 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   // a place to add to.
   const groups = MEALS.map(m => ({
     id: m.id,
-    label: m.label,
+    label: t(m.labelKey),
     items: log.filter(e => e.meal_type === m.id),
   }))
   const other = log.filter(e => !MEAL_LABEL_KEY[e.meal_type])
-  if (other.length) groups.push({ id: '_other', label: 'Друго', items: other, legacy: true })
+  if (other.length) groups.push({ id: '_other', label: t('meal.other'), items: other, legacy: true })
 
   return (
     <div className={styles.wrap}>
