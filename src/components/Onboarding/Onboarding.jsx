@@ -455,7 +455,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
         )}
         {step < totalSteps && (
           <button className={styles.nextBtn} onClick={next} type="button">
-            НАПРЕД →
+            Продължи <span className={styles.nextArrow} aria-hidden="true">→</span>
           </button>
         )}
         {step === totalSteps && (

@@ -690,8 +690,8 @@
    are the same product — the button should not change character between them.
    The warmth comes from a tint and a lit top edge rather than from a fill. */
 .nextBtn {
-  padding: 14px 28px;
-  border-radius: var(--r-md);
+  padding: 13px 26px;
+  border-radius: 999px;
   border: 1px solid rgba(var(--accent-rgb), 0.55);
   background: linear-gradient(to bottom,
     rgba(200, 160, 90, 0.16) 0%,
@@ -703,13 +703,24 @@
     0 0 34px -8px rgba(var(--accent-rgb), 0.45),
     0 10px 30px -14px rgba(0, 0, 0, 0.9);
   color: var(--accent);
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
+  font-weight: 500;
   font-size: 15px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  transition: background 180ms, border-color 180ms, opacity 150ms;
+  transition: background 180ms, border-color 180ms, opacity 150ms, transform 200ms var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
+
+.nextArrow {
+  display: inline-block;
+  transition: transform 220ms var(--ease-out);
+}
+.nextBtn:hover .nextArrow { transform: translateX(3px); }
+.nextBtn:active:not(:disabled) .nextArrow { transform: translateX(5px); }
 
 .nextBtn:active:not(:disabled) {
   background: linear-gradient(to bottom,

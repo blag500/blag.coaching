@@ -89,9 +89,9 @@ export function AuthProvider({ children }) {
     if (error) {
       const msg = error.message || ''
       if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials'))
-        setAuthError('Грешен имейл или парола.')
+        setAuthError('auth.err.invalidCredentials')
       else if (msg.includes('Email not confirmed'))
-        setAuthError('Потвърди имейла си преди да влезеш.')
+        setAuthError('auth.err.emailNotConfirmed')
       else
         setAuthError(msg)
       return false
@@ -163,7 +163,7 @@ export function AuthProvider({ children }) {
        form with their address already in it, not a red line telling them off. */
     if (status === 'taken') return 'exists'
     if (status === 'disposable') {
-      setAuthError('Този имейл е временен. Ползвай постоянен адрес.')
+      setAuthError('auth.err.disposableEmail')
       return false
     }
 
@@ -175,7 +175,7 @@ export function AuthProvider({ children }) {
       if (raw.includes('blag_duplicate_account')) return 'exists'
       setAuthError(
         raw.includes('blag_disposable_email')
-          ? 'Този имейл е временен. Ползвай постоянен адрес.'
+          ? 'auth.err.disposableEmail'
           : raw,
       )
       return false

@@ -158,6 +158,9 @@ export default {
   'auth.info.magicSent':  'We sent a one-time sign-in link to {email}.',
   'auth.info.needEmail':  'Enter your email first.',
   'auth.info.resent':     'We sent a new confirmation link.',
+  'auth.err.invalidCredentials': 'Wrong email or password.',
+  'auth.err.emailNotConfirmed':  'Confirm your email before signing in.',
+  'auth.err.disposableEmail':    'That’s a temporary email. Use a permanent address.',
 
   // WelcomeOverlay
   'welcome.eyebrow': 'WELCOME TO',

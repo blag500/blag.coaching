@@ -188,7 +188,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
             </div>
           )}
 
-          {authError && <p className={styles.error}>{authError}</p>}
+          {authError && <p className={styles.error}>{authError.startsWith('auth.err.') ? t(authError) : authError}</p>}
           {info      && <p className={styles.info}>{info}</p>}
 
           <button className={styles.submit} type="submit" disabled={loading}>

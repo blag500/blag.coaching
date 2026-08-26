@@ -159,6 +159,9 @@ export default {
   'auth.info.magicSent':  'Изпратихме еднократен линк за вход на {email}.',
   'auth.info.needEmail':  'Първо въведи имейла си.',
   'auth.info.resent':     'Изпратихме нов линк за потвърждение.',
+  'auth.err.invalidCredentials': 'Грешен имейл или парола.',
+  'auth.err.emailNotConfirmed':  'Потвърди имейла си преди да влезеш.',
+  'auth.err.disposableEmail':    'Този имейл е временен. Ползвай постоянен адрес.',
 
   // WelcomeOverlay
   'welcome.eyebrow': 'ДОБРЕ ДОШЪЛ В',
