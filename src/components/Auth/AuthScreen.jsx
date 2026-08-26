@@ -26,11 +26,12 @@ function EyeIcon({ open }) {
 }
 
 export default function AuthScreen({ onBack, initialMode = 'login', initialEmail = '' }) {
-  const { signIn, signUp, signInWithGoogle, resetPassword, checkEmailStatus, resendConfirmation, signInWithMagicLink, authError } = useAuth()
+  const { signIn, signUp, verifySignupOtp, signInWithGoogle, resetPassword, checkEmailStatus, resendConfirmation, signInWithMagicLink, authError } = useAuth()
   const { t } = useSettings()
-  const [mode, setMode]         = useState(initialMode) // 'login' | 'register' | 'reset'
+  const [mode, setMode]         = useState(initialMode) // 'login' | 'register' | 'reset' | 'verify'
   const [email, setEmail]       = useState(initialEmail)
   const [password, setPassword] = useState('')
+  const [otpCode, setOtpCode]   = useState('')
   const [showPw, setShowPw]     = useState(false)
   const [loading, setLoading]   = useState(false)
   const [info, setInfo]         = useState('')
@@ -58,15 +59,24 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
         const status = await checkEmailStatus(email)
         if (status === 'taken') setStuck(true)
       }
-    } else {
+    } else if (mode === 'register') {
       const res = await signUp(email, password)
       if (res === 'exists') {
         setMode('login')
         setInfo(t('auth.info.alreadyRegistered'))
         setTimeout(() => passwordRef.current?.focus(), 60)
+      } else if (res === 'otp') {
+        // Регистрацията мина; чака се 6-цифрен код за потвърждение — на
+        // същия екран, без препращане към Safari.
+        setMode('verify')
+        setOtpCode('')
       } else if (res) {
         setInfo(t('auth.info.confirmSent'))
       }
+    } else if (mode === 'verify') {
+      const ok = await verifySignupOtp(email, otpCode.trim())
+      if (!ok) { setLoading(false); return }
+      // AuthProvider ще прихване сесията и AppShell ще смени екрана.
     }
 
     setLoading(false)
@@ -99,6 +109,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
     ? '...'
     : mode === 'login'    ? t('auth.submit.login')
     : mode === 'register' ? t('auth.submit.register')
+    : mode === 'verify'   ? t('auth.otp.submit')
     :                       t('auth.submit.reset')
 
   return (
@@ -121,22 +132,31 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           </button>
         )}
 
-        <div className={styles.tabs}>
-          <button
-            type="button"
-            className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
-            onClick={() => switchMode('login')}
-          >
-            {t('auth.tab.login')}
-          </button>
-          <button
-            type="button"
-            className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`}
-            onClick={() => switchMode('register')}
-          >
-            {t('auth.tab.register')}
-          </button>
-        </div>
+        {mode !== 'verify' && (
+          <div className={styles.tabs}>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
+              onClick={() => switchMode('login')}
+            >
+              {t('auth.tab.login')}
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`}
+              onClick={() => switchMode('register')}
+            >
+              {t('auth.tab.register')}
+            </button>
+          </div>
+        )}
+
+        {mode === 'verify' && (
+          <div className={styles.verifyHead}>
+            <h2 className={styles.verifyTitle}>{t('auth.otp.title')}</h2>
+            <p className={styles.verifyBody}>{t('auth.otp.body', { email })}</p>
+          </div>
+        )}
 
         {mode === 'reset' && (
           <p className={styles.resetIntro}>
@@ -145,21 +165,44 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
         )}
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="auth-email">{t('auth.emailLabel')}</label>
-            <input
-              id="auth-email"
-              className={styles.input}
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={e => { setEmail(e.target.value); setStuck(false) }}
-              required
-              autoComplete="email"
-            />
-          </div>
+          {mode !== 'verify' && (
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="auth-email">{t('auth.emailLabel')}</label>
+              <input
+                id="auth-email"
+                className={styles.input}
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={e => { setEmail(e.target.value); setStuck(false) }}
+                required
+                autoComplete="email"
+              />
+            </div>
+          )}
 
-          {mode !== 'reset' && (
+          {mode === 'verify' && (
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="auth-otp">{t('auth.otp.label')}</label>
+              <input
+                id="auth-otp"
+                className={styles.input}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+                placeholder="123456"
+                value={otpCode}
+                onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                maxLength={6}
+                minLength={6}
+                required
+                autoFocus
+              />
+            </div>
+          )}
+
+          {mode !== 'reset' && mode !== 'verify' && (
             <div className={styles.field}>
               <label className={styles.label} htmlFor="auth-password">{t('auth.passwordLabel')}</label>
               <div className={styles.inputWrap}>
@@ -191,9 +234,29 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           {authError && <p className={styles.error}>{authError.startsWith('auth.err.') ? t(authError) : authError}</p>}
           {info      && <p className={styles.info}>{info}</p>}
 
-          <button className={styles.submit} type="submit" disabled={loading}>
+          <button className={styles.submit} type="submit" disabled={loading || (mode === 'verify' && otpCode.length < 6)}>
             {submitLabel}
           </button>
+
+          {mode === 'verify' && (
+            <div className={styles.recoverActions} style={{ marginTop: 10 }}>
+              <button
+                type="button"
+                className={styles.recoverPrimary}
+                onClick={handleResend}
+                disabled={resending}
+              >
+                {resending ? '...' : t('auth.otp.resend')}
+              </button>
+              <button
+                type="button"
+                className={styles.recoverSecondary}
+                onClick={() => { setMode('register'); setOtpCode('') }}
+              >
+                {t('auth.otp.wrongEmail')}
+              </button>
+            </div>
+          )}
 
           {stuck && (
             <div className={styles.recover}>
@@ -233,7 +296,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           </button>
         )}
 
-        {mode !== 'reset' && (
+        {mode !== 'reset' && mode !== 'verify' && (
           <button
             type="button"
             className={styles.googleBtn}

@@ -149,6 +149,24 @@ export function AuthProvider({ children }) {
     return true
   }
 
+  /* Потвърждаване на регистрация чрез 6-цифрен код от имейла (OTP).
+     Заменя link-based confirm-а, който на iOS отваряше Safari вместо
+     инсталираното PWA и оставяше клиента заключен в грешния контекст.
+     Кодът се въвежда в същия екран → сесията се създава веднага там. */
+  async function verifySignupOtp(email, token) {
+    setAuthError(null)
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+    if (error) {
+      const msg = error.message || ''
+      if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid'))
+        setAuthError('auth.err.otpInvalid')
+      else
+        setAuthError(msg)
+      return false
+    }
+    return !!data.session
+  }
+
   async function signUp(email, password, name) {
     setAuthError(null)
 
@@ -182,7 +200,9 @@ export function AuthProvider({ children }) {
     }
     if (data.user) {
       // The one moment there is an account to hang it on. Null for everyone who
-      // arrived by knowing the address, which is most people.
+      // arrived by knowing the address, which is most people. Името и източникът
+      // се пишат преди verify — потребителят вече е в auth.users, а profiles
+      // редът съществува от секундата на signup-а благодарение на trigger-а.
       await supabase.from('profiles')
         .update({ name, source: readSource() })
         .eq('id', data.user.id)
@@ -191,7 +211,10 @@ export function AuthProvider({ children }) {
         body: { userId: data.user.id, email, name },
       }).catch(() => {})
     }
-    return true
+    // 'otp' сигнализира на UI-то да покаже екрана за 6-цифрен код. Ако
+    // проектът е конфигуриран с автоматичен confirm (без имейл), signUp
+    // връща и сесия — тогава сме на login state, не на otp state.
+    return data.session ? true : 'otp'
   }
 
   async function signInWithGoogle() {
@@ -544,6 +567,7 @@ export function AuthProvider({ children }) {
       authError,
       signIn,
       signUp,
+      verifySignupOtp,
       signInWithGoogle,
       resetPassword,
       checkEmailStatus,

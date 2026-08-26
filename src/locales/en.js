@@ -161,6 +161,13 @@ export default {
   'auth.err.invalidCredentials': 'Wrong email or password.',
   'auth.err.emailNotConfirmed':  'Confirm your email before signing in.',
   'auth.err.disposableEmail':    'That’s a temporary email. Use a permanent address.',
+  'auth.err.otpInvalid':         'Wrong or expired code. Check your email or request a new one.',
+  'auth.otp.title':              'Check your email',
+  'auth.otp.body':               'We sent a 6-digit code to {email}. Enter it here to finish signing up.',
+  'auth.otp.label':              'Code',
+  'auth.otp.submit':             'Confirm',
+  'auth.otp.resend':             'Send a new code',
+  'auth.otp.wrongEmail':         'Wrong email?',
 
   'today.habitsEmpty':     'No habits yet.',
   'today.habitsEmptyCta':  'Set them up →',
@@ -532,6 +539,13 @@ export default {
 
   // Tasks
   'tasks.title':                   'TASKS',
+  'chatp.today':                   'TODAY',
+  'chatp.yesterday':               'YESTERDAY',
+  'chatp.chats':                   'CHATS',
+  'chatp.noClients':               'No clients',
+  'chatp.noMsg':                   'No messages yet',
+  'chatp.send':                    'Send',
+  'chatp.clientFallback':          'Client',
 
   // WelcomeOverlay
   'welcome.eyebrow': 'WELCOME TO',

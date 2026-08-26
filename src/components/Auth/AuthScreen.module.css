@@ -375,3 +375,27 @@
   line-height: 1.5;
   margin: 0;
 }
+
+/* Verify-екранът замества tabs-а с кратък header. Заглавието и обяснението
+   идват центрирани — единственото действие тук е шест цифри. */
+.verifyHead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+  padding: 4px 0 2px;
+}
+.verifyTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.verifyBody {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}

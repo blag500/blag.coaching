@@ -162,6 +162,13 @@ export default {
   'auth.err.invalidCredentials': 'Грешен имейл или парола.',
   'auth.err.emailNotConfirmed':  'Потвърди имейла си преди да влезеш.',
   'auth.err.disposableEmail':    'Този имейл е временен. Ползвай постоянен адрес.',
+  'auth.err.otpInvalid':         'Кодът е грешен или изтекъл. Провери имейла или поискай нов.',
+  'auth.otp.title':              'Провери имейла си',
+  'auth.otp.body':               'Изпратихме 6-цифрен код на {email}. Въведи го тук, за да завършиш регистрацията.',
+  'auth.otp.label':              'Код',
+  'auth.otp.submit':             'Потвърди',
+  'auth.otp.resend':             'Изпрати нов код',
+  'auth.otp.wrongEmail':         'Грешен имейл?',
 
   'today.habitsEmpty':     'Още нямаш навици.',
   'today.habitsEmptyCta':  'Настрой ги →',
@@ -533,6 +540,13 @@ export default {
 
   // Tasks (заглавия и общи)
   'tasks.title':                   'ЗАДАЧИ',
+  'chatp.today':                   'ДНЕС',
+  'chatp.yesterday':               'ВЧЕРА',
+  'chatp.chats':                   'ЧАТОВЕ',
+  'chatp.noClients':               'Няма клиенти',
+  'chatp.noMsg':                   'Няма съобщения все още',
+  'chatp.send':                    'Изпрати',
+  'chatp.clientFallback':          'Клиент',
 
   // WelcomeOverlay
   'welcome.eyebrow': 'ДОБРЕ ДОШЪЛ В',

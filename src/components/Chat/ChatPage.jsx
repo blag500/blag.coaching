@@ -1,26 +1,27 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './ChatPage.module.css'
 
-function dateSeparator(dateStr) {
+function dateSeparator(dateStr, t) {
   const d = new Date(dateStr)
   const today = new Date()
   const yesterday = new Date(today)
   yesterday.setDate(today.getDate() - 1)
 
-  if (d.toDateString() === today.toDateString()) return 'ДНЕС'
-  if (d.toDateString() === yesterday.toDateString()) return 'ВЧЕРА'
+  if (d.toDateString() === today.toDateString()) return t('chatp.today')
+  if (d.toDateString() === yesterday.toDateString()) return t('chatp.yesterday')
   return d.toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' })
 }
 
-function groupByDate(messages) {
+function groupByDate(messages, t) {
   const groups = []
   let lastDate = null
   for (const msg of messages) {
     const day = msg.created_at.slice(0, 10)
     if (day !== lastDate) {
-      groups.push({ type: 'separator', key: day, label: dateSeparator(msg.created_at) })
+      groups.push({ type: 'separator', key: day, label: dateSeparator(msg.created_at, t) })
       lastDate = day
     }
     groups.push({ type: 'message', key: msg.id, msg })
@@ -30,6 +31,7 @@ function groupByDate(messages) {
 
 function CoachChatList({ embedded, onSelect }) {
   const { fetchClients } = useAuth()
+  const { t } = useSettings()
   const [clients, setClients] = useState([])
   const [loading, setLoading] = useState(true)
 
