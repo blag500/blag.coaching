@@ -45,11 +45,13 @@
 /* A play icon instead of a plain arrow — says "this opens something" rather
    than "this goes somewhere". Sized to match the word weight. */
 .arrow {
+  position: relative;
+  isolation: isolate;
   flex-shrink: 0;
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   background: rgba(var(--accent-rgb), 0.10);
   display: flex;
   align-items: center;
@@ -57,6 +59,43 @@
   color: var(--accent);
   font-size: 13px;
   transition: transform 220ms var(--ease-out), background 180ms, border-color 180ms;
+}
+
+/* Въртящ се златен акцент по рамката на play бутона — същият език като
+   sheen-а на auth картата, за да се четат като едно семейство. */
+@property --lessonSheen {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.arrow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--lessonSheen, 0deg),
+    transparent 0%,
+    transparent 62%,
+    rgba(240, 200, 120, 0.55) 76%,
+    rgba(255, 236, 190, 0.95) 82%,
+    rgba(240, 200, 120, 0.55) 88%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  animation: lessonSheenSpin 4.5s linear infinite;
+}
+@keyframes lessonSheenSpin {
+  to { --lessonSheen: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrow::before { animation: none; opacity: 0.6; }
 }
 
 .line:active .arrow {
