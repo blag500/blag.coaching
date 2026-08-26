@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './Chat.module.css'
 
 export default function Chat({ clientId, clientName, onClose }) {
   const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
+  const { t } = useSettings()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
@@ -92,14 +94,14 @@ export default function Chat({ clientId, clientName, onClose }) {
   async function handleSend() {
     if (!input.trim()) return
     const toId = otherUserId
-    if (!toId) { setSendError('Треньорът не е намерен — опресни приложението'); return }
+    if (!toId) { setSendError(t('chat.err.noCoach')); return }
     const text = input.trim()
     setInput('')
     setSendError(null)
     const { data, error } = await sendMessage(toId, text)
     if (error || !data) {
       setInput(text)
-      setSendError('Грешка при изпращане — опитай отново')
+      setSendError(t('chat.err.send'))
     } else {
       setMessages(prev => [...prev, data])
     }
@@ -109,19 +111,19 @@ export default function Chat({ clientId, clientName, onClose }) {
     const file = e.target.files?.[0]
     if (!file) return
     const toId = otherUserId
-    if (!toId) { setSendError('Треньорът не е намерен — опресни приложението'); return }
+    if (!toId) { setSendError(t('chat.err.noCoach')); return }
 
     setUploading(true)
     setSendError(null)
     const ext  = file.name.split('.').pop()
     const path = `${user.id}/${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('chat-photos').upload(path, file)
-    if (upErr) { setSendError('Грешка при качване на снимката'); setUploading(false); return }
+    if (upErr) { setSendError(t('chat.err.upload')); setUploading(false); return }
 
     const { data: { publicUrl } } = supabase.storage.from('chat-photos').getPublicUrl(path)
     const { data, error } = await sendMessage(toId, null, publicUrl)
     if (error || !data) {
-      setSendError('Грешка при изпращане')
+      setSendError(t('chat.err.sendShort'))
     } else {
       setMessages(prev => [...prev, data])
     }
@@ -129,7 +131,7 @@ export default function Chat({ clientId, clientName, onClose }) {
     e.target.value = ''
   }
 
-  const displayName = isCoach ? clientName : 'Треньор'
+  const displayName = isCoach ? clientName : t('chat.coachName')
 
   return (
     <div className={styles.chat}>
@@ -146,9 +148,9 @@ export default function Chat({ clientId, clientName, onClose }) {
 
       <div className={styles.messages}>
         {loading ? (
-          <p className={styles.loading}>Зарежда...</p>
+          <p className={styles.loading}>{t('chat.loading')}</p>
         ) : messages.length === 0 ? (
-          <p className={styles.empty}>Няма съобщения</p>
+          <p className={styles.empty}>{t('chat.empty')}</p>
         ) : (
           messages.map(msg => (
             <div
@@ -159,7 +161,7 @@ export default function Chat({ clientId, clientName, onClose }) {
                 <img
                   src={msg.photo_url}
                   className={styles.photoBubble}
-                  alt="снимка"
+                  alt={t('chat.imgAlt')}
                   onClick={() => setLightboxUrl(msg.photo_url)}
                 />
               ) : (
@@ -188,14 +190,14 @@ export default function Chat({ clientId, clientName, onClose }) {
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || !otherUserId}
           type="button"
-          aria-label="Изпрати снимка"
+          aria-label={t('chat.sendImg')}
         >
           {uploading ? '…' : '📷'}
         </button>
         <input
           className={styles.field}
           type="text"
-          placeholder="Напиши съобщение..."
+          placeholder={t('chat.placeholder')}
           value={input}
           onChange={e => { setInput(e.target.value); if (sendError) setSendError(null) }}
           onKeyDown={e => e.key === 'Enter' && handleSend()}

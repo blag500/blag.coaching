@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { useShop } from '../../hooks/useShop'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './CartDrawer.module.css'
-
-function formatPrice(stotinki) {
-  return (stotinki / 100).toFixed(2) + ' лв.'
-}
 
 export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
   const { checkout } = useShop()
+  const { t } = useSettings()
+  const formatPrice = stotinki => t('cart.currency', { amount: (stotinki / 100).toFixed(2) })
   const [address, setAddress] = useState('')
   const [notes,   setNotes]   = useState('')
   const [loading, setLoading] = useState(false)
@@ -26,7 +25,7 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
       cart.clearCart()
       window.location.href = url
     } catch (err) {
-      setError(err.message || 'Грешка при поръчката')
+      setError(err.message || t('cart.err.order'))
       setLoading(false)
     }
   }
@@ -36,8 +35,8 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
       <div className={styles.backdrop} onClick={onClose} aria-hidden="true" />
       <div className={styles.drawer}>
         <div className={styles.header}>
-          <span className={styles.title}>КОЛИЧКА</span>
-          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Затвори">
+          <span className={styles.title}>{t('cart.title')}</span>
+          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label={t('cart.close')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" width="16" height="16">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -45,7 +44,7 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
         </div>
 
         {cart.items.length === 0 ? (
-          <div className={styles.empty}>Количката е празна.</div>
+          <div className={styles.empty}>{t('cart.empty')}</div>
         ) : (
           <>
             <div className={styles.itemList}>
@@ -53,7 +52,7 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
                 <div key={item.product_id} className={styles.item}>
                   <div className={styles.itemInfo}>
                     <span className={styles.itemName}>{item.name}</span>
-                    <span className={styles.itemMacros}>{item.protein}g П · {item.kcal} kcal</span>
+                    <span className={styles.itemMacros}>{item.protein}g {t('nutr.card.pShort')} · {item.kcal} {t('unit.kcal')}</span>
                   </div>
                   <div className={styles.itemRight}>
                     <div className={styles.qtyRow}>
@@ -70,20 +69,20 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
             <div className={styles.deliverySection}>
               <input
                 className={styles.input}
-                placeholder="Адрес за доставка"
+                placeholder={t('cart.address')}
                 value={address}
                 onChange={e => setAddress(e.target.value)}
               />
               <input
                 className={styles.input}
-                placeholder="Бележки (незадължително)"
+                placeholder={t('cart.notes')}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
               />
             </div>
 
             <div className={styles.totalRow}>
-              <span className={styles.totalLabel}>ОБЩО</span>
+              <span className={styles.totalLabel}>{t('cart.total')}</span>
               <span className={styles.totalVal}>{formatPrice(cart.totalStotinki)}</span>
             </div>
 
@@ -95,12 +94,10 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
               disabled={loading || !address.trim()}
               type="button"
             >
-              {loading ? 'ЗАРЕЖДА...' : 'ПЛАТИ С КАРТА →'}
+              {loading ? t('cart.loading') : t('cart.pay')}
             </button>
 
-            <p className={styles.hint}>
-              Макросите ще се логнат автоматично след потвърждение на плащането.
-            </p>
+            <p className={styles.hint}>{t('cart.footnote')}</p>
           </>
         )}
       </div>

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useWaterLog } from '../../hooks/useWaterLog'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './FAB.module.css'
 
 export default function FAB({ onNavigate, activeTab }) {
+  const { t } = useSettings()
   const [open, setOpen] = useState(false)
   const { add: addWater } = useWaterLog()
   const [waterFlash, setWaterFlash] = useState(false)
@@ -36,17 +38,17 @@ export default function FAB({ onNavigate, activeTab }) {
       <div className={styles.wrap}>
         {open && (
           <div className={styles.dial}>
-            <button className={styles.action} onClick={handlePhoto} type="button" aria-label="Снимай ядене">
+            <button className={styles.action} onClick={handlePhoto} type="button" aria-label={t('fab.snap')}>
               <CameraIcon />
-              <span className={styles.actionLabel}>Снимай</span>
+              <span className={styles.actionLabel}>{t('fab.snapLabel')}</span>
             </button>
-            <button className={styles.action} onClick={handleWater} type="button" aria-label="Добави вода">
+            <button className={styles.action} onClick={handleWater} type="button" aria-label={t('fab.water')}>
               <WaterIcon />
-              <span className={styles.actionLabel}>Вода +1</span>
+              <span className={styles.actionLabel}>{t('fab.waterLabel')}</span>
             </button>
-            <button className={styles.action} onClick={handleFood} type="button" aria-label="Логни ядене">
+            <button className={styles.action} onClick={handleFood} type="button" aria-label={t('fab.food')}>
               <FoodIcon />
-              <span className={styles.actionLabel}>Храна</span>
+              <span className={styles.actionLabel}>{t('fab.foodLabel')}</span>
             </button>
           </div>
         )}
@@ -55,7 +57,7 @@ export default function FAB({ onNavigate, activeTab }) {
           className={`${styles.fab} ${open ? styles.fabOpen : ''} ${waterFlash ? styles.fabFlash : ''}`}
           onClick={() => setOpen(o => !o)}
           type="button"
-          aria-label={open ? 'Затвори' : 'Бързо действие'}
+          aria-label={open ? t('fab.close') : t('fab.quick')}
         >
           <PlusIcon />
         </button>

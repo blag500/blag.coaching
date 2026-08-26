@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { registerPushSubscription } from '../../hooks/usePushNotifications'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './NotificationPrompt.module.css'
 
 const STORAGE_KEY  = 'notif_prompt_last_shown'
 const REPROMPT_MS  = 3 * 24 * 60 * 60 * 1000 // 3 days
 
 export default function NotificationPrompt() {
+  const { t } = useSettings()
   const { user } = useAuth()
   const [show, setShow] = useState(false)
 
@@ -46,15 +48,13 @@ export default function NotificationPrompt() {
     <div className={styles.overlay} role="dialog" aria-modal="true">
       <div className={styles.sheet}>
         <div className={styles.iconWrap}>🔔</div>
-        <h2 className={styles.title}>Разреши известия</h2>
-        <p className={styles.body}>
-          Получавай напомняния за добавките си и съобщения от треньора директно на телефона.
-        </p>
+        <h2 className={styles.title}>{t('np.title')}</h2>
+        <p className={styles.body}>{t('np.body')}</p>
         <button className={styles.allowBtn} onClick={allow} type="button">
-          Разреши известия
+          {t('np.allow')}
         </button>
         <button className={styles.dismissBtn} onClick={dismiss} type="button">
-          Не сега
+          {t('np.later')}
         </button>
       </div>
     </div>

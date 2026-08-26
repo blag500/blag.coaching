@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ProgressPhotos.module.css'
 
 function fmtDate(iso) {
@@ -10,6 +11,7 @@ function fmtDate(iso) {
 }
 
 export default function ProgressPhotos() {
+  const { t } = useSettings()
   const { user } = useAuth()
   const [photos,   setPhotos]   = useState([])  // checkins with photo_url
   const [lightbox, setLightbox] = useState(null)
@@ -33,7 +35,7 @@ export default function ProgressPhotos() {
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
           <circle cx="12" cy="13" r="4"/>
         </svg>
-        <p className={styles.emptyText}>Добави снимка в Check-in за да видиш прогреса си тук</p>
+        <p className={styles.emptyText}>{t('pp.emptyText')}</p>
       </div>
     )
   }
@@ -61,11 +63,11 @@ export default function ProgressPhotos() {
       {compare.length > 0 && (
         <div className={styles.compareBar}>
           <span className={styles.compareHint}>
-            {compare.length === 1 ? 'Избери втора снимка за сравнение' : ''}
+            {compare.length === 1 ? t('pp.pickSecond') : ''}
           </span>
           {compare.length === 2 && (
             <button className={styles.compareBtn} onClick={() => setLightbox('compare')} type="button">
-              СРАВНИ →
+              {t('pp.compare')}
             </button>
           )}
           <button className={styles.compareClear} onClick={() => setCompare([])} type="button">
@@ -93,7 +95,7 @@ export default function ProgressPhotos() {
                 <div className={styles.overlay}>
                   <span className={styles.overlayDate}>{fmtDate(p.date)}</span>
                   {p.weight_kg != null && (
-                    <span className={styles.overlayWeight}>{p.weight_kg} кг</span>
+                    <span className={styles.overlayWeight}>{p.weight_kg} {t('unit.kg')}</span>
                   )}
                 </div>
                 {selected && (
@@ -126,14 +128,14 @@ export default function ProgressPhotos() {
       {lightbox === 'compare' && before && after && (
         <div className={styles.lightbox} onClick={() => setLightbox(null)}>
           <div className={styles.compareView} onClick={e => e.stopPropagation()}>
-            {[{ label: 'ПРЕДИ', p: before }, { label: 'СЛЕД', p: after }].map(({ label, p }) => (
+            {[{ label: t('pp.before'), p: before }, { label: t('pp.after'), p: after }].map(({ label, p }) => (
               <div key={p.id} className={styles.comparePane}>
                 <img src={p.photo_url} className={styles.compareImg} alt={label} />
                 <div className={styles.compareLabel}>
                   <span className={styles.compareLabelTag}>{label}</span>
                   <span className={styles.compareLabelDate}>{fmtDate(p.date)}</span>
                   {p.weight_kg != null && (
-                    <span className={styles.compareLabelWeight}>{p.weight_kg} кг</span>
+                    <span className={styles.compareLabelWeight}>{p.weight_kg} {t('unit.kg')}</span>
                   )}
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Lessons from '../LandingPage/Lessons'
 import land from '../LandingPage/LandingPage.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './CoachOffer.module.css'
 
 /**
@@ -24,6 +25,7 @@ const IG = 'https://ig.me/m/niki.blggg'
    "why would I need a coach" — they are also the only thing on this flow that
    opens onto footage, so the answer is shown rather than argued. */
 function WhySheet({ onClose }) {
+  const { t } = useSettings()
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
@@ -39,7 +41,7 @@ function WhySheet({ onClose }) {
      transforms — a fixed element inside one is positioned against it rather
      than against the window. */
   return createPortal(
-    <div className={styles.whySheet} role="dialog" aria-label="Защо ми е Blag Coach">
+    <div className={styles.whySheet} role="dialog" aria-label={t('co.aria')}>
       {/* The same print and the same dark pillow the lessons section carries on
           the landing page — reused, not copied, so the two never drift. */}
       <div className={land.lessonsBg} aria-hidden="true" />
@@ -52,14 +54,14 @@ function WhySheet({ onClose }) {
         <span className={land.markLink}>
           <span className={land.markText}>THE BLAG COACH</span>
         </span>
-        <h2 className={land.h2}>ще те научи как да:</h2>
+        <h2 className={land.h2}>{t('co.headTeach')}</h2>
         <Lessons />
       </div>
 
       {/* Sticky, so it is reachable with the list scrolled anywhere. Back, not
           close: it returns to the screen with the button on it. */}
       <div className={styles.whyFoot}>
-        <button className={styles.back} onClick={onClose} type="button" aria-label="Назад">
+        <button className={styles.back} onClick={onClose} type="button" aria-label={t('co.back')}>
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
             <polyline points="15 6 9 12 15 18" />
           </svg>
@@ -71,6 +73,7 @@ function WhySheet({ onClose }) {
 }
 
 export default function CoachOffer({ onWrite, onSkip, saving, error }) {
+  const { t } = useSettings()
   const [why, setWhy] = useState(false)
 
   return (
@@ -100,15 +103,15 @@ export default function CoachOffer({ onWrite, onSkip, saving, error }) {
           rel="noopener noreferrer"
           onClick={onWrite}
         >
-          ПИШИ МИ ЗА БЕЗПЛАТНА ТРЕНИРОВКА
+          {t('co.write')}
         </a>
 
         <button className={styles.why} onClick={() => setWhy(true)} type="button">
-          Защо ми е Blag Coach
+          {t('co.why')}
         </button>
 
         <button className={styles.skip} onClick={onSkip} disabled={saving} type="button">
-          {saving ? '...' : 'Продължи сам'}
+          {saving ? '...' : t('co.skip')}
         </button>
       </div>
 

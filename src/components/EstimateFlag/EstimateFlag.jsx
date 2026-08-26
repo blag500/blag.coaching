@@ -1,3 +1,4 @@
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './EstimateFlag.module.css'
 
 /**
@@ -15,6 +16,7 @@ import styles from './EstimateFlag.module.css'
  * approximately-equal sign already means this and means nothing else.
  */
 export default function EstimateFlag({ children, className = '' }) {
+  const { t } = useSettings()
   return (
     <p className={`${styles.flag} ${className}`}>
       <svg viewBox="0 0 20 20" width="15" height="15" className={styles.mark} aria-hidden="true">
@@ -24,7 +26,7 @@ export default function EstimateFlag({ children, className = '' }) {
               fill="none" stroke="currentColor" strokeWidth="1.5"
               strokeLinecap="round" transform="translate(1,0)" />
       </svg>
-      <span>{children ?? <>Изчислено приблизително. <b>Провери числата</b>, преди да запишеш.</>}</span>
+      <span>{children ?? <>{t('ef.body')} <b>{t('ef.check')}</b>, {t('ef.beforeSave')}</>}</span>
     </p>
   )
 }
