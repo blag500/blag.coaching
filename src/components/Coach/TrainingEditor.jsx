@@ -194,11 +194,13 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                               {url ? <img src={url} alt="" className={styles.exThumbImg} /> : '📷'}
                             </span>
                             <span className={styles.exBody}>
-                              <span className={styles.exName}>{ex.name || '(без име)'}</span>
+                              <span className={styles.exName}>
+                                <span className={styles.exNameText}>{ex.name || '(без име)'}</span>
+                                {ex.note && <span className={styles.exNote}>· {ex.note}</span>}
+                              </span>
                               <span className={styles.exMeta}>
                                 {muscle && <span className={styles.exMuscle}>{muscle.label}</span>}
                                 <span className={styles.exReps}>{ex.sets || '?'} × {ex.reps || '?'}</span>
-                                {ex.note && <span className={styles.exNoteDot} title={ex.note}>·</span>}
                               </span>
                             </span>
                           </button>
@@ -332,7 +334,7 @@ function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) 
 
         <label className={styles.modalField}>
           <span>Бележка</span>
-          <textarea value={note} onChange={e => setNote(e.target.value)} rows={3}
+          <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
                     placeholder="Темпо, техника, каденс…" />
         </label>
 

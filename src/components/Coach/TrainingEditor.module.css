@@ -203,9 +203,27 @@
   font-family: var(--font-body);
   font-size: 14px;
   color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.exNameText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Бележката — по-блед и по-малък шрифт след името, за да чете като допълнение
+   вместо като втори равностоен низ. Слива се на едно cite-like звучене. */
+.exNote {
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.75;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .exMeta {
   display: flex;
@@ -223,7 +241,6 @@
   letter-spacing: 0.03em;
 }
 .exReps { font-variant-numeric: tabular-nums; }
-.exNoteDot { color: var(--accent); font-size: 16px; line-height: 1; }
 
 .exRemove {
   width: 30px;
@@ -403,18 +420,22 @@
 }
 @keyframes modalFade { from { opacity: 0 } to { opacity: 1 } }
 
+/* Bottom sheet: висок към 90% от прозореца, скролва вътрешно ако полетата
+   не се събират — safe-area паддинг долу гарантира, че бутоните не се
+   бият с домашния индикатор на iOS. */
 .modal {
   width: 100%;
   max-width: 520px;
-  max-height: 92vh;
+  max-height: 90vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--surface-1);
   border-top: 1px solid var(--panel-border);
   border-radius: 20px 20px 0 0;
-  padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   animation: modalRise 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 @keyframes modalRise {
@@ -447,7 +468,8 @@
 
 .modalPhoto {
   position: relative;
-  height: 140px;
+  height: 96px;
+  flex-shrink: 0;
   border-radius: var(--r-md);
   border: 1px dashed rgba(var(--accent-rgb), 0.35);
   background: var(--surface-2);
@@ -483,7 +505,7 @@
 .modalField input,
 .modalField select,
 .modalField textarea {
-  padding: 11px 12px;
+  padding: 10px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
@@ -496,7 +518,7 @@
 .modalField input:focus,
 .modalField select:focus,
 .modalField textarea:focus { border-color: var(--accent); }
-.modalField textarea { resize: vertical; min-height: 60px; }
+.modalField textarea { resize: vertical; min-height: 52px; }
 
 .modalRow {
   display: grid;
