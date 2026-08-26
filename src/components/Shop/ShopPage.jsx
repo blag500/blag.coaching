@@ -2,25 +2,24 @@ import { useState } from 'react'
 import { useShop } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import CartDrawer from './CartDrawer'
 import CatalogManager from './CatalogManager'
 import styles from './ShopPage.module.css'
 
 const CATEGORIES = [
-  { id: 'all',         label: 'ВСИЧКИ'    },
-  { id: 'bars_snacks', label: 'БАРОВЕ'    },
-  { id: 'pantry',      label: 'БАКАЛИЯ'   },
-  { id: 'supplements', label: 'ДОБАВКИ'   },
+  { id: 'all',         labelKey: 'shop.cat.all'         },
+  { id: 'bars_snacks', labelKey: 'shop.cat.bars'        },
+  { id: 'pantry',      labelKey: 'shop.cat.pantry'      },
+  { id: 'supplements', labelKey: 'shop.cat.supplements' },
 ]
-
-function formatPrice(stotinki) {
-  return (stotinki / 100).toFixed(2) + ' лв.'
-}
 
 export default function ShopPage({ initialOrderSuccess }) {
   const { products, loading } = useShop()
   const cart = useCart()
   const { profile } = useAuth()
+  const { t } = useSettings()
+  const formatPrice = stotinki => t('cart.currency', { amount: (stotinki / 100).toFixed(2) })
   const isCoach = profile?.role === 'coach'
   const [category, setCategory] = useState('all')
   const [cartOpen,     setCartOpen]     = useState(false)
@@ -37,12 +36,12 @@ export default function ShopPage({ initialOrderSuccess }) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>МАГАЗИН</h1>
-          <p className={styles.subtitle}>БЪРЗА ДОСТАВКА · ПРОСЛЕДЕНИ МАКРОСИ</p>
+          <h1 className={styles.title}>{t('shop.title')}</h1>
+          <p className={styles.subtitle}>{t('shop.subtitle')}</p>
         </div>
         <div className={styles.headerBtns}>
           {isCoach && (
-            <button className={styles.manageBtn} onClick={() => setManagerOpen(true)} type="button" aria-label="Управление на каталога">
+            <button className={styles.manageBtn} onClick={() => setManagerOpen(true)} type="button" aria-label={t('shop.manage')}>
               ⚙
             </button>
           )}
@@ -50,7 +49,7 @@ export default function ShopPage({ initialOrderSuccess }) {
             className={`${styles.cartBtn} ${cart.itemCount > 0 ? styles.cartBtnActive : ''}`}
             onClick={() => setCartOpen(true)}
             type="button"
-            aria-label="Количка"
+            aria-label={t('shop.cart')}
           >
             🛒
             {cart.itemCount > 0 && (
@@ -62,7 +61,7 @@ export default function ShopPage({ initialOrderSuccess }) {
 
       {orderSuccess && (
         <div className={styles.successBanner}>
-          <span>✓ Поръчката е потвърдена! Продуктите са логнати в дневника.</span>
+          <span>{t('shop.confirmed')}</span>
           <button onClick={() => setOrderSuccess(false)} type="button" className={styles.successClose}>×</button>
         </div>
       )}
@@ -76,13 +75,13 @@ export default function ShopPage({ initialOrderSuccess }) {
             className={`${styles.catBtn} ${category === c.id ? styles.catBtnActive : ''}`}
             onClick={() => setCategory(c.id)}
           >
-            {c.label}
+            {t(c.labelKey)}
           </button>
         ))}
       </div>
 
       {visible.length === 0 ? (
-        <div className={styles.empty}>Няма продукти в тази категория.</div>
+        <div className={styles.empty}>{t('shop.emptyCat')}</div>
       ) : (
         <div className={styles.grid}>
           {visible.map(p => {
@@ -100,13 +99,13 @@ export default function ShopPage({ initialOrderSuccess }) {
                   <span className={styles.cardName}>{p.name}</span>
                   {p.description && <span className={styles.cardDesc}>{p.description}</span>}
                   <div className={styles.cardMacros}>
-                    <span className={styles.macroChip} style={{ color: '#42A5F5' }}>{p.protein_per_serving}g П</span>
-                    <span className={styles.macroChip} style={{ color: '#66BB6A' }}>{p.carbs_per_serving}g В</span>
-                    <span className={styles.macroChip} style={{ color: 'var(--accent)' }}>{p.fat_per_serving}g М</span>
-                    <span className={styles.macroChip} style={{ color: 'var(--muted)' }}>{p.kcal_per_serving} kcal</span>
+                    <span className={styles.macroChip} style={{ color: '#42A5F5' }}>{p.protein_per_serving}g {t('nutr.card.pShort')}</span>
+                    <span className={styles.macroChip} style={{ color: '#66BB6A' }}>{p.carbs_per_serving}g {t('nutr.card.cShort')}</span>
+                    <span className={styles.macroChip} style={{ color: 'var(--accent)' }}>{p.fat_per_serving}g {t('nutr.card.fShort')}</span>
+                    <span className={styles.macroChip} style={{ color: 'var(--muted)' }}>{p.kcal_per_serving} {t('unit.kcal')}</span>
                   </div>
                   <div className={styles.cardServing}>
-                    {p.serving_size}{p.serving_unit} на порция
+                    {t('shop.perServing', { n: p.serving_size, unit: p.serving_unit })}
                   </div>
                 </div>
                 <div className={styles.cardFooter}>
@@ -119,7 +118,7 @@ export default function ShopPage({ initialOrderSuccess }) {
                     </div>
                   ) : (
                     <button type="button" className={styles.addBtn} onClick={() => cart.addItem(p)}>
-                      + ДОБАВИ
+                      {t('shop.add')}
                     </button>
                   )}
                 </div>

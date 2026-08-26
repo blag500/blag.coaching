@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ShoppingList.module.css'
-
-const DAY_NAMES = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -11,7 +10,7 @@ function formatDate(iso) {
 }
 
 // ─── Week strip showing last 14 days with shopping activity dots ─────────────
-function WeekStrip({ history }) {
+function WeekStrip({ history, t }) {
   const activityDays = new Set(
     history.map(l => new Date(l.archived_at).toDateString())
   )
@@ -28,7 +27,7 @@ function WeekStrip({ history }) {
         const active = activityDays.has(d.toDateString())
         return (
           <div key={i} className={`${styles.stripDay} ${isToday ? styles.stripToday : ''}`}>
-            <span className={styles.stripLabel}>{DAY_NAMES[d.getDay()]}</span>
+            <span className={styles.stripLabel}>{t(`days.${d.getDay()}`)}</span>
             <div className={`${styles.stripDot} ${active ? styles.stripDotActive : ''}`} />
             <span className={styles.stripNum}>{d.getDate()}</span>
           </div>
@@ -39,7 +38,7 @@ function WeekStrip({ history }) {
 }
 
 // ─── Past shopping session card ───────────────────────────────────────────────
-function HistoryCard({ session }) {
+function HistoryCard({ session, t }) {
   const [open, setOpen] = useState(false)
   const total   = session.items.length
   const checked = session.items.filter(i => i.checked).length
@@ -54,7 +53,7 @@ function HistoryCard({ session }) {
       >
         <div className={styles.histLeft}>
           <span className={styles.histDate}>{formatDate(session.archived_at)}</span>
-          <span className={styles.histSummary}>{total} артикула · {pct}% отметнати</span>
+          <span className={styles.histSummary}>{t('sl.histSummary', { total, pct })}</span>
         </div>
         <div className={styles.histRight}>
           <div className={styles.progressRing}>
@@ -91,6 +90,7 @@ function HistoryCard({ session }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ShoppingList({ onBack }) {
   const { user } = useAuth()
+  const { t } = useSettings()
   const [tab, setTab]           = useState('list')
   const [activeList, setActiveList] = useState(null)
   const [items, setItems]       = useState([])
@@ -213,9 +213,9 @@ export default function ShoppingList({ onBack }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} type="button">← ОТКРИЙ</button>
+        <button className={styles.backBtn} onClick={onBack} type="button">{t('sl.back')}</button>
         <div className={styles.headerRow}>
-          <h1 className={styles.title}>СПИСЪК</h1>
+          <h1 className={styles.title}>{t('sl.title')}</h1>
           {items.length > 0 && (
             <span className={styles.progress}>{checked}/{items.length}</span>
           )}
@@ -224,14 +224,14 @@ export default function ShoppingList({ onBack }) {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        {[{ id: 'list', label: 'ТЕКУЩ' }, { id: 'history', label: 'ИСТОРИЯ' }].map(t => (
+        {[{ id: 'list', labelKey: 'sl.tab.current' }, { id: 'history', labelKey: 'sl.tab.history' }].map(tab2 => (
           <button
-            key={t.id}
-            className={`${styles.tab} ${tab === t.id ? styles.tabActive : ''}`}
-            onClick={() => setTab(t.id)}
+            key={tab2.id}
+            className={`${styles.tab} ${tab === tab2.id ? styles.tabActive : ''}`}
+            onClick={() => setTab(tab2.id)}
             type="button"
           >
-            {t.label}
+            {t(tab2.labelKey)}
           </button>
         ))}
       </div>
@@ -240,11 +240,11 @@ export default function ShoppingList({ onBack }) {
       {tab === 'list' && (
         <div className={styles.listBody}>
           {loading ? (
-            <p className={styles.empty}>Зарежда...</p>
+            <p className={styles.empty}>{t('sl.loading')}</p>
           ) : (
             <>
               {items.length === 0 && (
-                <p className={styles.empty}>Списъкът е празен. Добави артикули по-долу.</p>
+                <p className={styles.empty}>{t('sl.empty')}</p>
               )}
 
               <ul className={styles.itemList}>
@@ -257,7 +257,7 @@ export default function ShoppingList({ onBack }) {
                       className={`${styles.checkbox} ${item.checked ? styles.checkboxDone : ''}`}
                       onClick={() => toggleItem(item.id, item.checked)}
                       type="button"
-                      aria-label={item.checked ? 'Отмаркирай' : 'Маркирай'}
+                      aria-label={item.checked ? t('sl.uncheck') : t('sl.check')}
                     >
                       {item.checked && (
                         <svg viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="12" height="10">
@@ -271,7 +271,7 @@ export default function ShoppingList({ onBack }) {
                       className={styles.deleteItemBtn}
                       onClick={() => deleteItem(item.id)}
                       type="button"
-                      aria-label="Изтрий"
+                      aria-label={t('sl.delete')}
                     >
                       ×
                     </button>
@@ -289,7 +289,7 @@ export default function ShoppingList({ onBack }) {
                   disabled={archiving}
                   type="button"
                 >
-                  {archiving ? 'Запазва...' : 'Завърши пазаруването →'}
+                  {archiving ? t('sl.finishing') : t('sl.finish')}
                 </button>
               )}
 
@@ -299,7 +299,7 @@ export default function ShoppingList({ onBack }) {
                   ref={inputRef}
                   className={styles.addInput}
                   type="text"
-                  placeholder="Артикул..."
+                  placeholder={t('sl.itemPh')}
                   value={nameInput}
                   onChange={e => setNameInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addItem()}
@@ -307,7 +307,7 @@ export default function ShoppingList({ onBack }) {
                 <input
                   className={styles.qtyInput}
                   type="text"
-                  placeholder="Кол."
+                  placeholder={t('sl.qtyPh')}
                   value={qtyInput}
                   onChange={e => setQtyInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addItem()}
@@ -330,16 +330,16 @@ export default function ShoppingList({ onBack }) {
       {tab === 'history' && (
         <>
           {!histLoaded ? (
-            <p className={styles.empty}>Зарежда...</p>
+            <p className={styles.empty}>{t('sl.loading')}</p>
           ) : (
             <>
-              {history.length > 0 && <WeekStrip history={history} />}
+              {history.length > 0 && <WeekStrip history={history} t={t} />}
               {history.length === 0 ? (
-                <p className={styles.empty}>Все още няма архивирани списъци.</p>
+                <p className={styles.empty}>{t('sl.noHistory')}</p>
               ) : (
                 <div className={styles.histList}>
                   {history.map(session => (
-                    <HistoryCard key={session.id} session={session} />
+                    <HistoryCard key={session.id} session={session} t={t} />
                   ))}
                 </div>
               )}
