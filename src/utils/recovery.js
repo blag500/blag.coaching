@@ -227,18 +227,36 @@ const UNKNOWN_H = 48
  */
 export function blockReadiness(block, recovery, lastDoneByLabel = {}, now = Date.now()) {
   const groups = new Set(resolveGroups(block))
-  // A full-body day is held back by whichever group is furthest from ready.
+  // Full-body ден е задържан от най-невъзстановената група — там наистина
+  // всичко влиза в основната работа.
   if (!groups.size && classifyMuscle(block.label) === 'full') {
     for (const g of Object.keys(RECOVERY_H)) groups.add(g)
-  }
-
-  if (groups.size) {
     let worst = { pct: 101, group: null }
     for (const g of groups) {
       const pct = recovery[g]?.pct ?? 100
       if (pct < worst.pct) worst = { pct, group: g, basis: 'muscle' }
     }
     return worst
+  }
+
+  if (groups.size) {
+    /* Използваме основната група (primary), не най-слабо възстановената.
+       Причина: Upper A има ['upper', 'pull', 'extra'] по default — ако extra
+       е тренуван вчера (примерно Прасци в Lower A), Upper A показваше 37%
+       възстановен, въпреки че upper е 100%. Това лъже: тренировката на
+       гърди/рамене/трицепс не се компромисва от изморените прасци.
+
+       Primary се дефинира по label-а — 'Upper A' → upper. Ако label-ът не
+       се разпознае, взимаме първата от block.groups (accessoy-и обикновено
+       се записват накрая), а иначе — първата от resolveGroups. */
+    const fromLabel = classifyMuscle(block.label)
+    const primary =
+      (fromLabel && fromLabel !== 'full' && groups.has(fromLabel)) ? fromLabel :
+      (Array.isArray(block.groups) && block.groups.length)
+        ? (tagToBroad(block.groups[0]) || [...groups][0])
+        : [...groups][0]
+    const pct = recovery[primary]?.pct ?? 100
+    return { pct, group: primary, basis: 'muscle' }
   }
 
   const last = lastDoneByLabel[block.label]
