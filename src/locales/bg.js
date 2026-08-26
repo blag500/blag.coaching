@@ -621,6 +621,26 @@ export default {
   'tasks.date.overdueDays':  '{n}д закъснение',
   'tasks.date.inDays':       'След {n}д',
 
+  // Showcase
+  'sc.cat.all':              'ВСИЧКО',
+  'sc.cat.training':         'ТРЕНИРОВКА',
+  'sc.cat.nutrition':        'ХРАНЕНЕ',
+  'sc.title':                'ВДЪХНОВЕНИЕ',
+  'sc.subtitle':             'Виж как тренира и живее треньорът',
+  'sc.publications':         'ПУБЛИКАЦИИ',
+  'sc.emptyPubs':            'Все още няма публикации.',
+  'sc.coachFallback':        'Треньорът',
+  'sc.coachRole':            'ТРЕНЬОР',
+  'sc.trainingLast7':        'ТРЕНИРОВКА — ПОСЛЕДНИ 7 ДНИ',
+  'sc.habitsLast7':          'НАВИЦИ — ПОСЛЕДНИ 7 ДНИ',
+  'sc.kcalToday':            'ККАЛ ДНЕС',
+  'sc.habitsToday':          'НАВИЦИ ДНЕС',
+  'sc.sleep':                'СЪН',
+  'sc.sleepHours':           '{n}ч',
+  'sc.training':             'ТРЕНИРОВКА',
+  'sc.checkinPhotos':        'CHECK-IN СНИМКИ',
+  'days.sun': 'Нд',
+
   // WelcomeOverlay
   'welcome.eyebrow': 'ДОБРЕ ДОШЪЛ В',
   'welcome.sub':     'Ето какво можеш да правиш в приложението:',

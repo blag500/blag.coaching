@@ -620,6 +620,26 @@ export default {
   'tasks.date.overdueDays':  '{n}d overdue',
   'tasks.date.inDays':       'in {n}d',
 
+  // Showcase
+  'sc.cat.all':              'ALL',
+  'sc.cat.training':         'TRAINING',
+  'sc.cat.nutrition':        'NUTRITION',
+  'sc.title':                'INSPIRATION',
+  'sc.subtitle':             'See how your coach trains and lives',
+  'sc.publications':         'POSTS',
+  'sc.emptyPubs':            'No posts yet.',
+  'sc.coachFallback':        'Coach',
+  'sc.coachRole':            'COACH',
+  'sc.trainingLast7':        'TRAINING — LAST 7 DAYS',
+  'sc.habitsLast7':          'HABITS — LAST 7 DAYS',
+  'sc.kcalToday':            'KCAL TODAY',
+  'sc.habitsToday':          'HABITS TODAY',
+  'sc.sleep':                'SLEEP',
+  'sc.sleepHours':           '{n}h',
+  'sc.training':             'TRAINING',
+  'sc.checkinPhotos':        'CHECK-IN PHOTOS',
+  'days.sun':                'Su',
+
   // WelcomeOverlay
   'welcome.eyebrow': 'WELCOME TO',
   'welcome.sub':     'Here’s what you can do in the app:',

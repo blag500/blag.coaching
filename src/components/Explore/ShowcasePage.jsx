@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { HABITS as DEFAULT_HABITS } from '../../data/appData'
 import styles from './ShowcasePage.module.css'
 
 const CATEGORIES = [
-  { id: null,        label: 'ВСИЧКО' },
-  { id: 'training',  label: 'ТРЕНИРОВКА' },
-  { id: 'nutrition', label: 'ХРАНЕНЕ' },
+  { id: null,        labelKey: 'sc.cat.all' },
+  { id: 'training',  labelKey: 'sc.cat.training' },
+  { id: 'nutrition', labelKey: 'sc.cat.nutrition' },
 ]
-const CAT_LABEL = { training: 'ТРЕНИРОВКА', nutrition: 'ХРАНЕНЕ' }
+const CAT_KEY = { training: 'sc.cat.training', nutrition: 'sc.cat.nutrition' }
 const CAT_COLOR = { training: 'var(--accent)', nutrition: '#66BB6A' }
-
-const DAYS_BG = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
 function last7Days() {
   return Array.from({ length: 7 }, (_, i) => {
@@ -24,6 +23,7 @@ function last7Days() {
 
 export default function ShowcasePage({ onBack }) {
   const { user, profile: myProfile } = useAuth()
+  const { t } = useSettings()
   const [posts,      setPosts]      = useState([])
   const [loading,    setLoading]    = useState(true)
   const [filter,     setFilter]     = useState(null)
@@ -162,19 +162,19 @@ export default function ShowcasePage({ onBack }) {
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">←</button>
         <div>
-          <h1 className={styles.title}>ВДЪХНОВЕНИЕ</h1>
-          <p className={styles.subtitle}>Виж как тренира и живее треньорът</p>
+          <h1 className={styles.title}>{t('sc.title')}</h1>
+          <p className={styles.subtitle}>{t('sc.subtitle')}</p>
         </div>
       </header>
 
       {loading ? (
-        <p className={styles.empty}>Зарежда...</p>
+        <p className={styles.empty}>{t('chat.loading')}</p>
       ) : (
         <>
           {coachData && <CoachLiveCard data={coachData} onPhotoClick={setLightbox} />}
 
           {/* Posts */}
-          <div className={styles.sectionLabel}>ПУБЛИКАЦИИ</div>
+          <div className={styles.sectionLabel}>{t('sc.publications')}</div>
           <div className={styles.filterRow}>
             {CATEGORIES.map(c => (
               <button
@@ -183,13 +183,13 @@ export default function ShowcasePage({ onBack }) {
                 className={`${styles.filterBtn} ${filter === c.id ? styles.filterBtnActive : ''}`}
                 onClick={() => setFilter(c.id)}
               >
-                {c.label}
+                {t(c.labelKey)}
               </button>
             ))}
           </div>
 
           {visible.length === 0 ? (
-            <p className={styles.empty}>Все още няма публикации.</p>
+            <p className={styles.empty}>{t('sc.emptyPubs')}</p>
           ) : (
             <div className={styles.list}>
               {visible.map(post => (
@@ -198,7 +198,7 @@ export default function ShowcasePage({ onBack }) {
                   <div className={styles.cardBody}>
                     <div className={styles.cardMeta}>
                       <span className={styles.catBadge} style={{ color: CAT_COLOR[post.category], borderColor: CAT_COLOR[post.category] + '55' }}>
-                        {CAT_LABEL[post.category]}
+                        {t(CAT_KEY[post.category])}
                       </span>
                       <span className={styles.cardDate}>
                         {new Date(post.created_at).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
@@ -231,12 +231,12 @@ function CoachLiveCard({ data, onPhotoClick }) {
         <div className={styles.coachAvatar}>
           {profile.avatar_url
             ? <img src={profile.avatar_url} className={styles.coachAvatarImg} alt="" />
-            : <span>{(profile.name || 'Т')[0].toUpperCase()}</span>
+            : <span>{(profile.name || t('sc.coachFallback'))[0].toUpperCase()}</span>
           }
         </div>
         <div>
-          <p className={styles.coachName}>{profile.name || 'Треньорът'}</p>
-          <p className={styles.coachRole}>ТРЕНЬОР</p>
+          <p className={styles.coachName}>{profile.name || t('sc.coachFallback')}</p>
+          <p className={styles.coachRole}>{t('sc.coachRole')}</p>
         </div>
         {trainingStreak > 0 && (
           <div className={styles.streakBadge}>
@@ -247,7 +247,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
       </div>
 
       {/* Last 7 days training dots */}
-      <div className={styles.sectionMini}>ТРЕНИРОВКА — ПОСЛЕДНИ 7 ДНИ</div>
+      <div className={styles.sectionMini}>{t('sc.trainingLast7')}</div>
       <div className={styles.dotRow}>
         {daySummaries.map((d, i) => {
           const dayObj = new Date(d.date)
@@ -260,7 +260,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
               </div>
               {label && <span className={styles.dotWorkoutLabel}>{label}</span>}
               <span className={`${styles.dotLabel} ${isToday ? styles.dotLabelToday : ''}`}>
-                {DAYS_BG[dayObj.getDay()]}
+                {t(`days.${dayObj.getDay()}`)}
               </span>
             </div>
           )
@@ -268,7 +268,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
       </div>
 
       {/* Last 7 days habits */}
-      <div className={styles.sectionMini}>НАВИЦИ — ПОСЛЕДНИ 7 ДНИ</div>
+      <div className={styles.sectionMini}>{t('sc.habitsLast7')}</div>
       <div className={styles.habitBars}>
         {daySummaries.map((d, i) => {
           const pct = d.habitsTotal > 0 ? Math.round((d.habitsDone / d.habitsTotal) * 100) : 0
@@ -282,7 +282,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
                 />
               </div>
               <span className={`${styles.dotLabel} ${isToday ? styles.dotLabelToday : ''}`}>
-                {DAYS_BG[new Date(d.date).getDay()]}
+                {t(`days.${new Date(d.date).getDay()}`)}
               </span>
             </div>
           )
@@ -293,7 +293,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
       <div className={styles.statsRow}>
         <div className={styles.statBox}>
           <span className={styles.statVal}>{today.kcal > 0 ? today.kcal : '—'}</span>
-          <span className={styles.statLabel}>ККАЛ ДНЕС</span>
+          <span className={styles.statLabel}>{t('sc.kcalToday')}</span>
           {kcalPct !== null && today.kcal > 0 && (
             <div className={styles.statBar}>
               <div className={styles.statBarFill} style={{ width: `${kcalPct}%`, background: kcalPct >= 90 ? '#66BB6A' : 'var(--accent)' }} />
@@ -302,26 +302,26 @@ function CoachLiveCard({ data, onPhotoClick }) {
         </div>
         <div className={styles.statBox}>
           <span className={styles.statVal}>{today.habitsDone}/{today.habitsTotal}</span>
-          <span className={styles.statLabel}>НАВИЦИ ДНЕС</span>
+          <span className={styles.statLabel}>{t('sc.habitsToday')}</span>
         </div>
         {lastSleep && (
           <div className={styles.statBox}>
-            <span className={styles.statVal}>{lastSleep.duration_hours}ч</span>
-            <span className={styles.statLabel}>СЪН</span>
+            <span className={styles.statVal}>{t('sc.sleepHours', { n: lastSleep.duration_hours })}</span>
+            <span className={styles.statLabel}>{t('sc.sleep')}</span>
           </div>
         )}
         <div className={styles.statBox}>
           <span className={`${styles.statVal} ${today.trained ? styles.statGreen : styles.statMuted}`}>
             {today.trained ? '✓' : '—'}
           </span>
-          <span className={styles.statLabel}>ТРЕНИРОВКА</span>
+          <span className={styles.statLabel}>{t('sc.training')}</span>
         </div>
       </div>
 
       {/* Check-in photos */}
       {checkins.length > 0 && (
         <>
-          <div className={styles.sectionMini}>CHECK-IN СНИМКИ</div>
+          <div className={styles.sectionMini}>{t('sc.checkinPhotos')}</div>
           <div className={styles.photoStrip}>
             {checkins.map(c => (
               <button
@@ -349,7 +349,7 @@ function PostDetail({ post, onBack }) {
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">←</button>
         <span className={styles.catBadge} style={{ color: CAT_COLOR[post.category], borderColor: CAT_COLOR[post.category] + '55' }}>
-          {CAT_LABEL[post.category]}
+          {t(CAT_KEY[post.category])}
         </span>
       </header>
       {post.photo_url && <img src={post.photo_url} className={styles.detailImg} alt="" />}
