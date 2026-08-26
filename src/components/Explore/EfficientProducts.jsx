@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './EfficientProducts.module.css'
 
 const FORM_EMPTY = { name: '', source: '', price: '', indicator: '' }
 
 const FORM_FIELDS = [
-  { key: 'name',      label: 'Наименование',       placeholder: 'напр. Пилешки гърди' },
-  { key: 'source',    label: 'Откъде се набавя',   placeholder: 'напр. Kaufland, Lidl, онлайн...' },
-  { key: 'price',     label: 'Цена',               placeholder: 'напр. 4.99 лв / кг' },
-  { key: 'indicator', label: 'С какво се отличава', placeholder: 'напр. Висок протеин, Богат на омега-3...' },
+  { key: 'name',      labelKey: 'ep.f.name',      placeholderKey: 'ep.f.namePh' },
+  { key: 'source',    labelKey: 'ep.f.source',    placeholderKey: 'ep.f.sourcePh' },
+  { key: 'price',     labelKey: 'ep.f.price',     placeholderKey: 'ep.f.pricePh' },
+  { key: 'indicator', labelKey: 'ep.f.indicator', placeholderKey: 'ep.f.indicatorPh' },
 ]
 
 function PinIcon() {
@@ -40,11 +41,12 @@ function CameraIcon() {
 }
 
 function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelete, onEdit, onPhotoClick }) {
+  const { t } = useSettings()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(FORM_EMPTY)
   const [saving, setSaving] = useState(false)
   const isOwner = product.added_by === currentUserId
-  const addedByName = product.profiles?.name ?? 'Анонимен'
+  const addedByName = product.profiles?.name ?? t('ep.anon')
 
   function startEdit() {
     setDraft({ name: product.name, source: product.source, price: product.price, indicator: product.indicator })
@@ -75,7 +77,7 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
           <>
             {FORM_FIELDS.map(f => (
               <div key={f.key} className={styles.formField}>
-                <label className={styles.formLabel}>{f.label}</label>
+                <label className={styles.formLabel}>{t(f.labelKey)}</label>
                 <input
                   className={styles.formInput}
                   type="text"
@@ -85,14 +87,14 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
               </div>
             ))}
             <div className={styles.formActions}>
-              <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button">Отказ</button>
+              <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button">{t('ep.cancel')}</button>
               <button
                 className={styles.submitBtn}
                 onClick={handleSave}
                 disabled={saving || FORM_FIELDS.some(f => !draft[f.key].trim())}
                 type="button"
               >
-                {saving ? 'Запазва...' : 'Запази'}
+                {saving ? t('ep.saving') : t('ep.save')}
               </button>
             </div>
           </>
@@ -102,13 +104,13 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
               <span className={styles.cardName}>{product.name}</span>
               {isOwner && (
                 <div className={styles.cardActions}>
-                  <button className={styles.editBtn} onClick={startEdit} type="button" aria-label="Редактирай">
+                  <button className={styles.editBtn} onClick={startEdit} type="button" aria-label={t('ep.edit')}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="13" height="13" aria-hidden="true">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </button>
-                  <button className={styles.deleteBtn} onClick={() => onDelete(product.id)} type="button" aria-label="Изтрий">×</button>
+                  <button className={styles.deleteBtn} onClick={() => onDelete(product.id)} type="button" aria-label={t('ep.delete')}>×</button>
                 </div>
               )}
             </div>
@@ -118,12 +120,12 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
               <span className={styles.metaItem}><TagIcon />{product.price}</span>
             </div>
             <div className={styles.cardFooter}>
-              <span className={styles.addedBy}>от {addedByName}</span>
+              <span className={styles.addedBy}>{t('ep.addedBy', { name: addedByName })}</span>
               <button
                 className={`${styles.likeBtn} ${liked ? styles.likeBtnActive : ''}`}
                 onClick={() => onLike(product.id)}
                 type="button"
-                aria-label="Харесай"
+                aria-label={t('ep.like')}
               >
                 💪 {likeCount > 0 && <span className={styles.likeCount}>{likeCount}</span>}
               </button>
@@ -137,6 +139,7 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
 
 export default function EfficientProducts({ onBack }) {
   const { user } = useAuth()
+  const { t } = useSettings()
   const [products, setProducts]     = useState([])
   const [likeMap, setLikeMap]       = useState({})   // { productId: count }
   const [likedSet, setLikedSet]     = useState(new Set()) // product IDs liked by current user
@@ -246,7 +249,7 @@ export default function EfficientProducts({ onBack }) {
       .single()
 
     if (err) {
-      setError('Грешка при добавяне. Опитай пак.')
+      setError(t('ep.errSubmit'))
       setSubmitting(false)
       return
     }
@@ -299,15 +302,15 @@ export default function EfficientProducts({ onBack }) {
       )}
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">
-          ← ОТКРИЙ
+          {t('ep.back')}
         </button>
-        <h1 className={styles.title}>ЕФЕКТИВНИ ПРОДУКТИ</h1>
-        <p className={styles.subtitle}>Добавено от общността · всеки може да допринесе</p>
+        <h1 className={styles.title}>{t('ep.title')}</h1>
+        <p className={styles.subtitle}>{t('ep.subtitle')}</p>
       </header>
 
       {showForm ? (
         <div className={styles.formWrap}>
-          <h2 className={styles.formTitle}>НОВА НАХОДКА</h2>
+          <h2 className={styles.formTitle}>{t('ep.newFind')}</h2>
           {FORM_FIELDS.map(f => (
             <div key={f.key} className={styles.formField}>
               <label className={styles.formLabel} htmlFor={`ep-${f.key}`}>{f.label}</label>
@@ -323,14 +326,14 @@ export default function EfficientProducts({ onBack }) {
           ))}
 
           <div className={styles.formField}>
-            <label className={styles.formLabel}>Снимка (незадължително)</label>
+            <label className={styles.formLabel}>{t('ep.photoLabel')}</label>
             <label className={styles.photoUploadLabel} htmlFor="ep-photo">
               {photoPreview ? (
-                <img src={photoPreview} alt="преглед" className={styles.photoPreviewImg} />
+                <img src={photoPreview} alt={t('ep.photoAlt')} className={styles.photoPreviewImg} />
               ) : (
                 <span className={styles.photoUploadHint}>
                   <CameraIcon />
-                  Добави снимка
+                  {t('ep.photoAdd')}
                 </span>
               )}
             </label>
@@ -345,15 +348,15 @@ export default function EfficientProducts({ onBack }) {
 
           {error && <p className={styles.formError}>{error}</p>}
           <div className={styles.formActions}>
-            <button className={styles.cancelBtn} onClick={cancelForm} type="button">Отказ</button>
+            <button className={styles.cancelBtn} onClick={cancelForm} type="button">{t('ep.cancel')}</button>
             <button className={styles.submitBtn} onClick={handleSubmit} disabled={!canSubmit} type="button">
-              {submitting ? 'Изпраща...' : '+ Добави'}
+              {submitting ? t('ep.submitting') : t('ep.addNew')}
             </button>
           </div>
         </div>
       ) : (
         <button className={styles.contributeBtn} onClick={() => setShowForm(true)} type="button">
-          + Добави продукт
+          {t('ep.addProduct')}
         </button>
       )}
 
@@ -364,22 +367,22 @@ export default function EfficientProducts({ onBack }) {
             onClick={() => setSortBy('newest')}
             type="button"
           >
-            Най-нови
+            {t('ep.sort.newest')}
           </button>
           <button
             className={`${styles.sortBtn} ${sortBy === 'liked' ? styles.sortBtnActive : ''}`}
             onClick={() => setSortBy('liked')}
             type="button"
           >
-            💪 Най-харесвани
+            {t('ep.sort.liked')}
           </button>
         </div>
       )}
 
       {loading ? (
-        <p className={styles.empty}>Зарежда...</p>
+        <p className={styles.empty}>{t('chat.loading')}</p>
       ) : products.length === 0 ? (
-        <p className={styles.empty}>Все още няма продукти. Бъди първият!</p>
+        <p className={styles.empty}>{t('ep.emptyFirst')}</p>
       ) : (
         <div className={styles.list}>
           {sorted.map(p => (
