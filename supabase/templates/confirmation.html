@@ -10,17 +10,17 @@
   install in the wrong context. The {{ .ConfirmationURL }} lives on as a small
   fallback for anyone who prefers a click.
 
-  Identity matches the Splash: the arms mark above the BLAG wordmark, the
-  COACHING kicker in the same weight, a hairline gold divider, and the
-  "Be blag, Be better" tagline. `arms-hi.webp` is fetched from the production
-  domain — email cannot embed local assets, and remote images are blocked until
-  the reader taps "Show images", so the design still reads without it (the
-  typography carries the mark on its own).
+  The header matches the Splash: two flexed arms flanking BLAG COACHING with the
+  "Be blag, Be better" tagline underneath. Both arms are separate PNGs — one is
+  the source `email-arm-right.png`, the other is `email-arm-left.png` (same asset
+  flipped once at build time), because `transform: scaleX(-1)` is stripped by
+  Outlook and some Gmail clients.
 
-  No external CSS, no flexbox, no custom fonts we can rely on. One table, every
-  colour inline, a system display stack that falls back gracefully where Oswald
-  cannot load. Brushed-gold gradients are traded for a flat swatch — inline
-  `background-clip: text` renders as empty in most inboxes.
+  Email is not a browser: no external CSS, no flexbox, no custom fonts we can
+  rely on. One table, every colour inline, a system display stack that falls
+  back gracefully where Oswald cannot load. Brushed-gold gradients are traded
+  for a flat swatch — inline `background-clip: text` renders blank in most
+  inboxes.
 -->
 <div style="margin:0;padding:0;background:#0C0A06;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0C0A06" style="background:#0C0A06;margin:0;padding:0;">
@@ -29,43 +29,36 @@
 
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;width:100%;">
 
-          <!-- Arms mark — the same silhouette that flanks BLAG on the splash,
-               centred above the wordmark here so a single image reads clean in
-               every inbox. Alt text is empty on purpose: with images off, the
-               typography carries the mark and a stand-in caption would double
-               the wordmark below. -->
+          <!-- Splash-style lockup: two arms flanking the wordmark. A three-cell
+               table so Outlook, Gmail and Apple Mail all land the same layout;
+               vertical-align:middle so the arms hang from the same axis as the
+               name they hold. -->
           <tr>
-            <td align="center" style="padding:0 0 12px;">
-              <img src="https://blag-coaching.com/arms-hi.webp" alt="" width="140"
-                   style="display:block;width:140px;max-width:60%;height:auto;border:0;outline:none;text-decoration:none;" />
-            </td>
-          </tr>
-
-          <!-- Wordmark -->
-          <tr>
-            <td align="center" style="padding:4px 0 4px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:52px;font-weight:600;letter-spacing:14px;text-indent:14px;color:#E4CE94;line-height:1;">BLAG</div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:6px 0 4px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:20px;font-weight:600;letter-spacing:9px;text-indent:9px;color:#C8A05A;line-height:1;">COACHING</div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:14px 0 8px;">
-              <div style="width:56px;height:1px;background:#B08A45;line-height:1px;font-size:0;">&nbsp;</div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:0 0 28px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:400;letter-spacing:6px;text-indent:6px;color:#8A7B5C;line-height:1;text-transform:uppercase;">Be blag, Be better</div>
+            <td align="center" style="padding:8px 0 20px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td valign="middle" style="padding:0 4px;">
+                    <img src="https://blag-coaching.com/email-arm-left.png" alt="" width="76"
+                         style="display:block;width:76px;height:auto;border:0;outline:none;text-decoration:none;" />
+                  </td>
+                  <td valign="middle" align="center" style="padding:0 6px;">
+                    <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:36px;font-weight:600;letter-spacing:8px;text-indent:8px;color:#E4CE94;line-height:1;">BLAG</div>
+                    <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:14px;font-weight:600;letter-spacing:6px;text-indent:6px;color:#C8A05A;line-height:1;padding:10px 0 0;">COACHING</div>
+                    <div style="width:40px;height:1px;background:#B08A45;line-height:1px;font-size:0;margin:12px auto 0;">&nbsp;</div>
+                    <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:400;letter-spacing:5px;text-indent:5px;color:#8A7B5C;line-height:1;padding:10px 0 0;text-transform:uppercase;">Be&nbsp;blag,&nbsp;Be&nbsp;better</div>
+                  </td>
+                  <td valign="middle" style="padding:0 4px;">
+                    <img src="https://blag-coaching.com/email-arm-right.png" alt="" width="76"
+                         style="display:block;width:76px;height:auto;border:0;outline:none;text-decoration:none;" />
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
           <!-- Card -->
           <tr>
-            <td style="background:#15110B;border:1px solid rgba(255,183,77,0.16);border-radius:16px;padding:36px 30px;">
+            <td style="background:#15110B;border:1px solid rgba(255,183,77,0.16);border-radius:16px;padding:32px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:22px;font-weight:500;letter-spacing:2px;color:#F2E8CF;padding:0 0 14px;">
@@ -78,12 +71,14 @@
                   </td>
                 </tr>
 
-                <!-- OTP code — the primary CTA. Big, spaced, tabular so the six
-                     digits read as a single object rather than a running number. -->
+                <!-- OTP code — the primary CTA. white-space:nowrap forces the six
+                     digits onto one line even when the client renders the card
+                     narrower than expected; letter-spacing is trimmed to 6px so
+                     the whole run fits under 240px inside the box. -->
                 <tr>
                   <td align="center" style="padding:0 0 22px;">
-                    <div style="display:inline-block;background:#0C0A06;border:1px solid rgba(255,183,77,0.28);border-radius:14px;padding:20px 28px;">
-                      <div style="font-family:'Menlo','Consolas','Courier New',monospace;font-size:34px;font-weight:600;letter-spacing:10px;text-indent:10px;color:#ffb74d;line-height:1;">
+                    <div style="display:inline-block;background:#0C0A06;border:1px solid rgba(255,183,77,0.28);border-radius:14px;padding:18px 22px;">
+                      <div style="font-family:'Menlo','Consolas','Courier New',monospace;font-size:30px;font-weight:600;letter-spacing:6px;text-indent:6px;color:#ffb74d;line-height:1;white-space:nowrap;">
                         {{ .Token }}
                       </div>
                     </div>
