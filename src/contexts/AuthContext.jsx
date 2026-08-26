@@ -152,10 +152,15 @@ export function AuthProvider({ children }) {
   /* Потвърждаване на регистрация чрез 6-цифрен код от имейла (OTP).
      Заменя link-based confirm-а, който на iOS отваряше Safari вместо
      инсталираното PWA и оставяше клиента заключен в грешния контекст.
-     Кодът се въвежда в същия екран → сесията се създава веднага там. */
+     Кодът се въвежда в същия екран → сесията се създава веднага там.
+
+     type MUST be 'signup' — с 'email' Supabase третира verify-а като
+     passwordless magic-link login и не закача паролата към акаунта,
+     заради което следващият login с парола гърми с 'invalid credentials'
+     и клиентът е заключен на magic link завинаги. */
   async function verifySignupOtp(email, token) {
     setAuthError(null)
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' })
     if (error) {
       const msg = error.message || ''
       if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid'))
