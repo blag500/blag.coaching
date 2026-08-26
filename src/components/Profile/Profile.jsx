@@ -67,11 +67,11 @@ export default function Profile({ onMenuOpen }) {
 
   async function handlePasswordSave() {
     setPwStatus('')
-    if (pwValue.length < 6) { setPwStatus('err:Поне 6 знака.'); return }
+    if (pwValue.length < 6) { setPwStatus('err:' + t('profile.password.min')); return }
     setPwSaving(true)
     const { error } = await supabase.auth.updateUser({ password: pwValue })
     setPwSaving(false)
-    if (error) { setPwStatus('err:' + (error.message || 'Грешка')); return }
+    if (error) { setPwStatus('err:' + (error.message || t('profile.password.err'))); return }
     setPwValue('')
     setPwStatus('saved')
     setTimeout(() => { setPwStatus(''); setPwOpen(false) }, 1800)
@@ -138,9 +138,9 @@ export default function Profile({ onMenuOpen }) {
   }
 
   const trendLabel = trend === null ? null
-    : trend > 0 ? `+${trend} kg тази седмица ↑`
-    : trend < 0 ? `${trend} kg тази седмица ↓`
-    : 'Без промяна тази седмица'
+    : trend > 0 ? t('profile.weight.trendUp',   { n: trend })
+    : trend < 0 ? t('profile.weight.trendDown', { n: trend })
+    :             t('profile.weight.trendFlat')
 
   const RANGE_DAYS = { '2W': 14, '1M': 30, '3M': 90, 'ALL': null }
   const WEIGHT_ROWS_SHOWN = 7
@@ -189,11 +189,11 @@ export default function Profile({ onMenuOpen }) {
     // parseFloat stops at the comma, so "86,4" was being logged as 86 — the
     // decimal is the whole point of weighing yourself daily.
     const kg = parseWeight(weightInput)
-    if (kg === null) { setWeightError('Провери числото'); return }
+    if (kg === null) { setWeightError(t('profile.weight.errCheck')); return }
     setWeightError('')
     const { error } = await addWeight(kg)
     if (error) {
-      setWeightError('Грешка при запис. Опитай пак.')
+      setWeightError(t('profile.weight.errSave'))
     } else {
       setWeightSaved(true)
       setTimeout(() => setWeightSaved(false), 3000)
@@ -267,7 +267,7 @@ export default function Profile({ onMenuOpen }) {
         /* No plan above the name. It printed FREE over his own profile — the
            one screen where the reader already knows what they are paying, and
            the last place a reminder of it belongs. */
-        title={profile?.name || 'ПРОФИЛ'}
+        title={profile?.name || t('profile.title')}
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}
         onAvatarClick={() => avatarInputRef.current?.click()}
@@ -277,40 +277,40 @@ export default function Profile({ onMenuOpen }) {
 
       {/* Form check-in — daily action, lives at the top */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>CHECK-IN НА ФОРМА</h2>
+        <h2 className={styles.sectionTitle}>{t('profile.formCheckin')}</h2>
         <FormCheckin />
       </section>
 
       {/* Progress photo timeline */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ПРОГРЕС СНИМКИ</h2>
+        <h2 className={styles.sectionTitle}>{t('profile.progressPhotos')}</h2>
         <ProgressPhotos />
       </section>
 
       {/* Activity calendar */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ДНЕВНА АКТИВНОСТ</h2>
-        <p className={styles.sectionSub}>Кликни върху ден за детайли</p>
+        <h2 className={styles.sectionTitle}>{t('profile.activity')}</h2>
+        <p className={styles.sectionSub}>{t('profile.activitySub')}</p>
         <ActivityCalendar />
       </section>
 
       {/* Weekly snapshot */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>СЕДМИЧНО РЕЗЮМЕ</h2>
+        <h2 className={styles.sectionTitle}>{t('profile.weeklySnapshot')}</h2>
         <WeeklySnapshot kcalTarget={parseInt(macros.calories) || 0} />
       </section>
 
       {/* Macro targets — editable for coach, read-only display for clients */}
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>
-          {isCoach ? 'МОИТЕ МАКРО ЦЕЛИ' : 'ЦЕЛИ (зададени от треньора)'}
+          {isCoach ? t('profile.macros') : t('profile.macrosReadonly')}
         </h2>
         <div className={styles.macroEditGrid}>
           {[
-            { key: 'calories', label: 'КАЛОРИИ', unit: 'ккал', color: MACRO_COLORS.calories },
-            { key: 'protein',  label: 'ПРОТЕИН',  unit: 'g',    color: MACRO_COLORS.protein  },
-            { key: 'carbs',    label: 'ВЪГЛ.',    unit: 'g',    color: MACRO_COLORS.carbs    },
-            { key: 'fat',      label: 'МАЗНИНИ',  unit: 'g',    color: MACRO_COLORS.fat      },
+            { key: 'calories', label: t('profile.macros.calories'), unit: t('unit.kcal'), color: MACRO_COLORS.calories },
+            { key: 'protein',  label: t('profile.macros.protein'),  unit: 'g',           color: MACRO_COLORS.protein  },
+            { key: 'carbs',    label: t('profile.macros.carbs'),    unit: 'g',           color: MACRO_COLORS.carbs    },
+            { key: 'fat',      label: t('profile.macros.fat'),      unit: 'g',           color: MACRO_COLORS.fat      },
           ].map(({ key, label, unit, color }) => (
             <div key={key} className={styles.macroEditField}>
               <span className={styles.macroEditLabel} style={{ color }}>{label}</span>
@@ -338,17 +338,17 @@ export default function Profile({ onMenuOpen }) {
             disabled={macrosSaving}
             type="button"
           >
-            {macrosSaving ? '...' : macrosSaved ? '✓ Запазено' : 'Запази цели'}
+            {macrosSaving ? '...' : macrosSaved ? t('profile.saved') : t('profile.macros.save')}
           </button>
         )}
       </section>
 
       {/* Weight tracker */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ТЕГЛО</h2>
+        <h2 className={styles.sectionTitle}>{t('profile.weight')}</h2>
 
         <form onSubmit={handleWeightSave} className={styles.weightForm}>
-          <label className={styles.label} htmlFor="weight-input">Днешно тегло</label>
+          <label className={styles.label} htmlFor="weight-input">{t('profile.weight.today')}</label>
           <div className={styles.weightRow}>
             <input
               id="weight-input"
@@ -363,16 +363,16 @@ export default function Profile({ onMenuOpen }) {
             />
             <span className={styles.unit}>kg</span>
             <button type="submit" className={`${styles.saveWeightBtn} ${weightSaved ? styles.saveWeightBtnSaved : ''}`}>
-              {weightSaved ? '✓' : 'Запази'}
+              {weightSaved ? '✓' : t('profile.save')}
             </button>
           </div>
-          {weightSaved && <p className={styles.savedMsg}>✓ {weightInput} кг записани успешно</p>}
+          {weightSaved && <p className={styles.savedMsg}>{t('profile.weight.savedMsg', { kg: weightInput })}</p>}
           {weightError && <p className={styles.errorMsg}>{weightError}</p>}
         </form>
 
         {/* Target weight */}
         <div className={styles.targetRow}>
-          <label className={styles.label} htmlFor="target-input">Целево тегло</label>
+          <label className={styles.label} htmlFor="target-input">{t('profile.weight.target')}</label>
           <div className={styles.weightRow}>
             <input
               id="target-input"
@@ -388,7 +388,7 @@ export default function Profile({ onMenuOpen }) {
             />
             <span className={styles.unit}>kg</span>
           </div>
-          {targetSaved && <p className={styles.savedMsg}>✓ Целево тегло запазено</p>}
+          {targetSaved && <p className={styles.savedMsg}>{t('profile.weight.targetSaved')}</p>}
         </div>
 
         {/* Progress bar */}
@@ -397,7 +397,7 @@ export default function Profile({ onMenuOpen }) {
             <div className={styles.progressBar}>
               <div className={styles.progressFill} style={{ width: `${weightProgress}%` }} />
             </div>
-            <span className={styles.progressLabel}>{weightProgress}% към целта</span>
+            <span className={styles.progressLabel}>{t('profile.weight.progress', { pct: weightProgress })}</span>
           </div>
         )}
 
@@ -419,22 +419,22 @@ export default function Profile({ onMenuOpen }) {
               <div className={styles.weightStatsRow}>
                 <div className={styles.weightStat}>
                   <span className={styles.weightStatVal}>{weightStats.count}</span>
-                  <span className={styles.weightStatLabel}>записа</span>
+                  <span className={styles.weightStatLabel}>{t('profile.weight.stat.records')}</span>
                 </div>
                 <div className={styles.weightStat}>
                   <span className={styles.weightStatVal}>{weightStats.min}</span>
-                  <span className={styles.weightStatLabel}>мин. kg</span>
+                  <span className={styles.weightStatLabel}>{t('profile.weight.stat.min')}</span>
                 </div>
                 <div className={styles.weightStat}>
                   <span className={styles.weightStatVal}>{weightStats.max}</span>
-                  <span className={styles.weightStatLabel}>макс. kg</span>
+                  <span className={styles.weightStatLabel}>{t('profile.weight.stat.max')}</span>
                 </div>
                 {weightStats.change !== null && (
                   <div className={styles.weightStat}>
                     <span className={`${styles.weightStatVal} ${weightStats.change > 0 ? styles.up : weightStats.change < 0 ? styles.down : ''}`}>
                       {weightStats.change > 0 ? `+${weightStats.change}` : weightStats.change}
                     </span>
-                    <span className={styles.weightStatLabel}>промяна kg</span>
+                    <span className={styles.weightStatLabel}>{t('profile.weight.stat.change')}</span>
                   </div>
                 )}
               </div>
@@ -448,9 +448,9 @@ export default function Profile({ onMenuOpen }) {
               <table className={styles.weightTable}>
                 <thead>
                   <tr>
-                    <th className={styles.weightTh}>Дата</th>
-                    <th className={styles.weightTh}>Тегло</th>
-                    <th className={styles.weightTh}>Промяна</th>
+                    <th className={styles.weightTh}>{t('profile.weight.col.date')}</th>
+                    <th className={styles.weightTh}>{t('profile.weight.col.weight')}</th>
+                    <th className={styles.weightTh}>{t('profile.weight.col.change')}</th>
                     <th className={styles.weightTh} />
                   </tr>
                 </thead>
@@ -476,7 +476,7 @@ export default function Profile({ onMenuOpen }) {
                           className={styles.weightDeleteBtn}
                           onClick={() => removeWeight(entry.date)}
                           type="button"
-                          aria-label="Изтрий"
+                          aria-label={t('foodlog.delete')}
                         >
                           ×
                         </button>
@@ -494,20 +494,20 @@ export default function Profile({ onMenuOpen }) {
                 type="button"
               >
                 {showAllWeights
-                  ? 'Покажи по-малко'
-                  : `Всички ${weightRows.length} записа`}
+                  ? t('profile.weight.showLess')
+                  : t('profile.weight.showAll', { n: weightRows.length })}
               </button>
             )}
           </>
         ) : (
-          <p className={styles.emptyHint}>Запиши тегло, за да видиш историята</p>
+          <p className={styles.emptyHint}>{t('profile.weight.empty')}</p>
         )}
       </section>
 
       {/* Coach: Edit own training plan */}
       {isCoach && (
         <section className={styles.card}>
-          <h2 className={styles.sectionTitle}>МОЙ ПЛАН</h2>
+          <h2 className={styles.sectionTitle}>{t('profile.myPlan')}</h2>
           <TrainingEditor
             initialPlan={profile.training_plan}
             onSave={handleSaveCoachPlan}
@@ -518,18 +518,18 @@ export default function Profile({ onMenuOpen }) {
 
       {/* Name */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ИМЕ</h2>
+        <h2 className={styles.sectionTitle}>{t('profile.name')}</h2>
         <form onSubmit={handleNameSave} className={styles.nameForm}>
           <input
             className={styles.textInput}
             type="text"
-            placeholder="Твоето име"
+            placeholder={t('profile.name.placeholder')}
             value={name}
             onChange={e => setName(e.target.value)}
           />
           {nameError && <p className={styles.errorMsg}>{nameError}</p>}
           <button type="submit" className={`${styles.saveSettingsBtn} ${nameSaved ? styles.saved : ''}`}>
-            {nameSaved ? '✓ Запазено' : 'Запази'}
+            {nameSaved ? t('profile.saved') : t('profile.save')}
           </button>
         </form>
       </section>
@@ -542,10 +542,8 @@ export default function Profile({ onMenuOpen }) {
           desk job. Editor lives here because habits are how *this* client
           measures their week. */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>НАВИЦИ</h2>
-        <p className={styles.sectionSub}>
-          Твоят собствен списък. Разбъркай, кръсти, махни каквото не е за теб.
-        </p>
+        <h2 className={styles.sectionTitle}>{t('profile.habits')}</h2>
+        <p className={styles.sectionSub}>{t('profile.habits.sub')}</p>
         <HabitsEditor />
       </section>
 
@@ -582,7 +580,7 @@ export default function Profile({ onMenuOpen }) {
               type="button"
               className={`${styles.toggleBtn} ${lang === 'bg' ? styles.toggleBtnActive : ''}`}
               onClick={() => setLang('bg')}
-            >БГ</button>
+            >BG</button>
             <button
               type="button"
               className={`${styles.toggleBtn} ${lang === 'en' ? styles.toggleBtnActive : ''}`}
@@ -591,18 +589,18 @@ export default function Profile({ onMenuOpen }) {
           </div>
         </div>
         <div className={styles.settingsRow}>
-          <span className={styles.settingsLabel}>Таймер за почивка</span>
+          <span className={styles.settingsLabel}>{t('profile.restTimer')}</span>
           <div className={styles.toggleGroup}>
             <button
               type="button"
               className={`${styles.toggleBtn} ${restTimer ? styles.toggleBtnActive : ''}`}
               onClick={() => setRestTimer(true)}
-            >Вкл.</button>
+            >{t('profile.restTimer.on')}</button>
             <button
               type="button"
               className={`${styles.toggleBtn} ${!restTimer ? styles.toggleBtnActive : ''}`}
               onClick={() => setRestTimer(false)}
-            >Изкл.</button>
+            >{t('profile.restTimer.off')}</button>
           </div>
         </div>
       </section>
@@ -613,14 +611,14 @@ export default function Profile({ onMenuOpen }) {
           accepts the new password against the current session, no old one
           needed. */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ПАРОЛА</h2>
+        <h2 className={styles.sectionTitle}>{t('profile.password')}</h2>
         {!pwOpen ? (
           <button
             className={styles.pwOpenBtn}
             onClick={() => setPwOpen(true)}
             type="button"
           >
-            Смени парола
+            {t('profile.password.change')}
           </button>
         ) : (
           <div className={styles.pwForm}>
@@ -629,7 +627,7 @@ export default function Profile({ onMenuOpen }) {
               className={styles.pwInput}
               value={pwValue}
               onChange={e => { setPwValue(e.target.value); if (pwStatus.startsWith('err')) setPwStatus('') }}
-              placeholder="Нова парола (мин. 6 знака)"
+              placeholder={t('profile.password.placeholder')}
               autoComplete="new-password"
               minLength={6}
             />
@@ -640,14 +638,14 @@ export default function Profile({ onMenuOpen }) {
                 disabled={pwSaving || pwValue.length < 6}
                 type="button"
               >
-                {pwSaving ? '...' : pwStatus === 'saved' ? '✓ Сменена' : 'Запази'}
+                {pwSaving ? '...' : pwStatus === 'saved' ? t('profile.password.saved') : t('profile.save')}
               </button>
               <button
                 className={styles.pwCancelBtn}
                 onClick={() => { setPwOpen(false); setPwValue(''); setPwStatus('') }}
                 type="button"
               >
-                Отказ
+                {t('profile.password.cancel')}
               </button>
             </div>
             {pwStatus.startsWith('err') && (
@@ -659,7 +657,7 @@ export default function Profile({ onMenuOpen }) {
 
       <section className={styles.card}>
         <button className={styles.signOutBtn} onClick={signOut} type="button">
-          {lang === 'en' ? 'Sign out' : 'Изход от акаунта'}
+          {t('profile.signOut')}
         </button>
       </section>
     </div>
