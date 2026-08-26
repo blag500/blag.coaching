@@ -265,6 +265,12 @@ button {
   cursor: pointer;
   font-family: var(--font-body);
   -webkit-tap-highlight-color: transparent;
+  /* iOS Safari (и home-screen PWA) държи 300-500ms след всеки tap за да
+     разграничи single-tap от double-tap-to-zoom. При бързо тапване на
+     habit чипове или checkbox-и това изглежда като „бутонът не отговаря
+     за 2 секунди". touch-action:manipulation изключва double-tap-to-zoom
+     САМО на бутоните — pinch-to-zoom на страницата продължава да работи. */
+  touch-action: manipulation;
   /* Base transition ensures the spring-back is also animated, not instant */
   transition: transform 180ms var(--ease-out), opacity 150ms var(--ease-out);
 }
