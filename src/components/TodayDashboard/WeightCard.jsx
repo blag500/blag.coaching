@@ -34,10 +34,10 @@ function fmtKg(n) {
   return n.toLocaleString('bg-BG', { minimumFractionDigits: 0, maximumFractionDigits: 1 })
 }
 
-function signed(kg) {
+function signed(kg, kgUnit) {
   const v = Math.round(kg * 10) / 10
-  if (v === 0) return `±0 кг`
-  return `${v > 0 ? '+' : '−'}${fmtKg(Math.abs(v))} кг`
+  if (v === 0) return `±0 ${kgUnit}`
+  return `${v > 0 ? '+' : '−'}${fmtKg(Math.abs(v))} ${kgUnit}`
 }
 
 const WINDOW_DAYS = 30
@@ -46,7 +46,7 @@ const WINDOW_DAYS = 30
  * One line under the number: how far it has moved, and over what.
  *
  * Returns null when there is nothing honest to say — a single weigh-in is a
- * point, not a direction, and "±0 кг since today" is worse than silence.
+ * point, not a direction, and "±0 ${t('unit.kg')} since today" is worse than silence.
  */
 function trendSummary(weights, todayEntry, t) {
   if (!todayEntry || weights.length < 2) return null
@@ -63,8 +63,8 @@ function trendSummary(weights, todayEntry, t) {
     (new Date(todayEntry.date) - new Date(base.date)) / 86400000)
 
   // A window only earns its name once it is nearly full. Below that, the date
-  // is the honest label: "−0,4 кг от 13.08" claims nothing about a month.
-  const change = signed(todayEntry.kg - base.kg)
+  // is the honest label: "−0,4 ${t('unit.kg')} от 13.08" claims nothing about a month.
+  const change = signed(todayEntry.kg - base.kg, t('unit.kg'))
   return spanDays >= WINDOW_DAYS - 5
     ? `${change} ${t('today.weightOverDays', { n: WINDOW_DAYS })}`
     : `${change} ${t('today.weightSince', { date: shortDate(base.date) })}`
@@ -134,7 +134,7 @@ export default function WeightCard() {
                 maxLength={5}
                 aria-label={t('today.weight')}
               />
-              <span className={styles.unit}>кг</span>
+              <span className={styles.unit}>{t('unit.kg')}</span>
             </div>
             <button type="submit" className={styles.save} disabled={busy}>
               {t('today.weightSave')}
@@ -159,7 +159,7 @@ export default function WeightCard() {
                 {target !== null && (
                   <span className={styles.target}>/{fmtKg(target)}</span>
                 )}
-                <span className={styles.kgUnit}>кг</span>
+                <span className={styles.kgUnit}>{t('unit.kg')}</span>
               </span>
               <span className={styles.delta}>
                 {summary ?? t('today.weightFirst')}

@@ -190,6 +190,18 @@ export default {
   'drawer.close':                 'Затвори меню',
   'drawer.aria':                  'Меню',
 
+  // Shared units + small strings across today/macro/log
+  'unit.kg':               'кг',
+  'unit.kcal':             'ккал',
+  'unit.g':                'г',
+  'unit.gShort':           'г',
+  'today.addGlass':        'Добави чаша',
+  'today.recentEmpty':     'Още нищо за днес.',
+  'today.allMacrosHit':    'Всички макроси в целта',
+  'foodlog.estimated':     'изчислено приблизително',
+  'foodlog.delete':        'Изтрий',
+  'nutr.card.perServingUnit': 'g/порция',
+
   // WelcomeOverlay
   'welcome.eyebrow': 'ДОБРЕ ДОШЪЛ В',
   'welcome.sub':     'Ето какво можеш да правиш в приложението:',

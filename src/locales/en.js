@@ -189,6 +189,18 @@ export default {
   'drawer.close':                 'Close menu',
   'drawer.aria':                  'Menu',
 
+  // Shared units + small strings
+  'unit.kg':               'kg',
+  'unit.kcal':             'kcal',
+  'unit.g':                'g',
+  'unit.gShort':           'g',
+  'today.addGlass':        'Add a glass',
+  'today.recentEmpty':     'Nothing logged today.',
+  'today.allMacrosHit':    'All macros on target',
+  'foodlog.estimated':     'estimated',
+  'foodlog.delete':        'Delete',
+  'nutr.card.perServingUnit': 'g/serving',
+
   // WelcomeOverlay
   'welcome.eyebrow': 'WELCOME TO',
   'welcome.sub':     'Here’s what you can do in the app:',

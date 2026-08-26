@@ -61,7 +61,7 @@ export default function MacroScale({ macros, label, log = [], t }) {
       role={allHit ? 'button' : undefined}
       tabIndex={allHit ? 0 : undefined}
       onKeyDown={allHit ? e => { if (e.key === 'Enter' || e.key === ' ') replay() } : undefined}
-      aria-label={allHit ? 'Всички макроси в целта' : undefined}
+      aria-label={allHit ? t('today.allMacrosHit') : undefined}
       aria-hidden={back}
     >
       {burst > 0 && <Confetti burst={burst} />}
@@ -129,7 +129,7 @@ export default function MacroScale({ macros, label, log = [], t }) {
           — a panel that grows with the number of meals would push everything
           below it down the page by a different amount every day. */}
       <div className={styles.logList}>
-        {entries.length === 0 && <p className={styles.logEmpty}>Още нищо за днес.</p>}
+        {entries.length === 0 && <p className={styles.logEmpty}>{t('today.recentEmpty')}</p>}
         {entries.map((f, i) => (
           <div key={f.id ?? i} className={styles.logRow}>
             <span className={styles.logName}>
@@ -137,7 +137,7 @@ export default function MacroScale({ macros, label, log = [], t }) {
                   number a model guessed should say so wherever it is read. */}
               {f.estimated && (
                 <svg viewBox="0 0 20 20" width="11" height="11" className={styles.estMark}
-                     aria-label="изчислено приблизително" role="img">
+                     aria-label={t('foodlog.estimated')} role="img">
                   <path d="M5 8.2c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0M5 12.4c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0"
                         fill="none" stroke="currentColor" strokeWidth="1.7"
                         strokeLinecap="round" transform="translate(1,0)" />

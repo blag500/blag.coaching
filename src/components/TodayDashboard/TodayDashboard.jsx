@@ -349,7 +349,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
           /* Stops the tap reaching the card, so adding a glass never doubles
              as a celebration. */
           onClick={e => { e.stopPropagation(); addWater(1) }}
-          aria-label="Добави чаша"
+          aria-label={t('today.addGlass')}
         >+</button>
       </div>
     </div>,

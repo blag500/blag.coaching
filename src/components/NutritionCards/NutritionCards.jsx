@@ -182,6 +182,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
       ) : view === 'meals' ? (
         <>
           <LibraryTab
+            t={t}
             recipes={recipes}
             products={products}
             loading={foodsLoading}
@@ -220,32 +221,33 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
 
 // ─── Library Tab ─────────────────────────────────────────────────────────────
 
-function LibraryTab({ recipes, products, loading, logServings, setLogServings, onLog, onDelete, onNewItem }) {
+function LibraryTab({ t, recipes, products, loading, logServings, setLogServings, onLog, onDelete, onNewItem }) {
   return (
     <div className={styles.library}>
       <div className={styles.libraryHeader}>
-        <span className={styles.libraryTitle}>МОЯТА БИБЛИОТЕКА</span>
+        <span className={styles.libraryTitle}>{t('nutr.library.title')}</span>
         <button className={styles.newBtn} onClick={onNewItem} type="button">
-          + НОВО
+          {t('nutr.library.new')}
         </button>
       </div>
 
       {loading ? (
-        <p className={styles.libEmpty}>Зарежда...</p>
+        <p className={styles.libEmpty}>{t('nutr.library.loading')}</p>
       ) : recipes.length === 0 && products.length === 0 ? (
         <div className={styles.libEmpty}>
-          <p>Нямаш запазени рецепти или продукти.</p>
-          <p className={styles.libHint}>Натисни + НОВО за да добавиш.</p>
+          <p>{t('nutr.library.emptyMain')}</p>
+          <p className={styles.libHint}>{t('nutr.library.emptyHint')}</p>
         </div>
       ) : (
         <>
           {recipes.length > 0 && (
             <section>
-              <h3 className={styles.groupLabel}>РЕЦЕПТИ</h3>
+              <h3 className={styles.groupLabel}>{t('nutr.library.recipes')}</h3>
               <div className={styles.itemList}>
                 {recipes.map(food => (
                   <CustomFoodCard
                     key={food.id}
+                    t={t}
                     food={food}
                     servings={logServings[food.id] ?? ''}
                     onServingsChange={v => setLogServings(prev => ({ ...prev, [food.id]: v }))}
@@ -259,11 +261,12 @@ function LibraryTab({ recipes, products, loading, logServings, setLogServings, o
 
           {products.length > 0 && (
             <section>
-              <h3 className={styles.groupLabel}>ПРОДУКТИ</h3>
+              <h3 className={styles.groupLabel}>{t('nutr.library.products')}</h3>
               <div className={styles.itemList}>
                 {products.map(food => (
                   <CustomFoodCard
                     key={food.id}
+                    t={t}
                     food={food}
                     servings={logServings[food.id] ?? ''}
                     onServingsChange={v => setLogServings(prev => ({ ...prev, [food.id]: v }))}
@@ -279,7 +282,7 @@ function LibraryTab({ recipes, products, loading, logServings, setLogServings, o
 
       {/* Pre-defined meal templates */}
       <div className={styles.templatesSection}>
-        <h3 className={styles.groupLabel}>ШАБЛОНИ</h3>
+        <h3 className={styles.groupLabel}>{t('nutr.library.templates')}</h3>
         <MealCards />
       </div>
     </div>
@@ -289,7 +292,7 @@ function LibraryTab({ recipes, products, loading, logServings, setLogServings, o
 // ─── Macro Remaining Bar ─────────────────────────────────────────────────────
 
 
-function CustomFoodCard({ food, servings, onServingsChange, onLog, onDelete }) {
+function CustomFoodCard({ t, food, servings, onServingsChange, onLog, onDelete }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -302,8 +305,8 @@ function CustomFoodCard({ food, servings, onServingsChange, onLog, onDelete }) {
         <div className={styles.foodCardInfo}>
           <span className={styles.foodCardName}>{food.name}</span>
           <span className={styles.foodCardMacros}>
-            {food.kcal} ккал · П{food.protein}g · В{food.carbs}g · М{food.fat}g
-            {food.serving_grams > 0 && <> · {food.serving_grams}g/порция</>}
+            {food.kcal} {t('nutr.card.kcal')} · {t('nutr.card.pShort')}{food.protein}g · {t('nutr.card.cShort')}{food.carbs}g · {t('nutr.card.fShort')}{food.fat}g
+            {food.serving_grams > 0 && <> · {food.serving_grams}{t('nutr.card.perServingUnit')}</>}
           </span>
         </div>
         <span className={styles.foodCardChevron}>{expanded ? '▲' : '▼'}</span>
@@ -320,7 +323,7 @@ function CustomFoodCard({ food, servings, onServingsChange, onLog, onDelete }) {
           )}
           <div className={styles.logRow}>
             <div className={styles.servingsWrap}>
-              <label className={styles.servingsLabel}>Порции</label>
+              <label className={styles.servingsLabel}>{t('nutr.card.servings')}</label>
               <input
                 className={styles.servingsInput}
                 type="number"
@@ -332,9 +335,9 @@ function CustomFoodCard({ food, servings, onServingsChange, onLog, onDelete }) {
               />
             </div>
             <button className={styles.logBtn} onClick={onLog} type="button">
-              + Логни
+              {t('nutr.card.log')}
             </button>
-            <button className={styles.delBtn} onClick={onDelete} type="button" aria-label="Изтрий">
+            <button className={styles.delBtn} onClick={onDelete} type="button" aria-label={t('foodlog.delete')}>
               🗑
             </button>
           </div>
