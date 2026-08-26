@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import RecipeForm from './RecipeForm'
 import styles from './RecipeList.module.css'
@@ -17,6 +18,7 @@ function calcTotals(ingredients) {
 }
 
 export default function RecipeList({ onAddRaw }) {
+  const { t } = useSettings()
   const { user } = useAuth()
   const [recipes, setRecipes]     = useState([])
   const [loading, setLoading]     = useState(true)
@@ -75,7 +77,7 @@ export default function RecipeList({ onAddRaw }) {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Изтрий рецептата?')) return
+    if (!window.confirm(t('rl.confirmDelete'))) return
     await supabase.from('recipes').delete().eq('id', id)
     setRecipes(prev => prev.filter(r => r.id !== id))
     if (expanded === id) setExpanded(null)
@@ -110,7 +112,7 @@ export default function RecipeList({ onAddRaw }) {
           <input
             className={styles.search}
             type="text"
-            placeholder="Търси рецепти..."
+            placeholder={t('rl.search')}
             value={query}
             onChange={e => setQuery(e.target.value)}
           />
@@ -119,15 +121,15 @@ export default function RecipeList({ onAddRaw }) {
           )}
         </div>
         <button className={styles.newBtn} onClick={() => setCreating(true)} type="button">
-          + Нова
+          {t('rl.new')}
         </button>
       </div>
 
       {loading ? (
-        <p className={styles.empty}>Зарежда...</p>
+        <p className={styles.empty}>{t('chat.loading')}</p>
       ) : filtered.length === 0 ? (
         <p className={styles.empty}>
-          {recipes.length === 0 ? 'Нямаш рецепти. Добави първата!' : 'Няма намерени рецепти.'}
+          {recipes.length === 0 ? t('rl.emptyMain') : t('rl.emptyMatch')}
         </p>
       ) : (
         <ul className={styles.list}>
@@ -151,14 +153,14 @@ export default function RecipeList({ onAddRaw }) {
                     <div className={styles.info}>
                       <span className={styles.name}>{recipe.name}</span>
                       <span className={styles.meta}>
-                        {Math.round(totals.kcal)} ккал · {recipe.servings} порции · {recipe.total_grams}g
+                        {t('rl.summary', { kcal: Math.round(totals.kcal), servings: recipe.servings, grams: recipe.total_grams })}
                       </span>
                     </div>
                     <button
                       className={styles.addBtn}
                       onClick={e => { e.stopPropagation(); openRecipe(recipe) }}
                       type="button"
-                      aria-label={`Добави ${recipe.name}`}
+                      aria-label={t('rl.addAria', { name: recipe.name })}
                     >+</button>
                   </div>
                 ) : (
@@ -171,10 +173,14 @@ export default function RecipeList({ onAddRaw }) {
                       <div className={styles.expandedInfo}>
                         <div className={styles.expandedName}>{recipe.name}</div>
                         <div className={styles.expandedMacros}>
-                          {Math.round(totals.kcal)} ккал · П{Math.round(totals.protein * 10) / 10}g ·
-                          В{Math.round(totals.carbs * 10) / 10}g · М{Math.round(totals.fat * 10) / 10}g
+                          {t('rl.expandedTotal', {
+                            kcal: Math.round(totals.kcal),
+                            p: Math.round(totals.protein * 10) / 10,
+                            c: Math.round(totals.carbs * 10) / 10,
+                            f: Math.round(totals.fat * 10) / 10,
+                          })}
                         </div>
-                        <div className={styles.expandedSub}>{recipe.servings} порции · {recipe.total_grams}g общо</div>
+                        <div className={styles.expandedSub}>{t('rl.expandedMeta', { servings: recipe.servings, grams: recipe.total_grams })}</div>
                       </div>
                     </div>
 
@@ -184,18 +190,18 @@ export default function RecipeList({ onAddRaw }) {
                         className={`${styles.modeBtn} ${logMode === 'servings' ? styles.modeBtnActive : ''}`}
                         onClick={() => setLogMode('servings')}
                         type="button"
-                      >Порции</button>
+                      >{t('rl.mode.servings')}</button>
                       <button
                         className={`${styles.modeBtn} ${logMode === 'grams' ? styles.modeBtnActive : ''}`}
                         onClick={() => setLogMode('grams')}
                         type="button"
-                      >Грамаж</button>
+                      >{t('rl.mode.grams')}</button>
                     </div>
 
                     {/* Input */}
                     {logMode === 'servings' ? (
                       <div className={styles.portionRow}>
-                        <span className={styles.portionLabel}>Порции</span>
+                        <span className={styles.portionLabel}>{t('rl.mode.servings')}</span>
                         <input
                           className={styles.portionInput}
                           type="number"
@@ -205,11 +211,11 @@ export default function RecipeList({ onAddRaw }) {
                           onChange={e => setServingVal(e.target.value)}
                           autoFocus
                         />
-                        <span className={styles.portionSub}>от {recipe.servings}</span>
+                        <span className={styles.portionSub}>{t('rl.of', { n: recipe.servings })}</span>
                       </div>
                     ) : (
                       <div className={styles.portionRow}>
-                        <span className={styles.portionLabel}>Грамаж</span>
+                        <span className={styles.portionLabel}>{t('rl.mode.grams')}</span>
                         <input
                           className={styles.portionInput}
                           type="number"
@@ -225,19 +231,21 @@ export default function RecipeList({ onAddRaw }) {
                     {/* Preview */}
                     {ratio > 0 && (
                       <div className={styles.preview}>
-                        {Math.round(totals.kcal    * ratio)} ккал ·
-                        П {Math.round(totals.protein * ratio * 10) / 10}g ·
-                        В {Math.round(totals.carbs   * ratio * 10) / 10}g ·
-                        М {Math.round(totals.fat     * ratio * 10) / 10}g
+                        {t('rl.scaled', {
+                          kcal: Math.round(totals.kcal * ratio),
+                          p: Math.round(totals.protein * ratio * 10) / 10,
+                          c: Math.round(totals.carbs * ratio * 10) / 10,
+                          f: Math.round(totals.fat * ratio * 10) / 10,
+                        })}
                       </div>
                     )}
 
                     {/* Actions */}
                     <div className={styles.actions}>
-                      <button className={styles.cancelBtn} onClick={() => setExpanded(null)} type="button">Назад</button>
-                      <button className={styles.editBtn} onClick={() => setEditing(recipe)} type="button">Редактирай</button>
-                      <button className={styles.deleteBtn} onClick={() => handleDelete(recipe.id)} type="button">Изтрий</button>
-                      <button className={styles.logBtn} onClick={() => handleAdd(recipe)} type="button">+ Добави</button>
+                      <button className={styles.cancelBtn} onClick={() => setExpanded(null)} type="button">{t('rl.back')}</button>
+                      <button className={styles.editBtn} onClick={() => setEditing(recipe)} type="button">{t('rl.edit')}</button>
+                      <button className={styles.deleteBtn} onClick={() => handleDelete(recipe.id)} type="button">{t('rl.delete')}</button>
+                      <button className={styles.logBtn} onClick={() => handleAdd(recipe)} type="button">{t('rl.add')}</button>
                     </div>
                   </div>
                 )}

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import EstimateFlag from '../EstimateFlag/EstimateFlag'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import BarcodeScanner from '../FoodLogger/BarcodeScanner'
 import styles from './RecipeForm.module.css'
@@ -29,6 +30,7 @@ function calcTotals(ingredients) {
 
 export default function RecipeForm({ recipe, onSave, onCancel }) {
   const { user, profile } = useAuth()
+  const { t } = useSettings()
   const isCoach = profile?.role === 'coach'
 
   const [name, setName]             = useState(recipe?.name || '')
@@ -107,7 +109,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
       const { data, error } = await supabase.functions.invoke('macro-lookup', {
         body: { query: pickerQuery.trim() },
       })
-      if (error || !data?.per100g) throw new Error('Не е намерено')
+      if (error || !data?.per100g) throw new Error(t('rf.notFound'))
       setPickerResults([data])
     } catch (err) {
       setPickerError(err.message)
@@ -188,7 +190,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         .from('recipes').insert(payload).select().single())
     }
 
-    if (err) { console.error('Recipe save error:', err); setSaveError(err.message || 'Грешка при запазване.'); setSaving(false); return }
+    if (err) { console.error('Recipe save error:', err); setSaveError(err.message || t('rf.saveErr')); setSaving(false); return }
     onSave(data)
   }
 
@@ -200,14 +202,14 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
 
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onCancel} type="button">←</button>
-        <span className={styles.title}>{recipe ? 'РЕДАКТИРАЙ РЕЦЕПТА' : 'НОВА РЕЦЕПТА'}</span>
+        <span className={styles.title}>{recipe ? t('rf.editTitle') : t('rf.newTitle')}</span>
       </div>
 
       {/* Photo */}
       <div className={styles.photoBox} onClick={() => photoInputRef.current?.click()}>
         {photoPreview
           ? <img src={photoPreview} className={styles.photoImg} alt="" />
-          : <div className={styles.photoPlaceholder}><CameraIcon size={24} /><span>Добави снимка</span></div>
+          : <div className={styles.photoPlaceholder}><CameraIcon size={24} /><span>{t('rf.photoAdd')}</span></div>
         }
         <input
           ref={photoInputRef}
@@ -222,7 +224,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
       <input
         className={styles.nameInput}
         type="text"
-        placeholder="Наименование на рецептата..."
+        placeholder={t('rf.namePh')}
         value={name}
         onChange={e => setName(e.target.value)}
       />
@@ -230,8 +232,8 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
       {/* Ingredients */}
       <div className={styles.section}>
         <div className={styles.sectionRow}>
-          <span className={styles.sectionTitle}>СЪСТАВКИ</span>
-          <button className={styles.addIngBtn} onClick={openPicker} type="button">+ Добави</button>
+          <span className={styles.sectionTitle}>{t('rf.ingredients')}</span>
+          <button className={styles.addIngBtn} onClick={openPicker} type="button">{t('rf.addIng')}</button>
         </div>
 
         {/* Picker panel */}
@@ -244,12 +246,12 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                   className={`${styles.pickerTab} ${pickerTab === 'ai' ? styles.pickerTabActive : ''}`}
                   onClick={() => { setPickerTab('ai'); setPending(null) }}
                   type="button"
-                >AI + Баркод</button>
+                >{t('rf.tab.ai')}</button>
                 <button
                   className={`${styles.pickerTab} ${pickerTab === 'manual' ? styles.pickerTabActive : ''}`}
                   onClick={() => { setPickerTab('manual'); setPending(null) }}
                   type="button"
-                >Ръчно</button>
+                >{t('rf.tab.manual')}</button>
               </div>
               <button className={styles.pickerClose} onClick={() => setPickerOpen(false)} type="button">×</button>
             </div>
@@ -264,10 +266,10 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     onChange={e => setPending(p => ({ ...p, name: e.target.value }))}
                   />
                   <div className={styles.pendingMacros}>
-                    {pending.per100g.kcal} ккал · П{pending.per100g.protein}g · В{pending.per100g.carbs}g · М{pending.per100g.fat}g / 100g
+                    {t('rf.per100g', { kcal: pending.per100g.kcal, p: pending.per100g.protein, c: pending.per100g.carbs, f: pending.per100g.fat })}
                   </div>
                   <div className={styles.gramRow}>
-                    <label className={styles.gramLabel}>Грамаж</label>
+                    <label className={styles.gramLabel}>{t('rf.grams')}</label>
                     <input
                       className={styles.gramInput}
                       type="number"
@@ -279,8 +281,8 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     <span className={styles.gramUnit}>g</span>
                   </div>
                   <div className={styles.pickerActions}>
-                    <button className={styles.cancelSmall} onClick={() => setPending(null)} type="button">← Назад</button>
-                    <button className={styles.confirmBtn} onClick={confirmIngredient} type="button">Добави</button>
+                    <button className={styles.cancelSmall} onClick={() => setPending(null)} type="button">{t('rf.back')}</button>
+                    <button className={styles.confirmBtn} onClick={confirmIngredient} type="button">{t('rf.confirm')}</button>
                   </div>
                 </>
               ) : (
@@ -289,7 +291,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     <input
                       className={styles.pickerInput}
                       type="text"
-                      placeholder="Търси съставка с AI..."
+                      placeholder={t('rf.searchIng')}
                       value={pickerQuery}
                       onChange={e => setPickerQuery(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handlePickerSearch()}
@@ -307,7 +309,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                       className={styles.pickerBarcodeBtn}
                       onClick={() => setScanning(true)}
                       type="button"
-                      title="Баркод"
+                      title={t('rf.barcode')}
                     >📷</button>
                   </div>
                   {pickerError && <p className={styles.pickerError}>{pickerError}</p>}
@@ -316,7 +318,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                     <div key={i} className={styles.pickerResult} onClick={() => selectPickerResult(item)}>
                       <div className={styles.pickerResultName}>{item.name}</div>
                       <div className={styles.pickerResultMacros}>
-                        {item.per100g.kcal} ккал · П{item.per100g.protein}g / 100g
+                        {t('rf.per100gShort', { kcal: item.per100g.kcal, p: item.per100g.protein })}
                       </div>
                     </div>
                   ))}
@@ -329,17 +331,17 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
               <>
                 <input
                   className={styles.pendingName}
-                  placeholder="Наименование..."
+                  placeholder={t('rf.manualNamePh')}
                   value={manual.name}
                   onChange={e => setM('name', e.target.value)}
                   autoFocus
                 />
                 <div className={styles.manualGrid}>
                   {[
-                    { key: 'kcal',    label: 'Ккал' },
-                    { key: 'protein', label: 'Протеин g' },
-                    { key: 'carbs',   label: 'Въгл. g' },
-                    { key: 'fat',     label: 'Мазн. g' },
+                    { key: 'kcal',    label: t('rf.macro.kcal') },
+                    { key: 'protein', label: t('rf.macro.protein') },
+                    { key: 'carbs',   label: t('rf.macro.carbs') },
+                    { key: 'fat',     label: t('rf.macro.fat') },
                   ].map(({ key, label }) => (
                     <div key={key} className={styles.manualField}>
                       <label className={styles.manualLabel}>{label} / 100g</label>
@@ -356,7 +358,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                   ))}
                 </div>
                 <div className={styles.gramRow}>
-                  <label className={styles.gramLabel}>Грамаж</label>
+                  <label className={styles.gramLabel}>{t('rf.grams')}</label>
                   <input
                     className={styles.gramInput}
                     type="number"
@@ -372,7 +374,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                   onClick={confirmManual}
                   disabled={!manual.name.trim() || !manual.kcal}
                   type="button"
-                >Добави съставката</button>
+                >{t('rf.addIngBtn')}</button>
               </>
             )}
           </div>
@@ -380,7 +382,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
 
         {/* Ingredient list */}
         {ingredients.length === 0 ? (
-          <p className={styles.emptyIngredients}>Все още няма съставки</p>
+          <p className={styles.emptyIngredients}>{t('rf.emptyIng')}</p>
         ) : (
           <ul className={styles.ingList}>
             {ingredients.map((ing, idx) => (
@@ -402,17 +404,22 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
 
         {ingredients.length > 0 && (
           <div className={styles.totalsRow}>
-            Общо: {Math.round(totals.kcal)} ккал · П{Math.round(totals.protein * 10) / 10}g ·
-            В{Math.round(totals.carbs * 10) / 10}g · М{Math.round(totals.fat * 10) / 10}g · {totalGrams}g
+            {t('rf.total', {
+              kcal: Math.round(totals.kcal),
+              p: Math.round(totals.protein * 10) / 10,
+              c: Math.round(totals.carbs * 10) / 10,
+              f: Math.round(totals.fat * 10) / 10,
+              grams: totalGrams,
+            })}
           </div>
         )}
       </div>
 
       {/* Servings */}
       <div className={styles.section}>
-        <span className={styles.sectionTitle}>ПОРЦИИ</span>
+        <span className={styles.sectionTitle}>{t('rf.servings')}</span>
         <div className={styles.servingRow}>
-          <label className={styles.servingLabel}>Брой порции в рецептата</label>
+          <label className={styles.servingLabel}>{t('rf.servingsLabel')}</label>
           <input
             className={styles.servingInput}
             type="number"
@@ -424,8 +431,10 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         </div>
         {ingredients.length > 0 && numServings > 0 && (
           <div className={styles.perServing}>
-            1 порция ≈ {Math.round(totals.kcal / numServings)} ккал ·
-            П {Math.round(totals.protein / numServings * 10) / 10}g ·
+            {t('rf.perServing', {
+              kcal: Math.round(totals.kcal / numServings),
+              p: Math.round(totals.protein / numServings * 10) / 10,
+            })} ·
             {Math.round(totalGrams / numServings)}g
           </div>
         )}
@@ -435,7 +444,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
       {isCoach && (
         <div className={styles.section}>
           <div className={styles.shareRow}>
-            <span className={styles.shareLabel}>Сподели с клиенти</span>
+            <span className={styles.shareLabel}>{t('rf.share')}</span>
             <button
               className={`${styles.toggle} ${isShared ? styles.toggleOn : ''}`}
               onClick={() => setIsShared(v => !v)}
@@ -456,7 +465,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         disabled={!name.trim() || ingredients.length === 0 || saving}
         type="button"
       >
-        {saving ? 'Запазва...' : recipe ? 'Запази промените' : 'Запази рецептата'}
+        {saving ? t('rf.saving') : recipe ? t('rf.saveChanges') : t('rf.saveRecipe')}
       </button>
     </div>
   )
