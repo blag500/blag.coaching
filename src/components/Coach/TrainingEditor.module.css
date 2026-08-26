@@ -315,21 +315,51 @@
 }
 
 
-/* Group chips — the binding to the mannequin, in four taps or fewer. */
-.chips {
+/* Мускулен dropdown: summary линия показва избраните групи (или „трябва
+   избор" в акцент когато е празно); отваря се към chip grid отдолу. */
+.muscleDrop {
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  transition: border-color 200ms var(--ease-out), background 200ms var(--ease-out);
+}
+.muscleDropEmpty {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.06);
+}
+.muscleSummary {
+  list-style: none;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.muscleSummary::-webkit-details-marker { display: none; }
+.muscleSummaryText {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.muscleDropEmpty .muscleSummaryText { color: var(--accent); }
+.muscleChevron {
+  color: var(--muted);
+  font-size: 12px;
+  transition: transform 200ms var(--ease-out);
+}
+.muscleDrop[open] .muscleChevron { transform: rotate(180deg); }
+.muscleGrid {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 8px;
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  border: 1px solid transparent;
-  transition: border-color 200ms var(--ease-out), background 200ms var(--ease-out);
-}
-
-.chipsEmpty {
-  border-color: rgba(var(--accent-rgb), 0.45);
-  background: rgba(var(--accent-rgb), 0.06);
+  padding: 0 12px 12px;
 }
 
 .chip {

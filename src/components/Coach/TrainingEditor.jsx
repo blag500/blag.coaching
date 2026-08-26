@@ -152,27 +152,30 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                 {!block.isRest && (() => {
                   const chosen = new Set(Array.isArray(block.groups) ? block.groups : [])
                   const empty = chosen.size === 0
+                  const summary = empty
+                    ? 'трябва избор'
+                    : GROUP_OPTIONS.filter(g => chosen.has(g.id)).map(g => g.label).join(' · ')
                   return (
                     <div className={styles.fieldRow}>
-                      <label className={styles.fieldLabel}>
-                        Мускулни групи за манекена
-                        {empty && (
-                          <span className={styles.needsPick}> · трябва избор</span>
-                        )}
-                      </label>
-                      <div className={`${styles.chips} ${empty ? styles.chipsEmpty : ''}`}>
-                        {GROUP_OPTIONS.map(g => (
-                          <button
-                            key={g.id}
-                            type="button"
-                            className={`${styles.chip} ${chosen.has(g.id) ? styles.chipOn : ''}`}
-                            onClick={() => toggleGroup(block.id, g.id)}
-                            title={g.hint}
-                          >
-                            {g.label}
-                          </button>
-                        ))}
-                      </div>
+                      <label className={styles.fieldLabel}>Мускулни групи за манекена</label>
+                      <details className={`${styles.muscleDrop} ${empty ? styles.muscleDropEmpty : ''}`}>
+                        <summary className={styles.muscleSummary}>
+                          <span className={styles.muscleSummaryText}>{summary}</span>
+                          <span className={styles.muscleChevron} aria-hidden="true">▾</span>
+                        </summary>
+                        <div className={styles.muscleGrid}>
+                          {GROUP_OPTIONS.map(g => (
+                            <button
+                              key={g.id}
+                              type="button"
+                              className={`${styles.chip} ${chosen.has(g.id) ? styles.chipOn : ''}`}
+                              onClick={() => toggleGroup(block.id, g.id)}
+                            >
+                              {g.label}
+                            </button>
+                          ))}
+                        </div>
+                      </details>
                     </div>
                   )
                 })()}
