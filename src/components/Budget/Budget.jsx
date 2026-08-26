@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useBudget, monthStart, nextMonthStart, prevMonthStart } from '../../hooks/useBudget'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Budget.module.css'
 
 const RATE = 1.95583  // official fixed rate: 1 EUR = 1.95583 BGN
@@ -26,6 +27,7 @@ function monthLabel(m) {
 // ── Setup view ────────────────────────────────────────────────────
 
 function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selectedMonth }) {
+  const { t } = useSettings()
   const [budgetAmt, setBudgetAmt] = useState(
     existing?.budget_amount ? String(Math.round(disp(existing.budget_amount) * 100) / 100) : ''
   )
@@ -75,20 +77,20 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
     <div className={styles.page}>
       <div className={styles.header}>
         {onBack && (
-          <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Назад">
+          <button className={styles.backBtn} onClick={onBack} type="button" aria-label={t('bg.back')}>
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
               <polyline points="15 6 9 12 15 18" />
             </svg>
           </button>
         )}
-        <h1 className={styles.title}>НАСТРОЙКИ</h1>
+        <h1 className={styles.title}>{t('bg.settings')}</h1>
         <span className={styles.currencyBadge}>{sym}</span>
       </div>
 
       <div className={styles.setupMonthLabel}>{monthLabel(selectedMonth)}</div>
 
       <div className={styles.card}>
-        <label className={styles.label}>Оставащ бюджет за месеца ({sym})</label>
+        <label className={styles.label}>{t('bg.remaining', { sym })}</label>
         <input
           className={styles.input}
           type="number" inputMode="decimal" step="0.01" min="0"
@@ -100,18 +102,18 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
       </div>
 
       <div className={styles.card}>
-        <label className={styles.label}>Буфер за непредвидени разходи (%)</label>
+        <label className={styles.label}>{t('bg.buffer')}</label>
         <input
           className={styles.input}
           type="number" inputMode="decimal" step="1" min="0" max="50"
           value={bufferPct}
           onChange={e => setBufferPct(e.target.value)}
         />
-        <p className={styles.hint}>Резервирани: {fmt(bufferDisp)} {sym}</p>
+        <p className={styles.hint}>{t('bg.reserved', { amount: fmt(bufferDisp), sym })}</p>
       </div>
 
       <div className={styles.card}>
-        <label className={styles.label}>Спестявания / краен резерв ({sym})</label>
+        <label className={styles.label}>{t('bg.savings', { sym })}</label>
         <input
           className={styles.input}
           type="number" inputMode="decimal" step="0.01" min="0"
@@ -119,13 +121,13 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
           onChange={e => setSavingsAmt(e.target.value)}
           placeholder="0.00"
         />
-        <p className={styles.hint}>Не влиза в дневната квота — показва се само при нужда</p>
+        <p className={styles.hint}>{t('bg.savingsHint')}</p>
       </div>
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <span className={styles.label}>Планирани разходи</span>
-          <button className={styles.ghostBtn} onClick={addExpense} type="button">+ Добави</button>
+          <span className={styles.label}>{t('bg.plannedExpenses')}</span>
+          <button className={styles.ghostBtn} onClick={addExpense} type="button">{t('bg.add')}</button>
         </div>
         {expenses.map((exp, i) => (
           <div key={i} className={styles.expenseItem}>
@@ -133,7 +135,7 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
               <input
                 className={`${styles.input} ${styles.inputFlex}`}
                 type="text"
-                placeholder="Наименование"
+                placeholder={t('bg.namePh')}
                 value={exp.name}
                 onChange={e => setField(i, 'name', e.target.value)}
               />
@@ -149,14 +151,14 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
             <input
               className={`${styles.input} ${styles.noteInput}`}
               type="text"
-              placeholder="Бележка (незадължително)"
+              placeholder={t('bg.notePh')}
               value={exp.note}
               onChange={e => setField(i, 'note', e.target.value)}
             />
           </div>
         ))}
         {expenses.length > 0 && (
-          <p className={styles.hint}>Общо планирани: {fmt(totalPlan)} {sym}</p>
+          <p className={styles.hint}>{t('bg.totalPlanned', { amount: fmt(totalPlan), sym })}</p>
         )}
       </div>
 
@@ -166,7 +168,7 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
         disabled={!budgetAmt || saving}
         type="button"
       >
-        {saving ? 'Записва...' : 'ЗАПАЗИ'}
+        {saving ? t('bg.saving') : t('bg.save')}
       </button>
     </div>
   )
@@ -175,8 +177,9 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
 // ── Planned expense row (inline edit) ────────────────────────────
 
 function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
+  const { t } = useSettings()
   const [editing, setEditing] = useState(false)
-  const isDefaultName = !expense.name || expense.name === 'Разход'
+  const isDefaultName = !expense.name || expense.name === t('bg.defaultExpName')
   const [name,    setName]    = useState(isDefaultName ? '' : expense.name)
   const [note,    setNote]    = useState(expense.note || '')
   const [amount,  setAmount]  = useState(
@@ -197,14 +200,14 @@ function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
           className={styles.input}
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="Наименование"
+          placeholder={t('bg.namePh')}
           autoFocus
         />
         <input
           className={`${styles.input} ${styles.noteInput}`}
           value={note}
           onChange={e => setNote(e.target.value)}
-          placeholder="Описание (незадължително)"
+          placeholder={t('bg.descPh')}
         />
         <div className={styles.plannedEditAmtRow}>
           <input
@@ -228,20 +231,20 @@ function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
         {isDefaultName ? (
           expense.note
             ? <span className={styles.plannedName}>{expense.note}</span>
-            : <span className={styles.plannedAddNote}>+ добави описание</span>
+            : <span className={styles.plannedAddNote}>{t('bg.addDesc')}</span>
         ) : (
           <>
             <span className={styles.plannedName}>{expense.name}</span>
             {expense.note
               ? <span className={styles.plannedNote}>{expense.note}</span>
-              : <span className={styles.plannedAddNote}>+ добави описание</span>
+              : <span className={styles.plannedAddNote}>{t('bg.addDesc')}</span>
             }
           </>
         )}
       </div>
       <div className={styles.plannedRowRight}>
         <span className={styles.plannedAmt}>{fmt(disp(expense.amount))} {sym}</span>
-        <button className={styles.txnDel} onClick={onDelete} type="button" aria-label="Изтрий">×</button>
+        <button className={styles.txnDel} onClick={onDelete} type="button" aria-label={t('bg.delete')}>×</button>
       </div>
     </div>
   )
@@ -250,6 +253,7 @@ function PlannedExpenseRow({ expense, disp, toBGN, sym, onUpdate, onDelete }) {
 // ── Add transaction form ──────────────────────────────────────────
 
 function AddForm({ onAdd, sym, toBGN, defaultDate }) {
+  const { t } = useSettings()
   const [date,   setDate]   = useState(defaultDate || todayISO())
   const [desc,   setDesc]   = useState('')
   const [amount, setAmount] = useState('')
@@ -269,7 +273,7 @@ function AddForm({ onAdd, sym, toBGN, defaultDate }) {
       <input
         className={styles.input}
         type="text"
-        placeholder="Кафе, обяд, транспорт..."
+        placeholder={t('bg.txnPh')}
         value={desc}
         onChange={e => setDesc(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && amtRef.current?.focus()}
@@ -290,7 +294,7 @@ function AddForm({ onAdd, sym, toBGN, defaultDate }) {
           disabled={!amount || parseFloat(amount) <= 0}
           type="button"
         >
-          + ДОБАВИ
+          {t('bg.addBtn')}
         </button>
       </div>
       <input
@@ -306,6 +310,7 @@ function AddForm({ onAdd, sym, toBGN, defaultDate }) {
 // ── Monthly calendar ──────────────────────────────────────────────
 
 function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
+  const { t } = useSettings()
   const today       = new Date()
   const todayStr    = todayISO()
   const isCurrentM  = selectedMonth === monthStart()
@@ -335,9 +340,9 @@ function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
   return (
     <div className={styles.calendar}>
       <div className={styles.calHead}>
-        <span>Дата</span>
-        <span>Похарчено</span>
-        <span>Остатък</span>
+        <span>{t('bg.col.date')}</span>
+        <span>{t('bg.col.spent')}</span>
+        <span>{t('bg.col.left')}</span>
       </div>
       {days.map(day => (
         <div
@@ -354,7 +359,7 @@ function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
           </span>
           <span className={`${styles.calRem} ${day.remaining !== null && day.remaining < 0 ? styles.calRemNeg : ''}`}>
             {day.isPayday
-              ? <span className={styles.salary}>ЗАПЛАТА ↑</span>
+              ? <span className={styles.salary}>{t('bg.salary')}</span>
               : `${day.remaining >= 0 ? '' : '−'}${fmt(disp(day.remaining))} ${sym}`
             }
           </span>
@@ -367,6 +372,7 @@ function MonthCalendar({ transactions, dailyQuota, disp, sym, selectedMonth }) {
 // ── Spending bar chart ────────────────────────────────────────────
 
 function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
+  const { t } = useSettings()
   const today      = new Date()
   const todayStr   = localISO(today)
   const isCurrentM = selectedMonth === monthStart()
@@ -400,7 +406,7 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
 
   return (
     <div className={styles.chartWrap}>
-      <div className={styles.chartTitle}>Разходи по дни • {sym}</div>
+      <div className={styles.chartTitle}>{t('bg.chartTitle', { sym })}</div>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
         <line
           x1={PAD.left} y1={PAD.top + cH}
@@ -462,6 +468,7 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
 // ── Main Budget page ──────────────────────────────────────────────
 
 export default function Budget() {
+  const { t } = useSettings()
   const currentMonthStr = monthStart()
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr)
   const { config, transactions, loading, upsertConfig, addTransaction, deleteTransaction } = useBudget(selectedMonth)
@@ -471,7 +478,7 @@ export default function Budget() {
     () => localStorage.getItem('budget_currency') || 'BGN'
   )
 
-  const sym   = currency === 'EUR' ? '€' : 'лв.'
+  const sym   = currency === 'EUR' ? '€' : t('bg.currencyBgn')
   const disp  = (bgn) => currency === 'EUR' ? bgn / RATE : bgn
   const toBGN = (n)   => currency === 'EUR' ? n * RATE   : n
 
@@ -524,8 +531,8 @@ export default function Budget() {
 
   const heroValue = isCurrentMonth ? dailyQuota - spentToday : available - totalSpent
   const heroLabel = isCurrentMonth
-    ? 'остават за днес'
-    : heroValue >= 0 ? 'остатък за месеца' : 'превишен бюджет'
+    ? t('bg.forToday')
+    : heroValue >= 0 ? t('bg.monthLeft') : t('bg.overBudget')
   const isNeg = heroValue < 0
 
   const savings = config.savings_amount ?? 0
@@ -544,14 +551,14 @@ export default function Budget() {
 
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.title}>БЮДЖЕТ</h1>
+        <h1 className={styles.title}>{t('bg.title')}</h1>
         <div className={styles.headerActions}>
-          <button className={styles.currencyToggle} onClick={toggleCurrency} type="button" aria-label="Смяна на валута">
-            <span className={currency === 'BGN' ? styles.currActive : styles.currInactive}>лв.</span>
+          <button className={styles.currencyToggle} onClick={toggleCurrency} type="button" aria-label={t('bg.currencyToggle')}>
+            <span className={currency === 'BGN' ? styles.currActive : styles.currInactive}>{t('bg.currencyBgn')}</span>
             <span className={styles.currSep}>⇄</span>
             <span className={currency === 'EUR' ? styles.currActive : styles.currInactive}>€</span>
           </button>
-          <button className={styles.settingsBtn} onClick={() => setView('setup')} type="button" aria-label="Настройки">
+          <button className={styles.settingsBtn} onClick={() => setView('setup')} type="button" aria-label={t('bg.settingsBtn')}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="3"/>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -580,17 +587,17 @@ export default function Budget() {
       <div className={styles.stats}>
         <div className={styles.stat}>
           <span className={styles.statAmt}>{fmt(disp(dailyQuota))}</span>
-          <span className={styles.statLbl}>квота / ден</span>
+          <span className={styles.statLbl}>{t('bg.perDay')}</span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.stat}>
           <span className={styles.statAmt}>{fmt(disp(isCurrentMonth ? spentToday : totalSpent))}</span>
-          <span className={styles.statLbl}>{isCurrentMonth ? 'похарчено' : 'похарчено общо'}</span>
+          <span className={styles.statLbl}>{isCurrentMonth ? t('bg.spentToday') : t('bg.spentTotal')}</span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.stat}>
           <span className={styles.statAmt}>{isCurrentMonth ? daysToEnd : totalDays}</span>
-          <span className={styles.statLbl}>{isCurrentMonth ? 'дни до края' : 'дни в месеца'}</span>
+          <span className={styles.statLbl}>{isCurrentMonth ? t('bg.daysLeft') : t('bg.daysInMonth')}</span>
         </div>
       </div>
 
@@ -598,7 +605,7 @@ export default function Budget() {
       {(config.planned_expenses ?? []).length > 0 && (
         <div className={styles.plannedWrap}>
           <div className={styles.plannedHdr}>
-            <span className={styles.plannedTitle}>ПЛАНИРАНИ РАЗХОДИ</span>
+            <span className={styles.plannedTitle}>{t('bg.planned')}</span>
             <span className={styles.plannedTotal}>{fmt(disp(totalPlan))} {sym}</span>
           </div>
           {(config.planned_expenses ?? []).map((e, i) => (
@@ -625,8 +632,8 @@ export default function Budget() {
       {savings > 0 && (
         <div className={`${styles.savingsCard} ${isNeg ? styles.savingsAlert : ''}`}>
           <div className={styles.savingsInfo}>
-            <span className={styles.savingsLabel}>КРАЕН РЕЗЕРВ</span>
-            {isNeg && <span className={styles.savingsHint}>бюджетът е изчерпан</span>}
+            <span className={styles.savingsLabel}>{t('bg.finalReserve')}</span>
+            {isNeg && <span className={styles.savingsHint}>{t('bg.budgetExhausted')}</span>}
           </div>
           <span className={styles.savingsAmt}>{fmt(disp(savings))} {sym}</span>
         </div>
@@ -658,7 +665,7 @@ export default function Budget() {
         tabIndex={0}
         onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setShowCalendar(v => !v)}
       >
-        <span>{showCalendar ? '↑ Скрий плана' : '↓ Месечен план'}</span>
+        <span>{showCalendar ? t('bg.hidePlan') : t('bg.monthlyPlan')}</span>
         <span className={styles.calToggleMonth}>{selMonthName.toUpperCase()}</span>
       </div>
 
@@ -678,7 +685,7 @@ export default function Budget() {
           {sortedDates.map(date => {
             const isToday   = date === todayStr
             const dateLabel = isToday
-              ? 'ДНЕС'
+              ? t('bg.today')
               : new Date(date + 'T12:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' }).toUpperCase()
             const dayTotal  = byDate[date].reduce((s, t) => s + +t.amount, 0)
             return (
@@ -695,7 +702,7 @@ export default function Budget() {
                       className={styles.txnDel}
                       onClick={() => deleteTransaction(txn.id)}
                       type="button"
-                      aria-label="Изтрий"
+                      aria-label={t('bg.delete')}
                     >×</button>
                   </div>
                 ))}
@@ -704,7 +711,7 @@ export default function Budget() {
           })}
         </div>
       ) : (
-        <p className={styles.empty}>Няма разходи за {selMonthName}</p>
+        <p className={styles.empty}>{t('bg.emptyForMonth', { month: selMonthName })}</p>
       )}
     </div>
   )
