@@ -203,11 +203,14 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
-                placeholder="123456"
+                placeholder="00000000"
                 value={otpCode}
-                onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                maxLength={6}
-                minLength={6}
+                /* Дължината на OTP-то е конфигурирана в Supabase (6-10 цифри
+                   в различни проекти). Не фиксираме на 6 — приемаме каквото
+                   е дошло по имейл; Supabase.verifyOtp сам ще каже ако е
+                   грешен. */
+                onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                maxLength={10}
                 required
                 autoFocus
               />
@@ -246,7 +249,7 @@ export default function AuthScreen({ onBack, initialMode = 'login', initialEmail
           {authError && <p className={styles.error}>{authError.startsWith('auth.err.') ? t(authError) : authError}</p>}
           {info      && <p className={styles.info}>{info}</p>}
 
-          <button className={styles.submit} type="submit" disabled={loading || (mode === 'verify' && otpCode.length < 6)}>
+          <button className={styles.submit} type="submit" disabled={loading || (mode === 'verify' && otpCode.length < 4)}>
             {submitLabel}
           </button>
 

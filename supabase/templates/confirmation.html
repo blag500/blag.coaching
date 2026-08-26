@@ -71,17 +71,21 @@
                   </td>
                 </tr>
 
-                <!-- OTP code — the primary CTA. white-space:nowrap forces the six
-                     digits onto one line even when the client renders the card
-                     narrower than expected; letter-spacing is trimmed to 6px so
-                     the whole run fits under 240px inside the box. -->
+                <!-- OTP code — the primary CTA. Rendered as a single-cell table
+                     rather than nested divs: iOS Mail ignores white-space:nowrap
+                     on divs and wraps 8-digit tokens onto two lines. A <td>
+                     shrink-wraps to its content and never breaks unless there is
+                     whitespace inside — {{ .Token }} has none, so the whole run
+                     stays on one line by geometry, not by CSS suggestion. -->
                 <tr>
                   <td align="center" style="padding:0 0 22px;">
-                    <div style="display:inline-block;background:#0C0A06;border:1px solid rgba(255,183,77,0.28);border-radius:14px;padding:18px 22px;">
-                      <div style="font-family:'Menlo','Consolas','Courier New',monospace;font-size:30px;font-weight:600;letter-spacing:6px;text-indent:6px;color:#ffb74d;line-height:1;white-space:nowrap;">
-                        {{ .Token }}
-                      </div>
-                    </div>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                      <tr>
+                        <td align="center" bgcolor="#0C0A06" style="background:#0C0A06;border:1px solid rgba(255,183,77,0.28);border-radius:14px;padding:18px 24px;font-family:'Menlo','Consolas','Courier New',monospace;font-size:26px;font-weight:600;letter-spacing:5px;text-indent:5px;color:#ffb74d;line-height:1;white-space:nowrap;">
+                          {{ .Token }}
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
 
