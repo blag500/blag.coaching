@@ -37,6 +37,7 @@ import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
 import { useHideOnScroll } from './hooks/useHideOnScroll'
+import { useKeyboardInset } from './hooks/useKeyboardInset'
 import SwipePager from './components/SwipePager/SwipePager'
 import { useSupplementsToday } from './hooks/useSupplementsToday'
 import SupplementBanner from './components/Supplements/SupplementBanner'
@@ -133,6 +134,7 @@ function AppShell() {
 
   usePushNotifications()
   useHideOnScroll(!drawerOpen)
+  useKeyboardInset()
 
   const { pendingCount: supplementPending } = useSupplementsToday()
 
