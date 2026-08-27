@@ -18,17 +18,17 @@ import { MEALS, MEAL_LABEL_KEY, defaultMeal } from '../FoodLogger/meals'
 import styles from './ClientDetail.module.css'
 
 const TABS = [
-  { id: 'progress',   label: 'ПРОГРЕС' },
-  { id: 'chat',       label: 'ЧАТ' },
+  { id: 'progress',   labelKey: 'cd.tab.progress' },
+  { id: 'chat',       labelKey: 'cd.tab.chat' },
   { id: 'checkin',    label: 'CHECK-IN' },
-  { id: 'sessions',   label: 'ГРАФИК' },
-  { id: 'nutrition',  label: 'ХРАНЕНЕ' },
-  { id: 'lifts',      label: 'УПРАЖНЕНИЯ' },
-  { id: 'plan',       label: 'ПЛАН' },
-  { id: 'goals',      label: 'ЦЕЛИ' },
-  { id: 'notes',      label: 'БЕЛЕЖКИ' },
-  { id: 'tasks',      label: 'ЗАДАЧИ' },
-  { id: 'reminders',  label: 'НАПОМНЯНИЯ' },
+  { id: 'sessions',   labelKey: 'cd.tab.sessions' },
+  { id: 'nutrition',  labelKey: 'cd.tab.nutrition' },
+  { id: 'lifts',      labelKey: 'cd.tab.lifts' },
+  { id: 'plan',       labelKey: 'cd.tab.plan' },
+  { id: 'goals',      labelKey: 'cd.tab.goals' },
+  { id: 'notes',      labelKey: 'cd.tab.notes' },
+  { id: 'tasks',      labelKey: 'cd.tab.tasks' },
+  { id: 'reminders',  labelKey: 'cd.tab.reminders' },
 ]
 
 function TrashIcon() {
@@ -97,7 +97,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
       onDelete(client.id)
     } else {
       const msg = error?.message || error?.context?.responseText || JSON.stringify(error)
-      setDeleteError(`Грешка: ${msg}`)
+      setDeleteError(t('cd.error', { msg }))
       setDeleting(false)
     }
   }
@@ -136,14 +136,14 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
     <div className={`${styles.page} ${tab === 'chat' ? styles.pageChat : ''}`}>
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} type="button">
-          ← КЛИЕНТИ
+          {t('cd.backToClients')}
         </button>
         <span className={styles.clientName}>{client.name || client.email}</span>
         <button
           className={`${styles.deleteBtn} ${confirmDelete ? styles.deleteBtnActive : ''}`}
           onClick={() => setConfirmDelete(v => !v)}
           type="button"
-          aria-label="Изтрий профила"
+          aria-label={t('cd.deleteProfile')}
         >
           <TrashIcon />
         </button>
@@ -152,17 +152,17 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
       {confirmDelete && (
         <div className={styles.deleteConfirm}>
           <p className={styles.deleteConfirmText}>
-            Изтрий профила на <strong>{client.name || client.email}</strong>? Действието е необратимо.
+            {t('cd.deleteConfirm', { name: client.name || client.email })}
           </p>
           {deleteError && (
             <p className={styles.deleteErrorText}>{deleteError}</p>
           )}
           <div className={styles.deleteConfirmActions}>
             <button className={styles.deleteCancelBtn} onClick={() => { setConfirmDelete(false); setDeleteError(null) }} type="button">
-              Отказ
+              {t('cd.cancel')}
             </button>
             <button className={styles.deleteConfirmBtn} onClick={handleDelete} disabled={deleting} type="button">
-              {deleting ? 'Изтрива...' : 'Да, изтрий'}
+              {deleting ? t('cd.deleting') : t('cd.confirmDelete')}
             </button>
           </div>
         </div>
@@ -172,10 +172,10 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
       <div className={styles.macroBar}>
         <div className={styles.macroBarFields}>
           {[
-            { key: 'calories', label: 'ККАЛ' },
-            { key: 'protein',  label: 'ПРОТЕИН g' },
-            { key: 'carbs',    label: 'ВЪГЛ g' },
-            { key: 'fat',      label: 'МАЗН g' },
+            { key: 'calories', label: t('cd.kcal') },
+            { key: 'protein',  label: t('cd.proteinG') },
+            { key: 'carbs',    label: t('cd.carbsG') },
+            { key: 'fat',      label: t('cd.fatG') },
           ].map(({ key, label }) => (
             <div key={key} className={styles.macroField}>
               <label className={styles.macroLabel}>{label}</label>
@@ -195,19 +195,19 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
           disabled={macroSaving}
           type="button"
         >
-          {macroSaving ? '...' : macroSaved ? '✓' : 'Запази'}
+          {macroSaving ? '...' : macroSaved ? '✓' : t('cd.save')}
         </button>
       </div>
 
       <div className={styles.tabBar}>
-        {TABS.map(t => (
+        {TABS.map(item => (
           <button
-            key={t.id}
-            className={`${styles.tab} ${tab === t.id ? styles.tabActive : ''}`}
-            onClick={() => setTab(t.id)}
+            key={item.id}
+            className={`${styles.tab} ${tab === item.id ? styles.tabActive : ''}`}
+            onClick={() => setTab(item.id)}
             type="button"
           >
-            {t.label}
+            {t(item.labelKey)}
           </button>
         ))}
       </div>
@@ -257,8 +257,9 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
 // ─── Progress Tab ────────────────────────────────────────────────────────────
 
 function ProgressTab({ stats, client }) {
+  const { t } = useSettings()
   if (!stats) {
-    return <p className={styles.loading}>Зарежда...</p>
+    return <p className={styles.loading}>{t('cd.loading')}</p>
   }
 
   const { foodByDay, habitsByDay, weights } = stats
@@ -283,14 +284,14 @@ function ProgressTab({ stats, client }) {
     <div className={styles.progressTab}>
       {/* Client readiness */}
       <section className={styles.chartSection}>
-        <h3 className={styles.chartTitle}>ГОТОВНОСТ ДНЕС</h3>
+        <h3 className={styles.chartTitle}>{t('cd.readinessToday')}</h3>
         {/* The coach came here to look, so the coach gets the breakdown. */}
         <ReadinessWidget detailed client={{ id: client.id, calories: client.calories, protein: client.protein }} />
       </section>
 
       {/* Kcal bars */}
       <section className={styles.chartSection}>
-        <h3 className={styles.chartTitle}>ККАЛ — ПОСЛЕДНИ 7 ДНИ</h3>
+        <h3 className={styles.chartTitle}>{t('cd.kcal7')}</h3>
         <div className={styles.barChart}>
           {days.map(d => (
             <div key={d.date} className={styles.barCol}>
@@ -310,12 +311,12 @@ function ProgressTab({ stats, client }) {
             </div>
           ))}
         </div>
-        <p className={styles.chartNote}>Цел: {targetKcal} ккал (пунктирана линия)</p>
+        <p className={styles.chartNote}>{t('cd.kcalGoalNote', { n: targetKcal })}</p>
       </section>
 
       {/* Habit completion */}
       <section className={styles.chartSection}>
-        <h3 className={styles.chartTitle}>НАВИЦИ — ПОСЛЕДНИ 7 ДНИ</h3>
+        <h3 className={styles.chartTitle}>{t('cd.habits7')}</h3>
         <div className={styles.habitRows}>
           {days.map(d => {
             const pct = totalHabits > 0 ? (d.habits / totalHabits) * 100 : 0
@@ -334,7 +335,7 @@ function ProgressTab({ stats, client }) {
 
       {weights.length > 0 && (
         <section className={styles.chartSection}>
-          <h3 className={styles.chartTitle}>ТЕГЛО</h3>
+          <h3 className={styles.chartTitle}>{t('cd.weight')}</h3>
           <WeightChart
             weights={weights}
             targetWeight={client.target_weight ? parseFloat(client.target_weight) : null}
@@ -349,6 +350,7 @@ function ProgressTab({ stats, client }) {
 // ─── Goals Tab ───────────────────────────────────────────────────────────────
 
 function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
+  const { t } = useSettings()
   function set(field, value) {
     setEdits(prev => ({ ...prev, [field]: value }))
   }
@@ -359,7 +361,7 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
     <div className={styles.goalsTab}>
       {hasIntake && (
         <div className={styles.intakeSection}>
-          <p className={styles.intakeSectionTitle}>ДАННИ ОТ КЛИЕНТА</p>
+          <p className={styles.intakeSectionTitle}>{t('cd.intakeTitle')}</p>
           {(client.phone || client.age || client.intake_training_days || client.intake_call_time) && (
             <div className={styles.intakeRow}>
               {client.phone && (
@@ -368,25 +370,25 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
                 </a>
               )}
               {client.intake_call_time && (
-                <span className={styles.intakeAge}>🕐 {client.intake_call_time}ч.</span>
+                <span className={styles.intakeAge}>{t('cd.callTime', { time: client.intake_call_time })}</span>
               )}
               {client.age && (
-                <span className={styles.intakeAge}>{client.age} год.</span>
+                <span className={styles.intakeAge}>{t('cd.age', { n: client.age })}</span>
               )}
               {client.intake_training_days && (
-                <span className={styles.intakeAge}>{client.intake_training_days}× тренировки/седм.</span>
+                <span className={styles.intakeAge}>{t('cd.trainingDays', { n: client.intake_training_days })}</span>
               )}
             </div>
           )}
           {client.intake_goal && (
             <div className={styles.intakeBlock}>
-              <span className={styles.intakeKey}>Цел</span>
+              <span className={styles.intakeKey}>{t('cd.goal')}</span>
               <p className={styles.intakeValue}>{client.intake_goal}</p>
             </div>
           )}
           {client.intake_notes && (
             <div className={styles.intakeBlock}>
-              <span className={styles.intakeKey}>Здравни бележки</span>
+              <span className={styles.intakeKey}>{t('cd.healthNotes')}</span>
               <p className={styles.intakeValue}>{client.intake_notes}</p>
             </div>
           )}
@@ -394,18 +396,18 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
       )}
 
       <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel}>Имe</label>
+        <label className={styles.fieldLabel}>{t('cd.name')}</label>
         <input
           className={styles.fieldInput}
           type="text"
           value={edits.name}
           onChange={e => set('name', e.target.value)}
-          placeholder="Имe на клиента"
+          placeholder={t('cd.namePh')}
         />
       </div>
 
       <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel}>Целево тегло</label>
+        <label className={styles.fieldLabel}>{t('cd.targetWeight')}</label>
         <div className={styles.inputWrap}>
           <input
             className={styles.fieldInput}
@@ -425,7 +427,7 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
       />
 
       <div className={styles.fieldGroup}>
-        <label className={styles.fieldLabel}>Калориен баланс</label>
+        <label className={styles.fieldLabel}>{t('cd.calorieBalance')}</label>
         <button
           type="button"
           className={`${styles.toggleSwitch} ${edits.eat_back_calories ? styles.toggleSwitchOn : ''}`}
@@ -433,7 +435,7 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
         >
           <span className={styles.toggleSwitchKnob} />
           <span className={styles.toggleSwitchLabel}>
-            {edits.eat_back_calories ? 'Изгорените ккал добавят към дневната цел' : 'Само информация (не добавя към цел)'}
+            {edits.eat_back_calories ? t('cd.eatBackOn') : t('cd.eatBackOff')}
           </span>
         </button>
       </div>
@@ -444,13 +446,14 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
         disabled={saving}
         type="button"
       >
-        {saving ? '...' : saved ? '✓ Запазено' : 'Запази'}
+        {saving ? '...' : saved ? t('cd.saved') : t('cd.save')}
       </button>
     </div>
   )
 }
 
 function HabitsEditor({ habits, onChange }) {
+  const { t } = useSettings()
   const list = habits ?? DEFAULT_HABITS
   const [newEmoji, setNewEmoji] = useState('')
   const [newLabel, setNewLabel] = useState('')
@@ -479,10 +482,10 @@ function HabitsEditor({ habits, onChange }) {
   return (
     <div className={styles.habitsEditorSection}>
       <div className={styles.habitsEditorHeader}>
-        <span className={styles.fieldLabel}>НАВИЦИ</span>
+        <span className={styles.fieldLabel}>{t('cd.habits')}</span>
         {habits !== null && (
           <button className={styles.habitsResetBtn} onClick={resetToDefaults} type="button">
-            Стандартни
+            {t('cd.standard')}
           </button>
         )}
       </div>
@@ -516,7 +519,7 @@ function HabitsEditor({ habits, onChange }) {
           className={styles.habitLabelInput}
           value={newLabel}
           onChange={e => setNewLabel(e.target.value)}
-          placeholder="Нов навик..."
+          placeholder={t('cd.newHabitPh')}
           onKeyDown={e => e.key === 'Enter' && add()}
         />
         <button className={styles.habitAddBtn} onClick={add} type="button">+</button>
@@ -528,6 +531,7 @@ function HabitsEditor({ habits, onChange }) {
 // ─── Nutrition Tab ───────────────────────────────────────────────────────
 
 function NutritionTab({ client }) {
+  const { t } = useSettings()
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [logs, setLogs]         = useState([])
   const [loading, setLoading]   = useState(false)
@@ -652,17 +656,17 @@ function NutritionTab({ client }) {
         />
         <div className={styles.logEditGrid}>
           <div className={styles.logEditField}>
-            <label className={styles.logEditLabel}>Грамаж</label>
+            <label className={styles.logEditLabel}>{t('cd.grams')}</label>
             <input className={styles.logEditInput} type="number" min="0"
               value={draft.grams}
               onChange={e => handleDraftGramsChange(entry, e.target.value)}
             />
           </div>
           {[
-            { key: 'kcal',    label: 'Ккал'      },
-            { key: 'protein', label: 'Протеин g'  },
-            { key: 'carbs',   label: 'Въгл g'     },
-            { key: 'fat',     label: 'Мазнини g'  },
+            { key: 'kcal',    label: t('cd.kcalTitle') },
+            { key: 'protein', label: t('cd.proteinLower') },
+            { key: 'carbs',   label: t('cd.carbsLower') },
+            { key: 'fat',     label: t('cd.fatLower') },
           ].map(({ key, label }) => (
             <div key={key} className={styles.logEditField}>
               <label className={styles.logEditLabel}>{label}</label>
@@ -674,8 +678,8 @@ function NutritionTab({ client }) {
           ))}
         </div>
         <div className={styles.logEditActions}>
-          <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">Отказ</button>
-          <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">Запази</button>
+          <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">{t('cd.cancel')}</button>
+          <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">{t('cd.save')}</button>
         </div>
       </div>
     ) : (
@@ -685,7 +689,7 @@ function NutritionTab({ client }) {
             type="button"
             className={styles.logThumbBtn}
             onClick={() => setLightboxUrl(entry.photo_url)}
-            aria-label="Виж снимката на ястието"
+            aria-label={t('cd.viewMealPhoto')}
           >
             <img src={entry.photo_url} className={styles.logThumbImg} alt="" />
           </button>
@@ -694,12 +698,12 @@ function NutritionTab({ client }) {
           <span className={styles.logName}>{entry.name}</span>
           <span className={styles.logMacros}>
             {entry.grams > 0 && <><span className={styles.logGrams}>{entry.grams}g</span> · </>}
-            {entry.kcal} ккал · П{Math.round(entry.protein * 10) / 10}g · В{Math.round(entry.carbs * 10) / 10}g · М{Math.round(entry.fat * 10) / 10}g
+            {t('cd.rowMacros', { kcal: entry.kcal, p: Math.round(entry.protein * 10) / 10, c: Math.round(entry.carbs * 10) / 10, f: Math.round(entry.fat * 10) / 10 })}
           </span>
         </div>
         <div className={styles.logEntryActions}>
-          <button className={styles.logEditBtn} onClick={() => startEdit(entry)} type="button" aria-label="Редактирай">✎</button>
-          <button className={styles.logDeleteBtn} onClick={() => deleteEntry(entry.id)} type="button" aria-label="Изтрий">×</button>
+          <button className={styles.logEditBtn} onClick={() => startEdit(entry)} type="button" aria-label={t('cd.edit')}>✎</button>
+          <button className={styles.logDeleteBtn} onClick={() => deleteEntry(entry.id)} type="button" aria-label={t('cd.delete')}>×</button>
         </div>
       </div>
     )
@@ -720,7 +724,7 @@ function NutritionTab({ client }) {
     <div className={styles.nutritionTab}>
       {mealPhotos.length > 0 && (
         <div className={styles.mealPhotoStrip}>
-          <span className={styles.mealPhotoStripLabel}>СНИМКИ НА ЯСТИЯ — {mealPhotos.length}</span>
+          <span className={styles.mealPhotoStripLabel}>{t('cd.mealPhotos', { n: mealPhotos.length })}</span>
           <div className={styles.mealPhotoScroll}>
             {mealPhotos.map(p => (
               <button
@@ -743,7 +747,7 @@ function NutritionTab({ client }) {
           <input
             className={styles.addFoodName}
             type="text"
-            placeholder="Наименование на храната..."
+            placeholder={t('cd.foodNamePh')}
             value={newEntry.name}
             onChange={e => setNewEntry(prev => ({ ...prev, name: e.target.value }))}
           />
@@ -761,11 +765,11 @@ function NutritionTab({ client }) {
           </div>
           <div className={styles.addFoodGrid}>
             {[
-              { key: 'kcal',    label: 'Ккал *'   },
-              { key: 'protein', label: 'Протеин g' },
-              { key: 'carbs',   label: 'Въгл g'   },
-              { key: 'fat',     label: 'Мазнини g' },
-              { key: 'grams',   label: 'Грамаж g'  },
+              { key: 'kcal',    label: t('cd.kcalReq') },
+              { key: 'protein', label: t('cd.proteinLower') },
+              { key: 'carbs',   label: t('cd.carbsLower') },
+              { key: 'fat',     label: t('cd.fatLower') },
+              { key: 'grams',   label: t('cd.gramsG') },
             ].map(({ key, label }) => (
               <div key={key} className={styles.addFoodField}>
                 <label className={styles.addFoodLabel}>{label}</label>
@@ -779,33 +783,33 @@ function NutritionTab({ client }) {
             ))}
           </div>
           <div className={styles.addFoodActions}>
-            <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">Отказ</button>
+            <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">{t('cd.cancel')}</button>
             <button
               className={styles.addFoodSubmit}
               onClick={handleAdd}
               disabled={adding || !newEntry.name.trim() || !newEntry.kcal}
               type="button"
             >
-              {adding ? 'Добавя...' : '+ Добави'}
+              {adding ? t('cd.adding') : t('cd.add')}
             </button>
           </div>
         </div>
       ) : (
         <button className={styles.addFoodBtn} onClick={() => setShowAdd(true)} type="button">
-          + Добави храна ръчно
+          {t('cd.addFoodManual')}
         </button>
       )}
 
       {logs.length > 0 && (
         <div className={styles.dayTotal}>
-          {totals.kcal} / {targetKcal} ккал · П{totals.protein}g · В{totals.carbs}g · М{totals.fat}g
+          {t('cd.dayTotals', { kcal: totals.kcal, target: targetKcal, p: totals.protein, c: totals.carbs, f: totals.fat })}
         </div>
       )}
 
       {loading ? (
-        <p className={styles.loading}>Зарежда...</p>
+        <p className={styles.loading}>{t('cd.loading')}</p>
       ) : logs.length === 0 ? (
-        <p className={styles.empty}>Няма логирани храни за тази дата</p>
+        <p className={styles.empty}>{t('cd.noFood')}</p>
       ) : (
         shownLogGroups.map(group => {
           const kcal = Math.round(group.items.reduce((s, e) => s + (e.kcal || 0), 0))
@@ -813,7 +817,7 @@ function NutritionTab({ client }) {
             <section key={group.id} className={styles.mealGroup}>
               <div className={styles.mealHead}>
                 <span className={styles.mealName}>{group.label}</span>
-                <span className={styles.mealKcal}>{kcal} ккал</span>
+                <span className={styles.mealKcal}>{t('cd.mealKcal', { n: kcal })}</span>
               </div>
               <div className={styles.logList}>
                 {group.items.map(renderLogEntry)}
@@ -829,8 +833,8 @@ function NutritionTab({ client }) {
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.94)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', cursor: 'zoom-out' }}
           onClick={() => setLightboxUrl(null)}
         >
-          <img src={lightboxUrl} alt="Ястие" style={{ maxWidth: '100%', maxHeight: '88vh', borderRadius: '12px', objectFit: 'contain' }} />
-          <button type="button" onClick={() => setLightboxUrl(null)} aria-label="Затвори" style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '50%', color: '#fff', fontSize: 20, width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <img src={lightboxUrl} alt={t('cd.dishAlt')} style={{ maxWidth: '100%', maxHeight: '88vh', borderRadius: '12px', objectFit: 'contain' }} />
+          <button type="button" onClick={() => setLightboxUrl(null)} aria-label={t('cd.close')} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '50%', color: '#fff', fontSize: 20, width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       )}
     </div>
@@ -840,6 +844,7 @@ function NutritionTab({ client }) {
 // ─── Lifts Tab ───────────────────────────────────────────────────────────
 
 function LiftsTab({ clientId }) {
+  const { t } = useSettings()
   const { addExerciseLogForClient, updateExerciseLog, removeExerciseLog } = useAuth()
   const [subTab,       setSubTab]       = useState('log')
   // The client's own session view, read-only. A coach opening a client before a
@@ -965,15 +970,15 @@ function LiftsTab({ clientId }) {
         <button
           className={`${styles.liftsSubTab} ${subTab === 'log' ? styles.liftsSubTabActive : ''}`}
           onClick={() => setSubTab('log')} type="button"
-        >ДНЕВНИК</button>
+        >{t('cd.liftLog')}</button>
         <button
           className={`${styles.liftsSubTab} ${subTab === 'progression' ? styles.liftsSubTabActive : ''}`}
           onClick={() => setSubTab('progression')} type="button"
-        >ПРОГРЕСИЯ</button>
+        >{t('cd.liftProgression')}</button>
         <button
           className={`${styles.liftsSubTab} ${subTab === 'sessions' ? styles.liftsSubTabActive : ''}`}
           onClick={() => { setSubTab('sessions'); setStatsEx(null) }} type="button"
-        >СЕСИИ</button>
+        >{t('cd.liftSessions')}</button>
       </div>
 
       {/* ── SESSIONS view — the same screens the client has ── */}
@@ -1002,16 +1007,16 @@ function LiftsTab({ clientId }) {
               <input
                 className={styles.addFoodName}
                 type="text"
-                placeholder="Упражнение *"
+                placeholder={t('cd.exercisePh')}
                 autoFocus
                 value={newEntry.name}
                 onChange={e => setNewEntry(p => ({ ...p, name: e.target.value }))}
               />
               <div className={styles.liftAddGrid}>
                 {[
-                  { key: 'weight', label: 'Кг',     step: '0.5' },
-                  { key: 'reps',   label: 'Повт.',   step: '1'   },
-                  { key: 'sets',   label: 'Серии',   step: '1'   },
+                  { key: 'weight', label: t('cd.kg'),   step: '0.5' },
+                  { key: 'reps',   label: t('cd.reps'), step: '1'   },
+                  { key: 'sets',   label: t('cd.sets'), step: '1'   },
                 ].map(({ key, label, step }) => (
                   <div key={key} className={styles.addFoodField}>
                     <label className={styles.addFoodLabel}>{label}</label>
@@ -1027,32 +1032,32 @@ function LiftsTab({ clientId }) {
               <input
                 className={styles.addFoodName}
                 type="text"
-                placeholder="Бележки (по избор)"
+                placeholder={t('cd.notesOptPh')}
                 value={newEntry.notes}
                 onChange={e => setNewEntry(p => ({ ...p, notes: e.target.value }))}
               />
               <div className={styles.addFoodActions}>
-                <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">Отказ</button>
+                <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">{t('cd.cancel')}</button>
                 <button
                   className={styles.addFoodSubmit}
                   onClick={handleAdd}
                   disabled={adding || !newEntry.name.trim()}
                   type="button"
                 >
-                  {adding ? 'Добавя...' : '+ Добави'}
+                  {adding ? t('cd.adding') : t('cd.add')}
                 </button>
               </div>
             </div>
           ) : (
             <button className={styles.addFoodBtn} onClick={() => setShowAdd(true)} type="button">
-              + Добави упражнение
+              {t('cd.addExercise')}
             </button>
           )}
 
           {loading ? (
-            <p className={styles.loading}>Зарежда...</p>
+            <p className={styles.loading}>{t('cd.loading')}</p>
           ) : logs.length === 0 ? (
-            <p className={styles.empty}>Няма логирани упражнения за тази дата</p>
+            <p className={styles.empty}>{t('cd.noLifts')}</p>
           ) : (
             <div className={styles.liftList}>
               {logs.map(log =>
@@ -1066,9 +1071,9 @@ function LiftsTab({ clientId }) {
                     />
                     <div className={styles.liftEditGrid}>
                       {[
-                        { key: 'weight', label: 'Кг',   step: '0.5' },
-                        { key: 'reps',   label: 'Повт.', step: '1'   },
-                        { key: 'sets',   label: 'Серии', step: '1'   },
+                        { key: 'weight', label: t('cd.kg'),   step: '0.5' },
+                        { key: 'reps',   label: t('cd.reps'), step: '1'   },
+                        { key: 'sets',   label: t('cd.sets'), step: '1'   },
                       ].map(({ key, label, step }) => (
                         <div key={key} className={styles.logEditField}>
                           <label className={styles.logEditLabel}>{label}</label>
@@ -1082,13 +1087,13 @@ function LiftsTab({ clientId }) {
                     </div>
                     <input
                       className={`${styles.logEditInput} ${styles.liftNotesInput}`}
-                      type="text" placeholder="Бележки"
+                      type="text" placeholder={t('cd.notesPh')}
                       value={draft.notes}
                       onChange={e => setDraft(p => ({ ...p, notes: e.target.value }))}
                     />
                     <div className={styles.logEditActions}>
-                      <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">Отказ</button>
-                      <button className={styles.logEditSave} onClick={() => saveEdit(log.id)} type="button">Запази</button>
+                      <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">{t('cd.cancel')}</button>
+                      <button className={styles.logEditSave} onClick={() => saveEdit(log.id)} type="button">{t('cd.save')}</button>
                     </div>
                   </div>
                 ) : (
@@ -1096,14 +1101,14 @@ function LiftsTab({ clientId }) {
                     <div className={styles.liftInfo}>
                       <span className={styles.liftName}>{log.exercise_name}</span>
                       <span className={styles.liftStats}>
-                        {log.weight != null && <span className={styles.liftKg}>{log.weight} кг</span>}
+                        {log.weight != null && <span className={styles.liftKg}>{t('cd.kgUnit', { n: log.weight })}</span>}
                         {log.reps && <span>{log.sets || 1} × {log.reps}</span>}
                         {log.notes && <span className={styles.liftNoteInline}>{log.notes}</span>}
                       </span>
                     </div>
                     <div className={styles.logEntryActions}>
-                      <button className={styles.logEditBtn} onClick={() => startEdit(log)} type="button" aria-label="Редактирай">✎</button>
-                      <button className={styles.logDeleteBtn} onClick={() => handleDelete(log.id)} type="button" aria-label="Изтрий">×</button>
+                      <button className={styles.logEditBtn} onClick={() => startEdit(log)} type="button" aria-label={t('cd.edit')}>✎</button>
+                      <button className={styles.logDeleteBtn} onClick={() => handleDelete(log.id)} type="button" aria-label={t('cd.delete')}>×</button>
                     </div>
                   </div>
                 )
@@ -1117,9 +1122,9 @@ function LiftsTab({ clientId }) {
       {subTab === 'progression' && (
         <div className={styles.progressionWrap}>
           {allLogs === null ? (
-            <p className={styles.loading}>Зарежда...</p>
+            <p className={styles.loading}>{t('cd.loading')}</p>
           ) : exNames.length === 0 ? (
-            <p className={styles.empty}>Няма записани упражнения</p>
+            <p className={styles.empty}>{t('cd.noLiftsAny')}</p>
           ) : (
             <>
               <div className={styles.exPicker}>
@@ -1210,6 +1215,7 @@ function setsLabel(s) {
 
 // Editable progression history table for the coach view
 function ProgHistoryTable({ rows, onDelete, onUpdate }) {
+  const { t } = useSettings()
   const [editId, setEditId] = useState(null)
   const [draft,  setDraft]  = useState({})
   const [saving, setSaving] = useState(false)
@@ -1250,15 +1256,15 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
               </span>
               <input
                 className={styles.progEditInput}
-                type="number" min="0" step="0.5" placeholder="кг"
+                type="number" min="0" step="0.5" placeholder={t('cd.phKg')}
                 value={draft.weight}
                 onChange={e => setDraft(p => ({ ...p, weight: e.target.value }))}
               />
               <div className={styles.progEditPair}>
-                <input className={styles.progEditInput} type="number" min="0" placeholder="сер."
+                <input className={styles.progEditInput} type="number" min="0" placeholder={t('cd.phSets')}
                   value={draft.sets} onChange={e => setDraft(p => ({ ...p, sets: e.target.value }))} />
                 <span className={styles.progEditSep}>×</span>
-                <input className={styles.progEditInput} type="number" min="0" placeholder="повт."
+                <input className={styles.progEditInput} type="number" min="0" placeholder={t('cd.phReps')}
                   value={draft.reps} onChange={e => setDraft(p => ({ ...p, reps: e.target.value }))} />
               </div>
               <div className={styles.progEditActions}>
@@ -1272,12 +1278,12 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
                 {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
               </span>
               <span className={styles.exHistoryKg}>
-                {row.weight != null ? `${row.weight} кг` : '—'}
+                {row.weight != null ? t('cd.kgUnit', { n: row.weight }) : '—'}
               </span>
               <span>{row.sets && row.reps ? `${row.sets} × ${row.reps}` : '—'}</span>
               <div className={styles.progEditActions}>
-                <button className={styles.progEditBtn} onClick={() => startEdit(row)} type="button" aria-label="Редактирай">✎</button>
-                <button className={styles.progDeleteBtn} onClick={() => onDelete(row.id)} type="button" aria-label="Изтрий">✕</button>
+                <button className={styles.progEditBtn} onClick={() => startEdit(row)} type="button" aria-label={t('cd.edit')}>✎</button>
+                <button className={styles.progDeleteBtn} onClick={() => onDelete(row.id)} type="button" aria-label={t('cd.delete')}>✕</button>
               </div>
             </div>
     )
@@ -1286,9 +1292,9 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
   return (
     <div className={styles.exHistoryTable}>
       <div className={styles.exHistoryHeader}>
-        <span>Дата</span>
-        <span>Кг</span>
-        <span>Серии × Повт.</span>
+        <span>{t('cd.thDate')}</span>
+        <span>{t('cd.kg')}</span>
+        <span>{t('cd.thSetsReps')}</span>
         <span />
       </div>
       {sessions.map(s => {
@@ -1305,17 +1311,17 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
                 {new Date(s.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
               </span>
               <span className={styles.exHistoryKg}>
-                {s.top?.weight != null ? `${s.top.weight} кг` : '—'}
+                {s.top?.weight != null ? t('cd.kgUnit', { n: s.top.weight }) : '—'}
               </span>
               <span>{setsLabel(s)}</span>
               <div className={styles.progEditActions}>
                 {/* Sets open for editing; a single legacy row edits in place,
                     so nothing that worked before stops working. */}
                 {multi
-                  ? <button className={styles.progEditBtn} type="button" aria-label="Серии">{isOpen ? '▴' : '▾'}</button>
-                  : <button className={styles.progEditBtn} onClick={() => startEdit(s.sets[0])} type="button" aria-label="Редактирай">✎</button>}
+                  ? <button className={styles.progEditBtn} type="button" aria-label={t('cd.setsAria')}>{isOpen ? '▴' : '▾'}</button>
+                  : <button className={styles.progEditBtn} onClick={() => startEdit(s.sets[0])} type="button" aria-label={t('cd.edit')}>✎</button>}
                 {!multi && (
-                  <button className={styles.progDeleteBtn} onClick={() => onDelete(s.sets[0].id)} type="button" aria-label="Изтрий">✕</button>
+                  <button className={styles.progDeleteBtn} onClick={() => onDelete(s.sets[0].id)} type="button" aria-label={t('cd.delete')}>✕</button>
                 )}
               </div>
             </div>
@@ -1323,9 +1329,9 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
             {/* Total moved, where the top set alone hides a harder session. */}
             {(s.volume > 0 || s.replaces) && (
               <span className={styles.progVolume}>
-                {s.volume > 0 && `обем ${Math.round(s.volume).toLocaleString('bg-BG')} кг`}
+                {s.volume > 0 && t('cd.volume', { n: Math.round(s.volume).toLocaleString('bg-BG') })}
                 {s.volume > 0 && s.replaces && ' · '}
-                {s.replaces && `вместо ${s.replaces}`}
+                {s.replaces && t('cd.replaces', { name: s.replaces })}
               </span>
             )}
 
@@ -1380,29 +1386,29 @@ function LiftProgressChart({ data }) {
 
 // ─── Check-in Tab ────────────────────────────────────────────────────────────
 
-const GYM_PERF_LABEL = ['↓ СПАД', '= ЗАДРЖ', '↑ РЪСТ']
+const GYM_PERF_LABEL_KEYS = ['cd.gym.down', 'cd.gym.hold', 'cd.gym.up']
 const GYM_PERF_COLOR = ['#EF5350', 'var(--accent)', '#66BB6A']
 
 // ─── Sessions Tab ────────────────────────────────────────────────────────────
 
-const MONTHS_CD = ['ЯНУ','ФЕВ','МАР','АПР','МАЙ','ЮНИ','ЮЛИ','АВГ','СЕП','ОКТ','НОЕ','ДЕК']
 
-function fmtSessionDT(iso) {
+function fmtSessionDT(t, iso) {
   const d = new Date(iso)
-  return `${String(d.getDate()).padStart(2,'0')} ${MONTHS_CD[d.getMonth()]}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+  return `${String(d.getDate()).padStart(2,'0')} ${t(`monthsShort.${d.getMonth()}`).toUpperCase()}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
 
-const SESSION_STATUS_LABEL = {
-  pending:   'ЧАКА',
-  confirmed: 'ПОТВЪРД.',
-  completed: 'ПРОВЕДЕНО',
-  declined:  'ОТКАЗАНА',
-  cancelled: 'ОТМЕНЕНА',
+const SESSION_STATUS_LABEL_KEYS = {
+  pending:   'cd.sess.pending',
+  confirmed: 'cd.sess.confirmed',
+  completed: 'cd.sess.completed',
+  declined:  'cd.sess.declined',
+  cancelled: 'cd.sess.cancelled',
 }
 
-const PAY_LABEL = { invoiced: 'ИЗПРАТЕНА', paid: 'ПЛАТЕНО' }
+const PAY_LABEL_KEYS = { invoiced: 'cd.pay.invoiced', paid: 'cd.pay.paid' }
 
 function SessionsTab({ clientId, client }) {
+  const { t } = useSettings()
   const [sessions,     setSessions]     = useState([])
   const [loading,      setLoading]      = useState(true)
   const [modal,        setModal]        = useState(null)
@@ -1444,7 +1450,7 @@ function SessionsTab({ clientId, client }) {
       body: { session_id: modal.id, price_eur: priceVal },
     })
     if (error || data?.error) {
-      setInvoiceError(error?.message || data?.error || 'Грешка при изпращане')
+      setInvoiceError(error?.message || data?.error || t('cd.invoiceError'))
       setInvoicing(false)
       return
     }
@@ -1458,13 +1464,13 @@ function SessionsTab({ clientId, client }) {
     setInvoicing(false)
   }
 
-  if (loading) return <p className={styles.loading}>Зарежда...</p>
+  if (loading) return <p className={styles.loading}>{t('cd.loading')}</p>
 
   return (
     <div className={styles.sessionsTab}>
       {/* Default price setting */}
       <div className={styles.defaultPriceRow}>
-        <span className={styles.defaultPriceLabel}>Цена на сесия</span>
+        <span className={styles.defaultPriceLabel}>{t('cd.sessionPrice')}</span>
         <input
           className={styles.defaultPriceInput}
           type="number"
@@ -1479,14 +1485,14 @@ function SessionsTab({ clientId, client }) {
         {savingDefault && <span className={styles.defaultPriceSaving}>…</span>}
       </div>
 
-      {sessions.length === 0 && <p className={styles.empty}>Няма сесии за този клиент</p>}
+      {sessions.length === 0 && <p className={styles.empty}>{t('cd.noSessions')}</p>}
 
       {sessions.map(s => {
         const canInvoice = (s.status === 'confirmed' || s.status === 'completed') && !s.payment_status
         return (
           <div key={s.id} className={styles.sessionCard}>
             <div className={styles.sessionInfo}>
-              <span className={styles.sessionDate}>{fmtSessionDT(s.scheduled_at)}</span>
+              <span className={styles.sessionDate}>{fmtSessionDT(t, s.scheduled_at)}</span>
               <span className={styles.sessionTitle}>{s.title}</span>
               {s.price_eur != null && (
                 <span className={styles.sessionPrice}>{s.price_eur} €</span>
@@ -1495,11 +1501,11 @@ function SessionsTab({ clientId, client }) {
             <div className={styles.sessionRight}>
               <div className={styles.sessionBadges}>
                 <span className={`${styles.sessionStatusBadge} ${styles['sStatus_' + s.status] || ''}`}>
-                  {SESSION_STATUS_LABEL[s.status] ?? s.status}
+                  {SESSION_STATUS_LABEL_KEYS[s.status] ?? s.status}
                 </span>
                 {s.payment_status && (
                   <span className={`${styles.sessionPayBadge} ${styles['sPay_' + s.payment_status] || ''}`}>
-                    {PAY_LABEL[s.payment_status] ?? s.payment_status}
+                    {PAY_LABEL_KEYS[s.payment_status] ?? s.payment_status}
                   </span>
                 )}
               </div>
@@ -1509,7 +1515,7 @@ function SessionsTab({ clientId, client }) {
                   onClick={() => openModal(s)}
                   type="button"
                 >
-                  ФАКТУРА
+                  {t('cd.invoice')}
                 </button>
               )}
             </div>
@@ -1521,8 +1527,8 @@ function SessionsTab({ clientId, client }) {
         <div className={styles.invoiceOverlay} onClick={e => e.target === e.currentTarget && setModal(null)}>
           <div className={styles.invoiceSheet}>
             <div className={styles.handle} />
-            <p className={styles.invoiceTitle}>ИЗПРАТИ ФАКТУРА</p>
-            <p className={styles.invoiceSubtitle}>{modal.title} · {fmtSessionDT(modal.scheduled_at)}</p>
+            <p className={styles.invoiceTitle}>{t('cd.sendInvoice')}</p>
+            <p className={styles.invoiceSubtitle}>{modal.title} · {fmtSessionDT(t, modal.scheduled_at)}</p>
             <div className={styles.priceRow}>
               <input
                 className={styles.priceInput}
@@ -1544,7 +1550,7 @@ function SessionsTab({ clientId, client }) {
                 disabled={invoicing}
                 type="button"
               >
-                Отказ
+                {t('cd.cancel')}
               </button>
               <button
                 className={styles.invoiceConfirmBtn}
@@ -1552,7 +1558,7 @@ function SessionsTab({ clientId, client }) {
                 disabled={invoicing || !price || parseFloat(price) <= 0}
                 type="button"
               >
-                {invoicing ? 'Изпраща...' : 'Изпрати'}
+                {invoicing ? t('cd.sending') : t('cd.send')}
               </button>
             </div>
           </div>
@@ -1565,6 +1571,7 @@ function SessionsTab({ clientId, client }) {
 // ─── Photo Timeline ───────────────────────────────────────────────────────────
 
 function PhotoTimeline({ checkins, onPhotoClick }) {
+  const { t } = useSettings()
   const photos = [...checkins]
     .filter(c => c.photo_url)
     .sort((a, b) => a.date.localeCompare(b.date)) // oldest left → newest right
@@ -1573,7 +1580,7 @@ function PhotoTimeline({ checkins, onPhotoClick }) {
 
   return (
     <div className={styles.photoTimeline}>
-      <span className={styles.photoTimelineLabel}>ПРОГРЕС СНИМКИ — {photos.length}</span>
+      <span className={styles.photoTimelineLabel}>{t('cd.progressPhotos', { n: photos.length })}</span>
       <div className={styles.photoScroll}>
         {photos.map((c, i) => {
           const isLatest = i === photos.length - 1
@@ -1589,7 +1596,7 @@ function PhotoTimeline({ checkins, onPhotoClick }) {
                 {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: 'short' })}
               </span>
               {c.weight_kg != null && (
-                <span className={styles.photoWeight}>{c.weight_kg}кг</span>
+                <span className={styles.photoWeight}>{t('cd.photoWeight', { n: c.weight_kg })}</span>
               )}
             </button>
           )
@@ -1602,12 +1609,13 @@ function PhotoTimeline({ checkins, onPhotoClick }) {
 // ─── Checkin Tab ──────────────────────────────────────────────────────────────
 
 const TREND_PERIODS = [
-  { label: '7Д',    days: 7  },
-  { label: '30Д',   days: 30 },
-  { label: 'ВСИЧКО', days: null },
+  { labelKey: 'cd.period7',   days: 7  },
+  { labelKey: 'cd.period30',  days: 30 },
+  { labelKey: 'cd.periodAll', days: null },
 ]
 
 function CheckinTrends({ checkins }) {
+  const { t } = useSettings()
   const [period, setPeriod] = useState(30)
 
   const filtered = period === null ? checkins : checkins.filter(c => {
@@ -1635,16 +1643,16 @@ function CheckinTrends({ checkins }) {
   return (
     <div className={styles.checkinTrends}>
       <div className={styles.trendsPeriodRow}>
-        <span className={styles.trendsLabel}>СРЕДНИ СТОЙНОСТИ</span>
+        <span className={styles.trendsLabel}>{t('cd.averages')}</span>
         <div className={styles.trendsPeriodBtns}>
           {TREND_PERIODS.map(p => (
             <button
-              key={p.label}
+              key={p.labelKey}
               type="button"
               className={`${styles.trendsPeriodBtn} ${period === p.days ? styles.trendsPeriodBtnActive : ''}`}
               onClick={() => setPeriod(p.days)}
             >
-              {p.label}
+              {t(p.labelKey)}
             </button>
           ))}
         </div>
@@ -1653,14 +1661,14 @@ function CheckinTrends({ checkins }) {
       <div className={styles.trendsStats}>
         {avgSleep !== null && (
           <div className={styles.trendsStat}>
-            <span className={styles.trendsStatVal}>{avgSleep}<span className={styles.trendsStatUnit}>ч</span></span>
-            <span className={styles.trendsStatLabel}>ср. сън</span>
+            <span className={styles.trendsStatVal}>{avgSleep}<span className={styles.trendsStatUnit}>{t('cd.hoursUnit')}</span></span>
+            <span className={styles.trendsStatLabel}>{t('cd.avgSleep')}</span>
           </div>
         )}
         {avgDesire !== null && (
           <div className={styles.trendsStat}>
             <span className={styles.trendsStatVal}>{avgDesire}<span className={styles.trendsStatUnit}>/5</span></span>
-            <span className={styles.trendsStatLabel}>желание</span>
+            <span className={styles.trendsStatLabel}>{t('cd.desire')}</span>
           </div>
         )}
         {hasGym && (
@@ -1670,20 +1678,20 @@ function CheckinTrends({ checkins }) {
               {gymCounts[1] > 0 && <span style={{ color: 'var(--accent)' }}>={gymCounts[1]} </span>}
               {gymCounts[0] > 0 && <span style={{ color: '#EF5350' }}>↓{gymCounts[0]}</span>}
             </span>
-            <span className={styles.trendsStatLabel}>зала</span>
+            <span className={styles.trendsStatLabel}>{t('cd.gym')}</span>
           </div>
         )}
         {wLast !== null && (
           <div className={styles.trendsStat}>
             <span className={styles.trendsStatVal}>
-              {wLast}<span className={styles.trendsStatUnit}>кг</span>
+              {wLast}<span className={styles.trendsStatUnit}>{t('cd.kgShort')}</span>
             </span>
             <span className={styles.trendsStatLabel}>
               {wDelta !== null
                 ? <span style={{ color: wDelta < 0 ? '#66BB6A' : '#EF5350' }}>
-                    {wDelta > 0 ? `+${wDelta}` : wDelta} кг
+                    {t('cd.weightDelta', { sign: wDelta > 0 ? '+' : '', n: wDelta })}
                   </span>
-                : 'последно'}
+                : t('cd.latest')}
             </span>
           </div>
         )}
@@ -1693,6 +1701,7 @@ function CheckinTrends({ checkins }) {
 }
 
 function CheckinTab({ clientId }) {
+  const { t } = useSettings()
   const [checkins,  setCheckins]  = useState([])
   const [loading,   setLoading]   = useState(true)
   const [lightbox,  setLightbox]  = useState(null)
@@ -1707,8 +1716,8 @@ function CheckinTab({ clientId }) {
       .then(({ data }) => { setCheckins(data || []); setLoading(false) })
   }, [clientId])
 
-  if (loading) return <p className={styles.loading}>Зарежда...</p>
-  if (checkins.length === 0) return <p className={styles.empty}>Няма check-in записи</p>
+  if (loading) return <p className={styles.loading}>{t('cd.loading')}</p>
+  if (checkins.length === 0) return <p className={styles.empty}>{t('cd.noCheckins')}</p>
 
   return (
     <div className={styles.checkinTab}>
@@ -1731,30 +1740,30 @@ function CheckinTab({ clientId }) {
                 {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
               </span>
               {c.weight_kg != null && (
-                <span className={styles.checkinWeight}>{c.weight_kg} кг</span>
+                <span className={styles.checkinWeight}>{t('cd.kgUnit', { n: c.weight_kg })}</span>
               )}
             </div>
             <div className={styles.checkinChips}>
               {c.sleep_hours != null && (
-                <span className={styles.checkinChip}>{c.sleep_hours}ч сън</span>
+                <span className={styles.checkinChip}>{t('cd.sleepChip', { n: c.sleep_hours })}</span>
               )}
               {c.gym_performance != null && (
                 <span
                   className={styles.checkinChip}
                   style={{ color: GYM_PERF_COLOR[c.gym_performance], borderColor: GYM_PERF_COLOR[c.gym_performance] + '66' }}
                 >
-                  {GYM_PERF_LABEL[c.gym_performance]}
+                  {t(GYM_PERF_LABEL_KEYS[c.gym_performance])}
                 </span>
               )}
               {c.training_desire != null && (
-                <span className={styles.checkinChip}>желание {c.training_desire}/5</span>
+                <span className={styles.checkinChip}>{t('cd.desireChip', { n: c.training_desire })}</span>
               )}
             </div>
             {c.weekly_win && (
-              <p className={styles.checkinWin}>Победа: {c.weekly_win}</p>
+              <p className={styles.checkinWin}>{t('cd.weeklyWin', { text: c.weekly_win })}</p>
             )}
             {c.weekly_improve && (
-              <p className={styles.checkinImprove}>Подобрение: {c.weekly_improve}</p>
+              <p className={styles.checkinImprove}>{t('cd.weeklyImprove', { text: c.weekly_improve })}</p>
             )}
             {c.notes && (
               <p className={styles.checkinNotes}>{c.notes}</p>
@@ -1776,11 +1785,12 @@ function CheckinTab({ clientId }) {
 }
 
 function NotesTab({ notes, setNotes, onSave, saving, saved }) {
+  const { t } = useSettings()
   return (
     <div className={styles.notesTab}>
       <textarea
         className={styles.notesArea}
-        placeholder="Бележки за клиента — прогрес, наблюдения, корекции..."
+        placeholder={t('cd.notesTextPh')}
         value={notes}
         onChange={e => setNotes(e.target.value)}
         rows={12}
@@ -1791,7 +1801,7 @@ function NotesTab({ notes, setNotes, onSave, saving, saved }) {
         disabled={saving}
         type="button"
       >
-        {saving ? '...' : saved ? '✓ Запазено' : 'Запази бележките'}
+        {saving ? '...' : saved ? t('cd.saved') : t('cd.saveNotes')}
       </button>
     </div>
   )
@@ -1803,6 +1813,7 @@ const TODAY_STR = () => new Date().toISOString().slice(0, 10)
 const IN7_STR   = () => new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10)
 
 function ClientTasksTab({ clientId }) {
+  const { t } = useSettings()
   const { tasks, loading, pushTask, deleteTask, toggleTask } = useClientTasks(clientId)
   const [text, setText]       = useState('')
   const [dueSlot, setDueSlot] = useState('today')
@@ -1836,7 +1847,7 @@ function ClientTasksTab({ clientId }) {
           ref={inputRef}
           className={styles.coachTaskInput}
           type="text"
-          placeholder="Задача за клиента..."
+          placeholder={t('cd.taskPh')}
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handlePush()}
@@ -1846,12 +1857,12 @@ function ClientTasksTab({ clientId }) {
           onClick={handlePush}
           disabled={!text.trim() || saving}
           type="button"
-        >ИЗПРАТИ</button>
+        >{t('cd.send2')}</button>
         <div className={styles.coachTaskMeta}>
           {[
-            { id: 'today', label: 'ДНЕС' },
-            { id: 'week',  label: '+7 ДНИ' },
-            { id: 'later', label: 'БЕЗ ДАТА' },
+            { id: 'today', label: t('cd.due.today') },
+            { id: 'week',  label: t('cd.due.week') },
+            { id: 'later', label: t('cd.due.later') },
           ].map(opt => (
             <button
               key={opt.id}
@@ -1864,15 +1875,15 @@ function ClientTasksTab({ clientId }) {
             className={`${styles.coachMetaBtn} ${highPrio ? styles.coachMetaBtnPrio : ''}`}
             onClick={() => setHighPrio(v => !v)}
             type="button"
-          >! ВАЖНО</button>
+          >{t('cd.important')}</button>
         </div>
       </div>
 
-      {loading && <p className={styles.loading}>Зарежда...</p>}
+      {loading && <p className={styles.loading}>{t('cd.loading')}</p>}
 
       {!loading && active.length === 0 && done.length === 0 && (
         <p className={styles.loading} style={{ color: 'var(--muted)', textAlign: 'center', padding: '24px 0' }}>
-          Няма задачи за клиента.
+          {t('cd.noTasks')}
         </p>
       )}
 
@@ -1882,7 +1893,7 @@ function ClientTasksTab({ clientId }) {
 
       {done.length > 0 && (
         <div style={{ marginTop: 8, opacity: 0.45 }}>
-          <div className={styles.sectionLabel} style={{ marginBottom: 6 }}>ИЗПЪЛНЕНИ</div>
+          <div className={styles.sectionLabel} style={{ marginBottom: 6 }}>{t('cd.doneTasks')}</div>
           {done.map(task => (
             <CoachTaskRow key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />
           ))}
