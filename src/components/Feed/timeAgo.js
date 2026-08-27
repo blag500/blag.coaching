@@ -5,7 +5,7 @@
  * разстоянието. Датата се връща чак когато е минала седмица, защото оттам
  * нататък „преди 9 дни" е по-трудно за четене от самата дата.
  */
-export function timeAgo(iso, t) {
+export function timeAgo(iso, t, lang = 'bg') {
   const then = new Date(iso).getTime()
   const mins = Math.floor((Date.now() - then) / 60000)
 
@@ -16,5 +16,6 @@ export function timeAgo(iso, t) {
   const days = Math.floor(hours / 24)
   if (days < 7)     return t('feed.ago.day',  { n: days })
 
-  return new Date(iso).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })
+  const locale = lang === 'en' ? 'en-GB' : 'bg-BG'
+  return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: '2-digit' })
 }
