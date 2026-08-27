@@ -18,14 +18,14 @@ const COMMENT_SELECT = 'id, post_id, user_id, body, created_at'
  * Не са вградени в заявката за постовете, защото RLS на profiles пуска само
  * собствения ред: един клиент не вижда профила на друг, и с право — там стоят
  * имейл, калории, цели. Затова четенето минава през public.feed_authors, който
- * излага само име, снимка и роля (миграция 088).
+ * излага само име, снимка, роля и био (миграции 088 и 090).
  */
 async function fetchAuthors(ids) {
   const wanted = [...new Set(ids.filter(Boolean))]
   if (wanted.length === 0) return {}
   const { data } = await supabase
     .from('feed_authors')
-    .select('id, name, avatar_url, role')
+    .select('id, name, avatar_url, role, bio')
     .in('id', wanted)
   return Object.fromEntries((data ?? []).map(a => [a.id, a]))
 }

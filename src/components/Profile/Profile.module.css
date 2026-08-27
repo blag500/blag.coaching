@@ -706,3 +706,32 @@
   background: var(--surface-2);
 }
 
+
+/* ── Био ──────────────────────────────────────────────────────────
+   Единственото поле в приложението, което друг човек чете за теб. */
+.bioInput {
+  width: 100%;
+  resize: vertical;
+  min-height: 74px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 11px 12px;
+  outline: none;
+}
+.bioInput:focus { border-color: var(--accent); }
+.bioInput::placeholder { color: var(--muted); opacity: 0.65; }
+
+.bioCount {
+  display: block;
+  text-align: right;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.6;
+  margin-top: -4px;
+}

@@ -2374,4 +2374,11 @@ export default {
   'feed.ach.exercises': '{n} упражнения',
   'feed.ach.habits':    '{n} навика',
   'feed.ach.days':      '{n} дни',
+
+  'profile.bio':             'Кратко за теб',
+  'profile.bio.placeholder': 'Какво да знае за теб човекът, който види твой пост?',
+  'feed.bioEmpty':           'Още не е написал(а) нищо за себе си.',
+  'feed.bioEmptyMine':       'Още не си написал нищо за себе си. Полето е в Профил → Настройки.',
+  'feed.message':            'ПИШИ',
+  'feed.close':              'Затвори',
 }

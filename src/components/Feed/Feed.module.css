@@ -421,3 +421,125 @@
   margin-top: 4px;
   cursor: pointer;
 }
+
+/* ── Кой е зад поста ──────────────────────────────────────────────
+   Бутонът около кръгчето и името. Изглежда като нищо, докато не го
+   натиснеш — заглавието на пост не бива да прилича на бутон. */
+.postWhoBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: opacity 140ms var(--ease-out);
+}
+.postWhoBtn:active { opacity: 0.6; }
+.postWhoBtn:disabled { cursor: default; }
+
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: sheetFade 180ms var(--ease-out) both;
+}
+@keyframes sheetFade { from { opacity: 0 } to { opacity: 1 } }
+
+.sheet {
+  width: 100%;
+  max-width: 340px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 26px 60px -20px rgba(0, 0, 0, 0.9);
+  padding: 26px 22px 18px;
+  text-align: center;
+  animation: sheetRise 240ms var(--ease-out) both;
+}
+@keyframes sheetRise {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.sheetAvatar {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  font-family: var(--font-heading);
+  font-size: 30px;
+  color: var(--accent);
+}
+.sheetAvatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.sheetName {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.sheetBio {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.88;
+  margin: 0 0 18px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sheetBioEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.7;
+  margin: 0 0 18px;
+}
+
+.sheetMessage {
+  display: block;
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-md);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.sheetClose {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 9px;
+  cursor: pointer;
+}

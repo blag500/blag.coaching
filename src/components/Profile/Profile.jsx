@@ -66,6 +66,9 @@ export default function Profile({ onMenuOpen, onNavigate }) {
   const targetWeight = profile?.target_weight ?? ''
 
   const [name, setName]           = useState(profile?.name ?? '')
+  /* Биото стои до името, защото е същото нещо: как те вижда друг човек.
+     Показва се на картата, която се отваря от кръгчето във фийда. */
+  const [bio, setBio]             = useState(profile?.bio ?? '')
   const [nameSaved, setNameSaved] = useState(false)
   const [nameError, setNameError] = useState(null)
 
@@ -146,6 +149,8 @@ export default function Profile({ onMenuOpen, onNavigate }) {
     if (profile?.name) setName(profile.name)
   }, [profile?.name])
 
+  useEffect(() => { setBio(profile?.bio ?? '') }, [profile?.bio])
+
   const streak = useMemo(() => calcStreak(history), [history])
 
   const startWeight  = weights[0]?.kg ?? null
@@ -203,7 +208,7 @@ export default function Profile({ onMenuOpen, onNavigate }) {
   async function handleNameSave(e) {
     e.preventDefault()
     setNameError(null)
-    const { error } = await updateProfile({ name })
+    const { error } = await updateProfile({ name, bio: bio.trim() || null })
     if (error) setNameError(error.message)
     else { setNameSaved(true); setTimeout(() => setNameSaved(false), 2000) }
   }
@@ -587,6 +592,17 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             value={name}
             onChange={e => setName(e.target.value)}
           />
+          <label className={styles.label} htmlFor="bio-input">{t('profile.bio')}</label>
+          <textarea
+            id="bio-input"
+            className={styles.bioInput}
+            rows={3}
+            maxLength={240}
+            placeholder={t('profile.bio.placeholder')}
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+          />
+          <span className={styles.bioCount}>{bio.length}/240</span>
           {nameError && <p className={styles.errorMsg}>{nameError}</p>}
           <button type="submit" className={`${styles.saveSettingsBtn} ${nameSaved ? styles.saved : ''}`}>
             {nameSaved ? t('profile.saved') : t('profile.save')}

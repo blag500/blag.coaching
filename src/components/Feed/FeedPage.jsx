@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useFeed } from '../../hooks/useFeed'
@@ -5,6 +6,7 @@ import AppHeader from '../AppHeader/AppHeader'
 import PostComposer from './PostComposer'
 import PostCard from './PostCard'
 import Pictogram from '../Pictogram/Pictogram'
+import AuthorSheet from './AuthorSheet'
 import styles from './Feed.module.css'
 
 /**
@@ -18,6 +20,7 @@ import styles from './Feed.module.css'
 export default function FeedPage({ onNavigate, onMenuOpen }) {
   const { profile } = useAuth()
   const { t } = useSettings()
+  const [author, setAuthor] = useState(null)
   const {
     posts, loading, error, hasMore,
     loadMore, addPost, removePost, toggleLike, bumpCommentCount,
@@ -34,6 +37,14 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
       />
 
       <PostComposer onPost={addPost} />
+
+      {author && (
+        <AuthorSheet
+          author={author}
+          onClose={() => setAuthor(null)}
+          onMessage={() => { setAuthor(null); onNavigate('chat') }}
+        />
+      )}
 
       {error && <p className={styles.errorMsg}>{error}</p>}
 
@@ -58,6 +69,7 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
               onToggleLike={toggleLike}
               onDelete={removePost}
               onCommentCountChange={bumpCommentCount}
+              onOpenAuthor={setAuthor}
             />
           ))}
           {hasMore && (

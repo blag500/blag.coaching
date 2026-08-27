@@ -121,7 +121,7 @@ const ACHIEVEMENTS = {
   },
 }
 
-export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange }) {
+export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange, onOpenAuthor }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const [openComments, setOpenComments] = useState(false)
@@ -137,6 +137,16 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
   return (
     <article className={`${styles.post} ${achievement ? styles.postAchievement : ''}`}>
       <header className={styles.postHead}>
+        {/* Кръгчето и името водят към човека. Един бутон около двете, а не
+            два поотделно: те сочат едно и също място, а две мишени, залепени
+            една за друга, се различават само от някого, който вече знае, че
+            са две. */}
+        <button
+          type="button"
+          className={styles.postWhoBtn}
+          onClick={() => post.author && onOpenAuthor?.(post.author)}
+          disabled={!post.author}
+        >
         <Avatar url={post.author?.avatar_url} name={post.author?.name} />
         <div className={styles.postWho}>
           <span className={styles.postAuthor}>
@@ -147,6 +157,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           </span>
           <span className={styles.postTime}>{timeAgo(post.createdAt, t)}</span>
         </div>
+        </button>
         {(mine || isCoach) && (
           confirmDrop ? (
             <div className={styles.postDropRow}>

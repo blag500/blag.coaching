@@ -2367,4 +2367,11 @@ export default {
   'feed.ach.exercises': '{n} exercises',
   'feed.ach.habits':    '{n} habits',
   'feed.ach.days':      '{n} days',
+
+  'profile.bio':             'A little about you',
+  'profile.bio.placeholder': 'What should someone who sees your post know about you?',
+  'feed.bioEmpty':           'Has not written anything yet.',
+  'feed.bioEmptyMine':       'You have not written anything yet. The field is in Profile → Settings.',
+  'feed.message':            'MESSAGE',
+  'feed.close':              'Close',
 }
