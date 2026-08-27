@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { CARDS, DEFAULT_ORDER, layout } from '../TodayDashboard/cards'
 import styles from './DashboardCards.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 /**
  * Which cards the dashboard shows, and in what order.
@@ -22,6 +23,7 @@ const HOLD_MS = 220
 const SCROLL_CANCEL_PX = 8
 
 export default function DashboardCards() {
+  const { t } = useSettings()
   const { profile, updateProfile } = useAuth()
   const [order, setOrder] = useState(() => layout(profile?.dashboard_cards).visible)
   const [saving, setSaving] = useState(false)
@@ -50,7 +52,7 @@ export default function DashboardCards() {
          drag code for an hour when the database was answering "column
          profiles.dashboard_cards does not exist" the whole time — and a person
          retrying a save that cannot succeed has been told the wrong thing. */
-      setError(err.message || 'Не се записа. Опитай пак.')
+      setError(err.message || t('dc.saveFailed'))
     } else {
       setError('')
     }
@@ -293,15 +295,15 @@ export default function DashboardCards() {
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
-        <span className={styles.title}>ТАБЛОТО</span>
-        {saving && <span className={styles.saving}>записва…</span>}
+        <span className={styles.title}>{t('dc.title')}</span>
+        {saving && <span className={styles.saving}>{t('dc.saving')}</span>}
       </div>
       <p className={styles.lead}>
-        Задръж и влачи, за да пренаредиш.
+        {t('dc.dragHint')}
       </p>
       {error && (
         <p className={styles.error}>
-          Не се записа. <span className={styles.errorWhy}>{error}</span>
+          {t('dc.errorLead')}<span className={styles.errorWhy}>{error}</span>
         </p>
       )}
 
@@ -318,7 +320,7 @@ export default function DashboardCards() {
             onKeyDown={e => onKeyDown(e, i)}
             tabIndex={0}
             role="button"
-            aria-label={`${meta(id)?.label}. Alt със стрелка нагоре или надолу мести.`}
+            aria-label={t('dc.rowAria', { label: meta(id)?.label })}
           >
             <span className={styles.grip} aria-hidden="true">
               <span /><span /><span />
@@ -328,19 +330,19 @@ export default function DashboardCards() {
               <span className={styles.hint}>{meta(id)?.hint}</span>
             </div>
             <button type="button" className={styles.toggle} onClick={() => hide(id)}>
-              Скрий
+              {t('dc.hide')}
             </button>
           </li>
         ))}
       </ul>
 
       {order.length === 0 && (
-        <p className={styles.empty}>Няма нищо избрано — страницата ще е празна.</p>
+        <p className={styles.empty}>{t('dc.empty')}</p>
       )}
 
       {hidden.length > 0 && (
         <>
-          <span className={styles.subhead}>СКРИТИ</span>
+          <span className={styles.subhead}>{t('dc.hidden')}</span>
           <ul className={styles.list}>
             {hidden.map(id => (
               <li key={id} className={`${styles.row} ${styles.rowOff}`}>
@@ -349,7 +351,7 @@ export default function DashboardCards() {
                   <span className={styles.hint}>{meta(id)?.hint}</span>
                 </div>
                 <button type="button" className={styles.toggleOn} onClick={() => show(id)}>
-                  Покажи
+                  {t('dc.show')}
                 </button>
               </li>
             ))}

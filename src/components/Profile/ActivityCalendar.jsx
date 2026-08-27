@@ -2,16 +2,16 @@ import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './ActivityCalendar.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const CATEGORIES = [
-  { key: 'training', color: 'var(--accent)', label: 'Тренировка', emoji: '💪' },
-  { key: 'food',     color: '#66BB6A', label: 'Хранене',    emoji: '🥗' },
-  { key: 'habits',   color: '#4FC3F7', label: 'Навици',     emoji: '✅' },
-  { key: 'weight',   color: '#F06292', label: 'Тегло',      emoji: '⚖️' },
-  { key: 'sleep',    color: '#CE93D8', label: 'Сън',        emoji: '😴' },
+  { key: 'training', color: 'var(--accent)', labelKey: 'ac.training', emoji: '💪' },
+  { key: 'food',     color: '#66BB6A', labelKey: 'ac.food',   emoji: '🥗' },
+  { key: 'habits',   color: '#4FC3F7', labelKey: 'ac.habits', emoji: '✅' },
+  { key: 'weight',   color: '#F06292', labelKey: 'ac.weight', emoji: '⚖️' },
+  { key: 'sleep',    color: '#CE93D8', labelKey: 'ac.sleep',  emoji: '😴' },
 ]
 
-const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
 function heatColor(count) {
   if (count === 0) return 'transparent'
@@ -23,6 +23,7 @@ function heatColor(count) {
 }
 
 export default function ActivityCalendar() {
+  const { t, lang } = useSettings()
   const { user } = useAuth()
   const today = new Date().toISOString().slice(0, 10)
 
@@ -122,10 +123,10 @@ export default function ActivityCalendar() {
     <div>
       {/* Monthly stats */}
       <div className={styles.stats}>
-        <StatChip emoji="📅" value={monthStats.activeDays} label="активни дни" />
-        <StatChip emoji="💪" value={monthStats.training}   label="тренировки" />
-        <StatChip emoji="🥗" value={monthStats.food}       label="дни хранене" />
-        <StatChip emoji="✅" value={monthStats.habits}     label="дни навици" />
+        <StatChip emoji="📅" value={monthStats.activeDays} label={t('ac.activeDays')} />
+        <StatChip emoji="💪" value={monthStats.training}   label={t('ac.workouts')} />
+        <StatChip emoji="🥗" value={monthStats.food}       label={t('ac.foodDays')} />
+        <StatChip emoji="✅" value={monthStats.habits}     label={t('ac.habitDays')} />
       </div>
 
       {/* Month navigation */}
@@ -137,7 +138,7 @@ export default function ActivityCalendar() {
 
       {/* Weekday labels */}
       <div className={styles.weekdays}>
-        {WEEKDAYS.map(d => <span key={d} className={styles.weekday}>{d}</span>)}
+        {[0, 1, 2, 3, 4, 5, 6].map(i => <span key={i} className={styles.weekday}>{t(`daysMon.${i}`)}</span>)}
       </div>
 
       {/* Calendar grid */}
@@ -169,27 +170,27 @@ export default function ActivityCalendar() {
 
       {/* Heat legend */}
       <div className={styles.heatLegend}>
-        <span className={styles.heatLegendLabel}>Малко</span>
+        <span className={styles.heatLegendLabel}>{t('ac.legendLow')}</span>
         {[1, 2, 3, 4, 5].map(n => (
           <span key={n} className={styles.heatSwatch} style={{ background: heatColor(n) }} />
         ))}
-        <span className={styles.heatLegendLabel}>Много</span>
+        <span className={styles.heatLegendLabel}>{t('ac.legendHigh')}</span>
       </div>
 
       {/* Day detail panel */}
       {selectedDay && selAct && (
         <div className={styles.detail}>
           <p className={styles.detailDate}>
-            {new Date(selectedDay + 'T12:00').toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })}
+            {new Date(selectedDay + 'T12:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
           {Object.values(selAct).every(v => !v) ? (
-            <p className={styles.detailEmpty}>Няма записана активност за този ден</p>
+            <p className={styles.detailEmpty}>{t('ac.detailEmpty')}</p>
           ) : (
             <div className={styles.detailRow}>
-              {CATEGORIES.map(({ key, color, label, emoji }) =>
+              {CATEGORIES.map(({ key, color, labelKey, emoji }) =>
                 selAct[key] ? (
                   <span key={key} className={styles.detailBadge} style={{ borderColor: color + '55', color }}>
-                    {emoji} {label}
+                    {emoji} {t(labelKey)}
                   </span>
                 ) : null
               )}

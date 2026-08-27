@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { HABITS as DEFAULT_HABITS } from '../../data/appData'
 import styles from './HabitsEditor.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 /**
  * Custom habits — the six defaults were "everyone's habits", which is nobody's.
@@ -13,6 +14,7 @@ import styles from './HabitsEditor.module.css'
  * still leaves the client with something to check off.
  */
 export default function HabitsEditor() {
+  const { t } = useSettings()
   const { profile, updateProfile } = useAuth()
 
   const initial = profile?.habits?.length > 0 ? profile.habits : DEFAULT_HABITS
@@ -74,7 +76,7 @@ export default function HabitsEditor() {
     setSaving(true)
     const { error } = await updateProfile({ habits: clean.length ? clean : null })
     setSaving(false)
-    if (error) { setErr(error.message || 'Не се записа.'); return }
+    if (error) { setErr(error.message || t('he.saveFailed')); return }
     setDirty(false); setSaved(true)
     lastServerRef.current = JSON.stringify(clean.length ? clean : DEFAULT_HABITS)
     setTimeout(() => setSaved(false), 1600)
@@ -90,14 +92,14 @@ export default function HabitsEditor() {
               value={h.emoji ?? ''}
               onChange={e => update(i, { emoji: e.target.value })}
               maxLength={4}
-              aria-label="Емоджи"
+              aria-label={t('he.emoji')}
             />
             <input
               className={styles.label}
               value={h.label ?? ''}
               onChange={e => update(i, { label: e.target.value })}
-              placeholder="Напр. 3 часа без екран"
-              aria-label="Име на навика"
+              placeholder={t('he.namePh')}
+              aria-label={t('he.nameAria')}
             />
             <div className={styles.reorder}>
               <button
@@ -105,21 +107,21 @@ export default function HabitsEditor() {
                 className={styles.reorderBtn}
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
-                aria-label="Нагоре"
+                aria-label={t('he.up')}
               >▲</button>
               <button
                 type="button"
                 className={styles.reorderBtn}
                 onClick={() => move(i, +1)}
                 disabled={i === rows.length - 1}
-                aria-label="Надолу"
+                aria-label={t('he.down')}
               >▼</button>
             </div>
             <button
               type="button"
               className={styles.remove}
               onClick={() => remove(i)}
-              aria-label="Премахни навика"
+              aria-label={t('he.remove')}
             >×</button>
           </li>
         ))}
@@ -127,10 +129,10 @@ export default function HabitsEditor() {
 
       <div className={styles.actions}>
         <button type="button" className={styles.addBtn} onClick={add}>
-          + Добави навик
+          {t('he.add')}
         </button>
         <button type="button" className={styles.resetBtn} onClick={reset}>
-          По подразбиране
+          {t('he.defaults')}
         </button>
       </div>
 
@@ -141,7 +143,7 @@ export default function HabitsEditor() {
           onClick={save}
           disabled={saving}
         >
-          {saved ? '✓ Записано' : saving ? '...' : 'Запази'}
+          {saved ? t('he.saved') : saving ? '...' : t('he.save')}
         </button>
       )}
 

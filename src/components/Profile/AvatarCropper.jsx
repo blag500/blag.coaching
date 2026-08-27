@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import styles from './AvatarCropper.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const CROP = 240
 
@@ -11,6 +12,7 @@ function getTouchDist(touches) {
 }
 
 export default function AvatarCropper({ file, onConfirm, onCancel }) {
+  const { t } = useSettings()
   const [imgSrc,    setImgSrc]    = useState(null)
   const [imgSize,   setImgSize]   = useState({ w: 1, h: 1 })
   const [scale,     setScale]     = useState(1)
@@ -133,7 +135,7 @@ export default function AvatarCropper({ file, onConfirm, onCancel }) {
   return createPortal(
     <div className={styles.overlay}>
       <div className={styles.sheet}>
-        <p className={styles.hint}>Плъзни · Щипни за мащаб</p>
+        <p className={styles.hint}>{t('av.hint')}</p>
 
         <div
           className={styles.cropWrap}
@@ -151,9 +153,9 @@ export default function AvatarCropper({ file, onConfirm, onCancel }) {
         </div>
 
         <div className={styles.actions}>
-          <button className={styles.cancelBtn} onClick={onCancel} type="button">Откажи</button>
+          <button className={styles.cancelBtn} onClick={onCancel} type="button">{t('av.cancel')}</button>
           <button className={styles.confirmBtn} onClick={handleConfirm} disabled={confirming} type="button">
-            {confirming ? '…' : 'Потвърди'}
+            {confirming ? '…' : t('av.confirm')}
           </button>
         </div>
       </div>

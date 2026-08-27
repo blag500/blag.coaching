@@ -2,20 +2,22 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './FormCheckin.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
 const GYM_PERF = [
-  { label: 'СПАД',  icon: '↓', activeClass: 'tapBtnRed'   },
-  { label: 'ЗАДРЖ', icon: '–', activeClass: 'tapBtnAmber'  },
-  { label: 'РЪСТ',  icon: '↑', activeClass: 'tapBtnGreen'  },
+  { labelKey: 'fck.gymDown', icon: '↓', activeClass: 'tapBtnRed'   },
+  { labelKey: 'fck.gymHold', icon: '–', activeClass: 'tapBtnAmber' },
+  { labelKey: 'fck.gymUp',   icon: '↑', activeClass: 'tapBtnGreen' },
 ]
 
 const GYM_PERF_COLORS = ['#EF5350', 'var(--accent)', '#66BB6A']
 
 export default function FormCheckin() {
+  const { t } = useSettings()
   const { user } = useAuth()
   const fileRef = useRef()
 
@@ -150,7 +152,7 @@ export default function FormCheckin() {
         <div className={styles.section}>
           <div className={styles.metricsRow}>
             <div className={styles.metricField}>
-              <span className={styles.metricLabel}>ТЕГЛО</span>
+              <span className={styles.metricLabel}>{t('fck.weight')}</span>
               <div className={styles.metricInputRow}>
                 <input
                   id="ci-weight"
@@ -160,11 +162,11 @@ export default function FormCheckin() {
                   value={weight}
                   onChange={e => setWeight(e.target.value)}
                 />
-                <span className={styles.metricUnit}>кг</span>
+                <span className={styles.metricUnit}>{t('fck.kg')}</span>
               </div>
             </div>
             <div className={styles.metricField}>
-              <span className={styles.metricLabel}>СЪН</span>
+              <span className={styles.metricLabel}>{t('fck.sleep')}</span>
               <div className={styles.metricInputRow}>
                 <input
                   id="ci-sleep"
@@ -174,7 +176,7 @@ export default function FormCheckin() {
                   value={sleepHours}
                   onChange={e => setSleepHours(e.target.value)}
                 />
-                <span className={styles.metricUnit}>ч.</span>
+                <span className={styles.metricUnit}>{t('fck.hours')}</span>
               </div>
             </div>
           </div>
@@ -182,23 +184,23 @@ export default function FormCheckin() {
 
         {/* ── Training ── */}
         <div className={styles.section}>
-          <span className={styles.sectionLabel}>ТРЕНИРОВКА</span>
+          <span className={styles.sectionLabel}>{t('fck.training')}</span>
 
           <div className={styles.perfRow}>
-            {GYM_PERF.map(({ label, icon, activeClass }, i) => (
+            {GYM_PERF.map(({ labelKey, icon, activeClass }, i) => (
               <button
                 key={i}
                 type="button"
                 className={`${styles.perfBtn} ${gymPerf === i ? styles[activeClass] : ''}`}
                 onClick={() => setGymPerf(gymPerf === i ? null : i)}
               >
-                {icon} {label}
+                {icon} {t(labelKey)}
               </button>
             ))}
           </div>
 
           <div className={styles.desireRow}>
-            <span className={styles.desireLabel}>ЖЕЛАНИЕ</span>
+            <span className={styles.desireLabel}>{t('fck.desire')}</span>
             <div className={styles.desireDots}>
               {[0, 1, 2, 3, 4, 5].map(n => (
                 <button
@@ -216,12 +218,12 @@ export default function FormCheckin() {
 
         {/* ── Note ── */}
         <div className={styles.section}>
-          <span className={styles.sectionLabel}>БЕЛЕЖКА</span>
+          <span className={styles.sectionLabel}>{t('fck.note')}</span>
           <input
             id="ci-notes"
             className={styles.noteInput}
             type="text"
-            placeholder="Как се чувствам..."
+            placeholder={t('fck.notePh')}
             value={notes}
             onChange={e => setNotes(e.target.value)}
           />
@@ -234,30 +236,30 @@ export default function FormCheckin() {
             className={styles.weeklyToggle}
             onClick={() => setShowWeekly(v => !v)}
           >
-            СЕДМИЧНО РЕЗЮМЕ
+            {t('fck.weekly')}
             <span className={`${styles.chevron} ${showWeekly ? styles.chevronOpen : ''}`}>▾</span>
           </button>
 
           {showWeekly && (
             <div className={styles.weeklyFields}>
               <div className={styles.weeklyField}>
-                <span className={styles.sectionLabel}>ПОБЕДА ЗА СЕДМИЦАТА</span>
+                <span className={styles.sectionLabel}>{t('fck.win')}</span>
                 <input
                   id="ci-win"
                   className={styles.noteInput}
                   type="text"
-                  placeholder="Нещо, което мина добре..."
+                  placeholder={t('fck.winPh')}
                   value={weeklyWin}
                   onChange={e => setWeeklyWin(e.target.value)}
                 />
               </div>
               <div className={styles.weeklyField}>
-                <span className={styles.sectionLabel}>ЩО ДА ПОДОБРЯ</span>
+                <span className={styles.sectionLabel}>{t('fck.improve')}</span>
                 <input
                   id="ci-improve"
                   className={styles.noteInput}
                   type="text"
-                  placeholder="Нещо за следващата седмица..."
+                  placeholder={t('fck.improvePh')}
                   value={weeklyImprove}
                   onChange={e => setWeeklyImprove(e.target.value)}
                 />
@@ -281,7 +283,7 @@ export default function FormCheckin() {
             <div className={styles.previewArea}>
               <img src={previewUrl} className={styles.previewImg} alt="Preview" />
               <button type="button" className={styles.removePhotoBtn} onClick={clearPhoto}>
-                × Премахни
+                {t('fck.removePhoto')}
               </button>
             </div>
           ) : (
@@ -294,7 +296,7 @@ export default function FormCheckin() {
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
-              Добави снимка на форма
+              {t('fck.addPhoto')}
             </button>
           )}
         </div>
@@ -304,7 +306,7 @@ export default function FormCheckin() {
           className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
           disabled={uploading || !canSave}
         >
-          {uploading ? '...' : saved ? '✓ ЗАПИСАНО' : 'ЗАПАЗИ ЧЕК-ИН'}
+          {uploading ? '...' : saved ? t('fck.saved') : t('fck.save')}
         </button>
       </form>
 
@@ -334,11 +336,11 @@ export default function FormCheckin() {
                   {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
                 </span>
                 {c.weight_kg != null && (
-                  <span className={styles.cardWeight}>{c.weight_kg} кг</span>
+                  <span className={styles.cardWeight}>{t('fck.cardWeight', { n: c.weight_kg })}</span>
                 )}
                 <div className={styles.cardChips}>
                   {c.sleep_hours != null && (
-                    <span className={styles.chip}>{c.sleep_hours}ч</span>
+                    <span className={styles.chip}>{t('fck.sleepChip', { n: c.sleep_hours })}</span>
                   )}
                   {c.gym_performance != null && (
                     <span
@@ -362,7 +364,7 @@ export default function FormCheckin() {
                 type="button"
                 className={styles.deleteBtn}
                 onClick={() => handleDelete(c)}
-                aria-label="Изтрий"
+                aria-label={t('fck.delete')}
               >×</button>
             </div>
           ))}

@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './WeeklySnapshot.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
-const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 const GYM_COLORS = ['#EF5350', 'var(--accent)', '#66BB6A']
 const GYM_ICONS  = ['↓', '=', '↑']
 
@@ -27,6 +27,7 @@ function barColor(pct) {
 }
 
 export default function WeeklySnapshot({ kcalTarget = 0 }) {
+  const { t } = useSettings()
   const { user }  = useAuth()
   const [offset,   setOffset]   = useState(0)
   const [data,     setData]     = useState(null)
@@ -130,9 +131,9 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
   const latestImprove = [...days].reverse().find(d => checkinByDay[d]?.weekly_improve)
 
   const weekLabel = offset === 0
-    ? 'ТАЗИ СЕДМИЦА'
+    ? t('ws.thisWeek')
     : offset === -1
-      ? 'МИНАЛАТА СЕДМИЦА'
+      ? t('ws.lastWeek')
       : `${new Date(from + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })} – ${new Date(to + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })}`
 
   const hasAnyData = foodDaysArr.length > 0 || trainCount > 0 || habitDaysArr.length > 0 || sleepDays.length > 0
@@ -147,7 +148,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
           className={styles.navBtn}
           type="button"
           onClick={() => setOffset(o => o - 1)}
-          aria-label="Предишна седмица"
+          aria-label={t('ws.prevWeek')}
         >
           <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
             <path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -159,7 +160,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
           type="button"
           onClick={() => setOffset(o => o + 1)}
           disabled={offset === 0}
-          aria-label="Следваща седмица"
+          aria-label={t('ws.nextWeek')}
         >
           <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
             <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -187,7 +188,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
 
       {/* Content */}
       {!loading && !hasAnyData && (
-        <p className={styles.empty}>Няма данни за тази седмица</p>
+        <p className={styles.empty}>{t('ws.empty')}</p>
       )}
 
       {!loading && hasAnyData && (
@@ -195,7 +196,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
 
           {/* ── Nutrition bars ── */}
           <div className={styles.section}>
-            <p className={styles.sectionLabel}>ХРАНЕНЕ</p>
+            <p className={styles.sectionLabel}>{t('ws.nutrition')}</p>
             <div className={styles.barsRow}>
               {days.map((d, i) => {
                 const food    = foodByDay[d]
@@ -220,7 +221,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
                       )}
                     </div>
                     <span className={`${styles.barLabel} ${d === today ? styles.barLabelToday : ''}`}>
-                      {DAY_LABELS[i]}
+                      {t(`daysMon.${i}`)}
                     </span>
                   </div>
                 )
@@ -228,14 +229,14 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
             </div>
             <p className={styles.subLine}>
               {avgKcal !== null
-                ? <>Ср. <strong>{avgKcal}</strong> ккал{kcalTarget > 0 ? ` · цел ${kcalTarget}` : ''}</>
-                : 'Няма записи'}
+                ? <>{t('ws.avgKcal')}<strong>{avgKcal}</strong>{t('ws.kcalUnit')}{kcalTarget > 0 ? t('ws.goalSuffix', { n: kcalTarget }) : ''}</>
+                : t('ws.noEntries')}
             </p>
           </div>
 
           {/* ── Training dots ── */}
           <div className={styles.section}>
-            <p className={styles.sectionLabel}>ТРЕНИРОВКА</p>
+            <p className={styles.sectionLabel}>{t('ws.training')}</p>
             <div className={styles.dotsRow}>
               {days.map((d, i) => {
                 const done     = trainDays.has(d)
@@ -254,14 +255,14 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
                       )}
                     </div>
                     <span className={`${styles.barLabel} ${d === today ? styles.barLabelToday : ''}`}>
-                      {DAY_LABELS[i]}
+                      {t(`daysMon.${i}`)}
                     </span>
                   </div>
                 )
               })}
             </div>
             <p className={styles.subLine}>
-              <strong>{trainCount}</strong> {trainCount === 1 ? 'тренировка' : 'тренировки'}
+              <strong>{trainCount}</strong> {trainCount === 1 ? t('ws.trainOne') : t('ws.trainMany')}
             </p>
           </div>
 
@@ -271,19 +272,19 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
               {habitPct !== null && (
                 <div className={styles.statBox}>
                   <span className={styles.statVal}>{habitPct}%</span>
-                  <span className={styles.statLabel}>навици</span>
+                  <span className={styles.statLabel}>{t('ws.habits')}</span>
                 </div>
               )}
               {avgSleep !== null && (
                 <div className={styles.statBox}>
-                  <span className={styles.statVal}>{avgSleep}<span className={styles.statUnit}>ч</span></span>
-                  <span className={styles.statLabel}>ср. сън</span>
+                  <span className={styles.statVal}>{avgSleep}<span className={styles.statUnit}>{t('ws.hours')}</span></span>
+                  <span className={styles.statLabel}>{t('ws.avgSleep')}</span>
                 </div>
               )}
               {avgDesire !== null && (
                 <div className={styles.statBox}>
                   <span className={styles.statVal}>{avgDesire}<span className={styles.statUnit}>/5</span></span>
-                  <span className={styles.statLabel}>желание</span>
+                  <span className={styles.statLabel}>{t('ws.desire')}</span>
                 </div>
               )}
               {hasGym && (
@@ -294,7 +295,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
                       : null
                     )}
                   </span>
-                  <span className={styles.statLabel}>зала</span>
+                  <span className={styles.statLabel}>{t('ws.gym')}</span>
                 </div>
               )}
             </div>
@@ -307,7 +308,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
                 <div className={styles.weeklyRow}>
                   <div className={styles.weeklyAccent} style={{ background: '#66BB6A' }} />
                   <div className={styles.weeklyBody}>
-                    <span className={styles.weeklyTag}>ПОБЕДА</span>
+                    <span className={styles.weeklyTag}>{t('ws.tagWin')}</span>
                     <span className={styles.weeklyVal}>{checkinByDay[latestWin].weekly_win}</span>
                   </div>
                 </div>
@@ -316,7 +317,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
                 <div className={styles.weeklyRow}>
                   <div className={styles.weeklyAccent} style={{ background: 'var(--accent)' }} />
                   <div className={styles.weeklyBody}>
-                    <span className={styles.weeklyTag}>ПОДОБРЕНИЕ</span>
+                    <span className={styles.weeklyTag}>{t('ws.tagImprove')}</span>
                     <span className={styles.weeklyVal}>{checkinByDay[latestImprove].weekly_improve}</span>
                   </div>
                 </div>

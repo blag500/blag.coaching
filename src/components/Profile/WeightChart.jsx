@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { smoothPath } from '../../utils/smoothPath'
 import styles from './WeightChart.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const RANGES = [
-  { key: '2W',  label: '2 СЕД', days: 14  },
-  { key: '1M',  label: '1 МЕС', days: 30  },
-  { key: '3M',  label: '3 МЕС', days: 90  },
-  { key: 'ALL', label: 'ВСЕ',   days: null },
+  { key: '2W',  labelKey: 'wc.range2w',  days: 14  },
+  { key: '1M',  labelKey: 'wc.range1m',  days: 30  },
+  { key: '3M',  labelKey: 'wc.range3m',  days: 90  },
+  { key: 'ALL', labelKey: 'wc.rangeAll', days: null },
 ]
 
 const W = 300
@@ -17,6 +18,7 @@ const PAD_T = 14
 const PAD_B = 24
 
 export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', range: rangeProp, onRange: onRangeProp }) {
+  const { t } = useSettings()
   const [rangeInternal, setRangeInternal] = useState('1M')
   const range    = rangeProp    ?? rangeInternal
   const setRange = onRangeProp  ?? setRangeInternal
@@ -34,7 +36,7 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
     return (
       <div className={styles.wrap}>
         <RangePills range={range} onRange={setRange} />
-        <p className={styles.empty}>Недостатъчно данни за периода</p>
+        <p className={styles.empty}>{t('wc.empty')}</p>
       </div>
     )
   }
@@ -84,21 +86,21 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
     <div className={styles.wrap}>
       <div className={styles.statRow}>
         <div className={styles.stat}>
-          <span className={styles.statLabel}>ТЕКУЩО</span>
-          <span className={styles.statVal}>{lastKg} кг</span>
+          <span className={styles.statLabel}>{t('wc.current')}</span>
+          <span className={styles.statVal}>{t('wc.kg', { n: lastKg })}</span>
         </div>
         {delta != null && (
           <div className={styles.stat}>
-            <span className={styles.statLabel}>ПРОМЯНА</span>
+            <span className={styles.statLabel}>{t('wc.change')}</span>
             <span className={`${styles.statVal} ${deltaPos ? styles.statPos : deltaNeg ? styles.statNeg : ''}`}>
-              {delta > 0 ? '+' : ''}{delta} кг
+              {t('wc.delta', { sign: delta > 0 ? '+' : '', n: delta })}
             </span>
           </div>
         )}
         {targetWeight != null && (
           <div className={styles.stat}>
-            <span className={styles.statLabel}>ЦЕЛ</span>
-            <span className={styles.statVal}>{targetWeight} кг</span>
+            <span className={styles.statLabel}>{t('wc.goal')}</span>
+            <span className={styles.statVal}>{t('wc.kg', { n: targetWeight })}</span>
           </div>
         )}
       </div>
@@ -133,7 +135,7 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
               x1={PAD_L} y1={goalY} x2={W - PAD_R} y2={goalY}
               stroke="#C9A227" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.5"
             />
-            <text x={W - PAD_R + 2} y={goalY + 3} fontSize="7" fill="#C9A227" opacity="0.7">цел</text>
+            <text x={W - PAD_R + 2} y={goalY + 3} fontSize="7" fill="#C9A227" opacity="0.7">{t('wc.goalTick')}</text>
           </>
         )}
 
@@ -169,6 +171,7 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
 }
 
 function RangePills({ range, onRange }) {
+  const { t } = useSettings()
   return (
     <div className={styles.pills}>
       {RANGES.map(r => (
@@ -178,7 +181,7 @@ function RangePills({ range, onRange }) {
           onClick={() => onRange(r.key)}
           type="button"
         >
-          {r.label}
+          {t(r.labelKey)}
         </button>
       ))}
     </div>
