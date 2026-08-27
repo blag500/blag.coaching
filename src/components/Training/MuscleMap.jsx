@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { BodyChart, ViewSide } from 'body-muscles'
 import { muscleStats } from '../../utils/muscleStats'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MuscleMap.module.css'
 
 // Attribution: anatomy paths from body-muscles (Apache 2.0, © 2024 Ivan Vulović).
@@ -8,10 +9,10 @@ import styles from './MuscleMap.module.css'
 // dependency; nothing here vendors its SVG data.
 
 const MODES = [
-  { id: 'recovery',    label: 'ВЪЗСТ.',    hint: 'По-плътно = прясно тренирана (още се възстановява).' },
-  { id: 'lastTrained', label: 'ПОСЛЕДНО',  hint: 'По-плътно = скоро си я тренирал.' },
-  { id: 'overload',    label: 'ПРОГРЕСИЯ', hint: 'По-плътно = по-голямо покачване на обема спрямо предишните две седмици.' },
-  { id: 'volume',      label: 'ОБЕМ 7Д',   hint: 'По-плътно = повече обем за последните седем дни.' },
+  { id: 'recovery',    labelKey: 'mm.recovery',    hintKey: 'mm.recoveryHint' },
+  { id: 'lastTrained', labelKey: 'mm.lastTrained', hintKey: 'mm.lastHint' },
+  { id: 'overload',    labelKey: 'mm.overload',    hintKey: 'mm.overloadHint' },
+  { id: 'volume',      labelKey: 'mm.volume',      hintKey: 'mm.volumeHint' },
 ]
 
 // One place the app's four groups meet body-muscles's 70+ muscle IDs. If the
@@ -121,6 +122,7 @@ function BodyView({ side, bodyState }) {
 }
 
 export default function MuscleMap({ recovery, sessions = [], completions = [], groupsByLabel = null }) {
+  const { t } = useSettings()
   const [mode, setMode] = useState('recovery')
 
   const stats = useMemo(
@@ -136,7 +138,7 @@ export default function MuscleMap({ recovery, sessions = [], completions = [], g
     [mode, recovery, stats, ctx],
   )
 
-  const activeHint = MODES.find(m => m.id === mode)?.hint
+  const activeHintKey = MODES.find(m => m.id === mode)?.hintKey
 
   return (
     <div className={styles.wrap}>
@@ -150,7 +152,7 @@ export default function MuscleMap({ recovery, sessions = [], completions = [], g
             className={`${styles.filter} ${mode === m.id ? styles.activeFilter : ''}`}
             onClick={() => setMode(m.id)}
           >
-            {m.label}
+            {t(m.labelKey)}
           </button>
         ))}
       </div>
@@ -158,15 +160,15 @@ export default function MuscleMap({ recovery, sessions = [], completions = [], g
       <div className={styles.bodies}>
         <div className={styles.side}>
           <BodyView side="front" bodyState={bodyState} />
-          <span className={styles.caption}>ПРЕДНА</span>
+          <span className={styles.caption}>{t('mm.front')}</span>
         </div>
         <div className={styles.side}>
           <BodyView side="back" bodyState={bodyState} />
-          <span className={styles.caption}>ЗАДНА</span>
+          <span className={styles.caption}>{t('mm.back')}</span>
         </div>
       </div>
 
-      {activeHint && <p className={styles.hint}>{activeHint}</p>}
+      {activeHintKey && <p className={styles.hint}>{t(activeHintKey)}</p>}
     </div>
   )
 }

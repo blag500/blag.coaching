@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import BlockCompare from './BlockCompare'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ProgressionView.module.css'
 
 // ── Chart ────────────────────────────────────────────────────────────────────
@@ -15,9 +16,9 @@ const GRAD_ID = 'progGrad'
 // Eight weeks is the block, so it is a range in its own right rather than
 // something to approximate with "1 month" or "3 months".
 const RANGES = [
-  { key: '8W',  label: '8 СЕДМ', days: 56  },
-  { key: '3M',  label: '3 МЕС',  days: 90  },
-  { key: 'ALL', label: 'ВСЕ',    days: null },
+  { key: '8W',  labelKey: 'pv.range8w',  days: 56  },
+  { key: '3M',  labelKey: 'pv.range3m',  days: 90  },
+  { key: 'ALL', labelKey: 'pv.rangeAll', days: null },
 ]
 
 const PALETTE = ['var(--accent)', '#4FC3F7', '#ff8a65', '#81C784', '#CE93D8', '#80DEEA', '#FFAB91']
@@ -43,8 +44,9 @@ export function e1RM(weight, reps) {
 }
 
 function ExerciseChart({ entries }) {
+  const { t } = useSettings()
   const vals = entries.map(e => e1RM(e.weight, e.reps)).filter(w => w > 0)
-  if (!vals.length) return <p className={styles.noData}>Няма данни за тегло.</p>
+  if (!vals.length) return <p className={styles.noData}>{t('pv.noWeight')}</p>
 
   const rawMin = Math.min(...vals), rawMax = Math.max(...vals)
   const pad    = Math.max((rawMax - rawMin) * 0.18, 1)
@@ -99,6 +101,7 @@ function ExerciseChart({ entries }) {
 // ── Editable table ───────────────────────────────────────────────────────────
 
 function ExerciseTable({ entries, onDelete, onUpdate }) {
+  const { t } = useSettings()
   const [editId, setEditId] = useState(null)
   const [draft,  setDraft]  = useState({})
   const [saving, setSaving] = useState(false)
@@ -131,11 +134,11 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.th}>Дата</th>
-            <th className={styles.th}>Тегло</th>
-            <th className={styles.th}>Повт.</th>
-            <th className={styles.th}>Серии</th>
-            <th className={styles.thNotes}>Бележки</th>
+            <th className={styles.th}>{t('pv.thDate')}</th>
+            <th className={styles.th}>{t('pv.thWeight')}</th>
+            <th className={styles.th}>{t('pv.thReps')}</th>
+            <th className={styles.th}>{t('pv.thSets')}</th>
+            <th className={styles.thNotes}>{t('pv.thNotes')}</th>
             <th className={styles.thAction} />
           </tr>
         </thead>
@@ -157,7 +160,7 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
                     value={draft.sets} onChange={ev => setDraft(p => ({ ...p, sets: ev.target.value }))} />
                 </td>
                 <td className={styles.tdEdit}>
-                  <input className={styles.editInput} type="text" placeholder="Бележки"
+                  <input className={styles.editInput} type="text" placeholder={t('pv.notesPh')}
                     value={draft.notes} onChange={ev => setDraft(p => ({ ...p, notes: ev.target.value }))} />
                 </td>
                 <td className={styles.tdAction}>
@@ -173,8 +176,8 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
                 <td className={styles.td}>{e.sets ?? '—'}</td>
                 <td className={`${styles.td} ${styles.tdNotes}`}>{e.notes || '—'}</td>
                 <td className={styles.tdAction}>
-                  <button className={styles.editRowBtn} onClick={() => startEdit(e)} type="button" aria-label="Редактирай">✎</button>
-                  <button className={styles.deleteRowBtn} onClick={() => onDelete(e.id)} type="button" aria-label="Изтрий">✕</button>
+                  <button className={styles.editRowBtn} onClick={() => startEdit(e)} type="button" aria-label={t('pv.edit')}>✎</button>
+                  <button className={styles.deleteRowBtn} onClick={() => onDelete(e.id)} type="button" aria-label={t('pv.delete')}>✕</button>
                 </td>
               </tr>
             )
@@ -188,6 +191,7 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
 // ── Level 2: progression for one exercise ────────────────────────────────────
 
 function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate, embedded }) {
+  const { t } = useSettings()
   const [range, setRange] = useState('ALL')
 
   const chronoEntries = useMemo(() => {
@@ -215,7 +219,7 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
     <div className={styles.wrap}>
       {!embedded && (
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack} type="button" aria-label={`Обратно към ${blockLabel}`}>
+          <button className={styles.backBtn} onClick={onBack} type="button" aria-label={t('pv.backTo', { name: blockLabel })}>
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
               <polyline points="15 6 9 12 15 18" />
             </svg>
@@ -228,13 +232,13 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
         {RANGES.map(r => (
           <button key={r.key}
             className={`${styles.rangeBtn} ${range === r.key ? styles.rangeBtnActive : ''}`}
-            onClick={() => setRange(r.key)} type="button">{r.label}
+            onClick={() => setRange(r.key)} type="button">{t(r.labelKey)}
           </button>
         ))}
       </div>
 
       {filtered.length === 0 ? (
-        <p className={styles.noData}>Няма записи за избрания период.</p>
+        <p className={styles.noData}>{t('pv.noEntries')}</p>
       ) : (
         <>
           <div className={styles.chartWrap}><ExerciseChart entries={filtered} /></div>
@@ -242,12 +246,12 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
           <div className={styles.statsRow}>
             <div className={styles.stat}>
               <span className={styles.statVal}>{filtered.length}</span>
-              <span className={styles.statLabel}>записа</span>
+              <span className={styles.statLabel}>{t('pv.statEntries')}</span>
             </div>
             {maxW != null && (
               <div className={styles.stat}>
                 <span className={styles.statVal}>{maxW}kg</span>
-                <span className={styles.statLabel}>макс. тегло</span>
+                <span className={styles.statLabel}>{t('pv.statMaxWeight')}</span>
               </div>
             )}
             {diff != null && (
@@ -255,7 +259,7 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
                 <span className={`${styles.statVal} ${diff > 0 ? styles.statUp : diff < 0 ? styles.statDown : ''}`}>
                   {diff > 0 ? `+${diff}` : diff}kg
                 </span>
-                <span className={styles.statLabel}>прогрес*</span>
+                <span className={styles.statLabel}>{t('pv.statProgress')}</span>
               </div>
             )}
           </div>
@@ -263,8 +267,7 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
           {/* Said once, rather than leaving the reader to wonder why the line
               moved on a day the weight did not. */}
           <p className={styles.chartNote}>
-            * Кривата и прогресът броят и повторенията — серия с повече повторения
-            на същата тежест се води напредък.
+            {t('pv.footnote')}
           </p>
 
           <ExerciseTable entries={tableEntries} onDelete={onDelete} onUpdate={onUpdate} />
@@ -277,6 +280,7 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
 // ── Level 1: exercises within a block ────────────────────────────────────────
 
 function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions = [], embedded }) {
+  const { t } = useSettings()
   // Planned exercise names (lowercased for a case-tolerant contains check).
   const planned = new Set((block.exercises ?? []).map(e => e.name))
 
@@ -304,7 +308,7 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions 
     <div className={styles.wrap}>
       {!embedded && (
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack} type="button" aria-label="Обратно към блокове">
+          <button className={styles.backBtn} onClick={onBack} type="button" aria-label={t('pv.backToBlocks')}>
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
               <polyline points="15 6 9 12 15 18" />
             </svg>
@@ -320,7 +324,7 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions 
       )}
 
       {block.isRest || block.exercises.length === 0 ? (
-        <p className={styles.noData}>Почивен ден — няма упражнения.</p>
+        <p className={styles.noData}>{t('pv.restDay')}</p>
       ) : (
         <>
           <div className={styles.exList}>
@@ -336,7 +340,7 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions 
                   <span className={styles.exBtnName}>{ex.name}</span>
                   <span className={styles.exBtnMeta}>
                     {ex.sets}×{ex.reps}
-                    {count > 0 && <span className={styles.exBtnCount}>{count} записа</span>}
+                    {count > 0 && <span className={styles.exBtnCount}>{t('pv.entryCount', { n: count })}</span>}
                   </span>
                   <span className={styles.exBtnArrow}>›</span>
                 </button>
@@ -346,9 +350,9 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions 
 
           {substitutes.length > 0 && (
             <>
-              <h4 className={styles.subsHead}>ЗАМЕНЕНИ УПРАЖНЕНИЯ</h4>
+              <h4 className={styles.subsHead}>{t('pv.subsHead')}</h4>
               <p className={styles.subsHint}>
-                Логвани в дните на този блок, но извън плана — вероятно суапове от моливчето.
+                {t('pv.subsNote')}
               </p>
               <div className={styles.exList}>
                 {substitutes.map(s => (
@@ -360,8 +364,8 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions 
                   >
                     <span className={styles.exBtnName}>{s.name}</span>
                     <span className={styles.exBtnMeta}>
-                      суап
-                      <span className={styles.exBtnCount}>{s.count} записа</span>
+                      {t('pv.swap')}
+                      <span className={styles.exBtnCount}>{t('pv.entryCount', { n: s.count })}</span>
                     </span>
                     <span className={styles.exBtnArrow}>›</span>
                   </button>
@@ -378,12 +382,13 @@ function BlockExercises({ block, allLogs, onSelectExercise, onBack, completions 
 // ── Level 0: block list ───────────────────────────────────────────────────────
 
 function BlockList({ blocks, allLogs, onSelectBlock, onClose, embedded }) {
+  const { t } = useSettings()
   return (
     <div className={styles.wrap}>
       {!embedded && (
         <div className={styles.header}>
-          <h2 className={styles.title}>ПРОГРЕСИЯ</h2>
-          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Затвори">
+          <h2 className={styles.title}>{t('pv.title')}</h2>
+          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label={t('pv.close')}>
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6"  y1="6" x2="18" y2="18" />
@@ -404,7 +409,7 @@ function BlockList({ blocks, allLogs, onSelectBlock, onClose, embedded }) {
             >
               <span className={styles.blockBtnDot} style={{ background: blockColor(idx) }} />
               <span className={styles.blockBtnLabel}>{block.label}</span>
-              {total > 0 && <span className={styles.blockBtnCount}>{total} записа</span>}
+              {total > 0 && <span className={styles.blockBtnCount}>{t('pv.entryCount', { n: total })}</span>}
               <span className={styles.blockBtnArrow}>›</span>
             </button>
           )
@@ -426,6 +431,7 @@ export default function ProgressionView({
   onSelectBlock: onSelectBlockProp,
   onSelectEx:    onSelectExProp,
 }) {
+  const { t } = useSettings()
   const { user } = useAuth()
   const [allLogsArr, setAllLogsArr]       = useState([])
   const [loading, setLoading]             = useState(true)
@@ -470,7 +476,7 @@ export default function ProgressionView({
     if (data) setAllLogsArr(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l))
   }
 
-  if (loading) return <div className={styles.wrap}><p className={styles.noData}>Зарежда...</p></div>
+  if (loading) return <div className={styles.wrap}><p className={styles.noData}>{t('pv.loading')}</p></div>
 
   if (selectedBlock && selectedEx) {
     return (

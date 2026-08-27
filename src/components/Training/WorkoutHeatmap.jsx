@@ -1,8 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react'
-import { mondayOf, iso, dayDate, MONTHS_SHORT, bigNum } from '../../utils/training'
+import { mondayOf, iso, dayDate, monthsShort, bigNum, sessionTitle } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './WorkoutHeatmap.module.css'
-
-const DOW = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
 /** Five steps, because four shades of gold are already more than the eye
  *  separates reliably and the fifth step is "nothing at all". */
@@ -21,12 +20,16 @@ const LEVELS = 5
  * is visibly heavier, which is the whole reason to draw the same data twice.
  */
 export default function WorkoutHeatmap({ sessions, weeks = 26 }) {
+  const { t, lang } = useSettings()
+  const MS = monthsShort(t)
+  const DOW = [0, 1, 2, 3, 4, 5, 6].map(i => t(`daysMon.${i}`))
+  const longDate = k => dayDate(k).toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'long' })
   const scroller = useRef(null)
 
   const { columns, scale, max } = useMemo(() => {
     const byDate = new Map()
     for (const s of sessions) {
-      if (!s.setCount && /почивк/i.test(s.title)) continue
+      if (!s.setCount && s.isRest) continue
       byDate.set(s.date, s)
     }
 
@@ -81,7 +84,7 @@ export default function WorkoutHeatmap({ sessions, weeks = 26 }) {
                  right end, so column zero is normally cut off by the edge of
                  the scroller — labelling it printed half a month name. */
               <span key={i} className={styles.month}>
-                {i > 0 && c.month !== columns[i - 1].month ? MONTHS_SHORT[c.month] : ''}
+                {i > 0 && c.month !== columns[i - 1].month ? MS[c.month] : ''}
               </span>
             ))}
           </div>
@@ -95,7 +98,9 @@ export default function WorkoutHeatmap({ sessions, weeks = 26 }) {
                     className={styles.cell}
                     data-level={level(d.session)}
                     title={d.session
-                      ? `${dayDate(d.key).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' })} — ${d.session.title}${d.session.volume ? ` · ${bigNum(d.session.volume)} кг` : ''}`
+                      ? (d.session.volume
+                          ? t('hm.cellVolume', { date: longDate(d.key), title: sessionTitle(t, d.session), kg: bigNum(d.session.volume) })
+                          : t('hm.cellTitle',  { date: longDate(d.key), title: sessionTitle(t, d.session) }))
                       : dayDate(d.key).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' })}
                   />
                 ))}
@@ -106,9 +111,9 @@ export default function WorkoutHeatmap({ sessions, weeks = 26 }) {
       </div>
 
       <div className={styles.legend}>
-        <span className={styles.legendLabel}>по-малко</span>
+        <span className={styles.legendLabel}>{t('hm.less')}</span>
         {[0, 1, 2, 3, 4].map(l => <span key={l} className={styles.cell} data-level={l} />)}
-        <span className={styles.legendLabel}>{max ? 'повече обем' : 'повече'}</span>
+        <span className={styles.legendLabel}>{max ? t('hm.moreVolume') : t('hm.more')}</span>
       </div>
     </div>
   )

@@ -28,14 +28,13 @@ export const iso = d => new Date(d).toISOString().slice(0, 10)
 /** The date a day-string means at noon, so time zones never shift it a day. */
 export const dayDate = s => new Date(s + 'T12:00:00')
 
-const MONTHS = [
-  'Януари', 'Февруари', 'Март', 'Април', 'Май', 'Юни',
-  'Юли', 'Август', 'Септември', 'Октомври', 'Ноември', 'Декември',
-]
-export const MONTHS_SHORT = ['Яну', 'Фев', 'Мар', 'Апр', 'Май', 'Юни', 'Юли', 'Авг', 'Сеп', 'Окт', 'Ное', 'Дек']
-export const monthTitle = key => {
+// Месеците живеят в locale файловете, не тук — този модул няма достъп до
+// контекста, затова взима t() от извикващия. Компонентите правят
+// `const MS = monthsShort(t)` веднъж и после индексират както преди.
+export const monthsShort = t => Array.from({ length: 12 }, (_, i) => t(`monthsShort.${i}`))
+export const monthTitle = (t, key) => {
   const [y, m] = key.split('-')
-  return `${MONTHS[+m - 1]} ${y}`
+  return `${t(`months.${+m - 1}`)} ${y}`
 }
 
 /**
@@ -98,7 +97,13 @@ export function buildSessions(logs = [], completions = []) {
       bestSoFar[ex.name] = Math.max(prior, ex.best)
     }
     s.exerciseList = [...s.exercises.values()]
-    s.title = s.labels.join(' · ') || (s.exerciseList.length ? 'Тренировка' : 'Почивка')
+    // Заглавието на клиента (етикетите от плана) е негов текст и не се превежда.
+    // Когато няма такова, оставяме ключ вместо готов низ, за да го преведе екранът.
+    s.title = s.labels.join(' · ')
+    s.titleKey = s.title ? null : (s.exerciseList.length ? 'training.sessionWorkout' : 'training.sessionRest')
+    // Структурен флаг вместо търсене на „почивк" в заглавието: то вече може да
+    // е на два езика, а проверката трябва да работи и на двата.
+    s.isRest = s.titleKey === 'training.sessionRest' || /почивк|\brest\b/i.test(s.title)
   }
 
   return sessions.reverse()  // newest first, which is how every screen reads it
@@ -124,7 +129,7 @@ export function groupByMonth(sessions) {
  * a week of nothing satisfy a weekly goal.
  */
 export function trainingStats(sessions, goal, now = new Date()) {
-  const trained = sessions.filter(s => s.setCount > 0 || !/почивк/i.test(s.title))
+  const trained = sessions.filter(s => s.setCount > 0 || !s.isRest)
   const dates = trained.map(s => s.date)
 
   const todayStr = iso(now)
@@ -186,10 +191,13 @@ export const kg = n => {
 export const bigNum = n => Math.round(n).toLocaleString('bg-BG')
 
 /** "днес", "вчера", "преди 3 дни", then a date once days stop meaning anything. */
-export function agoLabel(dateStr) {
+export function agoLabel(t, dateStr, lang = 'bg') {
   const days = Math.round((Date.now() - dayDate(dateStr)) / 86400000)
-  if (days <= 0) return 'днес'
-  if (days === 1) return 'вчера'
-  if (days < 14) return `преди ${days} дни`
-  return dayDate(dateStr).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
+  if (days <= 0) return t('ago.today')
+  if (days === 1) return t('ago.yesterday')
+  if (days < 14) return t('ago.days', { n: days })
+  return dayDate(dateStr).toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'short' })
 }
+
+/** The session's own title, or the translated stand-in when it has none. */
+export const sessionTitle = (t, s) => s.title || (s.titleKey ? t(s.titleKey) : '')

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { calcReadiness } from './useSleepLogs'
-import { GROUP_LABELS, GROUP_COLORS, muscleRecovery } from '../utils/recovery'
+import { GROUP_LABEL_KEYS, GROUP_COLORS, muscleRecovery } from '../utils/recovery'
 
 function dateStr(offset = 0) {
   const d = new Date()
@@ -128,14 +128,14 @@ export function useReadiness(client = null) {
       // the hold-back from today's soreness — two screens showing different
       // percentages for the same muscle is worse than showing none.
       const recovery = muscleRecovery(allWorkouts, Date.now(), sleepLog?.soreness ?? null)
-      const muscleGroups = Object.keys(GROUP_LABELS)
+      const muscleGroups = Object.keys(GROUP_LABEL_KEYS)
         .filter(g => recovery[g]?.trained)
         .map(g => {
           const { pct, hours } = recovery[g]
           const color = pct >= 80 ? '#81C784' : pct >= 55 ? 'var(--accent)' : '#ef5350'
           return {
             group: g,
-            label: GROUP_LABELS[g],
+            labelKey: GROUP_LABEL_KEYS[g],
             accentColor: GROUP_COLORS[g],
             pct,
             hours,
@@ -181,11 +181,11 @@ export function useReadiness(client = null) {
       const trainingScore = Math.min(100, Math.round((workoutDays / 4) * 100))
 
       const components = [
-        { id: 'recovery',  label: 'ВЪЗСТАНОВЯВАНЕ',      score: recoveryScore,  weight: 0.35, color: '#81C784' },
-        { id: 'nutrition', label: 'ХРАНЕНЕ (ВЧЕРА)',      score: nutritionScore, weight: 0.25, color: 'var(--accent)' },
-        { id: 'habits',    label: 'НАВИЦИ',               score: habitsScore,    weight: 0.20, color: '#AB47BC' },
-        { id: 'hydration', label: 'ХИДРАТАЦИЯ (ВЧЕРА)',   score: hydrationScore, weight: 0.15, color: '#42A5F5' },
-        { id: 'training',  label: 'ТРЕНИРОВКИ (7д)',      score: trainingScore,  weight: 0.05, color: '#66BB6A' },
+        { id: 'recovery',  score: recoveryScore,  weight: 0.35, color: '#81C784' },
+        { id: 'nutrition', score: nutritionScore, weight: 0.25, color: 'var(--accent)' },
+        { id: 'habits',    score: habitsScore,    weight: 0.20, color: '#AB47BC' },
+        { id: 'hydration', score: hydrationScore, weight: 0.15, color: '#42A5F5' },
+        { id: 'training',  score: trainingScore,  weight: 0.05, color: '#66BB6A' },
       ]
 
       // Weighted average — null scores are excluded, weights renormalized

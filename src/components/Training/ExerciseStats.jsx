@@ -1,5 +1,6 @@
 import { useMemo, useId } from 'react'
-import { e1RM, kg, bigNum, dayDate, weeklyCounts, MONTHS_SHORT } from '../../utils/training'
+import { e1RM, kg, bigNum, dayDate, weeklyCounts, monthsShort } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ExerciseStats.module.css'
 
 const W = 320, H = 150
@@ -21,7 +22,7 @@ function smoothPath(pts) {
 /** A date as it fits under a tick: "14 мар". */
 const tick = ds => {
   const d = dayDate(ds)
-  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()].toLowerCase()}`
+  return `${d.getDate()} ${MS[d.getMonth()].toLowerCase()}`
 }
 
 /**
@@ -32,8 +33,9 @@ const tick = ds => {
  * starts at zero draws it as a flat line.
  */
 function LineChart({ points, color, unit, format = kg }) {
+  const { t } = useSettings()
   const gid = useId().replace(/:/g, '')
-  if (points.length === 0) return <p className={styles.noData}>Няма данни.</p>
+  if (points.length === 0) return <p className={styles.noData}>{t('es.noData')}</p>
 
   const vals = points.map(p => p.value)
   const lo = Math.min(...vals), hi = Math.max(...vals)
@@ -97,7 +99,8 @@ function LineChart({ points, color, unit, format = kg }) {
 
 /** A count or a total per period. Bars start at zero, because they are amounts. */
 function BarChart({ bars, color, format = bigNum, integer = false }) {
-  if (!bars.length) return <p className={styles.noData}>Няма данни.</p>
+  const { t } = useSettings()
+  if (!bars.length) return <p className={styles.noData}>{t('es.noData')}</p>
   const raw = Math.max(...bars.map(b => b.value), 1)
   // A count axis rounded up to an even number, so the midpoint tick is a whole
   // session rather than 1.5 rounded to 2 — which drew an axis reading 0, 2, 3.
@@ -163,6 +166,8 @@ function Panel({ title, sub, children }) {
  * flat line.
  */
 export default function ExerciseStats({ name, sessions, onBack }) {
+  const { t } = useSettings()
+  const MS = monthsShort(t)
   const data = useMemo(() => {
     const rows = []
     for (const s of [...sessions].reverse()) {          // oldest first
@@ -189,12 +194,12 @@ export default function ExerciseStats({ name, sessions, onBack }) {
   if (!data.length) {
     return (
       <div className={styles.page}>
-        <button type="button" className={styles.back} onClick={onBack} aria-label="Назад">
+        <button type="button" className={styles.back} onClick={onBack} aria-label={t('es.back')}>
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
             <polyline points="15 6 9 12 15 18" />
           </svg>
         </button>
-        <p className={styles.noData}>Няма логнати серии за {name}.</p>
+        <p className={styles.noData}>{t('es.noSets', { name })}</p>
       </div>
     )
   }
@@ -207,7 +212,7 @@ export default function ExerciseStats({ name, sessions, onBack }) {
   return (
     <div className={styles.page}>
       <div className={styles.head}>
-        <button type="button" className={styles.back} onClick={onBack} aria-label="Назад">
+        <button type="button" className={styles.back} onClick={onBack} aria-label={t('es.back')}>
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
             <polyline points="15 6 9 12 15 18" />
           </svg>
@@ -217,39 +222,39 @@ export default function ExerciseStats({ name, sessions, onBack }) {
 
       <div className={styles.summary}>
         <div className={styles.sumCell}>
-          <span className={styles.sumNum}>{kg(bestWeight)}<span className={styles.sumUnit}>кг</span></span>
-          <span className={styles.sumLabel}>НАЙ-ТЕЖКА СЕРИЯ</span>
+          <span className={styles.sumNum}>{kg(bestWeight)}<span className={styles.sumUnit}>{t('unit.kg')}</span></span>
+          <span className={styles.sumLabel}>{t('es.heaviestSet')}</span>
         </div>
         <div className={styles.sumCell}>
-          <span className={styles.sumNum}>{kg(best1rm)}<span className={styles.sumUnit}>кг</span></span>
-          <span className={styles.sumLabel}>ИЗЧИСЛЕН 1ПМ</span>
+          <span className={styles.sumNum}>{kg(best1rm)}<span className={styles.sumUnit}>{t('unit.kg')}</span></span>
+          <span className={styles.sumLabel}>{t('es.e1rm')}</span>
         </div>
         <div className={styles.sumCell}>
           <span className={styles.sumNum}>{bigNum(bestVolume)}</span>
-          <span className={styles.sumLabel}>НАЙ-ДОБЪР ОБЕМ</span>
+          <span className={styles.sumLabel}>{t('es.bestVolume')}</span>
         </div>
         <div className={styles.sumCell}>
           <span className={styles.sumNum}>{totalSets}</span>
-          <span className={styles.sumLabel}>СЕРИИ ОБЩО</span>
+          <span className={styles.sumLabel}>{t('es.totalSets')}</span>
         </div>
       </div>
 
-      <Panel title="ЛИЧЕН РЕКОРД" sub="най-тежката серия във всяка тренировка">
+      <Panel title={t('es.prTitle')} sub={t('es.prSub')}>
         <LineChart points={data.map(r => ({ date: r.date, value: r.topWeight }))}
-                   color="var(--accent)" unit="кг" />
+                   color="var(--accent)" unit={t('unit.kg')} />
       </Panel>
 
-      <Panel title="ИЗЧИСЛЕН 1ПМ" sub="тежест и повторения заедно, по Epley">
+      <Panel title={t('es.e1rm')} sub={t('es.e1rmSub')}>
         <LineChart points={data.map(r => ({ date: r.date, value: r.best1rm }))}
-                   color="#CE93D8" unit="кг" />
+                   color="#CE93D8" unit={t('unit.kg')} />
       </Panel>
 
-      <Panel title="ОБЕМ" sub="тежест × повторения за тренировка">
+      <Panel title={t('es.volumeTitle')} sub={t('es.volumeSub')}>
         <BarChart bars={data.map(r => ({ label: tick(r.date), value: r.volume }))}
                   color="#4FC3F7" />
       </Panel>
 
-      <Panel title="ЧЕСТОТА" sub="тренировки с това упражнение на седмица">
+      <Panel title={t('es.freqTitle')} sub={t('es.freqSub')}>
         <BarChart
           bars={weekly.map(b => ({ label: tick(b.start), value: b.value }))}
           color="#81C784"

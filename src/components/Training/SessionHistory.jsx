@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
-import { groupByMonth, kg, bigNum, MONTHS_SHORT, dayDate } from '../../utils/training'
+import { groupByMonth, kg, bigNum, monthsShort, dayDate, sessionTitle } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './SessionHistory.module.css'
 
 const ChartIcon = () => (
@@ -12,38 +13,39 @@ const ChartIcon = () => (
 
 /** One exercise inside an opened session: every set, as it was logged. */
 function ExerciseBlock({ ex, onOpenExercise }) {
+  const { t } = useSettings()
   return (
     <div className={styles.exercise}>
       <div className={styles.exHead}>
         <span className={styles.exName}>
           {ex.name}
-          {ex.pr && <span className={styles.prTag} title="Личен рекорд">РЕКОРД</span>}
+          {ex.pr && <span className={styles.prTag} title={t('sh.prTitle')}>{t('sh.prTag')}</span>}
         </span>
         <button
           type="button"
           className={styles.chartBtn}
           onClick={() => onOpenExercise(ex.name)}
-          aria-label={`Графика за ${ex.name}`}
+          aria-label={t('sh.chartAria', { name: ex.name })}
         ><ChartIcon /></button>
       </div>
 
       {ex.replaces && (
-        <span className={styles.swapNote}>вместо {ex.replaces}</span>
+        <span className={styles.swapNote}>{t('sh.replaces', { name: ex.replaces })}</span>
       )}
 
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.thNo}>СЕРИЯ</th>
-            <th>ТЕЖЕСТ</th>
-            <th>ПОВТ.</th>
+            <th className={styles.thNo}>{t('sh.thSet')}</th>
+            <th>{t('sh.thWeight')}</th>
+            <th>{t('sh.thReps')}</th>
           </tr>
         </thead>
         <tbody>
           {ex.sets.map((s, i) => (
             <tr key={s.id ?? i}>
               <td className={styles.tdNo}>{i + 1}</td>
-              <td className={styles.tdVal}>{s.weight ? `${kg(s.weight)} кг` : 'собствено'}</td>
+              <td className={styles.tdVal}>{s.weight ? `${kg(s.weight)} ${t('unit.kg')}` : t('sh.bodyweight')}</td>
               <td className={styles.tdVal}>{s.reps ?? '—'}</td>
             </tr>
           ))}
@@ -63,6 +65,8 @@ function ExerciseBlock({ ex, onOpenExercise }) {
  * work it was, and opens into the sets exactly as they were entered.
  */
 export default function SessionHistory({ sessions, onOpenExercise, onEditDay }) {
+  const { t } = useSettings()
+  const MS = monthsShort(t)
   const [open, setOpen] = useState(() => new Set(sessions.slice(0, 1).map(s => s.date)))
   const months = useMemo(() => groupByMonth(sessions), [sessions])
 
@@ -77,8 +81,8 @@ export default function SessionHistory({ sessions, onOpenExercise, onEditDay }) 
   if (!sessions.length) {
     return (
       <div className={styles.empty}>
-        <p className={styles.emptyTitle}>ДНЕВНИКЪТ Е ПРАЗЕН</p>
-        <p className={styles.emptySub}>Първата логната серия го отваря.</p>
+        <p className={styles.emptyTitle}>{t('sh.emptyTitle')}</p>
+        <p className={styles.emptySub}>{t('sh.emptySub')}</p>
       </div>
     )
   }
@@ -92,7 +96,7 @@ export default function SessionHistory({ sessions, onOpenExercise, onEditDay }) 
           {m.sessions.map(s => {
             const isOpen = open.has(s.date)
             const d = dayDate(s.date)
-            const rest = !s.setCount && /почивк/i.test(s.title)
+            const rest = !s.setCount && s.isRest
             return (
               <article key={s.date} className={`${styles.session} ${isOpen ? styles.sessionOpen : ''}`}>
                 <button
@@ -103,21 +107,21 @@ export default function SessionHistory({ sessions, onOpenExercise, onEditDay }) 
                 >
                   <span className={`${styles.date} ${rest ? styles.dateRest : ''}`}>
                     <span className={styles.dateDay}>{d.getDate()}</span>
-                    <span className={styles.dateMon}>{MONTHS_SHORT[d.getMonth()]}</span>
+                    <span className={styles.dateMon}>{MS[d.getMonth()]}</span>
                   </span>
 
                   <span className={styles.headText}>
                     <span className={styles.title}>{s.title}</span>
                     <span className={styles.meta}>
                       {rest ? (
-                        'почивен ден'
+                        t('sh.restDay')
                       ) : (
                         <>
-                          <span className={styles.metaBit}>{s.exerciseList.length} упр.</span>
-                          <span className={styles.metaBit}>{s.setCount} серии</span>
-                          {s.volume > 0 && <span className={styles.metaBit}>{bigNum(s.volume)} кг</span>}
+                          <span className={styles.metaBit}>{t('sh.exCount', { n: s.exerciseList.length })}</span>
+                          <span className={styles.metaBit}>{t('sh.setCount', { n: s.setCount })}</span>
+                          {s.volume > 0 && <span className={styles.metaBit}>{bigNum(s.volume)} {t('unit.kg')}</span>}
                           {s.prCount > 0 && (
-                            <span className={`${styles.metaBit} ${styles.metaPr}`}>{s.prCount} рекорд{s.prCount === 1 ? '' : 'а'}</span>
+                            <span className={`${styles.metaBit} ${styles.metaPr}`}>{s.prCount === 1 ? t('sh.prCount.one') : t('sh.prCount.other', { n: s.prCount })}</span>
                           )}
                         </>
                       )}
@@ -131,7 +135,7 @@ export default function SessionHistory({ sessions, onOpenExercise, onEditDay }) 
                   <div className={styles.body}>
                     {s.exerciseList.length === 0 ? (
                       <p className={styles.noSets}>
-                        {rest ? 'Почивка — нищо за записване.' : 'Тренировката е отбелязана, но серии не са логнати.'}
+                        {rest ? t('sh.restNote') : t('sh.tickedNote')}
                       </p>
                     ) : (
                       s.exerciseList.map(ex => (
@@ -141,7 +145,7 @@ export default function SessionHistory({ sessions, onOpenExercise, onEditDay }) 
 
                     {!rest && (
                       <button type="button" className={styles.editDay} onClick={() => onEditDay(s.date)}>
-                        Поправи този ден
+                        {t('sh.fixDay')}
                       </button>
                     )}
                   </div>

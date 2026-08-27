@@ -139,10 +139,10 @@ function ComponentBar({ label, score, color }) {
 // Written out rather than abbreviated. "2д" set in Bulgarian lowercase looks
 // close enough to "2g" to be read as grams, which in a food-tracking app is the
 // one misreading worth spending four characters to avoid.
-function HoursLabel(hours) {
-  if (hours < 24) return `${hours} ч`
+function HoursLabel(t, hours) {
+  if (hours < 24) return t('readiness.hours', { n: hours })
   const d = Math.floor(hours / 24)
-  return d === 1 ? '1 ден' : `${d} дни`
+  return d === 1 ? t('readiness.dayOne') : t('readiness.days', { n: d })
 }
 
 /**
@@ -179,7 +179,7 @@ function verdictFor({ score, provisional, components, muscleGroups, weakFactors,
   // Nothing is wrong, so the useful thing left to say is which muscle group is
   // still short of recovered — the only line here that decides today's session.
   const sore = muscleGroups.filter(g => g.pct < 80).sort((a, b) => a.pct - b.pct)[0]
-  if (sore) return { key: 'readiness.verdict.muscle', vars: { g: sore.label, p: sore.pct } }
+  if (sore) return { key: 'readiness.verdict.muscle', vars: { g: t(sore.labelKey), p: sore.pct } }
 
   // Good day, one soft number: worth mentioning, not worth a warning.
   if (weakest) {
@@ -298,10 +298,10 @@ export default function ReadinessWidget({
 
       {muscleGroups.length > 0 && (
         <div className={styles.muscleSection}>
-          <span className={styles.muscleSectionLabel}>МУСКУЛНА ГОТОВНОСТ</span>
+          <span className={styles.muscleSectionLabel}>{t('readiness.muscleSection')}</span>
           {muscleGroups.map(g => (
             <div key={g.group} className={styles.muscleRow}>
-              <span className={styles.muscleLabel}>{g.label}</span>
+              <span className={styles.muscleLabel}>{t(g.labelKey)}</span>
               <div className={styles.muscleTrack}>
                 <div
                   className={styles.muscleFill}
@@ -309,7 +309,7 @@ export default function ReadinessWidget({
                 />
               </div>
               <span className={styles.musclePct} style={{ color: g.color }}>{g.pct}%</span>
-              <span className={styles.muscleHours}>{HoursLabel(g.hours)}</span>
+              <span className={styles.muscleHours}>{HoursLabel(t, g.hours)}</span>
             </div>
           ))}
         </div>

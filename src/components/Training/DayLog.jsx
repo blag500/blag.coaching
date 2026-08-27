@@ -39,14 +39,14 @@ function prevSet(sets, i) {
 }
 
 /** What a finished exercise says on its one line, once it is folded away. */
-function summarise(sets) {
+function summarise(t, sets) {
   const done = sets.filter(s => s.id && s.weight !== '')
   if (!done.length) return ''
   const weights = [...new Set(done.map(s => String(s.weight)))]
   // The usual case is one load across the sets, and repeating it three times
   // says nothing three times.
   if (weights.length === 1) {
-    return `${weights[0]}кг × ${done.map(s => s.reps || '?').join(', ')}`
+    return t('dl.topSet', { kg: weights[0], reps: done.map(s => s.reps || '?').join(', ') })
   }
   return done.map(s => `${s.weight}×${s.reps || '?'}`).join(' · ')
 }
@@ -66,6 +66,7 @@ function summarise(sets) {
  * what empty already means.
  */
 export default function DayLog({ date, blockLabels, blocks, onLogged }) {
+  const { t } = useSettings()
   const { user } = useAuth()
   const { restTimer } = useSettings()
   const [rows, setRows] = useState({})   // planned name → [{ id, weight, reps }]
@@ -390,7 +391,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   }
 
   if (!exercises.length) {
-    return <p className={styles.empty}>Няма упражнения за този блок.</p>
+    return <p className={styles.empty}>{t('dl.noExercises')}</p>
   }
 
   return (
@@ -430,7 +431,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
             type="button"
             className={styles.thumb}
             onClick={() => setZoom({ url: photoUrl, name: shown })}
-            aria-label={`Виж ${shown}`}
+            aria-label={t('dl.viewAria', { name: shown })}
           >
             <img src={photoUrl} alt="" className={styles.thumbImg} />
           </button>
@@ -447,7 +448,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
               >
                 <span className={styles.foldedTick}>✓</span>
                 <span className={styles.foldedName}>{shown}</span>
-                <span className={styles.foldedSum}>{summarise(sets)}</span>
+                <span className={styles.foldedSum}>{summarise(t, sets)}</span>
               </button>
             </div>
           )
@@ -463,7 +464,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                   type="button"
                   className={styles.swapBtn}
                   onClick={() => setEditing(editing === ex.name ? null : ex.name)}
-                  aria-label={`Смени ${ex.name} за този ден`}
+                  aria-label={t('dl.swapAria', { name: ex.name })}
                 >✎</button>
               </span>
               <span className={styles.target}>
@@ -474,7 +475,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                   type="button"
                   className={styles.fold}
                   onClick={() => setOpen(p => ({ ...p, [ex.name]: false }))}
-                  aria-label="Сгъни"
+                  aria-label={t('dl.collapse')}
                 >▴</button>
               )}
             </div>
@@ -482,7 +483,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
             {/* Today only. The programme is untouched, so next session comes
                 back to it on its own. */}
             {swap[ex.name] && (
-              <span className={styles.swapNote}>вместо {ex.name} · само за днес</span>
+              <span className={styles.swapNote}>{t('dl.swapNote', { name: ex.name })}</span>
             )}
 
             {editing === ex.name && (() => {
@@ -501,23 +502,23 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       value={swap[ex.name] ?? ''}
                       placeholder={ex.name}
                       onChange={e => setSwap(p => ({ ...p, [ex.name]: e.target.value }))}
-                      aria-label="Какво направи вместо него"
+                      aria-label={t('dl.swapInput')}
                       autoFocus
                     />
                     <button type="button" className={styles.swapDone} onClick={() => setEditing(null)}>
-                      Готово
+                      {t('dl.swapDone')}
                     </button>
                     {swap[ex.name] && (
                       <button
                         type="button"
                         className={styles.swapReset}
                         onClick={() => { setSwap(p => ({ ...p, [ex.name]: '' })); setEditing(null) }}
-                      >Върни</button>
+                      >{t('dl.swapUndo')}</button>
                     )}
                   </div>
 
                   <div className={styles.swapGroups}>
-                    <span className={styles.swapGroupsLabel}>Мускулна група</span>
+                    <span className={styles.swapGroupsLabel}>{t('dl.muscleGroup')}</span>
                     <select
                       className={styles.swapGroupSelect}
                       value={currentGroup ?? ''}
@@ -526,11 +527,11 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                         if (!v) clearExerciseGroup(tagName)
                         else setExerciseGroup(tagName, v)
                       }}
-                      aria-label="Мускулна група за упражнението"
+                      aria-label={t('dl.muscleAria')}
                     >
-                      <option value="">— избери —</option>
+                      <option value="">{t('dl.choose')}</option>
                       {FINE_MUSCLES.map(m => (
-                        <option key={m.id} value={m.id}>{m.label}</option>
+                        <option key={m.id} value={m.id}>{t(m.labelKey)}</option>
                       ))}
                     </select>
                   </div>
@@ -541,9 +542,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
             {sets.length > 0 && (
               <div className={styles.gridHead} aria-hidden="true">
                 <span className={styles.hSet}>#</span>
-                <span className={styles.hPrev}>Пред.</span>
-                <span className={styles.hVal}>Кг</span>
-                <span className={styles.hVal}>Повт.</span>
+                <span className={styles.hPrev}>{t('dl.hPrev')}</span>
+                <span className={styles.hVal}>{t('dl.hWeight')}</span>
+                <span className={styles.hVal}>{t('dl.hReps')}</span>
                 <span className={styles.hCheck}>✓</span>
               </div>
             )}
@@ -568,7 +569,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                     onClick={prev ? () => repeat(ex.name, i) : undefined}
                     disabled={!prev}
                     tabIndex={-1}
-                    title={prev ? 'Повтори предната серия' : ''}
+                    title={prev ? t('dl.repeatPrev') : ''}
                   >
                     {prevLabel}
                   </button>
@@ -584,7 +585,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       placeholder={prev ? String(prev.weight) : ''}
                       onChange={e => edit(ex.name, i, 'weight', e.target.value)}
                       onBlur={() => blur(ex.name, i)}
-                      aria-label={`${ex.name}, серия ${i + 1}, килограми`}
+                      aria-label={t('dl.kgAria', { name: ex.name, n: i + 1 })}
                     />
                   </div>
 
@@ -596,7 +597,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       placeholder={prev ? String(prev.reps ?? ex.reps ?? '') : String(ex.reps ?? '')}
                       onChange={e => edit(ex.name, i, 'reps', e.target.value)}
                       onBlur={() => blur(ex.name, i)}
-                      aria-label={`${ex.name}, серия ${i + 1}, повторения`}
+                      aria-label={t('dl.repsAria', { name: ex.name, n: i + 1 })}
                     />
                   </div>
 
@@ -609,7 +610,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                     type="button"
                     className={`${styles.checkBtn} ${r.id ? styles.checkOn : ''} ${saved === key ? styles.checkFlash : ''}`}
                     onClick={() => blur(ex.name, i)}
-                    aria-label={r.id ? 'Записано' : 'Отбележи серията'}
+                    aria-label={r.id ? t('dl.saved') : t('dl.markSet')}
                     tabIndex={-1}
                   >
                     {r.id ? '✓' : ''}
@@ -620,7 +621,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
             <div className={styles.footRow}>
               <button type="button" className={styles.addSet} onClick={() => addSet(ex.name)}>
-                + серия
+                {t('dl.addSet')}
               </button>
 
               {/* While the clock is running it is the loud thing on the row;
@@ -634,14 +635,14 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                     type="button"
                     className={`${styles.rest} ${over ? styles.restDone : ''}`}
                     onClick={() => setRest(null)}
-                    title="Спри почивката"
+                    title={t('dl.stopRest')}
                   >
-                    {over ? `✓ готов · ${formatPace(sec)}` : `⏱ почивка ${formatPace(sec)}`}
+                    {over ? t('dl.restOver', { time: formatPace(sec) }) : t('dl.resting', { time: formatPace(sec) })}
                   </button>
                 )
               })() : pace != null ? (
-                <span className={styles.pace} title="Средно време от серия до серия, включително самата серия">
-                  {formatPace(pace)} между сериите
+                <span className={styles.pace} title={t('dl.paceTitle')}>
+                  {t('dl.pace', { time: formatPace(pace) })}
                 </span>
               ) : null}
 

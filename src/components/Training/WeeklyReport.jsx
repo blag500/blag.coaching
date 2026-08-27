@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { iso, bigNum, MONTHS_SHORT } from '../../utils/training'
+import { iso, bigNum, monthsShort } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import { classifyMuscle, RECOVERY_H } from '../../utils/recovery'
 import styles from './WeeklyReport.module.css'
 
@@ -45,6 +46,8 @@ function overall(scores) {
  * is, in one line each.
  */
 export default function WeeklyReport({ sessions, goal, now = new Date() }) {
+  const { t } = useSettings()
+  const MS = monthsShort(t)
   const [flipped, setFlipped] = useState(false)
 
   const report = useMemo(() => {
@@ -64,7 +67,7 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
     const inThis = s => s.date >= thisIso && s.date <= todayIso
     const inPrev = s => s.date >= prevIso && s.date <  cutIso
 
-    const trained = sessions.filter(s => s.setCount > 0 || !/почивк/i.test(s.title))
+    const trained = sessions.filter(s => s.setCount > 0 || !s.isRest)
     const thisWk = trained.filter(inThis)
     const prevWk = trained.filter(inPrev)
 
@@ -146,27 +149,27 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
       volDelta,
       lifts,
       subs: [
-        { key: 'consistency', label: 'ПОСЛЕДОВАТЕЛНОСТ', letter: grade(consist),
-          note: `${thisWk.length} от ${goal} тренировки за 7 дни` },
-        { key: 'volume', label: 'ОБЕМ', letter: grade(vol),
+        { key: 'consistency', label: t('wr.consistency'), letter: grade(consist),
+          note: t('wr.consistencyNote', { n: thisWk.length, goal }) },
+        { key: 'volume', label: t('wr.volume'), letter: grade(vol),
           note: prevVol > 0
-            ? `${volDelta >= 0 ? '+' : ''}${volDelta}% спрямо предните 7 дни`
-            : thisVol > 0 ? `${bigNum(thisVol)} кг за 7 дни` : 'Няма записан обем' },
-        { key: 'intensity', label: 'ИНТЕНЗИТЕТ', letter: grade(intens),
-          note: prs === 0 ? 'Няма нови рекорди' : `${prs} нови ${prs === 1 ? 'рекорд' : 'рекорда'}` },
-        { key: 'recovery', label: 'ВЪЗСТАНОВЯВАНЕ', letter: grade(recov),
+            ? t('wr.volumeDelta', { sign: volDelta >= 0 ? '+' : '', pct: volDelta })
+            : thisVol > 0 ? t('wr.volumeTotal', { kg: bigNum(thisVol) }) : t('wr.volumeNone') },
+        { key: 'intensity', label: t('wr.intensity'), letter: grade(intens),
+          note: prs === 0 ? t('wr.prNone') : prs === 1 ? t('wr.prOne') : t('wr.prMany', { n: prs }) },
+        { key: 'recovery', label: t('wr.recovery'), letter: grade(recov),
           note: earlyHits === 0
-            ? 'Всяка група беше готова, когато я тренира'
-            : `${earlyHits} ${earlyHits === 1 ? 'тренировка' : 'тренировки'} преди пълно възстановяване` },
+            ? t('wr.recoveryClean')
+            : earlyHits === 1 ? t('wr.recoveryEarly.one') : t('wr.recoveryEarly.other', { n: earlyHits }) },
       ],
-      dateLabel: `${thisStart.getDate()} ${MONTHS_SHORT[thisStart.getMonth()].toUpperCase()} → ${today.getDate()} ${MONTHS_SHORT[today.getMonth()].toUpperCase()}`,
+      dateLabel: `${thisStart.getDate()} ${MS[thisStart.getMonth()].toUpperCase()} → ${today.getDate()} ${MS[today.getMonth()].toUpperCase()}`,
     }
   }, [sessions, goal, now])
 
   if (!report.overallLetter) {
     return (
       <div className={styles.wrap}>
-        <p className={styles.empty}>Логни поне една серия тази седмица, за да получиш оценка.</p>
+        <p className={styles.empty}>{t('wr.empty')}</p>
       </div>
     )
   }
@@ -176,16 +179,16 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
       type="button"
       className={`${styles.card} ${flipped ? styles.flipped : ''}`}
       onClick={() => setFlipped(f => !f)}
-      aria-label={flipped ? 'Обърни картата' : 'Виж разбивката'}
+      aria-label={flipped ? t('wr.flipBack') : t('wr.flipOpen')}
     >
       {/* ── Front ── */}
       <div className={`${styles.face} ${styles.front}`}>
         <div className={styles.topRow}>
-          <span className={styles.eyebrow}>ПОСЛЕДНИ 7 ДНИ</span>
+          <span className={styles.eyebrow}>{t('wr.last7')}</span>
           <div className={styles.stats}>
             <div className={styles.stat}>
               <span className={styles.statVal}>{report.prs}</span>
-              <span className={styles.statLabel}>рекорда</span>
+              <span className={styles.statLabel}>{t('wr.records')}</span>
             </div>
             {report.volDelta != null && (
               <div className={styles.stat}>
@@ -195,7 +198,7 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
                 >
                   {report.volDelta >= 0 ? '+' : ''}{report.volDelta}%
                 </span>
-                <span className={styles.statLabel}>обем</span>
+                <span className={styles.statLabel}>{t('wr.volumeStat')}</span>
               </div>
             )}
           </div>
@@ -213,13 +216,13 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
               </li>
             ))}
             {report.lifts.length === 0 && (
-              <li className={styles.noLifts}>Няма упражнения тази седмица</li>
+              <li className={styles.noLifts}>{t('wr.noLifts')}</li>
             )}
           </ul>
         </div>
 
         <div className={styles.footer}>
-          <span className={styles.hint}>докосни за разбивка</span>
+          <span className={styles.hint}>{t('wr.hintOpen')}</span>
           <span className={styles.date}>{report.dateLabel}</span>
         </div>
       </div>
@@ -227,7 +230,7 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
       {/* ── Back ── */}
       <div className={`${styles.face} ${styles.back}`}>
         <div className={styles.topRow}>
-          <span className={styles.eyebrow}>РАЗБИВКА</span>
+          <span className={styles.eyebrow}>{t('wr.breakdown')}</span>
           <span className={styles.gradeSmall} style={{ color: report.overallColor }}>
             {report.overallLetter}
           </span>
@@ -248,7 +251,7 @@ export default function WeeklyReport({ sessions, goal, now = new Date() }) {
         </ul>
 
         <div className={styles.footer}>
-          <span className={styles.hint}>докосни, за да обърнеш обратно</span>
+          <span className={styles.hint}>{t('wr.hintBack')}</span>
           <span className={styles.date}>{report.dateLabel}</span>
         </div>
       </div>

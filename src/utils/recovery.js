@@ -13,8 +13,8 @@
 // day, and a 48-hour window would have kept locking it out.
 export const RECOVERY_H = { upper: 48, lower: 72, pull: 48, extra: 36 }
 
-export const GROUP_LABELS = {
-  upper: 'ГОРНА', lower: 'ДОЛНА', pull: 'ГРЪБ', extra: 'ЕКСТРА',
+export const GROUP_LABEL_KEYS = {
+  upper: 'group.upper', lower: 'group.lower', pull: 'group.pull', extra: 'group.extra',
 }
 
 /**
@@ -26,18 +26,18 @@ export const GROUP_LABELS = {
  * needing to know.
  */
 export const FINE_MUSCLES = [
-  { id: 'chest',      label: 'Гърди',       broad: 'upper' },
-  { id: 'shoulders',  label: 'Рамо',        broad: 'upper' },
-  { id: 'triceps',    label: 'Трицепс',     broad: 'upper' },
-  { id: 'back',       label: 'Гръб',        broad: 'pull'  },
-  { id: 'biceps',     label: 'Бицепс',      broad: 'pull'  },
-  { id: 'quads',      label: 'Квадрицепс',  broad: 'lower' },
-  { id: 'hamstrings', label: 'Задно бедро', broad: 'lower' },
-  { id: 'glutes',     label: 'Глутеус',     broad: 'lower' },
-  { id: 'calves',     label: 'Прасци',      broad: 'extra' },
-  { id: 'abs',        label: 'Корем',       broad: 'extra' },
-  { id: 'forearms',   label: 'Предмишница', broad: 'extra' },
-  { id: 'traps',      label: 'Трапец',      broad: 'extra' },
+  { id: 'chest',      labelKey: 'muscle.chest',      broad: 'upper' },
+  { id: 'shoulders',  labelKey: 'muscle.shoulders',  broad: 'upper' },
+  { id: 'triceps',    labelKey: 'muscle.triceps',    broad: 'upper' },
+  { id: 'back',       labelKey: 'muscle.back',       broad: 'pull'  },
+  { id: 'biceps',     labelKey: 'muscle.biceps',     broad: 'pull'  },
+  { id: 'quads',      labelKey: 'muscle.quads',      broad: 'lower' },
+  { id: 'hamstrings', labelKey: 'muscle.hamstrings', broad: 'lower' },
+  { id: 'glutes',     labelKey: 'muscle.glutes',     broad: 'lower' },
+  { id: 'calves',     labelKey: 'muscle.calves',     broad: 'extra' },
+  { id: 'abs',        labelKey: 'muscle.abs',        broad: 'extra' },
+  { id: 'forearms',   labelKey: 'muscle.forearms',   broad: 'extra' },
+  { id: 'traps',      labelKey: 'muscle.traps',      broad: 'extra' },
 ]
 
 const FINE_TO_BROAD = Object.fromEntries(FINE_MUSCLES.map(m => [m.id, m.broad]))

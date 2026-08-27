@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react'
-import { MONTHS_SHORT, iso } from '../../utils/training'
+import { monthsShort, iso } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MonthCalendar.module.css'
-
-const MONTHS_FULL = [
-  'Януари','Февруари','Март','Април','Май','Юни',
-  'Юли','Август','Септември','Октомври','Ноември','Декември',
-]
-const DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
 // One shade per plan variation. Assignment is deterministic by label so a
 // block keeps its colour from one month to the next; the palette has enough
@@ -28,6 +23,9 @@ function hashLabel(s = '') {
  * grid — which block, and a link into the day's log.
  */
 export default function MonthCalendar({ completions = [], blocks = [], onOpenDay }) {
+  const { t } = useSettings()
+  const MS = monthsShort(t)
+  const DAY_NAMES = [0, 1, 2, 3, 4, 5, 6].map(i => t(`daysMon.${i}`))
   const [cursor, setCursor] = useState(() => {
     const d = new Date()
     return { y: d.getFullYear(), m: d.getMonth() }
@@ -40,7 +38,7 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
   const colorFor = useMemo(() => {
     const map = new Map()
     for (const b of blocks) {
-      if (b.isRest || /почивк/i.test(b.label)) {
+      if (b.isRest || /почивк|\brest\b/i.test(b.label)) {
         map.set(b.label, 'rgba(255,255,255,0.35)')
       } else {
         map.set(b.label, PALETTE[hashLabel(b.label) % PALETTE.length])
@@ -86,15 +84,15 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
-        <button type="button" className={styles.nav} onClick={prevMonth} aria-label="Предишен месец">‹</button>
+        <button type="button" className={styles.nav} onClick={prevMonth} aria-label={t('mc.prevMonth')}>‹</button>
         <span className={styles.title}>
-          {MONTHS_FULL[cursor.m]} {cursor.y}
+          {t(`months.${cursor.m}`)} {cursor.y}
         </span>
         <button
           type="button"
           className={styles.nav}
           onClick={nextMonth}
-          aria-label="Следващ месец"
+          aria-label={t('mc.nextMonth')}
           disabled={isFutureMonth}
         >›</button>
       </div>
@@ -118,7 +116,7 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
               type="button"
               className={`${styles.cell} ${isToday ? styles.today : ''} ${done.length ? styles.hasWork : ''} ${isPicked ? styles.picked : ''}`}
               onClick={() => setPicked(p => p === dateIso ? null : dateIso)}
-              aria-label={done.length ? `${d} ${MONTHS_SHORT[cursor.m]} · ${labels.join(', ')}` : `${d} ${MONTHS_SHORT[cursor.m]}`}
+              aria-label={done.length ? `${d} ${MS[cursor.m]} · ${labels.join(', ')}` : `${d} ${MS[cursor.m]}`}
             >
               <span className={styles.dayNum}>{d}</span>
               {labels.length > 0 && (
@@ -147,11 +145,11 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
               type="button"
               className={styles.picked_close}
               onClick={() => setPicked(null)}
-              aria-label="Затвори"
+              aria-label={t('mc.close')}
             >✕</button>
           </div>
           {pickedList.length === 0 ? (
-            <p className={styles.picked_empty}>Няма отчетена тренировка.</p>
+            <p className={styles.picked_empty}>{t('mc.noSession')}</p>
           ) : (
             <ul className={styles.picked_list}>
               {pickedList.map((c, i) => (
@@ -162,7 +160,7 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
               ))}
               {onOpenDay && (
                 <button type="button" className={styles.picked_open} onClick={() => onOpenDay(picked)}>
-                  Отвори в дневника →
+                  {t('mc.openInLog')}
                 </button>
               )}
             </ul>

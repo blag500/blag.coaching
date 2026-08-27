@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './BlockCompare.module.css'
 
 const WEEKS = 8
@@ -54,12 +55,12 @@ function topSet(rows) {
 }
 
 /** The change, said in whatever actually moved. */
-function deltaLabel(first, last) {
+function deltaLabel(t, first, last) {
   const dW = Math.round((last.weight - first.weight) * 10) / 10
   const dR = (last.reps || 0) - (first.reps || 0)
   const parts = []
-  if (dW) parts.push(`${dW > 0 ? '+' : ''}${dW}кг`)
-  if (dR) parts.push(`${dR > 0 ? '+' : ''}${dR} повт.`)
+  if (dW) parts.push(t('bc.deltaKg', { sign: dW > 0 ? '+' : '', n: dW }))
+  if (dR) parts.push(t('bc.deltaReps', { sign: dR > 0 ? '+' : '', n: dR }))
   return parts.join(' · ')
 }
 
@@ -76,6 +77,7 @@ function deltaLabel(first, last) {
  * heaviest of the latest — not averages. A block is judged on what it moved.
  */
 export default function BlockCompare({ block, allLogs }) {
+  const { t } = useSettings()
   const { rows, since } = useMemo(() => {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - DAYS)
@@ -114,7 +116,7 @@ export default function BlockCompare({ block, allLogs }) {
         firstDate: days[0],
         lastDate: days[days.length - 1],
         delta,
-        change: first && last ? deltaLabel(first, last) : '',
+        change: first && last ? deltaLabel(t, first, last) : '',
         pct: a ? Math.round((delta / a) * 100) : 0,
         single: days.length === 1,
         volFirst,
@@ -136,7 +138,7 @@ export default function BlockCompare({ block, allLogs }) {
   if (!tracked.length) {
     return (
       <p className={styles.empty}>
-        Още няма логнати тежести за този блок през последните {WEEKS} седмици.
+        {t('bc.empty', { weeks: WEEKS })}
       </p>
     )
   }
@@ -147,9 +149,7 @@ export default function BlockCompare({ block, allLogs }) {
   return (
     <div className={styles.wrap}>
       <p className={styles.lead}>
-        Първата срещу последната тренировка от {sinceLabel} насам.
-        Процентът брои и повторенията, не само килограмите, а обемът —
-        колко тежест общо си вдигнал в тренировката.
+        {t('bc.note', { since: sinceLabel })}
       </p>
 
       {rows.map(r => (
@@ -157,25 +157,25 @@ export default function BlockCompare({ block, allLogs }) {
           <span className={styles.name}>{r.name}</span>
 
           {r.sessions === 0 ? (
-            <span className={styles.none}>няма записи</span>
+            <span className={styles.none}>{t('bc.none')}</span>
           ) : r.single ? (
             /* One session is a starting point, not a trend. Saying "+0" would
                claim a measurement that has not been made yet. */
             <span className={styles.startOnly}>
-              {r.first.weight}кг × {r.first.reps} · начало
+              {t('bc.firstOnly', { kg: r.first.weight, reps: r.first.reps })}
             </span>
           ) : (
             <span className={styles.compare}>
-              <span className={styles.from}>{r.first.weight}кг × {r.first.reps}</span>
+              <span className={styles.from}>{t('bc.setPair', { kg: r.first.weight, reps: r.first.reps })}</span>
               <span className={styles.arrow}>→</span>
-              <span className={styles.to}>{r.last.weight}кг × {r.last.reps}</span>
+              <span className={styles.to}>{t('bc.setPair', { kg: r.last.weight, reps: r.last.reps })}</span>
               <span
                 className={styles.delta}
                 style={{ color: r.delta > 0.5 ? '#81C784' : r.delta < -0.5 ? '#ef5350' : 'var(--muted)' }}
               >
                 {/* What moved, then what it was worth. A rep is progression and
                     now says so instead of reading as no change at all. */}
-                {r.change || 'без промяна'}
+                {r.change || t('bc.noChange')}
                 {r.change && ` · ${r.pct > 0 ? '+' : ''}${r.pct}%`}
               </span>
 
@@ -183,7 +183,7 @@ export default function BlockCompare({ block, allLogs }) {
                   the session was plainly harder. */}
               {r.volFirst > 0 && (
                 <span className={styles.volume}>
-                  обем {fmt(r.volFirst)} → {fmt(r.volLast)} кг
+                  {t('bc.volumeLine', { from: fmt(r.volFirst), to: fmt(r.volLast) })}
                   <span
                     className={styles.volPct}
                     style={{ color: r.volPct > 2 ? '#81C784' : r.volPct < -2 ? '#ef5350' : 'var(--muted)' }}
@@ -192,7 +192,7 @@ export default function BlockCompare({ block, allLogs }) {
                   </span>
                   {r.setsChanged && (
                     <span className={styles.volNote}>
-                      ({r.setsFirst} → {r.setsLast} серии)
+                      {t('bc.setsLine', { from: r.setsFirst, to: r.setsLast })}
                     </span>
                   )}
                 </span>
@@ -201,7 +201,7 @@ export default function BlockCompare({ block, allLogs }) {
           )}
 
           {r.sessions > 0 && (
-            <span className={styles.count}>{r.sessions} трен.</span>
+            <span className={styles.count}>{t('bc.sessions', { n: r.sessions })}</span>
           )}
         </div>
       ))}

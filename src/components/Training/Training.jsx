@@ -17,8 +17,9 @@ import MonthCalendar from './MonthCalendar'
 import TrainingDashboard from './TrainingDashboard'
 import SessionHistory from './SessionHistory'
 import ExerciseStats from './ExerciseStats'
-import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups, GROUP_COLORS, GROUP_LABELS } from '../../utils/recovery'
-import { trainingStats, agoLabel, bigNum, iso, dayDate, MONTHS_SHORT } from '../../utils/training'
+import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups, GROUP_COLORS, GROUP_LABEL_KEYS } from '../../utils/recovery'
+import { trainingStats, agoLabel, bigNum, iso, dayDate, monthsShort, sessionTitle } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Training.module.css'
 
 // The same dumbbell the bottom nav draws, so the empty state speaks the app's
@@ -46,7 +47,7 @@ function getBlocks(plan) {
   return plan
 }
 
-const isRestBlock = b => !!b && (b.isRest || (b.label || '').toUpperCase().includes('ПОЧИВК'))
+const isRestBlock = b => !!b && (b.isRest || /ПОЧИВК|\bREST\b/.test((b.label || '').toUpperCase()))
 
 /** One pictogram per broad group + a rest icon, drawn as inline SVGs so they
  *  tint with the row's accent colour (currentColor) and never cost a network
@@ -111,6 +112,11 @@ const BLOCK_ICONS = {
  * into a single lift's whole history (`exercise`).
  */
 export default function Training({ onMenuOpen }) {
+  const { t, lang } = useSettings()
+  const MS = monthsShort(t)
+  // Дата в кратък вид за бутоните „маркирай ..." — езикът следва избора.
+  const shortDate = d => new Date(d + 'T12:00:00')
+    .toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'short' })
   const { user, profile, updateProfile } = useAuth()
   const isCoach = profile?.role === 'coach'
   // A coached client's plan is written by the coach and waited on; a self-serve
@@ -364,7 +370,7 @@ export default function Training({ onMenuOpen }) {
       <div className={styles.page}>
         <AppHeader
           onBack={() => setEditing(false)}
-          title="ТРЕНИРОВКА"
+          title={t('tr.header')}
         />
         <TrainingEditor
           initialPlan={isOldFormat(profile?.training_plan) ? null : profile?.training_plan}
@@ -380,16 +386,15 @@ export default function Training({ onMenuOpen }) {
   if (!blocks) {
     return (
       <div className={styles.page}>
-        <AppHeader onMenuOpen={onMenuOpen} title="ТРЕНИРОВКА" />
+        <AppHeader onMenuOpen={onMenuOpen} title={t('tr.header')} />
         {selfManaged ? (
           // No coach is coming — so the empty state is a setup, not a wait. One
           // tap to a ready split, or the editor to build from scratch.
           <div className={styles.noPlanWrap}>
             <span className={styles.noPlanIcon}><DumbbellIcon /></span>
-            <p className={styles.noPlanTitle}>ЗАДАЙ ТРЕНИРОВКА</p>
+            <p className={styles.noPlanTitle}>{t('tr.noPlanTitle')}</p>
             <p className={styles.noPlanSub}>
-              Тръгни с готова програма или си направи своя. Ще можеш да я
-              променяш по всяко време.
+              {t('tr.noPlanSub')}
             </p>
             <div className={styles.setupActions}>
               <button
@@ -398,7 +403,7 @@ export default function Training({ onMenuOpen }) {
                 disabled={savingPlan}
                 type="button"
               >
-                {savingPlan ? '...' : 'Готова програма'}
+                {savingPlan ? '...' : t('tr.readyPlan')}
               </button>
               <button
                 className={styles.setupPrimary}
@@ -406,15 +411,15 @@ export default function Training({ onMenuOpen }) {
                 disabled={savingPlan}
                 type="button"
               >
-                От нулата
+                {t('tr.fromScratch')}
               </button>
             </div>
           </div>
         ) : (
           <div className={styles.noPlanWrap}>
             <span className={styles.noPlanIcon}><DumbbellIcon /></span>
-            <p className={styles.noPlanTitle}>ПРОГРАМАТА СЕ ПОДГОТВЯ</p>
-            <p className={styles.noPlanSub}>Треньорът подготвя твоята тренировъчна програма. Очаквай скоро!</p>
+            <p className={styles.noPlanTitle}>{t('tr.pendingTitle')}</p>
+            <p className={styles.noPlanSub}>{t('tr.pendingSub')}</p>
           </div>
         )}
       </div>
@@ -428,7 +433,7 @@ export default function Training({ onMenuOpen }) {
       <div className={styles.page}>
         <AppHeader
           onBack={() => { setExercise(null); setView('history') }}
-          title="ПРОГРЕС"
+          title={t('tr.progressHeader')}
         />
         <ExerciseStats
           name={exercise}
@@ -446,7 +451,7 @@ export default function Training({ onMenuOpen }) {
       <div className={styles.page}>
         <AppHeader
           onBack={() => setView('home')}
-          title="ДНЕВНИК"
+          title={t('tr.logHeader')}
         />
         <SessionHistory
           sessions={sessions}
@@ -473,7 +478,7 @@ export default function Training({ onMenuOpen }) {
       <div className={styles.page}>
         <AppHeader
           onBack={() => setView('home')}
-          title="ПРОГРЕСИЯ"
+          title={t('tr.progressionHeader')}
         />
         <ProgressionView onClose={() => setView('home')} blocks={blocks} />
       </div>
@@ -488,10 +493,10 @@ export default function Training({ onMenuOpen }) {
       <div className={styles.page}>
         <AppHeader
           onBack={() => setView('home')}
-          title="ЛОГ"
+          title={t('tr.sessionHeader')}
           action={
             <button className={styles.editBtn} onClick={() => setView('home')} type="button">
-              ГОТОВО
+              {t('tr.done')}
             </button>
           }
         />
@@ -527,17 +532,17 @@ export default function Training({ onMenuOpen }) {
             ].join(' ')}>
               <span className={styles.recoveryDot} />
               {selRec.pct >= 80
-                ? 'По часовник — готова'
+                ? t('tr.recReady')
                 : selRec.basis === 'block'
                   /* No muscle group was recognised in the label, so the claim is
                      narrowed to what is actually known: when this block itself
                      was last trained. */
-                  ? `Тренира я преди ${selRec.hours} ч · ${selRec.pct}%`
+                  ? t('tr.recBlock', { h: selRec.hours, pct: selRec.pct })
                   : recovery[selRec.group]?.damped && (selHours ?? 0) >= RECOVERY_H[selRec.group]
                     /* The clock says rested, the check-in says otherwise. Saying
                        which of the two is talking matters more than the number. */
-                    ? `Часовете са изкарани, но си отчел крепатура · ${selRec.pct}%`
-                    : `Още ${Math.max(1, Math.round(RECOVERY_H[selRec.group] - (selHours ?? 0)))} ч до пълно възстановяване · ${selRec.pct}%`}
+                    ? t('tr.recSore', { pct: selRec.pct })
+                    : t('tr.recWait', { h: Math.max(1, Math.round(RECOVERY_H[selRec.group] - (selHours ?? 0))), pct: selRec.pct })}
             </div>
           )}
 
@@ -546,8 +551,8 @@ export default function Training({ onMenuOpen }) {
           {rest ? (
             <div className={styles.restCard}>
               <span className={styles.restIcon}>🛌</span>
-              <p className={styles.restTitle}>Почивка</p>
-              <p className={styles.restSub}>Сън · Хидратация · Мобилити</p>
+              <p className={styles.restTitle}>{t('tr.rest')}</p>
+              <p className={styles.restSub}>{t('tr.restSub')}</p>
             </div>
           ) : (
             <DayLog
@@ -569,16 +574,16 @@ export default function Training({ onMenuOpen }) {
             type="button"
           >
             {alreadyMarked || justMarked
-              ? `✓ Отбелязано${logDate !== todayStr ? ` за ${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}` : ' за днес'}!`
+              ? (logDate === todayStr ? t('tr.markedToday') : t('tr.markedDate', { date: shortDate(logDate) }))
               : marking
               ? '...'
               : rest
-              ? `✓ Маркирай почивен ден${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`
-              : `✓ Маркирай като готово${logDate !== todayStr ? ` (${new Date(logDate + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })})` : ''}`}
+              ? (logDate === todayStr ? t('tr.markRest') : t('tr.markRestDate', { date: shortDate(logDate) }))
+              : (logDate === todayStr ? t('tr.markDone') : t('tr.markDoneDate', { date: shortDate(logDate) }))}
           </button>
           {alreadyMarked && (
             <button className={styles.unmarkBtn} onClick={handleUnmarkDone} disabled={marking} type="button">
-              × Премахни маркирането
+              {t('tr.unmark')}
             </button>
           )}
         </div>
@@ -603,10 +608,10 @@ export default function Training({ onMenuOpen }) {
           homeTab === 'progression' && progBlock ? () => { setProgEx(null); setProgBlock(null) } :
           undefined
         }
-        title="ТРЕНИРОВКА"
+        title={t('tr.header')}
         action={canEdit ? (
           <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
-            ПРОГРАМА
+            {t('tr.plan')}
           </button>
         ) : null}
       />
@@ -618,7 +623,7 @@ export default function Training({ onMenuOpen }) {
       <div className={styles.segmented} role="tablist">
         {[
           {
-            id: 'today', label: 'Днес',
+            id: 'today', labelKey: 'tr.tabToday',
             icon: (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
                    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -632,7 +637,7 @@ export default function Training({ onMenuOpen }) {
             /* Bar-chart is the shape people already read as "progress" — it
                moves from the old "week" tab onto its own dedicated one, so
                progression stops being a link at the bottom of another page. */
-            id: 'progression', label: 'Прогресия',
+            id: 'progression', labelKey: 'tr.tabProgression',
             icon: (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
                    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -647,7 +652,7 @@ export default function Training({ onMenuOpen }) {
             /* Was "Седмица" and held the weekly report + calendar + diary +
                dashboard. Renamed to "Insights" because the tab is really a
                look-back at what the week produced, not just the calendar. */
-            id: 'insights', label: 'Insights',
+            id: 'insights', labelKey: 'tr.tabInsights',
             icon: (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
                    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -657,7 +662,7 @@ export default function Training({ onMenuOpen }) {
             ),
           },
           {
-            id: 'body', label: 'Тяло',
+            id: 'body', labelKey: 'tr.tabBody',
             icon: (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"
                    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -666,18 +671,18 @@ export default function Training({ onMenuOpen }) {
               </svg>
             ),
           },
-        ].map(t => (
+        ].map(tab => (
           <button
-            key={t.id}
-            className={`${styles.segment} ${homeTab === t.id ? styles.segmentActive : ''}`}
-            onClick={() => setHomeTab(t.id)}
+            key={tab.id}
+            className={`${styles.segment} ${homeTab === tab.id ? styles.segmentActive : ''}`}
+            onClick={() => setHomeTab(tab.id)}
             role="tab"
-            aria-selected={homeTab === t.id}
-            aria-label={t.label}
-            title={t.label}
+            aria-selected={homeTab === tab.id}
+            aria-label={t(tab.labelKey)}
+            title={t(tab.labelKey)}
             type="button"
           >
-            {t.icon}
+            {tab.icon}
           </button>
         ))}
       </div>
@@ -695,10 +700,13 @@ export default function Training({ onMenuOpen }) {
               const isDue = dueBlock?.id === block.id
               const isRest = isRestBlock(block)
               const meta = isRest
-                ? 'Почивка · сън, хидратация, мобилити'
+                ? t('tr.metaRest')
                 : last
-                  ? `Последно ${agoLabel(last)} · ${rec.pct >= 80 ? 'готова' : rec.pct + '% възст.'}`
-                  : (rec.pct >= 80 ? 'Готова — още не си я логвал' : 'Още не си я логвал')
+                  ? t('tr.metaLast', {
+                      ago: agoLabel(t, last, lang),
+                      state: rec.pct >= 80 ? t('tr.stateReady') : t('tr.statePct', { pct: rec.pct }),
+                    })
+                  : (rec.pct >= 80 ? t('tr.metaReadyNew') : t('tr.metaNew'))
               return (
                 <li
                   key={block.id}
@@ -737,9 +745,9 @@ export default function Training({ onMenuOpen }) {
 
           <section className={styles.today}>
             <span className={styles.todayEyebrow}>
-              {last ? `Последна тренировка ${agoLabel(last.date)}` : 'Още нищо не е логнато'}
+              {last ? t('tr.lastSession', { ago: agoLabel(t, last.date, lang) }) : t('tr.nothingLogged')}
             </span>
-            <h2 className={styles.todayTitle}>{selectedBlock?.label ?? 'Почивка'}</h2>
+            <h2 className={styles.todayTitle}>{selectedBlock?.label ?? t('tr.rest')}</h2>
 
             {selRec && selRec.basis !== 'never' && (
               <span className={[
@@ -748,8 +756,8 @@ export default function Training({ onMenuOpen }) {
               ].join(' ')}>
                 <span className={styles.recoveryDot} />
                 {selRec.pct >= 80
-                  ? 'По часовник — готова'
-                  : `≈ ${selRec.pct}% възстановена`}
+                  ? t('tr.recReady')
+                  : t('tr.recPct', { pct: selRec.pct })}
               </span>
             )}
           </section>
@@ -789,8 +797,8 @@ export default function Training({ onMenuOpen }) {
                     disabled={marking || already}
                   >
                     {done
-                      ? '✓ Логната тренировка!'
-                      : marking ? '...' : '✓ Логни тренировката'}
+                      ? t('tr.logged')
+                      : marking ? '...' : t('tr.logIt')}
                   </button>
                 )
               })()}
@@ -800,8 +808,8 @@ export default function Training({ onMenuOpen }) {
           {selectedBlock && isRestBlock(selectedBlock) && (
             <div className={styles.restCard}>
               <span className={styles.restIcon}>🛌</span>
-              <p className={styles.restTitle}>Почивка</p>
-              <p className={styles.restSub}>Сън · Хидратация · Мобилити</p>
+              <p className={styles.restTitle}>{t('tr.rest')}</p>
+              <p className={styles.restSub}>{t('tr.restSub')}</p>
             </div>
           )}
         </>
@@ -809,7 +817,7 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'progression' && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>ПРОГРЕСИЯ</h2>
+          <h2 className={styles.sectionTitle}>{t('tr.sectionProgression')}</h2>
           <ProgressionView
             blocks={blocks}
             completions={enrichedCompletions}
@@ -824,7 +832,7 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'insights' && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>ПОСЛЕДНИ 7 ДНИ</h2>
+          <h2 className={styles.sectionTitle}>{t('tr.sectionLast7')}</h2>
           <WeeklyReport sessions={sessions} goal={goal} />
           <MonthCalendar
             completions={completions}
@@ -842,24 +850,24 @@ export default function Training({ onMenuOpen }) {
               question belongs where the calendar and grade card already are,
               not stuck between the day-log and the progression link. */}
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>ДНЕВНИК</h2>
+            <h2 className={styles.sectionTitle}>{t('tr.sectionLog')}</h2>
             <button type="button" className={styles.seeAll} onClick={() => setView('history')}>
-              всички {sessions.length} ›
+              {t('tr.allSessions', { n: sessions.length })}
             </button>
           </div>
           {sessions.length === 0 ? (
-            <p className={styles.sectionEmpty}>Първата логната серия отваря дневника.</p>
+            <p className={styles.sectionEmpty}>{t('tr.logEmpty')}</p>
           ) : (
             <ul className={styles.recent}>
               {sessions.slice(0, 5).map(s => (
                 <li key={s.date}>
                   <button type="button" className={styles.recentRow} onClick={() => setView('history')}>
                     <span className={styles.recentDate}>
-                      {dayDate(s.date).getDate()} {MONTHS_SHORT[dayDate(s.date).getMonth()].toLowerCase()}
+                      {dayDate(s.date).getDate()} {MS[dayDate(s.date).getMonth()].toLowerCase()}
                     </span>
-                    <span className={styles.recentName}>{s.title}</span>
+                    <span className={styles.recentName}>{sessionTitle(t, s)}</span>
                     <span className={styles.recentMeta}>
-                      {s.volume > 0 ? `${bigNum(s.volume)} кг` : `${s.setCount} серии`}
+                      {s.volume > 0 ? t('tr.recentVolume', { kg: bigNum(s.volume) }) : t('tr.recentSets', { n: s.setCount })}
                     </span>
                   </button>
                 </li>
@@ -878,7 +886,7 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'body' && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>МУСКУЛНИ ГРУПИ</h2>
+          <h2 className={styles.sectionTitle}>{t('tr.sectionMuscles')}</h2>
           <MuscleMap recovery={recovery} sessions={sessions} completions={enrichedCompletions} groupsByLabel={groupsByLabel} />
           <MuscleStatus completions={completions} recovery={recovery} />
         </section>

@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
-import { classifyMuscle, GROUP_LABELS, RECOVERY_H } from '../../utils/recovery'
+import { classifyMuscle, GROUP_LABEL_KEYS, RECOVERY_H } from '../../utils/recovery'
+import { agoLabel } from '../../utils/training'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MuscleStatus.module.css'
 
 // Green, amber, red — the same three steps and the same thresholds the
@@ -11,14 +13,6 @@ function recoveryColor(pct) {
   return '#ef5350'
 }
 
-/** "вчера", "преди 3 дни", or a date once it stops meaning anything in days. */
-function agoLabel(dateStr) {
-  const days = Math.round((Date.now() - new Date(dateStr + 'T12:00:00')) / 86400000)
-  if (days <= 0)  return 'днес'
-  if (days === 1) return 'вчера'
-  if (days < 14)  return `преди ${days} дни`
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
-}
 
 /**
  * Where each muscle group stands.
@@ -33,6 +27,7 @@ function agoLabel(dateStr) {
  * without being read.
  */
 export default function MuscleStatus({ completions, recovery }) {
+  const { t, lang } = useSettings()
   const { rows, recent } = useMemo(() => {
     const last = {}
     for (const c of completions) {
@@ -41,7 +36,7 @@ export default function MuscleStatus({ completions, recovery }) {
       if (!last[g] || c.completed_date > last[g]) last[g] = c.completed_date
     }
 
-    const rows = Object.keys(GROUP_LABELS)
+    const rows = Object.keys(GROUP_LABEL_KEYS)
       .filter(g => last[g])
       .map(g => {
         const pct = recovery?.[g]?.pct ?? 100
@@ -49,7 +44,7 @@ export default function MuscleStatus({ completions, recovery }) {
         const left = Math.max(0, Math.round(RECOVERY_H[g] - hours))
         return {
           group: g,
-          label: GROUP_LABELS[g],
+          label: t(GROUP_LABEL_KEYS[g]),
           date: last[g],
           pct,
           ready: pct >= 80,
@@ -72,7 +67,7 @@ export default function MuscleStatus({ completions, recovery }) {
   }, [completions, recovery])
 
   if (!rows.length) {
-    return <p className={styles.empty}>Още няма записани тренировки.</p>
+    return <p className={styles.empty}>{t('ms.empty')}</p>
   }
 
   return (
@@ -82,7 +77,7 @@ export default function MuscleStatus({ completions, recovery }) {
           <div className={styles.top}>
             <span className={styles.name}>{r.label}</span>
             <span className={styles.state} style={{ color: r.color }}>
-              {r.ready ? 'готова' : `още ${r.left} ч`}
+              {r.ready ? t('ms.ready') : t('ms.hoursLeft', { n: r.left })}
             </span>
           </div>
 
@@ -93,12 +88,12 @@ export default function MuscleStatus({ completions, recovery }) {
             />
           </div>
 
-          <span className={styles.last}>последно {agoLabel(r.date)}</span>
+          <span className={styles.last}>{t('ms.last', { ago: agoLabel(t, r.date, lang) })}</span>
         </div>
       ))}
 
       <p className={styles.total}>
-        {recent} {recent === 1 ? 'тренировка' : 'тренировки'} за последните 4 седмици
+        {recent === 1 ? t('ms.total.one') : t('ms.total.other', { n: recent })}
       </p>
     </div>
   )
