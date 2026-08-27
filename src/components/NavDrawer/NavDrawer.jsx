@@ -38,6 +38,14 @@ const ClientsIcon = () => (
     <path d="M15 20c0-2.5 1.8-4 4-4" />
   </svg>
 )
+const FeedIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" />
+    <circle cx="17.5" cy="9.5" r="2.2" />
+    <path d="M15.6 20c0-2.6 1.7-4.2 3.9-4.2 1 0 1.9.3 2.5.9" />
+  </svg>
+)
 const ExploreIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
@@ -161,6 +169,7 @@ const CLIENT_SECTIONS = [
   {
     labelKey: 'drawer.section.resources',
     tabs: [
+      { id: 'feed',    key: 'nav.feed',    Icon: FeedIcon    },
       { id: 'chat',    key: 'nav.chat',    Icon: ChatIcon    },
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
       { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
@@ -215,6 +224,7 @@ const COACH_SECTIONS = [
   {
     labelKey: 'drawer.section.resources',
     tabs: [
+      { id: 'feed',    key: 'nav.feed',    Icon: FeedIcon    },
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
       { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
     ],

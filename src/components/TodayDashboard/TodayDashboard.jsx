@@ -86,7 +86,14 @@ function dateStr(offset = 0) {
   return d.toISOString().slice(0, 10)
 }
 
-export default function TodayDashboard({ onNavigate, onMenuOpen }) {
+/**
+ * Картите за деня.
+ *
+ * Живее на два адреса: като раздел ДНЕС вътре в Профил (`embedded`), и — за
+ * треньора — все още като собствена страница. Разликата е само хедърът: в
+ * Профил той вече стои отгоре и втори би повторил същото име два пъти.
+ */
+export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = false, onHabitsSetup }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const { log, totals } = useFoodLog()
@@ -265,7 +272,10 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
         <button
           type="button"
           className={styles.habitsEmpty}
-          onClick={() => onNavigate('profile')}
+          /* Извън Профил това е път към страницата; вътре в него — към
+             раздела, в който стои редакторът, защото „иди в профила" не
+             помага на човек, който вече е там. */
+          onClick={onHabitsSetup ?? (() => onNavigate('profile'))}
         >
           <span className={styles.habitsEmptyLead}>{t('today.habitsEmpty')}</span>
           <span className={styles.habitsEmptyCta}>{t('today.habitsEmptyCta')}</span>
@@ -443,18 +453,18 @@ export default function TodayDashboard({ onNavigate, onMenuOpen }) {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${embedded ? styles.pageEmbedded : ''}`}>
       {badgeQueue[0] && (
         <BadgePopup badge={badgeQueue[0]} onDone={() => setBadgeQueue(q => q.slice(1))} />
       )}
-      <AppHeader
+      {!embedded && <AppHeader
         onMenuOpen={onMenuOpen}
         eyebrow={greeting}
         title={profile?.name?.split(' ')[0]?.toUpperCase() ?? 'BLAG'}
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}
         onAvatarClick={() => onNavigate('profile')}
-      />
+      />}
 
       {/* Ordered by the client, in their profile. The default is the argument
           the page makes on its own: the verdict first, then the things they

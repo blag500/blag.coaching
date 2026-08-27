@@ -16,6 +16,8 @@ import ProgressPhotos from '../ProgressPhotos/ProgressPhotos'
 import WeeklySnapshot from './WeeklySnapshot'
 import AvatarCropper from './AvatarCropper'
 import AppHeader from '../AppHeader/AppHeader'
+import TodayDashboard from '../TodayDashboard/TodayDashboard'
+import { layout } from '../TodayDashboard/cards'
 import styles from './Profile.module.css'
 
   function calcStreak(history) {
@@ -38,7 +40,17 @@ const MACRO_COLORS = {
   fat:      'var(--accent)',
 }
 
-export default function Profile({ onMenuOpen }) {
+/* Трите раздела на страницата.
+   Профилът пое и таблото за деня, а сборът е твърде дълъг за един скрол:
+   най-често отваряното — картите за днес — би стояло над петстотин пиксела
+   настройки, които се пипат веднъж на месец. Затова лента, а не заглавия. */
+const SEGMENTS = [
+  { id: 'today',    key: 'profile.seg.today'    },
+  { id: 'progress', key: 'profile.seg.progress' },
+  { id: 'settings', key: 'profile.seg.settings' },
+]
+
+export default function Profile({ onMenuOpen, onNavigate }) {
   const { profile, user, updateProfile, signOut } = useAuth()
   const { theme, setTheme, lang, setLang, restTimer, setRestTimer, t } = useSettings()
   const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
@@ -102,6 +114,16 @@ export default function Profile({ onMenuOpen }) {
       if (!error) localStorage.removeItem('blag_target_weight_v1')
     })
   }, [profile?.id, profile?.target_weight])
+
+  /* Денят е това, с което страницата отваря. Разделът не се помни между
+     влизанията нарочно: който е бил в настройките сутринта, вечерта иска пак
+     да види чашите вода, а не полето за смяна на парола. */
+  const [seg, setSeg] = useState('today')
+
+  /* Дневното мерене се въвежда на картата в ДНЕС. Формулярът тук се показва
+     само на този, който е махнал тази карта от таблото си — иначе един и същ
+     килограм би имал две полета на една страница. */
+  const weighInOnToday = layout(profile?.dashboard_cards).visible.includes('weight')
 
   const [savingCoachPlan, setSavingCoachPlan] = useState(false)
   const [weightRange, setWeightRange] = useState('1M')
@@ -275,6 +297,35 @@ export default function Profile({ onMenuOpen }) {
         avatarBusy={avatarUploading}
       />
 
+      <div className={styles.segments} role="tablist" aria-label={t('profile.seg.aria')}>
+        {SEGMENTS.map(sg => (
+          <button
+            key={sg.id}
+            type="button"
+            role="tab"
+            aria-selected={seg === sg.id}
+            className={`${styles.segment} ${seg === sg.id ? styles.segmentOn : ''}`}
+            onClick={() => setSeg(sg.id)}
+          >
+            {t(sg.key)}
+          </button>
+        ))}
+      </div>
+
+      {/* ── ДНЕС ──
+          Същите карти, които доскоро бяха отделен таб: готовност, навици,
+          тегло, вода, макроси, стек. Подредбата им е клиентска и се редактира
+          в НАСТРОЙКИ, един раздел вдясно. */}
+      {seg === 'today' && (
+        <TodayDashboard
+          embedded
+          onNavigate={onNavigate}
+          onHabitsSetup={() => setSeg('settings')}
+        />
+      )}
+
+      {seg === 'progress' && (<>
+
       {/* Form check-in — daily action, lives at the top */}
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>{t('profile.formCheckin')}</h2>
@@ -347,6 +398,7 @@ export default function Profile({ onMenuOpen }) {
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>{t('profile.weight')}</h2>
 
+        {!weighInOnToday && (
         <form onSubmit={handleWeightSave} className={styles.weightForm}>
           <label className={styles.label} htmlFor="weight-input">{t('profile.weight.today')}</label>
           <div className={styles.weightRow}>
@@ -369,6 +421,7 @@ export default function Profile({ onMenuOpen }) {
           {weightSaved && <p className={styles.savedMsg}>{t('profile.weight.savedMsg', { kg: weightInput })}</p>}
           {weightError && <p className={styles.errorMsg}>{weightError}</p>}
         </form>
+        )}
 
         {/* Target weight */}
         <div className={styles.targetRow}>
@@ -516,6 +569,10 @@ export default function Profile({ onMenuOpen }) {
         </section>
       )}
 
+      </>)}
+
+      {seg === 'settings' && (<>
+
       {/* Name */}
       <section className={styles.card}>
         <h2 className={styles.sectionTitle}>{t('profile.name')}</h2>
@@ -660,6 +717,8 @@ export default function Profile({ onMenuOpen }) {
           {t('profile.signOut')}
         </button>
       </section>
+
+      </>)}
     </div>
   )
 }

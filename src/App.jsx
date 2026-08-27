@@ -25,6 +25,7 @@ import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
 import Recovery from './pages/Recovery'
 import TodayDashboard from './components/TodayDashboard/TodayDashboard'
+import FeedPage from './components/Feed/FeedPage'
 import RewardsPage from './components/Rewards/RewardsPage'
 import Budget from './components/Budget/Budget'
 import Tasks from './components/Tasks/Tasks'
@@ -44,7 +45,9 @@ import SupplementBanner from './components/Supplements/SupplementBanner'
 import { trackPage } from './lib/analytics'
 import styles from './App.module.css'
 
-const NAV_ORDER = ['today', 'nutrition', 'training', 'profile']
+/* Фийдът зае мястото, което таблото освободи, когато се прибра в Профил.
+   Редът е същият, само първият адрес е друг. */
+const NAV_ORDER = ['feed', 'nutrition', 'training', 'profile']
 
 // Goal ids → the word the success chip shows after the calorie target.
 const GOAL_LABEL = { cut: 'Изгаряне', maintain: 'Поддържане', bulk: 'Покачване' }
@@ -52,7 +55,7 @@ const GOAL_LABEL = { cut: 'Изгаряне', maintain: 'Поддържане', 
 function AppShell() {
   const { session, profile, loading, selectPlan, refreshProfile } = useAuth()
   const [splash, setSplash] = useState(true)
-  const [activeTab, setActiveTab] = useState('today')
+  const [activeTab, setActiveTab] = useState('feed')
   const [slideDir, setSlideDir] = useState('up')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showSupplementBanner, setShowSupplementBanner] = useState(false)
@@ -257,19 +260,23 @@ function AppShell() {
   const openMenu = () => setDrawerOpen(true)
 
   const pages = {
+    feed:       <FeedPage onNavigate={navigate} onMenuOpen={openMenu} />,
+    /* Таблото вече живее като раздел ДНЕС вътре в Профил. Адресът остава
+       заради треньора, чийто профил е друга страница, и заради всяка връзка,
+       която още сочи насам. */
     today:      <TodayDashboard onNavigate={navigate} onMenuOpen={openMenu} />,
     nutrition:  <NutritionCards onNavigate={navigate} onMenuOpen={openMenu} />,
     compliance: <Compliance />,
     training:   <Training onMenuOpen={openMenu} />,
     recovery:   <Recovery />,
-    profile:    <Profile onMenuOpen={openMenu} />,
+    profile:    <Profile onMenuOpen={openMenu} onNavigate={navigate} />,
     clients:    <CoachPanel />,
     coachday:   <CoachMyDay />,
     explore:    <Explore onMenuOpen={openMenu} />,
     calendar:   <TrainingCalendar />,
     learn:      <LearnPage />,
     chat:       <ChatPage />,
-    rewards:    <RewardsPage onBack={() => setActiveTab('today')} />,
+    rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
     budget:     <Budget />,
     tasks:      <Tasks />,
     protocol:   <PrepProtocol />,

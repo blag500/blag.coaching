@@ -36,6 +36,40 @@
   }
 }
 
+/* ── Лентата с разделите ──────────────────────────────────────────
+   Не е sticky нарочно: хедърът отгоре сам се крие при скрол надолу и се
+   връща при скрол нагоре, а залепена лента би влизала под него точно в
+   момента, в който той се връща. Един скрол нагоре връща и двете. */
+.segments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  margin: 0 0 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.segment {
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  padding: 9px 4px;
+  cursor: pointer;
+  transition: color 180ms var(--ease-out), background 180ms var(--ease-out);
+}
+
+.segmentOn {
+  background: var(--panel-bg);
+  color: var(--accent);
+  box-shadow: var(--panel-shadow);
+}
+
 .sectionSub {
   font-family: var(--font-body);
   font-size: 11px;
