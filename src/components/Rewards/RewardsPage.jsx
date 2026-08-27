@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
-import { HABITS as DEFAULT_HABITS } from '../../data/appData'
+import { defaultHabits } from '../../data/appData'
 import styles from './RewardsPage.module.css'
 
 function pad(n) { return String(n).padStart(2, '0') }
@@ -17,7 +17,7 @@ export default function RewardsPage({ onBack }) {
   const [days,  setDays]  = useState({})
   const [loading, setLoading] = useState(true)
 
-  const habits      = profile?.habits?.length > 0 ? profile.habits : DEFAULT_HABITS
+  const habits      = profile?.habits?.length > 0 ? profile.habits : defaultHabits(t)
   const totalHabits = habits.length
   const calTarget   = profile?.calories || 0
 

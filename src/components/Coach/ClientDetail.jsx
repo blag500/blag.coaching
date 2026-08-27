@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
-import { HABITS } from '../../data/appData'
-const DEFAULT_HABITS = HABITS
+import { HABITS, defaultHabits } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
 import DatePicker from '../DatePicker/DatePicker'
 import ChatPage from '../Chat/ChatPage'
@@ -455,7 +454,7 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
 
 function HabitsEditor({ habits, onChange }) {
   const { t } = useSettings()
-  const list = habits ?? DEFAULT_HABITS
+  const list = habits ?? defaultHabits(t)
   const [newEmoji, setNewEmoji] = useState('')
   const [newLabel, setNewLabel] = useState('')
 

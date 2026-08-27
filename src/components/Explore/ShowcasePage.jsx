@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
-import { HABITS as DEFAULT_HABITS } from '../../data/appData'
+import { defaultHabits } from '../../data/appData'
 import styles from './ShowcasePage.module.css'
 import { loc } from '../../utils/locale'
 
@@ -76,7 +76,7 @@ export default function ShowcasePage({ onBack }) {
         name:       fetched.name       || myProfile?.name       || '',
         avatar_url: fetched.avatar_url || myProfile?.avatar_url || null,
       }
-      const habits   = (profile.habits?.length > 0) ? profile.habits : DEFAULT_HABITS
+      const habits   = (profile.habits?.length > 0) ? profile.habits : defaultHabits(t)
       const habitIds = habits.map(h => h.id)
 
       // Nutrition per day

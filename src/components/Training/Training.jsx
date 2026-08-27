@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { DEFAULT_TRAINING_BLOCKS } from '../../data/appData'
+import { defaultTrainingBlocks } from '../../data/appData'
 import DayLog from './DayLog'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
@@ -313,10 +313,7 @@ export default function Training({ onMenuOpen }) {
   async function applyStarter() {
     setSavingPlan(true)
     await updateProfile({
-      training_plan: DEFAULT_TRAINING_BLOCKS.map(b => ({
-        ...b,
-        exercises: b.exercises.map(e => ({ ...e })),
-      })),
+      training_plan: defaultTrainingBlocks(t),
     })
     setSavingPlan(false)
   }

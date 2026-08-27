@@ -40,7 +40,7 @@ function defaultBlocks(initialPlan) {
     })
   }
   // От нулата — празен списък. „Готова програма" остава като отделен път от
-  // Training.jsx (applyStarter копира DEFAULT_TRAINING_BLOCKS в профила преди
+  // Training.jsx (applyStarter копира defaultTrainingBlocks() в профила преди
   // да отвори editor-а).
   return []
 }

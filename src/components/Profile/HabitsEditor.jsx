@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { HABITS as DEFAULT_HABITS } from '../../data/appData'
+import { defaultHabits } from '../../data/appData'
 import styles from './HabitsEditor.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 
@@ -17,7 +17,7 @@ export default function HabitsEditor() {
   const { t } = useSettings()
   const { profile, updateProfile } = useAuth()
 
-  const initial = profile?.habits?.length > 0 ? profile.habits : DEFAULT_HABITS
+  const initial = profile?.habits?.length > 0 ? profile.habits : defaultHabits(t)
   const [rows, setRows] = useState(() => initial.map(h => ({ ...h })))
   const [dirty, setDirty] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -29,7 +29,7 @@ export default function HabitsEditor() {
   const lastServerRef = useRef(JSON.stringify(initial))
   useEffect(() => {
     if (dirty) return
-    const nextServer = JSON.stringify(profile?.habits?.length > 0 ? profile.habits : DEFAULT_HABITS)
+    const nextServer = JSON.stringify(profile?.habits?.length > 0 ? profile.habits : defaultHabits(t))
     if (nextServer !== lastServerRef.current) {
       lastServerRef.current = nextServer
       setRows(JSON.parse(nextServer))
@@ -53,7 +53,7 @@ export default function HabitsEditor() {
     setDirty(true); setSaved(false)
   }
   function reset() {
-    setRows(DEFAULT_HABITS.map(h => ({ ...h })))
+    setRows(defaultHabits(t))
     setDirty(true); setSaved(false)
   }
   function move(i, dir) {
@@ -78,7 +78,7 @@ export default function HabitsEditor() {
     setSaving(false)
     if (error) { setErr(error.message || t('he.saveFailed')); return }
     setDirty(false); setSaved(true)
-    lastServerRef.current = JSON.stringify(clean.length ? clean : DEFAULT_HABITS)
+    lastServerRef.current = JSON.stringify(clean.length ? clean : defaultHabits(t))
     setTimeout(() => setSaved(false), 1600)
   }
 
