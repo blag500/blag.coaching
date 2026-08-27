@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import styles from './StreakCelebration.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const COLORS = ['var(--accent)', '#ffd54f', '#fff9c4', '#ffe082', '#fff176', '#ffcc02']
 
@@ -19,6 +20,7 @@ function makeConfetti(count) {
 const PIECES = makeConfetti(40)
 
 export default function StreakCelebration({ streak, onDone }) {
+  const { t } = useSettings()
   const timerRef = useRef(null)
 
   useEffect(() => {
@@ -50,8 +52,8 @@ export default function StreakCelebration({ streak, onDone }) {
       <div className={styles.card}>
         <span className={styles.fire}>🔥</span>
         <p className={styles.streakNum}>{streak}</p>
-        <p className={styles.streakLabel}>ПОРЕДНИ ДНИ</p>
-        <p className={styles.sub}>Всички навици изпълнени!</p>
+        <p className={styles.streakLabel}>{t('scel.streakLabel')}</p>
+        <p className={styles.sub}>{t('scel.sub')}</p>
       </div>
     </div>
   )

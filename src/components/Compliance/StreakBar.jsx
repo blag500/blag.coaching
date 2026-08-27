@@ -1,15 +1,15 @@
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import styles from './StreakBar.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
-const DAY_LABELS_BG = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
-function getLast7Days() {
+function getLast7Days(t) {
   const days = []
   for (let i = 6; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
     const iso = d.toISOString().slice(0, 10)
-    days.push({ iso, label: DAY_LABELS_BG[d.getDay()], isToday: i === 0 })
+    days.push({ iso, label: t(`days.${d.getDay()}`), isToday: i === 0 })
   }
   return days
 }
@@ -32,16 +32,17 @@ function calcStreak(history) {
 }
 
 export default function StreakBar() {
+  const { t } = useSettings()
   const history  = useHabitHistory()
-  const days     = getLast7Days()
+  const days     = getLast7Days(t)
   const streak   = calcStreak(history)
 
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
-        <span className={styles.title}>ПОСЛЕДНИ 7 ДНИ</span>
+        <span className={styles.title}>{t('sb.last7')}</span>
         {streak > 0 && (
-          <span className={styles.streakBadge}>{streak} подред</span>
+          <span className={styles.streakBadge}>{t('sb.streak', { n: streak })}</span>
         )}
       </div>
 

@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useUnread } from '../../hooks/useUnread'
 import styles from './SOSButton.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const STORAGE_KEY = 'blag_chat_hidden'
 
 export default function ChatButton({ onNavigate }) {
+  const { t } = useSettings()
   const { user, profile } = useAuth()
   const [hidden, setHidden] = useState(() => localStorage.getItem(STORAGE_KEY) === 'true')
   const isCoach = profile?.role === 'coach'
@@ -39,7 +41,7 @@ export default function ChatButton({ onNavigate }) {
 
   if (hidden) {
     return (
-      <button className={styles.tab} onClick={restore} type="button" aria-label="Покажи чат">
+      <button className={styles.tab} onClick={restore} type="button" aria-label={t('sos.showChat')}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
           strokeLinecap="round" strokeLinejoin="round" width="15" height="15" aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -51,15 +53,15 @@ export default function ChatButton({ onNavigate }) {
 
   return (
     <div className={styles.pill}>
-      <button className={styles.dismissBtn} onClick={dismiss} type="button" aria-label="Скрий чата">
+      <button className={styles.dismissBtn} onClick={dismiss} type="button" aria-label={t('sos.hideChat')}>
         ✕
       </button>
-      <button className={styles.chatBtn} onClick={() => onNavigate?.('chat')} type="button" aria-label="Чат с треньора">
+      <button className={styles.chatBtn} onClick={() => onNavigate?.('chat')} type="button" aria-label={t('sos.chatAria')}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
           strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
-        <span className={styles.chatLabel}>ТРЕНЬОР</span>
+        <span className={styles.chatLabel}>{t('sos.coach')}</span>
         {totalUnread > 0 && (
           <span className={styles.badge}>{totalUnread > 9 ? '9+' : totalUnread}</span>
         )}

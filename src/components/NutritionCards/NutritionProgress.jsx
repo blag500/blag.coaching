@@ -1,14 +1,15 @@
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './NutritionProgress.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 // Protein was green here and blue on every other screen, carbs the reverse.
 // Colour is the whole point of these three — if the same macro is a different
 // colour depending on which tab you are standing on, it has stopped meaning
 // anything and become decoration.
 const MACROS = [
-  { key: 'protein', label: 'ПРОТЕИН', short: 'П', unit: 'g', color: 'var(--macro-protein)' },
-  { key: 'carbs',   label: 'ВЪГЛ.',   short: 'В', unit: 'g', color: 'var(--macro-carbs)' },
-  { key: 'fat',     label: 'МАЗНИНИ', short: 'М', unit: 'g', color: 'var(--macro-fat)' },
+  { key: 'protein', labelKey: 'np.protein', shortKey: 'macro.p', unit: 'g', color: 'var(--macro-protein)' },
+  { key: 'carbs',   labelKey: 'np.carbs',   shortKey: 'macro.c', unit: 'g', color: 'var(--macro-carbs)' },
+  { key: 'fat',     labelKey: 'np.fat',     shortKey: 'macro.f', unit: 'g', color: 'var(--macro-fat)' },
 ]
 
 const R  = 46          // ring radius
@@ -20,6 +21,7 @@ const C  = 2 * Math.PI * R   // circumference ≈ 289.03
 export default function NutritionProgress({
   totals, targets, kcalBurned = 0, eatBack = false, idBase = 'np',
 }) {
+  const { t } = useSettings()
   const kcalLogged = totals.kcal  || 0
   const kcalTarget = (eatBack && kcalBurned > 0)
     ? (targets.kcal || 0) + kcalBurned
@@ -50,7 +52,7 @@ export default function NutritionProgress({
 
   return (
     <div className={styles.wrap}>
-      <span className={styles.heading}>ПРИЕМ ДНЕС</span>
+      <span className={styles.heading}>{t('np.heading')}</span>
 
       <div className={styles.inner}>
 
@@ -168,7 +170,7 @@ export default function NutritionProgress({
               fill="var(--muted)"
               fontSize="10"
               fontFamily="var(--font-body)">
-              ккал
+              {t('np.kcalLabel')}
             </text>
             <text x="60" y="75"
               textAnchor="middle"
@@ -215,7 +217,7 @@ export default function NutritionProgress({
             return (
               <div key={m.key} className={styles.row}>
                 <div className={styles.meta}>
-                  <span className={styles.label}>{m.label}</span>
+                  <span className={styles.label}>{t(m.labelKey)}</span>
                   <span
                     className={styles.values}
                     style={{ color: over ? '#ef4444' : m.color }}

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './DatePicker.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
 export default function DatePicker({ selectedDate, onChange }) {
+  const { t } = useSettings()
   const [showCal, setShowCal] = useState(false)
   const wrapRef = useRef(null)
 
@@ -39,7 +41,7 @@ export default function DatePicker({ selectedDate, onChange }) {
   return (
     <div className={styles.wrap} ref={wrapRef}>
       <div className={styles.nav}>
-        <button className={styles.arrowBtn} onClick={() => shiftDate(-1)} type="button" aria-label="Предишен ден">‹</button>
+        <button className={styles.arrowBtn} onClick={() => shiftDate(-1)} type="button" aria-label={t('dp.prevDay')}>‹</button>
         <button
           className={`${styles.labelBtn} ${showCal ? styles.labelBtnOpen : ''}`}
           onClick={() => setShowCal(v => !v)}
@@ -47,14 +49,14 @@ export default function DatePicker({ selectedDate, onChange }) {
         >
           {label}
         </button>
-        <button className={styles.arrowBtn} onClick={() => shiftDate(1)} type="button" aria-label="Следващ ден">›</button>
+        <button className={styles.arrowBtn} onClick={() => shiftDate(1)} type="button" aria-label={t('dp.nextDay')}>›</button>
         {!isToday && (
           <button
             className={styles.todayBtn}
             onClick={() => { onChange(todayStr()); setShowCal(false) }}
             type="button"
           >
-            ДНЕС
+            {t('dp.today')}
           </button>
         )}
       </div>
@@ -64,6 +66,7 @@ export default function DatePicker({ selectedDate, onChange }) {
 }
 
 function MiniCal({ selectedDate, onSelect }) {
+  const { t } = useSettings()
   const today = todayStr()
   const init = new Date(selectedDate + 'T12:00:00')
   const [year, setYear] = useState(init.getFullYear())
@@ -95,7 +98,7 @@ function MiniCal({ selectedDate, onSelect }) {
         <button className={styles.calNavBtn} onClick={next} type="button">›</button>
       </div>
       <div className={styles.calGrid}>
-        {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'].map(d => (
+        {[0, 1, 2, 3, 4, 5, 6].map(i => t(`daysMon.${i}`)).map(d => (
           <span key={d} className={styles.calWeekDay}>{d}</span>
         ))}
         {cells.map((day, i) => {

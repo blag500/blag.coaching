@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './RingProgress.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const R = 50
 const CIRCUMFERENCE = 2 * Math.PI * R
 
 export default function RingProgress({ completed, total }) {
+  const { t } = useSettings()
   const pct = total > 0 ? completed / total : 0
   const offset = CIRCUMFERENCE - pct * CIRCUMFERENCE
   const perfect = completed === total && total > 0
@@ -31,7 +33,7 @@ export default function RingProgress({ completed, total }) {
           aria-valuenow={completed}
           aria-valuemin={0}
           aria-valuemax={total}
-          aria-label={`${completed} от ${total} навика`}
+          aria-label={t('hab.ringAria', { done: completed, total })}
         >
           <circle
             cx="60" cy="60" r={R}
@@ -59,10 +61,10 @@ export default function RingProgress({ completed, total }) {
         </svg>
       </div>
 
-      <p className={styles.label}>НАВИЦИ ДНЕС</p>
+      <p className={styles.label}>{t('hab.today')}</p>
 
       {perfect && (
-        <p className={styles.perfect}>ПЕРФЕКТЕН ДЕН</p>
+        <p className={styles.perfect}>{t('hab.perfect')}</p>
       )}
     </div>
   )

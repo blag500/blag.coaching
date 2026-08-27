@@ -1,9 +1,11 @@
 import { useWaterLog } from '../../hooks/useWaterLog'
 import styles from './WaterTracker.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const GLASS_TARGET = 8
 
 export default function WaterTracker() {
+  const { t } = useSettings()
   const { glasses, add } = useWaterLog(GLASS_TARGET)
 
   const pct = Math.min(glasses / GLASS_TARGET, 1)
@@ -12,10 +14,10 @@ export default function WaterTracker() {
     <div className={styles.card}>
       <div className={styles.top}>
         <div className={styles.labelRow}>
-          <span className={styles.title}>ВОДА</span>
+          <span className={styles.title}>{t('wt.title')}</span>
           <span className={styles.count}>
             <span className={styles.countVal}>{glasses}</span>
-            <span className={styles.countTarget}> / {GLASS_TARGET} чаши</span>
+            <span className={styles.countTarget}>{t('wt.target', { n: GLASS_TARGET })}</span>
           </span>
         </div>
 
@@ -31,7 +33,7 @@ export default function WaterTracker() {
             type="button"
             className={`${styles.glass} ${i < glasses ? styles.glassFull : ''}`}
             onClick={() => add(i < glasses ? -(glasses - i) : i + 1 - glasses)}
-            aria-label={`${i + 1} чаша`}
+            aria-label={t('wt.glassAria', { n: i + 1 })}
           >
             <GlassIcon filled={i < glasses} />
           </button>
@@ -43,11 +45,11 @@ export default function WaterTracker() {
       </div>
 
       <div className={styles.btns}>
-        <button type="button" className={styles.btn} onClick={() => add(-1)} disabled={glasses === 0} aria-label="Намали">
+        <button type="button" className={styles.btn} onClick={() => add(-1)} disabled={glasses === 0} aria-label={t('wt.less')}>
           −
         </button>
-        <button type="button" className={`${styles.btn} ${styles.btnAdd}`} onClick={() => add(1)} aria-label="Добави чаша">
-          + чаша
+        <button type="button" className={`${styles.btn} ${styles.btnAdd}`} onClick={() => add(1)} aria-label={t('wt.moreAria')}>
+          {t('wt.more')}
         </button>
       </div>
     </div>

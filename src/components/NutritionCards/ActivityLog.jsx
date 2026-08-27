@@ -2,8 +2,10 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { MET_ACTIVITIES, calcKcal } from '../../hooks/useActivityLog'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './ActivityLog.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemove }) {
+  const { t } = useSettings()
   const { profile } = useAuth()
   const [selectedId, setSelectedId] = useState(MET_ACTIVITIES[0].id)
   const [duration, setDuration] = useState('30')
@@ -44,12 +46,12 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
 
   async function handleAdd() {
     const mins = parseInt(duration)
-    if (!mins || mins <= 0) { setError('Въведи минути'); return }
+    if (!mins || mins <= 0) { setError(t('al.errMinutes')); return }
     setError('')
     setAdding(true)
     const res = await onAdd(selectedId, mins)
     setAdding(false)
-    if (res?.error) setError('Грешка при запис. Опитай пак.')
+    if (res?.error) setError(t('al.errSave'))
   }
 
   return (
@@ -64,7 +66,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
             aria-haspopup="listbox"
             aria-expanded={dropdownOpen}
           >
-            <span className={styles.selectValue}>{selected?.label ?? 'Избери активност'}</span>
+            <span className={styles.selectValue}>{selected?.label ?? t('al.pickActivity')}</span>
             <span className={`${styles.selectChevron} ${dropdownOpen ? styles.selectChevronOpen : ''}`}>›</span>
           </button>
 
@@ -73,7 +75,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
               <input
                 className={styles.searchInput}
                 type="text"
-                placeholder="Търси активност..."
+                placeholder={t('al.searchPh')}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 autoFocus
@@ -93,7 +95,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
                   </li>
                 ))}
                 {filtered.length === 0 && (
-                  <li className={styles.optionEmpty}>Няма резултат</li>
+                  <li className={styles.optionEmpty}>{t('al.noResult')}</li>
                 )}
               </ul>
             </div>
@@ -109,12 +111,12 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
               max="480"
               value={duration}
               onChange={e => setDuration(e.target.value)}
-              placeholder="мин."
+              placeholder={t('al.minPh')}
             />
-            <span className={styles.durationUnit}>мин.</span>
+            <span className={styles.durationUnit}>{t('al.minUnit')}</span>
           </div>
           {preview > 0 && (
-            <span className={styles.preview}>≈ {preview} ккал</span>
+            <span className={styles.preview}>{t('al.preview', { n: preview })}</span>
           )}
           <button
             type="button"
@@ -122,7 +124,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
             onClick={handleAdd}
             disabled={adding || !parseInt(duration)}
           >
-            {adding ? '...' : '+ ДОБАВИ'}
+            {adding ? '...' : t('al.add')}
           </button>
         </div>
 
@@ -135,28 +137,28 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
             <div key={a.id} className={styles.entry}>
               <div className={styles.entryInfo}>
                 <span className={styles.entryName}>{a.activity}</span>
-                <span className={styles.entryMeta}>{a.duration_min} мин</span>
+                <span className={styles.entryMeta}>{t('al.entryMeta', { n: a.duration_min })}</span>
               </div>
-              <span className={styles.entryKcal}>−{a.kcal_burned} ккал</span>
+              <span className={styles.entryKcal}>{t('al.entryKcal', { n: a.kcal_burned })}</span>
               <button
                 type="button"
                 className={styles.removeBtn}
                 onClick={() => onRemove(a.id)}
-                aria-label="Изтрий"
+                aria-label={t('al.delete')}
               >
                 ×
               </button>
             </div>
           ))}
           <div className={styles.total}>
-            <span className={styles.totalLabel}>ОБЩО ИЗГОРЕНИ</span>
-            <span className={styles.totalVal}>{totalKcalBurned} ккал</span>
+            <span className={styles.totalLabel}>{t('al.totalLabel')}</span>
+            <span className={styles.totalVal}>{t('al.totalVal', { n: totalKcalBurned })}</span>
           </div>
         </div>
       )}
 
       {activities.length === 0 && (
-        <p className={styles.empty}>Няма записана активност за днес</p>
+        <p className={styles.empty}>{t('al.empty')}</p>
       )}
     </div>
   )

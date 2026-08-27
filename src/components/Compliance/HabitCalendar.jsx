@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import styles from './HabitCalendar.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
-const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
-const BG_MONTHS = [
-  'Януари','Февруари','Март','Април','Май','Юни',
-  'Юли','Август','Септември','Октомври','Ноември','Декември',
-]
 
 function pad(n) { return String(n).padStart(2, '0') }
 function dateStr(year, month, day) { return `${year}-${pad(month + 1)}-${pad(day)}` }
@@ -21,6 +17,7 @@ function cellColor(ratio) {
 }
 
 export default function HabitCalendar() {
+  const { t } = useSettings()
   const history = useHabitHistory()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -57,18 +54,18 @@ export default function HabitCalendar() {
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
-        <button className={styles.arrow} onClick={prevMonth} aria-label="Предишен месец">◀</button>
-        <span className={styles.monthLabel}>{BG_MONTHS[month]} {year}</span>
+        <button className={styles.arrow} onClick={prevMonth} aria-label={t('hc.prevMonth')}>◀</button>
+        <span className={styles.monthLabel}>{t(`months.${month}`)} {year}</span>
         <button
           className={styles.arrow}
           onClick={nextMonth}
-          aria-label="Следващ месец"
+          aria-label={t('hc.nextMonth')}
           disabled={isCurrentMonth}
         >▶</button>
       </div>
 
       <div className={styles.dayLabels}>
-        {DAY_LABELS.map(d => <span key={d} className={styles.dayLabel}>{d}</span>)}
+        {[0, 1, 2, 3, 4, 5, 6].map(i => <span key={i} className={styles.dayLabel}>{t(`daysMon.${i}`)}</span>)}
       </div>
 
       <div className={styles.grid}>
@@ -84,7 +81,7 @@ export default function HabitCalendar() {
               className={`${styles.cell} ${isToday ? styles.today : ''}`}
               style={{ background: cellColor(ratio) }}
               title={entry ? `${entry.completed}/${entry.total}` : ''}
-              aria-label={`${day}. ${entry ? `${entry.completed} от ${entry.total} навика` : 'няма данни'}`}
+              aria-label={t('hc.dayAria', { day, detail: entry ? t('hc.dayDone', { done: entry.completed, total: entry.total }) : t('hc.dayNone') })}
             >
               <span className={styles.dayNum}>{day}</span>
               {isToday && <span className={styles.todayDot} />}
@@ -95,8 +92,8 @@ export default function HabitCalendar() {
 
       <p className={styles.summary}>
         {perfectDays > 0
-          ? `${perfectDays} перфектни дни този месец 🏆`
-          : 'Отбележи навиците — ще се появят тук'}
+          ? t('hc.perfect', { n: perfectDays })
+          : t('hc.hint')}
       </p>
     </div>
   )

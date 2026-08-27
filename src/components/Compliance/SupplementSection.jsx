@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useSupplementsToday } from '../../hooks/useSupplementsToday'
 import styles from './SupplementSection.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const REMINDER_OPTIONS = [
-  { id: 'morning',   label: 'Сутрин' },
-  { id: 'afternoon', label: 'Обед'   },
-  { id: 'evening',   label: 'Вечер'  },
+  { id: 'morning',   labelKey: 'ss.morning'   },
+  { id: 'afternoon', labelKey: 'ss.afternoon' },
+  { id: 'evening',   labelKey: 'ss.evening'   },
 ]
 
 function AddForm({ onAdd, onCancel }) {
+  const { t } = useSettings()
   const [name, setName]           = useState('')
   const [dose, setDose]           = useState('')
   const [reminders, setReminders] = useState([])
@@ -32,14 +34,14 @@ function AddForm({ onAdd, onCancel }) {
     <form className={styles.form} onSubmit={handleSubmit}>
       <input
         className={styles.input}
-        placeholder="Название (напр. Креатин)"
+        placeholder={t('ss.namePh')}
         value={name}
         onChange={e => setName(e.target.value)}
         autoFocus
       />
       <input
         className={styles.input}
-        placeholder="Доза (напр. 5g)"
+        placeholder={t('ss.dosePh')}
         value={dose}
         onChange={e => setDose(e.target.value)}
       />
@@ -57,10 +59,10 @@ function AddForm({ onAdd, onCancel }) {
       </div>
       <div className={styles.formActions}>
         <button type="submit" className={styles.saveBtn} disabled={!name.trim() || saving}>
-          {saving ? '...' : 'Запази'}
+          {saving ? '...' : t('ss.save')}
         </button>
         <button type="button" className={styles.cancelBtn} onClick={onCancel}>
-          Отказ
+          {t('ss.cancel')}
         </button>
       </div>
     </form>
@@ -68,6 +70,7 @@ function AddForm({ onAdd, onCancel }) {
 }
 
 export default function SupplementSection() {
+  const { t } = useSettings()
   const { supplements, takenIds, loading, toggle, addSupplement, removeSupplement } = useSupplementsToday()
   const [showAdd, setShowAdd] = useState(false)
 
@@ -81,16 +84,16 @@ export default function SupplementSection() {
   return (
     <section className={styles.section}>
       <div className={styles.sectionHeader}>
-        <span className={styles.sectionTitle}>ДОБАВКИ</span>
+        <span className={styles.sectionTitle}>{t('ss.title')}</span>
         {!showAdd && (
           <button className={styles.addBtn} onClick={() => setShowAdd(true)} type="button">
-            + Добави
+            {t('ss.add')}
           </button>
         )}
       </div>
 
       {supplements.length === 0 && !showAdd && (
-        <p className={styles.empty}>Няма добавени добавки.</p>
+        <p className={styles.empty}>{t('ss.empty')}</p>
       )}
 
       <div className={styles.list}>
@@ -121,7 +124,7 @@ export default function SupplementSection() {
                 className={styles.removeBtn}
                 onClick={() => removeSupplement(sup.id)}
                 type="button"
-                aria-label="Премахни"
+                aria-label={t('ss.remove')}
               >
                 ×
               </button>

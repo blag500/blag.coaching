@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import styles from './FlipCard.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 export default function FlipCard({ card }) {
+  const { t } = useSettings()
   const [flipped, setFlipped] = useState(false)
 
   return (
@@ -13,7 +15,7 @@ export default function FlipCard({ card }) {
       tabIndex={0}
       onKeyDown={e => e.key === 'Enter' && setFlipped(f => !f)}
       aria-pressed={flipped}
-      aria-label={`${card.front.label} — натисни за детайли`}
+      aria-label={t('fc.aria', { label: card.front.label })}
     >
       <div className={`${styles.card} ${flipped ? styles.flipped : ''}`}>
         {/* Front */}

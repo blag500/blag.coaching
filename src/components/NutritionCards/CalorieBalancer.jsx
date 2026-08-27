@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './CalorieBalancer.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const DAY = 86_400_000
 
@@ -10,12 +11,11 @@ const DAY = 86_400_000
 // a target adjustment for that noise trains the wrong behaviour.
 const TOLERANCE = 0.05
 
-const DAY_NAMES = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
 function iso(d) { return new Date(d).toISOString().slice(0, 10) }
-function dayLabel(dateIso) {
+function dayLabel(t, dateIso) {
   const d = new Date(dateIso + 'T12:00:00')
-  return `${DAY_NAMES[d.getDay()]} ${d.getDate()}`
+  return `${t(`balancer.day.${d.getDay()}`)} ${d.getDate()}`
 }
 
 /** Monday of the current week (Monday-first, Sunday closes). */
@@ -37,6 +37,7 @@ function mondayOfThisWeek() {
  * until Sunday because the week is what the average is over.
  */
 export default function CalorieBalancer() {
+  const { t } = useSettings()
   const { user, profile, updateProfile } = useAuth()
   const target = profile?.calories ?? 0
   const [days, setDays] = useState([])
@@ -58,7 +59,7 @@ export default function CalorieBalancer() {
       d.setDate(d.getDate() + i)
       out.push({
         idx: i + 1,
-        label: DAY_NAMES[d.getDay()],
+        label: t(`balancer.day.${d.getDay()}`),
         day: d.getDate(),
         isToday: i === 0,
       })
@@ -133,8 +134,7 @@ export default function CalorieBalancer() {
     return (
       <div className={styles.wrap}>
         <p className={styles.empty}>
-          Настрой дневната си калорийна цел в „Открий → Калкулатор", за да
-          може балансьорът да сметне къде си спрямо нея.
+          {t('balancer.emptyTarget')}
         </p>
       </div>
     )
@@ -151,8 +151,8 @@ export default function CalorieBalancer() {
 
   return (
     <div className={styles.wrap}>
-      <h3 className={styles.title}>БАЛАНС НА СЕДМИЦАТА</h3>
-      <p className={styles.sub}>Цел за ден: {target.toLocaleString('bg-BG')} ккал</p>
+      <h3 className={styles.title}>{t('balancer.title')}</h3>
+      <p className={styles.sub}>{t('balancer.dayGoal', { n: target.toLocaleString('bg-BG') })}</p>
 
       <div className={styles.chart} style={{ '--target-h': `${(target / max) * 100}%` }}>
         {days.map(d => {
@@ -164,11 +164,11 @@ export default function CalorieBalancer() {
                 <div
                   className={`${styles.bar} ${over ? styles.barOver : ''} ${d.kcal ? '' : styles.barEmpty}`}
                   style={{ height: `${h}%` }}
-                  title={`${d.kcal.toLocaleString('bg-BG')} ккал`}
+                  title={t('balancer.dayKcalTitle', { n: d.kcal.toLocaleString('bg-BG') })}
                 />
                 <div className={styles.targetLine} />
               </div>
-              <span className={styles.colLabel}>{dayLabel(d.date)}</span>
+              <span className={styles.colLabel}>{dayLabel(t, d.date)}</span>
               <span className={styles.colVal}>{d.kcal ? d.kcal.toLocaleString('bg-BG') : '·'}</span>
             </div>
           )
@@ -176,26 +176,25 @@ export default function CalorieBalancer() {
       </div>
 
       {analysis.eaten === 0 ? (
-        <p className={styles.empty}>Още няма логвани дни в тази седмица.</p>
+        <p className={styles.empty}>{t('balancer.noLoggedYet')}</p>
       ) : (
         <>
           <div className={styles.deltaBox}>
             <div className={styles.deltaRow}>
-              <span className={styles.deltaLabel}>Средно за {analysis.eaten} дни</span>
-              <span className={styles.deltaVal}>{analysis.avg.toLocaleString('bg-BG')} ккал</span>
+              <span className={styles.deltaLabel}>{t('balancer.avgLabel', { n: analysis.eaten })}</span>
+              <span className={styles.deltaVal}>{t('balancer.avgVal', { n: analysis.avg.toLocaleString('bg-BG') })}</span>
             </div>
             <div className={styles.deltaRow}>
-              <span className={styles.deltaLabel}>Спрямо целта</span>
+              <span className={styles.deltaLabel}>{t('balancer.vsGoal')}</span>
               <span className={`${styles.deltaVal} ${isOver ? styles.over : isUnder ? styles.under : ''}`}>
-                {analysis.delta > 0 ? '+' : ''}{analysis.delta.toLocaleString('bg-BG')} ккал
+                {t('balancer.deltaVal', { sign: analysis.delta > 0 ? '+' : '', n: analysis.delta.toLocaleString('bg-BG') })}
               </span>
             </div>
           </div>
 
           {analysis.withinTolerance ? (
             <p className={styles.perfect}>
-              В рамките на ±5% от целта — това е шумът от мерене на порции, не
-              нещо за балансиране.
+              {t('balancer.withinNoise')}
             </p>
           ) : (
             <>
@@ -214,7 +213,7 @@ export default function CalorieBalancer() {
                       value={spread}
                       onChange={e => setSpread(parseInt(e.target.value, 10))}
                       className={styles.slider}
-                      aria-label="Дни за разпределяне"
+                      aria-label={t('balancer.sliderAria')}
                       style={{ '--fill': `${((spread - 1) / Math.max(1, remaining - 1)) * 100}%` }}
                     />
                     <div className={styles.ticks}>
@@ -231,16 +230,21 @@ export default function CalorieBalancer() {
                     </div>
                   </>
                 ) : (
-                  <p className={styles.lastDay}>Днес е неделя — само за днес</p>
+                  <p className={styles.lastDay}>{t('balancer.sundayOnly')}</p>
                 )}
               </div>
 
               <div className={styles.suggestion}>
                 <p className={styles.suggestionValue}>
-                  {suggested.toLocaleString('bg-BG')} <span className={styles.suggestionUnit}>ккал / ден</span>
+                  {suggested.toLocaleString('bg-BG')} <span className={styles.suggestionUnit}>{t('balancer.perDayUnit')}</span>
                 </p>
                 <p className={styles.suggestionMeta}>
-                  за {spread} {spread === 1 ? 'ден' : 'дни'} · {perDay > 0 ? '−' : '+'}{Math.abs(perDay).toLocaleString('bg-BG')} спрямо {target.toLocaleString('bg-BG')}
+                  {t(spread === 1 ? 'balancer.spreadOverOne' : 'balancer.spreadOverMany', {
+                    n: spread,
+                    sign: perDay > 0 ? '−' : '+',
+                    delta: Math.abs(perDay).toLocaleString('bg-BG'),
+                    target: target.toLocaleString('bg-BG'),
+                  })}
                 </p>
 
                 <button
@@ -249,7 +253,7 @@ export default function CalorieBalancer() {
                   onClick={applyNewTarget}
                   disabled={applying || applied}
                 >
-                  {applied ? '✓ Приложено' : applying ? '...' : 'Приложи като нова цел'}
+                  {applied ? t('balancer.applied') : applying ? '...' : t('balancer.applyBtn')}
                 </button>
               </div>
             </>
@@ -258,8 +262,7 @@ export default function CalorieBalancer() {
       )}
 
       <p className={styles.footnote}>
-        Броят се само дни, в които има логвана храна — празен ден = „не съм
-        логнал", а не „не съм ял", и не влиза в сметката.
+        {t('balancer.footnote')}
       </p>
     </div>
   )
