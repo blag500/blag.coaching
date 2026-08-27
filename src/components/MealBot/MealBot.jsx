@@ -1,78 +1,66 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MealBot.module.css'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const QUESTIONS = {
   timing: {
-    text: 'Кога е храненето? 🕐',
+    textKey: 'mb.q.timing',
     options: [
-      { value: 'pre',    emoji: '🏋️', label: 'Преди тренировка' },
-      { value: 'post',   emoji: '💪', label: 'След тренировка' },
-      { value: 'normal', emoji: '🍽',  label: 'Обичайно хранене' },
+      { value: 'pre',    emoji: '🏋️', labelKey: 'mb.timing.pre'    },
+      { value: 'post',   emoji: '💪', labelKey: 'mb.timing.post'   },
+      { value: 'normal', emoji: '🍽',  labelKey: 'mb.timing.normal' },
     ],
   },
   taste: {
-    text: 'Какво ти се яде?',
+    textKey: 'mb.q.craving',
     options: [
-      { value: 'salty', emoji: '🧂', label: 'Солено' },
-      { value: 'sweet', emoji: '🍫', label: 'Сладко' },
-      { value: 'any',   emoji: '🤷', label: 'Без значение' },
+      { value: 'salty', emoji: '🧂', labelKey: 'mb.craving.salty' },
+      { value: 'sweet', emoji: '🍫', labelKey: 'mb.craving.sweet' },
+      { value: 'any',   emoji: '🤷', labelKey: 'mb.craving.any'   },
     ],
   },
   cooking: {
-    text: 'Колко искаш да готвиш?',
+    textKey: 'mb.q.effort',
     options: [
-      { value: 'none',  emoji: '⚡',  label: 'Без готвене' },
-      { value: 'quick', emoji: '🥗', label: 'До 15 минути' },
-      { value: 'full',  emoji: '👨‍🍳', label: 'Готов съм да готвя' },
+      { value: 'none',  emoji: '⚡',  labelKey: 'mb.effort.none'  },
+      { value: 'quick', emoji: '🥗', labelKey: 'mb.effort.quick' },
+      { value: 'full',  emoji: '👨‍🍳', labelKey: 'mb.effort.full'  },
     ],
   },
   calories: {
-    text: 'Колко калории?',
+    textKey: 'mb.q.size',
     options: [
-      { value: 'light',    emoji: '🥗', label: 'Леко  (до 400)' },
-      { value: 'moderate', emoji: '🍱', label: 'Умерено  (400–700)' },
-      { value: 'heavy',    emoji: '🍖', label: 'Заситено  (700+)' },
-      { value: 'any',      emoji: '🎯', label: 'Без значение' },
+      { value: 'light',    emoji: '🥗', labelKey: 'mb.size.light'    },
+      { value: 'moderate', emoji: '🍱', labelKey: 'mb.size.moderate' },
+      { value: 'heavy',    emoji: '🍖', labelKey: 'mb.size.heavy'    },
+      { value: 'any',      emoji: '🎯', labelKey: 'mb.size.any'      },
     ],
   },
 }
 
-const REACTIONS = {
-  timing: {
-    pre:    'Добра идея! 🔋 Ще потърся нещо с добри въглехидрати за енергия.',
-    post:   'Страхотно! 💪 Трябват протеини за възстановяване.',
-    normal: 'Разбрано! 🍽 Ще намерим нещо вкусно и балансирано.',
-  },
-  taste: {
-    salty: 'Солено — класиката. 🧂',
-    sweet: 'Сладко е! Понякога е необходимо. 🍫',
-    any:   'Гъвкав! Нямам ограничения. 🤷',
-  },
-  cooking: {
-    none:  'Без готвене — разумно! ⚡',
-    quick: '15 минути — напълно достатъчно! 🥗',
-    full:  'Готов да готвиш — обичам ентусиазма! 👨‍🍳',
-  },
-  calories: {
-    light:    'Леко хранене — умно! 🥗',
-    moderate: 'Умерено — перфектен баланс! 🍱',
-    heavy:    'Заситено — трябва ти гориво! 🍖',
-    any:      'Без ограничения — харесва ми! 🎯',
-  },
+const REACTION_KEYS = {
+  timing:   { pre: 'mb.ack.pre',     post: 'mb.ack.post',        normal: 'mb.ack.normal' },
+  taste:    { salty: 'mb.ack.salty', sweet: 'mb.ack.sweet',      any: 'mb.ack.any' },
+  cooking:  { none: 'mb.ack.none',   quick: 'mb.ack.quick',      full: 'mb.ack.full' },
+  calories: { light: 'mb.ack.light', moderate: 'mb.ack.moderate',
+              heavy: 'mb.ack.heavy', any: 'mb.ack.anySize' },
 }
 
 const FLOW = ['timing', 'taste', 'cooking', 'calories']
 
 const MACRO_META = {
-  protein: { label: 'Протеин',      emoji: '🥩', unit: 'g' },
-  carbs:   { label: 'Въглехидрати', emoji: '🍞', unit: 'g' },
-  fat:     { label: 'Мазнини',      emoji: '🧈', unit: 'g' },
-  kcal:    { label: 'Калории',      emoji: '🔥', unit: 'ккал' },
+  protein: { labelKey: 'mb.macro.protein', emoji: '🥩', unit: 'g' },
+  carbs:   { labelKey: 'mb.macro.carbs',   emoji: '🍞', unit: 'g' },
+  fat:     { labelKey: 'mb.macro.fat',     emoji: '🧈', unit: 'g' },
+  kcal:    { labelKey: 'mb.macro.kcal',    emoji: '🔥', unitKey: 'mb.unit.kcal' },
 }
+
+/** Мерната единица на макроса — калориите са единствените с преводима. */
+const macroUnit = (t, m) => (m.unitKey ? t(m.unitKey) : m.unit)
 
 // ─── Session persistence ──────────────────────────────────────────────────────
 
@@ -257,6 +245,7 @@ function TypingIndicator() {
 
 export default function MealBot({ onAddRaw }) {
   const { user, profile } = useAuth()
+  const { t } = useSettings()
 
   // ── Restore persisted session (today only) ────────────────────────────────
   const [saved] = useState(() => loadSession(user?.id))
@@ -289,11 +278,7 @@ export default function MealBot({ onAddRaw }) {
   // Show welcome only on a fresh session (skip if restoring)
   useEffect(() => {
     if (messages.length > 0) return
-    addBot(
-      'Здравей! 👋 Аз съм **Благ Бот** — твоят личен хранителен асистент!\n\n' +
-      'Не знаеш какво да ядеш? Ще те насоча с 4 бързи въпроса.\n\n' +
-      'Или анализирам деня ти и ти казвам точно как да покриеш оставащите макроси! 📊'
-    )
+    addBot(t('mb.intro'))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist session to localStorage on every meaningful change
@@ -312,7 +297,7 @@ export default function MealBot({ onAddRaw }) {
 
   async function handleStart() {
     const s = ++sessionRef.current
-    addUser('Хайде! 🚀')
+    addUser(t('mb.start'))
     await botSay(QUESTIONS.timing.text, s)
     if (sessionRef.current !== s) return
     setStep('timing')
@@ -320,19 +305,19 @@ export default function MealBot({ onAddRaw }) {
 
   async function handleOption(qKey, opt) {
     const s = sessionRef.current
-    addUser(`${opt.emoji} ${opt.label}`)
+    addUser(`${opt.emoji} ${t(opt.labelKey)}`)
     const newPrefs = { ...prefs, [qKey]: opt.value }
     setPrefs(newPrefs)
-    await botSay(REACTIONS[qKey][opt.value], s)
+    await botSay(t(REACTION_KEYS[qKey][opt.value]), s)
     if (sessionRef.current !== s) return
     const nextIdx = FLOW.indexOf(qKey) + 1
     if (nextIdx < FLOW.length) {
       const nextKey = FLOW[nextIdx]
-      await botSay(QUESTIONS[nextKey].text, s)
+      await botSay(t(QUESTIONS[nextKey].textKey), s)
       if (sessionRef.current !== s) return
       setStep(nextKey)
     } else {
-      await botSay('Анализирам историята ти... 🧠', s)
+      await botSay(t('mb.analysing'), s)
       if (sessionRef.current !== s) return
       setStep('analyzing')
       await runMealSuggestion(newPrefs, s)
@@ -349,7 +334,7 @@ export default function MealBot({ onAddRaw }) {
       .slice(0, 8)
 
     if (!ranked.length) {
-      await botSay('Не намерих подходящи съвпадения. Опитай с различни критерии! 🔄', s)
+      await botSay(t('mb.noMatch'), s)
       if (sessionRef.current === s) setStep('empty')
       return
     }
@@ -359,15 +344,20 @@ export default function MealBot({ onAddRaw }) {
 
     const top = ranked[0]
     const timingNote =
-      finalPrefs.timing === 'post' ? 'Богато на протеин — идеално за след тренировка! 💪' :
-      finalPrefs.timing === 'pre'  ? 'Добри въглехидрати за енергия! 🔋' :
-                                     'Балансирано и вкусно! 🍽'
+      finalPrefs.timing === 'post' ? t('mb.note.post') :
+      finalPrefs.timing === 'pre'  ? t('mb.note.pre') :
+                                     t('mb.note.normal')
 
     await botSay(
-      `Намерих го! На база хранителната ти история ти препоръчвам:\n\n` +
+      `${t('mb.foundIt')}\n\n` +
       `🍴 **${top.name}**\n` +
-      `${Math.round(top.kcal)} ккал · П ${Math.round(top.protein * 10) / 10}g · В ${Math.round(top.carbs * 10) / 10}g · М ${Math.round(top.fat * 10) / 10}g\n` +
-      `Хапвал си го **${top.frequency}** ${top.frequency === 1 ? 'път' : 'пъти'}!\n\n` +
+      `${t('mb.suggestMacros', {
+        kcal: Math.round(top.kcal),
+        p: Math.round(top.protein * 10) / 10,
+        c: Math.round(top.carbs * 10) / 10,
+        f: Math.round(top.fat * 10) / 10,
+      })}\n` +
+      `${t(top.frequency === 1 ? 'mb.eatenOnce' : 'mb.eatenMany', { n: top.frequency })}\n\n` +
       timingNote,
       s
     )
@@ -378,17 +368,21 @@ export default function MealBot({ onAddRaw }) {
     const s = sessionRef.current
     const next = suggIdx + 1
     if (next >= suggestions.length) {
-      addUser('Покажи друго 🔄')
-      await botSay('Изчерпах всички предложения! Опитай нови критерии. ↺', s)
+      addUser(t('mb.showOther'))
+      await botSay(t('mb.exhausted'), s)
       return
     }
     setSuggIdx(next)
-    addUser('Покажи друго 🔄')
+    addUser(t('mb.showOther'))
     const item = suggestions[next]
     await botSay(
-      `Ето още едно:\n\n🍴 **${item.name}**\n` +
-      `${Math.round(item.kcal)} ккал · П ${Math.round(item.protein * 10) / 10}g · ${Math.round(item.grams)}g\n` +
-      `Хапвал си го **${item.frequency}** ${item.frequency === 1 ? 'път' : 'пъти'}!`,
+      `${t('mb.oneMore')}\n\n🍴 **${item.name}**\n` +
+      `${t('mb.nextMacros', {
+        kcal: Math.round(item.kcal),
+        p: Math.round(item.protein * 10) / 10,
+        g: Math.round(item.grams),
+      })}\n` +
+      `${t(item.frequency === 1 ? 'mb.eatenOnce' : 'mb.eatenMany', { n: item.frequency })}`,
       s
     )
   }
@@ -410,9 +404,9 @@ export default function MealBot({ onAddRaw }) {
 
   async function handleDailyAnalysis() {
     const s = ++sessionRef.current
-    addUser('📊 Анализирай деня')
+    addUser(t('mb.analyseDay'))
 
-    await botSay('Зареждам дневния ти лог... ⏳', s)
+    await botSay(t('mb.loadingLog'), s)
     if (sessionRef.current !== s) return
 
     // Targets from profile
@@ -424,7 +418,7 @@ export default function MealBot({ onAddRaw }) {
     }
 
     if (!targets.protein && !targets.kcal) {
-      await botSay('Нямаш зададени макро цели. Попитай своя треньор да ги настрои в профила ти! 📊', s)
+      await botSay(t('mb.noTargets'), s)
       if (sessionRef.current === s) setStep('empty')
       return
     }
@@ -463,26 +457,31 @@ export default function MealBot({ onAddRaw }) {
     const pct = (v, t) => t > 0 ? ` (${Math.round(v / t * 100)}%)` : ''
 
     const statusMsg =
-      `Ето как изглежда денят ти:\n\n` +
-      `🔥 Калории: **${totals.kcal}** / ${targets.kcal} ккал${pct(totals.kcal, targets.kcal)}\n` +
-      `🥩 Протеин: **${totals.protein}g** / ${targets.protein}g${pct(totals.protein, targets.protein)}\n` +
-      `🍞 Въглехидрати: **${totals.carbs}g** / ${targets.carbs}g${pct(totals.carbs, targets.carbs)}\n` +
-      `🧈 Мазнини: **${totals.fat}g** / ${targets.fat}g${pct(totals.fat, targets.fat)}`
+      `${t('mb.dayHeader')}\n\n` +
+      `${t('mb.dayKcal',    { v: totals.kcal,    t: targets.kcal,    pct: pct(totals.kcal, targets.kcal) })}\n` +
+      `${t('mb.dayProtein', { v: totals.protein, t: targets.protein, pct: pct(totals.protein, targets.protein) })}\n` +
+      `${t('mb.dayCarbs',   { v: totals.carbs,   t: targets.carbs,   pct: pct(totals.carbs, targets.carbs) })}\n` +
+      `${t('mb.dayFat',     { v: totals.fat,     t: targets.fat,     pct: pct(totals.fat, targets.fat) })}`
 
     await botSay(statusMsg, s)
     if (sessionRef.current !== s) return
 
     if (Object.keys(deficits).length === 0) {
-      await botSay('Браво! 🎉 Покрил си всички макроси за деня! Продължавай така! 💪', s)
+      await botSay(t('mb.allCovered'), s)
       if (sessionRef.current === s) setStep('empty')
       return
     }
 
     const deficitLines = Object.entries(deficits)
-      .map(([k, v]) => `${MACRO_META[k].emoji} **${MACRO_META[k].label}**: нужни още **${v}${MACRO_META[k].unit}**`)
+      .map(([k, v]) => t('mb.deficitLine', {
+        emoji: MACRO_META[k].emoji,
+        label: t(MACRO_META[k].labelKey),
+        v,
+        unit: macroUnit(t, MACRO_META[k]),
+      }))
       .join('\n')
 
-    await botSay(`Имаш следните дефицити:\n\n${deficitLines}\n\nКой да покрием? 🎯`, s)
+    await botSay(t('mb.deficits', { lines: deficitLines }), s)
     if (sessionRef.current !== s) return
 
     setMacroDeficits(deficits)
@@ -492,9 +491,9 @@ export default function MealBot({ onAddRaw }) {
   async function handleMacroPick(macro) {
     const s = sessionRef.current
     const m = MACRO_META[macro]
-    addUser(`${m.emoji} Покрий ${m.label}`)
+    addUser(t('mb.coverMacro', { emoji: m.emoji, label: t(m.labelKey) }))
 
-    await botSay(`Анализирам историята ти за най-добри източници на ${m.label.toLowerCase()}... 🧠`, s)
+    await botSay(t('mb.analysingMacro', { label: t(m.labelKey).toLowerCase() }), s)
     if (sessionRef.current !== s) return
 
     const items = await getHistory(s)
@@ -505,8 +504,7 @@ export default function MealBot({ onAddRaw }) {
 
     if (!suggs.length) {
       await botSay(
-        `Не намерих подходящи храни в историята ти за **${m.label.toLowerCase()}**.\n` +
-        `Логни по-разнообразни храни и ще мога да предложа по-добро решение! 📝`,
+        t('mb.noMacroFoods', { label: t(m.labelKey).toLowerCase() }),
         s
       )
       if (sessionRef.current === s) setStep('macroSelect')
@@ -515,15 +513,15 @@ export default function MealBot({ onAddRaw }) {
 
     const foodLines = suggs.map(sg => {
       const macroVal = macro === 'kcal'
-        ? `~${sg.kcal} ккал`
-        : `~${sg[macro]}g ${m.label.toLowerCase()}`
-      return `🍴 **${sg.name}** — ${sg.grams}g → ${macroVal}`
+        ? t('mb.macroValKcal', { n: sg.kcal })
+        : t('mb.macroVal', { n: sg[macro], label: t(m.labelKey).toLowerCase() })
+      return t('mb.foodLine', { name: sg.name, g: sg.grams, val: macroVal })
     }).join('\n')
 
     await botSay(
-      `Ето храни от историята ти, подходящи за оставащите ~**${gap}${m.unit}**:\n\n` +
-      `${foodLines}\n\n` +
-      `📊 Заедно дават около **${totalContrib}${m.unit}** — добра приблизителна покривка.`,
+      t('mb.macroSuggest', {
+        gap, unit: macroUnit(t, m), lines: foodLines, total: totalContrib,
+      }),
       s
     )
     if (sessionRef.current !== s) return
@@ -542,7 +540,7 @@ export default function MealBot({ onAddRaw }) {
     setMacroSuggestions([])
     setAddedItems({})
     setStep('macroSelect')
-    addBot('Окей! Кой друг макрос да покрием? 🎯')
+    addBot(t('mb.whichOther'))
   }
 
   // ── Shared: fetch + cache history ──────────────────────────────────────────
@@ -560,7 +558,7 @@ export default function MealBot({ onAddRaw }) {
     if (sessionRef.current !== s) return null
 
     if (!data?.length) {
-      await botSay('Нямаш достатъчно хранителна история! Логни повече храни и тогава ще мога да те насоча по-добре. 📝', s)
+      await botSay(t('mb.notEnoughHist'), s)
       if (sessionRef.current === s) setStep('empty')
       return null
     }
@@ -576,7 +574,7 @@ export default function MealBot({ onAddRaw }) {
     clearSession(user?.id)
     sessionRef.current++
     setTyping(false)
-    setMessages([{ from: 'bot', text: 'Хайде наново! 👋 Нови въпроси, нови идеи! 🎯', id: Date.now() }])
+    setMessages([{ from: 'bot', text: t('mb.restart'), id: Date.now() }])
     setStep('welcome')
     setPrefs({})
     setSuggestions([])
@@ -608,10 +606,10 @@ export default function MealBot({ onAddRaw }) {
         {step === 'welcome' && (
           <div className={styles.welcomeBtns}>
             <button className={styles.startBtn} onClick={handleStart} type="button">
-              Хайде! 🚀
+              {t('mb.start')}
             </button>
             <button className={styles.analysisBtn} onClick={handleDailyAnalysis} type="button">
-              📊 Анализирай деня
+              {t('mb.analyseDay')}
             </button>
           </div>
         )}
@@ -627,7 +625,7 @@ export default function MealBot({ onAddRaw }) {
                 type="button"
               >
                 <span className={styles.optEmoji}>{opt.emoji}</span>
-                {opt.label}
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>
@@ -637,13 +635,13 @@ export default function MealBot({ onAddRaw }) {
         {step === 'results' && currentItem && (
           <div className={styles.resultBtns}>
             <button className={styles.addBtn} onClick={handleAddSuggestion} type="button">
-              + Добави към лога
+              {t('mb.addToLog')}
             </button>
             <button className={styles.nextBtn} onClick={handleNextSuggestion} type="button">
-              Друго 🔄
+              {t('mb.other')}
             </button>
             <button className={styles.restartBtn} onClick={handleRestart} type="button">
-              Нов въпрос ↺
+              {t('mb.newQuestion')}
             </button>
           </div>
         )}
@@ -661,12 +659,12 @@ export default function MealBot({ onAddRaw }) {
                   type="button"
                 >
                   <span className={styles.optEmoji}>{m.emoji}</span>
-                  {m.label} — нужни {gap}{m.unit}
+                  {t('mb.macroNeeded', { label: t(m.labelKey), gap, unit: macroUnit(t, m) })}
                 </button>
               )
             })}
             <button className={styles.restartBtn} onClick={handleRestart} type="button">
-              ↺ Нов въпрос
+              {t('mb.newQuestion2')}
             </button>
           </div>
         )}
@@ -679,7 +677,7 @@ export default function MealBot({ onAddRaw }) {
                 <div className={styles.macroSugInfo}>
                   <span className={styles.macroSugName}>{item.name}</span>
                   <span className={styles.macroSugMeta}>
-                    {item.grams}g · {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g
+                    {t('mb.itemMacros', { g: item.grams, kcal: item.kcal, p: item.protein, c: item.carbs, f: item.fat })}
                   </span>
                 </div>
                 <button
@@ -688,16 +686,16 @@ export default function MealBot({ onAddRaw }) {
                   disabled={addedItems[i]}
                   type="button"
                 >
-                  {addedItems[i] ? '✓' : '+ Добави'}
+                  {addedItems[i] ? '✓' : t('mb.add')}
                 </button>
               </div>
             ))}
             <div className={styles.macroResultActions}>
               <button className={styles.nextBtn} onClick={handlePickAnotherMacro} type="button">
-                Друг макрос 🔄
+                {t('mb.otherMacro')}
               </button>
               <button className={styles.restartBtn} onClick={handleRestart} type="button">
-                ↺ Нов въпрос
+                {t('mb.newQuestion2')}
               </button>
             </div>
           </div>
@@ -705,7 +703,7 @@ export default function MealBot({ onAddRaw }) {
 
         {step === 'empty' && (
           <button className={styles.restartBtn} onClick={handleRestart} type="button">
-            Опитай отново ↺
+            {t('mb.tryAgain')}
           </button>
         )}
 
