@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { lookupBarcode, looksInconsistent, correctBarcode } from '../../utils/openFoodFacts'
 import { supabase } from '../../lib/supabase'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './BarcodeScanner.module.css'
 
 // Chrome and Android ship a native decoder; Safari does not. Camera access
@@ -11,6 +12,7 @@ import styles from './BarcodeScanner.module.css'
 const HAS_NATIVE = typeof BarcodeDetector !== 'undefined'
 
 export default function BarcodeScanner({ onFound, onClose }) {
+  const { t } = useSettings()
   const videoRef  = useRef(null)
   const streamRef = useRef(null)
   const rafRef    = useRef(null)
@@ -132,7 +134,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
         readerRef.current = controls
       } catch {
         if (!cancelled) {
-          setErrorMsg('Разпознаването не тръгна. Въведи номера ръчно.')
+          setErrorMsg(t('bs.startFailed'))
           setStatus('manual')
         }
       }
@@ -218,7 +220,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
       ...per100,
     })
     setSaving(false)
-    if (error) { setErrorMsg('Неуспешен запис. Опитай пак.'); return }
+    if (error) { setErrorMsg(t('bs.saveFailed')); return }
 
     onFound({
       id: crypto.randomUUID(),
@@ -233,11 +235,11 @@ export default function BarcodeScanner({ onFound, onClose }) {
   // transformed ancestor makes position:fixed resolve against it instead of the
   // viewport — the sheet ended up below the fold rather than over the screen.
   return createPortal(
-    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Баркод скенер">
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label={t('bs.dialogAria')}>
       <div className={styles.modal}>
         <div className={styles.top}>
-          <span className={styles.modalTitle}>СКЕНЕР</span>
-          <button className={styles.closeBtn} onClick={() => { stopStream(); onClose() }} aria-label="Затвори">✕</button>
+          <span className={styles.modalTitle}>{t('bs.title')}</span>
+          <button className={styles.closeBtn} onClick={() => { stopStream(); onClose() }} aria-label={t('bs.close')}>✕</button>
         </div>
 
         {(status === 'scanning' || status === 'opening') && (
@@ -250,11 +252,11 @@ export default function BarcodeScanner({ onFound, onClose }) {
                 onClick={toggleTorch}
                 type="button"
                 aria-pressed={torchOn}
-                aria-label={torchOn ? 'Изгаси светкавицата' : 'Светкавица'}
+                aria-label={torchOn ? t('bs.torchOff') : t('bs.torchOn')}
               >⚡</button>
             )}
             <p className={styles.hint}>
-              {status === 'opening' ? 'Отваря камерата…' : 'Насочи камерата към баркода'}
+              {status === 'opening' ? t('bs.opening') : t('bs.aim')}
             </p>
           </div>
         )}
@@ -262,25 +264,25 @@ export default function BarcodeScanner({ onFound, onClose }) {
         {status === 'found' && (
           <div className={styles.searching}>
             <span className={styles.spinner} />
-            <p>Търси продукта...</p>
+            <p>{t('bs.searching')}</p>
           </div>
         )}
 
         {status === 'manual' && (
           <div className={styles.manualWrap}>
             {errorMsg && <p className={styles.errorMsg}>{errorMsg}</p>}
-            <p className={styles.manualLabel}>Въведи EAN / баркод:</p>
+            <p className={styles.manualLabel}>{t('bs.manualLabel')}</p>
             <form onSubmit={handleManual} className={styles.manualForm}>
               <input
                 className={styles.manualInput}
                 type="text"
                 inputMode="numeric"
-                placeholder="напр. 3017620422003"
+                placeholder={t('bs.manualPh')}
                 value={manualCode}
                 onChange={e => setManualCode(e.target.value)}
                 autoFocus
               />
-              <button type="submit" className={styles.manualBtn}>Търси</button>
+              <button type="submit" className={styles.manualBtn}>{t('bs.manualBtn')}</button>
             </form>
           </div>
         )}
@@ -288,19 +290,18 @@ export default function BarcodeScanner({ onFound, onClose }) {
         {status === 'review' && review && (
           <div className={styles.unknownWrap}>
             <p className={styles.unknownLead}>
-              Числата на този продукт не се връзват — калориите не отговарят на
-              макросите. Провери ги по етикета.
+              {t('bs.mismatch')}
             </p>
             <p className={styles.reviewName}>{review.name}</p>
 
             <form onSubmit={acceptReview} className={styles.unknownForm}>
-              <p className={styles.unknownHint}>Стойности на 100 г:</p>
+              <p className={styles.unknownHint}>{t('bs.per100')}</p>
               <div className={styles.unknownGrid}>
                 {[
-                  { k: 'kcal',    label: 'ККАЛ', color: 'var(--accent)' },
-                  { k: 'protein', label: 'П',    color: 'var(--macro-protein)' },
-                  { k: 'carbs',   label: 'В',    color: 'var(--macro-carbs)' },
-                  { k: 'fat',     label: 'М',    color: 'var(--macro-fat)' },
+                  { k: 'kcal',    label: t('macro.kcalCaps'), color: 'var(--accent)' },
+                  { k: 'protein', label: t('macro.p'),        color: 'var(--macro-protein)' },
+                  { k: 'carbs',   label: t('macro.c'),        color: 'var(--macro-carbs)' },
+                  { k: 'fat',     label: t('macro.f'),        color: 'var(--macro-fat)' },
                 ].map(({ k, label, color }) => (
                   <label className={styles.unknownCell} key={k}>
                     <span className={styles.unknownTag} style={{ color }}>{label}</span>
@@ -317,10 +318,10 @@ export default function BarcodeScanner({ onFound, onClose }) {
               </div>
 
               <button type="submit" className={styles.manualBtn} disabled={saving}>
-                {saving ? 'Записва…' : 'Добави'}
+                {saving ? t('bs.saving') : t('bs.add')}
               </button>
               <p className={styles.reviewNote}>
-                Поправката се запазва за баркода — следващия път ще е вярна.
+                {t('bs.fixNote')}
               </p>
             </form>
           </div>
@@ -329,7 +330,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
         {status === 'unknown' && (
           <div className={styles.unknownWrap}>
             <p className={styles.unknownLead}>
-              Този баркод още го няма в базата. Въведи го веднъж и следващия път ще се разпознава сам.
+              {t('bs.unknown')}
             </p>
             <p className={styles.unknownCode}>{manualCode}</p>
             {errorMsg && <p className={styles.errorMsg}>{errorMsg}</p>}
@@ -337,20 +338,20 @@ export default function BarcodeScanner({ onFound, onClose }) {
             <form onSubmit={saveProduct} className={styles.unknownForm}>
               <input
                 className={styles.manualInput}
-                placeholder="Име на продукта"
+                placeholder={t('bs.namePh')}
                 value={newProduct.name}
                 onChange={e => setNewProduct(p => ({ ...p, name: e.target.value }))}
                 autoFocus
-                aria-label="Име на продукта"
+                aria-label={t('bs.namePh')}
               />
 
-              <p className={styles.unknownHint}>Стойности на 100 г от етикета:</p>
+              <p className={styles.unknownHint}>{t('bs.per100Label')}</p>
               <div className={styles.unknownGrid}>
                 {[
-                  { k: 'kcal',    label: 'ККАЛ', color: 'var(--accent)' },
-                  { k: 'protein', label: 'П',    color: 'var(--macro-protein)' },
-                  { k: 'carbs',   label: 'В',    color: 'var(--macro-carbs)' },
-                  { k: 'fat',     label: 'М',    color: 'var(--macro-fat)' },
+                  { k: 'kcal',    label: t('macro.kcalCaps'), color: 'var(--accent)' },
+                  { k: 'protein', label: t('macro.p'),        color: 'var(--macro-protein)' },
+                  { k: 'carbs',   label: t('macro.c'),        color: 'var(--macro-carbs)' },
+                  { k: 'fat',     label: t('macro.f'),        color: 'var(--macro-fat)' },
                 ].map(({ k, label, color }) => (
                   <label className={styles.unknownCell} key={k}>
                     <span className={styles.unknownTag} style={{ color }}>{label}</span>
@@ -366,7 +367,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
               </div>
 
               <button type="submit" className={styles.manualBtn} disabled={saving}>
-                {saving ? 'Записва…' : 'Запази и добави'}
+                {saving ? t('bs.saving') : t('bs.saveAndAdd')}
               </button>
             </form>
 
@@ -375,7 +376,7 @@ export default function BarcodeScanner({ onFound, onClose }) {
               onClick={() => { setErrorMsg(''); handledRef.current = false; setStatus('manual') }}
               type="button"
             >
-              ← Друг баркод
+              {t('bs.otherBarcode')}
             </button>
           </div>
         )}

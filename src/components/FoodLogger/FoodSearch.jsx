@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import EstimateFlag from '../EstimateFlag/EstimateFlag'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { searchFoods } from '../../utils/openFoodFacts'
 import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
@@ -16,10 +17,11 @@ import styles from './FoodSearch.module.css'
    the bare letters П/В/М — the same drawings the ring carries above, each in its
    macro's colour so the row is scannable rather than merely legible. */
 function Macros({ kcal, p, c, f, prefix }) {
+  const { t } = useSettings()
   return (
     <div className={styles.macroRow}>
       {prefix && <span className={styles.macroPrefix}>{prefix}</span>}
-      <span className={styles.macroKcal}>{kcal} ккал</span>
+      <span className={styles.macroKcal}>{t('fs.macroKcal', { n: kcal })}</span>
       <span className={styles.macroChip} style={{ color: 'var(--macro-protein)' }}>
         <Pictogram name="protein" size={14} />{p}g
       </span>
@@ -65,16 +67,16 @@ function ScanLabelIcon() {
 // level 1 = warning only
 // factor: multiply user's cooked grams by this to get raw/dry equivalent
 const FOOD_CLASSES = [
-  { re: /пиле|пилеш|пуй|пуеш|chicken|turkey/i,          level: 2, label: 'птиче месо',  factor: 1.35, dryCooked: false },
-  { re: /говеж|телеш|beef|стек|steak/i,                   level: 2, label: 'говеждо',     factor: 1.25, dryCooked: false },
-  { re: /свинск|pork/i,                                   level: 2, label: 'свинско',     factor: 1.20, dryCooked: false },
-  { re: /риба|сьомга|тон|скумрия|треска|salmon|tuna|fish/i, level: 2, label: 'риба',     factor: 1.15, dryCooked: false },
-  { re: /\bориз\b|rice/i,                                 level: 2, label: 'ориз',        factor: 0.37, dryCooked: true  },
-  { re: /паст[аи]|спагет|макарон|pasta|spaghetti|noodle/i, level: 2, label: 'тестени',   factor: 0.43, dryCooked: true  },
-  { re: /леща|lentil/i,                                   level: 2, label: 'леща',        factor: 0.40, dryCooked: true  },
-  { re: /нахут|chickpea/i,                                level: 2, label: 'нахут',       factor: 0.38, dryCooked: true  },
-  { re: /боб|bean/i,                                      level: 2, label: 'боб',         factor: 0.40, dryCooked: true  },
-  { re: /яйц|egg|кайма|колбас|наденица|sausage/i,        level: 1, label: null,           factor: 1,    dryCooked: false },
+  { re: /пиле|пилеш|пуй|пуеш|chicken|turkey/i,          level: 2, factor: 1.35, dryCooked: false },
+  { re: /говеж|телеш|beef|стек|steak/i,                   level: 2, factor: 1.25, dryCooked: false },
+  { re: /свинск|pork/i,                                   level: 2, factor: 1.20, dryCooked: false },
+  { re: /риба|сьомга|тон|скумрия|треска|salmon|tuna|fish/i, level: 2, factor: 1.15, dryCooked: false },
+  { re: /\bориз\b|rice/i,                                 level: 2, factor: 0.37, dryCooked: true  },
+  { re: /паст[аи]|спагет|макарон|pasta|spaghetti|noodle/i, level: 2, factor: 0.43, dryCooked: true  },
+  { re: /леща|lentil/i,                                   level: 2, factor: 0.40, dryCooked: true  },
+  { re: /нахут|chickpea/i,                                level: 2, factor: 0.38, dryCooked: true  },
+  { re: /боб|bean/i,                                      level: 2, factor: 0.40, dryCooked: true  },
+  { re: /яйц|egg|кайма|колбас|наденица|sausage/i,        level: 1, factor: 1,    dryCooked: false },
 ]
 
 function classifyFood(name = '') {
@@ -118,13 +120,14 @@ function resizeImage(file, maxDim = 900, maxBytes = 700_000) {
     img.onerror = () => {
       URL.revokeObjectURL(url)
       // Safari can decode HEIC in an <img>, most other browsers cannot.
-      reject(new Error('Този формат снимка не се поддържа. Опитай с JPG или снимай направо.'))
+      reject(new Error('UNSUPPORTED_IMAGE_FORMAT'))
     }
     img.src = url
   })
 }
 
 export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals = {}, targets = {} }) {
+  const { t } = useSettings()
   const [mode, setMode] = useState('ai')
 
   return (
@@ -132,11 +135,11 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
       <div className={styles.modeBar}>
         {[
           { id: 'ai',      label: 'AI',      icon: '◈' },
-          { id: 'barcode', label: 'БАРКОД',  icon: '▥' },
-          { id: 'history', label: 'ИСТОРИЯ', icon: '↺' },
-          { id: 'draft',   label: 'ЧЕРНОВА', icon: '✎' },
-          { id: 'bot',     label: 'БОТ',     icon: '◉' },
-          { id: 'recipes', label: 'РЕЦЕПТИ', icon: '≡' },
+          { id: 'barcode', label: t('fs.mode.barcode'), icon: '▥' },
+          { id: 'history', label: t('fs.mode.history'), icon: '↺' },
+          { id: 'draft',   label: t('fs.mode.draft'),   icon: '✎' },
+          { id: 'bot',     label: t('fs.mode.bot'),     icon: '◉' },
+          { id: 'recipes', label: t('fs.mode.recipes'), icon: '≡' },
         ].map(m => (
           <button
             key={m.id}
@@ -163,6 +166,7 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
 // ─── AI macro lookup mode ────────────────────────────────────────────────────
 
 function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
+  const { t } = useSettings()
   const [query, setQuery]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [labelLoading, setLabelLoading] = useState(false)
@@ -201,9 +205,9 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
         let body
         try { body = await fnError.context?.json() } catch { /* ignore */ }
         if (fnError.context?.status === 422 || body?.error === 'unrecognized') {
-          setError('Не разпознахме тази храна. Опитай с по-ясно описание.')
+          setError(t('fs.notRecognised'))
         } else {
-          setError('Неуспешно търсене. Провери връзката и опитай отново.')
+          setError(t('fs.searchFailed'))
         }
         return
       }
@@ -226,7 +230,7 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
       setResult({ ...data, estimated: true })
       setGrams(String(data.typical_grams || 100))
     } catch {
-      setError('Неуспешно търсене. Провери връзката и опитай отново.')
+      setError(t('fs.searchFailed'))
     } finally {
       setLoading(false)
     }
@@ -258,7 +262,9 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
       setResult({ ...data, estimated: true })
       setGrams(String(data.typical_grams || 100))
     } catch (err) {
-      setError(`Грешка: ${err.message}`)
+      setError(err.message === 'UNSUPPORTED_IMAGE_FORMAT'
+        ? t('fs.photoFormat')
+        : t('fs.error', { msg: err.message }))
     } finally {
       setLabelLoading(false)
     }
@@ -322,7 +328,9 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
       setResult({ ...data, estimated: true })
       setGrams(String(data.typical_grams || 100))
     } catch (err) {
-      setError(`Грешка: ${err.message}`)
+      setError(err.message === 'UNSUPPORTED_IMAGE_FORMAT'
+        ? t('fs.photoFormat')
+        : t('fs.error', { msg: err.message }))
     } finally {
       setFoodPhotoLoading(false)
     }
@@ -340,11 +348,11 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
           value={query}
           onChange={e => { setQuery(e.target.value); resetResults() }}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          placeholder="Храна или няколко със запетая..."
-          aria-label="AI търсене на макроси"
+          placeholder={t('fs.queryPh')}
+          aria-label={t('fs.queryAria')}
         />
         {query && (
-          <button className={styles.clear} onClick={() => { setQuery(''); resetResults() }} aria-label="Изчисти">×</button>
+          <button className={styles.clear} onClick={() => { setQuery(''); resetResults() }} aria-label={t('fs.clear')}>×</button>
         )}
       </div>
 
@@ -356,8 +364,8 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
           type="button"
         >
           {loading
-            ? <><span className={styles.spinner} style={{ marginRight: 8 }} />Анализира...</>
-            : 'Намери макроси'}
+            ? <><span className={styles.spinner} style={{ marginRight: 8 }} />{t('fs.analysing')}</>
+            : t('fs.findMacros')}
         </button>
 
         <button
@@ -365,12 +373,12 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
           onClick={() => foodPhotoInputRef.current?.click()}
           disabled={foodPhotoLoading}
           type="button"
-          title="Снимай ястие — Gemini разпознава храните"
+          title={t('fs.dishTitle')}
         >
           <PlateIcon />
           {foodPhotoLoading
-            ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />Анализира...</>
-            : 'Ястие'}
+            ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />{t('fs.analysing')}</>
+            : t('fs.dish')}
         </button>
 
         <button
@@ -378,12 +386,12 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
           onClick={() => photoInputRef.current?.click()}
           disabled={labelLoading}
           type="button"
-          title="Снимай хранителна стойност от етикет"
+          title={t('fs.labelTitle')}
         >
           <ScanLabelIcon />
           {labelLoading
-            ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />Разчита...</>
-            : 'Етикет'}
+            ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />{t('fs.reading')}</>
+            : t('fs.label')}
         </button>
       </div>
 
@@ -423,9 +431,9 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
             type="text"
             value={result.name}
             onChange={e => { setResult(prev => ({ ...prev, name: e.target.value })); setIsCooked(false) }}
-            aria-label="Наименование"
+            aria-label={t('fs.nameAria')}
           />
-          <Macros prefix="на 100g" kcal={result.per100g.kcal} p={result.per100g.protein} c={result.per100g.carbs} f={result.per100g.fat} />
+          <Macros prefix={t('fs.per100g')} kcal={result.per100g.kcal} p={result.per100g.protein} c={result.per100g.carbs} f={result.per100g.fat} />
 
           {fc?.level === 2 && (
             <div className={styles.cookingToggle}>
@@ -434,30 +442,30 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
                 onClick={() => setIsCooked(false)}
                 type="button"
               >
-                {fc.dryCooked ? 'Сухо' : 'Сурово'}
+                {fc.dryCooked ? t('fs.dry') : t('fs.raw')}
               </button>
               <button
                 className={`${styles.cookingBtn} ${isCooked ? styles.cookingBtnActive : ''}`}
                 onClick={() => setIsCooked(true)}
                 type="button"
               >
-                Сготвено
+                {t('fs.cooked')}
               </button>
               {isCooked && (
                 <span className={styles.cookingNote}>
-                  ≈ {Math.round(effG)}g {fc.dryCooked ? 'сухо' : 'сурово'}
+                  {t('fs.cookingNote', { g: Math.round(effG), state: fc.dryCooked ? t('fs.dryLower') : t('fs.rawLower') })}
                 </span>
               )}
             </div>
           )}
           {fc?.level === 1 && (
             <div className={styles.cookingWarn}>
-              ⚠ Провери дали стойностите са за суров или обработен продукт
+              {t('fs.cookingWarn')}
             </div>
           )}
 
           <div className={styles.gramRow}>
-            <label className={styles.gramLabel} htmlFor="ai-grams-input">Грамаж</label>
+            <label className={styles.gramLabel} htmlFor="ai-grams-input">{t('fs.grams')}</label>
             <input
               id="ai-grams-input"
               className={styles.gramInput}
@@ -480,8 +488,8 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
           )}
           {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
           <div className={styles.panelActions}>
-            <button className={styles.cancelBtn} onClick={() => setResult(null)} type="button">Назад</button>
-            <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
+            <button className={styles.cancelBtn} onClick={() => setResult(null)} type="button">{t('fs.back')}</button>
+            <button className={styles.addBtn} onClick={handleAdd} type="button">{t('fs.add')}</button>
           </div>
         </div>
         )
@@ -518,6 +526,7 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
 // ─── Multi-food confirmation panel ───────────────────────────────────────────
 
 function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
+  const { t } = useSettings()
   const [items, setItems] = useState(initialItems)
 
   function updateGrams(idx, rawVal) {
@@ -550,8 +559,8 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
   if (items.length === 0) {
     return (
       <div className={styles.multiPanel}>
-        <p className={styles.multiEmpty}>Всички храни са премахнати.</p>
-        <button className={styles.cancelBtn} onClick={onCancel} type="button">Назад</button>
+        <p className={styles.multiEmpty}>{t('fs.multiEmpty')}</p>
+        <button className={styles.cancelBtn} onClick={onCancel} type="button">{t('fs.back')}</button>
       </div>
     )
   }
@@ -560,9 +569,9 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
     <div className={styles.multiPanel}>
       <div className={styles.multiHeader}>
         <span className={styles.multiTitle}>
-          {items.length} {items.length === 1 ? 'храна' : 'храни'} — провери грамажа
+          {items.length === 1 ? t('fs.multiTitle.one') : t('fs.multiTitle.other', { n: items.length })}
         </span>
-        <span className={styles.multiHint}>Коригирай количествата при нужда</span>
+        <span className={styles.multiHint}>{t('fs.multiHint')}</span>
       </div>
 
       <div className={styles.multiList}>
@@ -574,7 +583,7 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
                 className={styles.multiItemRemove}
                 onClick={() => removeItem(i)}
                 type="button"
-                aria-label="Премахни"
+                aria-label={t('fs.remove')}
               >×</button>
             </div>
             <div className={styles.multiItemRow}>
@@ -590,7 +599,7 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
                 <span className={styles.gramUnit}>g</span>
               </div>
               <span className={styles.multiItemMacros}>
-                {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g
+                {t('fs.rowMacros', { kcal: item.kcal, p: item.protein, c: item.carbs, f: item.fat })}
               </span>
             </div>
           </div>
@@ -598,18 +607,18 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
       </div>
 
       <div className={styles.multiTotals}>
-        <span className={styles.multiTotalsLabel}>ОБЩО</span>
+        <span className={styles.multiTotalsLabel}>{t('fs.total')}</span>
         <span className={styles.multiTotalsVal}>
-          {totals.kcal} ккал · П{totals.protein}g · В{totals.carbs}g · М{totals.fat}g
+          {t('fs.rowMacros', { kcal: totals.kcal, p: totals.protein, c: totals.carbs, f: totals.fat })}
         </span>
       </div>
 
       {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
 
       <div className={styles.panelActions}>
-        <button className={styles.cancelBtn} onClick={onCancel} type="button">Назад</button>
+        <button className={styles.cancelBtn} onClick={onCancel} type="button">{t('fs.back')}</button>
         <button className={styles.addBtn} onClick={() => onAdd(items)} type="button">
-          + Добави {items.length === 1 ? '1 храна' : `${items.length} храни`}
+          {items.length === 1 ? t('fs.addN.one') : t('fs.addN.other', { n: items.length })}
         </button>
       </div>
     </div>
@@ -619,6 +628,7 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
 // ─── Barcode scan mode ───────────────────────────────────────────────────────
 
 function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
+  const { t } = useSettings()
   const [scanning, setScanning] = useState(true)
   const [result, setResult]     = useState(null)
   const [grams, setGrams]       = useState('100')
@@ -659,9 +669,9 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
   if (!result) {
     return (
       <div className={styles.barcodeRetry}>
-        <p className={styles.error}>Продуктът не е намерен.</p>
+        <p className={styles.error}>{t('fs.notFound')}</p>
         <button className={styles.addBtn} onClick={() => setScanning(true)} type="button">
-          Опитай отново
+          {t('fs.tryAgain')}
         </button>
       </div>
     )
@@ -676,14 +686,14 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
         type="text"
         value={result.name}
         onChange={e => setResult(prev => ({ ...prev, name: e.target.value }))}
-        aria-label="Наименование"
+        aria-label={t('fs.nameAria')}
       />
       {result.brand && (
         <div className={styles.aiPer100g}>{result.brand}</div>
       )}
-      <Macros prefix="на 100g" kcal={result.per100g.kcal} p={result.per100g.protein} c={result.per100g.carbs} f={result.per100g.fat} />
+      <Macros prefix={t('fs.per100g')} kcal={result.per100g.kcal} p={result.per100g.protein} c={result.per100g.carbs} f={result.per100g.fat} />
       <div className={styles.gramRow}>
-        <label className={styles.gramLabel} htmlFor="bc-grams-input">Грамаж</label>
+        <label className={styles.gramLabel} htmlFor="bc-grams-input">{t('fs.grams')}</label>
         <input
           id="bc-grams-input"
           className={styles.gramInput}
@@ -706,8 +716,8 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
       )}
       {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
       <div className={styles.panelActions}>
-        <button className={styles.cancelBtn} onClick={() => setScanning(true)} type="button">← Сканирай</button>
-        <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
+        <button className={styles.cancelBtn} onClick={() => setScanning(true)} type="button">{t('fs.rescan')}</button>
+        <button className={styles.addBtn} onClick={handleAdd} type="button">{t('fs.add')}</button>
       </div>
     </div>
   )
@@ -716,6 +726,7 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
 // ─── Manual entry mode ───────────────────────────────────────────────────────
 
 function ManualMode({ onAddRaw }) {
+  const { t } = useSettings()
   const empty = { name: '', kcal: '', protein: '', carbs: '', fat: '', grams: '' }
   const [form, setForm] = useState(empty)
   const [added, setAdded] = useState(false)
@@ -746,17 +757,17 @@ function ManualMode({ onAddRaw }) {
       <input
         className={`${styles.input} ${styles.manualName}`}
         type="text"
-        placeholder="Наименование на храната..."
+        placeholder={t('fs.manualNamePh')}
         value={form.name}
         onChange={e => set('name', e.target.value)}
       />
       <div className={styles.macroGrid}>
         {[
-          { key: 'kcal',    label: 'Ккал',  required: true },
-          { key: 'protein', label: 'Протеин g' },
-          { key: 'carbs',   label: 'Въгл. g' },
-          { key: 'fat',     label: 'Мазн. g' },
-          { key: 'grams',   label: 'Грамаж g' },
+          { key: 'kcal',    label: t('fs.manualKcal'), required: true },
+          { key: 'protein', label: t('fs.manualProtein') },
+          { key: 'carbs',   label: t('fs.manualCarbs') },
+          { key: 'fat',     label: t('fs.manualFat') },
+          { key: 'grams',   label: t('fs.manualGrams') },
         ].map(({ key, label, required }) => (
           <div key={key} className={styles.macroField}>
             <label className={styles.macroLabel}>{label}{required && ' *'}</label>
@@ -778,7 +789,7 @@ function ManualMode({ onAddRaw }) {
         disabled={!canAdd}
         type="button"
       >
-        {added ? '✓ Добавено' : '+ Добави към лога'}
+        {added ? t('fs.added') : t('fs.addToLog')}
       </button>
     </div>
   )
@@ -787,6 +798,7 @@ function ManualMode({ onAddRaw }) {
 // ─── Recent foods mode ───────────────────────────────────────────────────────
 
 function RecentMode({ onAddRaw }) {
+  const { t } = useSettings()
   const { user } = useAuth()
   const [recents, setRecents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -844,8 +856,8 @@ function RecentMode({ onAddRaw }) {
     setQuery('')
   }
 
-  if (loading) return <p className={styles.recentEmpty}>Зарежда...</p>
-  if (recents.length === 0) return <p className={styles.recentEmpty}>Няма скорошни храни</p>
+  if (loading) return <p className={styles.recentEmpty}>{t('fs.loading')}</p>
+  if (recents.length === 0) return <p className={styles.recentEmpty}>{t('fs.noRecents')}</p>
 
   const filtered = query.trim()
     ? recents.filter(r => r.name.toLowerCase().includes(query.trim().toLowerCase()))
@@ -857,17 +869,17 @@ function RecentMode({ onAddRaw }) {
         <input
           className={styles.recentSearch}
           type="text"
-          placeholder="Филтрирай скорошни..."
+          placeholder={t('fs.filterPh')}
           value={query}
           onChange={e => { setQuery(e.target.value); setSelectedName(null) }}
-          aria-label="Търси в скорошни"
+          aria-label={t('fs.filterAria')}
         />
         {query && (
-          <button className={styles.recentSearchClear} onClick={() => { setQuery(''); setSelectedName(null) }} type="button" aria-label="Изчисти">×</button>
+          <button className={styles.recentSearchClear} onClick={() => { setQuery(''); setSelectedName(null) }} type="button" aria-label={t('fs.clear')}>×</button>
         )}
       </div>
       {filtered.length === 0 && (
-        <p className={styles.recentEmpty}>Няма намерени храни</p>
+        <p className={styles.recentEmpty}>{t('fs.noneFound')}</p>
       )}
     <ul className={styles.recentList}>
       {filtered.map((item, i) => {
@@ -886,10 +898,10 @@ function RecentMode({ onAddRaw }) {
                   value={editedName}
                   onChange={e => setEditedName(e.target.value)}
                   placeholder={item.name}
-                  aria-label="Име на храна (може да се редактира)"
+                  aria-label={t('fs.recentNameAria')}
                 />
                 <div className={styles.gramRow}>
-                  <label className={styles.gramLabel}>Грамаж</label>
+                  <label className={styles.gramLabel}>{t('fs.grams')}</label>
                   <input
                     className={styles.gramInput}
                     type="number"
@@ -903,15 +915,17 @@ function RecentMode({ onAddRaw }) {
                 </div>
                 {ratio > 0 && (
                   <div className={styles.preview}>
-                    {Math.round(item.kcal * ratio)} ккал ·
-                    П {Math.round(item.protein * ratio * 10) / 10}g ·
-                    В {Math.round(item.carbs   * ratio * 10) / 10}g ·
-                    М {Math.round(item.fat     * ratio * 10) / 10}g
+                    {t('fs.previewMacros', {
+                      kcal: Math.round(item.kcal * ratio),
+                      p: Math.round(item.protein * ratio * 10) / 10,
+                      c: Math.round(item.carbs   * ratio * 10) / 10,
+                      f: Math.round(item.fat     * ratio * 10) / 10,
+                    })}
                   </div>
                 )}
                 <div className={styles.panelActions}>
-                  <button className={styles.cancelBtn} onClick={() => { setSelectedName(null); setEditedName('') }} type="button">Назад</button>
-                  <button className={styles.addBtn} onClick={() => handleConfirm(item)} type="button">+ Добави</button>
+                  <button className={styles.cancelBtn} onClick={() => { setSelectedName(null); setEditedName('') }} type="button">{t('fs.back')}</button>
+                  <button className={styles.addBtn} onClick={() => handleConfirm(item)} type="button">{t('fs.add')}</button>
                 </div>
               </>
             ) : (
@@ -919,7 +933,7 @@ function RecentMode({ onAddRaw }) {
                 <div className={styles.recentInfo}>
                   <span className={styles.recentName}>{item.name}</span>
                   <span className={styles.recentMacros}>
-                    {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g
+                    {t('fs.rowMacros', { kcal: item.kcal, p: item.protein, c: item.carbs, f: item.fat })}
                     {item.grams > 0 && <> · {item.grams}g</>}
                   </span>
                 </div>
@@ -927,7 +941,7 @@ function RecentMode({ onAddRaw }) {
                   className={styles.recentAddBtn}
                   onClick={() => handleSelect(item)}
                   type="button"
-                  aria-label={`Добави ${item.name}`}
+                  aria-label={t('fs.addNamed', { name: item.name })}
                 >
                   +
                 </button>
@@ -977,6 +991,7 @@ function buildOFFQuery(remaining, targets) {
 }
 
 function SuggestCard({ item, onAdd, hint }) {
+  const { t } = useSettings()
   const [expanded, setExpanded] = useState(false)
   const [grams, setGrams]       = useState(String(item.grams))
 
@@ -1000,7 +1015,7 @@ function SuggestCard({ item, onAdd, hint }) {
         <>
           <span className={styles.suggestCardName}>{item.name}</span>
           <div className={styles.gramRow}>
-            <label className={styles.gramLabel}>Грамаж</label>
+            <label className={styles.gramLabel}>{t('fs.grams')}</label>
             <input
               className={styles.gramInput}
               type="number" min="1" max="2000"
@@ -1012,15 +1027,17 @@ function SuggestCard({ item, onAdd, hint }) {
           </div>
           {ratio > 0 && (
             <div className={styles.preview}>
-              {Math.round(item.kcal * ratio)} ккал ·
-              П {Math.round(item.protein * ratio * 10) / 10}g ·
-              В {Math.round(item.carbs   * ratio * 10) / 10}g ·
-              М {Math.round(item.fat     * ratio * 10) / 10}g
+              {t('fs.previewMacros', {
+                kcal: Math.round(item.kcal * ratio),
+                p: Math.round(item.protein * ratio * 10) / 10,
+                c: Math.round(item.carbs   * ratio * 10) / 10,
+                f: Math.round(item.fat     * ratio * 10) / 10,
+              })}
             </div>
           )}
           <div className={styles.panelActions}>
-            <button className={styles.cancelBtn} onClick={() => setExpanded(false)} type="button">Назад</button>
-            <button className={styles.addBtn} onClick={handleAdd} type="button">+ Добави</button>
+            <button className={styles.cancelBtn} onClick={() => setExpanded(false)} type="button">{t('fs.back')}</button>
+            <button className={styles.addBtn} onClick={handleAdd} type="button">{t('fs.add')}</button>
           </div>
         </>
       ) : (
@@ -1028,7 +1045,7 @@ function SuggestCard({ item, onAdd, hint }) {
           <div className={styles.suggestCardInfo}>
             <span className={styles.suggestCardName}>{item.name}</span>
             <span className={styles.suggestCardMacros}>
-              {item.kcal} ккал · П{item.protein}g · В{item.carbs}g · М{item.fat}g · {item.grams}g
+              {t('fs.rowMacrosG', { kcal: item.kcal, p: item.protein, c: item.carbs, f: item.fat, g: item.grams })}
               {hint && <span className={styles.suggestCardHint}> · {hint}</span>}
             </span>
           </div>
@@ -1040,6 +1057,7 @@ function SuggestCard({ item, onAdd, hint }) {
 }
 
 function HistorySuggestions({ remaining, onAddRaw }) {
+  const { t } = useSettings()
   const { profile } = useAuth()
   const [items, setItems]     = useState(null)
   const [loading, setLoading] = useState(true)
@@ -1065,19 +1083,20 @@ function HistorySuggestions({ remaining, onAddRaw }) {
       })
   }, [profile?.id])
 
-  if (loading) return <p className={styles.suggestEmpty}>Зарежда...</p>
-  if (!items?.length) return <p className={styles.suggestEmpty}>Няма история за анализ</p>
+  if (loading) return <p className={styles.suggestEmpty}>{t('fs.loading')}</p>
+  if (!items?.length) return <p className={styles.suggestEmpty}>{t('fs.noHistory')}</p>
 
   return (
     <ul className={styles.suggestList}>
       {items.map((item, i) => (
-        <SuggestCard key={i} item={item} hint="от история" onAdd={onAddRaw} />
+        <SuggestCard key={i} item={item} hint={t('fs.hintHistory')} onAdd={onAddRaw} />
       ))}
     </ul>
   )
 }
 
 function OFFSuggestions({ remaining, targets, onAddRaw }) {
+  const { t } = useSettings()
   const [query, setQuery]     = useState('')
   const [items, setItems]     = useState(null)
   const [loading, setLoading] = useState(false)
@@ -1115,7 +1134,7 @@ function OFFSuggestions({ remaining, targets, onAddRaw }) {
         .slice(0, 8)
       setItems(scored)
     } catch {
-      setError('Грешка при търсене')
+      setError(t('fs.searchError'))
     }
     setLoading(false)
   }
@@ -1126,7 +1145,7 @@ function OFFSuggestions({ remaining, targets, onAddRaw }) {
         <input
           className={styles.offSearch}
           type="text"
-          placeholder="Търси в OpenFoodFacts..."
+          placeholder={t('fs.offSearchPh')}
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && runSearch(query)}
@@ -1141,7 +1160,7 @@ function OFFSuggestions({ remaining, targets, onAddRaw }) {
         </button>
       </div>
       {error && <p className={styles.suggestEmpty}>{error}</p>}
-      {!loading && items?.length === 0 && <p className={styles.suggestEmpty}>Няма резултати</p>}
+      {!loading && items?.length === 0 && <p className={styles.suggestEmpty}>{t('fs.noResults')}</p>}
       {items && items.length > 0 && (
         <ul className={styles.suggestList}>
           {items.map((item, i) => (
@@ -1154,6 +1173,7 @@ function OFFSuggestions({ remaining, targets, onAddRaw }) {
 }
 
 function SuggestMode({ totals, targets, onAddRaw }) {
+  const { t } = useSettings()
   const [subTab, setSubTab] = useState('history')
 
   const remaining = {
@@ -1166,12 +1186,12 @@ function SuggestMode({ totals, targets, onAddRaw }) {
   return (
     <div className={styles.suggestWrap}>
       <div className={styles.remainingBanner}>
-        <span className={styles.remainingLabel}>Остават</span>
+        <span className={styles.remainingLabel}>{t('fs.remaining')}</span>
         <div className={styles.remainingValues}>
-          <span className={styles.remKcal}>{Math.round(remaining.kcal)} ккал</span>
-          <span className={styles.remMacro}>П {Math.round(remaining.protein)}g</span>
-          <span className={styles.remMacro}>В {Math.round(remaining.carbs)}g</span>
-          <span className={styles.remMacro}>М {Math.round(remaining.fat)}g</span>
+          <span className={styles.remKcal}>{t('fs.remKcal', { n: Math.round(remaining.kcal) })}</span>
+          <span className={styles.remMacro}>{t('fs.remProtein', { n: Math.round(remaining.protein) })}</span>
+          <span className={styles.remMacro}>{t('fs.remCarbs', { n: Math.round(remaining.carbs) })}</span>
+          <span className={styles.remMacro}>{t('fs.remFat', { n: Math.round(remaining.fat) })}</span>
         </div>
       </div>
 
@@ -1180,12 +1200,12 @@ function SuggestMode({ totals, targets, onAddRaw }) {
           className={`${styles.subTabBtn} ${subTab === 'history' ? styles.subTabActive : ''}`}
           onClick={() => setSubTab('history')}
           type="button"
-        >МОЯ ИСТОРИЯ</button>
+        >{t('fs.tabHistory')}</button>
         <button
           className={`${styles.subTabBtn} ${subTab === 'off' ? styles.subTabActive : ''}`}
           onClick={() => setSubTab('off')}
           type="button"
-        >НОВИ ХРАНИ</button>
+        >{t('fs.tabNew')}</button>
       </div>
 
       {subTab === 'history' && <HistorySuggestions remaining={remaining} onAddRaw={onAddRaw} />}

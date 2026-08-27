@@ -257,7 +257,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     return editingId === entry.id ? (
       <li key={entry.id} className={`${styles.entry} ${styles.entryEditing}`}>
         <div className={styles.editNameField}>
-          <label className={styles.editLabel} htmlFor={`edit-name-${entry.id}`}>Наименование</label>
+          <label className={styles.editLabel} htmlFor={`edit-name-${entry.id}`}>{t('foodlog.editName')}</label>
           <input
             id={`edit-name-${entry.id}`}
             className={styles.editInput}
@@ -269,7 +269,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         </div>
 
         <div className={styles.editGramsRow}>
-          <label className={styles.editLabel}>Грамаж</label>
+          <label className={styles.editLabel}>{t('foodlog.editGrams')}</label>
           <input
             className={styles.editInput}
             type="number"
@@ -282,10 +282,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
 
         <div className={styles.editMacroGrid}>
           {[
-            { key: 'kcal',    label: 'ккал' },
-            { key: 'protein', label: 'Протеин' },
-            { key: 'carbs',   label: 'Въгл.' },
-            { key: 'fat',     label: 'Мазн.' },
+            { key: 'kcal',    label: t('foodlog.editKcal') },
+            { key: 'protein', label: t('foodlog.editProtein') },
+            { key: 'carbs',   label: t('foodlog.editCarbs') },
+            { key: 'fat',     label: t('foodlog.editFat') },
           ].map(({ key, label }) => (
             <div key={key} className={styles.editMacroField}>
               <label className={styles.editLabel}>{label}</label>
@@ -308,7 +308,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
                 className={styles.editPhotoRemoveBtn}
                 onClick={() => onPhotoRemove && onPhotoRemove(entry.id, entry.photo_url)}
               >
-                × Премахни снимката
+                {t('foodlog.removePhoto')}
               </button>
             ) : (
               <button
@@ -318,9 +318,9 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
                 disabled={uploadingId === entry.id}
               >
                 {uploadingId === entry.id ? (
-                  <><span className={styles.uploadDot} /> Качва...</>
+                  <><span className={styles.uploadDot} /> {t('foodlog.uploading')}</>
                 ) : (
-                  <><CameraIcon /> Добави снимка</>
+                  <><CameraIcon /> {t('foodlog.addPhoto')}</>
                 )}
               </button>
             )}
@@ -328,8 +328,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         )}
 
         <div className={styles.editActions}>
-          <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">Отказ</button>
-          <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">Запази</button>
+          <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">{t('foodlog.editCancel')}</button>
+          <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">{t('foodlog.editSave')}</button>
         </div>
       </li>
     ) : (
@@ -345,7 +345,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         <span
           className={styles.entryGrip}
           onPointerDown={e => onGripPointerDown(e, entry)}
-          aria-label="Влачи, за да преместиш"
+          aria-label={t('foodlog.dragAria')}
           role="button"
         >
           <span /><span /><span />
@@ -356,7 +356,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
             type="button"
             className={styles.thumbBtn}
             onClick={() => setLightboxUrl(entry.photo_url)}
-            aria-label="Виж снимката"
+            aria-label={t('foodlog.thumbAria')}
           >
             <img src={entry.photo_url} className={styles.thumbImg} alt="" />
           </button>
@@ -370,7 +370,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
                 teach everyone to stop reading them. */}
             {entry.estimated && (
               <svg viewBox="0 0 20 20" width="11" height="11" className={styles.estMark}
-                   aria-label="изчислено приблизително" role="img">
+                   aria-label={t('foodlog.estAria')} role="img">
                 <path d="M5 8.2c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0M5 12.4c1.4-1.6 2.6-1.6 4 0s2.6 1.6 4 0"
                       fill="none" stroke="currentColor" strokeWidth="1.7"
                       strokeLinecap="round" transform="translate(1,0)" />
@@ -379,7 +379,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
           </span>
           <span className={styles.entryMacros}>
             {entry.grams > 0 && <><span className={styles.entryGrams}>{entry.grams}g</span> · </>}
-            {entry.kcal} ккал · П{entry.protein}g · В{entry.carbs}g · М{entry.fat}g
+            {t('foodlog.rowMacros', { kcal: entry.kcal, p: entry.protein, c: entry.carbs, f: entry.fat })}
           </span>
         </div>
 
@@ -387,7 +387,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
           <button
             className={styles.editBtn}
             onClick={() => startEdit(entry)}
-            aria-label={`Редактирай ${entry.name}`}
+            aria-label={t('foodlog.editAria', { name: entry.name })}
             type="button"
           >
             ✎
@@ -395,7 +395,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
           <button
             className={styles.removeBtn}
             onClick={() => handleRemove(entry)}
-            aria-label={`Премахни ${entry.name}`}
+            aria-label={t('foodlog.removeAria', { name: entry.name })}
             type="button"
           >
             ×
@@ -432,19 +432,19 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
 
       {log.length > 0 && (
         <div className={styles.listHeader}>
-          <span className={styles.listTitle}>Дневен лог ({log.length})</span>
+          <span className={styles.listTitle}>{t('foodlog.listTitle', { n: log.length })}</span>
           <div className={styles.headerActions}>
             <button
               className={`${styles.undoBtn} ${lastRemoved ? styles.undoBtnActive : ''}`}
               onClick={handleUndo}
               disabled={!lastRemoved}
               type="button"
-              aria-label="Отмени последното премахване"
-              title="Отмени"
+              aria-label={t('foodlog.undoAria')}
+              title={t('foodlog.undoTitle')}
             >
               <UndoIcon />
             </button>
-            <button className={styles.clearBtn} onClick={onClear} type="button" aria-label="Изчисти деня" title="Изчисти">
+            <button className={styles.clearBtn} onClick={onClear} type="button" aria-label={t('foodlog.clearAria')} title={t('foodlog.clearTitle')}>
               <TrashIcon />
             </button>
           </div>
@@ -470,19 +470,19 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
               <span className={styles.mealHeadRight}>
                 {group.items.length > 0 && (
                   <span className={styles.mealTotals}>
-                    <span className={`${styles.macro} ${styles.macroP}`} title="Протеин">
+                    <span className={`${styles.macro} ${styles.macroP}`} title={t('foodlog.groupProtein')}>
                       <Pictogram name="protein" size={13} />
                       {protein}
                     </span>
-                    <span className={`${styles.macro} ${styles.macroC}`} title="Въглехидрати">
+                    <span className={`${styles.macro} ${styles.macroC}`} title={t('foodlog.groupCarbs')}>
                       <Pictogram name="carbs" size={13} />
                       {carbs}
                     </span>
-                    <span className={`${styles.macro} ${styles.macroF}`} title="Мазнини">
+                    <span className={`${styles.macro} ${styles.macroF}`} title={t('foodlog.groupFat')}>
                       <Pictogram name="fat" size={13} />
                       {fat}
                     </span>
-                    <span className={styles.mealKcal}>{kcal} ккал</span>
+                    <span className={styles.mealKcal}>{t('foodlog.mealKcal', { n: kcal })}</span>
                   </span>
                 )}
                 {!group.legacy && onAddRaw && (
@@ -490,7 +490,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
                     className={styles.mealAdd}
                     onClick={() => setQuickMeal(group.id)}
                     type="button"
-                    aria-label={`Добави в ${group.label}`}
+                    aria-label={t('foodlog.addToMealAria', { meal: group.label })}
                   >
                     +
                   </button>
@@ -523,8 +523,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       {/* Lightbox */}
       {lightboxUrl && (
         <div className={styles.lightbox} onClick={() => setLightboxUrl(null)}>
-          <img src={lightboxUrl} className={styles.lightboxImg} alt="Ястие" />
-          <button type="button" className={styles.lightboxClose} onClick={() => setLightboxUrl(null)} aria-label="Затвори">×</button>
+          <img src={lightboxUrl} className={styles.lightboxImg} alt={t('foodlog.dishAlt')} />
+          <button type="button" className={styles.lightboxClose} onClick={() => setLightboxUrl(null)} aria-label={t('foodlog.lightboxClose')}>×</button>
         </div>
       )}
 
