@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useSleepLogs, calcReadiness } from '../hooks/useSleepLogs'
 import { useWaterLog } from '../hooks/useWaterLog'
 import ReadinessWidget from '../components/ReadinessWidget/ReadinessWidget'
+import { useSettings } from '../contexts/SettingsContext'
 import styles from './Recovery.module.css'
 import { loc, monthNames, dayNames } from '../utils/locale'
 
@@ -19,10 +20,11 @@ function readinessColor(score) {
 }
 
 function ReadinessRing({ score }) {
+  const { t } = useSettings()
   if (score === null) return (
     <div className={styles.ringWrap}>
       <div className={styles.ringEmpty}>
-        <span className={styles.ringEmptyLabel}>Попълни формата</span>
+        <span className={styles.ringEmptyLabel}>{t('rec.fillForm')}</span>
       </div>
     </div>
   )
@@ -47,7 +49,7 @@ function ReadinessRing({ score }) {
             check-in, while readiness weighs it together with food, habits,
             water and training. Two rings labelled the same thing, showing two
             different numbers, is how the screen was reading before. */}
-        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="var(--font-body)">ЧЕК-ИН</text>
+        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="var(--font-body)">{t('rec.checkin')}</text>
       </svg>
     </div>
   )
@@ -112,6 +114,7 @@ function MoodPicker({ value, onChange }) {
 // ── Hydration counter ─────────────────────────────────────────────────────────
 
 function HydrationCounter({ value, onChange }) {
+  const { t } = useSettings()
   return (
     <div className={styles.hydrationWrap}>
       <div className={styles.hydrationGlasses}>
@@ -119,7 +122,7 @@ function HydrationCounter({ value, onChange }) {
           <button key={i} type="button"
             className={`${styles.glass} ${i < value ? styles.glassFull : ''}`}
             onClick={() => onChange(i < value ? i : i + 1)}
-            aria-label={`${i + 1} чаши`}
+            aria-label={t('rec.glassesAria', { n: i + 1 })}
           >💧</button>
         ))}
       </div>
@@ -137,6 +140,7 @@ function HydrationCounter({ value, onChange }) {
 // ── Recovery calendar ─────────────────────────────────────────────────────────
 
 function RecoveryCalendar({ logs }) {
+  const { t } = useSettings()
   const today = new Date()
   const [year, setYear]   = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
@@ -197,7 +201,7 @@ function RecoveryCalendar({ logs }) {
         })}
       </div>
       <div className={styles.calLegend}>
-        {[['#81C784','Отлично (80+)'],['var(--accent)','Добре (60–79)'],['#ff8a65','Умерено (40–59)'],['#ef5350','Ниско (<40)']].map(([color, label]) => (
+        {[['#81C784', t('rec.legend.great')], ['var(--accent)', t('rec.legend.good')], ['#ff8a65', t('rec.legend.mid')], ['#ef5350', t('rec.legend.low')]].map(([color, label]) => (
           <span key={color} className={styles.calLegendItem}>
             <span className={styles.calDot} style={{ background: color }} />
             {label}
@@ -211,6 +215,7 @@ function RecoveryCalendar({ logs }) {
 // ── History row ───────────────────────────────────────────────────────────────
 
 function HistoryRow({ log }) {
+  const { t } = useSettings()
   const d = new Date(log.date)
   const score = calcReadiness(log)
   const color = score !== null ? readinessColor(score) : null
@@ -221,7 +226,7 @@ function HistoryRow({ log }) {
         ? <span className={styles.histScore} style={{ color }}>{score}</span>
         : <span className={styles.histScore} style={{ color: 'rgba(242,232,207,0.2)' }}>—</span>
       }
-      <span className={styles.histSleep}>{log.duration_hours != null ? `${log.duration_hours}ч` : '—'}</span>
+      <span className={styles.histSleep}>{log.duration_hours != null ? t('rec.hoursShort', { n: log.duration_hours }) : '—'}</span>
       <span className={styles.histMood}>{log.mood ? MOODS[log.mood - 1] : '—'}</span>
       <span className={styles.histHyd}>{log.hydration_glasses != null ? `${log.hydration_glasses}💧` : '—'}</span>
     </div>
@@ -231,6 +236,7 @@ function HistoryRow({ log }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function Recovery() {
+  const { t } = useSettings()
   const { logs, todayLog, loading, logSleep } = useSleepLogs()
   const { glasses: waterGlasses, set: setWater } = useWaterLog()
 
@@ -289,7 +295,7 @@ export default function Recovery() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>ВЪЗСТАНОВЯВАНЕ</h1>
+        <h1 className={styles.title}>{t('nav.recovery')}</h1>
         <p className={styles.date}>{today}</p>
       </header>
 
@@ -310,52 +316,52 @@ export default function Recovery() {
 
         {/* Sleep */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>🌙 СЪН</h2>
+          <h2 className={styles.cardTitle}>🌙 {t('rec.sleep')}</h2>
           <div className={styles.field}>
-            <label className={styles.label}>Продължителност (часове)</label>
+            <label className={styles.label}>{t('rec.duration')}</label>
             <input className={styles.input} type="number" min="0" max="24" step="0.5"
-              placeholder="напр. 7.5" value={duration} onChange={e => setDuration(e.target.value)} />
+              placeholder={t('rec.durationPh')} value={duration} onChange={e => setDuration(e.target.value)} />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Качество</label>
+            <label className={styles.label}>{t('rec.quality')}</label>
             <StarRating value={quality} onChange={setQuality} />
           </div>
         </section>
 
         {/* Hydration — auto-saves via useWaterLog on each click */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>💧 ХИДРАТАЦИЯ</h2>
+          <h2 className={styles.cardTitle}>💧 {t('rec.hydration')}</h2>
           <HydrationCounter value={waterGlasses} onChange={setWater} />
         </section>
 
         {/* Energy */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>⚡ ЕНЕРГИЯ</h2>
-          <ScaleRating value={energy} onChange={setEnergy} labels={['Изтощен', 'Заредени']} />
+          <h2 className={styles.cardTitle}>⚡ {t('rec.energy')}</h2>
+          <ScaleRating value={energy} onChange={setEnergy} labels={[t('rec.energyLow'), t('rec.energyHigh')]} />
         </section>
 
         {/* Stress */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>🧠 СТРЕС</h2>
-          <ScaleRating value={stress} onChange={setStress} labels={['Без стрес', 'Много висок']} />
+          <h2 className={styles.cardTitle}>🧠 {t('rec.stress')}</h2>
+          <ScaleRating value={stress} onChange={setStress} labels={[t('rec.stressLow'), t('rec.stressHigh')]} />
         </section>
 
         {/* Soreness */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>💪 МУСКУЛНА УМОРА</h2>
-          <ScaleRating value={soreness} onChange={setSoreness} labels={['Без умора', 'Много силна']} />
+          <h2 className={styles.cardTitle}>💪 {t('rec.soreness')}</h2>
+          <ScaleRating value={soreness} onChange={setSoreness} labels={[t('rec.sorenessLow'), t('rec.sorenessHigh')]} />
         </section>
 
         {/* Mood */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>😊 НАСТРОЕНИЕ</h2>
+          <h2 className={styles.cardTitle}>😊 {t('rec.mood')}</h2>
           <MoodPicker value={mood} onChange={setMood} />
         </section>
 
         {/* Notes */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>📝 БЕЛЕЖКИ</h2>
-          <input className={styles.input} placeholder="Как се чувстваш днес?"
+          <h2 className={styles.cardTitle}>📝 {t('rec.notes')}</h2>
+          <input className={styles.input} placeholder={t('rec.notesPh')}
             value={notes} onChange={e => setNotes(e.target.value)} />
         </section>
 
@@ -363,14 +369,14 @@ export default function Recovery() {
           className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
           disabled={saving || !hasAnyValue}
         >
-          {saved ? '✓ Запазено' : saving ? '...' : 'Запази деня'}
+          {saved ? t('rec.saved') : saving ? '...' : t('rec.saveDay')}
         </button>
       </form>
 
       {/* Calendar */}
       {!loading && logs.length > 0 && (
         <section className={styles.calSection}>
-          <h2 className={styles.calSectionTitle}>КАЛЕНДАР</h2>
+          <h2 className={styles.calSectionTitle}>{t('rec.calendar')}</h2>
           <RecoveryCalendar logs={logs} />
         </section>
       )}
@@ -378,13 +384,13 @@ export default function Recovery() {
       {/* History */}
       {!loading && logs.length > 0 && (
         <section className={styles.histSection}>
-          <h2 className={styles.histTitle}>ИСТОРИЯ</h2>
+          <h2 className={styles.histTitle}>{t('rec.history')}</h2>
           <div className={styles.histHeader}>
-            <span className={styles.histDate}>Дата</span>
-            <span className={styles.histScore}>Готов.</span>
-            <span className={styles.histSleep}>Сън</span>
-            <span className={styles.histMood}>Настр.</span>
-            <span className={styles.histHyd}>Вода</span>
+            <span className={styles.histDate}>{t('rec.col.date')}</span>
+            <span className={styles.histScore}>{t('rec.col.score')}</span>
+            <span className={styles.histSleep}>{t('rec.col.sleep')}</span>
+            <span className={styles.histMood}>{t('rec.col.mood')}</span>
+            <span className={styles.histHyd}>{t('rec.col.water')}</span>
           </div>
           {logs.slice(0, 14).map(l => <HistoryRow key={l.date} log={l} />)}
         </section>
