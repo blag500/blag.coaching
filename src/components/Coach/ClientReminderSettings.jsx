@@ -1,15 +1,16 @@
 import { useReminderSettings } from '../../hooks/useReminderSettings'
+import { useSettings } from '../../contexts/SettingsContext'
 import { EmailRemindersCard } from '../Profile/NotificationSettings'
 import styles from '../Profile/NotificationSettings.module.css'
 
 export default function ClientReminderSettings({ clientId, clientName }) {
+  const { t } = useSettings()
   const { settings, toggle, toggleAll, loading, saving } = useReminderSettings(clientId)
 
   return (
     <div style={{ padding: '16px 16px 120px' }}>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
-        Управляваш имейл напомнянията за <strong style={{ color: 'var(--text)' }}>{clientName}</strong>.
-        Имейлите се пращат само ако нещото не е логнато за деня.
+        {t('crs.intro', { name: clientName })}{' '}{t('crs.note')}
       </p>
       <EmailRemindersCard
         email={settings}

@@ -1,12 +1,13 @@
 import { useAllOrders } from '../../hooks/useShop'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './OrdersPanel.module.css'
 
-const STATUS_LABELS = {
-  pending_payment: 'ЧАКАЩО ПЛАЩАНЕ',
-  confirmed:       'ПОТВЪРДЕНО',
-  preparing:       'ПОДГОТВЯ СЕ',
-  delivered:       'ДОСТАВЕНО',
-  cancelled:       'ОТКАЗАНО',
+const STATUS_LABEL_KEYS = {
+  pending_payment: 'op.status.pending_payment',
+  confirmed:       'op.status.confirmed',
+  preparing:       'op.status.preparing',
+  delivered:       'op.status.delivered',
+  cancelled:       'op.status.cancelled',
 }
 
 const STATUS_NEXT = {
@@ -14,18 +15,18 @@ const STATUS_NEXT = {
   preparing:  'delivered',
 }
 
-const STATUS_NEXT_LABEL = {
-  confirmed:  'ПОДГОТВЯ СЕ →',
-  preparing:  'ДОСТАВЕНО ✓',
+const STATUS_NEXT_LABEL_KEYS = {
+  confirmed:  'op.next.confirmed',
+  preparing:  'op.next.preparing',
 }
 
-function formatPrice(stotinki) {
-  return (stotinki / 100).toFixed(2) + ' лв.'
+function formatPrice(t, stotinki) {
+  return t('cart.currency', { amount: (stotinki / 100).toFixed(2) })
 }
 
-function formatDate(ts) {
+function formatDate(lang, ts) {
   const d = new Date(ts)
-  return d.toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
 const STATUS_COLOR = {
@@ -47,19 +48,19 @@ export default function OrdersPanel() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>ПОРЪЧКИ</h1>
+        <h1 className={styles.title}>{t('op.title')}</h1>
         {active.length > 0 && (
-          <div className={styles.activeBadge}>{active.length} АКТИВНИ</div>
+          <div className={styles.activeBadge}>{t('op.activeBadge', { n: active.length })}</div>
         )}
       </header>
 
       {orders.length === 0 && (
-        <div className={styles.empty}>Все още няма поръчки.</div>
+        <div className={styles.empty}>{t('op.empty')}</div>
       )}
 
       {active.length > 0 && (
         <section className={styles.section}>
-          <div className={styles.sectionLabel}>АКТИВНИ</div>
+          <div className={styles.sectionLabel}>{t('op.active')}</div>
           <div className={styles.list}>
             {active.map(o => <OrderCard key={o.id} order={o} onAdvance={() => updateStatus(o.id, STATUS_NEXT[o.status])} />)}
           </div>
@@ -68,7 +69,7 @@ export default function OrdersPanel() {
 
       {done.length > 0 && (
         <section className={styles.section}>
-          <div className={styles.sectionLabel}>ИСТОРИЯ</div>
+          <div className={styles.sectionLabel}>{t('op.history')}</div>
           <div className={styles.list}>
             {done.map(o => <OrderCard key={o.id} order={o} />)}
           </div>
@@ -79,8 +80,9 @@ export default function OrdersPanel() {
 }
 
 function OrderCard({ order, onAdvance }) {
-  const clientName = order.profiles?.name || order.profiles?.email || 'Клиент'
-  const nextLabel  = STATUS_NEXT_LABEL[order.status]
+  const { t, lang } = useSettings()
+  const clientName = order.profiles?.name || order.profiles?.email || t('op.client')
+  const nextKey    = STATUS_NEXT_LABEL_KEYS[order.status]
   const color      = STATUS_COLOR[order.status] || 'var(--muted)'
 
   return (
@@ -88,13 +90,13 @@ function OrderCard({ order, onAdvance }) {
       <div className={styles.cardTop}>
         <div>
           <span className={styles.clientName}>{clientName}</span>
-          <span className={styles.orderDate}>{formatDate(order.created_at)}</span>
+          <span className={styles.orderDate}>{formatDate(lang, order.created_at)}</span>
         </div>
         <div className={styles.cardTopRight}>
           <span className={styles.statusChip} style={{ color, borderColor: color }}>
-            {STATUS_LABELS[order.status] || order.status}
+            {STATUS_LABEL_KEYS[order.status] ? t(STATUS_LABEL_KEYS[order.status]) : order.status}
           </span>
-          <span className={styles.total}>{formatPrice(order.total_stotinki)}</span>
+          <span className={styles.total}>{formatPrice(t, order.total_stotinki)}</span>
         </div>
       </div>
 
@@ -103,7 +105,7 @@ function OrderCard({ order, onAdvance }) {
           {order.order_items.map(item => (
             <div key={item.id} className={styles.item}>
               <span className={styles.itemName}>{item.name_snapshot}</span>
-              <span className={styles.itemMeta}>×{item.qty} · {formatPrice(item.unit_price_stotinki * item.qty)}</span>
+              <span className={styles.itemMeta}>×{item.qty} · {formatPrice(t, item.unit_price_stotinki * item.qty)}</span>
             </div>
           ))}
         </div>
@@ -116,9 +118,9 @@ function OrderCard({ order, onAdvance }) {
         <div className={styles.notes}>💬 {order.delivery_notes}</div>
       )}
 
-      {nextLabel && onAdvance && (
+      {nextKey && onAdvance && (
         <button className={styles.advanceBtn} onClick={onAdvance} type="button">
-          {nextLabel}
+          {t(nextKey)}
         </button>
       )}
     </div>

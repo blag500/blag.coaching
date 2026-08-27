@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import { FINE_MUSCLES } from '../../utils/recovery'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './TrainingEditor.module.css'
 
 // Fine-grained muscle chips на блок ниво — заменят стария 4-групов ГОРНА/ГРЪБ/
@@ -10,7 +11,7 @@ import styles from './TrainingEditor.module.css'
 // работят без промяна.
 const GROUP_OPTIONS = FINE_MUSCLES.map(m => ({
   id: m.id,
-  label: m.label.toUpperCase(),
+  labelKey: m.labelKey,
 }))
 
 function freshBlock(pos) {
@@ -45,6 +46,7 @@ function defaultBlocks(initialPlan) {
 }
 
 export default function TrainingEditor({ initialPlan, onSave, saving }) {
+  const { t } = useSettings()
   const [blocks, setBlocks] = useState(() => defaultBlocks(initialPlan))
   const [openId, setOpenId] = useState(null)
   const { byName: photos, upload } = useExercisePhotos()
@@ -114,7 +116,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                 type="button"
               >
                 <span className={styles.blockIdx}>{idx + 1}</span>
-                <span className={styles.blockLabel}>{block.label || '(без име)'}</span>
+                <span className={styles.blockLabel}>{block.label || t('te.unnamedBlock')}</span>
                 <span className={styles.chevron}>{isOpen ? '▲' : '▼'}</span>
               </button>
               <div className={styles.blockHeaderRight}>
@@ -129,7 +131,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                   className={styles.removeBlock}
                   onClick={() => removeBlock(block.id)}
                   type="button"
-                  aria-label="Изтрий блок"
+                  aria-label={t('te.deleteBlock')}
                 >
                   ×
                 </button>
@@ -139,11 +141,11 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
             {isOpen && (
               <div className={styles.blockBody}>
                 <div className={styles.fieldRow}>
-                  <label className={styles.fieldLabel}>Наименование на блока</label>
+                  <label className={styles.fieldLabel}>{t('te.blockName')}</label>
                   <input
                     className={styles.fieldInput}
                     type="text"
-                    placeholder="напр. Upper A, Push, Крака..."
+                    placeholder={t('te.blockNamePh')}
                     value={block.label}
                     onChange={e => updateBlock(block.id, 'label', e.target.value)}
                   />
@@ -153,11 +155,11 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                   const chosen = new Set(Array.isArray(block.groups) ? block.groups : [])
                   const empty = chosen.size === 0
                   const summary = empty
-                    ? 'трябва избор'
-                    : GROUP_OPTIONS.filter(g => chosen.has(g.id)).map(g => g.label).join(' · ')
+                    ? t('te.needsChoice')
+                    : GROUP_OPTIONS.filter(g => chosen.has(g.id)).map(g => t(g.labelKey).toUpperCase()).join(' · ')
                   return (
                     <div className={styles.fieldRow}>
-                      <label className={styles.fieldLabel}>Мускулни групи за манекена</label>
+                      <label className={styles.fieldLabel}>{t('te.mannequinGroups')}</label>
                       <details className={`${styles.muscleDrop} ${empty ? styles.muscleDropEmpty : ''}`}>
                         <summary className={styles.muscleSummary}>
                           <span className={styles.muscleSummaryText}>{summary}</span>
@@ -198,11 +200,11 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                             </span>
                             <span className={styles.exBody}>
                               <span className={styles.exName}>
-                                <span className={styles.exNameText}>{ex.name || '(без име)'}</span>
+                                <span className={styles.exNameText}>{ex.name || t('te.unnamedBlock')}</span>
                                 {ex.note && <span className={styles.exNote}>· {ex.note}</span>}
                               </span>
                               <span className={styles.exMeta}>
-                                {muscle && <span className={styles.exMuscle}>{muscle.label}</span>}
+                                {muscle && <span className={styles.exMuscle}>{t(muscle.labelKey)}</span>}
                                 <span className={styles.exReps}>{ex.sets || '?'} × {ex.reps || '?'}</span>
                               </span>
                             </span>
@@ -211,7 +213,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                             className={styles.exRemove}
                             onClick={() => removeExercise(block.id, ex.id)}
                             type="button"
-                            aria-label="Изтрий упражнение"
+                            aria-label={t('te.deleteExercise')}
                           >×</button>
                         </div>
                       )
@@ -221,7 +223,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                       onClick={() => setModal({ blockId: block.id, exercise: null })}
                       type="button"
                     >
-                      + Добави упражнение
+                      {t('te.addExercise')}
                     </button>
                   </div>
                 )}
@@ -232,7 +234,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
       })}
 
       <button className={styles.addBlockBtn} onClick={addBlock} type="button">
-        + Нов блок
+        {t('te.newBlock')}
       </button>
 
       <button
@@ -241,7 +243,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
         disabled={saving}
         type="button"
       >
-        {saving ? '...' : 'Запази плана'}
+        {saving ? '...' : t('te.savePlan')}
       </button>
 
       {modal && (
@@ -259,6 +261,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
 }
 
 function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) {
+  const { t } = useSettings()
   const isEdit = !!exercise
   const [name, setName]     = useState(exercise?.name ?? '')
   const [sets, setSets]     = useState(exercise?.sets ?? '3')
@@ -294,8 +297,8 @@ function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) 
     <div className={styles.modalOverlay} onClick={onCancel}>
       <form className={styles.modal} onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
         <div className={styles.modalHead}>
-          <span className={styles.modalTitle}>{isEdit ? 'Редакция' : 'Ново упражнение'}</span>
-          <button type="button" className={styles.modalClose} onClick={onCancel} aria-label="Затвори">×</button>
+          <span className={styles.modalTitle}>{isEdit ? t('te.modalEdit') : t('te.modalNew')}</span>
+          <button type="button" className={styles.modalClose} onClick={onCancel} aria-label={t('te.close')}>×</button>
         </div>
 
         <label className={styles.modalPhoto}>
@@ -304,47 +307,47 @@ function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) 
             ? <span className={styles.modalPhotoBusy}>…</span>
             : photoUrl
               ? <img src={photoUrl} alt="" />
-              : <span className={styles.modalPhotoEmpty}>{name.trim() ? '📷 Добави снимка' : 'Кръсти упражнението, за да добавиш снимка'}</span>}
+              : <span className={styles.modalPhotoEmpty}>{name.trim() ? t('te.addPhoto') : t('te.nameFirst')}</span>}
         </label>
 
         <label className={styles.modalField}>
-          <span>Име</span>
+          <span>{t('te.name')}</span>
           <input type="text" value={name} onChange={e => setName(e.target.value)}
-                 placeholder="напр. Лежанка с щанга" autoFocus />
+                 placeholder={t('te.namePh')} autoFocus />
         </label>
 
         <div className={styles.modalRow}>
           <label className={styles.modalField}>
-            <span>Серии</span>
+            <span>{t('te.sets')}</span>
             <input type="text" inputMode="numeric" value={sets} onChange={e => setSets(e.target.value)} />
           </label>
           <label className={styles.modalField}>
-            <span>Повторения</span>
+            <span>{t('te.reps')}</span>
             <input type="text" value={reps} onChange={e => setReps(e.target.value)}
-                   placeholder="напр. 8–10" />
+                   placeholder={t('te.repsPh')} />
           </label>
         </div>
 
         <label className={styles.modalField}>
-          <span>Мускул</span>
+          <span>{t('te.muscle')}</span>
           <select value={muscle} onChange={e => setMuscle(e.target.value)}>
-            <option value="">(не е зададен)</option>
+            <option value="">{t('te.muscleNone')}</option>
             {FINE_MUSCLES.map(m => (
-              <option key={m.id} value={m.id}>{m.label}</option>
+              <option key={m.id} value={m.id}>{t(m.labelKey)}</option>
             ))}
           </select>
         </label>
 
         <label className={styles.modalField}>
-          <span>Бележка</span>
+          <span>{t('te.note')}</span>
           <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
-                    placeholder="Темпо, техника, каденс…" />
+                    placeholder={t('te.notePh')} />
         </label>
 
         <div className={styles.modalActions}>
-          <button type="button" className={styles.modalCancel} onClick={onCancel}>Отказ</button>
+          <button type="button" className={styles.modalCancel} onClick={onCancel}>{t('te.cancel')}</button>
           <button type="submit" className={styles.modalSave} disabled={!name.trim()}>
-            {isEdit ? 'Запази' : 'Добави'}
+            {isEdit ? t('te.save') : t('te.add')}
           </button>
         </div>
       </form>

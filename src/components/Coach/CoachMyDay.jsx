@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import styles from './CoachMyDay.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
@@ -11,6 +12,7 @@ function todayLabel() {
 }
 
 export default function CoachMyDay() {
+  const { t } = useSettings()
   const { user } = useAuth()
   const { habits, checked, toggle } = useHabitsToday()
   const [trained, setTrained]         = useState(false)
@@ -53,13 +55,13 @@ export default function CoachMyDay() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>МОЙ ДЕН</h1>
+        <h1 className={styles.title}>{t('cmd.title')}</h1>
         <p className={styles.subtitle}>{todayLabel()}</p>
       </header>
 
       {/* Training toggle */}
       <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>ТРЕНИРОВКА</h2>
+        <h2 className={styles.sectionTitle}>{t('cmd.training')}</h2>
         <button
           className={`${styles.trainBtn} ${trained ? styles.trainBtnDone : ''}`}
           onClick={toggleTraining}
@@ -67,12 +69,12 @@ export default function CoachMyDay() {
           type="button"
         >
           <span className={styles.trainEmoji}>{trained ? '💪' : '💤'}</span>
-          <span>{trained ? 'ТРЕНИРАХ ДНЕС' : 'ОТБЕЛЕЖИ ТРЕНИРОВКА'}</span>
+          <span>{trained ? t('cmd.trainedToday') : t('cmd.markTraining')}</span>
         </button>
         <p className={styles.trainHint}>
           {trained
-            ? 'Отбелязано — ще се вижда в ВДЪХНОВЕНИЕ'
-            : 'Тук можеш да отбележиш, че си тренирал днес'}
+            ? t('cmd.markedNote')
+            : t('cmd.markHint')}
         </p>
       </section>
 
@@ -80,7 +82,7 @@ export default function CoachMyDay() {
       {habits.length > 0 && (
         <section className={styles.card}>
           <div className={styles.sectionRow}>
-            <h2 className={styles.sectionTitle}>НАВИЦИ ДНЕС</h2>
+            <h2 className={styles.sectionTitle}>{t('cmd.habitsToday')}</h2>
             <span className={styles.habitCount}>
               {habitsDone}/{habitsTotal}
             </span>
@@ -110,24 +112,22 @@ export default function CoachMyDay() {
           <span className={`${styles.summaryVal} ${trained ? styles.summaryGreen : styles.summaryMuted}`}>
             {trained ? '✓' : '—'}
           </span>
-          <span className={styles.summaryLabel}>ТРЕНИРОВКА</span>
+          <span className={styles.summaryLabel}>{t('cmd.training')}</span>
         </div>
         <div className={styles.summaryBox}>
           <span className={styles.summaryVal}>{habitsDone}/{habitsTotal}</span>
-          <span className={styles.summaryLabel}>НАВИЦИ</span>
+          <span className={styles.summaryLabel}>{t('cmd.habits')}</span>
         </div>
         <div className={styles.summaryBox}>
           <span className={`${styles.summaryVal} ${habitsDone === habitsTotal && habitsTotal > 0 ? styles.summaryGreen : styles.summaryMuted}`}>
             {habitsTotal > 0 ? `${Math.round((habitsDone / habitsTotal) * 100)}%` : '—'}
           </span>
-          <span className={styles.summaryLabel}>СПАЗВАНЕ</span>
+          <span className={styles.summaryLabel}>{t('cmd.compliance')}</span>
         </div>
       </section>
 
       <p className={styles.vdahNote}>
-        Данните от тук се показват в <strong>ВДЪХНОВЕНИЕ</strong> на клиентите ти.
-        Задай своето тренировъчно разписание от <strong>ТРЕНИРОВКА</strong> в менюто,
-        за да виждаш и упражнения.
+        {t('cmd.footer')}
       </p>
     </div>
   )

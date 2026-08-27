@@ -1,15 +1,16 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import { useUnread } from '../../hooks/useUnread'
 import ClientDetail from './ClientDetail'
 import Chat from '../Chat/Chat'
 import { supabase } from '../../lib/supabase'
 import styles from './CoachPanel.module.css'
 
-const STATUS_LABELS = {
-  pending:   'ЧАКА',
-  confirmed: 'ПОТВЪРДЕНО',
-  completed: 'ПРОВЕДЕНО',
+const STATUS_LABEL_KEYS = {
+  pending:   'cp.status.pending',
+  confirmed: 'cp.status.confirmed',
+  completed: 'cp.status.completed',
 }
 
 /* The client's face in the list, so the coach recognises a person before
@@ -24,11 +25,10 @@ function ClientAvatar({ client }) {
   )
 }
 
-const MONTHS_SHORT = ['ЯНУ','ФЕВ','МАР','АПР','МАЙ','ЮНИ','ЮЛИ','АВГ','СЕП','ОКТ','НОЕ','ДЕК']
 
-function fmtDay(iso) {
+function fmtDay(t, iso) {
   const d = new Date(iso)
-  return `${String(d.getDate()).padStart(2,'0')} ${MONTHS_SHORT[d.getMonth()]}`
+  return `${String(d.getDate()).padStart(2,'0')} ${t(`monthsShort.${d.getMonth()}`).toUpperCase()}`
 }
 function fmtTime(iso) {
   const d = new Date(iso)
@@ -43,12 +43,12 @@ function localNow() {
 const TODAY = new Date().toISOString().slice(0, 10)
 const YESTERDAY = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
 
-function lastActiveLabel(date) {
-  if (!date) return 'неактивен'
-  if (date === TODAY)     return 'днес'
-  if (date === YESTERDAY) return 'вчера'
+function lastActiveLabel(t, date) {
+  if (!date) return t('cp.inactive')
+  if (date === TODAY)     return t('ago.today')
+  if (date === YESTERDAY) return t('ago.yesterday')
   const days = Math.round((new Date(TODAY) - new Date(date)) / 86400000)
-  return `${days} дни`
+  return t('cp.daysAgo', { n: days })
 }
 
 function sortPriority(c, stats) {
@@ -69,12 +69,13 @@ function clientSortCompare(a, b, stats) {
 }
 
 function SessionCard({ s, onCancel }) {
+  const { t } = useSettings()
   const clientName = s.client?.name || s.client?.email || '—'
   const canCancel  = s.status === 'pending' || s.status === 'confirmed'
   return (
     <div className={`${styles.upcomingCard} ${styles['ucard_' + s.status] || ''}`}>
       <div className={styles.upcomingDate}>
-        <span className={styles.upcomingDay}>{fmtDay(s.scheduled_at)}</span>
+        <span className={styles.upcomingDay}>{fmtDay(t, s.scheduled_at)}</span>
         <span className={styles.upcomingTime}>{fmtTime(s.scheduled_at)}</span>
       </div>
       <div className={styles.upcomingInfo}>
@@ -82,14 +83,14 @@ function SessionCard({ s, onCancel }) {
         <span className={styles.upcomingTitle}>{s.title}</span>
       </div>
       <span className={`${styles.upcomingBadge} ${styles['ubadge_' + s.status] || ''}`}>
-        {STATUS_LABELS[s.status] ?? s.status}
+        {STATUS_LABEL_KEYS[s.status] ? t(STATUS_LABEL_KEYS[s.status]) : s.status}
       </span>
       {canCancel && onCancel && (
         <button
           className={styles.cancelSessionBtn}
           onClick={() => onCancel(s.id)}
           type="button"
-          aria-label="Отмени тренировката"
+          aria-label={t('cp.cancelSession')}
         >
           ×
         </button>
@@ -99,6 +100,7 @@ function SessionCard({ s, onCancel }) {
 }
 
 export default function CoachPanel() {
+  const { t } = useSettings()
   const { user, fetchClients, fetchCoaches, approveClient, fetchTrainingSessions, createTrainingSession, updateSessionStatus, sendMessage, fetchAllClientsStats } = useAuth()
   const { unreadByUser } = useUnread()
 
@@ -214,7 +216,7 @@ export default function CoachPanel() {
     const { error } = await approveClient(clientId)
     if (!error) {
       setClients(prev => prev.map(c => c.id === clientId ? { ...c, approved: true, plan_pending: false } : c))
-      sendMessage(clientId, 'Добре дошъл! Аз съм Николай - Head Coach, твоят треньор.').catch(() => {})
+      sendMessage(clientId, t('cp.welcomeMsg')).catch(() => {})
     }
     setApprovingId(null)
   }
@@ -243,9 +245,9 @@ export default function CoachPanel() {
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <h1 className={styles.title}>КЛИЕНТИ</h1>
+          <h1 className={styles.title}>{t('cp.title')}</h1>
         </header>
-        <p className={styles.empty}>Зарежда...</p>
+        <p className={styles.empty}>{t('cp.loading')}</p>
       </div>
     )
   }
@@ -255,21 +257,21 @@ export default function CoachPanel() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>КЛИЕНТИ</h1>
+        <h1 className={styles.title}>{t('cp.title')}</h1>
         <p className={styles.subtitle}>
-          {clients.filter(c => !c.plan_pending).length} одобрени
-          {clients.filter(c => c.plan_pending).length > 0 && ` · ${clients.filter(c => c.plan_pending).length} чакащи`}
+          {t('cp.approved', { n: clients.filter(c => !c.plan_pending).length })}
+          {clients.filter(c => c.plan_pending).length > 0 && t('cp.waiting', { n: clients.filter(c => c.plan_pending).length })}
         </p>
       </header>
 
       {/* Sessions section — always shown */}
       <div className={styles.sessionsHeader}>
         <span className={styles.sessionsHeaderTitle}>
-          ЗАНЯТИЯ
+          {t('cp.sessions')}
           {upcoming.length > 0 && <span className={styles.badge}>{upcoming.length}</span>}
         </span>
         <button className={styles.addSessionBtn} onClick={openAddSession} type="button">
-          + НОВО
+          {t('cp.new')}
         </button>
       </div>
 
@@ -277,7 +279,7 @@ export default function CoachPanel() {
         <>
           {upcoming.length > 0 && (
             <>
-              <p className={styles.sessionsSubLabel}>ПРЕДСТОЯЩИ 7 ДНИ</p>
+              <p className={styles.sessionsSubLabel}>{t('cp.next7')}</p>
               <div className={styles.upcomingList}>
                 {upcoming.map(s => <SessionCard key={s.id} s={s} onCancel={handleCancelSession} />)}
               </div>
@@ -285,7 +287,7 @@ export default function CoachPanel() {
           )}
           {recentCompleted.length > 0 && (
             <>
-              <p className={styles.sessionsSubLabel}>ПОСЛЕДНИ 14 ДНИ</p>
+              <p className={styles.sessionsSubLabel}>{t('cp.last14')}</p>
               <div className={styles.upcomingList}>
                 {recentCompleted.map(s => <SessionCard key={s.id} s={s} />)}
               </div>
@@ -293,7 +295,7 @@ export default function CoachPanel() {
           )}
         </>
       ) : (
-        <p className={styles.sessionsEmpty}>Няма занятия</p>
+        <p className={styles.sessionsEmpty}>{t('cp.noSessions')}</p>
       )}
 
       {/* Clients list */}
@@ -305,7 +307,7 @@ export default function CoachPanel() {
             {pending.length > 0 && (
               <>
                 <p className={styles.sectionTitle}>
-                  ЧАКАЩИ ОДОБРЕНИЕ
+                  {t('cp.pendingApproval')}
                   <span className={styles.badge}>{pending.length}</span>
                 </p>
                 <div className={styles.list}>
@@ -331,13 +333,13 @@ export default function CoachPanel() {
                                 </a>
                               )}
                               {client.intake_call_time && (
-                                <span className={styles.intakeAge}>🕐 {client.intake_call_time}ч.</span>
+                                <span className={styles.intakeAge}>{t('cp.callTime', { time: client.intake_call_time })}</span>
                               )}
                               {client.age && (
-                                <span className={styles.intakeAge}>{client.age} год.</span>
+                                <span className={styles.intakeAge}>{t('cp.age', { n: client.age })}</span>
                               )}
                               {client.intake_training_days && (
-                                <span className={styles.intakeAge}>{client.intake_training_days}×/седм.</span>
+                                <span className={styles.intakeAge}>{t('cp.perWeek', { n: client.intake_training_days })}</span>
                               )}
                             </div>
                           )}
@@ -348,19 +350,19 @@ export default function CoachPanel() {
                           disabled={approvingId === client.id}
                           type="button"
                         >
-                          {approvingId === client.id ? '...' : 'ОДОБРИ'}
+                          {approvingId === client.id ? '...' : t('cp.approve')}
                         </button>
                       </div>
                       {(client.intake_goal || client.intake_notes) && (
                         <div className={styles.intakeDetails}>
                           {client.intake_goal && (
                             <p className={styles.intakeRow}>
-                              <span className={styles.intakeKey}>Цел: </span>{client.intake_goal}
+                              <span className={styles.intakeKey}>{t('cp.goalKey')}</span>{client.intake_goal}
                             </p>
                           )}
                           {client.intake_notes && (
                             <p className={styles.intakeRow}>
-                              <span className={styles.intakeKey}>Бележки: </span>{client.intake_notes}
+                              <span className={styles.intakeKey}>{t('cp.notesKey')}</span>{client.intake_notes}
                             </p>
                           )}
                         </div>
@@ -372,16 +374,16 @@ export default function CoachPanel() {
             )}
 
             {approved.length === 0 ? (
-              <p className={styles.empty}>Все още няма одобрени клиенти.</p>
+              <p className={styles.empty}>{t('cp.noApproved')}</p>
             ) : (
               <>
-                {pending.length > 0 && <p className={styles.sectionTitle}>КЛИЕНТИ</p>}
+                {pending.length > 0 && <p className={styles.sectionTitle}>{t('cp.title')}</p>}
                 <div className={styles.list}>
                   {[...approved]
                     .sort((a, b) => clientSortCompare(a, b, clientStats))
                     .map(client => {
                       const s = clientStats[client.id]
-                      const label = lastActiveLabel(s?.lastActive)
+                      const label = lastActiveLabel(t, s?.lastActive)
                       const isToday = s?.lastActive === TODAY
                       return (
                         <button
@@ -405,7 +407,7 @@ export default function CoachPanel() {
                             )}
                             <div className={styles.clientMeta}>
                               {s?.kcalToday > 0
-                                ? <span className={styles.kcalToday}>{Math.round(s.kcalToday)} ккал</span>
+                                ? <span className={styles.kcalToday}>{t('cp.kcalToday', { n: Math.round(s.kcalToday) })}</span>
                                 : <span className={styles.kcalEmpty}>—</span>
                               }
                               {client.calories > 0 && s?.kcalToday > 0 &&
@@ -444,7 +446,7 @@ export default function CoachPanel() {
       {/* Coaches */}
       {coaches.length > 0 && (
         <>
-          <p className={styles.sectionTitle}>КОЛЕГИ</p>
+          <p className={styles.sectionTitle}>{t('cp.colleagues')}</p>
           <div className={styles.list}>
             {coaches.map(coach => (
               <button
@@ -478,9 +480,9 @@ export default function CoachPanel() {
       {/* ── Update notice toggle ── */}
       <div className={styles.noticeRow}>
         <div>
-          <p className={styles.noticeLabel}>ИЗВЕСТИЕ ЗА АКТУАЛИЗАЦИЯ</p>
+          <p className={styles.noticeLabel}>{t('cp.noticeLabel')}</p>
           <p className={styles.noticeDesc}>
-            {notice ? 'Активно — клиентите виждат банер' : 'Неактивно'}
+            {notice ? t('cp.noticeOn') : t('cp.noticeOff')}
           </p>
         </div>
         <button
@@ -489,7 +491,7 @@ export default function CoachPanel() {
           disabled={noticeSaving}
           type="button"
         >
-          {noticeSaving ? '...' : notice ? 'ИЗКЛЮЧИ' : 'ПУСНИ'}
+          {noticeSaving ? '...' : notice ? t('cp.noticeStop') : t('cp.noticeStart')}
         </button>
       </div>
 
@@ -501,24 +503,24 @@ export default function CoachPanel() {
         <div className={styles.modal} onClick={() => setShowAddSession(false)}>
           <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
             <div className={styles.handle} />
-            <p className={styles.modalTitle}>НОВО ЗАНЯТИЕ</p>
+            <p className={styles.modalTitle}>{t('cp.newSession')}</p>
             <form className={styles.sessionForm} onSubmit={handleAddSession}>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>КЛИЕНТ</label>
+                <label className={styles.formLabel}>{t('cp.client')}</label>
                 <select
                   className={styles.formSelect}
                   value={sessionForm.clientId}
                   onChange={e => setSessionForm(p => ({ ...p, clientId: e.target.value }))}
                   required
                 >
-                  <option value="">— избери клиент —</option>
+                  <option value="">{t('cp.pickClient')}</option>
                   {approvedClients.map(c => (
                     <option key={c.id} value={c.id}>{c.name || c.email}</option>
                   ))}
                 </select>
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>ДАТА И ЧАС</label>
+                <label className={styles.formLabel}>{t('cp.dateTime')}</label>
                 <input
                   type="datetime-local"
                   className={styles.formInput}
@@ -528,17 +530,17 @@ export default function CoachPanel() {
                 />
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>ЗАГЛАВИЕ</label>
+                <label className={styles.formLabel}>{t('cp.sessionTitle')}</label>
                 <input
                   type="text"
                   className={styles.formInput}
                   value={sessionForm.title}
                   onChange={e => setSessionForm(p => ({ ...p, title: e.target.value }))}
-                  placeholder="Тренировка"
+                  placeholder={t('training.sessionWorkout')}
                 />
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>ВРЕМЕТРАЕНЕ (МИН)</label>
+                <label className={styles.formLabel}>{t('cp.duration')}</label>
                 <input
                   type="number"
                   className={styles.formInput}
@@ -549,7 +551,7 @@ export default function CoachPanel() {
                 />
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>БЕЛЕЖКИ (по избор)</label>
+                <label className={styles.formLabel}>{t('cp.notes')}</label>
                 <textarea
                   className={styles.formTextarea}
                   value={sessionForm.notes}
@@ -560,14 +562,14 @@ export default function CoachPanel() {
               </div>
               <div className={styles.formActions}>
                 <button type="button" className={styles.formCancelBtn} onClick={() => setShowAddSession(false)}>
-                  ОТКАЗ
+                  {t('cp.cancel')}
                 </button>
                 <button
                   type="submit"
                   className={styles.formSaveBtn}
                   disabled={savingSession || !sessionForm.clientId || !sessionForm.scheduledAt}
                 >
-                  {savingSession ? '...' : 'ЗАПАЗИ'}
+                  {savingSession ? '...' : t('cp.save')}
                 </button>
               </div>
             </form>
@@ -580,12 +582,13 @@ export default function CoachPanel() {
 
 // ─── Showcase Manager ─────────────────────────────────────────────────────────
 
-const CAT_LABEL = { training: 'ТРЕНИРОВКА', nutrition: 'ХРАНЕНЕ' }
+const CAT_LABEL_KEYS = { training: 'cp.cat.training', nutrition: 'cp.cat.nutrition' }
 const CAT_COLOR = { training: 'var(--accent)', nutrition: '#66BB6A' }
 
 const EMPTY_FORM = { category: 'training', title: '', body: '' }
 
 function ShowcaseManager() {
+  const { t } = useSettings()
   const fileRef = useRef()
   const [posts,    setPosts]    = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -656,12 +659,12 @@ function ShowcaseManager() {
   return (
     <div>
       <div className={styles.sessionsHeader}>
-        <span className={styles.sessionsHeaderTitle}>ВДЪХНОВЕНИЕ</span>
-        <button className={styles.addSessionBtn} onClick={openNew} type="button">+ НОВА</button>
+        <span className={styles.sessionsHeaderTitle}>{t('cp.inspiration')}</span>
+        <button className={styles.addSessionBtn} onClick={openNew} type="button">{t('cp.newPost')}</button>
       </div>
 
       {posts.length === 0 && !showForm && (
-        <p className={styles.empty} style={{ marginTop: 8 }}>Все още няма публикации.</p>
+        <p className={styles.empty} style={{ marginTop: 8 }}>{t('cp.noPosts')}</p>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -669,7 +672,7 @@ function ShowcaseManager() {
           <div key={post.id} className={styles.sessionItem} style={{ alignItems: 'flex-start' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <span style={{ fontFamily: 'var(--font-heading)', fontSize: 9, letterSpacing: '0.14em', color: CAT_COLOR[post.category] }}>
-                {CAT_LABEL[post.category]}
+                {t(CAT_LABEL_KEYS[post.category])}
               </span>
               <p style={{ fontFamily: 'var(--font-heading)', fontSize: 14, color: 'var(--text)', margin: '2px 0 0', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {post.title}
@@ -686,10 +689,10 @@ function ShowcaseManager() {
       {showForm && (
         <div className={styles.modal} onClick={() => setShowForm(false)}>
           <div className={styles.modalSheet} onClick={e => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>{editId ? 'РЕДАКТИРАЙ' : 'НОВА ПУБЛИКАЦИЯ'}</h3>
+            <h3 className={styles.modalTitle}>{editId ? t('cp.editPost') : t('cp.newPostTitle')}</h3>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>КАТЕГОРИЯ</label>
+                <label className={styles.formLabel}>{t('cp.category')}</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {['training', 'nutrition'].map(cat => (
                     <button
@@ -706,43 +709,43 @@ function ShowcaseManager() {
                         cursor: 'pointer',
                       }}
                     >
-                      {CAT_LABEL[cat]}
+                      {t(CAT_LABEL_KEYS[cat])}
                     </button>
                   ))}
                 </div>
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>ЗАГЛАВИЕ</label>
+                <label className={styles.formLabel}>{t('cp.sessionTitle')}</label>
                 <input
                   type="text"
                   className={styles.formInput}
                   value={form.title}
                   onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  placeholder="Заглавие на публикацията..."
+                  placeholder={t('cp.postTitlePh')}
                   required
                 />
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>СЪДЪРЖАНИЕ (по избор)</label>
+                <label className={styles.formLabel}>{t('cp.content')}</label>
                 <textarea
                   className={styles.formTextarea}
                   value={form.body}
                   onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
                   rows={5}
-                  placeholder="Описание, програма, съвети..."
+                  placeholder={t('cp.contentPh')}
                 />
               </div>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>СНИМКА (по избор)</label>
+                <label className={styles.formLabel}>{t('cp.photo')}</label>
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setPhotoFile(e.target.files[0] || null)} />
                 <button type="button" className={styles.formCancelBtn} onClick={() => fileRef.current.click()}>
-                  {photoFile ? `✓ ${photoFile.name}` : '+ Избери снимка'}
+                  {photoFile ? `✓ ${photoFile.name}` : t('cp.pickPhoto')}
                 </button>
               </div>
               <div className={styles.formActions}>
-                <button type="button" className={styles.formCancelBtn} onClick={() => setShowForm(false)}>ОТКАЗ</button>
+                <button type="button" className={styles.formCancelBtn} onClick={() => setShowForm(false)}>{t('cp.cancel')}</button>
                 <button type="submit" className={styles.formSaveBtn} disabled={saving || !form.title.trim()}>
-                  {saving ? '...' : 'ПУБЛИКУВАЙ'}
+                  {saving ? '...' : t('cp.publish')}
                 </button>
               </div>
             </form>
