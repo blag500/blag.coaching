@@ -22,7 +22,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (!q) return MET_ACTIVITIES
-    return MET_ACTIVITIES.filter(a => a.label.toLowerCase().includes(q))
+    return MET_ACTIVITIES.filter(a => t(a.labelKey).toLowerCase().includes(q))
   }, [query])
 
   // Close the dropdown when tapping outside
@@ -66,7 +66,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
             aria-haspopup="listbox"
             aria-expanded={dropdownOpen}
           >
-            <span className={styles.selectValue}>{selected?.label ?? t('al.pickActivity')}</span>
+            <span className={styles.selectValue}>{selected ? t(selected.labelKey) : t('al.pickActivity')}</span>
             <span className={`${styles.selectChevron} ${dropdownOpen ? styles.selectChevronOpen : ''}`}>›</span>
           </button>
 
@@ -90,7 +90,7 @@ export default function ActivityLog({ activities, totalKcalBurned, onAdd, onRemo
                       className={`${styles.option} ${a.id === selectedId ? styles.optionActive : ''}`}
                       onClick={() => pick(a.id)}
                     >
-                      {a.label}
+                      {t(a.labelKey)}
                     </button>
                   </li>
                 ))}

@@ -1,18 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import bg from '../locales/bg'
-import en from '../locales/en'
-import { syncLocale } from '../utils/locale'
-
-const TRANSLATIONS = { bg, en }
+import { syncLocale, tr } from '../utils/locale'
 
 const SettingsContext = createContext(null)
-
-// Заменя {key} плейсхолдерите с params[key]. Липсваща стойност се
-// оставя като {key}, за да е видима в UI-a.
-function interpolate(str, params) {
-  if (!params || typeof str !== 'string') return str
-  return str.replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m))
-}
 
 export function SettingsProvider({ children }) {
   const [theme, setThemeState] = useState(() => localStorage.getItem('blag_theme') || 'glass')
@@ -54,9 +43,10 @@ export function SettingsProvider({ children }) {
   function setLang(v)  { setLangState(v) }
   function setRestTimer(v) { setRestTimerState(!!v) }
 
+  /* Делегира на tr(), за да няма две реализации на един и същ превод.
+     syncLocale(lang) горе вече е записал езика при този рендер. */
   function t(key, params) {
-    const raw = TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.bg[key] ?? key
-    return interpolate(raw, params)
+    return tr(key, params)
   }
 
   return (

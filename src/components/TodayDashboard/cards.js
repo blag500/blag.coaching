@@ -11,12 +11,12 @@
  * back what was logged somewhere else.
  */
 export const CARDS = [
-  { id: 'readiness',   label: 'Готовност',         hint: 'Оценка спрямо твоята норма' },
-  { id: 'habits',      label: 'Навици',            hint: 'Чиповете за деня' },
-  { id: 'weight',      label: 'Тегло',             hint: 'Днешното мерене и тенденцията' },
-  { id: 'water',       label: 'Вода',              hint: 'Чашите за деня' },
-  { id: 'macros',      label: 'Макроси',           hint: 'Калории и трите макроса' },
-  { id: 'supplements', label: 'Суплементи',        hint: 'Твоят стек, ако има такъв' },
+  { id: 'readiness',   labelKey: 'dc.card.readiness',   hintKey: 'dc.card.readinessHint'   },
+  { id: 'habits',      labelKey: 'dc.card.habits',      hintKey: 'dc.card.habitsHint'      },
+  { id: 'weight',      labelKey: 'dc.card.weight',      hintKey: 'dc.card.weightHint'      },
+  { id: 'water',       labelKey: 'dc.card.water',       hintKey: 'dc.card.waterHint'       },
+  { id: 'macros',      labelKey: 'dc.card.macros',      hintKey: 'dc.card.macrosHint'      },
+  { id: 'supplements', labelKey: 'dc.card.supplements', hintKey: 'dc.card.supplementsHint' },
 ]
 
 export const DEFAULT_ORDER = CARDS.map(c => c.id)

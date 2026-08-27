@@ -43,6 +43,7 @@ import SwipePager from './components/SwipePager/SwipePager'
 import { useSupplementsToday } from './hooks/useSupplementsToday'
 import SupplementBanner from './components/Supplements/SupplementBanner'
 import { trackPage } from './lib/analytics'
+import { tr } from './utils/locale'
 import styles from './App.module.css'
 
 /* Фийдът зае мястото, което таблото освободи, когато се прибра в Профил.
@@ -50,7 +51,7 @@ import styles from './App.module.css'
 const NAV_ORDER = ['feed', 'nutrition', 'training', 'profile']
 
 // Goal ids → the word the success chip shows after the calorie target.
-const GOAL_LABEL = { cut: 'Изгаряне', maintain: 'Поддържане', bulk: 'Покачване' }
+const GOAL_KEY = { cut: 'goal.cut', maintain: 'goal.maintain', bulk: 'goal.bulk' }
 
 function AppShell() {
   const { session, profile, loading, selectPlan, refreshProfile } = useAuth()
@@ -223,7 +224,7 @@ function AppShell() {
       <RegistrationSuccess
         name={onboardName}
         calories={profile.calories}
-        goal={GOAL_LABEL[profile.goal]}
+        goal={GOAL_KEY[profile.goal] ? tr(GOAL_KEY[profile.goal]) : undefined}
         ready={profile.onboarding_done}
         onEnter={() => setOnboardName(null)}
       />
@@ -251,7 +252,7 @@ function AppShell() {
       <div className={styles.loadingScreen}>
         <span className={styles.loadingDot} />
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 16 }}>
-          Потвърждаваме плащането...
+          {tr('payment.confirming')}
         </p>
       </div>
     )

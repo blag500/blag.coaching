@@ -1,28 +1,29 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { tr } from '../utils/locale'
 import { useAuth } from '../contexts/AuthContext'
 
 export const MET_ACTIVITIES = [
-  { id: 'run',      label: 'Бягане',            met: 8.0 },
-  { id: 'walk',     label: 'Ходене',             met: 3.5 },
-  { id: 'bike',     label: 'Колоездене',         met: 6.0 },
-  { id: 'swim',     label: 'Плуване',            met: 7.0 },
-  { id: 'weights',  label: 'Вдигане тежести',    met: 4.0 },
-  { id: 'hiit',     label: 'HIIT',               met: 8.5 },
-  { id: 'jump',     label: 'Скачане въже',       met: 10.0 },
-  { id: 'yoga',     label: 'Йога',               met: 3.0 },
-  { id: 'stretch',  label: 'Разтягане',          met: 2.5 },
-  { id: 'cardio',   label: 'Кардио (общо)',      met: 5.0 },
-  { id: 'elliptic', label: 'Елиптика',           met: 5.5 },
-  { id: 'rowing',   label: 'Гребане (уред)',      met: 7.0 },
-  { id: 'soccer',   label: 'Футбол',             met: 7.0 },
-  { id: 'bball',    label: 'Баскетбол',          met: 6.5 },
-  { id: 'tennis',   label: 'Тенис',              met: 7.0 },
-  { id: 'dance',    label: 'Танци',              met: 5.0 },
-  { id: 'martial',  label: 'Бойни изкуства',     met: 6.0 },
-  { id: 'stairs',   label: 'Стълби',             met: 4.0 },
-  { id: 'hike',     label: 'Планинско ходене',   met: 5.5 },
-  { id: 'skating',  label: 'Ролери / скейт',     met: 7.0 },
+  { id: 'run',      labelKey: 'activity.run',            met: 8.0 },
+  { id: 'walk',     labelKey: 'activity.walk',             met: 3.5 },
+  { id: 'bike',     labelKey: 'activity.bike',         met: 6.0 },
+  { id: 'swim',     labelKey: 'activity.swim',            met: 7.0 },
+  { id: 'weights',  labelKey: 'activity.weights',    met: 4.0 },
+  { id: 'hiit',     labelKey: 'activity.hiit',               met: 8.5 },
+  { id: 'jump',     labelKey: 'activity.jump',       met: 10.0 },
+  { id: 'yoga',     labelKey: 'activity.yoga',               met: 3.0 },
+  { id: 'stretch',  labelKey: 'activity.stretch',          met: 2.5 },
+  { id: 'cardio',   labelKey: 'activity.cardio',      met: 5.0 },
+  { id: 'elliptic', labelKey: 'activity.elliptic',           met: 5.5 },
+  { id: 'rowing',   labelKey: 'activity.rowing',      met: 7.0 },
+  { id: 'soccer',   labelKey: 'activity.soccer',             met: 7.0 },
+  { id: 'bball',    labelKey: 'activity.bball',          met: 6.5 },
+  { id: 'tennis',   labelKey: 'activity.tennis',              met: 7.0 },
+  { id: 'dance',    labelKey: 'activity.dance',              met: 5.0 },
+  { id: 'martial',  labelKey: 'activity.martial',     met: 6.0 },
+  { id: 'stairs',   labelKey: 'activity.stairs',             met: 4.0 },
+  { id: 'hike',     labelKey: 'activity.hike',   met: 5.5 },
+  { id: 'skating',  labelKey: 'activity.skating',     met: 7.0 },
 ]
 
 export function calcKcal(met, weightKg, minutes) {
@@ -58,7 +59,7 @@ export function useActivityLog(date) {
 
   async function addActivity(activityId, durationMin) {
     const act = MET_ACTIVITIES.find(a => a.id === activityId)
-    if (!act || !session) return { error: new Error('Няма избрана активност') }
+    if (!act || !session) return { error: new Error(tr('al.errNoActivity')) }
     const weightKg = profile?.weight_kg ?? 75
     const kcalBurned = calcKcal(act.met, weightKg, durationMin)
     const { data, error } = await supabase

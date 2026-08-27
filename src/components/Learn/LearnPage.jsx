@@ -234,7 +234,7 @@ function LearnDeck({ savedProgress, onComplete }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>ЗНАНИЯ</h1>
+        <h1 className={styles.title}>{t('nav.learn')}</h1>
         <div className={styles.scoreRow}>
           <span className={styles.scoreCorrect}>✓ {score.correct}</span>
           <span className={styles.scoreSep}>·</span>
@@ -358,7 +358,7 @@ function HistoryView({ todayResult, history, onReplay }) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>ЗНАНИЯ</h1>
+        <h1 className={styles.title}>{t('nav.learn')}</h1>
         {streak > 0 && (
           <div className={styles.streakBadge}>
             🔥 {streak} {streak === 1 ? t('learn.day.one') : t('learn.day.many')}

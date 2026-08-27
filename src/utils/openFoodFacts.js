@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { tr } from './locale'
 
 const BASE = 'https://world.openfoodfacts.org/cgi/search.pl'
 const PRODUCT_BASE = 'https://world.openfoodfacts.org/api/v0/product'
@@ -6,7 +7,7 @@ const PRODUCT_BASE = 'https://world.openfoodfacts.org/api/v0/product'
 function normalizeProduct(p) {
   return {
     id: crypto.randomUUID(),
-    name: p.product_name_bg || p.product_name || p.product_name_en || 'Непознат продукт',
+    name: p.product_name_bg || p.product_name || p.product_name_en || tr('off.unknownProduct'),
     brand: p.brands || '',
     servingSize: p.serving_size || '100g',
     per100g: {
@@ -80,7 +81,7 @@ export async function lookupBarcode(code) {
   const res = await fetch(`${PRODUCT_BASE}/${encodeURIComponent(code)}.json`)
   if (!res.ok) throw new Error(`OpenFoodFacts barcode: ${res.status}`)
   const data = await res.json()
-  if (data.status !== 1 || !data.product) throw new Error('Продуктът не е намерен')
+  if (data.status !== 1 || !data.product) throw new Error(tr('off.notFound'))
   const food = normalizeProduct(data.product)
 
   // Cache it for all future scans (fire-and-forget, don't block)

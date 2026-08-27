@@ -170,7 +170,7 @@ function verdictFor({ score, provisional, components, muscleGroups, weakFactors,
     // For recovery the app already knows which of the five answers was low, and
     // a cause you can act on beats a verdict you cannot.
     if (weakest.id === 'recovery' && weakFactors.length) {
-      const why = weakFactors.map(f => t(`readiness.factor.${f}`)).join(' и ')
+      const why = weakFactors.map(f => t(`readiness.factor.${f}`)).join(t('readiness.and'))
       return { key: 'readiness.verdict.recoveryWhy', vars: { why } }
     }
     return { key: `readiness.verdict.${weakest.id}` }

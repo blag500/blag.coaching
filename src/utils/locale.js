@@ -1,3 +1,8 @@
+import bg from '../locales/bg'
+import en from '../locales/en'
+
+const TRANSLATIONS = { bg, en }
+
 /**
  * Кой Intl локал ползва приложението в момента.
  *
@@ -14,9 +19,11 @@
  * в useEffect би останало едно рисуване със стария локал след смяната.
  */
 let current = 'bg-BG'
+let currentLang = 'bg'
 
 /** Извиква се само от SettingsProvider. */
 export function syncLocale(lang) {
+  currentLang = lang
   current = lang === 'en' ? 'en-GB' : 'bg-BG'
 }
 
@@ -42,4 +49,27 @@ export function dayNames(style = 'short') {
   const fmt = new Intl.DateTimeFormat(current, { weekday: style })
   // 2021-02-01 е понеделник.
   return Array.from({ length: 7 }, (_, d) => fmt.format(new Date(2021, 1, 1 + d)))
+}
+
+/* Заменя {key} плейсхолдерите с params[key]. Липсваща стойност се оставя
+   като {key}, за да е видима в UI-a. */
+function interpolate(str, params) {
+  if (!params || typeof str !== 'string') return str
+  return str.replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m))
+}
+
+/**
+ * Превод извън React.
+ *
+ * Същата таблица, която t() чете от контекста, но достъпна и от хук, който
+ * вдига браузърно известие, и от utils файл, който хвърля грешка. Тези двете
+ * нямат компонент, от който да получат t(), а дотук плащаха с текст, зашит
+ * на български.
+ *
+ * Вътре в компонент се ползва t() от useSettings — той пререндира при смяна
+ * на езика, а tr() е моментна снимка.
+ */
+export function tr(key, params) {
+  const raw = TRANSLATIONS[currentLang]?.[key] ?? TRANSLATIONS.bg[key] ?? key
+  return interpolate(raw, params)
 }

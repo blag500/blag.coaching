@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { tr } from '../utils/locale'
 
 let instanceCounter = 0
 
@@ -46,7 +47,7 @@ export function useUnread() {
           Notification.permission === 'granted'
         ) {
           new Notification('Blag', {
-            body: 'Получихте ново съобщение',
+            body: tr('unread.newMessage'),
             icon: '/icon-192.png',
             tag: 'blag-message',
             renotify: false,

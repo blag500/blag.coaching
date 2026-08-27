@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { tr } from '../utils/locale'
 
 export function useTaskSuggestions() {
   const { user, profile } = useAuth()
@@ -33,7 +34,7 @@ export function useTaskSuggestions() {
     if (!hasTraining) {
       result.push({
         id:       'train',
-        text:     'Не си тренирал последните 3 дни',
+        text:     tr('tasks.sug.noTraining'),
         icon:     '🏋️',
         priority: 2,
         due_date: today,
@@ -45,7 +46,7 @@ export function useTaskSuggestions() {
     if (kcalYesterday < kcalTarget * 0.75) {
       result.push({
         id:       'nutrition',
-        text:     'Калориите вчера бяха под 75% от целта',
+        text:     tr('tasks.sug.lowKcal'),
         icon:     '🥗',
         priority: 1,
         due_date: today,
@@ -56,7 +57,7 @@ export function useTaskSuggestions() {
     if (glasses < 6) {
       result.push({
         id:       'water',
-        text:     `Изпил си само ${glasses} от 8 чаши вода`,
+        text:     tr('tasks.sug.lowWater', { n: glasses }),
         icon:     '💧',
         priority: 1,
         due_date: today,

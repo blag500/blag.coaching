@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { readSource } from '../utils/source'
 import { supabase } from '../lib/supabase'
+import { tr } from '../utils/locale'
 
 const AuthContext = createContext(null)
 
@@ -341,8 +342,8 @@ export function AuthProvider({ children }) {
       supabase.functions.invoke('send-push', {
         body: {
           toUserId: clientId,
-          title: 'Одобрен си!',
-          body: 'Твоят акаунт беше одобрен от треньора. Добре дошъл!',
+          title: tr('notif.approved.title'),
+          body: tr('notif.approved.body'),
         },
       }).catch(() => {})
     }
@@ -478,7 +479,7 @@ export function AuthProvider({ children }) {
     if (!error) {
       const pushBody = content
         ? (content.length > 80 ? content.slice(0, 77) + '…' : content)
-        : '📷 Снимка'
+        : tr('chat.photoPreview')
       // Fire-and-forget push to recipient
       supabase.functions.invoke('send-push', {
         body: {

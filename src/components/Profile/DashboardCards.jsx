@@ -320,14 +320,14 @@ export default function DashboardCards() {
             onKeyDown={e => onKeyDown(e, i)}
             tabIndex={0}
             role="button"
-            aria-label={t('dc.rowAria', { label: meta(id)?.label })}
+            aria-label={t('dc.rowAria', { label: t(meta(id)?.labelKey) })}
           >
             <span className={styles.grip} aria-hidden="true">
               <span /><span /><span />
             </span>
             <div className={styles.text}>
-              <span className={styles.name}>{meta(id)?.label ?? id}</span>
-              <span className={styles.hint}>{meta(id)?.hint}</span>
+              <span className={styles.name}>{(meta(id) ? t(meta(id).labelKey) : id)}</span>
+              <span className={styles.hint}>{t(meta(id)?.hintKey)}</span>
             </div>
             <button type="button" className={styles.toggle} onClick={() => hide(id)}>
               {t('dc.hide')}
@@ -347,8 +347,8 @@ export default function DashboardCards() {
             {hidden.map(id => (
               <li key={id} className={`${styles.row} ${styles.rowOff}`}>
                 <div className={styles.text}>
-                  <span className={styles.name}>{meta(id)?.label ?? id}</span>
-                  <span className={styles.hint}>{meta(id)?.hint}</span>
+                  <span className={styles.name}>{(meta(id) ? t(meta(id).labelKey) : id)}</span>
+                  <span className={styles.hint}>{t(meta(id)?.hintKey)}</span>
                 </div>
                 <button type="button" className={styles.toggleOn} onClick={() => show(id)}>
                   {t('dc.show')}
