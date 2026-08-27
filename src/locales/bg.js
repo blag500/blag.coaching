@@ -2181,6 +2181,7 @@ export default {
   "cc.bmi.obese3": "Затлъстяване III",
   "cc.protein.standard": "Стандарт",
   "cc.protein.athlete": "Атлет",
+  "cc.protein.prep": "Prep",
   "cc.errName": "Въведи името си",
   "cc.errFields": "Попълни всички полета",
   "cc.errSave": "Грешка при запис. Опитай пак.",

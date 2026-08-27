@@ -2174,6 +2174,7 @@ export default {
   "cc.bmi.obese3": "Obesity III",
   "cc.protein.standard": "Standard",
   "cc.protein.athlete": "Athlete",
+  "cc.protein.prep": "Prep",
   "cc.errName": "Enter your name",
   "cc.errFields": "Fill in every field",
   "cc.errSave": "Couldn’t save. Try again.",
