@@ -4,11 +4,12 @@ import { supabase } from '../../lib/supabase'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import styles from './CoachMyDay.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { loc } from '../../utils/locale'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
 function todayLabel() {
-  return new Date().toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })
+  return new Date().toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 export default function CoachMyDay() {

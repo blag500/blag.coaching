@@ -8,6 +8,7 @@ import HabitCalendar from './HabitCalendar'
 import StreakCelebration from './StreakCelebration'
 import WaterTracker from './WaterTracker'
 import styles from './Compliance.module.css'
+import { loc } from '../../utils/locale'
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -47,7 +48,7 @@ export default function Compliance() {
     setShowCelebration(true)
   }, [allDone, history])
 
-  const today = new Date().toLocaleDateString('bg-BG', {
+  const today = new Date().toLocaleDateString(loc(), {
     weekday: 'long', day: 'numeric', month: 'long',
   })
 

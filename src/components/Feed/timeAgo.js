@@ -1,3 +1,5 @@
+import { loc } from '../../utils/locale'
+
 /**
  * „преди 4 мин" — не часовник.
  *
@@ -5,7 +7,7 @@
  * разстоянието. Датата се връща чак когато е минала седмица, защото оттам
  * нататък „преди 9 дни" е по-трудно за четене от самата дата.
  */
-export function timeAgo(iso, t, lang = 'bg') {
+export function timeAgo(iso, t) {
   const then = new Date(iso).getTime()
   const mins = Math.floor((Date.now() - then) / 60000)
 
@@ -16,6 +18,5 @@ export function timeAgo(iso, t, lang = 'bg') {
   const days = Math.floor(hours / 24)
   if (days < 7)     return t('feed.ago.day',  { n: days })
 
-  const locale = lang === 'en' ? 'en-GB' : 'bg-BG'
-  return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: '2-digit' })
+  return new Date(iso).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit', year: '2-digit' })
 }

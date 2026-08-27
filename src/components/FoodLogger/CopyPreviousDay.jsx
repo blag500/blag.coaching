@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './CopyPreviousDay.module.css'
+import { loc } from '../../utils/locale'
 
 /** The day before the one being viewed, as a date string. */
 function dayBefore(dateStr) {
@@ -59,7 +60,7 @@ export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
   const isYesterday = source.date === dayBefore(date)
   const label = isYesterday
     ? t('copy.yesterday')
-    : when.toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'short' })
+    : when.toLocaleDateString(loc(), { day: 'numeric', month: 'short' })
 
   async function copy() {
     if (busy) return

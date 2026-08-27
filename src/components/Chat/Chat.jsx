@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './Chat.module.css'
+import { loc } from '../../utils/locale'
 
 export default function Chat({ clientId, clientName, onClose }) {
   const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
@@ -168,7 +169,7 @@ export default function Chat({ clientId, clientName, onClose }) {
                 <span className={styles.text}>{msg.content}</span>
               )}
               <span className={styles.time}>
-                {new Date(msg.created_at).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
+                {new Date(msg.created_at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           ))

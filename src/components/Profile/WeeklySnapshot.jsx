@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './WeeklySnapshot.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { loc } from '../../utils/locale'
 
 const GYM_COLORS = ['#EF5350', 'var(--accent)', '#66BB6A']
 const GYM_ICONS  = ['↓', '=', '↑']
@@ -134,7 +135,7 @@ export default function WeeklySnapshot({ kcalTarget = 0 }) {
     ? t('ws.thisWeek')
     : offset === -1
       ? t('ws.lastWeek')
-      : `${new Date(from + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })} – ${new Date(to + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })}`
+      : `${new Date(from + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' })} – ${new Date(to + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' })}`
 
   const hasAnyData = foodDaysArr.length > 0 || trainCount > 0 || habitDaysArr.length > 0 || sleepDays.length > 0
 

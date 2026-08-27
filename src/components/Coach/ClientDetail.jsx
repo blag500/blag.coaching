@@ -16,6 +16,7 @@ import ExerciseStats from '../Training/ExerciseStats'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import { MEALS, MEAL_LABEL_KEY, defaultMeal } from '../FoodLogger/meals'
 import styles from './ClientDetail.module.css'
+import { loc } from '../../utils/locale'
 
 const TABS = [
   { id: 'progress',   labelKey: 'cd.tab.progress' },
@@ -271,7 +272,7 @@ function ProgressTab({ stats, client }) {
     const dateStr = d.toISOString().slice(0, 10)
     days.push({
       date:    dateStr,
-      dayName: d.toLocaleDateString('bg-BG', { weekday: 'short' }),
+      dayName: d.toLocaleDateString(loc(), { weekday: 'short' }),
       kcal:    foodByDay[dateStr]            || 0,
       habits:  habitsByDay[dateStr]?.completed || 0,
     })
@@ -1252,7 +1253,7 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
     return editId === row.id ? (
             <div key={row.id} className={`${styles.exHistoryRow} ${styles.exHistoryRowEdit}`}>
               <span className={styles.exHistoryDate}>
-                {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+                {new Date(row.date + 'T00:00:00').toLocaleDateString(loc(), { day: 'numeric', month: 'short' })}
               </span>
               <input
                 className={styles.progEditInput}
@@ -1275,7 +1276,7 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
     ) : (
             <div key={row.id} className={styles.exHistoryRow}>
               <span className={styles.exHistoryDate}>
-                {new Date(row.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+                {new Date(row.date + 'T00:00:00').toLocaleDateString(loc(), { day: 'numeric', month: 'short' })}
               </span>
               <span className={styles.exHistoryKg}>
                 {row.weight != null ? t('cd.kgUnit', { n: row.weight }) : '—'}
@@ -1308,7 +1309,7 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
               style={multi ? { cursor: 'pointer' } : undefined}
             >
               <span className={styles.exHistoryDate}>
-                {new Date(s.date + 'T00:00:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}
+                {new Date(s.date + 'T00:00:00').toLocaleDateString(loc(), { day: 'numeric', month: 'short' })}
               </span>
               <span className={styles.exHistoryKg}>
                 {s.top?.weight != null ? t('cd.kgUnit', { n: s.top.weight }) : '—'}
@@ -1329,7 +1330,7 @@ function ProgHistoryTable({ rows, onDelete, onUpdate }) {
             {/* Total moved, where the top set alone hides a harder session. */}
             {(s.volume > 0 || s.replaces) && (
               <span className={styles.progVolume}>
-                {s.volume > 0 && t('cd.volume', { n: Math.round(s.volume).toLocaleString('bg-BG') })}
+                {s.volume > 0 && t('cd.volume', { n: Math.round(s.volume).toLocaleString(loc()) })}
                 {s.volume > 0 && s.replaces && ' · '}
                 {s.replaces && t('cd.replaces', { name: s.replaces })}
               </span>
@@ -1593,7 +1594,7 @@ function PhotoTimeline({ checkins, onPhotoClick }) {
             >
               <img src={c.photo_url} className={styles.photoImg} alt={c.date} />
               <span className={styles.photoDate}>
-                {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: 'short' })}
+                {new Date(c.date + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: 'short' })}
               </span>
               {c.weight_kg != null && (
                 <span className={styles.photoWeight}>{t('cd.photoWeight', { n: c.weight_kg })}</span>
@@ -1737,7 +1738,7 @@ function CheckinTab({ clientId }) {
           <div className={styles.checkinBody}>
             <div className={styles.checkinRow}>
               <span className={styles.checkinDate}>
-                {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                {new Date(c.date + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: '2-digit', year: '2-digit' })}
               </span>
               {c.weight_kg != null && (
                 <span className={styles.checkinWeight}>{t('cd.kgUnit', { n: c.weight_kg })}</span>

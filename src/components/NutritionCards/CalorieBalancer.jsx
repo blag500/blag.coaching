@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './CalorieBalancer.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { loc } from '../../utils/locale'
 
 const DAY = 86_400_000
 
@@ -152,7 +153,7 @@ export default function CalorieBalancer() {
   return (
     <div className={styles.wrap}>
       <h3 className={styles.title}>{t('balancer.title')}</h3>
-      <p className={styles.sub}>{t('balancer.dayGoal', { n: target.toLocaleString('bg-BG') })}</p>
+      <p className={styles.sub}>{t('balancer.dayGoal', { n: target.toLocaleString(loc()) })}</p>
 
       <div className={styles.chart} style={{ '--target-h': `${(target / max) * 100}%` }}>
         {days.map(d => {
@@ -164,12 +165,12 @@ export default function CalorieBalancer() {
                 <div
                   className={`${styles.bar} ${over ? styles.barOver : ''} ${d.kcal ? '' : styles.barEmpty}`}
                   style={{ height: `${h}%` }}
-                  title={t('balancer.dayKcalTitle', { n: d.kcal.toLocaleString('bg-BG') })}
+                  title={t('balancer.dayKcalTitle', { n: d.kcal.toLocaleString(loc()) })}
                 />
                 <div className={styles.targetLine} />
               </div>
               <span className={styles.colLabel}>{dayLabel(t, d.date)}</span>
-              <span className={styles.colVal}>{d.kcal ? d.kcal.toLocaleString('bg-BG') : '·'}</span>
+              <span className={styles.colVal}>{d.kcal ? d.kcal.toLocaleString(loc()) : '·'}</span>
             </div>
           )
         })}
@@ -182,12 +183,12 @@ export default function CalorieBalancer() {
           <div className={styles.deltaBox}>
             <div className={styles.deltaRow}>
               <span className={styles.deltaLabel}>{t('balancer.avgLabel', { n: analysis.eaten })}</span>
-              <span className={styles.deltaVal}>{t('balancer.avgVal', { n: analysis.avg.toLocaleString('bg-BG') })}</span>
+              <span className={styles.deltaVal}>{t('balancer.avgVal', { n: analysis.avg.toLocaleString(loc()) })}</span>
             </div>
             <div className={styles.deltaRow}>
               <span className={styles.deltaLabel}>{t('balancer.vsGoal')}</span>
               <span className={`${styles.deltaVal} ${isOver ? styles.over : isUnder ? styles.under : ''}`}>
-                {t('balancer.deltaVal', { sign: analysis.delta > 0 ? '+' : '', n: analysis.delta.toLocaleString('bg-BG') })}
+                {t('balancer.deltaVal', { sign: analysis.delta > 0 ? '+' : '', n: analysis.delta.toLocaleString(loc()) })}
               </span>
             </div>
           </div>
@@ -236,14 +237,14 @@ export default function CalorieBalancer() {
 
               <div className={styles.suggestion}>
                 <p className={styles.suggestionValue}>
-                  {suggested.toLocaleString('bg-BG')} <span className={styles.suggestionUnit}>{t('balancer.perDayUnit')}</span>
+                  {suggested.toLocaleString(loc())} <span className={styles.suggestionUnit}>{t('balancer.perDayUnit')}</span>
                 </p>
                 <p className={styles.suggestionMeta}>
                   {t(spread === 1 ? 'balancer.spreadOverOne' : 'balancer.spreadOverMany', {
                     n: spread,
                     sign: perDay > 0 ? '−' : '+',
-                    delta: Math.abs(perDay).toLocaleString('bg-BG'),
-                    target: target.toLocaleString('bg-BG'),
+                    delta: Math.abs(perDay).toLocaleString(loc()),
+                    target: target.toLocaleString(loc()),
                   })}
                 </p>
 

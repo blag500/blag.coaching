@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import bg from '../locales/bg'
 import en from '../locales/en'
+import { syncLocale } from '../utils/locale'
 
 const TRANSLATIONS = { bg, en }
 
@@ -34,6 +35,11 @@ export function SettingsProvider({ children }) {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('blag_theme', theme)
   }, [theme])
+
+  /* При рендер, не в useEffect: Intl локалът трябва да е верен още докато
+     децата се рисуват, иначе смяната на езика оставя едно рисуване с
+     българските дати. */
+  syncLocale(lang)
 
   useEffect(() => {
     localStorage.setItem('blag_lang', lang)

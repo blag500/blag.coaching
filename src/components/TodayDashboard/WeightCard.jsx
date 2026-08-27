@@ -6,6 +6,7 @@ import { parseWeight } from '../../utils/weight'
 import Pictogram from '../Pictogram/Pictogram'
 import WeightSpark from './WeightSpark'
 import styles from './WeightCard.module.css'
+import { loc } from '../../utils/locale'
 
 /**
  * Today's weigh-in, entered here rather than prompted from here.
@@ -31,7 +32,7 @@ function shortDate(iso) {
 }
 
 function fmtKg(n) {
-  return n.toLocaleString('bg-BG', { minimumFractionDigits: 0, maximumFractionDigits: 1 })
+  return n.toLocaleString(loc(), { minimumFractionDigits: 0, maximumFractionDigits: 1 })
 }
 
 function signed(kg, kgUnit) {

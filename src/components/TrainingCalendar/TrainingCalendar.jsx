@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './TrainingCalendar.module.css'
+import { loc } from '../../utils/locale'
 
 async function notifySession(sessionId, event) {
   try {
@@ -42,7 +43,7 @@ const STATUS_LABEL_KEYS = {
 
 function fmtTime(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
+  return new Date(iso).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
 }
 
 function sofiaDateStr(iso) {
@@ -61,7 +62,7 @@ function isoToDateInput(iso) {
 
 function isoToTimeInput(iso) {
   if (!iso) return '10:00'
-  return new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
+  return new Date(iso).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
 }
 
 // Sofia-aware "today" — returns { year, month (0-based), day }
@@ -342,7 +343,7 @@ export default function TrainingCalendar() {
   const historyByDate = useMemo(() => {
     const groups = {}
     historySessions.forEach(s => {
-      const key = new Date(s.scheduled_at).toLocaleDateString('bg-BG', {
+      const key = new Date(s.scheduled_at).toLocaleDateString(loc(), {
         weekday: 'short', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Sofia',
       }).toUpperCase()
       if (!groups[key]) groups[key] = []
@@ -358,7 +359,7 @@ export default function TrainingCalendar() {
       .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))
     const groups = {}
     upcoming.forEach(s => {
-      const key = new Date(s.scheduled_at).toLocaleDateString('bg-BG', {
+      const key = new Date(s.scheduled_at).toLocaleDateString(loc(), {
         weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Sofia',
       }).toUpperCase()
       if (!groups[key]) groups[key] = []
@@ -516,7 +517,7 @@ export default function TrainingCalendar() {
           <div className={styles.daySection}>
             <div className={styles.daySectionHead}>
               <span className={styles.daySectionTitle}>
-                {new Date(year, month, selDay).toLocaleDateString('bg-BG', {
+                {new Date(year, month, selDay).toLocaleDateString(loc(), {
                   weekday: 'short', day: 'numeric', month: 'long', timeZone: 'Europe/Sofia',
                 }).toUpperCase()}
               </span>

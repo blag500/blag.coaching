@@ -8,6 +8,8 @@
  * count of records, so every screen that shows a number shows the same number.
  */
 
+import { loc } from './locale'
+
 /** Epley. A set that added reps is progress, and load alone cannot say so. */
 export function e1RM(weight, reps) {
   const w = parseFloat(weight)
@@ -188,15 +190,15 @@ export const kg = n => {
 }
 
 /** 5 727 rather than 5727 — big volumes are read, not parsed. */
-export const bigNum = n => Math.round(n).toLocaleString('bg-BG')
+export const bigNum = n => Math.round(n).toLocaleString(loc())
 
 /** "днес", "вчера", "преди 3 дни", then a date once days stop meaning anything. */
-export function agoLabel(t, dateStr, lang = 'bg') {
+export function agoLabel(t, dateStr) {
   const days = Math.round((Date.now() - dayDate(dateStr)) / 86400000)
   if (days <= 0) return t('ago.today')
   if (days === 1) return t('ago.yesterday')
   if (days < 14) return t('ago.days', { n: days })
-  return dayDate(dateStr).toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'short' })
+  return dayDate(dateStr).toLocaleDateString(loc(), { day: 'numeric', month: 'short' })
 }
 
 /** The session's own title, or the translated stand-in when it has none. */

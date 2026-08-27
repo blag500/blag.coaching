@@ -3,6 +3,7 @@ import { useTasks } from '../../hooks/useTasks'
 import { useTaskSuggestions } from '../../hooks/useTaskSuggestions'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Tasks.module.css'
+import { loc } from '../../utils/locale'
 
 const TODAY = () => new Date().toISOString().slice(0, 10)
 const IN7   = () => new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10)
@@ -248,5 +249,5 @@ function formatDate(iso, t) {
   if (diff === -1) return t('tasks.date.yesterday')
   if (diff < 0)    return t('tasks.date.overdueDays', { n: Math.abs(diff) })
   if (diff <= 7)   return t('tasks.date.inDays', { n: diff })
-  return d.toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
+  return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' })
 }

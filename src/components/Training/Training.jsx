@@ -21,6 +21,7 @@ import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups, GROUP_COLORS
 import { trainingStats, agoLabel, bigNum, iso, dayDate, monthsShort, sessionTitle } from '../../utils/training'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Training.module.css'
+import { loc } from '../../utils/locale'
 
 // The same dumbbell the bottom nav draws, so the empty state speaks the app's
 // own line-icon language rather than dropping a colour emoji into it.
@@ -116,7 +117,7 @@ export default function Training({ onMenuOpen }) {
   const MS = monthsShort(t)
   // Дата в кратък вид за бутоните „маркирай ..." — езикът следва избора.
   const shortDate = d => new Date(d + 'T12:00:00')
-    .toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'short' })
+    .toLocaleDateString(loc(), { day: 'numeric', month: 'short' })
   const { user, profile, updateProfile } = useAuth()
   const isCoach = profile?.role === 'coach'
   // A coached client's plan is written by the coach and waited on; a self-serve
@@ -703,7 +704,7 @@ export default function Training({ onMenuOpen }) {
                 ? t('tr.metaRest')
                 : last
                   ? t('tr.metaLast', {
-                      ago: agoLabel(t, last, lang),
+                      ago: agoLabel(t, last),
                       state: rec.pct >= 80 ? t('tr.stateReady') : t('tr.statePct', { pct: rec.pct }),
                     })
                   : (rec.pct >= 80 ? t('tr.metaReadyNew') : t('tr.metaNew'))
@@ -745,7 +746,7 @@ export default function Training({ onMenuOpen }) {
 
           <section className={styles.today}>
             <span className={styles.todayEyebrow}>
-              {last ? t('tr.lastSession', { ago: agoLabel(t, last.date, lang) }) : t('tr.nothingLogged')}
+              {last ? t('tr.lastSession', { ago: agoLabel(t, last.date) }) : t('tr.nothingLogged')}
             </span>
             <h2 className={styles.todayTitle}>{selectedBlock?.label ?? t('tr.rest')}</h2>
 

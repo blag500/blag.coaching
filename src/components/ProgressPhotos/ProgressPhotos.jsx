@@ -3,9 +3,10 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ProgressPhotos.module.css'
+import { loc } from '../../utils/locale'
 
 function fmtDate(iso) {
-  return new Date(iso + 'T12:00').toLocaleDateString('bg-BG', {
+  return new Date(iso + 'T12:00').toLocaleDateString(loc(), {
     day: '2-digit', month: 'short', year: 'numeric',
   })
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { HABITS as DEFAULT_HABITS } from '../../data/appData'
 import styles from './ShowcasePage.module.css'
+import { loc } from '../../utils/locale'
 
 const CATEGORIES = [
   { id: null,        labelKey: 'sc.cat.all' },
@@ -201,7 +202,7 @@ export default function ShowcasePage({ onBack }) {
                         {t(CAT_KEY[post.category])}
                       </span>
                       <span className={styles.cardDate}>
-                        {new Date(post.created_at).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        {new Date(post.created_at).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit', year: '2-digit' })}
                       </span>
                     </div>
                     <h2 className={styles.cardTitle}>{post.title}</h2>
@@ -332,7 +333,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
               >
                 <img src={c.photo_url} className={styles.photoThumb} alt="" />
                 <span className={styles.photoDate}>
-                  {new Date(c.date).toLocaleDateString('bg-BG', { day: 'numeric', month: 'numeric' })}
+                  {new Date(c.date).toLocaleDateString(loc(), { day: 'numeric', month: 'numeric' })}
                 </span>
               </button>
             ))}
@@ -355,7 +356,7 @@ function PostDetail({ post, onBack }) {
       {post.photo_url && <img src={post.photo_url} className={styles.detailImg} alt="" />}
       <div className={styles.detailBody}>
         <p className={styles.detailDate}>
-          {new Date(post.created_at).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {new Date(post.created_at).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
         <h1 className={styles.detailTitle}>{post.title}</h1>
         {post.body && <p className={styles.detailText}>{post.body}</p>}

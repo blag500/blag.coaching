@@ -30,7 +30,7 @@ function Avatar({ url, name }) {
 /** Нишката под поста — чете се чак когато някой я отвори. */
 function Comments({ postId, onCountChange }) {
   const { profile, user } = useAuth()
-  const { t, lang } = useSettings()
+  const { t } = useSettings()
   const { comments, loading, addComment, removeComment } = usePostComments(postId)
   const [draft, setDraft] = useState('')
   const [busy, setBusy]   = useState(false)
@@ -61,7 +61,7 @@ function Comments({ postId, onCountChange }) {
           <div className={styles.commentBody}>
             <span className={styles.commentAuthor}>
               {c.author?.name || t('feed.someone')}
-              <span className={styles.commentTime}>{timeAgo(c.created_at, t, lang)}</span>
+              <span className={styles.commentTime}>{timeAgo(c.created_at, t)}</span>
             </span>
             <p className={styles.commentText}>{c.body}</p>
           </div>
@@ -90,7 +90,7 @@ function Comments({ postId, onCountChange }) {
 
 export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange }) {
   const { profile, user } = useAuth()
-  const { t, lang } = useSettings()
+  const { t } = useSettings()
   const [openComments, setOpenComments] = useState(false)
   const [confirmDrop, setConfirmDrop]   = useState(false)
 
@@ -109,7 +109,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
                 стоят съвет и разговор, а тези двете не тежат еднакво. */}
             {authorIsCoach && <span className={styles.coachTag}>{t('feed.coachTag')}</span>}
           </span>
-          <span className={styles.postTime}>{timeAgo(post.createdAt, t, lang)}</span>
+          <span className={styles.postTime}>{timeAgo(post.createdAt, t)}</span>
         </div>
         {(mine || isCoach) && (
           confirmDrop ? (

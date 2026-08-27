@@ -19,6 +19,7 @@ import AppHeader from '../AppHeader/AppHeader'
 import TodayDashboard from '../TodayDashboard/TodayDashboard'
 import { layout } from '../TodayDashboard/cards'
 import styles from './Profile.module.css'
+import { loc } from '../../utils/locale'
 
   function calcStreak(history) {
   let streak = 0
@@ -514,7 +515,7 @@ export default function Profile({ onMenuOpen, onNavigate }) {
                       className={i === 0 ? styles.weightTrLatest : styles.weightTr}
                     >
                       <td className={styles.weightTd}>
-                        {new Date(entry.date).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                        {new Date(entry.date).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit', year: '2-digit' })}
                       </td>
                       <td className={styles.weightTd}>{entry.kg} kg</td>
                       <td className={styles.weightTd}>

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './BlockCompare.module.css'
+import { loc } from '../../utils/locale'
 
 const WEEKS = 8
 const DAYS  = WEEKS * 7
@@ -43,7 +44,7 @@ function setCount(rows) {
 }
 
 /** Thousands separated — a five-figure tonnage is unreadable as a bare run. */
-const fmt = n => Math.round(n).toLocaleString('bg-BG')
+const fmt = n => Math.round(n).toLocaleString(loc())
 
 /** Best set of a session — best by what it was worth, not by what it weighed. */
 function topSet(rows) {
@@ -144,7 +145,7 @@ export default function BlockCompare({ block, allLogs }) {
   }
 
   const sinceLabel = new Date(since + 'T12:00:00')
-    .toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
+    .toLocaleDateString(loc(), { day: 'numeric', month: 'short' })
 
   return (
     <div className={styles.wrap}>

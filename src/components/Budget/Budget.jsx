@@ -2,11 +2,12 @@ import { useState, useRef } from 'react'
 import { useBudget, monthStart, nextMonthStart, prevMonthStart } from '../../hooks/useBudget'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Budget.module.css'
+import { loc } from '../../utils/locale'
 
 const RATE = 1.95583  // official fixed rate: 1 EUR = 1.95583 BGN
 
 function fmt(n) {
-  return Math.abs(Number(n)).toLocaleString('bg-BG', {
+  return Math.abs(Number(n)).toLocaleString(loc(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
@@ -21,7 +22,7 @@ function todayISO() {
 }
 
 function monthLabel(m) {
-  return new Date(m + 'T12:00').toLocaleString('bg-BG', { month: 'long', year: 'numeric' }).toUpperCase()
+  return new Date(m + 'T12:00').toLocaleString(loc(), { month: 'long', year: 'numeric' }).toUpperCase()
 }
 
 // ── Setup view ────────────────────────────────────────────────────
@@ -543,7 +544,7 @@ export default function Budget() {
     byDate[t.date].push(t)
   })
   const sortedDates  = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
-  const selMonthName = selDate.toLocaleString('bg-BG', { month: 'long' })
+  const selMonthName = selDate.toLocaleString(loc(), { month: 'long' })
   const defaultAddDate = isCurrentMonth ? todayISO() : selectedMonth
 
   return (
@@ -686,7 +687,7 @@ export default function Budget() {
             const isToday   = date === todayStr
             const dateLabel = isToday
               ? t('bg.today')
-              : new Date(date + 'T12:00').toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' }).toUpperCase()
+              : new Date(date + 'T12:00').toLocaleDateString(loc(), { day: 'numeric', month: 'long' }).toUpperCase()
             const dayTotal  = byDate[date].reduce((s, t) => s + +t.amount, 0)
             return (
               <div key={date} className={styles.txnGroup}>

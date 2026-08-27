@@ -88,7 +88,7 @@ export default function MuscleStatus({ completions, recovery }) {
             />
           </div>
 
-          <span className={styles.last}>{t('ms.last', { ago: agoLabel(t, r.date, lang) })}</span>
+          <span className={styles.last}>{t('ms.last', { ago: agoLabel(t, r.date) })}</span>
         </div>
       ))}
 

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { monthsShort, iso } from '../../utils/training'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MonthCalendar.module.css'
+import { loc } from '../../utils/locale'
 
 // One shade per plan variation. Assignment is deterministic by label so a
 // block keeps its colour from one month to the next; the palette has enough
@@ -137,7 +138,7 @@ export default function MonthCalendar({ completions = [], blocks = [], onOpenDay
         <div className={styles.picked_panel}>
           <div className={styles.picked_head}>
             <span className={styles.picked_date}>
-              {new Date(picked + 'T12:00:00').toLocaleDateString('bg-BG', {
+              {new Date(picked + 'T12:00:00').toLocaleDateString(loc(), {
                 weekday: 'long', day: 'numeric', month: 'long',
               })}
             </span>

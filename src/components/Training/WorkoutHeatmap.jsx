@@ -2,6 +2,7 @@ import { useMemo, useRef, useEffect } from 'react'
 import { mondayOf, iso, dayDate, monthsShort, bigNum, sessionTitle } from '../../utils/training'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './WorkoutHeatmap.module.css'
+import { loc } from '../../utils/locale'
 
 /** Five steps, because four shades of gold are already more than the eye
  *  separates reliably and the fifth step is "nothing at all". */
@@ -23,7 +24,7 @@ export default function WorkoutHeatmap({ sessions, weeks = 26 }) {
   const { t, lang } = useSettings()
   const MS = monthsShort(t)
   const DOW = [0, 1, 2, 3, 4, 5, 6].map(i => t(`daysMon.${i}`))
-  const longDate = k => dayDate(k).toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'long' })
+  const longDate = k => dayDate(k).toLocaleDateString(loc(), { day: 'numeric', month: 'long' })
   const scroller = useRef(null)
 
   const { columns, scale, max } = useMemo(() => {
@@ -101,7 +102,7 @@ export default function WorkoutHeatmap({ sessions, weeks = 26 }) {
                       ? (d.session.volume
                           ? t('hm.cellVolume', { date: longDate(d.key), title: sessionTitle(t, d.session), kg: bigNum(d.session.volume) })
                           : t('hm.cellTitle',  { date: longDate(d.key), title: sessionTitle(t, d.session) }))
-                      : dayDate(d.key).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' })}
+                      : dayDate(d.key).toLocaleDateString(loc(), { day: 'numeric', month: 'long' })}
                   />
                 ))}
               </div>

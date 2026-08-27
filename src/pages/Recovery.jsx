@@ -3,10 +3,10 @@ import { useSleepLogs, calcReadiness } from '../hooks/useSleepLogs'
 import { useWaterLog } from '../hooks/useWaterLog'
 import ReadinessWidget from '../components/ReadinessWidget/ReadinessWidget'
 import styles from './Recovery.module.css'
+import { loc, monthNames, dayNames } from '../utils/locale'
 
-const MONTHS_BG      = ['яну','фев','мар','апр','май','юни','юли','авг','сеп','окт','ное','дек']
-const MONTHS_FULL_BG = ['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември']
-const DAYS_SHORT     = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']
+/* Имената идват от Intl, не от закован масив: списък, който трябва да се
+   допише при всеки нов език, е списък, който някой ще забрави. */
 const HYDRATION_TARGET = 8
 
 // ── Readiness ring ────────────────────────────────────────────────────────────
@@ -173,11 +173,11 @@ function RecoveryCalendar({ logs }) {
     <div className={styles.cal}>
       <div className={styles.calHeader}>
         <button className={styles.calNav} onClick={prev} type="button">‹</button>
-        <span className={styles.calTitle}>{MONTHS_FULL_BG[month]} {year}</span>
+        <span className={styles.calTitle}>{monthNames('long')[month]} {year}</span>
         <button className={styles.calNav} onClick={next} type="button">›</button>
       </div>
       <div className={styles.calDow}>
-        {DAYS_SHORT.map(d => <span key={d} className={styles.calDowCell}>{d}</span>)}
+        {dayNames('short').map(d => <span key={d} className={styles.calDowCell}>{d}</span>)}
       </div>
       <div className={styles.calGrid}>
         {cells.map((cell, i) => {
@@ -216,7 +216,7 @@ function HistoryRow({ log }) {
   const color = score !== null ? readinessColor(score) : null
   return (
     <div className={styles.histRow}>
-      <span className={styles.histDate}>{d.getDate()} {MONTHS_BG[d.getMonth()]}</span>
+      <span className={styles.histDate}>{d.getDate()} {monthNames('short')[d.getMonth()]}</span>
       {score !== null
         ? <span className={styles.histScore} style={{ color }}>{score}</span>
         : <span className={styles.histScore} style={{ color: 'rgba(242,232,207,0.2)' }}>—</span>
@@ -284,7 +284,7 @@ export default function Recovery() {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  const today = new Date().toLocaleDateString('bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })
+  const today = new Date().toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
     <div className={styles.page}>

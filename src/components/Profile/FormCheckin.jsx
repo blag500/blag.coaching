@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './FormCheckin.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { loc } from '../../utils/locale'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -333,7 +334,7 @@ export default function FormCheckin() {
               )}
               <div className={styles.cardInfo}>
                 <span className={styles.cardDate}>
-                  {new Date(c.date + 'T12:00').toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                  {new Date(c.date + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: '2-digit', year: '2-digit' })}
                 </span>
                 {c.weight_kg != null && (
                   <span className={styles.cardWeight}>{t('fck.cardWeight', { n: c.weight_kg })}</span>

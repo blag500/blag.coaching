@@ -1,6 +1,7 @@
 import { useAllOrders } from '../../hooks/useShop'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './OrdersPanel.module.css'
+import { loc } from '../../utils/locale'
 
 const STATUS_LABEL_KEYS = {
   pending_payment: 'op.status.pending_payment',
@@ -26,7 +27,7 @@ function formatPrice(t, stotinki) {
 
 function formatDate(lang, ts) {
   const d = new Date(ts)
-  return d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(loc(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
 const STATUS_COLOR = {

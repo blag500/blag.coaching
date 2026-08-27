@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './DatePicker.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { loc } from '../../utils/locale'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -34,7 +35,7 @@ export default function DatePicker({ selectedDate, onChange }) {
   }, [showCal])
 
   const isToday = selectedDate === todayStr()
-  const label = new Date(selectedDate + 'T12:00:00').toLocaleDateString('bg-BG', {
+  const label = new Date(selectedDate + 'T12:00:00').toLocaleDateString(loc(), {
     weekday: 'short', day: 'numeric', month: 'long',
   })
 
@@ -88,7 +89,7 @@ function MiniCal({ selectedDate, onSelect }) {
     setYear(d.getFullYear()); setMonth(d.getMonth())
   }
 
-  const monthLabel = new Date(year, month, 1).toLocaleDateString('bg-BG', { month: 'long', year: 'numeric' })
+  const monthLabel = new Date(year, month, 1).toLocaleDateString(loc(), { month: 'long', year: 'numeric' })
 
   return (
     <div className={styles.calWrap}>

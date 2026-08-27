@@ -3,10 +3,11 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './ShoppingList.module.css'
+import { loc } from '../../utils/locale'
 
 function formatDate(iso) {
   const d = new Date(iso)
-  return d.toLocaleDateString('bg-BG', { day: 'numeric', month: 'long', year: 'numeric' })
+  return d.toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 // ─── Week strip showing last 14 days with shopping activity dots ─────────────

@@ -103,7 +103,7 @@ export default function TrainingDashboard({ sessions, stats, toBeat, onOpenSessi
         <button type="button" className={`${styles.card} ${styles.beat}`} onClick={onOpenSession}>
           <div className={styles.beatHead}>
             <div>
-              <span className={styles.beatEyebrow}>{t('td.lastEyebrow', { ago: agoLabel(t, toBeat.date, lang).toUpperCase() })}</span>
+              <span className={styles.beatEyebrow}>{t('td.lastEyebrow', { ago: agoLabel(t, toBeat.date).toUpperCase() })}</span>
               <span className={styles.beatTitle}>{sessionTitle(t, toBeat)}</span>
             </div>
             <span className={styles.beatBadge}>{t('td.toBeat')}</span>

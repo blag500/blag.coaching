@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { usePrepProtocol } from '../../hooks/usePrepProtocol'
 import styles from './PrepProtocol.module.css'
+import { loc } from '../../utils/locale'
 
 // ── helpers ──────────────────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().slice(0, 10) }
@@ -19,12 +20,12 @@ function macrosForKcal(kcal, weightKg) {
 
 function fmtDate(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString('bg-BG', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(iso).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 function fmtShort(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit' })
+  return new Date(iso).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' })
 }
 
 // Get Mon–Sun of current week including past days

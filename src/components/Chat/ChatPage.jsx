@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './ChatPage.module.css'
+import { loc } from '../../utils/locale'
 
 function dateSeparator(dateStr, t) {
   const d = new Date(dateStr)
@@ -12,7 +13,7 @@ function dateSeparator(dateStr, t) {
 
   if (d.toDateString() === today.toDateString()) return t('chatp.today')
   if (d.toDateString() === yesterday.toDateString()) return t('chatp.yesterday')
-  return d.toLocaleDateString('bg-BG', { day: 'numeric', month: 'long' })
+  return d.toLocaleDateString(loc(), { day: 'numeric', month: 'long' })
 }
 
 function groupByDate(messages, t) {
@@ -305,7 +306,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
                   )}
                 </div>
                 <span className={styles.time}>
-                  {new Date(item.msg.created_at).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(item.msg.created_at).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             )

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './ActivityCalendar.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { loc } from '../../utils/locale'
 
 const CATEGORIES = [
   { key: 'training', color: 'var(--accent)', labelKey: 'ac.training', emoji: '💪' },
@@ -104,7 +105,7 @@ export default function ActivityCalendar() {
     else setMonth(m => m + 1)
   }
 
-  const monthName = new Date(year, month, 1).toLocaleString('bg-BG', { month: 'long' })
+  const monthName = new Date(year, month, 1).toLocaleString(loc(), { month: 'long' })
 
   const cells = Array.from({ length: startOffset + daysInMonth }, (_, i) => {
     if (i < startOffset) return null
@@ -181,7 +182,7 @@ export default function ActivityCalendar() {
       {selectedDay && selAct && (
         <div className={styles.detail}>
           <p className={styles.detailDate}>
-            {new Date(selectedDay + 'T12:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { weekday: 'long', day: 'numeric', month: 'long' })}
+            {new Date(selectedDay + 'T12:00').toLocaleDateString(loc(), { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
           {Object.values(selAct).every(v => !v) ? (
             <p className={styles.detailEmpty}>{t('ac.detailEmpty')}</p>
