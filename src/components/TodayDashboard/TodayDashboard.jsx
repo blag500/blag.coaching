@@ -16,6 +16,7 @@ import WeightCard from './WeightCard'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import { layout } from './cards'
+import { shareAchievement } from '../../lib/achievements'
 import styles from './TodayDashboard.module.css'
 
 // A colour per habit, for when it is done.
@@ -241,6 +242,14 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
     if (justTrain) award('training')
     if ((justCal || justHabs || justTrain) && calDone && habsDone && trainedToday) {
       award('perfect')
+      /* Идеалният ден отива и във фийда — единственото постижение тук, което
+         значи нещо за друг човек. Останалите три са стъпки към него и
+         публикувани поотделно биха дали четири поста за един ден. */
+      shareAchievement(user?.id, {
+        kind: 'perfect',
+        date: today,
+        meta: { kcal: Math.round(totals.kcal || 0), habits: habits.length },
+      })
     }
 
     prevCal.current   = calDone

@@ -17,6 +17,7 @@ import WeeklySnapshot from './WeeklySnapshot'
 import AvatarCropper from './AvatarCropper'
 import AppHeader from '../AppHeader/AppHeader'
 import TodayDashboard from '../TodayDashboard/TodayDashboard'
+import Pictogram from '../Pictogram/Pictogram'
 import { layout } from '../TodayDashboard/cards'
 import styles from './Profile.module.css'
 import { loc } from '../../utils/locale'
@@ -46,9 +47,9 @@ const MACRO_COLORS = {
    най-често отваряното — картите за днес — би стояло над петстотин пиксела
    настройки, които се пипат веднъж на месец. Затова лента, а не заглавия. */
 const SEGMENTS = [
-  { id: 'today',    key: 'profile.seg.today'    },
-  { id: 'progress', key: 'profile.seg.progress' },
-  { id: 'settings', key: 'profile.seg.settings' },
+  { id: 'today',    key: 'profile.seg.today',    icon: 'dashboard' },
+  { id: 'progress', key: 'profile.seg.progress', icon: 'trend'     },
+  { id: 'settings', key: 'profile.seg.settings', icon: 'gear'      },
 ]
 
 export default function Profile({ onMenuOpen, onNavigate }) {
@@ -308,7 +309,8 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             className={`${styles.segment} ${seg === sg.id ? styles.segmentOn : ''}`}
             onClick={() => setSeg(sg.id)}
           >
-            {t(sg.key)}
+            <Pictogram name={sg.icon} size={16} className={styles.segmentIcon} />
+            <span className={styles.segmentLabel}>{t(sg.key)}</span>
           </button>
         ))}
       </div>

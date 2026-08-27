@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 const PAGE = 20
 
 const POST_SELECT = `
-  id, user_id, body, photo_url, created_at,
+  id, user_id, body, photo_url, created_at, kind, meta,
   post_likes(user_id),
   post_comments(id)
 `
@@ -42,6 +42,8 @@ function shape(row, myId, authors) {
     body:      row.body,
     photoUrl:  row.photo_url,
     createdAt: row.created_at,
+    kind:      row.kind ?? 'post',
+    meta:      row.meta ?? null,
     author:    authors[row.user_id] ?? null,
     likeCount: likes.length,
     liked:     likes.some(l => l.user_id === myId),
@@ -96,7 +98,7 @@ export function useFeed() {
     if (!user?.id) return { error: 'no user' }
     const { data, error: err } = await supabase
       .from('posts')
-      .insert({ user_id: user.id, body: body?.trim() || null, photo_url: photoUrl ?? null })
+      .insert({ user_id: user.id, kind: 'post', body: body?.trim() || null, photo_url: photoUrl ?? null })
       .select(POST_SELECT)
       .single()
     if (err) return { error: err.message }

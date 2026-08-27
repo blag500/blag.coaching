@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { usePostComments } from '../../hooks/useFeed'
 import { timeAgo } from './timeAgo'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './Feed.module.css'
 
 const HeartIcon = ({ filled }) => (
@@ -88,6 +89,38 @@ function Comments({ postId, onCountChange }) {
   )
 }
 
+/* Какво рисува всеки вид постижение.
+   Таблица, а не поредица от if-ове: нов вид е един ред тук плюс два ключа в
+   речника, а не четвърто разклонение в средата на картата. */
+const ACHIEVEMENTS = {
+  training: {
+    icon: 'training',
+    titleKey: 'feed.ach.training',
+    detail: (m, t) => [
+      m?.block,
+      m?.exercises ? t('feed.ach.exercises', { n: m.exercises }) : null,
+    ].filter(Boolean).join(' · '),
+  },
+  perfect: {
+    icon: 'trend',
+    titleKey: 'feed.ach.perfect',
+    detail: (m, t) => [
+      m?.kcal ? `${m.kcal} ${t('unit.kcal')}` : null,
+      m?.habits ? t('feed.ach.habits', { n: m.habits }) : null,
+    ].filter(Boolean).join(' · '),
+  },
+  streak: {
+    icon: 'calendar',
+    titleKey: 'feed.ach.streak',
+    detail: (m, t) => (m?.days ? t('feed.ach.days', { n: m.days }) : ''),
+  },
+  plan: {
+    icon: 'dashboard',
+    titleKey: 'feed.ach.plan',
+    detail: () => '',
+  },
+}
+
 export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
@@ -98,8 +131,11 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
   const mine    = post.userId === user?.id
   const authorIsCoach = post.author?.role === 'coach'
 
+  const achievement = ACHIEVEMENTS[post.kind] ?? null
+  const detail = achievement ? achievement.detail(post.meta, t) : ''
+
   return (
-    <article className={styles.post}>
+    <article className={`${styles.post} ${achievement ? styles.postAchievement : ''}`}>
       <header className={styles.postHead}>
         <Avatar url={post.author?.avatar_url} name={post.author?.name} />
         <div className={styles.postWho}>
@@ -127,11 +163,28 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
         )}
       </header>
 
-      {post.body && <p className={styles.postBody}>{post.body}</p>}
-      {post.photoUrl && (
-        <div className={styles.postPhoto}>
-          <img src={post.photoUrl} alt="" loading="lazy" />
+      {achievement ? (
+        /* Постижението няма текст — то е значка. Рисунката носи вида, редът
+           отдолу носи числата, а рамката в акцента отделя „приложението каза"
+           от „човекът написа", без да добавя надпис, който да го обяснява. */
+        <div className={styles.achievement}>
+          <span className={styles.achievementIcon}>
+            <Pictogram name={achievement.icon} size={22} />
+          </span>
+          <span className={styles.achievementText}>
+            <span className={styles.achievementTitle}>{t(achievement.titleKey)}</span>
+            {detail && <span className={styles.achievementDetail}>{detail}</span>}
+          </span>
         </div>
+      ) : (
+        <>
+          {post.body && <p className={styles.postBody}>{post.body}</p>}
+          {post.photoUrl && (
+            <div className={styles.postPhoto}>
+              <img src={post.photoUrl} alt="" loading="lazy" />
+            </div>
+          )}
+        </>
       )}
 
       <footer className={styles.postFoot}>

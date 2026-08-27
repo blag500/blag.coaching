@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { defaultTrainingBlocks } from '../../data/appData'
+import { shareAchievement } from '../../lib/achievements'
 import DayLog from './DayLog'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
@@ -330,6 +331,13 @@ export default function Training({ onMenuOpen }) {
     if (!error) {
       setJustMarked(true)
       refreshHistory()
+      /* Тренировката отива и във фийда. Без await: маркирането е свършено и
+         не бива да чака втора заявка, за да махне въртящото се кръгче. */
+      shareAchievement(user.id, {
+        kind: 'training',
+        date: logDate,
+        meta: { block: selectedBlock.label, exercises: selectedBlock.exercises?.length ?? 0 },
+      })
       setTimeout(() => setJustMarked(false), 2500)
     }
     setMarking(false)

@@ -2365,4 +2365,13 @@ export default {
   'ex.seatedCalf':      'Прасци седнал',
   'ex.cardioChoice':    'Бягане / Колело / Плуване',
   'ex.mobility':        'Мобилити и стречинг',
+
+  // ── Постижения във фийда ──────────────────────────────────────────
+  'feed.ach.training':  'ЗАВЪРШИ ТРЕНИРОВКА',
+  'feed.ach.perfect':   'ИДЕАЛЕН ДЕН',
+  'feed.ach.streak':    'СЕРИЯ БЕЗ ПРЕКЪСВАНЕ',
+  'feed.ach.plan':      'ЗАПОЧНА НОВ ПЛАН',
+  'feed.ach.exercises': '{n} упражнения',
+  'feed.ach.habits':    '{n} навика',
+  'feed.ach.days':      '{n} дни',
 }

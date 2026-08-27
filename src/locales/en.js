@@ -2358,4 +2358,13 @@ export default {
   'ex.seatedCalf':      'Seated calf raise',
   'ex.cardioChoice':    'Run / Bike / Swim',
   'ex.mobility':        'Mobility and stretching',
+
+  // ── Feed achievements ─────────────────────────────────────────────
+  'feed.ach.training':  'FINISHED A SESSION',
+  'feed.ach.perfect':   'PERFECT DAY',
+  'feed.ach.streak':    'UNBROKEN STREAK',
+  'feed.ach.plan':      'STARTED A NEW PLAN',
+  'feed.ach.exercises': '{n} exercises',
+  'feed.ach.habits':    '{n} habits',
+  'feed.ach.days':      '{n} days',
 }

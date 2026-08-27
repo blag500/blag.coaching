@@ -52,6 +52,10 @@
 }
 
 .segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   background: transparent;
   border: none;
   border-radius: var(--r-sm);
@@ -62,6 +66,16 @@
   padding: 9px 4px;
   cursor: pointer;
   transition: color 180ms var(--ease-out), background 180ms var(--ease-out);
+}
+
+.segmentIcon { flex-shrink: 0; }
+
+/* НАСТРОЙКИ е двойно по-дълга от ДНЕС, а трите дяла са равни. Под 380px
+   рисунката носи разделa сама и надписът се маха, вместо да се пренася на
+   два реда и да разлюлее лентата. */
+@media (max-width: 380px) {
+  .segmentLabel { display: none; }
+  .segment { padding: 11px 4px; }
 }
 
 .segmentOn {

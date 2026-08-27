@@ -228,6 +228,57 @@
 .postAction:active { transform: scale(0.92); }
 .postActionOn { color: var(--accent); }
 
+/* ── Постижение ───────────────────────────────────────────────── */
+/* Рамка в акцента и топъл фон: това е редът, който приложението е написало
+   вместо човека, и разликата трябва да се вижда от една крачка, без надпис,
+   който да я обяснява. */
+.postAchievement {
+  border-color: rgba(var(--accent-rgb), 0.35);
+  background:
+    linear-gradient(135deg, rgba(var(--accent-rgb), 0.07) 0%, transparent 62%),
+    var(--panel-bg);
+}
+
+.achievement {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 13px;
+}
+
+.achievementIcon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+}
+
+.achievementText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.achievementTitle {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.09em;
+  color: var(--accent);
+}
+
+.achievementDetail {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
 /* ── Коментари ────────────────────────────────────────────────── */
 .comments {
   margin-top: 12px;
@@ -312,7 +363,21 @@
 /* ── Празно и зареждане ───────────────────────────────────────── */
 .empty {
   text-align: center;
-  padding: 48px 20px;
+  padding: 40px 20px 48px;
+}
+
+/* Пръстен с рисунка над надписа. Празен екран, който е само два реда текст,
+   изглежда като страница, която не се е заредила. */
+.emptyIcon {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
 }
 .emptyLead {
   font-family: var(--font-heading);

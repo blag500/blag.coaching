@@ -4,6 +4,7 @@ import { useFeed } from '../../hooks/useFeed'
 import AppHeader from '../AppHeader/AppHeader'
 import PostComposer from './PostComposer'
 import PostCard from './PostCard'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './Feed.module.css'
 
 /**
@@ -42,6 +43,9 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
         </div>
       ) : posts.length === 0 ? (
         <div className={styles.empty}>
+          <span className={styles.emptyIcon}>
+            <Pictogram name="chat" size={26} />
+          </span>
           <p className={styles.emptyLead}>{t('feed.empty')}</p>
           <p className={styles.emptySub}>{t('feed.emptySub')}</p>
         </div>
