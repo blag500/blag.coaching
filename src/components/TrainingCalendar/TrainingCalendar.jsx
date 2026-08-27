@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './TrainingCalendar.module.css'
 
 async function notifySession(sessionId, event) {
@@ -10,16 +11,33 @@ async function notifySession(sessionId, event) {
   } catch (_) { /* silent */ }
 }
 
-const DAYS_SHORT  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
-const MONTHS_BG   = ['ЯНУАРИ','ФЕВРУАРИ','МАРТ','АПРИЛ','МАЙ','ЮНИ','ЮЛИ','АВГУСТ','СЕПТЕМВРИ','ОКТОМВРИ','НОЕМВРИ','ДЕКЕМВРИ']
-const SESSION_TYPES = ['Тренировка','Горна част','Долна част','Цяло тяло','Кардио','Гърди / Трицепс','Гръб / Бицепс','Рамене','Крака','Почивен ден']
+// Заглавието на сесията се пази в базата такова, каквото е избрано, затова
+// стойността остава българската — тя е канонична за вече записаните редове.
+// Превежда се само това, което се показва.
+const SESSION_TYPES = [
+  { value: 'Тренировка',      key: 'tc.type.workout'   },
+  { value: 'Горна част',      key: 'tc.type.upper'     },
+  { value: 'Долна част',      key: 'tc.type.lower'     },
+  { value: 'Цяло тяло',       key: 'tc.type.full'      },
+  { value: 'Кардио',          key: 'tc.type.cardio'    },
+  { value: 'Гърди / Трицепс', key: 'tc.type.chestTri'  },
+  { value: 'Гръб / Бицепс',   key: 'tc.type.backBi'    },
+  { value: 'Рамене',          key: 'tc.type.shoulders' },
+  { value: 'Крака',           key: 'tc.type.legs'      },
+  { value: 'Почивен ден',     key: 'tc.type.rest'      },
+]
+const TYPE_KEY = Object.fromEntries(SESSION_TYPES.map(x => [x.value, x.key]))
 
-const STATUS_LABELS = {
-  pending:   'ЧАКА',
-  confirmed: 'ПОТВЪРДЕНО',
-  completed: 'ПРОВЕДЕНА',
-  declined:  'ОТХВЪРЛЕНО',
-  cancelled: 'ОТМЕНЕНО',
+/** Заглавие за показване: преведено, ако е един от предварителните видове,
+ *  иначе както е записано — треньорът може да е писал свое. */
+const displayTitle = (t, title) => (TYPE_KEY[title] ? t(TYPE_KEY[title]) : title)
+
+const STATUS_LABEL_KEYS = {
+  pending:   'tc.status.pending',
+  confirmed: 'tc.status.confirmed',
+  completed: 'tc.status.completed',
+  declined:  'tc.status.declined',
+  cancelled: 'tc.status.cancelled',
 }
 
 function fmtTime(iso) {
@@ -54,6 +72,8 @@ function getSofiaToday() {
 
 // formMode: 'create' | 'coach-edit' | 'client-propose'
 export default function TrainingCalendar() {
+  const { t } = useSettings()
+  const DAYS_SHORT = [0, 1, 2, 3, 4, 5, 6].map(i => t(`daysMon.${i}`))
   const { profile, fetchTrainingSessions, createTrainingSession, updateSessionStatus, updateSession, fetchClients } = useAuth()
   const isCoach   = profile?.role === 'coach'
   const today     = getSofiaToday()
@@ -183,15 +203,15 @@ export default function TrainingCalendar() {
     if (formMode === 'create') {
       const coachId  = isCoach ? profile.id   : profile.coach_id
       const clientId = isCoach ? fClientId    : profile.id
-      if (!clientId) { setFormErr('Избери клиент'); setSaving(false); return }
-      if (!coachId)  { setFormErr('Нямаш назначен треньор'); setSaving(false); return }
+      if (!clientId) { setFormErr(t('tc.errPickClient')); setSaving(false); return }
+      if (!coachId)  { setFormErr(t('tc.errNoCoach')); setSaving(false); return }
       const { data, error } = await createTrainingSession({
         coachId, clientId, scheduledAt,
         title: fTitle,
         notes: fNotes || null,
       })
       setSaving(false)
-      if (error) { setFormErr('Грешка при запазване. Провери връзката и опитай пак.'); return }
+      if (error) { setFormErr(t('tc.errSaveConn')); return }
       setSessions(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)))
       notifySession(data.id, 'created')
 
@@ -202,7 +222,7 @@ export default function TrainingCalendar() {
         notes:        fNotes || null,
       })
       setSaving(false)
-      if (error) { setFormErr('Грешка при запазване'); return }
+      if (error) { setFormErr(t('tc.errSave')); return }
       setSessions(prev => prev.map(s => s.id === editingSess.id
         ? { ...s, scheduled_at: scheduledAt, title: fTitle, notes: fNotes || null }
         : s
@@ -216,7 +236,7 @@ export default function TrainingCalendar() {
         edit_requested_by:   profile.id,
       })
       setSaving(false)
-      if (error) { setFormErr('Грешка при запазване'); return }
+      if (error) { setFormErr(t('tc.errSave')); return }
       setSessions(prev => prev.map(s => s.id === editingSess.id
         ? { ...s, edit_proposed_at: scheduledAt, edit_proposed_title: fTitle,
             edit_proposed_notes: fNotes || null, edit_requested_by: profile.id }
@@ -351,27 +371,27 @@ export default function TrainingCalendar() {
   const isSel    = d => d === selDay
 
   const formTitles = {
-    'create':          'НОВА ТРЕНИРОВКА',
-    'coach-edit':      'РЕДАКТИРАЙ',
-    'client-propose':  'ЗАЯВИ ПРОМЯНА',
+    'create':          t('tc.formCreate'),
+    'coach-edit':      t('tc.formCoachEdit'),
+    'client-propose':  t('tc.formPropose'),
   }
   const submitLabels = {
-    'create':          'ЗАЯВИ ТРЕНИРОВКА',
-    'coach-edit':      'ЗАПАЗИ ПРОМЕНИТЕ',
-    'client-propose':  'ИЗПРАТИ ЗАЯВКА',
+    'create':          t('tc.submitCreate'),
+    'coach-edit':      t('tc.submitCoachEdit'),
+    'client-propose':  t('tc.submitPropose'),
   }
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>ГРАФИК</h1>
-        <p className={styles.subtitle}>тренировки</p>
+        <h1 className={styles.title}>{t('tc.title')}</h1>
+        <p className={styles.subtitle}>{t('tc.subtitle')}</p>
       </header>
 
       <div className={styles.monthNav}>
-        <button className={styles.navBtn} onClick={prevMonth} type="button" aria-label="Предишен месец">‹</button>
-        <span className={styles.monthLabel}>{MONTHS_BG[month]} {year}</span>
-        <button className={styles.navBtn} onClick={nextMonth} type="button" aria-label="Следващ месец">›</button>
+        <button className={styles.navBtn} onClick={prevMonth} type="button" aria-label={t('tc.prevMonth')}>‹</button>
+        <span className={styles.monthLabel}>{t(`months.${month}`).toUpperCase()} {year}</span>
+        <button className={styles.navBtn} onClick={nextMonth} type="button" aria-label={t('tc.nextMonth')}>›</button>
       </div>
 
       {isCoach && clients.length > 0 && (
@@ -381,7 +401,7 @@ export default function TrainingCalendar() {
             onClick={() => setFilterClientId('all')}
             type="button"
           >
-            ВСИЧКИ
+            {t('tc.all')}
           </button>
           {clients.map(c => (
             <button
@@ -437,7 +457,7 @@ export default function TrainingCalendar() {
           className={`${styles.tabBtn} ${activeTab === 'upcoming' ? styles.tabBtnActive : ''}`}
           onClick={() => setActiveTab('upcoming')} type="button"
         >
-          ПРЕДСТОЯЩИ
+          {t('tc.upcoming')}
           {sessions.filter(s => s.status === 'pending' || s.status === 'confirmed').length > 0 && (
             <span className={styles.tabCount}>
               {sessions.filter(s => s.status === 'pending' || s.status === 'confirmed').length}
@@ -448,7 +468,7 @@ export default function TrainingCalendar() {
           className={`${styles.tabBtn} ${activeTab === 'history' ? styles.tabBtnActive : ''}`}
           onClick={() => setActiveTab('history')} type="button"
         >
-          ИСТОРИЯ
+          {t('tc.history')}
         </button>
       </div>
 
@@ -457,15 +477,15 @@ export default function TrainingCalendar() {
           /* Client: all upcoming sessions grouped by date */
           <div className={styles.clientUpcomingSection}>
             <div className={styles.daySectionHead}>
-              <span className={styles.daySectionTitle}>ПРЕДСТОЯЩИ ТРЕНИРОВКИ</span>
+              <span className={styles.daySectionTitle}>{t('tc.upcomingTitle')}</span>
               <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
-                + ЗАЯВИ
+                {t('tc.request')}
               </button>
             </div>
             {loading ? (
-              <p className={styles.empty}>Зарежда...</p>
+              <p className={styles.empty}>{t('tc.loading')}</p>
             ) : clientUpcomingGroups.length === 0 ? (
-              <p className={styles.empty}>Нямаш предстоящи тренировки.{'\n'}Избери ден от календара и заяви.</p>
+              <p className={styles.empty}>{t('tc.emptyUpcoming')}</p>
             ) : (
               <div className={styles.historySection}>
                 {clientUpcomingGroups.map(([dateLabel, daySessions]) => (
@@ -502,18 +522,18 @@ export default function TrainingCalendar() {
               </span>
               <div className={styles.dayActions}>
                 <button className={styles.restDayBtn} onClick={handleRestDay} type="button">
-                  🌙 ПОЧИВЕН
+                  {t('tc.restDayBtn')}
                 </button>
                 <button className={styles.addBtn} onClick={() => openCreate(selDay)} type="button">
-                  + ЗАЯВИ
+                  {t('tc.request')}
                 </button>
               </div>
             </div>
 
             {loading ? (
-              <p className={styles.empty}>Зарежда...</p>
+              <p className={styles.empty}>{t('tc.loading')}</p>
             ) : selSessions.length === 0 ? (
-              <p className={styles.empty}>Няма предстоящи тренировки за този ден.</p>
+              <p className={styles.empty}>{t('tc.emptyDay')}</p>
             ) : (
               <div className={styles.sessionList}>
                 {selSessions.map(s => (
@@ -537,9 +557,9 @@ export default function TrainingCalendar() {
       ) : (
         <div className={styles.historySection}>
           {loading ? (
-            <p className={styles.empty}>Зарежда...</p>
+            <p className={styles.empty}>{t('tc.loading')}</p>
           ) : historyByDate.length === 0 ? (
-            <p className={styles.empty}>Няма минали тренировки.</p>
+            <p className={styles.empty}>{t('tc.emptyPast')}</p>
           ) : (
             historyByDate.map(([dateLabel, daySessions]) => (
               <div key={dateLabel} className={styles.historyGroup}>
@@ -573,7 +593,7 @@ export default function TrainingCalendar() {
             <div className={styles.sheetHeader}>
               <span className={styles.sheetTitle}>{formTitles[formMode]}</span>
               {(formMode === 'client-propose' || (!isCoach && formMode === 'create')) && (
-                <span className={styles.sheetSub}>треньорът ще потвърди</span>
+                <span className={styles.sheetSub}>{t('tc.sheetSub')}</span>
               )}
               <button className={styles.closeBtn} onClick={() => setShowForm(false)} type="button">✕</button>
             </div>
@@ -581,32 +601,32 @@ export default function TrainingCalendar() {
               <form id="calForm" onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Дата</label>
+                    <label className={styles.formLabel}>{t('tc.date')}</label>
                     <input type="date" value={fDate} onChange={e => setFDate(e.target.value)} className={styles.input} required />
                   </div>
                   <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Час</label>
+                    <label className={styles.formLabel}>{t('tc.time')}</label>
                     <input type="time" value={fTime} onChange={e => setFTime(e.target.value)} className={styles.input} required />
                   </div>
                 </div>
 
-                <label className={styles.formLabel}>Вид тренировка</label>
+                <label className={styles.formLabel}>{t('tc.typeLabel')}</label>
                 <div className={styles.typeChips}>
-                  {(isCoach ? SESSION_TYPES : SESSION_TYPES.filter(t => t !== 'Почивен ден')).map(t => (
+                  {(isCoach ? SESSION_TYPES : SESSION_TYPES.filter(x => x.value !== 'Почивен ден')).map(x => (
                     <button
-                      key={t}
+                      key={x.value}
                       type="button"
-                      className={`${styles.typeChip} ${fTitle === t ? styles.typeChipActive : ''}`}
-                      onClick={() => setFTitle(t)}
+                      className={`${styles.typeChip} ${fTitle === x.value ? styles.typeChipActive : ''}`}
+                      onClick={() => setFTitle(x.value)}
                     >
-                      {t}
+                      {t(x.key)}
                     </button>
                   ))}
                 </div>
 
                 {isCoach && formMode === 'create' && (
                   <>
-                    <label className={styles.formLabel}>Клиент</label>
+                    <label className={styles.formLabel}>{t('tc.client')}</label>
                     <select value={fClientId} onChange={e => setFClientId(e.target.value)} className={styles.input} required>
                       {clients.map(c => (
                         <option key={c.id} value={c.id}>{c.name || c.email}</option>
@@ -615,13 +635,13 @@ export default function TrainingCalendar() {
                   </>
                 )}
 
-                <label className={styles.formLabel}>Бележка (по желание)</label>
+                <label className={styles.formLabel}>{t('tc.notes')}</label>
                 <textarea
                   value={fNotes}
                   onChange={e => setFNotes(e.target.value)}
                   className={`${styles.input} ${styles.textarea}`}
                   rows={3}
-                  placeholder="Цел, специфики..."
+                  placeholder={t('tc.notesPh')}
                 />
               </form>
             </div>
@@ -629,7 +649,7 @@ export default function TrainingCalendar() {
             <div className={styles.sheetFooter}>
               {formErr && <p className={styles.formErr}>{formErr}</p>}
               <button type="submit" form="calForm" className={styles.submitBtn} disabled={saving}>
-                {saving ? 'Запазва...' : submitLabels[formMode]}
+                {saving ? t('tc.saving') : submitLabels[formMode]}
               </button>
             </div>
           </div>
@@ -641,6 +661,7 @@ export default function TrainingCalendar() {
 }
 
 function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPropose, onAcceptEdit, onDeclineEdit, onDelete }) {
+  const { t } = useSettings()
   const isPending     = session.status === 'pending'
   const isConfirmed   = session.status === 'confirmed'
   const requestedByMe = session.requested_by === myId
@@ -648,32 +669,32 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
   const hasEditReq    = !!session.edit_proposed_at
   const otherName     = isCoach
     ? (session.client?.name || session.client?.email || '—')
-    : (session.coach?.name  || session.coach?.email  || 'Треньорът')
+    : (session.coach?.name  || session.coach?.email  || t('tc.theCoach'))
 
   return (
     <div className={`${styles.sessionCard} ${styles['card_' + session.status]}`}>
       <div className={styles.cardMain}>
         <div className={styles.sessionTime}>{fmtTime(session.scheduled_at)}</div>
         <div className={styles.sessionInfo}>
-          <span className={styles.sessionTitle}>{session.title}</span>
+          <span className={styles.sessionTitle}>{displayTitle(t, session.title)}</span>
           <span className={styles.sessionOther}>{otherName}</span>
           {session.notes && <span className={styles.sessionNotes}>{session.notes}</span>}
         </div>
         <div className={styles.sessionRight}>
           <span className={`${styles.statusBadge} ${styles['badge_' + session.status]}`}>
-            {STATUS_LABELS[session.status]}
+            {t(STATUS_LABEL_KEYS[session.status])}
           </span>
           <div className={styles.actions}>
             {isPending && !requestedByMe && (
               <>
-                <button className={styles.confirmBtn} onClick={() => onStatus(session.id, 'confirmed')} type="button">ДА</button>
-                <button className={styles.declineBtn} onClick={() => onStatus(session.id, 'declined')}  type="button">НЕ</button>
+                <button className={styles.confirmBtn} onClick={() => onStatus(session.id, 'confirmed')} type="button">{t('tc.yes')}</button>
+                <button className={styles.declineBtn} onClick={() => onStatus(session.id, 'declined')}  type="button">{t('tc.no')}</button>
               </>
             )}
             {(isPending || isConfirmed) && !isPast && (
               <>
                 {isCoach && (
-                  <button className={styles.editIconBtn} onClick={() => onCoachEdit(session)} type="button" aria-label="Редактирай">
+                  <button className={styles.editIconBtn} onClick={() => onCoachEdit(session)} type="button" aria-label={t('tc.edit')}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14" aria-hidden="true">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -681,21 +702,21 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
                   </button>
                 )}
                 {!isCoach && !hasEditReq && (
-                  <button className={styles.proposeBtn} onClick={() => onClientPropose(session)} type="button">Промени</button>
+                  <button className={styles.proposeBtn} onClick={() => onClientPropose(session)} type="button">{t('tc.propose')}</button>
                 )}
                 {isPending && requestedByMe && (
-                  <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">Отмени</button>
+                  <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">{t('tc.cancel')}</button>
                 )}
                 {isConfirmed && (
-                  <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">Отмени</button>
+                  <button className={styles.cancelBtn} onClick={() => onStatus(session.id, 'cancelled')} type="button">{t('tc.cancel')}</button>
                 )}
               </>
             )}
             {isConfirmed && isPast && isCoach && (
-              <button className={styles.completeBtn} onClick={() => onStatus(session.id, 'completed')} type="button">Проведена</button>
+              <button className={styles.completeBtn} onClick={() => onStatus(session.id, 'completed')} type="button">{t('tc.complete')}</button>
             )}
             {onDelete && (
-              <button className={styles.deleteSessionBtn} onClick={() => onDelete(session.id)} type="button" aria-label="Изтрий">×</button>
+              <button className={styles.deleteSessionBtn} onClick={() => onDelete(session.id)} type="button" aria-label={t('tc.delete')}>×</button>
             )}
           </div>
         </div>
@@ -704,7 +725,7 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
       {/* Coach sees the pending edit proposal */}
       {hasEditReq && isCoach && (
         <div className={styles.editProposal}>
-          <span className={styles.editProposalLabel}>ПРЕДЛОЖЕНА ПРОМЯНА</span>
+          <span className={styles.editProposalLabel}>{t('tc.proposedLabel')}</span>
           <span className={styles.editProposalValue}>
             {fmtTime(session.edit_proposed_at)}
             {session.edit_proposed_title && session.edit_proposed_title !== session.title
@@ -715,8 +736,8 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
             <span className={styles.editProposalNotes}>{session.edit_proposed_notes}</span>
           )}
           <div className={styles.editProposalActions}>
-            <button className={styles.confirmBtn} onClick={() => onAcceptEdit(session)}      type="button">ПРИЕМИ</button>
-            <button className={styles.declineBtn} onClick={() => onDeclineEdit(session.id)}  type="button">ОТКАЖИ</button>
+            <button className={styles.confirmBtn} onClick={() => onAcceptEdit(session)}      type="button">{t('tc.accept')}</button>
+            <button className={styles.declineBtn} onClick={() => onDeclineEdit(session.id)}  type="button">{t('tc.reject')}</button>
           </div>
         </div>
       )}
@@ -724,7 +745,7 @@ function SessionCard({ session, isCoach, myId, onStatus, onCoachEdit, onClientPr
       {/* Client sees their own pending proposal */}
       {hasEditReq && !isCoach && session.edit_requested_by === myId && (
         <div className={styles.editPending}>
-          <span className={styles.editPendingLabel}>Промяната чака одобрение от треньора</span>
+          <span className={styles.editPendingLabel}>{t('tc.pendingLabel')}</span>
         </div>
       )}
     </div>
