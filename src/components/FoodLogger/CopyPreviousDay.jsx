@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './CopyPreviousDay.module.css'
 
 /** The day before the one being viewed, as a date string. */
@@ -24,6 +25,7 @@ function dayBefore(dateStr) {
  */
 export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
   const { user } = useAuth()
+  const { t, lang } = useSettings()
   const [source, setSource] = useState(null)   // { date, rows }
   const [busy, setBusy]     = useState(false)
 
@@ -56,8 +58,8 @@ export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
   const when = new Date(source.date + 'T12:00:00')
   const isYesterday = source.date === dayBefore(date)
   const label = isYesterday
-    ? 'вчера'
-    : when.toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })
+    ? t('copy.yesterday')
+    : when.toLocaleDateString(lang === 'en' ? 'en-GB' : 'bg-BG', { day: 'numeric', month: 'short' })
 
   async function copy() {
     if (busy) return
@@ -82,10 +84,14 @@ export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
   return (
     <button className={styles.card} onClick={copy} disabled={busy} type="button">
       <span className={styles.main}>
-        {busy ? 'Пренася…' : `Пренеси от ${label}`}
+        {busy ? t('copy.carrying') : t('copy.button', { label })}
       </span>
       <span className={styles.detail}>
-        {source.rows.length} {source.rows.length === 1 ? 'запис' : 'записа'} · {kcal} ккал
+        {t('copy.detail', {
+          n: source.rows.length,
+          noun: t(source.rows.length === 1 ? 'copy.record.one' : 'copy.record.other'),
+          kcal,
+        })}
       </span>
     </button>
   )

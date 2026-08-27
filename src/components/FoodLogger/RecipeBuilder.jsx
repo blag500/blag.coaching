@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './RecipeBuilder.module.css'
 
 function emptyIngredient() {
@@ -6,6 +7,7 @@ function emptyIngredient() {
 }
 
 export default function RecipeBuilder({ onSave, onClose }) {
+  const { t } = useSettings()
   const [name, setName]               = useState('')
   const [isRecipe, setIsRecipe]       = useState(true)
   const [servingGrams, setServingGrams] = useState('')
@@ -96,14 +98,14 @@ export default function RecipeBuilder({ onSave, onClose }) {
             onClick={() => setIsRecipe(true)}
             type="button"
           >
-            РЕЦЕПТА
+            {t('rb.recipe')}
           </button>
           <button
             className={`${styles.typeBtn} ${!isRecipe ? styles.typeBtnActive : ''}`}
             onClick={() => setIsRecipe(false)}
             type="button"
           >
-            ПРОДУКТ
+            {t('rb.product')}
           </button>
         </div>
 
@@ -111,7 +113,7 @@ export default function RecipeBuilder({ onSave, onClose }) {
           <input
             className={styles.nameInput}
             type="text"
-            placeholder={isRecipe ? 'Наименование на рецептата...' : 'Наименование на продукта...'}
+            placeholder={isRecipe ? t('rb.recipeNamePh') : t('rb.productNamePh')}
             value={name}
             onChange={e => setName(e.target.value)}
             autoFocus
@@ -120,7 +122,7 @@ export default function RecipeBuilder({ onSave, onClose }) {
 
         {isRecipe ? (
           <>
-            <div className={styles.sectionLabel}>СЪСТАВКИ</div>
+            <div className={styles.sectionLabel}>{t('rb.ingredients')}</div>
             <div className={styles.ingredientList}>
               {ingredients.map((ing, idx) => (
                 <div key={ing.id} className={styles.ingredientRow}>
@@ -129,17 +131,17 @@ export default function RecipeBuilder({ onSave, onClose }) {
                     <input
                       className={`${styles.ingInput} ${styles.ingName}`}
                       type="text"
-                      placeholder="Съставка"
+                      placeholder={t('rb.ingredientPh')}
                       value={ing.name}
                       onChange={e => updateIngredient(ing.id, 'name', e.target.value)}
                     />
                     <div className={styles.ingMacros}>
                       {[
-                        { key: 'grams',   ph: 'g'      },
-                        { key: 'kcal',    ph: 'ккал'   },
-                        { key: 'protein', ph: 'П g'     },
-                        { key: 'carbs',   ph: 'В g'     },
-                        { key: 'fat',     ph: 'М g'     },
+                        { key: 'grams',   ph: 'g' },
+                        { key: 'kcal',    ph: t('rb.phKcal') },
+                        { key: 'protein', ph: t('rb.phProtein') },
+                        { key: 'carbs',   ph: t('rb.phCarbs') },
+                        { key: 'fat',     ph: t('rb.phFat') },
                       ].map(({ key, ph }) => (
                         <input
                           key={key}
@@ -166,32 +168,32 @@ export default function RecipeBuilder({ onSave, onClose }) {
             </div>
 
             <button className={styles.addIngBtn} onClick={addIngredient} type="button">
-              + Добави съставка
+              {t('rb.addIngredient')}
             </button>
 
             {totals.kcal > 0 && (
               <div className={styles.totalsBox}>
-                <span className={styles.totalsLabel}>ОБЩО</span>
-                <span className={styles.totalsVal}>{Math.round(totals.kcal)} ккал</span>
-                <span className={styles.totalsMacro}>П {Math.round(totals.protein * 10) / 10}g</span>
-                <span className={styles.totalsMacro}>В {Math.round(totals.carbs * 10) / 10}g</span>
-                <span className={styles.totalsMacro}>М {Math.round(totals.fat * 10) / 10}g</span>
+                <span className={styles.totalsLabel}>{t('rb.total')}</span>
+                <span className={styles.totalsVal}>{t('rb.totalKcal', { n: Math.round(totals.kcal) })}</span>
+                <span className={styles.totalsMacro}>{t('rb.totalProtein', { n: Math.round(totals.protein * 10) / 10 })}</span>
+                <span className={styles.totalsMacro}>{t('rb.totalCarbs', { n: Math.round(totals.carbs * 10) / 10 })}</span>
+                <span className={styles.totalsMacro}>{t('rb.totalFat', { n: Math.round(totals.fat * 10) / 10 })}</span>
                 {totalGrams > 0 && <span className={styles.totalsGrams}>{Math.round(totalGrams)}g</span>}
               </div>
             )}
           </>
         ) : (
           <>
-            <div className={styles.sectionLabel}>МАКРОСИ НА 100g / ПОРЦИЯ</div>
+            <div className={styles.sectionLabel}>{t('rb.per100')}</div>
             <div className={styles.productGrid}>
               {[
-                { label: 'Калории',       val: prodKcal,    set: setProdKcal,    ph: 'ккал *' },
-                { label: 'Протеин',       val: prodProtein, set: setProdProtein, ph: 'g' },
-                { label: 'Въглехидрати',  val: prodCarbs,   set: setProdCarbs,   ph: 'g' },
-                { label: 'Мазнини',       val: prodFat,     set: setProdFat,     ph: 'g' },
-                { label: 'Порция (g)',    val: servingGrams,set: setServingGrams,ph: '100' },
-              ].map(({ label, val, set, ph }) => (
-                <div key={label} className={styles.productField}>
+                { k: 'kcal',    label: t('rb.calories'),   val: prodKcal,    set: setProdKcal,    ph: t('rb.phKcalReq') },
+                { k: 'protein', label: t('macro.protein'), val: prodProtein, set: setProdProtein, ph: 'g' },
+                { k: 'carbs',   label: t('macro.carbs'),   val: prodCarbs,   set: setProdCarbs,   ph: 'g' },
+                { k: 'fat',     label: t('macro.fat'),     val: prodFat,     set: setProdFat,     ph: 'g' },
+                { k: 'serving', label: t('rb.serving'),    val: servingGrams,set: setServingGrams,ph: '100' },
+              ].map(({ k, label, val, set, ph }) => (
+                <div key={k} className={styles.productField}>
                   <label className={styles.productLabel}>{label}</label>
                   <input
                     className={styles.productInput}
@@ -209,14 +211,14 @@ export default function RecipeBuilder({ onSave, onClose }) {
         )}
 
         <div className={styles.actions}>
-          <button className={styles.cancelBtn} onClick={onClose} type="button">Отмени</button>
+          <button className={styles.cancelBtn} onClick={onClose} type="button">{t('rb.cancel')}</button>
           <button
             className={styles.saveBtn}
             onClick={handleSave}
             disabled={!canSave || saving}
             type="button"
           >
-            {saving ? '...' : 'Запази'}
+            {saving ? '...' : t('rb.save')}
           </button>
         </div>
       </div>

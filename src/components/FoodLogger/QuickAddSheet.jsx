@@ -68,22 +68,22 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
       <div className={styles.sheet} onClick={e => e.stopPropagation()} role="dialog" aria-label={t('quickAdd.title', { meal: label })}>
         <div className={styles.head}>
           <span className={styles.title}>{t('quickAdd.title', { meal: label })}</span>
-          <button className={styles.close} onClick={onClose} type="button" aria-label="Затвори">×</button>
+          <button className={styles.close} onClick={onClose} type="button" aria-label={t('quickAdd.close')}>×</button>
         </div>
 
         <input
           className={styles.search}
           type="search"
-          placeholder="Търси в историята…"
+          placeholder={t('quickAdd.searchPh')}
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
 
         <div className={styles.list}>
           {loading ? (
-            <p className={styles.empty}>Зарежда…</p>
+            <p className={styles.empty}>{t('quickAdd.loading')}</p>
           ) : items.length === 0 ? (
-            <p className={styles.empty}>{query ? 'Няма съвпадение.' : 'Още нямаш логнати храни.'}</p>
+            <p className={styles.empty}>{query ? t('quickAdd.noMatch') : t('quickAdd.emptyHistory')}</p>
           ) : (
             items.map(it => (
               <button
@@ -97,7 +97,7 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
                 </span>
                 <span className={styles.info}>
                   <span className={styles.name}>{it.name}</span>
-                  <span className={styles.macros}>{Math.round(it.grams)}g · {it.kcal} ккал</span>
+                  <span className={styles.macros}>{Math.round(it.grams)}g · {it.kcal} {t('unit.kcal')}</span>
                 </span>
                 <span className={styles.count}>×{it.times_used}</span>
               </button>
@@ -106,7 +106,7 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
         </div>
 
         <button className={styles.addBtn} onClick={addAll} disabled={count === 0 || adding} type="button">
-          {adding ? 'Добавя…' : count > 0 ? `Добави ${count}` : 'Избери храни'}
+          {adding ? t('quickAdd.adding') : count > 0 ? t('quickAdd.addN', { n: count }) : t('quickAdd.pickFoods')}
         </button>
       </div>
     </div>,

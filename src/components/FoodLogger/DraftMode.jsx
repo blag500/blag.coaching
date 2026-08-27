@@ -1,16 +1,18 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { useSettings } from '../../contexts/SettingsContext'
 import styles from './DraftMode.module.css'
 
 const MACROS = [
-  { key: 'protein', label: 'Протеин', short: 'П', color: 'var(--macro-protein)', kcalPerG: 4 },
-  { key: 'carbs',   label: 'Въглехидрати', short: 'В', color: 'var(--macro-carbs)', kcalPerG: 4 },
-  { key: 'fat',     label: 'Мазнини', short: 'М', color: 'var(--macro-fat)', kcalPerG: 9 },
+  { key: 'protein', labelKey: 'macro.protein', shortKey: 'macro.p', color: 'var(--macro-protein)', kcalPerG: 4 },
+  { key: 'carbs',   labelKey: 'macro.carbs',   shortKey: 'macro.c', color: 'var(--macro-carbs)',   kcalPerG: 4 },
+  { key: 'fat',     labelKey: 'macro.fat',     shortKey: 'macro.f', color: 'var(--macro-fat)',     kcalPerG: 9 },
 ]
 
 /** Donut of where the planned calories come from. */
 function MacroDonut({ totals, size = 132 }) {
+  const { t } = useSettings()
   const parts = MACROS.map(m => ({ ...m, kcal: (totals[m.key] || 0) * m.kcalPerG }))
   const sum = parts.reduce((a, p) => a + p.kcal, 0)
   const r = size / 2 - 11
@@ -41,7 +43,7 @@ function MacroDonut({ totals, size = 132 }) {
       <text x="50%" y="47%" textAnchor="middle" fill="var(--text)"
             fontFamily="var(--font-heading)" fontSize="26">{Math.round(totals.kcal || 0)}</text>
       <text x="50%" y="62%" textAnchor="middle" fill="var(--muted)"
-            fontFamily="var(--font-body)" fontSize="9" letterSpacing="1.6">ККАЛ</text>
+            fontFamily="var(--font-body)" fontSize="9" letterSpacing="1.6">{t('macro.kcalCaps')}</text>
     </svg>
   )
 }
@@ -51,6 +53,7 @@ function MacroDonut({ totals, size = 132 }) {
  * until it is pushed to the log, so it can be edited freely.
  */
 export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
+  const { t } = useSettings()
   const [items, setItems] = useLocalStorage('blag_draft_v1', [])
   const [form, setForm] = useState({ name: '', grams: '100', kcal: '', protein: '', carbs: '', fat: '' })
   const [pushed, setPushed] = useState(false)
@@ -174,24 +177,24 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
   return (
     <div className={styles.wrap}>
       <p className={styles.intro}>
-        Нахвърляй какво мислиш да ядеш. Нищо не влиза в дневника, докато не го пренесеш.
+        {t('draft.intro')}
       </p>
 
       <form className={styles.form} onSubmit={add}>
         <div className={styles.rowTop}>
           <input
             className={styles.nameInput}
-            placeholder="Какво мислиш да ядеш?"
+            placeholder={t('draft.namePh')}
             value={form.name}
             onChange={e => set('name', e.target.value)}
-            aria-label="Име"
+            aria-label={t('draft.nameAria')}
           />
           <input
             className={styles.gramsInput}
             type="number" min="1" inputMode="numeric"
             value={form.grams}
             onChange={e => setGrams(e.target.value)}
-            aria-label="Грамаж"
+            aria-label={t('draft.gramsAria')}
           />
           <span className={styles.gUnit}>g</span>
         </div>
@@ -203,7 +206,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
                 <button className={styles.hit} onClick={() => useHit(h)} type="button">
                   <span className={styles.hitName}>{h.name}</span>
                   <span className={styles.hitMacros}>
-                    {Math.round(h.grams)}g · {h.kcal} ккал
+                    {t('draft.hitMacros', { g: Math.round(h.grams), kcal: h.kcal })}
                   </span>
                 </button>
               </li>
@@ -213,20 +216,20 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
 
         <div className={styles.macroRow}>
           <label className={styles.macroField}>
-            <span className={styles.macroTag} style={{ color: 'var(--accent)' }}>ККАЛ</span>
+            <span className={styles.macroTag} style={{ color: 'var(--accent)' }}>{t('macro.kcalCaps')}</span>
             <input type="number" min="0" inputMode="numeric" value={form.kcal}
                    onChange={e => setMacro('kcal', e.target.value)} placeholder="0" />
           </label>
           {MACROS.map(m => (
             <label className={styles.macroField} key={m.key}>
-              <span className={styles.macroTag} style={{ color: m.color }}>{m.short}</span>
+              <span className={styles.macroTag} style={{ color: m.color }}>{t(m.shortKey)}</span>
               <input type="number" min="0" step="0.1" inputMode="decimal" value={form[m.key]}
                      onChange={e => setMacro(m.key, e.target.value)} placeholder="0" />
             </label>
           ))}
         </div>
 
-        <button className={styles.addBtn} type="submit">+ Добави в черновата</button>
+        <button className={styles.addBtn} type="submit">{t('draft.add')}</button>
       </form>
 
       <div className={styles.summary}>
@@ -235,7 +238,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           {MACROS.map(m => (
             <div className={styles.legendRow} key={m.key}>
               <span className={styles.legendDot} style={{ background: m.color }} />
-              <span className={styles.legendLabel}>{m.label}</span>
+              <span className={styles.legendLabel}>{t(m.labelKey)}</span>
               <span className={styles.legendVal}>{Math.round(draft[m.key] * 10) / 10}g</span>
             </div>
           ))}
@@ -244,13 +247,13 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
 
       {targets.kcal > 0 && (
         <div className={styles.projection}>
-          <span className={styles.projLabel}>С тази чернова за деня</span>
+          <span className={styles.projLabel}>{t('draft.projLabel')}</span>
           <div className={styles.projBars}>
             {[
-              { k: 'kcal',    label: 'Ккал', color: 'var(--accent)' },
-              { k: 'protein', label: 'П',    color: 'var(--macro-protein)' },
-              { k: 'carbs',   label: 'В',    color: 'var(--macro-carbs)' },
-              { k: 'fat',     label: 'М',    color: 'var(--macro-fat)' },
+              { k: 'kcal',    label: t('macro.kcalTitle'), color: 'var(--accent)' },
+              { k: 'protein', label: t('macro.p'),         color: 'var(--macro-protein)' },
+              { k: 'carbs',   label: t('macro.c'),         color: 'var(--macro-carbs)' },
+              { k: 'fat',     label: t('macro.f'),         color: 'var(--macro-fat)' },
             ].map(({ k, label, color }) => {
               const t = targets[k] || 0
               const now = totals[k] || 0
@@ -275,7 +278,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
       )}
 
       {items.length === 0 ? (
-        <p className={styles.empty}>Черновата е празна.</p>
+        <p className={styles.empty}>{t('draft.empty')}</p>
       ) : (
         <>
           <ul className={styles.list}>
@@ -284,22 +287,22 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
                 <div className={styles.itemInfo}>
                   <span className={styles.itemName}>{i.name}</span>
                   <span className={styles.itemMacros}>
-                    {i.grams}g · {i.kcal} ккал · П{i.protein} В{i.carbs} М{i.fat}
+                    {t('draft.itemMacros', { g: i.grams, kcal: i.kcal, p: i.protein, c: i.carbs, f: i.fat })}
                   </span>
                 </div>
                 <button className={styles.removeBtn} onClick={() => remove(i.id)}
-                        type="button" aria-label={`Премахни ${i.name}`}>×</button>
+                        type="button" aria-label={t('draft.removeAria', { name: i.name })}>×</button>
               </li>
             ))}
           </ul>
 
           <button className={styles.pushBtn} onClick={pushToLog} type="button">
-            Пренеси в дневника →
+            {t('draft.push')}
           </button>
         </>
       )}
 
-      {pushed && <p className={styles.pushed}>✓ Пренесено в дневника</p>}
+      {pushed && <p className={styles.pushed}>{t('draft.pushed')}</p>}
     </div>
   )
 }
