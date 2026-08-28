@@ -42,7 +42,7 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
         <AuthorPage
           author={author}
           onClose={() => setAuthor(null)}
-          onMessage={() => { setAuthor(null); onNavigate('chat') }}
+          onMessage={() => { const who = author; setAuthor(null); onNavigate('chat', { peer: who.id }) }}
         />
       )}
 

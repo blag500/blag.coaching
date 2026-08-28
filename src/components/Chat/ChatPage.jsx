@@ -30,18 +30,36 @@ function groupByDate(messages, t) {
   return groups
 }
 
-function CoachChatList({ embedded, onSelect }) {
-  const { fetchClients } = useAuth()
+/**
+ * С кого говоря.
+ *
+ * Един списък за двете роли. Треньорът вижда всичките си клиенти, дори тези,
+ * с които още не е разменил дума — той започва разговорите. Клиентът вижда
+ * своя треньор и всеки, с когото вече е говорил; нов разговор започва от
+ * профила на човека във фийда, не от списък с всички непознати.
+ */
+function ConversationList({ embedded, conversations, extra, loading, onSelect }) {
   const { t } = useSettings()
-  const [clients, setClients] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchClients().then(({ data }) => {
-      setClients(data || [])
-      setLoading(false)
-    })
-  }, [])
+  /* Разговорите водят реда, защото носят кога е било последното съобщение.
+     Останалите се дописват отдолу по азбучен ред. */
+  const seen = new Set(conversations.map(c => c.peerId))
+  const rows = [
+    ...conversations.map(c => ({
+      id:      c.peerId,
+      name:    c.person?.name || t('feed.someone'),
+      avatar:  c.person?.avatar_url ?? null,
+      role:    c.person?.role,
+      unread:  c.unread,
+      preview: c.last?.content || (c.last?.photo_url ? t('chat.photoPreview') : ''),
+    })),
+    ...extra
+      .filter(p => !seen.has(p.id))
+      .map(p => ({
+        id: p.id, name: p.name || p.email, avatar: p.avatar_url ?? null,
+        role: p.role, unread: 0, preview: '',
+      })),
+  ]
 
   return (
     <div className={embedded ? styles.pageEmbedded : styles.page}>
@@ -56,22 +74,29 @@ function CoachChatList({ embedded, onSelect }) {
       <div className={styles.feed}>
         {loading ? (
           <p className={styles.empty}>{t('chat.loading')}</p>
-        ) : clients.length === 0 ? (
+        ) : rows.length === 0 ? (
           <p className={styles.empty}>{t('chatp.noClients')}</p>
-        ) : clients.map(c => (
+        ) : rows.map(r => (
           <button
-            key={c.id}
+            key={r.id}
             type="button"
             className={styles.clientRow}
-            onClick={() => onSelect(c.id, c.name || c.email, c.avatar_url)}
+            onClick={() => onSelect(r.id, r.name, r.avatar)}
           >
             <div className={styles.clientAvatar}>
-              {c.avatar_url
-                ? <img src={c.avatar_url} className={styles.avatarImg} alt="" />
-                : (c.name || '?')[0].toUpperCase()
+              {r.avatar
+                ? <img src={r.avatar} className={styles.avatarImg} alt="" />
+                : (r.name || '?')[0].toUpperCase()
               }
             </div>
-            <span className={styles.clientRowName}>{c.name || c.email}</span>
+            <span className={styles.clientRowText}>
+              <span className={styles.clientRowName}>
+                {r.name}
+                {r.role === 'coach' && <span className={styles.clientRowTag}>{t('feed.coachTag')}</span>}
+              </span>
+              {r.preview && <span className={styles.clientRowPreview}>{r.preview}</span>}
+            </span>
+            {r.unread > 0 && <span className={styles.clientUnread}>{r.unread}</span>}
             <span className={styles.clientChevron}>›</span>
           </button>
         ))}
@@ -80,8 +105,8 @@ function CoachChatList({ embedded, onSelect }) {
   )
 }
 
-export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedded = false }) {
-  const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
+export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId: initialPeerId, embedded = false }) {
+  const { user, profile, fetchMessages, fetchConversations, fetchClients, sendMessage, markMessagesAsRead } = useAuth()
   const { t } = useSettings()
   const [messages, setMessages]       = useState([])
   const [input, setInput]             = useState('')
@@ -89,12 +114,18 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
   const [sendError, setSendError]     = useState(null)
   const [uploading, setUploading]     = useState(false)
   const [lightboxUrl, setLightboxUrl] = useState(null)
-  const [resolvedCoachId, setResolvedCoachId] = useState(null)
   const [otherProfile, setOtherProfile] = useState(null)
 
-  const [selectedClientId,     setSelectedClientId]     = useState(clientId || null)
-  const [selectedClientName,   setSelectedClientName]   = useState(clientName || '')
-  const [selectedClientAvatar, setSelectedClientAvatar] = useState(clientAvatarUrl || null)
+  /* Един човек, независимо коя роля си. Дотук треньорът държеше избран
+     клиент, а клиентът — подразбиращ се треньор; две състояния за едно и
+     също нещо, заради което разговорът с трети човек нямаше къде да седне. */
+  const [peerId,     setPeerId]     = useState(initialPeerId || clientId || null)
+  const [peerName,   setPeerName]   = useState(clientName || '')
+  const [peerAvatar, setPeerAvatar] = useState(clientAvatarUrl || null)
+
+  const [conversations, setConversations] = useState([])
+  const [extraPeople,   setExtraPeople]   = useState([])
+  const [listLoading,   setListLoading]   = useState(true)
 
   const messagesEndRef    = useRef(null)
   const fileInputRef      = useRef(null)
@@ -102,7 +133,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
   const initialScrollDone = useRef(false)
   const isCoach = profile?.role === 'coach'
 
-  const otherUserId = isCoach ? selectedClientId : resolvedCoachId
+  const otherUserId = peerId
 
   async function markRead(userId) {
     if (!userId) return
@@ -110,40 +141,72 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
     window.dispatchEvent(new CustomEvent('blag:messages-read', { detail: { userId } }))
   }
 
+  /* Кого изобщо мога да отворя. Треньорът получава всичките си клиенти, дори
+     тези, с които не е говорил; клиентът — своя треньор, който е винаги там,
+     дори преди първата дума. */
   useEffect(() => {
-    if (isCoach && !selectedClientId) { setLoading(false); return }
-    setLoading(true)
+    if (!user?.id) return
+    let alive = true
+    setListLoading(true)
 
-    fetchMessages(isCoach ? selectedClientId : null).then(async ({ data }) => {
-      const msgs = data || []
-      setMessages(msgs)
-      setLoading(false)
+    Promise.all([
+      fetchConversations(),
+      isCoach
+        ? fetchClients().then(r => r.data || [])
+        : (async () => {
+            const coachId = profile?.coach_id
+              || (await supabase.rpc('get_coach_id').then(r => r.data))
+            if (!coachId) return []
+            const { data } = await supabase
+              .from('feed_authors').select('id, name, avatar_url, role').eq('id', coachId)
+            return data || []
+          })(),
+    ]).then(([conv, people]) => {
+      if (!alive) return
+      setConversations(conv.data || [])
+      setExtraPeople(people)
+      setListLoading(false)
 
-      if (!isCoach) {
-        const coachMsg = msgs.find(m => m.from_user_id !== user?.id)
-        const coachId  = coachMsg?.from_user_id
-          || profile?.coach_id
-          || (await supabase.rpc('get_coach_id').then(r => r.data))
-        setResolvedCoachId(coachId || null)
-        if (coachId) markRead(coachId)
-      } else {
-        markRead(selectedClientId)
+      /* Един-единствен възможен разговор се отваря сам. Списък с един ред е
+         една ненужна крачка за всеки клиент, който говори само с треньора си
+         — тоест за почти всички, почти винаги. */
+      const ids = new Set([...(conv.data || []).map(c => c.peerId), ...people.map(p => p.id)])
+      if (!initialPeerId && !clientId && ids.size === 1) {
+        const only = [...ids][0]
+        setPeerId(only)
+        const who = people.find(p => p.id === only)
+          || (conv.data || []).find(c => c.peerId === only)?.person
+        setPeerName(who?.name || '')
+        setPeerAvatar(who?.avatar_url || null)
       }
     })
-  }, [user?.id, isCoach ? selectedClientId : 'client'])
+    return () => { alive = false }
+  }, [user?.id, isCoach])
+
+  useEffect(() => {
+    if (!peerId) { setLoading(false); return }
+    setLoading(true)
+    fetchMessages(peerId).then(({ data }) => {
+      setMessages(data || [])
+      setLoading(false)
+      markRead(peerId)
+    })
+  }, [user?.id, peerId])
 
   // Fetch the other person's profile (name + avatar) for the header
+  /* През feed_authors, не през profiles: RLS на profiles пуска само своя ред
+     и треньора, тоест клиент, който отвори разговор с друг клиент, би видял
+     празно заглавие над съобщенията. */
   useEffect(() => {
-    const otherId = isCoach ? selectedClientId : resolvedCoachId
-    if (!otherId) return
-    supabase.from('profiles').select('name, avatar_url').eq('id', otherId).single()
+    if (!peerId) return
+    supabase.from('feed_authors').select('name, avatar_url, role').eq('id', peerId).maybeSingle()
       .then(({ data }) => { if (data) setOtherProfile(data) })
-  }, [resolvedCoachId, selectedClientId])
+  }, [peerId])
 
   useEffect(() => {
     if (!otherUserId) return
     const id = setInterval(async () => {
-      const { data } = await fetchMessages(isCoach ? otherUserId : null)
+      const { data } = await fetchMessages(otherUserId)
       if (data) setMessages(data)
     }, 15_000)
     return () => clearInterval(id)
@@ -153,7 +216,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
     if (!otherUserId) return
     const onVisible = async () => {
       if (document.visibilityState !== 'visible') return
-      const { data } = await fetchMessages(isCoach ? otherUserId : null)
+      const { data } = await fetchMessages(otherUserId)
       if (data) setMessages(data)
     }
     document.addEventListener('visibilitychange', onVisible)
@@ -163,24 +226,26 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
   useEffect(() => {
     if (!user?.id) return
     const channel = supabase
-      .channel(`chatpage_${user.id}_${selectedClientId || 'client'}`)
+      .channel(`chatpage_${user.id}_${peerId || 'none'}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${user.id}` },
         payload => {
           const msg = payload.new
-          if (isCoach && msg.from_user_id !== selectedClientId) return
+          /* Съобщение от друг разговор не влиза в отворения. Само вдига
+             броячът в списъка, който така или иначе се чете отново при
+             връщане назад. */
+          if (msg.from_user_id !== peerId) return
           setMessages(prev => {
             if (prev.some(m => m.id === msg.id)) return prev
             return [...prev, msg]
           })
-          if (!isCoach && !resolvedCoachId) setResolvedCoachId(msg.from_user_id)
           markRead(msg.from_user_id)
         }
       )
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [user?.id, isCoach, selectedClientId, resolvedCoachId])
+  }, [user?.id, peerId])
 
   useEffect(() => {
     if (!messages.length) return
@@ -228,26 +293,43 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
     e.target.value = ''
   }
 
-  // Coach with no client selected → show client picker
-  if (isCoach && !selectedClientId) {
+  function openPeer(id, name, avatar) {
+    setPeerId(id)
+    setPeerName(name)
+    setPeerAvatar(avatar)
+    setOtherProfile(null)
+    setMessages([])
+    setLoading(true)
+    initialScrollDone.current = false
+  }
+
+  function backToList() {
+    setPeerId(null)
+    setOtherProfile(null)
+    setMessages([])
+    fetchConversations().then(({ data }) => setConversations(data || []))
+  }
+
+  if (!peerId) {
     return (
-      <CoachChatList
+      <ConversationList
         embedded={embedded}
-        onSelect={(id, name, avatar) => {
-          setSelectedClientId(id)
-          setSelectedClientName(name)
-          setSelectedClientAvatar(avatar)
-          setOtherProfile(null)
-          setMessages([])
-          setLoading(true)
-          initialScrollDone.current = false
-        }}
+        conversations={conversations}
+        extra={extraPeople}
+        loading={listLoading}
+        onSelect={openPeer}
       />
     )
   }
 
-  const displayName   = otherProfile?.name      || (isCoach ? (selectedClientName || t('chatp.clientFallback')) : t('chat.coachName'))
-  const displayAvatar = otherProfile?.avatar_url || (isCoach ? selectedClientAvatar : null)
+  /* Стрелката назад се показва само когато има къде да се върнеш. Клиент с
+     един-единствен разговор не бива да гледа изход към списък от един ред. */
+  const canGoBack = new Set([
+    ...conversations.map(c => c.peerId), ...extraPeople.map(p => p.id),
+  ]).size > 1
+
+  const displayName   = otherProfile?.name       || peerName   || t('chatp.clientFallback')
+  const displayAvatar = otherProfile?.avatar_url || peerAvatar || null
   const items = groupByDate(messages)
 
   return (
@@ -259,11 +341,12 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, embedd
       )}
 
       <div className={styles.header}>
-        {isCoach && !embedded && (
+        {canGoBack && !embedded && (
           <button
             type="button"
             className={styles.backBtn}
-            onClick={() => { setSelectedClientId(null); setMessages([]) }}
+            onClick={backToList}
+            aria-label={t('header.back')}
           >
             ‹
           </button>

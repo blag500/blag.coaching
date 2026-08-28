@@ -121,7 +121,12 @@ function AppShell() {
     }
   }, [profile?.stripe_subscription_id])
 
-  function navigate(newTab, { instant = false } = {}) {
+  /* Кой разговор да отвори чатът. Носи се през navigate, защото пътят е
+     „профил във фийда → ПИШИ → чат", а табът няма как да отгатне човека. */
+  const [chatPeer, setChatPeer] = useState(null)
+
+  function navigate(newTab, { instant = false, peer = null } = {}) {
+    if (newTab === 'chat') setChatPeer(peer)
     // A swipe has already carried the page across, so replaying the entrance
     // animation would show the same move twice.
     if (instant) { setSlideDir('none'); setActiveTab(newTab); return }
@@ -276,7 +281,7 @@ function AppShell() {
     explore:    <Explore onMenuOpen={openMenu} />,
     calendar:   <TrainingCalendar />,
     learn:      <LearnPage />,
-    chat:       <ChatPage />,
+    chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} />,
     rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
     budget:     <Budget />,
     tasks:      <Tasks />,

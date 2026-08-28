@@ -115,7 +115,7 @@ export default function AuthorPage({ author, onClose, onMessage }) {
       </header>
 
       <div className={styles.authorBody}>
-        {isCoach && !isMe && (
+        {!isMe && (
           <button type="button" className={styles.authorMessage} onClick={onMessage}>
             {t('feed.message')}
           </button>

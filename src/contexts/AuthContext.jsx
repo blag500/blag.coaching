@@ -436,31 +436,72 @@ export function AuthProvider({ children }) {
   }
 
   // Messaging
-  async function fetchMessages(otherUserId) {
-    if (!session?.user.id) return { data: null, error: null }
+  /**
+   * Разговорът с един човек.
+   *
+   * Досега клиентът дърпаше всичките си съобщения наведнъж и ги слагаше в
+   * една нишка, защото отсрещният можеше да е само треньорът. Откакто във
+   * фийда се вижда кой е написал поста, това допускане пада: два разговора,
+   * слепени в един списък, са по-лоши от липсващ бутон.
+   *
+   * Затова заявката е симетрична за двете роли — кой съм аз и с кого говоря.
+   */
+  async function fetchMessages(peerId) {
+    if (!session?.user.id || !peerId) return { data: null, error: null }
     const me = session.user.id
-    const isClient = profile?.role !== 'coach'
-
-    if (isClient) {
-      // For clients: fetch all messages to/from me — don't rely on coach_id being correct
-      const [sent, received] = await Promise.all([
-        supabase.from('messages').select('*').eq('from_user_id', me),
-        supabase.from('messages').select('*').eq('to_user_id', me),
-      ])
-      const data = [...(sent.data || []), ...(received.data || [])]
-        .sort((a, b) => a.created_at.localeCompare(b.created_at))
-      return { data, error: sent.error || received.error || null }
-    }
-
-    // Coach: filter by specific client
-    if (!otherUserId) return { data: null, error: null }
     const [sent, received] = await Promise.all([
-      supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', otherUserId),
-      supabase.from('messages').select('*').eq('from_user_id', otherUserId).eq('to_user_id', me),
+      supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', peerId),
+      supabase.from('messages').select('*').eq('from_user_id', peerId).eq('to_user_id', me),
     ])
     const data = [...(sent.data || []), ...(received.data || [])]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
     return { data, error: sent.error || received.error || null }
+  }
+
+  /**
+   * С кого изобщо съм говорил.
+   *
+   * Групира се тук, а не в базата: разговорите на един човек са десетки, не
+   * хиляди, а изглед с group by щеше да иска своя политика и своя миграция за
+   * нещо, което един sort върши.
+   *
+   * Имената идват от feed_authors — единственото място, откъдето клиент може
+   * да прочете чуждо име и снимка, и точно затова вече съществува.
+   */
+  async function fetchConversations() {
+    if (!session?.user.id) return { data: [], error: null }
+    const me = session.user.id
+    const { data, error } = await supabase
+      .from('messages')
+      .select('from_user_id, to_user_id, content, photo_url, created_at, read_at')
+      .or(`from_user_id.eq.${me},to_user_id.eq.${me}`)
+      .order('created_at', { ascending: false })
+      .limit(500)
+    if (error) return { data: [], error }
+
+    const byPeer = new Map()
+    for (const m of data ?? []) {
+      const peer = m.from_user_id === me ? m.to_user_id : m.from_user_id
+      if (peer === me) continue
+      if (!byPeer.has(peer)) {
+        byPeer.set(peer, { peerId: peer, last: m, unread: 0 })
+      }
+      if (m.to_user_id === me && !m.read_at) byPeer.get(peer).unread++
+    }
+
+    const ids = [...byPeer.keys()]
+    if (ids.length === 0) return { data: [], error: null }
+
+    const { data: people } = await supabase
+      .from('feed_authors')
+      .select('id, name, avatar_url, role')
+      .in('id', ids)
+    const known = Object.fromEntries((people ?? []).map(p => [p.id, p]))
+
+    return {
+      data: [...byPeer.values()].map(c => ({ ...c, person: known[c.peerId] ?? null })),
+      error: null,
+    }
   }
 
   async function sendMessage(toUserId, content, photoUrl = null) {
@@ -600,6 +641,7 @@ export function AuthProvider({ children }) {
       updateSessionStatus,
       updateSession,
       fetchMessages,
+    fetchConversations,
       sendMessage,
       markMessagesAsRead,
       addExerciseLogForClient,

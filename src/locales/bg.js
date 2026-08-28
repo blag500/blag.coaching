@@ -586,7 +586,7 @@ export default {
   'chatp.today':                   'ДНЕС',
   'chatp.yesterday':               'ВЧЕРА',
   'chatp.chats':                   'ЧАТОВЕ',
-  'chatp.noClients':               'Няма клиенти',
+  'chatp.noClients':               'Няма разговори',
   'chatp.noMsg':                   'Няма съобщения все още',
   'chatp.send':                    'Изпрати',
   'chatp.clientFallback':          'Клиент',

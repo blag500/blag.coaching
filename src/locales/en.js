@@ -585,7 +585,7 @@ export default {
   'chatp.today':                   'TODAY',
   'chatp.yesterday':               'YESTERDAY',
   'chatp.chats':                   'CHATS',
-  'chatp.noClients':               'No clients',
+  'chatp.noClients':               'No conversations',
   'chatp.noMsg':                   'No messages yet',
   'chatp.send':                    'Send',
   'chatp.clientFallback':          'Client',

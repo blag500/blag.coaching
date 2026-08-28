@@ -14,12 +14,14 @@ export default function Chat({ clientId, clientName, onClose }) {
   const [sendError, setSendError] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [lightboxUrl, setLightboxUrl] = useState(null)
-  const [resolvedCoachId, setResolvedCoachId] = useState(null)
   const messagesEndRef = useRef(null)
   const fileInputRef   = useRef(null)
+  /* Този компонент се рендира само от CoachPanel, тоест отсрещният винаги е
+     клиентът, подаден отгоре. Собствената страница на чата (ChatPage) е
+     тази, която работи и за двете роли. */
   const isCoach = profile?.role === 'coach'
 
-  const otherUserId = isCoach ? clientId : resolvedCoachId
+  const otherUserId = clientId
 
   async function markRead(userId) {
     if (!userId) return
@@ -28,29 +30,18 @@ export default function Chat({ clientId, clientName, onClose }) {
   }
 
   useEffect(() => {
-    if (isCoach && !clientId) { setLoading(false); return }
+    if (!otherUserId) { setLoading(false); return }
 
-    fetchMessages(isCoach ? clientId : null).then(async ({ data }) => {
-      const msgs = data || []
-      setMessages(msgs)
+    fetchMessages(otherUserId).then(({ data }) => {
+      setMessages(data || [])
       setLoading(false)
-
-      if (!isCoach) {
-        const coachMsg = msgs.find(m => m.from_user_id !== user?.id)
-        const coachId  = coachMsg?.from_user_id
-          || profile?.coach_id
-          || (await supabase.rpc('get_coach_id').then(r => r.data))
-        setResolvedCoachId(coachId || null)
-        if (coachId) markRead(coachId)
-      } else {
-        markRead(clientId)
-      }
+      markRead(otherUserId)
     })
-  }, [user?.id, isCoach ? clientId : 'client'])
+  }, [user?.id, otherUserId])
 
   useEffect(() => {
     const id = setInterval(async () => {
-      const { data } = await fetchMessages(isCoach ? otherUserId : null)
+      const { data } = await fetchMessages(otherUserId)
       if (data) setMessages(data)
     }, 15_000)
     return () => clearInterval(id)
@@ -59,7 +50,7 @@ export default function Chat({ clientId, clientName, onClose }) {
   useEffect(() => {
     const onVisible = async () => {
       if (document.visibilityState !== 'visible') return
-      const { data } = await fetchMessages(isCoach ? otherUserId : null)
+      const { data } = await fetchMessages(otherUserId)
       if (data) setMessages(data)
     }
     document.addEventListener('visibilitychange', onVisible)
@@ -75,18 +66,17 @@ export default function Chat({ clientId, clientName, onClose }) {
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `to_user_id=eq.${user.id}` },
         payload => {
           const msg = payload.new
-          if (isCoach && msg.from_user_id !== clientId) return
+          if (msg.from_user_id !== clientId) return
           setMessages(prev => {
             if (prev.some(m => m.id === msg.id)) return prev
             return [...prev, msg]
           })
-          if (!isCoach && !resolvedCoachId) setResolvedCoachId(msg.from_user_id)
           markRead(msg.from_user_id)
         }
       )
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [user?.id, isCoach, clientId, resolvedCoachId])
+  }, [user?.id, clientId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
