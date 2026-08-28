@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import styles from './CatalogManager.module.css'
+import { useSettings } from '../../contexts/SettingsContext'
 
 const CATEGORIES = [
-  { id: 'protein', label: 'Протеин'  },
-  { id: 'carbs',   label: 'Въглехидрати' },
-  { id: 'snacks',  label: 'Закуски'  },
-  { id: 'other',   label: 'Друго'    },
+  { id: 'protein', labelKey: 'cm.cat.protein' },
+  { id: 'carbs',   labelKey: 'cm.cat.carbs'   },
+  { id: 'snacks',  labelKey: 'cm.cat.snacks'  },
+  { id: 'other',   labelKey: 'cm.cat.other'   },
 ]
 
-const UNITS = ['g', 'ml', 'бр', 'пакет']
+/* Стойността влиза в catalog_products.serving_unit и остава каквато е.
+   Преведе ли се тя, един и същ продукт ще носи „бр" или „pcs" според това
+   кой го е пипал последен — етикетът е този, който говори на езика. */
+const UNITS = [
+  { value: 'g',     labelKey: 'cm.unit.g'    },
+  { value: 'ml',    labelKey: 'cm.unit.ml'   },
+  { value: 'бр',    labelKey: 'cm.unit.pcs'  },
+  { value: 'пакет', labelKey: 'cm.unit.pack' },
+]
 
 const EMPTY_FORM = {
   name: '', description: '', category: 'protein',
@@ -24,6 +33,7 @@ function toNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n }
 function toInt(v) { const n = parseInt(v);   return isNaN(n) ? 0 : n }
 
 export default function CatalogManager({ onClose }) {
+  const { t } = useSettings()
   const [products,    setProducts]    = useState([])
   const [loading,     setLoading]     = useState(true)
   const [editing,     setEditing]     = useState(null) // null | 'new' | product.id
@@ -80,15 +90,15 @@ export default function CatalogManager({ onClose }) {
     const { error: upErr } = await supabase.storage
       .from('catalog-images')
       .upload(path, file, { upsert: true })
-    if (upErr) { setError('Грешка при качване: ' + upErr.message); setUploadingImg(false); return }
+    if (upErr) { setError(t('cm.errUpload', { msg: upErr.message })); setUploadingImg(false); return }
     const { data } = supabase.storage.from('catalog-images').getPublicUrl(path)
     set('image_url', data.publicUrl)
     setUploadingImg(false)
   }
 
   async function save() {
-    if (!form.name.trim()) { setError('Въведи наименование'); return }
-    if (!form.price_stotinki) { setError('Въведи цена'); return }
+    if (!form.name.trim()) { setError(t('cm.errName')); return }
+    if (!form.price_stotinki) { setError(t('cm.errPrice')); return }
     setSaving(true)
     setError('')
 
@@ -135,7 +145,7 @@ export default function CatalogManager({ onClose }) {
   }
 
   async function remove(id) {
-    if (!window.confirm('Изтрий продукта?')) return
+    if (!window.confirm(t('cm.confirmDelete'))) return
     await supabase.from('catalog_products').delete().eq('id', id)
     setProducts(prev => prev.filter(p => p.id !== id))
   }
@@ -144,10 +154,10 @@ export default function CatalogManager({ onClose }) {
     <div className={styles.overlay}>
       <div className={styles.panel}>
         <div className={styles.header}>
-          <span className={styles.title}>КАТАЛОГ</span>
+          <span className={styles.title}>{t('cm.title')}</span>
           <div className={styles.headerRight}>
-            <button type="button" className={styles.addBtn} onClick={openNew}>+ ДОБАВИ</button>
-            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Затвори">
+            <button type="button" className={styles.addBtn} onClick={openNew}>{t('cm.add')}</button>
+            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label={t('auth.close')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" width="16" height="16">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -158,19 +168,19 @@ export default function CatalogManager({ onClose }) {
         {loading ? null : (
           <div className={styles.list}>
             {products.length === 0 && (
-              <div className={styles.empty}>Все още няма продукти.</div>
+              <div className={styles.empty}>{t('cm.empty')}</div>
             )}
             {products.map(p => (
               <div key={p.id} className={`${styles.row} ${!p.available ? styles.rowUnavailable : ''}`}>
                 <div className={styles.rowInfo}>
                   <span className={styles.rowName}>{p.name}</span>
                   <span className={styles.rowMeta}>
-                    {(p.price_stotinki / 100).toFixed(2)} лв. · {p.protein_per_serving}g П · {p.kcal_per_serving} kcal
+                    {(p.price_stotinki / 100).toFixed(2)} {t('unit.bgn')} · {p.protein_per_serving}g {t('today.short.protein')} · {p.kcal_per_serving} kcal
                   </span>
                 </div>
                 <div className={styles.rowActions}>
                   <button type="button" className={`${styles.availBtn} ${p.available ? styles.availBtnOn : ''}`}
-                    onClick={() => toggleAvailable(p)} title={p.available ? 'Деактивирай' : 'Активирай'}>
+                    onClick={() => toggleAvailable(p)} title={p.available ? t('cm.deactivate') : t('cm.activate')}>
                     {p.available ? '●' : '○'}
                   </button>
                   <button type="button" className={styles.editBtn} onClick={() => openEdit(p)}>✎</button>
@@ -186,21 +196,21 @@ export default function CatalogManager({ onClose }) {
       {editing !== null && (
         <div className={styles.formOverlay}>
           <div className={styles.form}>
-            <div className={styles.formTitle}>{editing === 'new' ? 'НОВ ПРОДУКТ' : 'РЕДАКТИРАЙ'}</div>
+            <div className={styles.formTitle}>{editing === 'new' ? t('cm.newProduct') : t('cm.editProduct')}</div>
 
-            <input className={styles.input} placeholder="Наименование *" value={form.name} onChange={e => set('name', e.target.value)} autoFocus />
-            <input className={styles.input} placeholder="Описание" value={form.description} onChange={e => set('description', e.target.value)} />
+            <input className={styles.input} placeholder={t('cm.phName')} value={form.name} onChange={e => set('name', e.target.value)} autoFocus />
+            <input className={styles.input} placeholder={t('cm.phDesc')} value={form.description} onChange={e => set('description', e.target.value)} />
 
             <div className={styles.row2}>
               <select className={styles.select} value={form.category} onChange={e => set('category', e.target.value)}>
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{t(c.labelKey)}</option>)}
               </select>
-              <input className={styles.input} placeholder="Цена (стотинки)" type="number" value={form.price_stotinki}
+              <input className={styles.input} placeholder={t('cm.phPrice')} type="number" value={form.price_stotinki}
                 onChange={e => set('price_stotinki', e.target.value)} />
             </div>
 
             <div className={styles.priceHint}>
-              {form.price_stotinki ? `= ${(toInt(form.price_stotinki) / 100).toFixed(2)} лв.` : ''}
+              {form.price_stotinki ? `= ${(toInt(form.price_stotinki) / 100).toFixed(2)} ${t('unit.bgn')}` : ''}
             </div>
 
             <div className={styles.macroGrid}>
@@ -209,31 +219,31 @@ export default function CatalogManager({ onClose }) {
                 <input className={styles.input} type="number" value={form.kcal_per_serving} onChange={e => set('kcal_per_serving', e.target.value)} />
               </div>
               <div className={styles.macroField}>
-                <label className={styles.macroLabel} style={{ color: '#42A5F5' }}>Протеин g</label>
+                <label className={styles.macroLabel} style={{ color: '#42A5F5' }}>{t('cm.proteinG')}</label>
                 <input className={styles.input} type="number" value={form.protein_per_serving} onChange={e => set('protein_per_serving', e.target.value)} />
               </div>
               <div className={styles.macroField}>
-                <label className={styles.macroLabel} style={{ color: '#66BB6A' }}>Въглехид. g</label>
+                <label className={styles.macroLabel} style={{ color: '#66BB6A' }}>{t('cm.carbsG')}</label>
                 <input className={styles.input} type="number" value={form.carbs_per_serving} onChange={e => set('carbs_per_serving', e.target.value)} />
               </div>
               <div className={styles.macroField}>
-                <label className={styles.macroLabel} style={{ color: 'var(--accent)' }}>Мазнини g</label>
+                <label className={styles.macroLabel} style={{ color: 'var(--accent)' }}>{t('cm.fatG')}</label>
                 <input className={styles.input} type="number" value={form.fat_per_serving} onChange={e => set('fat_per_serving', e.target.value)} />
               </div>
             </div>
 
             <div className={styles.row2}>
-              <input className={styles.input} placeholder="Порция" type="number" value={form.serving_size} onChange={e => set('serving_size', e.target.value)} />
+              <input className={styles.input} placeholder={t('cm.phServing')} type="number" value={form.serving_size} onChange={e => set('serving_size', e.target.value)} />
               <select className={styles.select} value={form.serving_unit} onChange={e => set('serving_unit', e.target.value)}>
-                {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                {UNITS.map(u => <option key={u.value} value={u.value}>{t(u.labelKey)}</option>)}
               </select>
             </div>
 
             <div className={styles.row2}>
-              <input className={styles.input} placeholder="Ред (sort_order)" type="number" value={form.sort_order} onChange={e => set('sort_order', e.target.value)} />
+              <input className={styles.input} placeholder={t('cm.phOrder')} type="number" value={form.sort_order} onChange={e => set('sort_order', e.target.value)} />
               <label className={styles.availToggle}>
                 <input type="checkbox" checked={form.available} onChange={e => set('available', e.target.checked)} />
-                <span>Активен</span>
+                <span>{t('cm.active')}</span>
               </label>
             </div>
 
@@ -243,7 +253,7 @@ export default function CatalogManager({ onClose }) {
               )}
               <div className={styles.imageActions}>
                 <label className={styles.imageUploadBtn}>
-                  {uploadingImg ? 'Качва...' : form.image_url ? 'Смени снимка' : '+ Добави снимка'}
+                  {uploadingImg ? t('cm.uploading') : form.image_url ? t('cm.changePhoto') : t('cm.addPhoto')}
                   <input
                     type="file"
                     accept="image/*"
@@ -253,7 +263,7 @@ export default function CatalogManager({ onClose }) {
                   />
                 </label>
                 {form.image_url && (
-                  <button type="button" className={styles.imageClearBtn} onClick={() => set('image_url', '')}>Премахни</button>
+                  <button type="button" className={styles.imageClearBtn} onClick={() => set('image_url', '')}>{t('cm.removePhoto')}</button>
                 )}
               </div>
             </div>
@@ -261,9 +271,9 @@ export default function CatalogManager({ onClose }) {
             {error && <div className={styles.error}>{error}</div>}
 
             <div className={styles.formActions}>
-              <button type="button" className={styles.cancelBtn} onClick={() => setEditing(null)}>ОТКАЗ</button>
+              <button type="button" className={styles.cancelBtn} onClick={() => setEditing(null)}>{t('cm.cancel')}</button>
               <button type="button" className={styles.saveBtn} onClick={save} disabled={saving}>
-                {saving ? '...' : 'ЗАПАЗИ'}
+                {saving ? '...' : t('cm.save')}
               </button>
             </div>
           </div>
