@@ -442,74 +442,7 @@
 .postWhoBtn:active { opacity: 0.6; }
 .postWhoBtn:disabled { cursor: default; }
 
-.sheetBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  background: rgba(0, 0, 0, 0.66);
-  backdrop-filter: blur(3px);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  animation: sheetFade 180ms var(--ease-out) both;
-}
-@keyframes sheetFade { from { opacity: 0 } to { opacity: 1 } }
-
-.sheet {
-  width: 100%;
-  max-width: 340px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--r-lg);
-  box-shadow: 0 26px 60px -20px rgba(0, 0, 0, 0.9);
-  padding: 26px 22px 18px;
-  text-align: center;
-  animation: sheetRise 240ms var(--ease-out) both;
-}
-@keyframes sheetRise {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.sheetAvatar {
-  width: 76px;
-  height: 76px;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  background: var(--surface-2);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-  font-family: var(--font-heading);
-  font-size: 30px;
-  color: var(--accent);
-}
-.sheetAvatar img { width: 100%; height: 100%; object-fit: cover; }
-
-.sheetName {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family: var(--font-heading);
-  font-size: 19px;
-  letter-spacing: 0.06em;
-  color: var(--text);
-  margin: 0 0 10px;
-}
-
-.sheetBio {
-  font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text);
-  opacity: 0.88;
-  margin: 0 0 18px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.sheetBioEmpty {
+.authorBioEmpty {
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--muted);
@@ -517,7 +450,7 @@
   margin: 0 0 18px;
 }
 
-.sheetMessage {
+.authorMessage {
   display: block;
   width: 100%;
   background: var(--accent);
@@ -532,14 +465,142 @@
   cursor: pointer;
 }
 
-.sheetClose {
-  display: block;
-  width: 100%;
-  background: transparent;
+
+/* ── Профилът на автора ───────────────────────────────────────────
+   Цяла страница върху фийда, не картичка в средата: човекът има име,
+   представяне и постове, а това е повече, отколкото едно каре побира. */
+.authorPage {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+  animation: authorIn 260ms var(--ease-out) both;
+}
+@keyframes authorIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Знамето отгоре. Инициалите са едри нарочно: клиент без снимка е
+   правило, не изключение, и празно сиво кръгче не прави страница. */
+.authorHero {
+  position: relative;
+  padding: calc(env(safe-area-inset-top) + 56px) 22px 26px;
+  background:
+    radial-gradient(120% 110% at 50% 0%,
+      rgba(var(--accent-rgb), 0.22) 0%,
+      rgba(var(--accent-rgb), 0.06) 52%,
+      transparent 78%),
+    var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.authorBack {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: 12px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
   border: none;
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-size: 12px;
-  padding: 9px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text);
   cursor: pointer;
+}
+
+.authorMark {
+  width: 108px;
+  height: 108px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--accent-rgb), 0.34);
+  font-family: var(--font-heading);
+  font-size: 42px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+.authorMark img { width: 100%; height: 100%; object-fit: cover; }
+
+.authorName {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.authorMeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.authorBody {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
+}
+
+.authorBio {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  opacity: 0.9;
+  margin: 0 0 20px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.authorStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.authorStat {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  padding: 13px 10px;
+  text-align: center;
+}
+.authorStatVal {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 23px;
+  color: var(--accent);
+}
+.authorStatLabel {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.authorSection {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
 }

@@ -121,7 +121,7 @@ const ACHIEVEMENTS = {
   },
 }
 
-export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange, onOpenAuthor }) {
+export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange, onOpenAuthor, readOnly = false }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const [openComments, setOpenComments] = useState(false)
@@ -145,7 +145,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           type="button"
           className={styles.postWhoBtn}
           onClick={() => post.author && onOpenAuthor?.(post.author)}
-          disabled={!post.author}
+          disabled={readOnly || !post.author}
         >
         <Avatar url={post.author?.avatar_url} name={post.author?.name} />
         <div className={styles.postWho}>
@@ -158,7 +158,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           <span className={styles.postTime}>{timeAgo(post.createdAt, t)}</span>
         </div>
         </button>
-        {(mine || isCoach) && (
+        {!readOnly && (mine || isCoach) && (
           confirmDrop ? (
             <div className={styles.postDropRow}>
               <button type="button" className={styles.postDropYes} onClick={() => onDelete(post.id)}>
@@ -198,7 +198,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
         </>
       )}
 
-      <footer className={styles.postFoot}>
+      {!readOnly && <footer className={styles.postFoot}>
         <button
           type="button"
           className={`${styles.postAction} ${post.liked ? styles.postActionOn : ''}`}
@@ -216,9 +216,9 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           <CommentIcon />
           {post.commentCount > 0 && <span>{post.commentCount}</span>}
         </button>
-      </footer>
+      </footer>}
 
-      {openComments && (
+      {!readOnly && openComments && (
         <Comments postId={post.id} onCountChange={d => onCommentCountChange(post.id, d)} />
       )}
     </article>

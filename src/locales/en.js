@@ -2373,5 +2373,10 @@ export default {
   'feed.bioEmpty':           'Has not written anything yet.',
   'feed.bioEmptyMine':       'You have not written anything yet. The field is in Profile → Settings.',
   'feed.message':            'MESSAGE',
-  'feed.close':              'Close',
+
+  'feed.since':          'Since {when}',
+  'feed.recentPosts':    'RECENT POSTS',
+  'feed.noPosts':        'Nothing posted yet.',
+  'feed.stat.sessions':  'SESSIONS',
+  'feed.stat.perfect':   'PERFECT DAYS',
 }

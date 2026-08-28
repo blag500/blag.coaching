@@ -2380,5 +2380,10 @@ export default {
   'feed.bioEmpty':           'Още не е написал(а) нищо за себе си.',
   'feed.bioEmptyMine':       'Още не си написал нищо за себе си. Полето е в Профил → Настройки.',
   'feed.message':            'ПИШИ',
-  'feed.close':              'Затвори',
+
+  'feed.since':          'От {when}',
+  'feed.recentPosts':    'ПОСЛЕДНИ ПОСТОВЕ',
+  'feed.noPosts':        'Още няма публикувано нищо.',
+  'feed.stat.sessions':  'ТРЕНИРОВКИ',
+  'feed.stat.perfect':   'ИДЕАЛНИ ДНИ',
 }

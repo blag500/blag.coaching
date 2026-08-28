@@ -25,7 +25,7 @@ async function fetchAuthors(ids) {
   if (wanted.length === 0) return {}
   const { data } = await supabase
     .from('feed_authors')
-    .select('id, name, avatar_url, role, bio')
+    .select('id, name, avatar_url, role, bio, created_at')
     .in('id', wanted)
   return Object.fromEntries((data ?? []).map(a => [a.id, a]))
 }

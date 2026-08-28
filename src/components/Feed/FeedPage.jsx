@@ -6,7 +6,7 @@ import AppHeader from '../AppHeader/AppHeader'
 import PostComposer from './PostComposer'
 import PostCard from './PostCard'
 import Pictogram from '../Pictogram/Pictogram'
-import AuthorSheet from './AuthorSheet'
+import AuthorPage from './AuthorPage'
 import styles from './Feed.module.css'
 
 /**
@@ -39,7 +39,7 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
       <PostComposer onPost={addPost} />
 
       {author && (
-        <AuthorSheet
+        <AuthorPage
           author={author}
           onClose={() => setAuthor(null)}
           onMessage={() => { setAuthor(null); onNavigate('chat') }}
