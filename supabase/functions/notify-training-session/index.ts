@@ -118,7 +118,7 @@ function payButton(url: string, priceEur?: number) {
   const label = priceEur ? `ПЛАТИ ${priceEur.toFixed(2)} EUR` : 'ПЛАТИ ФАКТУРАТА'
   return `
     <div style="margin:20px 0">
-      <a href="${url}" style="display:inline-block;background:#ffb74d;color:#000;font-weight:700;font-size:15px;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.05em">
+      <a href="${url}" style="display:inline-block;background:#C8A05A;color:#000;font-weight:700;font-size:15px;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.05em">
         ${label}
       </a>
       <p style="margin:8px 0 0;font-size:12px;color:#888">Фактурата е валидна 7 дни.</p>
@@ -153,7 +153,7 @@ function buildPacket(event: string, s: any, paymentUrl: string | null): Packet |
         email: client.email,
         subject: `Нова тренировка: ${dateStr} в ${timeStr}`,
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
-          <h2 style="color:#ffb74d;margin:0 0 12px">Нова тренировка</h2>
+          <h2 style="color:#C8A05A;margin:0 0 12px">Нова тренировка</h2>
           <p>Здравей ${clientName},</p>
           <p><strong>${coachName}</strong> насрочи нова тренировка за теб.</p>
           ${sessionTable}

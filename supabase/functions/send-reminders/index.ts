@@ -13,11 +13,11 @@ function emailHtml(emoji: string, heading: string, body: string, name: string) {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:16px;background:#0C0A06">
-<div style="max-width:480px;margin:0 auto;background:#131009;border:1px solid rgba(255,183,77,0.15);border-radius:20px;padding:32px 28px;font-family:monospace">
+<div style="max-width:480px;margin:0 auto;background:#131009;border:1px solid rgba(200,160,90,0.18);border-radius:20px;padding:32px 28px;font-family:monospace">
   <div style="font-size:48px;text-align:center;margin-bottom:20px">${emoji}</div>
-  <h1 style="margin:0 0 12px;font-family:Impact,Arial Narrow,sans-serif;font-size:26px;letter-spacing:3px;color:#ffb74d;text-transform:uppercase">${heading}</h1>
+  <h1 style="margin:0 0 12px;font-family:Impact,Arial Narrow,sans-serif;font-size:26px;letter-spacing:3px;color:#C8A05A;text-transform:uppercase">${heading}</h1>
   <p style="margin:0 0 28px;font-size:14px;line-height:1.7;color:rgba(242,232,207,0.75)">${body}</p>
-  <a href="https://blagcoaching.netlify.app" style="display:inline-block;background:#ffb74d;color:#0C0A06;text-decoration:none;font-family:Impact,sans-serif;font-size:14px;letter-spacing:2px;padding:12px 24px;border-radius:24px">ОТВОРИ ПРИЛОЖЕНИЕТО</a>
+  <a href="https://blagcoaching.netlify.app" style="display:inline-block;background:#C8A05A;color:#0C0A06;text-decoration:none;font-family:Impact,sans-serif;font-size:14px;letter-spacing:2px;padding:12px 24px;border-radius:24px">ОТВОРИ ПРИЛОЖЕНИЕТО</a>
   <p style="margin:24px 0 0;font-size:11px;color:rgba(242,232,207,0.25)">Blag Coaching · ${name}</p>
 </div>
 </body></html>`

@@ -10,11 +10,15 @@
   install in the wrong context. The {{ .ConfirmationURL }} lives on as a small
   fallback for anyone who prefers a click.
 
-  The header matches the Splash: two flexed arms flanking BLAG COACHING with the
-  "Be blag, Be better" tagline underneath. Both arms are separate PNGs — one is
-  the source `email-arm-right.png`, the other is `email-arm-left.png` (same asset
-  flipped once at build time), because `transform: scaleX(-1)` is stripped by
-  Outlook and some Gmail clients.
+  The header is one image: the finished lockup — arms, wordmark and tagline
+  already set — rather than parts assembled with table cells and web type.
+
+  It was three pieces: two arm JPGs above type in Oswald. Two things broke.
+  The JPGs had the transparency chequerboard baked into the pixels, so every
+  inbox showed the arms sitting on a grid; and Oswald never loads in mail, so
+  the wordmark fell back to Arial Narrow and stopped being the mark. A finished
+  image has neither problem — and a logo assembled from parts is a logo that
+  can come apart, which in email it always eventually does.
 
   Email is not a browser: no external CSS, no flexbox, no custom fonts we can
   rely on. One table, every colour inline, a system display stack that falls
@@ -29,53 +33,19 @@
 
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;width:100%;">
 
-          <!-- Splash-style lockup, redrawn for email: three-column layout squeezed
-               the centre column so BLAG wrapped as B/L/A/G on iPhone. Vertical
-               stack instead — arms on a row of their own above the wordmark,
-               which gets the full column width. JPGs (not PNGs) because iOS Mail
-               renders alpha as a chequerboard when the mail body's dark
-               background does not paint through; the arm's #0C0A06 fill is
-               baked into the JPG. -->
+          <!-- One picture, 600px wide, shown at 300. Retina gets the pixels it
+               wants and the file stays under 200KB, which is what keeps Gmail
+               from clipping the message. -->
           <tr>
-            <td align="center" style="padding:8px 0 8px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
-                <tr>
-                  <td style="padding:0 6px;">
-                    <img src="https://blag-coaching.com/email-arm-left.jpg" alt="" width="92"
-                         style="display:block;width:92px;height:auto;border:0;outline:none;text-decoration:none;" />
-                  </td>
-                  <td style="padding:0 6px;">
-                    <img src="https://blag-coaching.com/email-arm-right.jpg" alt="" width="92"
-                         style="display:block;width:92px;height:auto;border:0;outline:none;text-decoration:none;" />
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:4px 0 4px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:52px;font-weight:600;letter-spacing:14px;text-indent:14px;color:#E4CE94;line-height:1;">BLAG</div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:6px 0 4px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:18px;font-weight:600;letter-spacing:9px;text-indent:9px;color:#C8A05A;line-height:1;">COACHING</div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:14px 0 8px;">
-              <div style="width:56px;height:1px;background:#B08A45;line-height:1px;font-size:0;">&nbsp;</div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:0 0 28px;">
-              <div style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:400;letter-spacing:6px;text-indent:6px;color:#8A7B5C;line-height:1;text-transform:uppercase;">Be blag, Be better</div>
+            <td align="center" style="padding:8px 0 30px;">
+              <img src="https://blag-coaching.com/email-logo.png"
+                   alt="BLAG COACHING — Be blag, be better" width="300"
+                   style="display:block;width:300px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />
             </td>
           </tr>
 
-          <!-- Card -->
           <tr>
-            <td style="background:#15110B;border:1px solid rgba(255,183,77,0.16);border-radius:16px;padding:32px 24px;">
+            <td style="background:#15110B;border:1px solid rgba(200,160,90,0.18);border-radius:16px;padding:32px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="font-family:'Oswald','Arial Narrow',Arial,sans-serif;font-size:22px;font-weight:500;letter-spacing:2px;color:#F2E8CF;padding:0 0 14px;">
@@ -98,7 +68,7 @@
                   <td align="center" style="padding:0 0 22px;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
                       <tr>
-                        <td align="center" bgcolor="#0C0A06" style="background:#0C0A06;border:1px solid rgba(255,183,77,0.28);border-radius:14px;padding:18px 24px;font-family:'Menlo','Consolas','Courier New',monospace;font-size:26px;font-weight:600;letter-spacing:5px;text-indent:5px;color:#ffb74d;line-height:1;white-space:nowrap;">
+                        <td align="center" bgcolor="#0C0A06" style="background:#0C0A06;border:1px solid rgba(200,160,90,0.32);border-radius:14px;padding:18px 24px;font-family:'Menlo','Consolas','Courier New',monospace;font-size:26px;font-weight:600;letter-spacing:5px;text-indent:5px;color:#E4CE94;line-height:1;white-space:nowrap;">
                           {{ .Token }}
                         </td>
                       </tr>
@@ -115,7 +85,7 @@
                 <!-- Divider -->
                 <tr>
                   <td align="center" style="padding:0 0 18px;">
-                    <div style="width:40px;height:1px;background:rgba(255,183,77,0.22);line-height:1px;font-size:0;">&nbsp;</div>
+                    <div style="width:40px;height:1px;background:rgba(200,160,90,0.24);line-height:1px;font-size:0;">&nbsp;</div>
                   </td>
                 </tr>
 
