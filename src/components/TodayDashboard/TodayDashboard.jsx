@@ -381,10 +381,14 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
       log={log || []}
       t={t}
       macros={[
-        { key: 'kcal',       val: Math.round(totals.kcal    || 0), target: targets.kcal,    color: 'var(--accent)' },
-        { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein, color: 'var(--macro-protein)' },
-        { key: 'carbs',     val: Math.round(totals.carbs   || 0), target: targets.carbs,   color: 'var(--macro-carbs)' },
-        { key: 'fat',         val: Math.round(totals.fat     || 0), target: targets.fat,     color: 'var(--macro-fat)' },
+        { key: 'kcal',    val: Math.round(totals.kcal    || 0), target: targets.kcal,
+          color: 'var(--accent)',         grad: 'var(--grad-kcal)',    glow: 'var(--glow-kcal)'    },
+        { key: 'protein', val: Math.round(totals.protein || 0), target: targets.protein,
+          color: 'var(--macro-protein)',  grad: 'var(--grad-protein)', glow: 'var(--glow-protein)' },
+        { key: 'carbs',   val: Math.round(totals.carbs   || 0), target: targets.carbs,
+          color: 'var(--macro-carbs)',    grad: 'var(--grad-carbs)',   glow: 'var(--glow-carbs)'   },
+        { key: 'fat',     val: Math.round(totals.fat     || 0), target: targets.fat,
+          color: 'var(--macro-fat)',      grad: 'var(--grad-fat)',     glow: 'var(--glow-fat)'     },
       ]}
     />,
 

@@ -202,9 +202,20 @@
 }
 
 .waterDropFull {
-  background: #42A5F5;
-  border-color: #42A5F5;
+  /* Градиент отгоре надолу и светлина отдолу: капката става обем, а не син
+     квадрат със заоблени ъгли. Ротацията на -45° е на елемента, затова
+     градиентът е зададен спрямо завъртяното — оттам ъгълът 160°. */
+  background: var(--grad-water);
+  border-color: #6FBBFF;
+  box-shadow: var(--glow-water);
   position: relative;
+}
+
+/* Празната капка е стъкло, не дупка: една точка светлина в горния ляв ъгъл
+   казва, че съдът съществува и чака. */
+.waterDrop {
+  transition: background 200ms var(--ease-out), border-color 200ms var(--ease-out),
+              box-shadow 200ms var(--ease-out);
 }
 
 /* Newest glass: a soft ripple radiates out once, then leaves the drop lit. A
@@ -647,15 +658,29 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out),
-              color 160ms var(--ease-out);
+              color 160ms var(--ease-out), box-shadow 160ms var(--ease-out),
+              transform 120ms var(--ease-out);
+}
+
+/* Чипът се отмята десетки пъти на ден — затова свиване, а не анимация:
+   мигновена обратна връзка, че натискането е чуто, и нищо повече. */
+.habitChip:active {
+  transform: scale(0.96);
 }
 
 .habitChipOn {
   /* colour-mix rather than a second hardcoded rgba per habit: one variable
-     carries the hue and the tint is derived from it. */
-  background: color-mix(in srgb, var(--habit) 14%, transparent);
-  border-color: color-mix(in srgb, var(--habit) 50%, transparent);
+     carries the hue and the tint is derived from it.
+     Наклонен градиент от същия тон — по-плътен горе вляво, където пада
+     светлината в целия сет, и мека светлина отвън, за да не е чипът просто
+     оцветено хапче. */
+  background:
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--habit) 26%, transparent) 0%,
+      color-mix(in srgb, var(--habit) 10%, transparent) 70%);
+  border-color: color-mix(in srgb, var(--habit) 55%, transparent);
   color: var(--habit);
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--habit) 45%, transparent);
 }
 
 /* Anywhere colour-mix is missing, the chip still clearly reads as done. */
@@ -709,4 +734,12 @@
 @media (prefers-reduced-motion: reduce) {
   .habitsCheer,
   .habitsCheer .habitChip { animation: none; }
+}
+
+/* Изключено движение: цветът и светлината остават, защото те носят смисъл —
+   пада само това, което се движи. */
+@media (prefers-reduced-motion: reduce) {
+  .habitChip:active { transform: none; }
+  .waterDropRipple,
+  .waterDropRipple::after { animation: none; }
 }

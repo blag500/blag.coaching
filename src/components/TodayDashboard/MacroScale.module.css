@@ -98,7 +98,7 @@
 /* Lit once it is inside the band — the bar stops being a measurement and
    becomes a result. */
 .fillHit {
-  box-shadow: 0 0 8px var(--glow);
+  box-shadow: var(--glow);
 }
 
 /* The line the fill is trying to reach. */
@@ -241,4 +241,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .inner { transition: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Лентата стига до стойността си без наливане — числото е важното. */
+  .fill { transition: none; }
 }

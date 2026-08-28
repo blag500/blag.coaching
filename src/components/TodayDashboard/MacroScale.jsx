@@ -88,8 +88,11 @@ export default function MacroScale({ macros, label, log = [], t }) {
                   className={`${styles.fill} ${m.state === 'hit' ? styles.fillHit : ''}`}
                   style={{
                     width: poured ? `${pct * 100}%` : '0%',
-                    background: colour,
-                    '--glow': colour,
+                    /* Градиентът е на макроса, не на лентата: същият тон,
+                       но с дълбочина, за да чете лентата като налято, а не
+                       като запълнено. */
+                    background: m.grad ?? colour,
+                    '--glow': m.glow ?? colour,
                     // Staggered so the four bars pour in a wave, not in unison.
                     transitionDelay: poured ? `${i * 80}ms` : '0ms',
                   }}
