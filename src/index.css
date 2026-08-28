@@ -129,6 +129,19 @@
 
   --surface-glass: rgba(12, 10, 6, 0.82);
 
+  /* Земята.
+     Стъклото има нужда от нещо зад себе си; върху равен цвят няма какво да
+     пропуска. Два топли басейна светлина и една студена сянка между тях —
+     достатъчно, че една карта горе и същата карта долу да не са еднакви, и
+     недостатъчно, че да се забележи като рисунка.
+     Стои на закрепен слой, не на страницата: светлината не се търкаля
+     заедно със съдържанието, а то минава над нея. */
+  --ground:
+    radial-gradient(ellipse 110% 60% at 50% -8%,  rgba(200, 160, 90, 0.10) 0%, transparent 62%),
+    radial-gradient(ellipse 90%  55% at 12% 42%,  rgba(200, 160, 90, 0.035) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 65% at 88% 88%,  rgba(120, 90, 200, 0.04) 0%, transparent 62%),
+    #0C0A06;
+
   /* Glass. Not a flat translucent panel — a pane has a lit edge where it
      catches the light and a body that stays dark, and it is the darkness in
      between that makes the lit edge read as glass rather than as grey. */
@@ -166,7 +179,13 @@
       rgba(255, 255, 255, 0.02) 30%,
       rgba(0, 0, 0, 0.06) 68%,
       rgba(0, 0, 0, 0.12) 100%),
-    var(--surface-1);
+    var(--panel-base);
+  /* Полупрозрачна, не плътна. Дотук панелът лежеше върху непрозрачен
+     --surface-1 и оттам нататък фонът зад него нямаше значение — картата
+     изглеждаше еднакво навсякъде по страницата. С алфа фонът я модулира:
+     по-светла там, където минава светлината, по-тъмна встрани. Точно това
+     прави стъклото стъкло, и не струва нито един backdrop-filter. */
+  --panel-base: rgba(19, 16, 9, 0.72);
   --panel-border: rgba(255, 255, 255, 0.08);
   --panel-shadow:
     /* Top specular — thick line of light like a bevelled edge */
@@ -200,6 +219,7 @@ html[data-theme="light"] {
       rgba(255, 255, 255, 0.9) 0%,
       rgba(26, 19, 0, 0.018) 100%),
     var(--surface-1);
+  --panel-base: rgba(255, 255, 255, 0.78);
   --panel-border: rgba(26, 19, 0, 0.09);
   --panel-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -221,6 +241,13 @@ html[data-theme="light"] {
   --border:    #D4C8A8;
   --red:       #D32F2F;
   --surface-glass: rgba(245, 240, 232, 0.92);
+  /* Върху светло земята е сянка, не светлина: басейните са по-топли и
+     по-плътни от хартията, иначе не се виждат изобщо. */
+  --ground:
+    radial-gradient(ellipse 110% 60% at 50% -8%, rgba(138, 106, 46, 0.07) 0%, transparent 62%),
+    radial-gradient(ellipse 90%  55% at 12% 42%, rgba(138, 106, 46, 0.045) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 80, 120, 0.05) 0%, transparent 62%),
+    #F5F0E8;
   --shadow-card: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
   --shadow-glow: 0 0 28px rgba(138, 106, 46, 0.14);
   --accent-glow: 0 0 0 3px rgba(138,106,46,0.08), 0 0 20px rgba(138,106,46,0.05);
@@ -246,19 +273,37 @@ html[data-theme="glass"] {
   --card-highlight: inset 0 1px 0 rgba(200, 160, 90, 0.08);
 }
 
-html[data-theme="glass"] #root {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(200, 160, 90, 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 70% 50% at 25% 20%, rgba(20, 16, 30, 0.90) 0%, transparent 65%),
-    radial-gradient(ellipse 60% 40% at 75% 75%, rgba(12, 10, 20, 0.80) 0%, transparent 65%),
+html[data-theme="glass"] {
+  --panel-base: rgba(16, 18, 28, 0.66);
+  --ground:
+    radial-gradient(ellipse 80% 50% at 50% -5%, rgba(200, 160, 90, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 25% 20%, rgba(30, 24, 46, 0.90) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 75% 75%, rgba(12, 10, 20, 0.85) 0%, transparent 65%),
     #0A0A0F;
-  min-height: 100%;
 }
 
 [data-theme="glass"] [class*="card"],
 [data-theme="glass"] [class*="Card"] {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+}
+
+/* Земята стои зад всичко и не се движи.
+   Закрепен слой, а не background-attachment: fixed — iOS Safari го игнорира
+   вътре в превъртащ се контейнер, а тук именно неподвижността е ефектът:
+   светлината стои, съдържанието минава над нея.
+   Слоят е на body, а приложението над него с положителен z-index. С
+   отрицателен z-index върху дете на #root редът на рисуване зависи от това
+   дали някой предшественик е образувал контекст — а той се образува от
+   всеки transform, какъвто табовете слагат при суайп. Тук нищо не зависи от
+   случайност. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--ground, var(--bg));
+  pointer-events: none;
 }
 
 html, body, #root {
@@ -282,6 +327,14 @@ html, body, #root {
      Correct letterforms that produce misread words are not worth keeping. */
   font-feature-settings: 'locl' 0;
 }
+
+#root {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+
 
 button {
   cursor: pointer;

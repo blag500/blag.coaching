@@ -288,7 +288,13 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
   }
 
   return (
-    <div className={styles.page}>
+    <div
+      className={styles.page}
+      /* Светлината пътува със стъпката: колкото по-навътре си, толкова
+         по-надолу е тя. Не украса — казва, че се движиш нанякъде, на екран,
+         който иначе изглежда еднакво на всяка стъпка. */
+      style={{ '--step': step, '--steps': totalSteps + 1 }}
+    >
       {onChangePlan && (
         <button className={styles.backPlan} onClick={onChangePlan} type="button">
           {t('ob.changePlan')}
