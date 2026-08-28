@@ -162,6 +162,10 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
       <div
         className={`${styles.arc} ${dragging ? styles.arcDragging : ''}`}
         ref={hostRef}
+        /* Хоризонталното влачене тук е на дъгата, не на страницата.
+           SwipePager пита isProtected() при всяко докосване и се отдръпва,
+           щом срещне този атрибут по пътя нагоре към body. */
+        data-no-swipe=""
         role="group"
         aria-label={t('dp.arcAria')}
       >
