@@ -1,6 +1,6 @@
 import { useReminderSettings } from '../../hooks/useReminderSettings'
 import { useSettings } from '../../contexts/SettingsContext'
-import { EmailRemindersCard } from '../Profile/NotificationSettings'
+import { ReminderListCard } from '../Profile/NotificationSettings'
 import styles from '../Profile/NotificationSettings.module.css'
 
 export default function ClientReminderSettings({ clientId, clientName }) {
@@ -12,7 +12,7 @@ export default function ClientReminderSettings({ clientId, clientName }) {
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
         {t('crs.intro', { name: clientName })}{' '}{t('crs.note')}
       </p>
-      <EmailRemindersCard
+      <ReminderListCard
         email={settings}
         toggle={toggle}
         toggleAll={toggleAll}

@@ -26,7 +26,11 @@ function scheduleNotifications(t, settings) {
   }, msUntil(settings.eveningTime))
 }
 
-export const EMAIL_REMINDERS = [
+/* Колоните носят _email по исторически причини: така се казваха, докато
+   напомнянията наистина бяха имейли. Днес send-reminders праща push, а
+   имейлът стои зад изключен флаг — преименуването на седем колони заради
+   името им не си струва миграция, но интерфейсът вече не бива да лъже. */
+export const REMINDERS = [
   { key: 'checkin_email',     emoji: '🌅', labelKey: 'ns.checkin',     time: '07:00' },
   { key: 'weight_email',      emoji: '⚖️', labelKey: 'ns.weight',      time: '07:30' },
   { key: 'habits_email',      emoji: '✅', labelKey: 'ns.habits',      time: '08:00' },
@@ -79,7 +83,7 @@ export default function NotificationSettings() {
 
   return (
     <>
-      {/* ── Push notifications ── */}
+      {/* ── Разрешението и двете локални бипвания ── */}
       {permission !== 'unsupported' && (
         <section className={styles.card}>
           <h2 className={styles.sectionTitle}>{t('ns.pushTitle')}</h2>
@@ -116,19 +120,19 @@ export default function NotificationSettings() {
         </section>
       )}
 
-      {/* ── Email reminders ── */}
-      <EmailRemindersCard email={email} toggle={toggle} toggleAll={toggleAll} loading={loading} saving={saving} />
+      {/* ── Напомнянията, които стигат до телефона ── */}
+      <ReminderListCard email={email} toggle={toggle} toggleAll={toggleAll} loading={loading} saving={saving} />
     </>
   )
 }
 
-export function EmailRemindersCard({ email, toggle, toggleAll, loading, saving }) {
+export function ReminderListCard({ email, toggle, toggleAll, loading, saving }) {
   const { t } = useSettings()
   return (
     <section className={styles.card}>
       <div className={styles.emailHeader}>
         <h2 className={styles.sectionTitle}>
-          {t('ns.emailTitle')}
+          {t('ns.remindersTitle')}
           {saving && <span className={styles.savingDot} />}
         </h2>
         <button
@@ -142,16 +146,16 @@ export function EmailRemindersCard({ email, toggle, toggleAll, loading, saving }
       </div>
 
       <p className={styles.note} style={{ marginBottom: 14 }}>
-        {t('ns.emailNote')}
+        {t('ns.remindersNote')}
       </p>
 
       {loading ? (
         <div className={styles.skeletonList}>
-          {EMAIL_REMINDERS.map(r => <div key={r.key} className={styles.skeletonRow} />)}
+          {REMINDERS.map(r => <div key={r.key} className={styles.skeletonRow} />)}
         </div>
       ) : (
         <div className={`${styles.emailList} ${!email.email_enabled ? styles.emailListDisabled : ''}`}>
-          {EMAIL_REMINDERS.map(r => (
+          {REMINDERS.map(r => (
             <div key={r.key} className={styles.emailRow}>
               <span className={styles.emailEmoji}>{r.emoji}</span>
               <span className={styles.emailLabel}>{t(r.labelKey)}</span>

@@ -795,3 +795,65 @@
 }
 .usernameHintBad  { color: #ef5350; opacity: 1; }
 .usernameHintGood { color: #66BB6A; opacity: 1; }
+
+/* ── Сгъване ──────────────────────────────────────────────────────
+   Заглавието става бутон, но не изглежда като такъв: цялата лента се
+   натиска, а стрелката е единственото, което казва, че има какво да се
+   отвори. */
+.foldHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+}
+
+/* Долната черта на заглавието се появява само когато секцията е отворена —
+   затворена, тя чертае линия под нищо. */
+.foldTitle {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.foldChevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 220ms var(--ease-out);
+}
+.foldChevronOpen { transform: rotate(180deg); }
+
+.foldBody {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  animation: foldOpen 220ms var(--ease-out) both;
+}
+@keyframes foldOpen {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Подзаглавието идва след чертата, не преди нея — отрицателният отстъп в
+   .sectionSub го дърпаше нагоре към заглавие, което вече не е до него. */
+.foldBody .sectionSub { margin-top: 0; }
+
+/* Компонент, който сам рисува картон, вложен в сгъвка, дава картон в картон.
+   Вътрешният губи рамката си: рамката вече е самата сгъвка. */
+.foldBody :global(section) {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 0 18px;
+  animation: none;
+}
+.foldBody :global(section:last-child) { margin-bottom: 0; }

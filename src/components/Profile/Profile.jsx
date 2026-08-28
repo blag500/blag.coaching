@@ -10,6 +10,7 @@ import NotificationSettings from './NotificationSettings'
 import DashboardCards from './DashboardCards'
 import HabitsEditor from './HabitsEditor'
 import UsernameField from './UsernameField'
+import Fold from './Fold'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
@@ -336,35 +337,27 @@ export default function Profile({ onMenuOpen, onNavigate }) {
       {seg === 'progress' && (<>
 
       {/* Form check-in — daily action, lives at the top */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.formCheckin')}</h2>
+      <Fold id="checkin" title={t('profile.formCheckin')}>
         <FormCheckin />
-      </section>
+      </Fold>
 
       {/* Progress photo timeline */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.progressPhotos')}</h2>
+      <Fold id="photos" title={t('profile.progressPhotos')}>
         <ProgressPhotos />
-      </section>
+      </Fold>
 
       {/* Activity calendar */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.activity')}</h2>
-        <p className={styles.sectionSub}>{t('profile.activitySub')}</p>
+      <Fold id="activity" title={t('profile.activity')} sub={t('profile.activitySub')}>
         <ActivityCalendar />
-      </section>
+      </Fold>
 
       {/* Weekly snapshot */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.weeklySnapshot')}</h2>
+      <Fold id="snapshot" title={t('profile.weeklySnapshot')}>
         <WeeklySnapshot kcalTarget={parseInt(macros.calories) || 0} />
-      </section>
+      </Fold>
 
       {/* Macro targets — editable for coach, read-only display for clients */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>
-          {isCoach ? t('profile.macros') : t('profile.macrosReadonly')}
-        </h2>
+      <Fold id="macros" title={isCoach ? t('profile.macros') : t('profile.macrosReadonly')}>
         <div className={styles.macroEditGrid}>
           {[
             { key: 'calories', label: t('profile.macros.calories'), unit: t('unit.kcal'), color: MACRO_COLORS.calories },
@@ -401,11 +394,10 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             {macrosSaving ? '...' : macrosSaved ? t('profile.saved') : t('profile.macros.save')}
           </button>
         )}
-      </section>
+      </Fold>
 
       {/* Weight tracker */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.weight')}</h2>
+      <Fold id="weight" title={t('profile.weight')}>
 
         {!weighInOnToday && (
         <form onSubmit={handleWeightSave} className={styles.weightForm}>
@@ -564,18 +556,17 @@ export default function Profile({ onMenuOpen, onNavigate }) {
         ) : (
           <p className={styles.emptyHint}>{t('profile.weight.empty')}</p>
         )}
-      </section>
+      </Fold>
 
       {/* Coach: Edit own training plan */}
       {isCoach && (
-        <section className={styles.card}>
-          <h2 className={styles.sectionTitle}>{t('profile.myPlan')}</h2>
+        <Fold id="coachplan" title={t('profile.myPlan')}>
           <TrainingEditor
             initialPlan={profile.training_plan}
             onSave={handleSaveCoachPlan}
             saving={savingCoachPlan}
           />
-        </section>
+        </Fold>
       )}
 
       </>)}
@@ -583,8 +574,7 @@ export default function Profile({ onMenuOpen, onNavigate }) {
       {seg === 'settings' && (<>
 
       {/* Name */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.name')}</h2>
+      <Fold id="identity" title={t('profile.name')}>
         <form onSubmit={handleNameSave} className={styles.nameForm}>
           <input
             className={styles.textInput}
@@ -611,27 +601,28 @@ export default function Profile({ onMenuOpen, onNavigate }) {
         </form>
 
         <UsernameField />
-      </section>
+      </Fold>
 
-      <NotificationSettings />
+      <Fold id="notifications" title={t('ns.groupTitle')} defaultOpen={false}>
+        <NotificationSettings />
+      </Fold>
 
       {/* Custom habits — the six defaults are a starting point, not a rule.
           The list you check off each day is the one you'll actually use, and
           "8000 стъпки" is not the same target for a runner and someone at a
           desk job. Editor lives here because habits are how *this* client
           measures their week. */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.habits')}</h2>
-        <p className={styles.sectionSub}>{t('profile.habits.sub')}</p>
+      <Fold id="habits" title={t('profile.habits')} sub={t('profile.habits.sub')} defaultOpen={false}>
         <HabitsEditor />
-      </section>
+      </Fold>
 
       {/* Next to the theme and the language, because it is the same kind of
           setting: how the app looks to this person, not what it knows. */}
-      <DashboardCards />
+      <Fold id="dashcards" title={t('dc.title')} defaultOpen={false}>
+        <DashboardCards />
+      </Fold>
 
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('settings.appearance')}</h2>
+      <Fold id="appearance" title={t('settings.appearance')} defaultOpen={false}>
         <div className={styles.settingsRow}>
           <span className={styles.settingsLabel}>{t('settings.theme')}</span>
           <div className={styles.toggleGroup}>
@@ -682,15 +673,14 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             >{t('profile.restTimer.off')}</button>
           </div>
         </div>
-      </section>
+      </Fold>
 
       {/* Password change — lives here rather than on the auth screen, where a
           "forgotten password" flow was competing with the magic-link login.
           Anyone in the app is already signed in; supabase.auth.updateUser
           accepts the new password against the current session, no old one
           needed. */}
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>{t('profile.password')}</h2>
+      <Fold id="password" title={t('profile.password')} defaultOpen={false}>
         {!pwOpen ? (
           <button
             className={styles.pwOpenBtn}
@@ -732,7 +722,7 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             )}
           </div>
         )}
-      </section>
+      </Fold>
 
       <section className={styles.card}>
         <button className={styles.signOutBtn} onClick={signOut} type="button">
