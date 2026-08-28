@@ -4,6 +4,7 @@ import { SettingsProvider } from './contexts/SettingsContext'
 import HelpPage from './pages/HelpPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import BottomNav from './components/BottomNav/BottomNav'
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 import NavDrawer from './components/NavDrawer/NavDrawer'
 import NutritionCards from './components/NutritionCards/NutritionCards'
 import Compliance from './components/Compliance/Compliance'
@@ -326,9 +327,12 @@ function AppShell() {
           enabled={!drawerOpen && NAV_ORDER.includes(activeTab)}
           onEdgePull={setDrawerDrag}
           onEdgeEnd={shouldOpen => { setDrawerDrag(null); setDrawerOpen(shouldOpen) }}
+          /* Предпазителят е около една страница, не около приложението:
+             гръмнал екран не бива да отнася навигацията със себе си —
+             останалите табове работят и човекът има къде да отиде. */
           render={tab => (
             <div key={tab} className={styles.page} data-dir={tab === activeTab ? slideDir : 'none'}>
-              {pages[tab] ?? null}
+              <ErrorBoundary key={tab}>{pages[tab] ?? null}</ErrorBoundary>
             </div>
           )}
         />

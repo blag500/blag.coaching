@@ -330,7 +330,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
 
   const displayName   = otherProfile?.name       || peerName   || t('chatp.clientFallback')
   const displayAvatar = otherProfile?.avatar_url || peerAvatar || null
-  const items = groupByDate(messages)
+  const items = groupByDate(messages, t)
 
   return (
     <div className={embedded ? styles.pageEmbedded : styles.page}>
