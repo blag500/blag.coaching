@@ -494,7 +494,7 @@ export function AuthProvider({ children }) {
 
     const { data: people } = await supabase
       .from('feed_authors')
-      .select('id, name, avatar_url, role')
+      .select('id, name, avatar_url, role, username')
       .in('id', ids)
     const known = Object.fromEntries((people ?? []).map(p => [p.id, p]))
 

@@ -9,6 +9,7 @@ import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import DashboardCards from './DashboardCards'
 import HabitsEditor from './HabitsEditor'
+import UsernameField from './UsernameField'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
 import FormCheckin from './FormCheckin'
@@ -608,6 +609,8 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             {nameSaved ? t('profile.saved') : t('profile.save')}
           </button>
         </form>
+
+        <UsernameField />
       </section>
 
       <NotificationSettings />

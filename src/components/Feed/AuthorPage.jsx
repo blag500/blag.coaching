@@ -108,6 +108,7 @@ export default function AuthorPage({ author, onClose, onMessage }) {
         </div>
 
         <h1 className={styles.authorName}>{author.name || t('feed.someone')}</h1>
+        {author.username && <p className={styles.authorHandle}>@{author.username}</p>}
         <p className={styles.authorMeta}>
           {isCoach && <span className={styles.coachTag}>{t('feed.coachTag')}</span>}
           {memberSince && <span>{memberSince}</span>}

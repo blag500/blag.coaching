@@ -2386,4 +2386,14 @@ export default {
   'feed.noPosts':        'Още няма публикувано нищо.',
   'feed.stat.sessions':  'ТРЕНИРОВКИ',
   'feed.stat.perfect':   'ИДЕАЛНИ ДНИ',
+
+  'un.label':       'Кратко име',
+  'un.placeholder': 'blagcoach',
+  'un.hint':        'Малки букви, цифри и долна черта. Едно на цялото приложение.',
+  'un.checking':    'Проверявам...',
+  'un.free':        'Свободно е.',
+  'un.taken':       'Заето е. Пробвай друго.',
+  'un.short':       'Поне 3 знака.',
+  'un.willClear':   'Празно поле маха краткото име.',
+  'un.saved':       'Записано.',
 }

@@ -735,3 +735,63 @@
   opacity: 0.6;
   margin-top: -4px;
 }
+
+/* ── Кратко име ───────────────────────────────────────────────────
+   Единственото поле в профила, което може да бъде заето от друг — затова
+   е и единственото с ред под себе си, който отговаря докато пишеш. */
+.usernameWrap { margin-top: 18px; }
+
+.usernameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0 12px;
+}
+.usernameRow:focus-within { border-color: var(--accent); }
+
+.usernameAt {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.usernameInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 12px 0;
+}
+.usernameInput::placeholder { color: var(--muted); opacity: 0.6; }
+
+.usernameSave {
+  flex-shrink: 0;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.usernameHint {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.7;
+  margin-top: 6px;
+}
+.usernameHintBad  { color: #ef5350; opacity: 1; }
+.usernameHintGood { color: #66BB6A; opacity: 1; }

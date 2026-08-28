@@ -2379,4 +2379,14 @@ export default {
   'feed.noPosts':        'Nothing posted yet.',
   'feed.stat.sessions':  'SESSIONS',
   'feed.stat.perfect':   'PERFECT DAYS',
+
+  'un.label':       'Short name',
+  'un.placeholder': 'blagcoach',
+  'un.hint':        'Lowercase, digits and underscore. One across the whole app.',
+  'un.checking':    'Checking...',
+  'un.free':        'Available.',
+  'un.taken':       'Taken. Try another.',
+  'un.short':       'At least 3 characters.',
+  'un.willClear':   'An empty field removes your short name.',
+  'un.saved':       'Saved.',
 }
