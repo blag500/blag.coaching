@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { tr } from '../utils/locale'
 
 const PAGE = 20
 
@@ -51,8 +52,28 @@ function shape(row, myId, authors) {
   }
 }
 
+/**
+ * Известие до автора на поста.
+ *
+ * Мълчи при неуспех и не се чака: сърцето вече е нарисувано на екрана, а
+ * това е странична последица от него. Пуснато без await, защото чакането на
+ * известие би направило харесването бавно за човека, който го е натиснал.
+ *
+ * Никога към себе си — приложението няма какво да съобщи на човек за
+ * собственото му действие.
+ */
+function notifyAuthor(post, me, title, body) {
+  if (!post?.userId || post.userId === me) return
+  supabase.functions.invoke('send-push', {
+    body: { toUserId: post.userId, title, body, tag: 'feed' },
+  }).catch(() => {})
+}
+
 export function useFeed() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  /* Заглавието на известието е кой го е направил. Без име „Blag" е по-добро
+     от празен ред. */
+  const myName = profile?.name || 'Blag'
   const [posts, setPosts]     = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
@@ -135,12 +156,18 @@ export function useFeed() {
       ? supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', user.id)
       : supabase.from('post_likes').insert({ post_id: id, user_id: user.id })
     const { error: err } = await q
+
+    /* Само при харесване. Отхаресването е поправка на собствено действие и
+       не е новина за никого. */
+    if (!err && !liked) {
+      notifyAuthor(post, user.id, myName, tr('feed.notif.like'))
+    }
     if (err) {
       setPosts(prev => prev.map(p => p.id === id
         ? { ...p, liked, likeCount: p.likeCount + (liked ? 1 : -1) }
         : p))
     }
-  }, [posts, user?.id])
+  }, [posts, user?.id, myName])
 
   /* Броят коментари стои на картата, а самите коментари се четат чак когато
      някой отвори нишката — фийд от двайсет поста иначе би дърпал всеки
@@ -158,8 +185,9 @@ export function useFeed() {
 }
 
 /** Коментарите на един пост — зареждат се при отваряне на нишката. */
-export function usePostComments(postId) {
-  const { user } = useAuth()
+export function usePostComments(postId, post) {
+  const { user, profile } = useAuth()
+  const myName = profile?.name || 'Blag'
   const [comments, setComments] = useState([])
   const [loading, setLoading]   = useState(true)
   const authorCache = useRef({})
@@ -200,8 +228,14 @@ export function usePostComments(postId) {
     if (error) return { error: error.message }
     const [withAuthor] = await attach([data])
     setComments(prev => [...prev, withAuthor])
+
+    /* Коментарът носи и себе си: първите шейсет знака стигат, за да се
+       разбере дали си струва да се отвори сега. */
+    notifyAuthor(post, user.id, myName,
+      body.trim().length > 60 ? body.trim().slice(0, 57) + '…' : body.trim())
+
     return { data }
-  }, [postId, user?.id, attach])
+  }, [postId, user?.id, attach, post, myName])
 
   const removeComment = useCallback(async (id) => {
     const before = comments

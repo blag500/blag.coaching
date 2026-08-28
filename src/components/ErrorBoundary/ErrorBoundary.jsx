@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { tr } from '../../utils/locale'
 import styles from './ErrorBoundary.module.css'
 
 /**
@@ -9,7 +10,8 @@ import styles from './ErrorBoundary.module.css'
  * един аргумент вместо с два. Черният екран не казва нищо нито на клиента,
  * нито на този, който трябва да го поправи.
  *
- * Класов компонент, защото componentDidCatch няма аналог с кукички.
+ * Класов компонент, защото componentDidCatch няма аналог с кукички — затова
+ * и преводът минава през tr(), а не през useSettings.
  */
 export default class ErrorBoundary extends Component {
   state = { error: null }
@@ -29,10 +31,8 @@ export default class ErrorBoundary extends Component {
     return (
       <div className={styles.wrap}>
         <div className={styles.card}>
-          <h1 className={styles.title}>Нещо се счупи</h1>
-          <p className={styles.lead}>
-            Този екран не успя да се зареди. Другите работят.
-          </p>
+          <h1 className={styles.title}>{tr('eb.title')}</h1>
+          <p className={styles.lead}>{tr('eb.lead')}</p>
 
           {/* Съобщението, не стекът: то е достатъчно да се намери мястото, а
               стекът върху телефон е стена, която никой не чете. */}
@@ -43,7 +43,7 @@ export default class ErrorBoundary extends Component {
             className={styles.btn}
             onClick={() => window.location.reload()}
           >
-            Презареди
+            {tr('eb.reload')}
           </button>
         </div>
       </div>

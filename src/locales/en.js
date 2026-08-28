@@ -2428,4 +2428,10 @@ export default {
   'cm.confirmDelete':  'Delete this product?',
 
   'ns.groupTitle': 'NOTIFICATIONS AND REMINDERS',
+
+  'feed.notif.like': 'liked your post',
+
+  'eb.title':  'Something broke',
+  'eb.lead':   'This screen failed to load. The others still work.',
+  'eb.reload': 'Reload',
 }

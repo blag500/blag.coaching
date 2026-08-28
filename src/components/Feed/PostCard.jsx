@@ -29,10 +29,10 @@ function Avatar({ url, name }) {
 }
 
 /** Нишката под поста — чете се чак когато някой я отвори. */
-function Comments({ postId, onCountChange }) {
+function Comments({ post, onCountChange }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
-  const { comments, loading, addComment, removeComment } = usePostComments(postId)
+  const { comments, loading, addComment, removeComment } = usePostComments(post.id, post)
   const [draft, setDraft] = useState('')
   const [busy, setBusy]   = useState(false)
   const isCoach = profile?.role === 'coach'
@@ -219,7 +219,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
       </footer>}
 
       {!readOnly && openComments && (
-        <Comments postId={post.id} onCountChange={d => onCommentCountChange(post.id, d)} />
+        <Comments post={post} onCountChange={d => onCommentCountChange(post.id, d)} />
       )}
     </article>
   )
