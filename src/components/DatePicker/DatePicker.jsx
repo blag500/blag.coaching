@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import styles from './DatePicker.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 import { loc } from '../../utils/locale'
+import DateArc from './DateArc'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -11,12 +12,6 @@ export default function DatePicker({ selectedDate, onChange }) {
   const { t } = useSettings()
   const [showCal, setShowCal] = useState(false)
   const wrapRef = useRef(null)
-
-  function shiftDate(days) {
-    const d = new Date(selectedDate + 'T12:00:00')
-    d.setDate(d.getDate() + days)
-    onChange(d.toISOString().slice(0, 10))
-  }
 
   function selectDate(dateStr) {
     onChange(dateStr)
@@ -34,33 +29,26 @@ export default function DatePicker({ selectedDate, onChange }) {
     return () => document.removeEventListener('pointerdown', handlePointer)
   }, [showCal])
 
-  const isToday = selectedDate === todayStr()
-  const label = new Date(selectedDate + 'T12:00:00').toLocaleDateString(loc(), {
-    weekday: 'short', day: 'numeric', month: 'long',
-  })
+  const today = todayStr()
+  const isToday = selectedDate === today
 
   return (
     <div className={styles.wrap} ref={wrapRef}>
-      <div className={styles.nav}>
-        <button className={styles.arrowBtn} onClick={() => shiftDate(-1)} type="button" aria-label={t('dp.prevDay')}>‹</button>
+      <DateArc
+        selectedDate={selectedDate}
+        today={today}
+        onChange={onChange}
+        onOpenMonth={() => setShowCal(v => !v)}
+      />
+      {!isToday && (
         <button
-          className={`${styles.labelBtn} ${showCal ? styles.labelBtnOpen : ''}`}
-          onClick={() => setShowCal(v => !v)}
+          className={styles.backToToday}
+          onClick={() => { onChange(today); setShowCal(false) }}
           type="button"
         >
-          {label}
+          {t('dp.today')}
         </button>
-        <button className={styles.arrowBtn} onClick={() => shiftDate(1)} type="button" aria-label={t('dp.nextDay')}>›</button>
-        {!isToday && (
-          <button
-            className={styles.todayBtn}
-            onClick={() => { onChange(todayStr()); setShowCal(false) }}
-            type="button"
-          >
-            {t('dp.today')}
-          </button>
-        )}
-      </div>
+      )}
       {showCal && <MiniCal selectedDate={selectedDate} onSelect={selectDate} />}
     </div>
   )

@@ -1910,8 +1910,6 @@ export default {
   "wt.less": "One less",
   "wt.moreAria": "Add a glass",
   "wt.more": "+ glass",
-  "dp.prevDay": "Previous day",
-  "dp.nextDay": "Next day",
   "dp.today": "TODAY",
   "al.errMinutes": "Enter the minutes",
   "al.errSave": "Couldn’t save. Try again.",
@@ -2434,4 +2432,6 @@ export default {
   'eb.title':  'Something broke',
   'eb.lead':   'This screen failed to load. The others still work.',
   'eb.reload': 'Reload',
+
+  'dp.arcAria': 'Pick a day — swipe sideways',
 }
