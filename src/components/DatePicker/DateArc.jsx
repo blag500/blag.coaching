@@ -25,6 +25,7 @@ const R      = 1400  // радиус на кръга в пиксели
 const STEP   = 2.15  // градуса на ден
 const SPAN   = 5     // колко дни се рисуват от всяка страна
 const PX_DAY = 52    // колко пиксела влачене струва един ден
+const LIMIT  = 365   // докъде стига дъгата във всяка посока
 
 const rad = deg => (deg * Math.PI) / 180
 
@@ -53,16 +54,22 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
   const offsetRef = useRef(0)
   useEffect(() => { offsetRef.current = offset }, [offset])
 
-  /* Докъде свършва напред. Бъдещето не се логва, затова дъгата спира на
-     днес — но със съпротива, не със стена: нещата в живота не спират
-     внезапно, а се забавят. */
-  const maxAhead = daysBetween(selectedDate, today)
+  /* Напред се стига също толкова, колкото назад.
+     Ден напред не е грешка, а план: човек, който знае какво ще яде утре,
+     трябва да може да го запише днес. Границата е една година в двете
+     посоки — не защото там свършва смисълът, а за да не отнесе едно
+     замятане някого в 2031-ва.
+     И в двата края спира със съпротива, не със стена: нещата в живота не
+     спират внезапно, а се забавят. */
+  const from = daysBetween(selectedDate, today)   // колко дни е днес спрямо избрания
+  const minO = from - LIMIT
+  const maxO = from + LIMIT
 
   const clamp = useCallback(o => {
-    if (o <= maxAhead) return o
-    const over = o - maxAhead
-    return maxAhead + over * 0.28
-  }, [maxAhead])
+    if (o > maxO) return maxO + (o - maxO) * 0.28
+    if (o < minO) return minO + (o - minO) * 0.28
+    return o
+  }, [minO, maxO])
 
   useEffect(() => { setOffset(0) }, [selectedDate])
 
@@ -104,7 +111,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
       setTimeout(() => setDragging(false), 0)
       if (d.cancelled || !d.moved) return
 
-      const k = Math.max(Math.min(Math.round(offsetRef.current), maxAhead), -365)
+      const k = Math.max(Math.min(Math.round(offsetRef.current), maxO), minO)
       if (k === 0) setOffset(0)              // празен ход — дъгата се връща
       else onChange(iso(shift(selectedDate, k)))
     }
@@ -125,7 +132,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup',   up)
     }
-  }, [clamp, maxAhead, selectedDate, onChange])
+  }, [clamp, minO, maxO, selectedDate, onChange])
 
   const days = []
   for (let i = -SPAN; i <= SPAN; i++) {
@@ -146,7 +153,11 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
          по-надолу пада, толкова по-малък и по-блед е. */
       style: {
         transform: `translate(-50%, 0) translate(${(R * Math.sin(rad(theta))).toFixed(2)}px, ${(R * (1 - Math.cos(rad(theta)))).toFixed(2)}px) scale(${(1 - away * 0.34).toFixed(3)})`,
-        opacity: future ? 0.22 : 1 - away * 0.62,
+        /* Бъдещето е по-бледо, но не изключено: то е план, не грешка.
+           Избледняването расте с разстоянието, а не е постоянно — денят в
+           горната точка трябва да се чете еднакво добре, независимо дали е
+           вчерашен или утрешен. */
+        opacity: (1 - away * 0.62) * (future ? 1 - away * 0.45 : 1),
         zIndex: 10 - Math.round(Math.abs(theta)),
       },
     })
@@ -180,10 +191,10 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
               styles.arcDay,
               d.i === 0 ? styles.arcDayOn : '',
               d.isToday ? styles.arcDayToday : '',
+              d.future ? styles.arcDayFuture : '',
             ].join(' ')}
             style={d.style}
-            disabled={d.future}
-            onClick={() => { if (!d.future && !dragging) onChange(d.iso) }}
+            onClick={() => { if (!dragging) onChange(d.iso) }}
           >
             <span className={styles.arcDow}>{d.dow}</span>
             <span className={styles.arcNum}>{d.num}</span>

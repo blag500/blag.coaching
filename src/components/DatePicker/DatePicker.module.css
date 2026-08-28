@@ -351,3 +351,11 @@
   transition: transform 140ms var(--ease-out);
 }
 .backToToday:active { transform: scale(0.96); }
+
+/* Избран бъдещ ден: същият кръг, но с прекъсната черта. Плътната казва
+   „това се случи", прекъснатата — „това е замислено". */
+.arcDayFuture.arcDayOn::before {
+  border-style: dashed;
+  background: rgba(var(--accent-rgb), 0.06);
+  box-shadow: none;
+}
