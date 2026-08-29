@@ -38,17 +38,21 @@ export default function DatePicker({ selectedDate, onChange }) {
         selectedDate={selectedDate}
         today={today}
         onChange={onChange}
+        calOpen={showCal}
         onOpenMonth={() => setShowCal(v => !v)}
-      />
-      {!isToday && (
-        <button
-          className={styles.backToToday}
-          onClick={() => { onChange(today); setShowCal(false) }}
-          type="button"
-        >
-          {t('dp.today')}
-        </button>
-      )}
+      >
+        {/* Връщането към днес се показва само когато си някъде другаде —
+            иначе е бутон, който не води наникъде. */}
+        {!isToday && (
+          <button
+            className={styles.backToToday}
+            onClick={() => { onChange(today); setShowCal(false) }}
+            type="button"
+          >
+            {t('dp.today')}
+          </button>
+        )}
+      </DateArc>
       {showCal && <MiniCal selectedDate={selectedDate} onSelect={selectDate} />}
     </div>
   )

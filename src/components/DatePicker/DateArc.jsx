@@ -83,7 +83,7 @@ function stillPreferred() {
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 }
 
-export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) {
+export default function DateArc({ selectedDate, today, onChange, onOpenMonth, calOpen, children }) {
   const { t } = useSettings()
   const hostRef  = useRef(null)
   const monthRef = useRef(null)
@@ -333,9 +333,18 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
         ))}
       </div>
 
-      <button type="button" className={styles.arcMonth} ref={monthRef} onClick={onOpenMonth}>
-        {shift(selectedDate, Math.round(offset)).toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}
-      </button>
+      {/* Месецът и „ДНЕС" стоят един до друг: и двата местят датата. */}
+      <div className={styles.arcActions}>
+        <button
+          type="button"
+          className={`${styles.arcMonth} ${calOpen ? styles.arcMonthOpen : ''}`}
+          ref={monthRef}
+          onClick={onOpenMonth}
+        >
+          {shift(selectedDate, Math.round(offset)).toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}
+        </button>
+        {children}
+      </div>
       <span className={styles.srOnly}>{label}</span>
     </div>
   )
