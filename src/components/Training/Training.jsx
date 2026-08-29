@@ -561,7 +561,11 @@ export default function Training({ onMenuOpen }) {
               <p className={styles.restSub}>{t('tr.restSub')}</p>
             </div>
           ) : (
+            /* Ключът е денят: това, което дневникът помни за деня — разгънатите
+               упражнения, заместителите, часовникът за почивка — принадлежи
+               на този ден и не бива да се пренася в следващия. */
             <DayLog
+              key={logDate}
               date={logDate}
               blockLabels={[selectedBlock.label]}
               blocks={blocks}
@@ -771,6 +775,7 @@ export default function Training({ onMenuOpen }) {
           {selectedBlock && !isRestBlock(selectedBlock) && (
             <>
               <DayLog
+                key={todayStr}
                 date={todayStr}
                 blockLabels={[selectedBlock.label]}
                 blocks={blocks}

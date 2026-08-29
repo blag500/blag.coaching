@@ -31,13 +31,19 @@ export const FINE_MUSCLES = [
   { id: 'triceps',    labelKey: 'muscle.triceps',    broad: 'upper' },
   { id: 'back',       labelKey: 'muscle.back',       broad: 'pull'  },
   { id: 'biceps',     labelKey: 'muscle.biceps',     broad: 'pull'  },
+  { id: 'reardelts',  labelKey: 'muscle.reardelts',  broad: 'upper' },
   { id: 'quads',      labelKey: 'muscle.quads',      broad: 'lower' },
   { id: 'hamstrings', labelKey: 'muscle.hamstrings', broad: 'lower' },
   { id: 'glutes',     labelKey: 'muscle.glutes',     broad: 'lower' },
+  { id: 'adductors',  labelKey: 'muscle.adductors',  broad: 'lower' },
+  { id: 'abductors',  labelKey: 'muscle.abductors',  broad: 'lower' },
   { id: 'calves',     labelKey: 'muscle.calves',     broad: 'extra' },
   { id: 'abs',        labelKey: 'muscle.abs',        broad: 'extra' },
+  { id: 'obliques',   labelKey: 'muscle.obliques',   broad: 'extra' },
+  { id: 'lowerback',  labelKey: 'muscle.lowerback',  broad: 'extra' },
   { id: 'forearms',   labelKey: 'muscle.forearms',   broad: 'extra' },
   { id: 'traps',      labelKey: 'muscle.traps',      broad: 'extra' },
+  { id: 'neck',       labelKey: 'muscle.neck',       broad: 'extra' },
 ]
 
 const FINE_TO_BROAD = Object.fromEntries(FINE_MUSCLES.map(m => [m.id, m.broad]))
@@ -63,12 +69,20 @@ export const GROUP_COLORS = {
 // Order matters: the accessory patterns are checked first, because "предмишница"
 // contains nothing the others match but "врат" and "корем" would otherwise fall
 // through to nothing at all.
-const PATTERNS = {
-  extra: /екстра|extra|аксесо|accessor|предмишн|forearm|трапец|trap|врат|neck|корем|abs|коремни|прасц|калф|calf/,
-  upper: /горн|upper|гърди|гръден|chest|пуш|push|бутан|рам|shoulder|делт|трицеп|tricep/,
-  lower: /долн|lower|крак|leg|бедр|глутеу|седалищ|прасец|quad|ham|клек|squat/,
-  pull:  /пул|pull|дърпан|гръб|back|бицеп|bicep|ръц|arm|лат/,
-}
+/* Списък, а не речник: една група се появява два пъти, и редът между двете
+   ѝ появи е това, което върши работата.
+   Приводящите и отвеждащите се хващат преди всичко останало — „отвеждащо
+   бедро" иначе минава за бедро, което е вярно, но по-грубо от нужното.
+   Долният гръб е в „екстра", а не в „дърпане", защото манекенът рисува
+   еректорите там: една дума на две места значи цветът да пали друго място,
+   а не онова, което човекът е тренирал. */
+const PATTERNS = [
+  ['lower', /аддукт|adduct|абдукт|abduct|привежд|отвежд/],
+  ['extra', /екстра|extra|аксесо|accessor|предмишн|forearm|трапец|trap|врат|neck|корем|abs|коремни|коси|oblique|долен гръб|поясн|еректор|erector|lower ?back|прасц|калф|calf/],
+  ['upper', /горн|upper|гърди|гръден|chest|пуш|push|бутан|рам|shoulder|делт|delt|трицеп|tricep/],
+  ['lower', /долн|lower|крак|leg|бедр|глутеу|седалищ|прасец|quad|ham|клек|squat/],
+  ['pull',  /пул|pull|дърпан|гръб|back|бицеп|bicep|ръц|arm|лат/],
+]
 
 /** Which group a block label belongs to, or null if it names nothing known. */
 export function classifyMuscle(label = '') {
@@ -76,7 +90,7 @@ export function classifyMuscle(label = '') {
   // Full body is every group at once, which is not a group — the caller has to
   // decide what to do with that, and pretending it is "upper" would be worse.
   if (/цяло тяло|full ?body|фул ?боди/.test(l)) return 'full'
-  for (const [group, re] of Object.entries(PATTERNS)) {
+  for (const [group, re] of PATTERNS) {
     if (re.test(l)) return group
   }
   return null

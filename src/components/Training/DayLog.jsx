@@ -75,7 +75,18 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const [now, setNow]   = useState(Date.now())
   const buzzedRef       = useRef(false)
   const [saved, setSaved] = useState(null)
-  const [swap, setSwap] = useState({})   // planned name → what stood in, today
+  /* Заместителят преживява излизането от страницата.
+     Дотук той съществуваше само през логнатите сетове: редът в базата носи
+     `replaces`, и оттам се възстановяваше при връщане. Но човек избира с какво
+     ще замени преди да е вдигнал каквото и да било — а дотогава изборът му
+     нямаше къде да живее и се губеше. Тук стои до деня, на който принадлежи,
+     както и разгънатите упражнения точно отдолу. Базата остава по-силната
+     дума: щом има логнат сет, той казва какво наистина е правено. */
+  const swapKey = `blag_daylog_swap_${date}`
+  const [swap, setSwap] = useState(() => {   // planned name → what stood in, today
+    try { return JSON.parse(localStorage.getItem(swapKey) || '{}') }
+    catch { return {} }
+  })
   const [editing, setEditing] = useState(null)
   // Explicit fold state, overrides the default. Persisted per date in
   // localStorage so leaving the block for the split picker and coming back
@@ -90,6 +101,16 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     try { localStorage.setItem(openKey, JSON.stringify(open)) }
     catch { /* quota — the fold state is a nice-to-have */ }
   }, [open, openKey])
+  useEffect(() => {
+    try {
+      const kept = Object.fromEntries(
+        Object.entries(swap).filter(([, v]) => String(v).trim() !== ''),
+      )
+      if (Object.keys(kept).length) localStorage.setItem(swapKey, JSON.stringify(kept))
+      else localStorage.removeItem(swapKey)
+    } catch { /* quota — заместителят е удобство, не запис */ }
+  }, [swap, swapKey])
+
   const { byName: photos } = useExercisePhotos()
   const { map: exerciseMap, setGroup: setExerciseGroup, clearGroup: clearExerciseGroup } = useExerciseMap()
   const [zoom, setZoom] = useState(null)
@@ -143,7 +164,10 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
           })
         }
         setRows(m)
-        setSwap(sw)
+        /* Базата отгоре, не вместо: логнатият сет казва какво наистина е
+           правено и бие всичко, но упражнение, което човек е заместил и още
+           не е започнал, няма ред в базата и трябва да оцелее презареждането. */
+        setSwap(prev => ({ ...prev, ...sw }))
       })
   }, [user?.id, date, JSON.stringify(exercises.map(e => e.name + e.sets))])
 
