@@ -1496,6 +1496,7 @@ export default {
   "tr.rest": "Почивка",
   "tr.restSub": "Сън · Хидратация · Мобилити",
   "tr.markedToday": "Отбелязано за днес!",
+  "tr.inProgress": "В ход",
   "tr.markedDate": "Отбелязано за {date}!",
   "tr.markRest": "Маркирай почивен ден",
   "tr.markRestDate": "Маркирай почивен ден ({date})",

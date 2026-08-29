@@ -533,6 +533,27 @@
 
 .chapterDue .chapterNo { color: var(--accent); }
 
+/* Тренировката в ход. Тя бие „ред е на този": план, който предлага, срещу
+   тежест, която вече е вдигана днес — второто е по-силният довод, значи и
+   по-силният знак. Точката пулсира, защото нещото не е свършено. */
+.chapterStarted .chapterHit { opacity: 1; }
+.chapterStarted .chapterNo,
+.chapterStarted .chapterMeta { color: var(--ok); }
+.chapterStarted::before {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(var(--ok-rgb), 0.16), 0 0 14px rgba(var(--ok-rgb), 0.5);
+  animation: chapterPulse 2200ms ease-in-out infinite;
+}
+
+@keyframes chapterPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapterStarted::before { animation: none; }
+}
+
 .chapterText {
   display: flex;
   flex-direction: column;

@@ -170,6 +170,32 @@ export default function Training({ onMenuOpen }) {
   // Whether the block on screen was chosen or merely offered.
   const userPicked = useRef(false)
 
+  /* Започнатата тренировка се помни до края на деня.
+     Един вдигнат сет казва повече от всяко натискане: този блок е този, който
+     човекът прави в момента. Дотук приложението не го знаеше — излизаш до
+     храненето между два сета, връщаш се, и пак си пред списъка, пак трябва да
+     намериш своя блок сред седем. Тренировка се прекъсва по десет пъти;
+     мястото, на което си, не бива да се губи при всяко от тях.
+     До деня, не завинаги: утре е друга тренировка. */
+  const startedKey = `blag_training_started_${iso(new Date())}`
+  // Кой блок е в ход, за да личи и в списъка, не само в отварянето.
+  const [startedId, setStartedId] = useState(() => {
+    try { return localStorage.getItem(`blag_training_started_${iso(new Date())}`) }
+    catch { return null }
+  })
+  /* Същото, но за еднократното отваряне. Отделно от състоянието, защото се
+     изхабява: екранът отваря на започнатия блок веднъж, при влизане — после
+     човекът си избира сам и не бива да го връщаме обратно. */
+  const startedRef = useRef(startedId)
+
+  function rememberStarted(id) {
+    setStartedId(id ? String(id) : null)
+    try {
+      if (id) localStorage.setItem(startedKey, String(id))
+      else localStorage.removeItem(startedKey)
+    } catch { /* quota — помненето е удобство, не запис */ }
+  }
+
   useEffect(() => {
     if (!user) return
     // Today's check-in, for the one answer that belongs in this decision.
@@ -187,6 +213,8 @@ export default function Training({ onMenuOpen }) {
   function handleLogged() {
     refreshLifts()
     refreshHistory()
+    // Само за днес: редактиране на минал ден не значи, че си в него сега.
+    if (logDate === todayStr && selectedBlock) rememberStarted(selectedBlock.id)
   }
 
   // Scrolling is per-screen: arriving at the history from halfway down the
@@ -290,6 +318,21 @@ export default function Training({ onMenuOpen }) {
   const dueEntry = ranked[0] ?? null
   const dueBlock = dueEntry?.block ?? null
 
+  /* Започнатото бие предложеното. Планът предлага кой блок е ред — но щом
+     днес вече е вдиган сет някъде, там е човекът, и екранът отваря там.
+     Веднъж, при първото идване на плана: после изборът е на човека. */
+  const blockIds = (blocks ?? []).map(b => b.id).join(',')
+  useEffect(() => {
+    const id = startedRef.current
+    if (!id || !blocks) return
+    startedRef.current = null
+    const b = blocks.find(x => String(x.id) === String(id))
+    if (!b) { rememberStarted(null); return }
+    userPicked.current = true
+    setSelectedId(b.id)
+    setSessionBlockId(b.id)
+  }, [blockIds])
+
   useEffect(() => {
     if (userPicked.current || !dueBlock) return
     setSelectedId(dueBlock.id)
@@ -350,6 +393,9 @@ export default function Training({ onMenuOpen }) {
     if (!error) {
       setJustMarked(true)
       refreshHistory()
+      /* Отбелязаният ден е затворен: следващото идване тръгва от списъка, а не
+         от блока, който току-що е приключил. */
+      if (logDate === todayStr) rememberStarted(null)
       /* Тренировката отива и във фийда. Без await: маркирането е свършено и
          не бива да чака втора заявка, за да махне въртящото се кръгче. */
       shareAchievement(user.id, {
@@ -731,6 +777,7 @@ export default function Training({ onMenuOpen }) {
               const last = lastDone[block.label]
               const isDue = dueBlock?.id === block.id
               const isRest = isRestBlock(block)
+              const started = startedId != null && String(block.id) === startedId
               const meta = isRest
                 ? t('tr.metaRest')
                 : last
@@ -742,7 +789,12 @@ export default function Training({ onMenuOpen }) {
               return (
                 <li
                   key={block.id}
-                  className={`${styles.chapter} ${isDue ? styles.chapterDue : ''} ${isRest ? styles.chapterRest : ''}`}
+                  className={[
+                    styles.chapter,
+                    isDue ? styles.chapterDue : '',
+                    isRest ? styles.chapterRest : '',
+                    started ? styles.chapterStarted : '',
+                  ].join(' ')}
                 >
                   <button
                     type="button"
@@ -758,7 +810,12 @@ export default function Training({ onMenuOpen }) {
                     <span className={styles.chapterNo}>{String(i + 1).padStart(2, '0')}</span>
                     <span className={styles.chapterText}>
                       <span className={styles.chapterName}>{block.label}</span>
-                      <span className={styles.chapterMeta}>{meta}</span>
+                      <span className={styles.chapterMeta}>
+                        {/* Започнатото се казва вместо готовността: щом днес вече
+                            е вдиган сет тук, въпросът „възстановен ли си" е
+                            отговорен от самото правене. */}
+                        {started ? t('tr.inProgress') : meta}
+                      </span>
                     </span>
                   </button>
                 </li>

@@ -1489,6 +1489,7 @@ export default {
   "tr.rest": "Rest",
   "tr.restSub": "Sleep · Hydration · Mobility",
   "tr.markedToday": "Marked for today!",
+  "tr.inProgress": "In progress",
   "tr.markedDate": "Marked for {date}!",
   "tr.markRest": "Mark a rest day",
   "tr.markRestDate": "Mark a rest day ({date})",
