@@ -217,7 +217,7 @@
 .arc {
   position: relative;
   width: 100%;
-  height: 74px;
+  height: 80px;
   overflow: hidden;
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
@@ -247,7 +247,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  /* Осем пиксела, не три: кръгът на избрания ден е с 15 по-висок от числото
+     и стърчи над него. По-малко разстояние и буквата влиза в кръга. */
+  gap: 8px;
   padding: 4px 0;
   border: none;
   background: transparent;
@@ -265,6 +267,7 @@
   font-family: var(--font-body);
   font-size: 9px;
   letter-spacing: 0.08em;
+  line-height: 1;
   text-transform: uppercase;
   transition: opacity 320ms var(--ease-out);
 }
@@ -283,14 +286,17 @@
   position: relative;
   z-index: 1;
 }
+/* Кръгът обикаля числото, не деня: центърът му е на 42 пиксела от горния
+   ръб на кутията — там, където е средата на числото — а не някъде между
+   буквата и него. */
 .arcDayOn::before {
   content: '';
   position: absolute;
   left: 50%;
-  top: 10px;
-  width: 38px;
-  height: 38px;
-  margin-left: -19px;
+  top: 26px;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
   border-radius: 50%;
   background: rgba(var(--accent-rgb), 0.12);
   border: 1px solid rgba(var(--accent-rgb), 0.42);
