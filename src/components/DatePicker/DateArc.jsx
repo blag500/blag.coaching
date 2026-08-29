@@ -30,16 +30,19 @@ const STEP   = 1.5   // градуса на ден
 const SPAN   = 5     // колко дни се рисуват от всяка страна
 const PX_DAY = 52    // колко пиксела влачене струва един ден
 const LIMIT  = 365   // докъде стига дъгата във всяка посока
+const TAP_MS = 300   // колко трае завъртането след натискане
 
 const rad = deg => (deg * Math.PI) / 180
+/* Тръгва бързо, спира меко — както спира въртящо се нещо, което го пускаш. */
+const ease = p => 1 - Math.pow(1 - p, 3)
 
 /**
  * Къде стои ден i, когато дъгата е завъртяна на off дни.
  *
  * Една функция, а не две: рендерът я вика за спокойното състояние, а
- * влаченето — кадър по кадър направо върху DOM. Ако бяха две, щяха да се
+ * движението — кадър по кадър направо върху DOM. Ако бяха две, щяха да се
  * разминат при първата промяна и дъгата щеше да подскача в мига, в който
- * пръстът я пусне.
+ * движението свърши.
  */
 function geom(i, off, future) {
   const theta = (i - off) * STEP
@@ -75,12 +78,17 @@ function daysBetween(aIso, bIso) {
   return Math.round((dayFromIso(bIso) - dayFromIso(aIso)) / 86400000)
 }
 
+function stillPreferred() {
+  return typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+}
+
 export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) {
   const { t } = useSettings()
   const hostRef  = useRef(null)
   const monthRef = useRef(null)
   const dayRefs  = useRef([])
-  const [offset, setOffset] = useState(0)   // в дни, дробно по време на влачене
+  const [offset, setOffset] = useState(0)   // в дни, дробно по време на движение
   const [dragging, setDragging] = useState(false)
   const drag = useRef(null)
   /* Огледало на offset за слушателите: те се закачат веднъж и иначе биха
@@ -107,45 +115,108 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
 
   useEffect(() => { setOffset(0) }, [selectedDate])
 
+  /* ── Рисуването ────────────────────────────────────────────────────────
+     Движението не минава през React — нито влаченето, нито натискането.
+     Всеки милиметър пръст е отделно събитие, а един setState на събитие
+     значи единайсет компонента наново по няколко пъти на кадър; при
+     натискане пък смяната на датата вдига цялата страница и заявките за
+     деня точно докато трябва да тече анимацията. Затова стойността се
+     пише направо върху елементите, веднъж на кадър, по такта на браузъра.
+     React научава крайното число чак когато движението е свършило. */
+  const wantRef  = useRef(0)
+  const frameRef = useRef(0)
+  const animRef  = useRef(0)
+
+  const paint = useCallback(() => {
+    frameRef.current = 0
+    const off = wantRef.current
+    for (let k = 0; k < dayRefs.current.length; k++) {
+      const el = dayRefs.current[k]
+      if (!el) continue
+      const g = geom(k - SPAN, off, el.dataset.future === '1')
+      el.style.transform = g.transform
+      el.style.opacity   = g.opacity
+      el.style.zIndex    = g.zIndex
+      if (el.firstElementChild) el.firstElementChild.style.opacity = g.dow
+    }
+    /* Месецът се сменя под пръста, а не след него. */
+    if (monthRef.current) {
+      monthRef.current.textContent = shift(selectedDate, Math.round(off))
+        .toLocaleDateString(loc(), { month: 'long', year: 'numeric' })
+    }
+  }, [selectedDate])
+
+  const schedule = useCallback(off => {
+    wantRef.current   = off
+    offsetRef.current = off
+    if (!frameRef.current) frameRef.current = requestAnimationFrame(paint)
+  }, [paint])
+
+  /** Кой ден носи кръга. Пипа се на ръка, защото React не участва в хода. */
+  const markOn = useCallback(k => {
+    dayRefs.current.forEach((el, idx) => {
+      el?.classList.toggle(styles.arcDayOn, idx === k + SPAN)
+    })
+  }, [])
+
+  /** Спира започнато завъртане, връща кръга и CSS преходите. */
+  const stopAnim = useCallback(() => {
+    if (!animRef.current) return
+    cancelAnimationFrame(animRef.current)
+    animRef.current = 0
+    markOn(0)                                     // прекъснато — изборът е старият
+    hostRef.current?.classList.remove(styles.arcDragging)
+  }, [markOn])
+
+  /**
+   * Натиснат ден.
+   *
+   * Дъгата се завърта дотам сама, със същата ръка, с която я върти пръстът,
+   * и чак когато спре, датата се сменя. Обратният ред — първо датата, после
+   * анимацията — значи страницата да се прерисува върху движещата се дъга,
+   * а това се вижда. Денят вече стои на върха, когато React стигне до него,
+   * затова смяната не се забелязва като скок.
+   */
+  const tap = useCallback((k, dIso) => {
+    if (k === 0) return
+    const host = hostRef.current
+    if (!host || stillPreferred()) { onChange(dIso); return }
+
+    stopAnim()
+    /* Класът маха CSS преходите: те и кадрите биха дърпали един елемент в
+       две посоки. Сваля се преди смяната на датата, за да е налице пак за
+       всичко останало. */
+    host.classList.add(styles.arcDragging)
+    /* Кръгът минава на натиснатия ден веднага и се качва заедно с него.
+       Ако чакаше края, изборът щеше да щракне от единия ден на другия в
+       един кадър — точно това се вижда като нескопосано. */
+    markOn(k)
+    const t0 = performance.now()
+
+    const stepFrame = now => {
+      const p = Math.min((now - t0) / TAP_MS, 1)
+      wantRef.current   = k * ease(p)
+      offsetRef.current = wantRef.current
+      paint()
+      if (p < 1) { animRef.current = requestAnimationFrame(stepFrame); return }
+      animRef.current = 0
+      host.classList.remove(styles.arcDragging)
+      onChange(dIso)
+    }
+    animRef.current = requestAnimationFrame(stepFrame)
+  }, [paint, stopAnim, markOn, onChange])
+
+  useEffect(() => () => {
+    if (animRef.current) cancelAnimationFrame(animRef.current)
+    if (frameRef.current) cancelAnimationFrame(frameRef.current)
+  }, [])
+
   useEffect(() => {
     const host = hostRef.current
     if (!host) return
 
-    /* Влаченето не минава през React.
-       Всеки милиметър пръст е отделно събитие, а един setState на събитие
-       значи единайсет компонента наново по няколко пъти на кадър — оттам
-       идваше накъсването. Тук стойността се записва направо върху
-       елементите, и то точно веднъж на кадър: браузърът казва кога е готов
-       да рисува, вместо ние да му налагаме кога. React научава крайното
-       число чак при пускане, когато има какво да се запомни. */
-    let frame = 0
-    let want  = 0
-
-    function paint() {
-      frame = 0
-      for (let k = 0; k < dayRefs.current.length; k++) {
-        const el = dayRefs.current[k]
-        if (!el) continue
-        const g = geom(k - SPAN, want, el.dataset.future === '1')
-        el.style.transform = g.transform
-        el.style.opacity   = g.opacity
-        el.style.zIndex    = g.zIndex
-        if (el.firstElementChild) el.firstElementChild.style.opacity = g.dow
-      }
-      /* Месецът се сменя под пръста, а не след него. */
-      if (monthRef.current) {
-        monthRef.current.textContent = shift(selectedDate, Math.round(want))
-          .toLocaleDateString(loc(), { month: 'long', year: 'numeric' })
-      }
-    }
-
-    function schedule(off) {
-      want = off
-      offsetRef.current = off
-      if (!frame) frame = requestAnimationFrame(paint)
-    }
-
     function down(e) {
+      stopAnim()                                  // пръстът има думата пред анимацията
       const p = e.touches ? e.touches[0] : e
       drag.current = { x: p.clientX, y: p.clientY, start: offsetRef.current, moved: false, cancelled: false }
     }
@@ -192,7 +263,6 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup',   up)
     return () => {
-      if (frame) cancelAnimationFrame(frame)
       host.removeEventListener('touchstart', down)
       host.removeEventListener('touchmove',  move)
       host.removeEventListener('touchend',   up)
@@ -201,7 +271,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup',   up)
     }
-  }, [clamp, minO, maxO, selectedDate, onChange])
+  }, [clamp, minO, maxO, selectedDate, onChange, schedule, stopAnim])
 
   const days = []
   for (let i = -SPAN; i <= SPAN; i++) {
@@ -255,7 +325,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
               d.future ? styles.arcDayFuture : '',
             ].join(' ')}
             style={d.style}
-            onClick={() => { if (!dragging) onChange(d.iso) }}
+            onClick={() => { if (!dragging) tap(d.i, d.iso) }}
           >
             <span className={styles.arcDow} style={d.dowStyle}>{d.dow}</span>
             <span className={styles.arcNum}>{d.num}</span>
