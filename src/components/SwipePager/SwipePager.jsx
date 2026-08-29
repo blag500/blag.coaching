@@ -122,6 +122,19 @@ function SwipePager({
     chromes[back].style.zIndex  = Z_ARRIVING
   }, [chromes, front, back])
 
+  /* A page built for a journey arrives already assembled.
+     The arriving page is built at the start of the journey so it is ready when
+     it lands — but that means the cards inside it would be rising while the
+     page itself is sliding, two motions on one thing and neither of them
+     readable. Sliding in is that page's entrance; it does not need a second
+     one. The mark stays on the slot for good: an entrance is spent once, and
+     only the page the app opens on never came from anywhere. */
+  useLayoutEffect(() => {
+    if (reveal !== 0 && slotRefs.current[back]) {
+      slotRefs.current[back].dataset.arrive = 'off'
+    }
+  }, [back, reveal])
+
   // The arriving pane is mounted by React, so it starts with no transform of
   // its own. Placing it in a layout effect puts it off-screen before the frame
   // is painted, instead of letting it flash across the middle of the display.

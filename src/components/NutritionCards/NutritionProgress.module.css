@@ -153,19 +153,20 @@
   .seg { transition: none; }
 }
 
-/* Обиколката на мънистото. Върти се групата, не дъгата, за да остане
-   центърът в средата на кръга, а не в кутията на щриха. */
-.shimmer {
-  transform-origin: 60px 60px;
-  animation: shimmerOrbit 6s linear infinite;
+/* Изяденото свети. Сиянието е размазано копие на самите дъги, значи стига
+   точно докъдето стигат те — оставащото сиво няма какво да огрее. Диша
+   бавно: пръстенът стои цял ден на екрана и трябва да е жив, без да е
+   нервен. */
+.lit {
+  opacity: 0.42;
+  animation: litBreath 3400ms ease-in-out infinite;
 }
 
-@keyframes shimmerOrbit {
-  to { transform: rotate(360deg); }
+@keyframes litBreath {
+  0%, 100% { opacity: 0.32; }
+  50%      { opacity: 0.68; }
 }
 
-/* При изключени анимации мънистото би стояло заковано на едно място и щеше
-   да прилича на дефект, не на светлина. По-добре го няма. */
 @media (prefers-reduced-motion: reduce) {
-  .shimmer { display: none; }
+  .lit { animation: none; }
 }

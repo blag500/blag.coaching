@@ -70,9 +70,6 @@ export default function NutritionProgress({
     { key: 'fat',     color: 'var(--macro-fat)', arc: fArc, offset: C - pArc - cArc },
   ]
 
-  // Червеният пръстен при преминат таван е цял, значи блещука цял.
-  const maskArc = kcalOver ? C : totalArc
-
   const kcalPctDisplay = Math.round(kcalPct * 100)
 
   /* Числото се навива заедно с дъгата. Пише се направо в елемента, кадър по
@@ -124,26 +121,15 @@ export default function NutritionProgress({
               <filter id={`${idBase}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
                 <feGaussianBlur stdDeviation="3.4" />
               </filter>
-              {/* Блещукането ходи само по изядената част на пръстена. Маската
-                  е същата дъга като цветната, със същия преход — расте с нея,
-                  а на празен ден няма къде да свети и не свети. */}
-              <mask id={`${idBase}-filled`} maskUnits="userSpaceOnUse"
-                x="0" y="0" width="120" height="120">
-                <circle
-                  className={styles.seg}
-                  cx="60" cy="60" r={R}
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth={SW}
-                  strokeDasharray={`${maskArc} ${Math.max(C - maskArc, 0)}`}
-                  transform="rotate(-90, 60, 60)"
-                />
-              </mask>
             </defs>
 
             <g transform="rotate(-90, 60, 60)">
-              {/* Bloom pass — the same arcs, blurred, underneath everything. */}
-              <g opacity="0.42" filter={`url(#${idBase}-bloom)`}>
+              {/* Bloom pass — the same arcs, blurred, underneath everything.
+                  Това е и светенето: диша самото размазано копие на дъгите,
+                  затова свети точно докъдето стига изяденото, а сивата част
+                  отзад няма какво да огрее. Върху цвета, а не отгоре му —
+                  бяло було би избелило макросите, а те носят значението. */}
+              <g className={styles.lit} filter={`url(#${idBase}-bloom)`}>
                 {!kcalOver && segments.map(seg =>
                   seg.arc > 0.3 && (
                     <circle
@@ -202,24 +188,6 @@ export default function NutritionProgress({
                   />
                 )
               )}
-            </g>
-
-            {/* Мънистото. Къса дъга светлина, размита до петно, което обикаля
-                бавно по вече изядената част. Пръстенът стои цял ден на екрана
-                и трябва да е жив, без да е нервен — оттам бавното: шест
-                секунди за обиколка се забелязва с крайчеца на окото, а не
-                дърпа погледа. */}
-            <g className={styles.shimmer} mask={`url(#${idBase}-filled)`}>
-              <circle
-                cx="60" cy="60" r={R}
-                fill="none"
-                stroke="#fff"
-                strokeOpacity="0.5"
-                strokeWidth={SW * 0.8}
-                strokeLinecap="round"
-                strokeDasharray={`${(C * 0.06).toFixed(2)} ${(C * 0.94).toFixed(2)}`}
-                filter={`url(#${idBase}-bloom)`}
-              />
             </g>
 
             {/* The bevel, drawn over the whole ring and outside the rotation so
