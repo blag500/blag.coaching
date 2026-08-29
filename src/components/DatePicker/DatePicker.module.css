@@ -247,7 +247,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 3px;
   padding: 4px 0;
   border: none;
   background: transparent;
@@ -258,14 +258,15 @@
   transition: transform 320ms var(--ease-out), opacity 320ms var(--ease-out);
   will-change: transform;
 }
-.arcDragging .arcDay { transition: none; }
+.arcDragging .arcDay,
+.arcDragging .arcDow { transition: none; }
 
 .arcDow {
   font-family: var(--font-body);
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.8;
+  transition: opacity 320ms var(--ease-out);
 }
 
 .arcNum {
