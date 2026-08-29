@@ -27,3 +27,11 @@
   z-index: 95;
   will-change: transform;
 }
+
+/* The back slot with nothing in it. It has to keep existing so the element the
+   next page is built in is the same one that later becomes the front pane —
+   but left as .incoming it would be a full-screen sheet of background colour
+   sitting over the page. */
+.idle {
+  display: none;
+}

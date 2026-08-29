@@ -152,3 +152,20 @@
 @media (prefers-reduced-motion: reduce) {
   .seg { transition: none; }
 }
+
+/* Обиколката на мънистото. Върти се групата, не дъгата, за да остане
+   центърът в средата на кръга, а не в кутията на щриха. */
+.shimmer {
+  transform-origin: 60px 60px;
+  animation: shimmerOrbit 6s linear infinite;
+}
+
+@keyframes shimmerOrbit {
+  to { transform: rotate(360deg); }
+}
+
+/* При изключени анимации мънистото би стояло заковано на едно място и щеше
+   да прилича на дефект, не на светлина. По-добре го няма. */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { display: none; }
+}

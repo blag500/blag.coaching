@@ -4,10 +4,9 @@ import { PaneProvider } from './PaneContext'
 import styles from './SwipePager.module.css'
 
 /** A window-sized layer that travels with a pane; see PaneContext. */
-function makeChromeLayer(z) {
+function makeChromeLayer() {
   const el = document.createElement('div')
-  el.style.cssText =
-    `position:fixed;inset:0;pointer-events:none;z-index:${z};`
+  el.style.cssText = 'position:fixed;inset:0;pointer-events:none;'
   return el
 }
 
@@ -21,6 +20,11 @@ const FLICK_SPEED = 0.45   // px per ms
 const FLICK_MIN   = 40     // but never on a twitch
 const GLIDE       = 420    // ms to finish or undo the journey
 
+// Below the pane that is arriving (95) for the page being left, above it for
+// the page arriving, and both under the tab bar (100), which never moves.
+const Z_LEAVING  = 90
+const Z_ARRIVING = 96
+
 /**
  * Tabs that follow the finger — both pages moving together, the way a strip of
  * paper slides past a window rather than one sheet being laid over another.
@@ -32,6 +36,13 @@ const GLIDE       = 420    // ms to finish or undo the journey
  * that actually change the markup: which neighbour is mounted, and whether the
  * slide is settling.
  *
+ * There are two slots and they never trade contents. A page arrives into the
+ * back slot, travels there, and when the journey ends that slot simply becomes
+ * the front one — the class on it changes, the subtree inside does not. Moving
+ * the arriving page into a different element instead would throw away
+ * everything it had just built and mount it a second time: the screen would
+ * blink, show the old day's numbers, and only then settle on the right ones.
+ *
  * At the first tab there is no page to the left, so dragging that way pulls the
  * side navigation out instead.
  */
@@ -39,19 +50,21 @@ function SwipePager({
   order, active, onChange, render, enabled = true,
   onEdgePull, onEdgeEnd,
 }, ref) {
-  const hostRef = useRef(null)
-  const curRef  = useRef(null)
-  const incRef  = useRef(null)
+  const hostRef   = useRef(null)
+  const slotRefs  = useRef([null, null])
 
-  // Below the incoming pane (95) for the page being left, above it for the page
-  // arriving, and both under the tab bar (100), which never moves.
-  const [curChrome] = useState(() => makeChromeLayer(90))
-  const [incChrome] = useState(() => makeChromeLayer(96))
+  const [chromes] = useState(() => [makeChromeLayer(), makeChromeLayer()])
 
   useEffect(() => {
-    document.body.append(curChrome, incChrome)
-    return () => { curChrome.remove(); incChrome.remove() }
-  }, [curChrome, incChrome])
+    document.body.append(chromes[0], chromes[1])
+    return () => { chromes[0].remove(); chromes[1].remove() }
+  }, [chromes])
+
+  // Which slot is the page the user is on. The other one is where an arriving
+  // page is built; on commit the two swap roles rather than swapping contents.
+  const [front, setFront] = useState(0)
+  const back = 1 - front
+
   // Which page is mounted next to this one, as a signed distance in tabs. A
   // swipe only ever reveals ±1; a tap on the bar can be three tabs away, and
   // the page it names still arrives from its own side — the ones in between
@@ -67,67 +80,78 @@ function SwipePager({
   const commitRef = useRef(null)
   const settling  = useRef(false)
   const live      = useRef({})
-  live.current = { order, active, idx, onChange, enabled, onEdgePull, onEdgeEnd }
+  live.current = { order, active, idx, onChange, enabled, onEdgePull, onEdgeEnd, front, back }
 
   /** Put both panes where the finger says, without going through React. */
   function place(dx, dir, animate) {
     offset.current = dx
     const w = window.innerWidth
     const ease = animate ? `transform ${GLIDE}ms var(--ease-drawer)` : 'none'
+    const { front: f, back: b } = live.current
 
     const resting = dx === 0 && !animate
+    const leaving = slotRefs.current[f]
 
-    if (curRef.current) {
-      curRef.current.style.transition = ease
+    if (leaving) {
+      leaving.style.transition = ease
       // At rest both the transform and the promotion are removed. Either one
       // would leave the page as the containing block for its fixed children.
-      curRef.current.style.willChange = resting ? '' : 'transform'
-      curRef.current.style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
+      leaving.style.willChange = resting ? '' : 'transform'
+      leaving.style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
     }
     // The chrome layer rides along, so a bar pinned to the bottom of the window
     // leaves with the page it belongs to instead of hanging behind.
-    curChrome.style.transition = ease
-    curChrome.style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
+    chromes[f].style.transition = ease
+    chromes[f].style.transform  = resting ? '' : `translate3d(${dx}px,0,0)`
 
     if (dir !== 0) {
       const off = `translate3d(${dx + dir * w}px,0,0)`
-      if (incRef.current) {
-        incRef.current.style.transition = ease
-        incRef.current.style.transform  = off
+      const arriving = slotRefs.current[b]
+      if (arriving) {
+        arriving.style.transition = ease
+        arriving.style.transform  = off
       }
-      incChrome.style.transition = ease
-      incChrome.style.transform  = off
+      chromes[b].style.transition = ease
+      chromes[b].style.transform  = off
     }
   }
 
-  // The incoming pane is mounted by React, so it starts with no transform of
+  // The chrome layers stack by role, not by slot, and the roles change hands.
+  useLayoutEffect(() => {
+    chromes[front].style.zIndex = Z_LEAVING
+    chromes[back].style.zIndex  = Z_ARRIVING
+  }, [chromes, front, back])
+
+  // The arriving pane is mounted by React, so it starts with no transform of
   // its own. Placing it in a layout effect puts it off-screen before the frame
   // is painted, instead of letting it flash across the middle of the display.
   useLayoutEffect(() => {
     if (reveal !== 0) place(offset.current, Math.sign(reveal), false)
   }, [reveal])
 
-  /** The slide has landed; adopt the new tab in the same paint. */
+  /** The slide has landed; the back slot becomes the front one. */
   function finish() {
     if (!settling.current) return
     const target = commitRef.current
     commitRef.current = null
     settling.current = false
     offset.current = 0
-    if (curRef.current) {
-      curRef.current.style.transition = 'none'
-      curRef.current.style.transform  = ''
-      curRef.current.style.willChange = ''
-    }
-    for (const el of [curChrome, incChrome]) {
+    for (const el of [slotRefs.current[0], slotRefs.current[1], chromes[0], chromes[1]]) {
+      if (!el) continue
       el.style.transition = 'none'
       el.style.transform  = ''
       el.style.willChange = ''
     }
     setReveal(0)
-    // Instant, because the page has already travelled — animating it in again
-    // would be the same move played twice.
-    if (target) onChange(target, { instant: true })
+    // One batch: the tab, the slot that holds it, and the fact that nothing is
+    // revealed any more all land in the same render. Anything else and there is
+    // a frame where the front slot is asked for a page it is not holding.
+    if (target) {
+      setFront(live.current.back)
+      // Instant, because the page has already travelled — animating it in again
+      // would be the same move played twice.
+      onChange(target, { instant: true })
+    }
   }
 
   /**
@@ -160,7 +184,7 @@ function SwipePager({
        да я сложи извън екрана. Да я пуснем да пътува в същия кадър, в който
        се появява, значи да тръгне от където и да е. */
     requestAnimationFrame(() => {
-      if (!incRef.current) return
+      if (!slotRefs.current[live.current.back]) return
       settling.current  = true
       commitRef.current = tab
       place(-dir * window.innerWidth, dir, true)
@@ -201,8 +225,8 @@ function SwipePager({
       // itself waits until the gesture is known to be horizontal: promoting it
       // would make it the containing block for its fixed children, and doing
       // that on every tap would jolt them for as long as a finger is down.
-      curChrome.style.willChange = 'transform'
-      incChrome.style.willChange = 'transform'
+      chromes[0].style.willChange = 'transform'
+      chromes[1].style.willChange = 'transform'
     }
 
     function onMove(e) {
@@ -253,8 +277,8 @@ function SwipePager({
 
     function onEnd() {
       if (axis !== 'x') {
-        curChrome.style.willChange = ''
-        incChrome.style.willChange = ''
+        chromes[0].style.willChange = ''
+        chromes[1].style.willChange = ''
         reset()
         return
       }
@@ -302,31 +326,46 @@ function SwipePager({
   }, [])
 
   function onTransitionEnd(e) {
-    // Transitions bubble; only the pane's own slide means the gesture is over.
+    // Transitions bubble; only a pane's own slide means the gesture is over.
     if (e.target !== e.currentTarget || e.propertyName !== 'transform') return
     finish()
   }
 
   const neighbour = reveal !== 0 ? order[idx + reveal] : null
   // Stable objects, so a page's chrome is not torn down and rebuilt on every
-  // render of the pager.
-  const curPane = useMemo(() => ({ chrome: curChrome, live: true  }), [curChrome])
-  const incPane = useMemo(() => ({ chrome: incChrome, live: false }), [incChrome])
+  // render of the pager. The layer each slot owns never changes — only which
+  // of the two is the live one does — so nothing portalled into it moves.
+  const panes = useMemo(
+    () => [
+      { chrome: chromes[0], live: front === 0 },
+      { chrome: chromes[1], live: front === 1 },
+    ],
+    [chromes, front],
+  )
 
   return (
     <div className={styles.host} ref={hostRef}>
-      {/* No transform is set here at rest. Any transform, even an identity one,
-          makes an element the containing block for its fixed descendants, and
-          the app pins things to the screen from inside pages. */}
-      <div className={styles.current} ref={curRef} onTransitionEnd={onTransitionEnd}>
-        <PaneProvider value={curPane}>{render(active)}</PaneProvider>
-      </div>
-
-      {neighbour && (
-        <div className={styles.incoming} ref={incRef} aria-hidden="true">
-          <PaneProvider value={incPane}>{render(neighbour)}</PaneProvider>
-        </div>
-      )}
+      {[0, 1].map(slot => {
+        const isFront = slot === front
+        const tab = isFront ? active : neighbour
+        return (
+          <div
+            key={slot}
+            ref={el => { slotRefs.current[slot] = el }}
+            /* No transform is set on the front pane at rest. Any transform,
+               even an identity one, makes an element the containing block for
+               its fixed descendants, and the app pins things to the screen
+               from inside pages. An empty back slot is taken out of the way
+               entirely — left as .incoming it would be a full-screen sheet of
+               background colour over the page. */
+            className={isFront ? styles.current : (tab ? styles.incoming : styles.idle)}
+            aria-hidden={isFront ? undefined : true}
+            onTransitionEnd={onTransitionEnd}
+          >
+            {tab ? <PaneProvider value={panes[slot]}>{render(tab)}</PaneProvider> : null}
+          </div>
+        )
+      })}
     </div>
   )
 }
