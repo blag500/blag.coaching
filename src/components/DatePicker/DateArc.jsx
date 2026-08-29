@@ -33,6 +33,34 @@ const LIMIT  = 365   // докъде стига дъгата във всяка �
 
 const rad = deg => (deg * Math.PI) / 180
 
+/**
+ * Къде стои ден i, когато дъгата е завъртяна на off дни.
+ *
+ * Една функция, а не две: рендерът я вика за спокойното състояние, а
+ * влаченето — кадър по кадър направо върху DOM. Ако бяха две, щяха да се
+ * разминат при първата промяна и дъгата щеше да подскача в мига, в който
+ * пръстът я пусне.
+ */
+function geom(i, off, future) {
+  const theta = (i - off) * STEP
+  const away  = Math.min(Math.abs(theta) / (SPAN * STEP), 1)
+  return {
+    /* translate3d, а не translate: браузърът вдига елемента на собствен слой
+       и въртенето не минава през прерисуване на страницата. */
+    transform: `translate(-50%, 0) translate3d(${(R * Math.sin(rad(theta))).toFixed(2)}px, ${(R * (1 - Math.cos(rad(theta)))).toFixed(2)}px, 0) scale(${(1 - away * 0.34).toFixed(3)})`,
+    /* Бъдещето е по-бледо, но не изключено: то е план, не грешка.
+       Избледняването расте с разстоянието, а не е постоянно — денят в
+       горната точка трябва да се чете еднакво добре, независимо дали е
+       вчерашен или утрешен. */
+    opacity: ((1 - away * 0.62) * (future ? 1 - away * 0.45 : 1)).toFixed(3),
+    zIndex: 10 - Math.round(Math.abs(theta)),
+    /* Буквите живеят само около върха. Далече от него те падат в реда на
+       числата и го задръстват, а и вече не носят информация: там важното е
+       кой е денят, не как се казва. */
+    dow: Math.max(0, 1 - away * 2.6).toFixed(2),
+  }
+}
+
 function iso(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
@@ -49,12 +77,14 @@ function daysBetween(aIso, bIso) {
 
 export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) {
   const { t } = useSettings()
-  const hostRef = useRef(null)
+  const hostRef  = useRef(null)
+  const monthRef = useRef(null)
+  const dayRefs  = useRef([])
   const [offset, setOffset] = useState(0)   // в дни, дробно по време на влачене
   const [dragging, setDragging] = useState(false)
   const drag = useRef(null)
   /* Огледало на offset за слушателите: те се закачат веднъж и иначе биха
-     четели стойността от рендера, в който са били създадени. */
+     чели стойността от рендера, в който са били създадени. */
   const offsetRef = useRef(0)
   useEffect(() => { offsetRef.current = offset }, [offset])
 
@@ -81,6 +111,40 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
     const host = hostRef.current
     if (!host) return
 
+    /* Влаченето не минава през React.
+       Всеки милиметър пръст е отделно събитие, а един setState на събитие
+       значи единайсет компонента наново по няколко пъти на кадър — оттам
+       идваше накъсването. Тук стойността се записва направо върху
+       елементите, и то точно веднъж на кадър: браузърът казва кога е готов
+       да рисува, вместо ние да му налагаме кога. React научава крайното
+       число чак при пускане, когато има какво да се запомни. */
+    let frame = 0
+    let want  = 0
+
+    function paint() {
+      frame = 0
+      for (let k = 0; k < dayRefs.current.length; k++) {
+        const el = dayRefs.current[k]
+        if (!el) continue
+        const g = geom(k - SPAN, want, el.dataset.future === '1')
+        el.style.transform = g.transform
+        el.style.opacity   = g.opacity
+        el.style.zIndex    = g.zIndex
+        if (el.firstElementChild) el.firstElementChild.style.opacity = g.dow
+      }
+      /* Месецът се сменя под пръста, а не след него. */
+      if (monthRef.current) {
+        monthRef.current.textContent = shift(selectedDate, Math.round(want))
+          .toLocaleDateString(loc(), { month: 'long', year: 'numeric' })
+      }
+    }
+
+    function schedule(off) {
+      want = off
+      offsetRef.current = off
+      if (!frame) frame = requestAnimationFrame(paint)
+    }
+
     function down(e) {
       const p = e.touches ? e.touches[0] : e
       drag.current = { x: p.clientX, y: p.clientY, start: offsetRef.current, moved: false, cancelled: false }
@@ -103,7 +167,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
       if (!d.moved) return
 
       e.preventDefault?.()
-      setOffset(clamp(d.start - dx / PX_DAY))
+      schedule(clamp(d.start - dx / PX_DAY))
     }
 
     function up() {
@@ -128,6 +192,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup',   up)
     return () => {
+      if (frame) cancelAnimationFrame(frame)
       host.removeEventListener('touchstart', down)
       host.removeEventListener('touchmove',  move)
       host.removeEventListener('touchend',   up)
@@ -140,11 +205,10 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
 
   const days = []
   for (let i = -SPAN; i <= SPAN; i++) {
-    const d       = shift(selectedDate, i)
-    const dIso    = iso(d)
-    const theta   = (i - offset) * STEP
-    const away    = Math.min(Math.abs(theta) / (SPAN * STEP), 1)
-    const future  = dIso > today
+    const d      = shift(selectedDate, i)
+    const dIso   = iso(d)
+    const future = dIso > today
+    const g      = geom(i, offset, future)
 
     days.push({
       i,
@@ -153,21 +217,8 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
       dow: t(`daysMon.${(d.getDay() + 6) % 7}`),
       future,
       isToday: dIso === today,
-      /* Буквите живеят само около върха. Далече от него те падат в реда на
-         числата и го задръстват, а и вече не носят информация: там важното
-         е кой е денят, не как се казва. */
-      dowStyle: { opacity: Math.max(0, 1 - away * 2.6).toFixed(2) },
-      /* Формата носи разстоянието: колкото по-встрани е денят, толкова
-         по-надолу пада, толкова по-малък и по-блед е. */
-      style: {
-        transform: `translate(-50%, 0) translate(${(R * Math.sin(rad(theta))).toFixed(2)}px, ${(R * (1 - Math.cos(rad(theta)))).toFixed(2)}px) scale(${(1 - away * 0.34).toFixed(3)})`,
-        /* Бъдещето е по-бледо, но не изключено: то е план, не грешка.
-           Избледняването расте с разстоянието, а не е постоянно — денят в
-           горната точка трябва да се чете еднакво добре, независимо дали е
-           вчерашен или утрешен. */
-        opacity: (1 - away * 0.62) * (future ? 1 - away * 0.45 : 1),
-        zIndex: 10 - Math.round(Math.abs(theta)),
-      },
+      style: { transform: g.transform, opacity: g.opacity, zIndex: g.zIndex },
+      dowStyle: { opacity: g.dow },
     })
   }
 
@@ -191,10 +242,12 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
         {/* Отметката, която казва къде е „сега" — дъгата се върти под нея. */}
         <span className={styles.arcMark} aria-hidden="true" />
 
-        {days.map(d => (
+        {days.map((d, k) => (
           <button
             key={d.iso}
             type="button"
+            ref={el => { dayRefs.current[k] = el }}
+            data-future={d.future ? '1' : '0'}
             className={[
               styles.arcDay,
               d.i === 0 ? styles.arcDayOn : '',
@@ -210,7 +263,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth }) 
         ))}
       </div>
 
-      <button type="button" className={styles.arcMonth} onClick={onOpenMonth}>
+      <button type="button" className={styles.arcMonth} ref={monthRef} onClick={onOpenMonth}>
         {shift(selectedDate, Math.round(offset)).toLocaleDateString(loc(), { month: 'long', year: 'numeric' })}
       </button>
       <span className={styles.srOnly}>{label}</span>
