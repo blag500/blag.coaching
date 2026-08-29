@@ -158,6 +158,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             targets={targets}
             kcalBurned={totalKcalBurned}
             eatBack={!!profile?.eat_back_calories}
+            animateKey={selectedDate}
           />
           <FoodSearch
             onAdd={addEntryMeal}

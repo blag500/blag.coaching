@@ -1,4 +1,5 @@
 ﻿.wrap {
+  composes: arrive d3 from '../../styles/arrive.module.css';
   margin-bottom: 20px;
 }
 

@@ -1,4 +1,5 @@
 ﻿.wrap {
+  composes: arrive d1 from '../../styles/arrive.module.css';
   position: relative;
   margin-bottom: 14px;
 }

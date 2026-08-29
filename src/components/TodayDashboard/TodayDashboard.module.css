@@ -21,6 +21,8 @@
 
 /* ── Cards ── */
 .card {
+  composes: arrive glint from '../../styles/arrive.module.css';
+
   position: relative;
   overflow: hidden;
   background: var(--panel-bg);
@@ -31,7 +33,6 @@
   flex-direction: column;
   gap: 10px;
   box-shadow: var(--panel-shadow);
-  animation: cardIn 400ms var(--ease-out) both;
 }
 
 /* The specular — a soft blown highlight sitting off the top-left corner, the
@@ -48,45 +49,10 @@
   pointer-events: none;
 }
 
-/* The glint — one sweep as the card arrives, then gone. */
-.card::after {
-  content: '';
-  position: absolute;
-  top: -60%;
-  bottom: -60%;
-  width: 42%;
-  left: -60%;
-  background: linear-gradient(100deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.055) 45%,
-    rgba(255, 255, 255, 0.10) 50%,
-    rgba(255, 255, 255, 0.055) 55%,
-    transparent 100%);
-  transform: skewX(-18deg);
-  pointer-events: none;
-  animation: glint 1100ms var(--ease-out) both;
-  animation-delay: inherit;
-}
-
-@keyframes glint {
-  from { left: -60%; opacity: 0; }
-  25%  { opacity: 1; }
-  to   { left: 130%; opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card::after { animation: none; opacity: 0; }
-}
-
 .card:nth-child(1) { animation-delay: 40ms;  }
 .card:nth-child(2) { animation-delay: 100ms; }
 .card:nth-child(3) { animation-delay: 160ms; }
 .card:nth-child(4) { animation-delay: 220ms; }
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 .cardRow {
   display: flex;
@@ -511,6 +477,7 @@
 }
 
 .metricCard {
+  composes: arrive from '../../styles/arrive.module.css';
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
@@ -523,7 +490,6 @@
   -webkit-tap-highlight-color: transparent;
   text-align: left;
   transition: border-color 0.15s;
-  animation: cardIn 400ms var(--ease-out) both;
 }
 
 .metricCard:active {

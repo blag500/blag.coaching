@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { isProtected } from '../../utils/gestures'
 import { PaneProvider } from './PaneContext'
 import styles from './SwipePager.module.css'
@@ -35,10 +35,10 @@ const GLIDE       = 420    // ms to finish or undo the journey
  * At the first tab there is no page to the left, so dragging that way pulls the
  * side navigation out instead.
  */
-export default function SwipePager({
+function SwipePager({
   order, active, onChange, render, enabled = true,
   onEdgePull, onEdgeEnd,
-}) {
+}, ref) {
   const hostRef = useRef(null)
   const curRef  = useRef(null)
   const incRef  = useRef(null)
@@ -52,7 +52,11 @@ export default function SwipePager({
     document.body.append(curChrome, incChrome)
     return () => { curChrome.remove(); incChrome.remove() }
   }, [curChrome, incChrome])
-  // Which neighbour is mounted: -1 for the tab on the left, +1 for the right.
+  // Which page is mounted next to this one, as a signed distance in tabs. A
+  // swipe only ever reveals ±1; a tap on the bar can be three tabs away, and
+  // the page it names still arrives from its own side — the ones in between
+  // are not passed through, the same way a book opens at a page rather than
+  // riffling to it.
   const [reveal, setReveal] = useState(0)
 
   const idx = order.indexOf(active)
@@ -100,7 +104,7 @@ export default function SwipePager({
   // its own. Placing it in a layout effect puts it off-screen before the frame
   // is painted, instead of letting it flash across the middle of the display.
   useLayoutEffect(() => {
-    if (reveal !== 0) place(offset.current, reveal, false)
+    if (reveal !== 0) place(offset.current, Math.sign(reveal), false)
   }, [reveal])
 
   /** The slide has landed; adopt the new tab in the same paint. */
@@ -125,6 +129,46 @@ export default function SwipePager({
     // would be the same move played twice.
     if (target) onChange(target, { instant: true })
   }
+
+  /**
+   * Натиснат таб.
+   *
+   * Дотук натискането само сменяше страницата и оставяше новата да изплува
+   * на място, докато React я сглобява и вдига заявките ѝ — движение и работа
+   * в един и същи кадър, затова се късаше. Тук ходът е същият, който прави
+   * суайпът: двете страници тръгват заедно, старата излиза, новата влиза, и
+   * чак когато пътуването свърши, табът се сменя. Разликата е само откъде
+   * идва бутането — от пръст или от бутон.
+   *
+   * Връща дали е поело хода; ако не, викащият си остава с изплуването.
+   */
+  function glideTo(tab) {
+    const l = live.current
+    const target = l.order.indexOf(tab)
+    if (!l.enabled || target === -1 || l.idx === -1 || target === l.idx) return false
+    /* Тече пътуване: вторият натиск се преглъща, вместо да го разцепи по
+       средата. Четиристотин милисекунди мълчание са по-малкото зло от две
+       страници, които се разминават. */
+    if (settling.current) return true
+    if (!hostRef.current) return false
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false
+
+    const delta = target - l.idx
+    const dir   = Math.sign(delta)
+    setReveal(delta)
+    /* Един кадър, за да успее React да монтира новата страница и слоят отдолу
+       да я сложи извън екрана. Да я пуснем да пътува в същия кадър, в който
+       се появява, значи да тръгне от където и да е. */
+    requestAnimationFrame(() => {
+      if (!incRef.current) return
+      settling.current  = true
+      commitRef.current = tab
+      place(-dir * window.innerWidth, dir, true)
+    })
+    return true
+  }
+
+  useImperativeHandle(ref, () => ({ glideTo }), [])
 
   useEffect(() => {
     const host = hostRef.current
@@ -286,3 +330,5 @@ export default function SwipePager({
     </div>
   )
 }
+
+export default forwardRef(SwipePager)

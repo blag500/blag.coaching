@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './NutritionProgress.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
@@ -15,13 +16,34 @@ const MACROS = [
 const R  = 46          // ring radius
 const SW = 10          // stroke width
 const C  = 2 * Math.PI * R   // circumference ≈ 289.03
+const DRAW_MS = 750          // колко трае изчертаването на пръстена
 
 // Gradient and filter ids are global to the document, so two of these on one
 // screen would quietly share — and steal — each other's definitions.
+function stillPreferred() {
+  return typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+}
+
 export default function NutritionProgress({
-  totals, targets, kcalBurned = 0, eatBack = false, idBase = 'np',
+  totals, targets, kcalBurned = 0, eatBack = false, idBase = 'np', animateKey = '',
 }) {
   const { t } = useSettings()
+
+  /* Пръстенът се изчертава, вместо да го има.
+     Дъгата, която тръгва от нула и стига до днешното, казва „ето докъде си
+     стигнал" — нарисуваната отдавна казва само „толкова е". Един кадър в
+     нула, после преходът: дължините на щрихите се анимират от браузъра, а
+     не от нас, така че рисуването не струва нито един рендер.
+     Тръгва наново при смяна на деня, защото това е нов ден, не нова стойност
+     на същия. */
+  const [drawn, setDrawn] = useState(() => stillPreferred())
+  useEffect(() => {
+    if (stillPreferred()) { setDrawn(true); return }
+    setDrawn(false)
+    const id = requestAnimationFrame(() => setDrawn(true))
+    return () => cancelAnimationFrame(id)
+  }, [animateKey])
   const kcalLogged = totals.kcal  || 0
   const kcalTarget = (eatBack && kcalBurned > 0)
     ? (targets.kcal || 0) + kcalBurned
@@ -36,7 +58,7 @@ export default function NutritionProgress({
   const macroTotal = pCal + cCal + fCal || 1
 
   // Each segment occupies a proportional slice of the kcalPct arc
-  const totalArc = kcalPct * C
+  const totalArc = drawn ? kcalPct * C : 0
   const pArc     = (pCal / macroTotal) * totalArc
   const cArc     = (cCal / macroTotal) * totalArc
   const fArc     = (fCal / macroTotal) * totalArc
@@ -49,6 +71,33 @@ export default function NutritionProgress({
   ]
 
   const kcalPctDisplay = Math.round(kcalPct * 100)
+
+  /* Числото се навива заедно с дъгата. Пише се направо в елемента, кадър по
+     кадър: през състояние това би значило целият донът наново шейсет пъти в
+     секунда, за да се смени един надпис. */
+  const kcalRef = useRef(null)
+  const pctRef  = useRef(null)
+  useEffect(() => {
+    const a = kcalRef.current
+    const b = pctRef.current
+    if (!a || !b) return
+    if (stillPreferred()) {
+      a.textContent = kcalLogged
+      b.textContent = `${kcalPctDisplay}%`
+      return
+    }
+    let frame = 0
+    const t0 = performance.now()
+    const tick = now => {
+      const p = Math.min((now - t0) / DRAW_MS, 1)
+      const e = 1 - Math.pow(1 - p, 3)
+      a.textContent = Math.round(kcalLogged * e)
+      b.textContent = `${Math.round(kcalPctDisplay * e)}%`
+      if (p < 1) frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [animateKey, kcalLogged, kcalPctDisplay])
 
   return (
     <div className={styles.wrap}>
@@ -81,6 +130,7 @@ export default function NutritionProgress({
                   seg.arc > 0.3 && (
                     <circle
                       key={`glow-${seg.key}`}
+                      className={styles.seg}
                       cx="60" cy="60" r={R}
                       fill="none"
                       stroke={seg.color}
@@ -123,6 +173,7 @@ export default function NutritionProgress({
                 seg.arc > 0.3 && (
                   <circle
                     key={seg.key}
+                    className={styles.seg}
                     cx="60" cy="60" r={R}
                     fill="none"
                     stroke={seg.color}
@@ -162,7 +213,8 @@ export default function NutritionProgress({
               fill={kcalOver ? '#ef4444' : 'var(--text)'}
               fontSize="22"
               fontFamily="var(--font-heading)"
-              letterSpacing="1">
+              letterSpacing="1"
+              ref={kcalRef}>
               {kcalLogged}
             </text>
             <text x="60" y="63"
@@ -183,7 +235,8 @@ export default function NutritionProgress({
               textAnchor="middle"
               fill={kcalOver ? '#ef4444' : 'var(--muted)'}
               fontSize="9"
-              fontFamily="var(--font-body)">
+              fontFamily="var(--font-body)"
+              ref={pctRef}>
               {kcalPctDisplay}%
             </text>
           </svg>
@@ -231,7 +284,7 @@ export default function NutritionProgress({
                   <div
                     className={styles.fill}
                     style={{
-                      width: `${pct}%`,
+                      width: `${drawn ? pct : 0}%`,
                       background: over ? '#ef4444' : m.color,
                       boxShadow: over ? 'none' : `0 0 6px ${m.color}55`,
                     }}

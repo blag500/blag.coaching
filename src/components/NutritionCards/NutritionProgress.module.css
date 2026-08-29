@@ -1,4 +1,5 @@
 .wrap {
+  composes: arrive glint d2 from '../../styles/arrive.module.css';
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
@@ -140,4 +141,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Дъгите растат сами. Дължината на щриха е анимируема, така че браузърът
+   поема изчертаването и не ни струва рендери. */
+.seg {
+  transition: stroke-dasharray 750ms var(--ease-out), stroke-dashoffset 750ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seg { transition: none; }
 }

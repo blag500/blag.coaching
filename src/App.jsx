@@ -59,6 +59,7 @@ function AppShell() {
   const [splash, setSplash] = useState(true)
   const [activeTab, setActiveTab] = useState('feed')
   const [slideDir, setSlideDir] = useState('up')
+  const pagerRef = useRef(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [showSupplementBanner, setShowSupplementBanner] = useState(false)
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('blag_welcome_seen'))
@@ -135,6 +136,11 @@ function AppShell() {
     const prevIdx = NAV_ORDER.indexOf(activeTab)
     const newIdx  = NAV_ORDER.indexOf(newTab)
     if (prevIdx !== -1 && newIdx !== -1 && prevIdx !== newIdx) {
+      /* И двете са в лентата — значи страницата може да пропътува разстоянието
+         вместо да изплува на място. Същият ход като при суайп, само че бутнат
+         от бутон. Ако пейджърът не го поеме (отворено чекмедже, изключени
+         анимации), остава изплуването. */
+      if (!drawerOpen && pagerRef.current?.glideTo(newTab)) return
       setSlideDir(newIdx > prevIdx ? 'right' : 'left')
     } else {
       setSlideDir('up')
@@ -321,6 +327,7 @@ function AppShell() {
       <NotificationPrompt />
       <main className={styles.content}>
         <SwipePager
+          ref={pagerRef}
           order={NAV_ORDER}
           active={activeTab}
           onChange={navigate}

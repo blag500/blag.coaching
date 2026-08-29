@@ -1,0 +1,64 @@
+/* Пристигането.
+ *
+ * Един жест, споделен от картите в приложението: изплуват отдолу и през тях
+ * минава един отблясък, веднъж. Роден е в таблото ДНЕС и там си остана —
+ * оттам идва усещането, че страницата е жива, а не че е нарисувана предварително.
+ * Живее на едно място, защото две копия на един жест се разминават още при
+ * първата поправка и после никой не помни кое е било правилното.
+ */
+
+.arrive {
+  animation: arriveIn 400ms var(--ease-out) both;
+}
+
+@keyframes arriveIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Отблясъкът — отсечка светлина, която минава напряко, докато картата идва,
+   и после я няма. Блясък, който се върти постоянно, се превръща в тик на
+   екран, който се отваря по двайсет пъти на ден. */
+.glint {
+  position: relative;
+  overflow: hidden;
+}
+.glint::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  width: 42%;
+  left: -60%;
+  background: linear-gradient(100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.055) 45%,
+    rgba(255, 255, 255, 0.10) 50%,
+    rgba(255, 255, 255, 0.055) 55%,
+    transparent 100%);
+  transform: skewX(-18deg);
+  pointer-events: none;
+  animation: glintSweep 1100ms var(--ease-out) both;
+  /* Наследява закъснението на картата, за да минава по нея, когато тя идва,
+     а не докато още я няма. */
+  animation-delay: inherit;
+}
+
+@keyframes glintSweep {
+  from { left: -60%; opacity: 0; }
+  25%  { opacity: 1; }
+  to   { left: 130%; opacity: 0; }
+}
+
+/* Стъпалата. Картите не идват накуп — една след друга, колкото да се усети
+   ред, не колкото да се чака. Стоят след .arrive, защото съкратеният запис
+   там нулира закъснението и последното правило има думата. */
+.d1 { animation-delay: 40ms;  }
+.d2 { animation-delay: 100ms; }
+.d3 { animation-delay: 160ms; }
+.d4 { animation-delay: 220ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .arrive { animation: none; }
+  .glint::after { animation: none; opacity: 0; }
+}

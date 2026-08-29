@@ -6,3 +6,4 @@ dist/
 
 # Playwright MCP scratch output (snapshots, console logs, screenshots)
 .playwright-mcp/
+test-results/
