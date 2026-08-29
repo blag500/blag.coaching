@@ -283,3 +283,49 @@ export function blockReadiness(block, recovery, lastDoneByLabel = {}, now = Date
     hours: Math.round(hours),
   }
 }
+
+/**
+ * Кога групата на един блок е пипана последно — и от кой блок.
+ *
+ * Това е въпросът, на който процентът се преструваше, че отговаря.
+ * „96% възстановена" не различаваше Горна А от Горна Б: и двете се свеждат
+ * до широката група „горна", групата има един часовник, и двата блока по
+ * определение получаваха едно и също число. Метрика, която трябва да помогне
+ * при избор между два блока, връщаше един отговор и за двата.
+ *
+ * Фактът е по-полезен и е проверим: „ГОРНА е тренирана преди 2 дни — Горна Б".
+ * Оттам човекът сам решава дали е достатъчно, вместо да му се твърди
+ * измерване, което никой не е правил.
+ *
+ * Връща null, когато групата не е пипана или последното пипане е самият блок
+ * — тогава „последно правен преди N дни" вече го е казало и повтарянето само
+ * запълва ред.
+ */
+export function groupLastTouch(block, workouts = [], groupsByLabel = null, exerciseMap = null) {
+  if (!block) return null
+  const groups = new Set(resolveGroups(block, exerciseMap))
+  if (!groups.size) return null
+
+  // Основната група, по същия ред както при готовността: етикетът води.
+  const fromLabel = classifyMuscle(block.label)
+  const primary =
+    (fromLabel && fromLabel !== 'full' && groups.has(fromLabel)) ? fromLabel :
+    (Array.isArray(block.groups) && block.groups.length)
+      ? (tagToBroad(block.groups[0]) || [...groups][0])
+      : [...groups][0]
+  if (!primary) return null
+
+  let best = null
+  for (const w of workouts) {
+    const gs = groupsByLabel?.[w.block_label]?.length
+      ? groupsByLabel[w.block_label]
+      : (() => { const g = classifyMuscle(w.block_label); return g && g !== 'full' ? [g] : [] })()
+    if (!gs.includes(primary)) continue
+    if (!best || w.completed_date > best.date) {
+      best = { date: w.completed_date, label: w.block_label }
+    }
+  }
+
+  if (!best || best.label === block.label) return null
+  return { group: primary, date: best.date, label: best.label }
+}

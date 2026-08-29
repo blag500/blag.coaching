@@ -18,7 +18,7 @@ import MonthCalendar from './MonthCalendar'
 import TrainingDashboard from './TrainingDashboard'
 import SessionHistory from './SessionHistory'
 import ExerciseStats from './ExerciseStats'
-import { muscleRecovery, blockReadiness, RECOVERY_H, resolveGroups, GROUP_COLORS, GROUP_LABEL_KEYS } from '../../utils/recovery'
+import { muscleRecovery, blockReadiness, groupLastTouch, resolveGroups, GROUP_COLORS, GROUP_LABEL_KEYS } from '../../utils/recovery'
 import { trainingStats, agoLabel, bigNum, iso, dayDate, monthsShort, sessionTitle } from '../../utils/training'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Training.module.css'
@@ -341,8 +341,12 @@ export default function Training({ onMenuOpen }) {
   const selectedBlock = blocks ? (blocks.find(b => b.id === selectedId) ?? blocks[0]) : null
   // Where the block on screen stands, so the page can justify its suggestion —
   // and say so plainly when you have picked something that has not rested.
-  const selRec = selectedBlock ? blockReadiness(selectedBlock, recovery, lastDone) : null
-  const selHours = selRec?.group ? recovery[selRec.group]?.hours : null
+  const selTouch = selectedBlock && !isRestBlock(selectedBlock)
+    ? groupLastTouch(selectedBlock, enrichedCompletions, groupsByLabel, exerciseMap)
+    : null
+  // Три и нагоре по скалата за схванатост вече не е тренировка, а щета —
+  // същият праг, на който sorenessDamping спира да мълчи.
+  const soreWarn = (soreness ?? 0) >= 3
 
   // The weekly goal is what the client already said at intake. Falling back to
   // the number of trainable blocks means a four-day split asks for four days,
@@ -593,27 +597,23 @@ export default function Training({ onMenuOpen }) {
         </div>
 
         <div className={styles.blockContent}>
-          {/* One line of reasoning. The muscle percentages have existed on the
-              Today card for a while without ever being connected to anything;
-              this is the decision they were always describing. */}
-          {selRec && selRec.basis !== 'never' && !rest && (
-            <div className={[
-              styles.recoveryNote,
-              selRec.pct >= 80 ? styles.recoveryReady : styles.recoveryWait,
-            ].join(' ')}>
+          {/* Един ред, и той е факт, а не оценка.
+              Крепатурата е думата на самия човек и бие всичко: часовник, който
+              не чува „схванат съм", е причината хората да спрат да вярват на
+              тези числа. Иначе — кога групата е пипана последно и от кой блок.
+              Процентът, който стоеше тук, твърдеше измерване, което го няма:
+              линеен часовник от константа, без обем, без интензитет, без
+              история, и даващ едно и също число на два различни блока. */}
+          {!rest && (soreWarn || selTouch) && (
+            <div className={`${styles.recoveryNote} ${styles.recoveryWait}`}>
               <span className={styles.recoveryDot} />
-              {selRec.pct >= 80
-                ? t('tr.recReady')
-                : selRec.basis === 'block'
-                  /* No muscle group was recognised in the label, so the claim is
-                     narrowed to what is actually known: when this block itself
-                     was last trained. */
-                  ? t('tr.recBlock', { h: selRec.hours, pct: selRec.pct })
-                  : recovery[selRec.group]?.damped && (selHours ?? 0) >= RECOVERY_H[selRec.group]
-                    /* The clock says rested, the check-in says otherwise. Saying
-                       which of the two is talking matters more than the number. */
-                    ? t('tr.recSore', { pct: selRec.pct })
-                    : t('tr.recWait', { h: Math.max(1, Math.round(RECOVERY_H[selRec.group] - (selHours ?? 0))), pct: selRec.pct })}
+              {soreWarn
+                ? t('tr.recSore')
+                : t('tr.groupTouched', {
+                    group: t(GROUP_LABEL_KEYS[selTouch.group]),
+                    ago: agoLabel(t, selTouch.date),
+                    block: selTouch.label,
+                  })}
             </div>
           )}
 
@@ -773,19 +773,27 @@ export default function Training({ onMenuOpen }) {
               wait their turn. Tap a chapter to open the session view. */}
           <ol className={styles.splitIndex}>
             {blocks.map((block, i) => {
-              const rec  = blockReadiness(block, recovery, lastDone)
               const last = lastDone[block.label]
               const isDue = dueBlock?.id === block.id
               const isRest = isRestBlock(block)
               const started = startedId != null && String(block.id) === startedId
+              /* Факт вместо процент. „96% възстановена" даваше едно и също
+                 число на Горна А и Горна Б — те делят една широка група, а
+                 групата има един часовник. Тук пише кога групата е пипана и
+                 от кого; кой блок кога е ред остава работа на ротацията. */
+              const touch = isRest ? null : groupLastTouch(block, enrichedCompletions, groupsByLabel, exerciseMap)
               const meta = isRest
                 ? t('tr.metaRest')
                 : last
-                  ? t('tr.metaLast', {
-                      ago: agoLabel(t, last),
-                      state: rec.pct >= 80 ? t('tr.stateReady') : t('tr.statePct', { pct: rec.pct }),
-                    })
-                  : (rec.pct >= 80 ? t('tr.metaReadyNew') : t('tr.metaNew'))
+                  ? (touch
+                      ? t('tr.metaLastGroup', {
+                          ago: agoLabel(t, last),
+                          group: t(GROUP_LABEL_KEYS[touch.group]),
+                          gago: agoLabel(t, touch.date),
+                          block: touch.label,
+                        })
+                      : t('tr.metaLastOnly', { ago: agoLabel(t, last) }))
+                  : t('tr.metaNew')
               return (
                 <li
                   key={block.id}
@@ -838,15 +846,18 @@ export default function Training({ onMenuOpen }) {
             </span>
             <h2 className={styles.todayTitle}>{selectedBlock?.label ?? t('tr.rest')}</h2>
 
-            {selRec && selRec.basis !== 'never' && (
-              <span className={[
-                styles.todayState,
-                selRec.pct >= 80 ? styles.todayReady : styles.todayWait,
-              ].join(' ')}>
+            {/* Единственото, което си струва да се каже тук: групата, която
+                този блок натоварва, кога е пипана последно и от кой блок. Ако
+                последното пипане е самият той, редът мълчи — горе вече пише
+                кога е бил. */}
+            {selTouch && (
+              <span className={`${styles.todayState} ${styles.todayWait}`}>
                 <span className={styles.recoveryDot} />
-                {selRec.pct >= 80
-                  ? t('tr.recReady')
-                  : t('tr.recPct', { pct: selRec.pct })}
+                {t('tr.groupTouched', {
+                  group: t(GROUP_LABEL_KEYS[selTouch.group]),
+                  ago: agoLabel(t, selTouch.date),
+                  block: selTouch.label,
+                })}
               </span>
             )}
           </section>
