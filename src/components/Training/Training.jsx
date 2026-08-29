@@ -113,6 +113,25 @@ const BLOCK_ICONS = {
  * (`session`), and the record is a screen of its own (`history`) that opens
  * into a single lift's whole history (`exercise`).
  */
+/**
+ * Знакът в бутона за отбелязване.
+ *
+ * Кръгче, докато денят не е затворен, и отметка, която се изчертава в мига,
+ * в който се затвори. Отметката беше буква в самия надпис — „✓ Маркирай като
+ * готово" — тоест стоеше там и преди да има какво да отмята, и не можеше да
+ * направи нищо в момента, който има значение. Знакът, който се рисува, е
+ * единственото място в целия ход, където приложението казва „добре, свърши
+ * го", и си струва да се види.
+ */
+function MarkGlyph({ done }) {
+  return (
+    <svg className={styles.markGlyph} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" className={styles.markRing} />
+      {done && <path d="M7 12.4 L10.6 16 L17 8.6" className={styles.markTick} />}
+    </svg>
+  )
+}
+
 export default function Training({ onMenuOpen }) {
   const { t, lang } = useSettings()
   const MS = monthsShort(t)
@@ -583,13 +602,16 @@ export default function Training({ onMenuOpen }) {
             disabled={marking || alreadyMarked}
             type="button"
           >
-            {alreadyMarked || justMarked
-              ? (logDate === todayStr ? t('tr.markedToday') : t('tr.markedDate', { date: shortDate(logDate) }))
-              : marking
-              ? '...'
-              : rest
-              ? (logDate === todayStr ? t('tr.markRest') : t('tr.markRestDate', { date: shortDate(logDate) }))
-              : (logDate === todayStr ? t('tr.markDone') : t('tr.markDoneDate', { date: shortDate(logDate) }))}
+            <MarkGlyph done={alreadyMarked || justMarked} />
+            <span>
+              {alreadyMarked || justMarked
+                ? (logDate === todayStr ? t('tr.markedToday') : t('tr.markedDate', { date: shortDate(logDate) }))
+                : marking
+                ? '...'
+                : rest
+                ? (logDate === todayStr ? t('tr.markRest') : t('tr.markRestDate', { date: shortDate(logDate) }))
+                : (logDate === todayStr ? t('tr.markDone') : t('tr.markDoneDate', { date: shortDate(logDate) }))}
+            </span>
           </button>
           {alreadyMarked && (
             <button className={styles.unmarkBtn} onClick={handleUnmarkDone} disabled={marking} type="button">
@@ -807,9 +829,8 @@ export default function Training({ onMenuOpen }) {
                     }}
                     disabled={marking || already}
                   >
-                    {done
-                      ? t('tr.logged')
-                      : marking ? '...' : t('tr.logIt')}
+                    <MarkGlyph done={done} />
+                    <span>{done ? t('tr.logged') : marking ? '...' : t('tr.logIt')}</span>
                   </button>
                 )
               })()}

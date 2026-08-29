@@ -298,55 +298,116 @@
   opacity: 0.7;
 }
 
+/* Бутонът за отбелязване разказва три състояния и трите трябва да се различат
+   от един поглед: нищо не е логнато (тих контур — бутонът е там, но не вика),
+   всичко е логнато (злато, това е моментът), денят е затворен (зелено, спряло).
+   Дотук вторият и третият бяха почти един и същ правоъгълник, а затвореният ден
+   беше плътно #3a7a3a — тухлен зелен, който не идва отникъде в палитрата. */
 .markDoneBtn {
   width: 100%;
   margin-top: 14px;
-  padding: 15px;
-  /* An outline until the session is actually logged — see .markDoneReady. A
-     filled gold bar was the loudest thing on the screen while it was still
-     only an administrative button. */
+  min-height: 54px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   background: transparent;
-  border: 1px solid rgba(var(--accent-rgb), 0.35);
-  border-radius: var(--radius);
-  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.26);
+  border-radius: var(--r-xl);
+  color: var(--muted);
   font-family: var(--font-heading);
-  font-size: 15px;
-  letter-spacing: 0.1em;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 0.15s, background 0.25s;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    background 260ms var(--ease-out),
+    border-color 260ms var(--ease-out),
+    color 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out),
+    transform 140ms var(--ease-out);
 }
 
-.markDoneBtn:active:not(:disabled) { opacity: 0.85; }
+.markDoneBtn:active:not(:disabled) { transform: scale(0.985); }
 .markDoneBtn:disabled { cursor: default; }
 
-.markDoneDone {
-  background: #3a7a3a;
-  color: #b8f0b8;
+/* Всичко е вдигнато — остава едно натискане. Единственият момент, в който този
+   бутон има право да е най-силното нещо на екрана. */
+.markDoneReady {
+  background: rgba(var(--accent-rgb), 0.14);
+  border-color: rgba(var(--accent-rgb), 0.6);
+  color: var(--accent);
+  box-shadow: 0 0 26px -10px rgba(var(--accent-rgb), 0.75);
 }
 
+/* Затворен ден. Спряло, не празнуващо: работата е свършена и бутонът се
+   отдръпва, вместо да продължи да свети. */
+.markDoneDone,
+.markDoneReady.markDoneDone {
+  background: rgba(var(--ok-rgb), 0.12);
+  border-color: rgba(var(--ok-rgb), 0.42);
+  color: var(--ok);
+  box-shadow: none;
+}
+
+.markGlyph {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+.markRing {
+  opacity: 0.42;
+  transition: opacity 260ms var(--ease-out);
+}
+.markDoneDone .markRing { opacity: 0.7; }
+
+/* Отметката се изчертава. Дължината 22 е с малко над самата чертa, за да няма
+   остатък, който да остане нарисуван преди началото на хода. */
+.markTick {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  animation: tickIn 420ms var(--ease-out) 80ms forwards;
+}
+
+@keyframes tickIn {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markTick { animation: none; stroke-dashoffset: 0; }
+}
+
+/* Отмяната е поправка на грешка, не действие от същия ред. Затова е ред текст
+   под бутона, а не втора лента със същата тежест — червено каре под зелено
+   каре изглежда като избор между две неща, а тук няма избор. */
 .unmarkBtn {
   display: block;
-  width: 100%;
-  margin-top: 8px;
-  padding: 10px;
+  margin: 10px auto 0;
+  padding: 6px 12px;
   background: none;
-  border: 1px solid rgba(255, 100, 100, 0.25);
-  border-radius: var(--radius);
-  color: rgba(255, 120, 120, 0.7);
+  border: none;
+  color: var(--muted);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 11.5px;
   letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(var(--red-rgb), 0.35);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
   -webkit-tap-highlight-color: transparent;
+  transition: color 150ms var(--ease-out);
 }
 
-.unmarkBtn:active:not(:disabled) {
-  border-color: rgba(255, 100, 100, 0.55);
-  color: rgba(255, 120, 120, 1);
-}
-
+.unmarkBtn:active:not(:disabled) { color: var(--red); }
 .unmarkBtn:disabled { opacity: 0.4; cursor: default; }
 
 /* One line of reasoning above the log: whether the muscles this block hits
@@ -679,11 +740,6 @@
 
 /* Once every exercise in the block is on record, the button stops being
    paperwork and becomes the obvious last action. */
-.markDoneReady {
-  background: rgba(var(--accent-rgb), 0.16);
-  border-color: rgba(var(--accent-rgb), 0.7);
-}
-
 /* ── Home: what to train ─────────────────────────────────────────────────────
    The one card that is a decision rather than a report. It sits above the
    dashboard because the dashboard exists to justify it, not the other way
