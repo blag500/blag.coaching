@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
-import { usePrepProtocol } from '../../hooks/usePrepProtocol'
+import { usePrepProtocol, todayStr, dayFromIso, addDays, bmrFor, tdeeFor } from '../../hooks/usePrepProtocol'
 import styles from './PrepProtocol.module.css'
 import { loc } from '../../utils/locale'
 
 // ── helpers ──────────────────────────────────────────────────────────
-function todayStr() { return new Date().toISOString().slice(0, 10) }
 
 // Contest prep formula: 2.5g protein/kg to preserve muscle during cut
 // Fat: 26% of kcal (supports hormonal balance — testosterone production needs dietary fat)
@@ -20,24 +19,27 @@ function macrosForKcal(kcal, weightKg) {
 
 function fmtDate(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })
+  return dayFromIso(iso).toLocaleDateString(loc(), { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 function fmtShort(iso) {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' })
+  return dayFromIso(iso).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' })
 }
 
-// Get Mon–Sun of current week including past days
-function currentWeekDays(weekStart) {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart)
-    d.setDate(d.getDate() + i)
-    return d.toISOString().slice(0, 10)
-  })
+/** Седемте дни на седмицата, каквато е тя — а тя не започва в понеделник. */
+function weekDaysFrom(weekStart) {
+  return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 }
 
-const DAY_LABEL_KEYS = ['daysMon.0','daysMon.1','daysMon.2','daysMon.3','daysMon.4','daysMon.5','daysMon.6']
+/* Буквата на деня се чете от самата дата, не от мястото в реда.
+   Дотук клетките бяха надписани ПН…НД по индекс, а седмиците на протокола
+   тръгват от деня, в който е започната подготовката. Започнеш ли в сряда,
+   първата клетка е сряда и пишеше „ПН". Отделно променливата се казваше
+   DAY_LABELS, а дефинираната беше DAY_LABEL_KEYS — оттам гърмеше екранът. */
+function dowKey(iso) {
+  return `daysMon.${(dayFromIso(iso).getDay() + 6) % 7}`
+}
 
 // ── Setup form ───────────────────────────────────────────────────────
 function PrepSetup({ onSave, profile }) {
@@ -55,18 +57,8 @@ function PrepSetup({ onSave, profile }) {
 
   function set(k, v) { setForm(p => ({ ...p, [k]: v })) }
 
-  // Auto-compute TDEE from profile if possible
-  function calcTDEE() {
-    const { gender, age, height_cm, weight_kg, activity_level } = profile ?? {}
-    if (!gender || !age || !height_cm || !weight_kg) return null
-    const bmr = gender === 'male'
-      ? 10 * weight_kg + 6.25 * height_cm - 5 * age + 5
-      : 10 * weight_kg + 6.25 * height_cm - 5 * age - 161
-    const mults = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9 }
-    return Math.round(bmr * (mults[activity_level] ?? 1.55))
-  }
-
-  const suggestedTDEE = calcTDEE()
+  // Една формула, споделена с протокола — две копия се разминават до месец.
+  const suggestedTDEE = tdeeFor(profile)
 
   async function handleSave(e) {
     e.preventDefault()
@@ -167,13 +159,12 @@ function PrepSetup({ onSave, profile }) {
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────
-function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onReforecast, profile, onApplyMacros }) {
+function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, profile, onApplyMacros }) {
   const { t } = useSettings()
   const today = todayStr()
   const [weightInput, setWeightInput]     = useState('')
   const [weightSaved, setWeightSaved]     = useState(false)
   const [showEnd,     setShowEnd]         = useState(false)
-  const [reforecastConfirm, setReforecastConfirm] = useState(false)
   const [notesMode,   setNotesMode]       = useState(false)
   const [macroApplied, setMacroApplied]   = useState(false)
   const [tdeeInput,    setTdeeInput]      = useState('')
@@ -207,7 +198,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
     setTimeout(() => setNotesSaved(false), 2000)
   }
 
-  const weekDays = cw ? currentWeekDays(cw.weekStart) : []
+  const weekDays = cw ? weekDaysFrom(cw.weekStart) : []
 
   return (
     <div className={styles.page}>
@@ -229,24 +220,40 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
         </p>
       </header>
 
-      {/* ── Reforecast banner ── */}
-      {plan?.reforecastNeeded && !reforecastConfirm && (
-        <div className={styles.reforecastBanner}>
-          <div className={styles.reforecastText}>
-            <strong>{t('pp.reforecastTitle')}</strong>
-            <span>
-              {t('pp.reforecastBody', { sign: plan.reforecastDiff > 0 ? '+' : '', diff: plan.reforecastDiff })}
-            </span>
+      {/* ── Темпо ──
+          Планът е запис: начертан е в началото и не се пипа, за да може
+          въпросът „бях ли в графика в трета седмица" да има отговор. Темпото е
+          сметка и се мени всеки ден: от последното мерене до целта, за дните,
+          които остават. Затова двете стоят едно до друго. */}
+      {plan?.pace && (
+        <section className={`${styles.card} ${styles.paceCard}`}>
+          <div className={styles.cardTitle}>{t('pp.pace')}</div>
+          <div className={styles.macroRow}>
+            <div className={styles.macroPill}>
+              <span className={styles.macroPillVal}>{plan.pace.kgLeft} {t('unit.kg')}</span>
+              <span className={styles.macroPillLabel}>{t('pp.paceLeft')}</span>
+            </div>
+            <div className={styles.macroPill}>
+              <span className={styles.macroPillVal}>{plan.pace.kgPerWeek}</span>
+              <span className={styles.macroPillLabel}>{t('pp.pacePerWeek')}</span>
+            </div>
+            {plan.pace.dailyKcal != null && (
+              <div className={styles.macroPill}>
+                <span className={`${styles.macroPillVal} ${styles.macroPillValAccent}`}>{plan.pace.dailyKcal}</span>
+                <span className={styles.macroPillLabel}>{t('pp.paceKcal')}</span>
+              </div>
+            )}
           </div>
-          <div className={styles.reforecastBtns}>
-            <button className={styles.reforecastYes} onClick={() => { onReforecast(); setReforecastConfirm(true) }} type="button">
-              {t('pp.yes')}
-            </button>
-            <button className={styles.reforecastNo} onClick={() => setReforecastConfirm(true)} type="button">
-              {t('pp.no')}
-            </button>
-          </div>
-        </div>
+          {plan.offBy != null && (
+            <p className={styles.paceNote}>
+              {t('pp.offBy', { sign: plan.offBy > 0 ? '+' : '', diff: plan.offBy })}
+            </p>
+          )}
+          {plan.kcalFloored && (
+            /* Аритметиката не знае, че под базовия обмен не се живее. */
+            <p className={styles.paceWarn}>{t('pp.kcalFloor', { n: plan.kcalFloored })}</p>
+          )}
+        </section>
       )}
 
       {/* ── This week card ── */}
@@ -277,13 +284,13 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
 
           {/* 7-day weigh-in grid */}
           <div className={styles.weekGrid}>
-            {weekDays.map((d, i) => {
+            {weekDays.map(d => {
               const entry  = weightLogs.find(w => w.date === d)
               const isPast = d <= today
               const isToday = d === today
               return (
                 <div key={d} className={`${styles.dayCell} ${isToday ? styles.dayCellToday : ''} ${!isPast ? styles.dayCellFuture : ''}`}>
-                  <span className={`${styles.dayLabel} ${isToday ? styles.dayCellDark : ''}`}>{DAY_LABELS[i]}</span>
+                  <span className={`${styles.dayLabel} ${isToday ? styles.dayCellDark : ''}`}>{t(dowKey(d))}</span>
                   <span className={`${styles.dayWeight} ${isToday ? styles.dayCellDark : ''}`}>{entry ? entry.kg : '·'}</span>
                 </div>
               )
@@ -310,9 +317,9 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
       {weekStats && (
         <section className={styles.card}>
             <div className={styles.statsRow}>
-            {weekStats.nutritionPct != null && (
+            {weekStats.onTargetDays != null && (
               <div className={styles.statBlock}>
-                <span className={styles.statVal}>{weekStats.nutritionPct}%</span>
+                <span className={styles.statVal}>{weekStats.onTargetDays}/{weekStats.loggedDays}</span>
                 <span className={styles.statLabel}>{t('pp.food')}</span>
               </div>
             )}
@@ -365,7 +372,12 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, onR
           <p className={styles.tdeeSetupNote}>{t('pp.weightSetupNote')}</p>
         ) : (
           (() => {
-            const m = macrosForKcal(plan.dailyKcal, profile.weight_kg)
+            /* Протеинът е 2.5 г на килограм — на кой килограм обаче. Полето в
+               профила е попълнено веднъж и стои; подготовката мери всяка
+               сутрин. Ако човек е свалил осем кила, старото поле иска двайсет
+               грама протеин, които вече не му трябват. */
+            const kg = plan.latestWeight ?? profile.weight_kg
+            const m = macrosForKcal(plan.dailyKcal, kg)
             return (
               <>
                 <div className={styles.macroRow}>
@@ -509,7 +521,7 @@ export default function PrepProtocol() {
   const { profile, updateProfile } = useAuth()
   const {
     prep, plan, weightLogs, weekStats, loading,
-    createPrep, updatePrep, endPrep, logMorningWeight, applyReforecast,
+    createPrep, updatePrep, endPrep, logMorningWeight,
   } = usePrepProtocol()
 
   async function handleApplyMacros({ calories, protein, carbs, fat }) {
@@ -536,7 +548,6 @@ export default function PrepProtocol() {
       weekStats={weekStats}
       onUpdate={{ updatePrep, _logWeight: logMorningWeight }}
       onEnd={endPrep}
-      onReforecast={applyReforecast}
       profile={profile}
       onApplyMacros={handleApplyMacros}
     />
