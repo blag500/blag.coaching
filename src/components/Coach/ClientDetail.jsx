@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
+import CheckinCompare from '../Checkin/CheckinCompare'
 import { supabase } from '../../lib/supabase'
 import { HABITS, defaultHabits } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
@@ -215,7 +216,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
       <div className={tab === 'chat' ? styles.bodyChat : styles.body}>
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
         {tab === 'chat'      && <ChatPage clientId={client.id} clientName={client.name || client.email} clientAvatarUrl={client.avatar_url} embedded />}
-        {tab === 'checkin'   && <CheckinTab clientId={client.id} />}
+        {tab === 'checkin'   && <CheckinTab clientId={client.id} female={client.gender === 'female'} />}
         {tab === 'sessions'  && <SessionsTab clientId={client.id} client={client} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
         {tab === 'lifts' && <LiftsTab clientId={client.id} />}
@@ -1572,8 +1573,12 @@ function SessionsTab({ clientId, client }) {
 
 function PhotoTimeline({ checkins, onPhotoClick }) {
   const { t } = useSettings()
+  /* Една поза през всички седмици — фронт релакс, а като няма, старата
+     единствена снимка. Лентата има смисъл само ако е една и съща поза: колаж
+     от различни ъгли не е прогрес, а албум. */
   const photos = [...checkins]
-    .filter(c => c.photo_url)
+    .map(c => ({ ...c, shot: c.photos?.front_relaxed ?? c.photo_url }))
+    .filter(c => c.shot)
     .sort((a, b) => a.date.localeCompare(b.date)) // oldest left → newest right
 
   if (photos.length === 0) return null
@@ -1589,9 +1594,9 @@ function PhotoTimeline({ checkins, onPhotoClick }) {
               key={c.id}
               type="button"
               className={`${styles.photoItem} ${isLatest ? styles.photoItemLatest : ''}`}
-              onClick={() => onPhotoClick(c.photo_url)}
+              onClick={() => onPhotoClick(c.shot)}
             >
-              <img src={c.photo_url} className={styles.photoImg} alt={c.date} />
+              <img src={c.shot} className={styles.photoImg} alt={c.date} />
               <span className={styles.photoDate}>
                 {new Date(c.date + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: 'short' })}
               </span>
@@ -1700,11 +1705,12 @@ function CheckinTrends({ checkins }) {
   )
 }
 
-function CheckinTab({ clientId }) {
+function CheckinTab({ clientId, female = false }) {
   const { t } = useSettings()
   const [checkins,  setCheckins]  = useState([])
   const [loading,   setLoading]   = useState(true)
   const [lightbox,  setLightbox]  = useState(null)
+  const [picked,    setPicked]    = useState(null)
 
   useEffect(() => {
     supabase
@@ -1719,8 +1725,33 @@ function CheckinTab({ clientId }) {
   if (loading) return <p className={styles.loading}>{t('cd.loading')}</p>
   if (checkins.length === 0) return <p className={styles.empty}>{t('cd.noCheckins')}</p>
 
+  /* Сравнението е първото нещо на екрана, защото е работата.
+     Списъкът от карти един под друг оставя треньора да държи миналата седмица
+     в главата си, докато чете тази — при петнайсет клиента по трийсет седмици
+     това е хиляда изваждания наум. */
+  const idx  = Math.max(0, checkins.findIndex(c => c.id === picked)) || 0
+  const cur  = checkins[idx] ?? checkins[0]
+  const prev = checkins[idx + 1] ?? null
+
   return (
     <div className={styles.checkinTab}>
+      {checkins.length > 1 && (
+        <div className={styles.checkinPicker}>
+          {checkins.slice(0, 12).map(c => (
+            <button
+              key={c.id}
+              type="button"
+              className={`${styles.checkinPick} ${c.id === cur.id ? styles.checkinPickOn : ''}`}
+              onClick={() => setPicked(c.id)}
+            >
+              {new Date(c.date + 'T12:00').toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' })}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <CheckinCompare current={cur} previous={prev} female={female} />
+
       <PhotoTimeline checkins={checkins} onPhotoClick={setLightbox} />
       <CheckinTrends checkins={checkins} />
       {checkins.map(c => (

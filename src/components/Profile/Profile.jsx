@@ -13,8 +13,8 @@ import UsernameField from './UsernameField'
 import Fold from './Fold'
 import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
-import FormCheckin from './FormCheckin'
 import ProgressPhotos from '../ProgressPhotos/ProgressPhotos'
+import { useCheckin } from '../../hooks/useCheckin'
 import WeeklySnapshot from './WeeklySnapshot'
 import AvatarCropper from './AvatarCropper'
 import AppHeader from '../AppHeader/AppHeader'
@@ -126,6 +126,8 @@ export default function Profile({ onMenuOpen, onNavigate }) {
      влизанията нарочно: който е бил в настройките сутринта, вечерта иска пак
      да види чашите вода, а не полето за смяна на парола. */
   const [seg, setSeg] = useState('today')
+  // Само знамето: снимката на седмицата не трябва на този екран.
+  const { due: checkinDue } = useCheckin(null, { withAuto: false })
 
   /* Дневното мерене се въвежда на картата в ДНЕС. Формулярът тук се показва
      само на този, който е махнал тази карта от таблото си — иначе един и същ
@@ -336,10 +338,17 @@ export default function Profile({ onMenuOpen, onNavigate }) {
 
       {seg === 'progress' && (<>
 
-      {/* Form check-in — daily action, lives at the top */}
-      <Fold id="checkin" title={t('profile.formCheckin')}>
-        <FormCheckin />
-      </Fold>
+      {/* Седмичният чекин е собствена страница: той е ритуал с ден и с две
+          страни, а не поле, което се дописва между другото. Тук стои входът. */}
+      <button
+        type="button"
+        className={`${styles.checkinLink} ${checkinDue ? styles.checkinLinkDue : ''}`}
+        onClick={() => onNavigate?.('checkin')}
+      >
+        <span className={styles.checkinLinkText}>{t('profile.formCheckin')}</span>
+        {checkinDue && <span className={styles.checkinLinkChip}>{t('ck.due')}</span>}
+        <span className={styles.checkinLinkGo} aria-hidden="true">›</span>
+      </button>
 
       {/* Progress photo timeline */}
       <Fold id="photos" title={t('profile.progressPhotos')}>

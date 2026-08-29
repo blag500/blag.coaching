@@ -1,0 +1,370 @@
+.page {
+  padding: 0 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.back {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.headText { display: flex; flex-direction: column; gap: 2px; }
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1.05;
+}
+
+.forDate {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tab {
+  padding: 9px 0;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.tabOn {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+}
+
+.card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  padding: 14px 16px 16px;
+}
+
+.cardTitle {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* Картата с вече знайното стои първа и е златна по ръб. Тя е причината
+   формулярът отдолу да е къс — човек, който вижда, че теглото и тренировките
+   му вече са тук, разбира защо не го питаме за тях. */
+.autoCard {
+  border-color: rgba(var(--accent-rgb), 0.26);
+}
+
+.autoNote {
+  margin: 0 0 12px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.autoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.autoCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.autoVal {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.autoUnit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.autoLabel {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.autoWeeks {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.field {
+  padding: 11px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.field:first-of-type { border-top: none; }
+
+.fieldLabel {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.hint {
+  display: block;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Скалата е копчета, не плъзгач: на телефон пръстът покрива плъзгача и човек
+   не вижда какво избира, докато не го пусне. */
+.scale {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.scaleBtn {
+  flex: 1 1 0;
+  min-width: 28px;
+  height: 34px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 140ms var(--ease-out), border-color 140ms var(--ease-out), background 140ms var(--ease-out);
+}
+.scaleOn {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.trend { display: flex; gap: 6px; }
+
+.trendBtn {
+  flex: 1;
+  height: 38px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-size: 17px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.trendDown { color: var(--red); border-color: rgba(var(--red-rgb), 0.45); background: rgba(var(--red-rgb), 0.08); }
+.trendHold { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.45); background: var(--accent-dim); }
+.trendUp   { color: var(--ok); border-color: rgba(var(--ok-rgb), 0.45); background: rgba(var(--ok-rgb), 0.10); }
+
+.boolBtn {
+  flex: 1;
+  height: 38px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.boolOn { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.5); background: var(--accent-dim); }
+
+.numRow { display: flex; align-items: center; gap: 8px; }
+.parts  { display: flex; gap: 6px; }
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.input:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.5); }
+
+.unit {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.textarea:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.5); }
+
+/* ── Позите ─────────────────────────────────────────────────────────
+   Шест гнезда с имена. Гнездото знае коя поза е, затова сравнението после не
+   иска от никого да подрежда снимки наум. */
+.poseGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.poseSlot { display: flex; flex-direction: column; gap: 5px; }
+
+.poseBtn {
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  background: var(--surface-2);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.poseFilled { border-style: solid; border-color: rgba(var(--accent-rgb), 0.35); }
+.poseBtn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.posePlus {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--muted);
+}
+
+.poseName {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  line-height: 1.25;
+  color: var(--muted);
+  text-align: center;
+}
+
+.submit {
+  width: 100%;
+  min-height: 54px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-xl);
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 240ms var(--ease-out), transform 140ms var(--ease-out);
+}
+.submit:active:not(:disabled) { transform: scale(0.985); }
+.submitDone { background: var(--ok); }
+
+.history {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dayRow {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.dayLabel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+.days { display: flex; gap: 4px; }
+
+.dayBtn {
+  flex: 1;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dayOn { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.5); background: var(--accent-dim); }

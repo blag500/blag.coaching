@@ -21,6 +21,7 @@ import Onboarding from './components/Onboarding/Onboarding'
 import RegistrationSuccess from './components/RegistrationSuccess/RegistrationSuccess'
 import PlanSelector from './components/PlanSelector/PlanSelector'
 import LandingPage from './components/LandingPage/LandingPage'
+import CheckinPage from './components/Checkin/CheckinPage'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
 import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
 import LearnPage from './components/Learn/LearnPage'
@@ -293,6 +294,9 @@ function AppShell() {
     budget:     <Budget />,
     tasks:      <Tasks />,
     protocol:   <PrepProtocol />,
+    /* Чекинът е седмичен, не всекидневен — затова не е таб, а страница, до
+       която се стига от Профил и от лентата, когато се дължи. */
+    checkin:    <CheckinPage onBack={() => setActiveTab('profile')} />,
     posing:       <PosingPage />,
     supplements:  <SupplementsPage />,
     shop:         isCoach ? <ShopPage initialOrderSuccess={!!orderSuccessId} /> : null,

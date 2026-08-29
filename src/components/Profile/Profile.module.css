@@ -857,3 +857,50 @@
   animation: none;
 }
 .foldBody :global(section:last-child) { margin-bottom: 0; }
+
+/* Входът към седмичния чекин. Ред, не карта: той води някъде, а не показва
+   нещо, и всяка карта повече на този екран е още едно място, което се гледа. */
+.checkinLink {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 12px;
+}
+
+.checkinLinkText {
+  flex: 1;
+  text-align: left;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.checkinLinkGo {
+  color: var(--accent);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.checkinLinkDue { border-color: rgba(var(--accent-rgb), 0.45); }
+
+.checkinLinkChip {
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}

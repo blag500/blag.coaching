@@ -2392,3 +2392,34 @@
   padding: 0 0 6px 2px;
   font-variant-numeric: tabular-nums;
 }
+
+/* Кой чекин гледаме. Дати, не заглавия: седмицата се разпознава по датата си
+   и нищо друго не ѝ трябва. */
+.checkinPicker {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+.checkinPicker::-webkit-scrollbar { display: none; }
+
+.checkinPick {
+  flex-shrink: 0;
+  padding: 7px 11px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.checkinPickOn {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+}
