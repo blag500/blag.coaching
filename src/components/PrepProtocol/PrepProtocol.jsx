@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { usePrepProtocol, todayStr, dayFromIso, addDays, bmrFor, tdeeFor } from '../../hooks/usePrepProtocol'
+import PeakWeek from '../PeakWeek/PeakWeek'
 import styles from './PrepProtocol.module.css'
 import { loc } from '../../utils/locale'
 
@@ -516,7 +517,57 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
   )
 }
 
+// ── Пистата ───────────────────────────────────────────────────────────
+/**
+ * Дългата подготовка, свита в един ред.
+ *
+ * Страницата вече е на пиковата седмица. Подготовката обаче не е декор — тя е
+ * причината пиковата седмица изобщо да може да работи: източникът е ясен, че
+ * ако не си стигнал слаб навреме, седемте дни отгоре не спасяват нищо. Затова
+ * тя остава, но свита: един ред, който казва колко остава и в графика ли си, и
+ * се разгъва само когато някой го поиска.
+ */
+function PrepRunway({ prep, plan, children }) {
+  const { t } = useSettings()
+  const [open, setOpen] = useState(false)
+
+  if (!prep) {
+    return (
+      <div className={styles.runway}>
+        <button className={styles.runwayBar} type="button" onClick={() => setOpen(o => !o)}>
+          <span className={styles.runwayLabel}>{t('pp.title')}</span>
+          <span className={styles.runwayVal}>{t('pw.runway.none')}</span>
+          <span className={styles.runwayChev}>{open ? '⌃' : '⌄'}</span>
+        </button>
+        {open && children}
+      </div>
+    )
+  }
+
+  const status = plan?.offBy == null ? t('pw.runway.onTrack')
+    : plan.offBy > 0 ? t('pw.runway.behind', { n: plan.offBy })
+    : t('pw.runway.ahead', { n: Math.abs(plan.offBy) })
+
+  return (
+    <div className={styles.runway}>
+      <button className={styles.runwayBar} type="button" onClick={() => setOpen(o => !o)}>
+        <span className={styles.runwayLabel}>{prep.competition_name || t('pp.title')}</span>
+        <span className={styles.runwayVal}>
+          {plan?.weeksOut != null && <>{t('pw.runway.weeks', { n: plan.weeksOut })} · </>}
+          {plan?.pace?.kgLeft != null && <>{t('pw.runway.kg', { n: plan.pace.kgLeft })} · </>}
+          <span className={plan?.offBy > 0 ? styles.runwayBehind : styles.runwayOk}>{status}</span>
+        </span>
+        <span className={styles.runwayChev}>{open ? '⌃' : '⌄'}</span>
+      </button>
+      {open && children}
+    </div>
+  )
+}
+
 // ── Main export ───────────────────────────────────────────────────────
+/**
+ * Страницата „Протокол" е пиковата седмица; подготовката е пистата към нея.
+ */
 export default function PrepProtocol() {
   const { profile, updateProfile } = useAuth()
   const {
@@ -536,20 +587,24 @@ export default function PrepProtocol() {
     )
   }
 
-  if (!prep) {
-    return <PrepSetup onSave={createPrep} profile={profile} />
-  }
-
-  return (
-    <PrepDashboard
-      prep={prep}
-      plan={plan}
-      weightLogs={weightLogs}
-      weekStats={weekStats}
-      onUpdate={{ updatePrep, _logWeight: logMorningWeight }}
-      onEnd={endPrep}
-      profile={profile}
-      onApplyMacros={handleApplyMacros}
-    />
+  const runway = (
+    <PrepRunway prep={prep} plan={plan}>
+      {prep ? (
+        <PrepDashboard
+          prep={prep}
+          plan={plan}
+          weightLogs={weightLogs}
+          weekStats={weekStats}
+          onUpdate={{ updatePrep, _logWeight: logMorningWeight }}
+          onEnd={endPrep}
+          profile={profile}
+          onApplyMacros={handleApplyMacros}
+        />
+      ) : (
+        <PrepSetup onSave={createPrep} profile={profile} />
+      )}
+    </PrepRunway>
   )
+
+  return <PeakWeek prep={prep} runway={runway} />
 }

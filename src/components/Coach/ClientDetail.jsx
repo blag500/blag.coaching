@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import CheckinCompare from '../Checkin/CheckinCompare'
+import CoachPeakWeek from '../PeakWeek/CoachPeakWeek'
 import { supabase } from '../../lib/supabase'
 import { HABITS, defaultHabits } from '../../data/appData'
 import TrainingEditor from './TrainingEditor'
@@ -21,7 +22,8 @@ import { loc } from '../../utils/locale'
 const TABS = [
   { id: 'progress',   labelKey: 'cd.tab.progress' },
   { id: 'chat',       labelKey: 'cd.tab.chat' },
-  { id: 'checkin',    label: 'CHECK-IN' },
+  { id: 'checkin',    labelKey: 'cd.tab.checkin' },
+  { id: 'peak',       labelKey: 'cd.tab.peak' },
   { id: 'sessions',   labelKey: 'cd.tab.sessions' },
   { id: 'nutrition',  labelKey: 'cd.tab.nutrition' },
   { id: 'lifts',      labelKey: 'cd.tab.lifts' },
@@ -217,6 +219,7 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
         {tab === 'progress' && <ProgressTab stats={stats} client={client} />}
         {tab === 'chat'      && <ChatPage clientId={client.id} clientName={client.name || client.email} clientAvatarUrl={client.avatar_url} embedded />}
         {tab === 'checkin'   && <CheckinTab clientId={client.id} female={client.gender === 'female'} />}
+        {tab === 'peak'      && <CoachPeakWeek clientId={client.id} />}
         {tab === 'sessions'  && <SessionsTab clientId={client.id} client={client} />}
         {tab === 'nutrition' && <NutritionTab client={client} />}
         {tab === 'lifts' && <LiftsTab clientId={client.id} />}

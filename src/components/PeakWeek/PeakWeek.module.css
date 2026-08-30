@@ -1,0 +1,742 @@
+.page {
+  padding: 0 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  composes: arrive d1 from '../../styles/arrive.module.css';
+}
+
+.loadingDot {
+  width: 10px;
+  height: 10px;
+  margin: 60px auto;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1200ms ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
+
+/* ── Шапка ────────────────────────────────────────────────────────── */
+
+.head {
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.showName {
+  margin: 2px 0 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stateNote {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Броячът е едно число. То е единственото, което човек гледа от вратата. */
+.countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 10px;
+}
+.countNum {
+  font-family: var(--font-heading);
+  font-size: 56px;
+  line-height: 0.9;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.countSub {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Лентата с дните ──────────────────────────────────────────────── */
+
+.strip {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0;
+  -webkit-overflow-scrolling: touch;
+}
+.strip::-webkit-scrollbar { display: none; }
+
+.stripDay {
+  flex: 1 0 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 0 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out);
+}
+
+.stripDow {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stripNum {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Фазата се чете от цвета на горния ръб, а не от още един ред текст —
+   осем дни с по два реда обяснение не се четат на телефон. */
+.ph_taper  { border-top: 2px solid rgba(255, 255, 255, 0.18); }
+.ph_load   { border-top: 2px solid rgba(var(--accent-rgb), 0.75); }
+.ph_adjust { border-top: 2px solid rgba(var(--red-rgb), 0.6); }
+.ph_show   { border-top: 2px solid var(--accent); }
+
+.stripPast  { opacity: 0.42; }
+.stripToday .stripNum { color: var(--accent); }
+.stripOn {
+  background: var(--accent-dim);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  opacity: 1;
+}
+
+/* ── Карти ────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  padding: 14px 16px 16px;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.cardTitleRow {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.chev { color: var(--muted); font-size: 13px; }
+
+.note {
+  margin: 6px 0 0;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.empty {
+  margin: 10px 0 0;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.warn {
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  background: rgba(var(--red-rgb), 0.08);
+  border-left: 2px solid rgba(var(--red-rgb), 0.5);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.inlineBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Денят ────────────────────────────────────────────────────────── */
+
+.dayHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.phaseTag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.tag_taper  { color: var(--muted); background: rgba(255, 255, 255, 0.06); }
+.tag_load   { color: var(--accent); background: var(--accent-dim); }
+.tag_adjust { color: var(--red); background: rgba(var(--red-rgb), 0.10); }
+.tag_show   { color: var(--bg); background: var(--accent); }
+
+.dayDate {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.dayOut {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: right;
+}
+
+.macroRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.macro { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.macroVal {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.macroAccent { color: var(--accent); }
+
+.macroLabel {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.applyBtn {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 42px;
+  background: transparent;
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: var(--r-pill);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 200ms var(--ease-out), color 200ms var(--ease-out);
+}
+.applyDone { background: var(--ok); border-color: var(--ok); color: var(--bg); }
+
+.lineRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 4px;
+}
+
+.lineLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.lineVal {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text);
+  text-align: right;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px 7px 8px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.checkOn { color: var(--ok); border-color: rgba(var(--ok-rgb), 0.5); }
+
+.checkBox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Видът ────────────────────────────────────────────────────────── */
+
+.lookCard { border-color: rgba(var(--accent-rgb), 0.26); }
+
+.lookRow {
+  display: flex;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.lookCell { display: flex; flex-direction: column; gap: 2px; }
+
+.lookVal {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.lookValSm {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.lookLabel {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.measureRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.input:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.5); }
+
+.ghostBtn {
+  flex-shrink: 0;
+  padding: 0 16px;
+  height: 42px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ghostBtn:disabled { opacity: 0.4; }
+
+/* Звездата е отделно копче нарочно: „записах се" и „ето така бих излязъл"
+   са две различни твърдения, и второто е това, върху което после стъпва
+   целевото тегло за деня на шоуто. */
+.lookBtn {
+  flex-shrink: 0;
+  width: 46px;
+  height: 42px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  font-size: 17px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lookBtn:disabled { opacity: 0.4; }
+
+.photoBtn {
+  width: 100%;
+  margin-top: 6px;
+  min-height: 38px;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logList {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.logItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.logLook .logKg { color: var(--accent); }
+
+.logTime {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.logThumb {
+  width: 30px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.logKg {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.logStar, .logDel {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.logLook .logStar { color: var(--accent); }
+.logDel { font-size: 18px; opacity: 0.5; }
+
+.pinBtn {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 40px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  border-radius: var(--r-pill);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Зареждането ──────────────────────────────────────────────────── */
+
+.loadSummary {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.loadEdit {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hint {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepBtn {
+  width: 42px;
+  height: 42px;
+  background: var(--surface-2);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stepVal {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 46px;
+  text-align: center;
+}
+
+.segRow { display: flex; gap: 6px; }
+
+.seg {
+  flex: 1;
+  min-height: 40px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.segOn { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.5); background: var(--accent-dim); }
+
+/* ── Правила ──────────────────────────────────────────────────────── */
+
+.rules {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule {
+  position: relative;
+  padding-left: 16px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.rule::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.7);
+}
+
+.neverCard { border-color: rgba(var(--red-rgb), 0.22); }
+
+.never {
+  position: relative;
+  padding-left: 16px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.never::before {
+  content: '×';
+  position: absolute;
+  left: 1px;
+  top: 0;
+  color: var(--red);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.source {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.65;
+}
+
+/* ── Настройка ────────────────────────────────────────────────────── */
+
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.error {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--red);
+}
+
+.primaryBtn {
+  width: 100%;
+  min-height: 52px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-xl);
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms var(--ease-out);
+}
+.primaryBtn:active:not(:disabled) { transform: scale(0.985); }
+
+/* ── Приключване ──────────────────────────────────────────────────── */
+
+.endBtn {
+  width: 100%;
+  min-height: 40px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.endConfirm { display: flex; flex-direction: column; gap: 12px; }
+.endRow { display: flex; gap: 8px; }
+
+.endYes, .endNo {
+  flex: 1;
+  min-height: 42px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.endYes { background: rgba(var(--red-rgb), 0.14); border: 1px solid rgba(var(--red-rgb), 0.45); color: var(--red); }
+.endNo  { background: transparent; border: 1px solid var(--panel-border); color: var(--muted); }
