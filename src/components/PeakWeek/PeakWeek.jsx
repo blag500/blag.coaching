@@ -84,7 +84,14 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
       prep_id:        prep?.id ?? null,
     }, kg)
     setSaving(false)
-    if (err) setError(err.message || t('pw.err.save'))
+    if (err) {
+      /* Суровата грешка от Postgres не е за клиента. Най-честата тук е липсваща
+         миграция или неопреснен schema кеш, и тя има име. */
+      const msg = err.message || ''
+      if (/schema cache|column|relation|does not exist/i.test(msg)) setError(t('pp.err.schemaCache'))
+      else if (/Load failed|Failed to fetch|NetworkError/i.test(msg)) setError(t('pp.err.network'))
+      else setError(msg || t('pw.err.save'))
+    }
   }
 
   return (
