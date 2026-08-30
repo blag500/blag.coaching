@@ -2671,4 +2671,33 @@ export default {
   'pw.weighIn':       'WEIGH-IN',
   'pw.weighInWindow': '{n} hours from the weigh-in to the stage.',
   'pw.weighInTight':  'Only {n} hours between the weigh-in and the stage. That much food does not go in — the gut will not pass it. Either the load is smaller and you lean on being lean, or the division changes.',
+
+  'pw.next': 'NEXT',
+  'pw.back': 'Back',
+
+  'pw.q.when':      'When is the show?',
+  'pw.q.whenSub':   'The week counts back from here. Stage time only matters if there is a weigh-in — the filling window is measured from it.',
+  'pw.q.stageTime': 'Stage time',
+  'pw.q.fromPrep':  'Take {d} from the prep',
+
+  'pw.q.where':    'Where and in what?',
+  'pw.q.whereSub': 'Both can be skipped. The division changes what follows, though — with a cap, the weigh-in decides everything.',
+
+  'pw.q.cap':    'Is there a weight cap?',
+  'pw.q.capSub': 'If your division has a weight class, set the cap. The load then starts after the weigh-in rather than three days out. Empty means no cap.',
+  'pw.q.dayBefore': 'The day before the show',
+
+  'pw.q.weight':      'What do you weigh now?',
+  'pw.q.weightSub':   'Carbs, protein and fat for each of the eight days are worked out from this number.',
+  'pw.q.lastWeighIn': 'Last weigh-in: {n} kg',
+
+  'pw.q.tdee':        'What is your maintenance?',
+  'pw.q.tdeeSub':     'The calories your weight sits on. You eat up to them until the load — no depletion.',
+  'pw.q.tdeeFromPrep': 'From the prep: {n}',
+  'pw.q.tdeeComputed': 'From height, weight and age: {n}',
+
+  'pw.q.load':        'How much will you load?',
+  'pw.q.loadSub':     'Grams of carbs per kilo of body weight, per day. The working range is 4–6.',
+  'pw.q.perKgChip':   '{n} g/kg · {g} g',
+  'pw.q.perKgFromPrep': 'Doubling your prep intake would come to {n} g/kg.',
 }

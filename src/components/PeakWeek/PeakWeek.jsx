@@ -30,6 +30,14 @@ function dowKey(iso) {
   return `daysMon.${(new Date(y, m - 1, d).getDay() + 6) % 7}`
 }
 
+/** Ден напред или назад от ISO дата, в местно време. */
+function addDaysIso(iso, n) {
+  const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number)
+  const dt = new Date(y, m - 1, d)
+  dt.setDate(dt.getDate() + n)
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+}
+
 function fmtTime(ts) {
   return new Date(ts).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })
 }
@@ -37,28 +45,40 @@ function fmtTime(ts) {
 // ── Настройка ────────────────────────────────────────────────────────
 
 /**
- * Настройката.
+ * Настройката, стъпка по стъпка.
  *
- * Групирана на три части, защото един списък от девет полета с обяснение под
- * всяко се чете като стена. Заглавията не са украса — те казват кое поле за
- * какво пита: шоуто, ти сега, зареждането.
+ * Беше формуляр с девет полета и предварително нагласени стойности. Двата
+ * проблема бяха един: полето, което вече съдържа нещо, не пита — то съобщава.
+ * Човек го подминава, а после числото е чуждо и никой не знае откъде е.
+ *
+ * Затова тук нищо не е попълнено предварително. Каквото приложението знае, се
+ * предлага като копче под полето — виждаш откъде идва и се съгласяваш с него
+ * нарочно. Стъпките са по един въпрос, защото на един въпрос се отговаря, а на
+ * девет се попълва.
+ *
+ * Моделът е същият като в онбординга: точки за напредък, заглавие, подзаглавие,
+ * едно поле, назад и напред. Втори модел за същото нещо в едно приложение е
+ * втори модел, който да се поддържа.
  */
+
+/** Предложение: показва се като копче, не се налива тихо в полето. */
+function Suggest({ children, onClick }) {
+  return (
+    <button type="button" className={styles.suggest} onClick={onClick}>
+      {children}
+    </button>
+  )
+}
+
 function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
   const { t } = useSettings()
+  const [step, setStep] = useState(1)
   const [form, setForm] = useState({
-    show_date:      prep?.competition_date ?? '',
-    show_time:      '',
-    show_name:      prep?.competition_name ?? '',
-    weigh_in_date:  '',
-    weigh_in_time:  '',
-    division:       '',
-    weight_limit:   '',
-    division_notes: '',
-    weight:         latestKg != null ? String(latestKg) : '',
-    tdee:           String(prep?.tdee ?? tdeeFor(profile) ?? ''),
-    cardio_min:     '',
-    carb_per_kg:    String(suggestedCarbPerKg ?? 5),
-    load_days:      3,
+    show_date: '', show_time: '', show_name: '',
+    division: '', weight_limit: '', division_notes: '',
+    weigh_in_date: '', weigh_in_time: '',
+    weight: '', tdee: '', cardio_min: '',
+    carb_per_kg: '', load_days: 3,
   })
   const [saving, setSaving] = useState(false)
   const [error,  setError]  = useState('')
@@ -68,21 +88,33 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
   const kg    = parseFloat(form.weight)
   const limit = parseFloat(form.weight_limit)
   const overLimit = Number.isFinite(limit) && Number.isFinite(kg) && kg > limit
+  const suggestedTdee = prep?.tdee ?? tdeeFor(profile)
 
-  async function submit(e) {
-    e.preventDefault()
-    if (!form.show_date) { setError(t('pw.err.date')); return }
-    if (!kg || kg < 30 || kg > 300) { setError(t('pw.err.weight')); return }
+  const STEPS = 6
+  const canNext =
+    step === 1 ? !!form.show_date :
+    step === 4 ? !!form.weight && kg >= 30 && kg <= 300 :
+    true
+
+  function next() {
+    setError('')
+    if (step < STEPS) setStep(s => s + 1)
+    else submit()
+  }
+
+  async function submit() {
+    if (!form.show_date) { setStep(1); setError(t('pw.err.date')); return }
+    if (!kg || kg < 30 || kg > 300) { setStep(4); setError(t('pw.err.weight')); return }
     setSaving(true); setError('')
     const { error: err } = await onSave({
       show_date:      form.show_date,
       show_time:      form.show_time || null,
       show_name:      form.show_name || null,
-      weigh_in_date:  form.weigh_in_date || null,
-      weigh_in_time:  form.weigh_in_time || null,
       division:       form.division || null,
       weight_limit:   Number.isFinite(limit) ? limit : null,
       division_notes: form.division_notes || null,
+      weigh_in_date:  form.weigh_in_date || null,
+      weigh_in_time:  form.weigh_in_time || null,
       tdee:           parseInt(form.tdee) || null,
       cardio_min:     parseInt(form.cardio_min) || 0,
       carb_per_kg:    parseFloat(form.carb_per_kg) || 5,
@@ -91,8 +123,6 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
     }, kg)
     setSaving(false)
     if (err) {
-      /* Суровата грешка от Postgres не е за клиента. Най-честата тук е липсваща
-         миграция или неопреснен schema кеш, и тя има име. */
       const msg = err.message || ''
       if (/schema cache|column|relation|does not exist/i.test(msg)) setError(t('pp.err.schemaCache'))
       else if (/Load failed|Failed to fetch|NetworkError/i.test(msg)) setError(t('pp.err.network'))
@@ -101,143 +131,174 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
   }
 
   return (
-    <form className={styles.setup} onSubmit={submit}>
-      <div className={styles.group}>
-        <div className={styles.groupTitle}>{t('pw.setup.gShow')}</div>
+    <div className={styles.wizard} style={{ '--step': step, '--steps': STEPS }}>
+      <div className={styles.progressBar}>
+        {Array.from({ length: STEPS }, (_, i) => (
+          <div key={i} className={[
+            styles.progressDot,
+            i + 1 < step ? styles.progressDotDone : '',
+            i + 1 === step ? styles.progressDotActive : '',
+          ].filter(Boolean).join(' ')} />
+        ))}
+      </div>
 
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.showDate')}</label>
-          <input className={styles.input} type="date" required
-            value={form.show_date} onChange={e => set('show_date', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.showDateHint')}</span>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.showTime')}</label>
-          <input className={styles.input} type="time"
-            value={form.show_time} onChange={e => set('show_time', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.showTimeHint')}</span>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.showName')}</label>
-          <input className={styles.input} type="text" placeholder={t('pw.setup.showNamePh')}
-            value={form.show_name} onChange={e => set('show_name', e.target.value)} />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.division')}</label>
-          <input className={styles.input} type="text" placeholder={t('pw.setup.divisionPh')}
-            value={form.division} onChange={e => set('division', e.target.value)} />
-        </div>
-
-        {/* Лимитът се въвежда, не се изчислява: таблиците по височина се
-            различават по федерация и по година, а числото, което треньорът
-            знае, е точно. */}
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.limit')}</label>
-          <input className={styles.input} type="number" inputMode="decimal" step="0.1"
-            min="30" max="200" placeholder={t('pw.setup.limitPh')}
-            value={form.weight_limit} onChange={e => set('weight_limit', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.limitHint')}</span>
-        </div>
-
-        {/* Кантарът е вторият краен срок и при клас по тегло е обвързващият.
-            Ако го има, зареждането тръгва след него, не три дни преди шоуто. */}
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.weighInDate')}</label>
-          <input className={styles.input} type="date"
-            value={form.weigh_in_date} onChange={e => set('weigh_in_date', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.weighInDateHint')}</span>
-        </div>
-
-        {form.weigh_in_date && (
-          <div className={styles.field}>
-            <label className={styles.label}>{t('pw.setup.weighInTime')}</label>
+      <div className={styles.wizContent}>
+        {step === 1 && (
+          <div className={styles.stepWrap} key="s1">
+            <h2 className={styles.heading}>{t('pw.q.when')}</h2>
+            <p className={styles.sub}>{t('pw.q.whenSub')}</p>
+            <input className={styles.input} type="date" autoFocus
+              value={form.show_date} onChange={e => set('show_date', e.target.value)} />
+            {prep?.competition_date && form.show_date !== prep.competition_date && (
+              <Suggest onClick={() => {
+                set('show_date', prep.competition_date)
+                if (prep.competition_name) set('show_name', prep.competition_name)
+              }}>
+                {t('pw.q.fromPrep', { d: fmtDay(prep.competition_date) })}
+              </Suggest>
+            )}
+            <label className={styles.label}>{t('pw.q.stageTime')}</label>
             <input className={styles.input} type="time"
-              value={form.weigh_in_time} onChange={e => set('weigh_in_time', e.target.value)} />
-            <span className={styles.hint}>{t('pw.setup.weighInTimeHint')}</span>
+              value={form.show_time} onChange={e => set('show_time', e.target.value)} />
           </div>
         )}
 
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.divisionNotes')}</label>
-          <textarea className={styles.textarea} rows={3}
-            placeholder={t('pw.setup.divisionNotesPh')}
-            value={form.division_notes} onChange={e => set('division_notes', e.target.value)} />
-        </div>
-      </div>
-
-      <div className={styles.group}>
-        <div className={styles.groupTitle}>{t('pw.setup.gYou')}</div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.weight')}</label>
-          <input className={styles.input} type="number" inputMode="decimal" step="0.1"
-            min="30" max="300" required
-            value={form.weight} onChange={e => set('weight', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.weightHint')}</span>
-        </div>
-
-        {/* Предупреждението стои под цялото поле, не между него и обяснението
-            му — иначе обяснението изглежда като част от тревогата. */}
-        {overLimit && (
-          <p className={styles.warn}>
-            {t('pw.setup.overLimit', { n: Math.round((kg - limit) * 10) / 10 })}
-          </p>
+        {step === 2 && (
+          <div className={styles.stepWrap} key="s2">
+            <h2 className={styles.heading}>{t('pw.q.where')}</h2>
+            <p className={styles.sub}>{t('pw.q.whereSub')}</p>
+            <label className={styles.label}>{t('pw.setup.showName')}</label>
+            <input className={styles.input} type="text"
+              value={form.show_name} onChange={e => set('show_name', e.target.value)} />
+            {prep?.competition_name && form.show_name !== prep.competition_name && (
+              <Suggest onClick={() => set('show_name', prep.competition_name)}>
+                {prep.competition_name}
+              </Suggest>
+            )}
+            <label className={styles.label}>{t('pw.setup.division')}</label>
+            <input className={styles.input} type="text"
+              value={form.division} onChange={e => set('division', e.target.value)} />
+            <label className={styles.label}>{t('pw.setup.divisionNotes')}</label>
+            <textarea className={styles.textarea} rows={3}
+              value={form.division_notes} onChange={e => set('division_notes', e.target.value)} />
+            <span className={styles.hint}>{t('pw.setup.divisionNotesPh')}</span>
+          </div>
         )}
 
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.tdee')}</label>
-          <input className={styles.input} type="number" inputMode="numeric" min="1200" max="6000"
-            value={form.tdee} onChange={e => set('tdee', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.tdeeHint')}</span>
-        </div>
+        {step === 3 && (
+          <div className={styles.stepWrap} key="s3">
+            <h2 className={styles.heading}>{t('pw.q.cap')}</h2>
+            <p className={styles.sub}>{t('pw.q.capSub')}</p>
+            <label className={styles.label}>{t('pw.setup.limit')}</label>
+            <input className={styles.input} type="number" inputMode="decimal" step="0.1"
+              min="30" max="200"
+              value={form.weight_limit} onChange={e => set('weight_limit', e.target.value)} />
 
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.cardio')}</label>
-          <input className={styles.input} type="number" inputMode="numeric" min="0" max="180"
-            placeholder="0"
-            value={form.cardio_min} onChange={e => set('cardio_min', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.cardioHint')}</span>
-        </div>
-      </div>
-
-      <div className={styles.group}>
-        <div className={styles.groupTitle}>{t('pw.setup.gLoad')}</div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.perKg')}</label>
-          <input className={styles.input} type="number" inputMode="decimal" step="0.1"
-            min={CARB_MIN} max={CARB_MAX}
-            value={form.carb_per_kg} onChange={e => set('carb_per_kg', e.target.value)} />
-          <span className={styles.hint}>
-            {t('pw.setup.perKgHint')}
-            {Number.isFinite(kg) && form.carb_per_kg
-              ? ' \u00b7 ' + t('pw.setup.perKgCalc', { n: Math.round(kg * parseFloat(form.carb_per_kg)) })
-              : ''}
-          </span>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>{t('pw.setup.loadDays')}</label>
-          <div className={styles.segRow}>
-            {[2, 3].map(n => (
-              <button key={n} type="button"
-                className={`${styles.seg} ${Number(form.load_days) === n ? styles.segOn : ''}`}
-                onClick={() => set('load_days', n)}>{n}</button>
-            ))}
+            {/* Кантарът има смисъл само при таван — затова се пита тук, а не
+                на отделна стъпка, която повечето хора ще прескочат. */}
+            {form.weight_limit && (
+              <>
+                <label className={styles.label}>{t('pw.setup.weighInDate')}</label>
+                <input className={styles.input} type="date"
+                  value={form.weigh_in_date} onChange={e => set('weigh_in_date', e.target.value)} />
+                {form.show_date && form.weigh_in_date !== form.show_date && (
+                  <Suggest onClick={() => set('weigh_in_date', addDaysIso(form.show_date, -1))}>
+                    {t('pw.q.dayBefore')}
+                  </Suggest>
+                )}
+                {form.weigh_in_date && (
+                  <>
+                    <label className={styles.label}>{t('pw.setup.weighInTime')}</label>
+                    <input className={styles.input} type="time"
+                      value={form.weigh_in_time} onChange={e => set('weigh_in_time', e.target.value)} />
+                  </>
+                )}
+              </>
+            )}
           </div>
-          <span className={styles.hint}>{t('pw.setup.loadDaysHint')}</span>
-        </div>
+        )}
+
+        {step === 4 && (
+          <div className={styles.stepWrap} key="s4">
+            <h2 className={styles.heading}>{t('pw.q.weight')}</h2>
+            <p className={styles.sub}>{t('pw.q.weightSub')}</p>
+            <input className={styles.input} type="number" inputMode="decimal" step="0.1"
+              min="30" max="300" autoFocus
+              value={form.weight} onChange={e => set('weight', e.target.value)} />
+            {latestKg != null && String(latestKg) !== form.weight && (
+              <Suggest onClick={() => set('weight', String(latestKg))}>
+                {t('pw.q.lastWeighIn', { n: latestKg })}
+              </Suggest>
+            )}
+            {overLimit && (
+              <p className={styles.warn}>
+                {t('pw.setup.overLimit', { n: Math.round((kg - limit) * 10) / 10 })}
+              </p>
+            )}
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className={styles.stepWrap} key="s5">
+            <h2 className={styles.heading}>{t('pw.q.tdee')}</h2>
+            <p className={styles.sub}>{t('pw.q.tdeeSub')}</p>
+            <input className={styles.input} type="number" inputMode="numeric" min="1200" max="6000"
+              value={form.tdee} onChange={e => set('tdee', e.target.value)} />
+            {suggestedTdee && String(suggestedTdee) !== form.tdee && (
+              <Suggest onClick={() => set('tdee', String(suggestedTdee))}>
+                {t(prep?.tdee ? 'pw.q.tdeeFromPrep' : 'pw.q.tdeeComputed', { n: suggestedTdee })}
+              </Suggest>
+            )}
+            <label className={styles.label}>{t('pw.setup.cardio')}</label>
+            <input className={styles.input} type="number" inputMode="numeric" min="0" max="180"
+              value={form.cardio_min} onChange={e => set('cardio_min', e.target.value)} />
+            <span className={styles.hint}>{t('pw.setup.cardioHint')}</span>
+          </div>
+        )}
+
+        {step === 6 && (
+          <div className={styles.stepWrap} key="s6">
+            <h2 className={styles.heading}>{t('pw.q.load')}</h2>
+            <p className={styles.sub}>{t('pw.q.loadSub')}</p>
+            <input className={styles.input} type="number" inputMode="decimal" step="0.1"
+              min={CARB_MIN} max={CARB_MAX}
+              value={form.carb_per_kg} onChange={e => set('carb_per_kg', e.target.value)} />
+            <div className={styles.suggestRow}>
+              {[4, 5, 6].map(n => (
+                <Suggest key={n} onClick={() => set('carb_per_kg', String(n))}>
+                  {t('pw.q.perKgChip', { n, g: Number.isFinite(kg) ? Math.round(kg * n) : '—' })}
+                </Suggest>
+              ))}
+            </div>
+            {suggestedCarbPerKg && (
+              <span className={styles.hint}>{t('pw.q.perKgFromPrep', { n: suggestedCarbPerKg })}</span>
+            )}
+
+            <label className={styles.label}>{t('pw.setup.loadDays')}</label>
+            <div className={styles.segRow}>
+              {[2, 3].map(n => (
+                <button key={n} type="button"
+                  className={`${styles.seg} ${Number(form.load_days) === n ? styles.segOn : ''}`}
+                  onClick={() => set('load_days', n)}>{n}</button>
+              ))}
+            </div>
+            <span className={styles.hint}>{t('pw.setup.loadDaysHint')}</span>
+          </div>
+        )}
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
 
-      <button className={styles.primaryBtn} type="submit" disabled={saving}>
-        {saving ? '\u2026' : t('pw.setup.start')}
-      </button>
-    </form>
+      <div className={styles.wizNav}>
+        {step > 1 && (
+          <button className={styles.backBtn} type="button" onClick={() => setStep(s => s - 1)}
+            aria-label={t('pw.back')}>‹</button>
+        )}
+        <button className={styles.nextBtn} type="button" onClick={next} disabled={!canNext || saving}>
+          {saving ? '…' : step === STEPS ? t('pw.setup.start') : t('pw.next')}
+        </button>
+      </div>
+    </div>
   )
 }
 
