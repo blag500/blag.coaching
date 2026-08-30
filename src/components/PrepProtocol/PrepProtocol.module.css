@@ -673,3 +673,60 @@
   padding-bottom: 8px;
   min-height: 0;
 }
+
+/* ── Срокът ─────────────────────────────────────────────────────────
+   Грешка №1 на подготовките е недостигащият срок, и тя се вижда още във
+   формуляра — преди да са минали дванайсет седмици по нея. */
+
+.readyRow { display: flex; gap: 6px; }
+
+.readySeg {
+  flex: 1;
+  min-height: 42px;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.readySegOn {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+}
+
+.rateOk, .rateWarn {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.rateOk {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 2px solid rgba(var(--ok-rgb), 0.5);
+}
+.rateWarn {
+  color: var(--text);
+  background: rgba(var(--red-rgb), 0.08);
+  border-left: 2px solid rgba(var(--red-rgb), 0.5);
+}
+
+/* Буферните седмици държат целта равна — те не са цели за сваляне и не бива
+   да се четат като пропуснати. */
+.bufferTag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

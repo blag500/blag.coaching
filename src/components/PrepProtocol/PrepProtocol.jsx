@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
-import { usePrepProtocol, todayStr, dayFromIso, addDays, bmrFor, tdeeFor } from '../../hooks/usePrepProtocol'
+import { usePrepProtocol, todayStr, dayFromIso, addDays, bmrFor, tdeeFor, timelineCheck } from '../../hooks/usePrepProtocol'
 import PeakWeek from '../PeakWeek/PeakWeek'
 import styles from './PrepProtocol.module.css'
 import { loc } from '../../utils/locale'
@@ -52,6 +52,7 @@ function PrepSetup({ onSave, profile }) {
     target_weight:    '',
     start_weight:     profile?.weight_kg ? String(profile.weight_kg) : '',
     tdee:             '',
+    ready_weeks:      2,
   })
   const [saving, setSaving] = useState(false)
   const [error,  setError]  = useState('')
@@ -60,6 +61,25 @@ function PrepSetup({ onSave, profile }) {
 
   // Една формула, споделена с протокола — две копия се разминават до месец.
   const suggestedTDEE = tdeeFor(profile)
+
+  /* Стига ли срокът — на живо, докато човек пише.
+     Дотук единствената проверка беше „датата да е в бъдещето", тоест 15 кг за
+     8 седмици минаваше без дума. Подът при базовия обмен после хващаше
+     симптома, но не казваше, че болестта е срокът. */
+  const weeksTotal = form.competition_date
+    ? Math.ceil((dayFromIso(form.competition_date) - dayFromIso(today)) / 86400000 / 7)
+    : 0
+  const activeWeeks = Math.max(0, weeksTotal - form.ready_weeks)
+  const check = timelineCheck({
+    startWeight:  parseFloat(form.start_weight),
+    targetWeight: parseFloat(form.target_weight),
+    activeWeeks,
+    gender: profile?.gender,
+  })
+  // Откога трябваше да се тръгне, за да излезе при безопасно темпо.
+  const shouldStart = check && !check.ok
+    ? addDays(form.competition_date, -(check.weeksNeeded + form.ready_weeks) * 7)
+    : null
 
   async function handleSave(e) {
     e.preventDefault()
@@ -76,6 +96,7 @@ function PrepSetup({ onSave, profile }) {
       target_weight:    parseFloat(form.target_weight),
       start_weight:     parseFloat(form.start_weight),
       start_date:       today,
+      ready_weeks:      form.ready_weeks,
       tdee:             parseInt(form.tdee) || suggestedTDEE || null,
     })
     setSaving(false)
@@ -148,6 +169,31 @@ function PrepSetup({ onSave, profile }) {
             onChange={e => set('tdee', e.target.value)} />
           <span className={styles.fieldNote}>{t('pp.tdeeNote')}</span>
         </div>
+
+        <div className={styles.setupSection}>
+          <label className={styles.label}>{t('pp.readyWeeks')}</label>
+          <div className={styles.readyRow}>
+            {[1, 2, 3].map(n => (
+              <button key={n} type="button"
+                className={`${styles.readySeg} ${form.ready_weeks === n ? styles.readySegOn : ''}`}
+                onClick={() => set('ready_weeks', n)}>{n}</button>
+            ))}
+          </div>
+          <span className={styles.fieldNote}>{t('pp.readyWeeksHint')}</span>
+        </div>
+
+        {/* Срокът е грешка №1 на подготовките, и е грешка, която се вижда още
+            тук — преди да са минали дванайсет седмици по нея. */}
+        {check && (
+          <p className={check.ok ? styles.rateOk : styles.rateWarn}>
+            {check.ok
+              ? t('pp.rate.ok', { n: check.ratePct, safe: check.safePct })
+              : t('pp.rate.short', {
+                  n: check.ratePct, safe: check.safePct,
+                  w: check.weeksShort, d: fmtDate(shouldStart),
+                })}
+          </p>
+        )}
 
         {error && <p className={styles.errorMsg}>{error}</p>}
 
@@ -248,6 +294,15 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
           {plan.offBy != null && (
             <p className={styles.paceNote}>
               {t('pp.offBy', { sign: plan.offBy > 0 ? '+' : '', diff: plan.offBy })}
+            </p>
+          )}
+          {plan.timeline && !plan.timeline.ok && (
+            <p className={styles.paceWarn}>
+              {t('pp.rate.shortNow', {
+                n: plan.timeline.ratePct,
+                safe: plan.timeline.safePct,
+                w: plan.timeline.weeksShort,
+              })}
             </p>
           )}
           {plan.kcalFloored && (
@@ -430,7 +485,10 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
                     <span className={styles.timelineWeeksOut}>{week.weeksOut} out</span>
                   </div>
                   <div className={styles.timelineDates}>{fmtShort(week.weekStart)}–{fmtShort(week.weekEnd)}</div>
-                  <div className={styles.timelineTarget}>{week.targetWeight} {t('unit.kg')}</div>
+                  <div className={styles.timelineTarget}>
+                    {week.targetWeight} {t('unit.kg')}
+                    {week.isBuffer && <span className={styles.bufferTag}>{t('pp.buffer')}</span>}
+                  </div>
                   <div className={styles.timelineActual}>
                     {week.avgWeight != null ? (
                       <span className={diff > 0.2 ? styles.behind : diff < -0.2 ? styles.ahead : styles.onTrack}>

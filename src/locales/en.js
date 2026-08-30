@@ -2620,4 +2620,11 @@ export default {
   'pw.coach.latest':     'latest weigh-in',
   'pw.coach.noLook':     'No look starred yet. Without one there is no target weight for show day.',
   'pw.coach.nothingTicked': 'nothing ticked',
+
+  'pp.readyWeeks':     'Ready before the show',
+  'pp.readyWeeksHint': 'weeks in which stage weight is already reached: peak week plus buffer',
+  'pp.rate.ok':        'Pace {n}% of body weight a week, against a norm of {safe}%. The timeline holds.',
+  'pp.rate.short':     'Pace {n}% of body weight a week, against a norm of {safe}%. {w} weeks short — this cut needed to start on {d}. Either the date moves or the target weight does.',
+  'pp.rate.shortNow':  'From here the target asks for {n}% of body weight a week, against a norm of {safe}%. {w} weeks short — either the date moves or the target weight does.',
+  'pp.buffer':         'buffer',
 }

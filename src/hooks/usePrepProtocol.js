@@ -56,34 +56,123 @@ export function tdeeFor(profile) {
   return bmr ? Math.round(bmr * (ACTIVITY[profile?.activity_level] ?? 1.55)) : null
 }
 
-// Build week-by-week targets from a given start point to competition
-function buildWeeks(startDate, compDate, startWeight, targetWeight) {
+/**
+ * Безопасното средно темпо: дял от телесното тегло на седмица.
+ *
+ * Жените слизат по-бавно и по-скъпо — хормоналният удар идва по-рано и
+ * забавянето към края е по-рязко. Едно число за двата пола прави или мъжкия
+ * план муден, или женския нездрав.
+ */
+export const WEEKLY_RATE = { male: 0.0075, female: 0.005 }
+
+/**
+ * Колко от свалянето пада на всяка седмица.
+ *
+ * Дотук беше поравно, и това беше грешката. Свалянето започва бързо — към
+ * 1–1.25% от теглото — и се забавя наполовина към края, когато рискът за
+ * мускул е най-голям. 0.75% е СРЕДНОТО за целия период, не темпото на всяка
+ * седмица.
+ *
+ * Цената на правата линия е, че тя лъже в двата края и е вярна само по
+ * средата: в осма седмица показва „изпреварваш" на човек, който е точно в
+ * график, а в петнайсета показва „изоставаш" на човек, който е напред. Второто
+ * е по-скъпото — точно тогава хората режат още.
+ *
+ * Тежестта пада линейно от 1.45 до 0.55 около средното. Тя е нагласена така, че
+ * при типична подготовка първата седмица да излиза около 1.1% от теглото, а
+ * последната около 0.4% — диапазонът от източника.
+ */
+const TAPER = 0.45
+
+function taperShares(n) {
+  if (n <= 1) return [1]
+  const raw = Array.from({ length: n }, (_, i) => 1 + TAPER * (1 - (2 * i) / (n - 1)))
+  const sum = raw.reduce((s, v) => s + v, 0)
+  return raw.map(v => v / sum)
+}
+
+/**
+ * Стига ли срокът.
+ *
+ * Отделна и чиста, защото я ползват две места: формулярът я вика при всяко
+ * писане, а таблото я показва върху вече започнат план. Броят седмици тук е
+ * АКТИВНИТЕ — след като буферът е изваден.
+ */
+export function timelineCheck({ startWeight, targetWeight, activeWeeks, gender }) {
+  const kg = startWeight - targetWeight
+  if (!(kg > 0) || !(activeWeeks > 0) || !startWeight) return null
+
+  const safe        = WEEKLY_RATE[gender] ?? WEEKLY_RATE.male
+  const ratePct     = kg / activeWeeks / startWeight
+  const weeksNeeded = Math.ceil(kg / (startWeight * safe))
+
+  return {
+    ratePct:     Math.round(ratePct * 10000) / 100,   // % на седмица
+    safePct:     Math.round(safe * 10000) / 100,
+    weeksNeeded,
+    weeksShort:  Math.max(0, weeksNeeded - activeWeeks),
+    // 15% допуск: 0.86%/седмица при норма 0.75% не е тревога.
+    ok: ratePct <= safe * 1.15,
+  }
+}
+
+/**
+ * Седмиците на подготовката.
+ *
+ * Кривата свършва `readyWeeks` преди шоуто, не в деня му. Пиковата седмица не е
+ * седмица за сваляне, а над нея се иска и поне една седмица готов предварително
+ * — дотук планът разпределяше сваляне върху дни, в които никой не сваля, и
+ * затова целите за последните седмици бяха недостижими по построение.
+ */
+function buildWeeks(startDate, compDate, startWeight, targetWeight, readyWeeks = 2) {
   const start = dayFromIso(startDate)
   const comp  = dayFromIso(compDate)
-  const totalDays  = Math.round((comp - start) / 86400000)
-  if (totalDays <= 0) return { totalWeeks: 0, kgPerWeek: 0, dailyKcalDelta: 0, weeks: [] }
+  const totalDays = Math.round((comp - start) / 86400000)
+  if (totalDays <= 0) return { totalWeeks: 0, activeWeeks: 0, weeks: [] }
 
-  const totalWeeks    = totalDays / 7
-  const kgTotal       = startWeight - targetWeight   // positive = cutting
-  const kgPerWeek     = kgTotal / totalWeeks
-  const dailyKcalDelta = Math.round((kgPerWeek * KCAL_PER_KG) / 7)  // negative = deficit
+  const count  = Math.ceil(totalDays / 7)
+  const buffer = Math.min(Math.max(0, Math.round(readyWeeks)), Math.max(0, count - 1))
+  const active = count - buffer
 
-  const count = Math.ceil(totalWeeks)
+  const kgTotal = startWeight - targetWeight   // положително = сваляне
+  const shares  = taperShares(active)
+
+  let cum = 0
   const weeks = Array.from({ length: count }, (_, i) => {
     const ws = new Date(start)
     ws.setDate(start.getDate() + i * 7)
     const we = new Date(ws)
     we.setDate(ws.getDate() + 6)
+
+    // Активните седмици свалят по своя дял; буферните държат целта равна.
+    if (i < active) cum += shares[i]
+    const target = startWeight - kgTotal * cum
+
     return {
       number:       i + 1,
       weeksOut:     count - i,
       weekStart:    isoOf(ws),
       weekEnd:      isoOf(we),
-      targetWeight: Math.round((startWeight - kgPerWeek * (i + 1)) * 10) / 10,
+      targetWeight: Math.round(target * 10) / 10,
+      /* Темпото за самата седмица — това, което правата линия нямаше как да
+         каже, защото при нея всички седмици бяха еднакви. */
+      weekKg:   i < active ? Math.round(kgTotal * shares[i] * 100) / 100 : 0,
+      isBuffer: i >= active,
     }
   })
 
-  return { totalWeeks: count, kgPerWeek, dailyKcalDelta, weeks }
+  const kgPerWeek      = active > 0 ? kgTotal / active : 0
+  const dailyKcalDelta = Math.round((kgPerWeek * KCAL_PER_KG) / 7)
+
+  return {
+    totalWeeks: count,
+    activeWeeks: active,
+    bufferWeeks: buffer,
+    readyDate: weeks[active - 1]?.weekEnd ?? null,
+    kgPerWeek,
+    dailyKcalDelta,
+    weeks,
+  }
 }
 
 export function usePrepProtocol() {
@@ -119,7 +208,7 @@ export function usePrepProtocol() {
       setWeightLogs(wl ?? [])
 
       // Current week bounds for cross-tab stats
-      const plan = buildWeeks(row.start_date, row.competition_date, row.start_weight, row.target_weight)
+      const plan = buildWeeks(row.start_date, row.competition_date, row.start_weight, row.target_weight, row.ready_weeks ?? 2)
       const today = todayStr()
       const cw = plan.weeks.find(w => today >= w.weekStart && today <= w.weekEnd)
       if (cw) {
@@ -176,7 +265,7 @@ export function usePrepProtocol() {
   // Derived plan with actuals merged in
   let plan = null
   if (prep) {
-    plan = buildWeeks(prep.start_date, prep.competition_date, prep.start_weight, prep.target_weight)
+    plan = buildWeeks(prep.start_date, prep.competition_date, prep.start_weight, prep.target_weight, prep.ready_weeks ?? 2)
 
     plan.weeks = plan.weeks.map(week => {
       const ww = weightLogs.filter(w => w.date >= week.weekStart && w.date <= week.weekEnd)
@@ -200,7 +289,11 @@ export function usePrepProtocol() {
     const latest = weightLogs.at(-1)
     if (latest) {
       plan.latestWeight = latest.kg
-      const daysLeft = Math.max(1, Math.round((dayFromIso(prep.competition_date) - dayFromIso(today)) / 86400000))
+      /* Дните до готовност, не до сцената. Свалянето трябва да е приключило
+         преди пиковата седмица; смятало ли се е до деня на шоуто, темпото
+         излизаше по-спокойно, отколкото е в действителност. */
+      const deadline = plan.readyDate ?? prep.competition_date
+      const daysLeft = Math.max(1, Math.round((dayFromIso(deadline) - dayFromIso(today)) / 86400000))
       const kgLeft   = latest.kg - prep.target_weight
       plan.pace = {
         daysLeft,
@@ -218,6 +311,15 @@ export function usePrepProtocol() {
         if (Math.abs(diff) > 0.2) plan.offBy = Math.round(diff * 10) / 10
       }
     }
+
+    /* Стига ли срокът — същата сметка, която формулярът прави преди старта,
+       но върху текущото тегло: подготовка може да тръгне добре и да закъснее. */
+    plan.timeline = timelineCheck({
+      startWeight: plan.latestWeight ?? prep.start_weight,
+      targetWeight: prep.target_weight,
+      activeWeeks: plan.weeks.filter(w => !w.isBuffer && w.weekEnd >= today).length,
+      gender: profile?.gender,
+    })
 
     /* Подът. Числото, което формулата дава, е аритметика — тя не знае, че под
        базовия обмен не се живее. Свален е дотам и се казва, че е свален:
