@@ -1,5 +1,11 @@
 .page {
-  padding: 0 16px 40px;
+  /* Горе минава системната лента (островът), долу стои навигацията с копчето
+     по средата, което стърчи над лентата. Числата са същите както в
+     PrepProtocol и Budget — страница, която ги няма, си губи първия и
+     последния ред под чуждо стъкло. */
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(100px + env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -19,7 +25,6 @@
 /* ── Шапка ────────────────────────────────────────────────────────── */
 
 .head {
-  padding-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 3px;
