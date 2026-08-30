@@ -2627,4 +2627,5 @@ export default {
   'pp.rate.short':     'Pace {n}% of body weight a week, against a norm of {safe}%. {w} weeks short — this cut needed to start on {d}. Either the date moves or the target weight does.',
   'pp.rate.shortNow':  'From here the target asks for {n}% of body weight a week, against a norm of {safe}%. {w} weeks short — either the date moves or the target weight does.',
   'pp.buffer':         'buffer',
+  'pp.weeksOutShort': '{n} out',
 }

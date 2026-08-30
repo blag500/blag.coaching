@@ -482,7 +482,7 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
                 <div key={week.number} className={`${styles.timelineRow} ${isCurrent ? styles.timelineRowCurrent : ''} ${isPast ? styles.timelineRowPast : ''}`}>
                   <div className={styles.timelineWeek}>
                     <span className={styles.timelineWeekNum}>{t('pp.wk', { n: week.number })}</span>
-                    <span className={styles.timelineWeeksOut}>{week.weeksOut} out</span>
+                    <span className={styles.timelineWeeksOut}>{t('pp.weeksOutShort', { n: week.weeksOut })}</span>
                   </div>
                   <div className={styles.timelineDates}>{fmtShort(week.weekStart)}–{fmtShort(week.weekEnd)}</div>
                   <div className={styles.timelineTarget}>
