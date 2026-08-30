@@ -2651,4 +2651,24 @@ export default {
   'pw.vsLimitNow':   'vs now',
   'pw.vsLimitLook':  'vs the look',
   'pw.limitWarn':    'The weight you liked yourself at is {n} kg over the cap. Either the load comes down or the division changes — the scale is not where this gets decided.',
+
+  'pw.phase.weighin':     'WEIGH-IN',
+  'pw.phaseNote.weighin': 'Today you make weight. Nothing spare before the scale; the load starts the moment you step off it. From here every bite works for the stage, not against the scale.',
+
+  'pw.rule.weighIn':          'Nothing to eat and no spare water before the scale, if you are on the edge.',
+  'pw.rule.afterWeighIn':     'The load starts the moment you step off the scale. The hours before it are gone.',
+  'pw.rule.preWeighIn':       'The weigh-in is tomorrow. Food comes down in volume today — not for the calories, but because whatever is in the gut weighs on the scale.',
+  'pw.rule.lowFoodLowCardio': 'Making weight: less food and less cardio beats more cardio and more food. Fatigue holds water.',
+  'pw.rule.gutVolume':        'Gut volume weighs. The same calories from less food is the better trade this week.',
+
+  'pw.setup.showTime':         'Stage time',
+  'pw.setup.showTimeHint':     'the hours left after the weigh-in are counted from this',
+  'pw.setup.weighInDate':      'Weigh-in day',
+  'pw.setup.weighInDateHint':  'leave empty if there is no weigh-in; if there is, the load starts after it',
+  'pw.setup.weighInTime':      'Weigh-in time',
+  'pw.setup.weighInTimeHint':  'a Saturday morning weigh-in for a Sunday stage is twenty-seven hours; a Sunday morning one is three',
+
+  'pw.weighIn':       'WEIGH-IN',
+  'pw.weighInWindow': '{n} hours from the weigh-in to the stage.',
+  'pw.weighInTight':  'Only {n} hours between the weigh-in and the stage. That much food does not go in — the gut will not pass it. Either the load is smaller and you lean on being lean, or the division changes.',
 }

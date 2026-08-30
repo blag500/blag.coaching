@@ -47,7 +47,10 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
   const { t } = useSettings()
   const [form, setForm] = useState({
     show_date:      prep?.competition_date ?? '',
+    show_time:      '',
     show_name:      prep?.competition_name ?? '',
+    weigh_in_date:  '',
+    weigh_in_time:  '',
     division:       '',
     weight_limit:   '',
     division_notes: '',
@@ -73,7 +76,10 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
     setSaving(true); setError('')
     const { error: err } = await onSave({
       show_date:      form.show_date,
+      show_time:      form.show_time || null,
       show_name:      form.show_name || null,
+      weigh_in_date:  form.weigh_in_date || null,
+      weigh_in_time:  form.weigh_in_time || null,
       division:       form.division || null,
       weight_limit:   Number.isFinite(limit) ? limit : null,
       division_notes: form.division_notes || null,
@@ -107,6 +113,13 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
         </div>
 
         <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.showTime')}</label>
+          <input className={styles.input} type="time"
+            value={form.show_time} onChange={e => set('show_time', e.target.value)} />
+          <span className={styles.hint}>{t('pw.setup.showTimeHint')}</span>
+        </div>
+
+        <div className={styles.field}>
           <label className={styles.label}>{t('pw.setup.showName')}</label>
           <input className={styles.input} type="text" placeholder={t('pw.setup.showNamePh')}
             value={form.show_name} onChange={e => set('show_name', e.target.value)} />
@@ -128,6 +141,24 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
             value={form.weight_limit} onChange={e => set('weight_limit', e.target.value)} />
           <span className={styles.hint}>{t('pw.setup.limitHint')}</span>
         </div>
+
+        {/* Кантарът е вторият краен срок и при клас по тегло е обвързващият.
+            Ако го има, зареждането тръгва след него, не три дни преди шоуто. */}
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.weighInDate')}</label>
+          <input className={styles.input} type="date"
+            value={form.weigh_in_date} onChange={e => set('weigh_in_date', e.target.value)} />
+          <span className={styles.hint}>{t('pw.setup.weighInDateHint')}</span>
+        </div>
+
+        {form.weigh_in_date && (
+          <div className={styles.field}>
+            <label className={styles.label}>{t('pw.setup.weighInTime')}</label>
+            <input className={styles.input} type="time"
+              value={form.weigh_in_time} onChange={e => set('weigh_in_time', e.target.value)} />
+            <span className={styles.hint}>{t('pw.setup.weighInTimeHint')}</span>
+          </div>
+        )}
 
         <div className={styles.field}>
           <label className={styles.label}>{t('pw.setup.divisionNotes')}</label>
@@ -241,6 +272,9 @@ function DayStrip({ plan, selected, today, onSelect }) {
         >
           <span className={styles.stripDow}>{t(dowKey(d.date))}</span>
           <span className={styles.stripNum}>{d.daysOut === 0 ? '★' : d.daysOut}</span>
+          {/* Кантарът е втори краен срок и трябва да се вижда от лентата, а не
+              само от картата по-надолу. */}
+          {d.isWeighIn && <span className={styles.stripScale} aria-hidden="true" />}
         </button>
       ))}
     </div>
@@ -366,9 +400,9 @@ function LookCard({ pw }) {
  * зареждането качва два-три килограма за три дни, и при таван това е разликата
  * между да излезеш и да те претеглят извън класа.
  */
-function DivisionCard({ week, latestKg, lookWeight }) {
+function DivisionCard({ week, latestKg, lookWeight, weighIn }) {
   const { t } = useSettings()
-  if (!week.division && week.weight_limit == null && !week.division_notes) return null
+  if (!week.division && week.weight_limit == null && !week.division_notes && !weighIn) return null
 
   const limit = week.weight_limit
   const over  = limit != null && latestKg != null
@@ -412,6 +446,23 @@ function DivisionCard({ week, latestKg, lookWeight }) {
         /* Зареждането качва тегло нарочно. При таван това трябва да се каже
            преди петък, не в събота на кантара. */
         <p className={styles.warn}>{t('pw.limitWarn', { n: lookOver })}</p>
+      )}
+
+      {weighIn && (
+        <div className={styles.weighIn}>
+          <div className={styles.weighInHead}>
+            <span className={styles.weighInLabel}>{t('pw.weighIn')}</span>
+            <span className={styles.weighInWhen}>
+              {fmtDay(weighIn.date)}{weighIn.time ? ` · ${weighIn.time.slice(0, 5)}` : ''}
+            </span>
+          </div>
+          <p className={styles.note}>
+            {t('pw.weighInWindow', { n: weighIn.hoursToShow })}
+          </p>
+          {/* Тесният прозорец не е дребна подробност: при около осемнайсет часа
+              просто няма как да се вкара достатъчно храна. */}
+          {weighIn.tight && <p className={styles.warn}>{t('pw.weighInTight', { n: weighIn.hoursToShow })}</p>}
+        </div>
       )}
 
       {week.division_notes && <p className={styles.divisionNotes}>{week.division_notes}</p>}
@@ -696,7 +747,7 @@ export default function PeakWeek({ prep = null, runway = null }) {
 
       {plan && <DayStrip plan={plan} selected={selected} today={today} onSelect={setSelected} />}
 
-      <DivisionCard week={week} latestKg={pw.latestKg} lookWeight={pw.lookWeight} />
+      <DivisionCard week={week} latestKg={pw.latestKg} lookWeight={pw.lookWeight} weighIn={plan?.weighIn} />
 
       {day && <DayCard day={day} pw={pw} onApplyMacros={updateProfile} />}
 

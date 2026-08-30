@@ -19,11 +19,22 @@
  */
 
 export const PHASE = {
-  taper:  'taper',   // сваляне на умората: делоуд, кардио → стъпки, храна до поддръжка
-  load:   'load',    // зареждане с въглехидрати
-  adjust: 'adjust',  // един ден преди: продължаваш, задържаш или дърпаш назад
-  show:   'show',    // денят
+  taper:   'taper',    // сваляне на умората: делоуд, кардио → стъпки, храна до поддръжка
+  weighin: 'weighin',  // кантарът: при клас по тегло това е обвързващият момент
+  load:    'load',     // зареждане с въглехидрати
+  adjust:  'adjust',   // един ден преди: продължаваш, задържаш или дърпаш назад
+  show:    'show',     // денят
 }
+
+/**
+ * Часовете, под които прозорецът от кантара до сцената е тесен.
+ *
+ * Източникът е пряк: при около осемнайсет часа между претеглянето и излизането
+ * често просто няма как да се вкара достатъчно храна — стомахът не пропуска
+ * толкова. Тогава изборът е между по-малко зареждане и друга категория, и той
+ * се прави в понеделник, не в събота.
+ */
+export const WEIGHIN_TIGHT_HOURS = 18
 
 /** Границите от източника: 3–10 г/кг, практически 4–6. */
 export const CARB_MIN = 3
@@ -93,14 +104,26 @@ export function stepsTargetFor(cardioMinPerDay) {
   return clamp(Math.round(converted / 500) * 500, STEPS_FLOOR, STEPS_CEIL)
 }
 
-function macrosFor(phase, kg, carbPerKg, tdee, adjustChoice) {
+/* Денят преди кантара: храната пада, но не защото се свалят калории — а
+   защото обемът в стомаха тежи на кантара сам по себе си. Източникът е
+   изричен, че за човек с клас по тегло по-малко храна и по-малко кардио бие
+   повече кардио и повече храна. */
+const PRE_WEIGHIN_CUT = 0.55
+
+function macrosFor(phase, kg, carbPerKg, tdee, adjustChoice, opts = {}) {
+  const { preWeighIn = false, postWeighIn = false } = opts
+
   if (phase === PHASE.taper) {
     const protein = r0(kg * BASE_PROTEIN_PER_KG)
     const fat     = r0(kg * BASE_FAT_PER_KG)
     /* Храната се качва до поддръжка. Ако не знаем поддръжката, оставяме
        въглехидратите неизвестни, вместо да измислим число. */
-    const carbs = tdee ? Math.max(0, r0((tdee - protein * 4 - fat * 9) / 4)) : null
-    return { protein, fat, carbs, kcal: tdee ?? null }
+    let carbs = tdee ? Math.max(0, r0((tdee - protein * 4 - fat * 9) / 4)) : null
+    if (preWeighIn && carbs != null) carbs = r0(carbs * PRE_WEIGHIN_CUT)
+    return {
+      protein, fat, carbs,
+      kcal: carbs != null ? r0(carbs * 4 + protein * 4 + fat * 9) : (tdee ?? null),
+    }
   }
 
   const loadCarbs = r0(kg * carbPerKg)
@@ -108,7 +131,10 @@ function macrosFor(phase, kg, carbPerKg, tdee, adjustChoice) {
   const fat       = r0(kg * LOAD_FAT_PER_KG)
 
   let carbs = loadCarbs
-  if (phase === PHASE.adjust || phase === PHASE.show) {
+  /* След кантара свиване няма. „Задръж" е разумно, когато зад гърба ти има
+     два-три дни зареждане; когато зад гърба ти има кантар отпреди часове,
+     единственото, което върши работа, е да пълниш. */
+  if (!postWeighIn && (phase === PHASE.adjust || phase === PHASE.show)) {
     /* Денят преди не е поредният ден по план — той е преценка. „Задръж" е
        средата между зареждане и връщане назад, и е разумното по подразбиране. */
     if (adjustChoice === ADJUST.hold) carbs = r0(loadCarbs * 0.6)
@@ -125,10 +151,19 @@ function macrosFor(phase, kg, carbPerKg, tdee, adjustChoice) {
  * „без диуретици" само веднъж в понеделник, го е забравил в петък, а точно в
  * петък изкушението идва.
  */
-function rulesFor(phase, isFirst) {
+function rulesFor(phase, isFirst, makingWeight, preWeighIn) {
   const common = ['pw.rule.sodium', 'pw.rule.water']
+  if (phase === PHASE.weighin) {
+    return ['pw.rule.weighIn', 'pw.rule.afterWeighIn', 'pw.rule.fullRest', ...common]
+  }
   if (phase === PHASE.taper) {
-    const r = ['pw.rule.eatUp', 'pw.rule.noDeplete', ...common]
+    const r = makingWeight
+      /* При клас по тегло редът е друг: по-малко храна и по-малко кардио бие
+         повече кардио и повече храна. Умората задържа вода, а обемът в стомаха
+         тежи на кантара сам по себе си. */
+      ? ['pw.rule.lowFoodLowCardio', 'pw.rule.gutVolume', ...common]
+      : ['pw.rule.eatUp', 'pw.rule.noDeplete', ...common]
+    if (preWeighIn) r.unshift('pw.rule.preWeighIn')
     if (isFirst) r.unshift('pw.rule.deloadStart')
     return r
   }
@@ -152,6 +187,9 @@ function rulesFor(phase, isFirst) {
  * @param {2|3}    [cfg.loadDays]          от колко дни преди тръгва зареждането
  * @param {number} [cfg.cardioMinPerDay]   умерено кардио на ден, за курса към стъпки
  * @param {string} [cfg.adjust]            изборът за деня преди: keep | hold | pull
+ * @param {string} [cfg.weighInDate]       YYYY-MM-DD, ако категорията има таван
+ * @param {string} [cfg.weighInTime]       HH:MM
+ * @param {string} [cfg.showTime]          HH:MM
  */
 export function buildPeakWeek({
   showDate,
@@ -161,6 +199,9 @@ export function buildPeakWeek({
   loadDays = 3,
   cardioMinPerDay = 0,
   adjust = ADJUST.hold,
+  weighInDate = null,
+  weighInTime = null,
+  showTime = null,
 } = {}) {
   if (!showDate || !weightKg) return null
 
@@ -169,26 +210,50 @@ export function buildPeakWeek({
   const load  = clamp(Number(loadDays) || 3, 2, 3)
   const steps = stepsTargetFor(cardioMinPerDay)
 
+  /* Кантарът е вторият краен срок, и при клас по тегло той е обвързващият.
+     Зареждането качва два-три килограма за три дни — ако то върви преди
+     претеглянето, човек прави тегло с натъпкан стомах или изобщо не го прави.
+     Затова при обявен кантар зареждането тръгва СЛЕД него, а дните преди са
+     ден за правене на тегло: малко храна, малко кардио, малко обем в стомаха. */
+  const weighInDaysOut = weighInDate
+    ? Math.round((fromIso(showDate) - fromIso(weighInDate)) / 86400000)
+    : null
+  const hasWeighIn = weighInDaysOut != null && weighInDaysOut >= 0 && weighInDaysOut <= 7
+
   const days = []
   for (let daysOut = 7; daysOut >= 0; daysOut--) {
-    const phase = daysOut === 0 ? PHASE.show
-      : daysOut === 1 ? PHASE.adjust
-      : daysOut <= load ? PHASE.load
-      : PHASE.taper
+    let phase
+    if (hasWeighIn) {
+      /* Денят на кантара е ден на кантара дори когато съвпада с деня на шоуто —
+         тогава той просто е първата половина от него. */
+      phase = daysOut === weighInDaysOut ? PHASE.weighin
+        : daysOut > weighInDaysOut ? PHASE.taper
+        : daysOut === 0 ? PHASE.show
+        : PHASE.load
+    } else {
+      phase = daysOut === 0 ? PHASE.show
+        : daysOut === 1 ? PHASE.adjust
+        : daysOut <= load ? PHASE.load
+        : PHASE.taper
+    }
 
-    const resting = phase === PHASE.adjust || phase === PHASE.show
+    const resting     = phase === PHASE.adjust || phase === PHASE.show || phase === PHASE.weighin
+    const preWeighIn  = hasWeighIn && daysOut === weighInDaysOut + 1
+    const postWeighIn = hasWeighIn && daysOut < weighInDaysOut
 
     days.push({
       date:     shift(showDate, -daysOut),
       daysOut,
       phase,
-      ...macrosFor(phase, kg, gkg, tdee, adjust),
+      ...macrosFor(phase, kg, gkg, tdee, adjust, { preWeighIn, postWeighIn }),
       /* Тренировката е най-силният лост върху умората, а умората задържа вода.
          Затова обемът пада от първия ден, а не от последния. */
       training:  resting ? 'rest' : 'deload',
       volumeCut: resting ? null : VOLUME_CUT,
       steps:     resting ? null : steps,
-      rules:     rulesFor(phase, daysOut === 7),
+      rules:     rulesFor(phase, daysOut === 7, hasWeighIn, preWeighIn),
+      isWeighIn: hasWeighIn && daysOut === weighInDaysOut,
+      preWeighIn,
     })
   }
 
@@ -206,6 +271,29 @@ export function buildPeakWeek({
     carbPerKgForSurplus = Math.min(CARB_MAX, Math.ceil((needCarbs / kg) * 10) / 10)
   }
 
+  /* Колко часа остават за пълнене след кантара. Дните не стигат за тази
+     сметка: кантар в събота 8:00 при сцена в неделя 11:00 е двайсет и седем
+     часа, а кантар в неделя 8:00 при същата сцена е три. */
+  let weighIn = null
+  if (hasWeighIn) {
+    const wi = fromIso(weighInDate)
+    const [wh, wm] = String(weighInTime ?? '08:00').split(':').map(Number)
+    wi.setHours(wh || 0, wm || 0, 0, 0)
+
+    const sh = fromIso(showDate)
+    const [th, tm] = String(showTime ?? '11:00').split(':').map(Number)
+    sh.setHours(th || 0, tm || 0, 0, 0)
+
+    const hours = Math.round((sh - wi) / 3600000)
+    weighIn = {
+      date: weighInDate,
+      time: weighInTime ?? null,
+      daysOut: weighInDaysOut,
+      hoursToShow: hours,
+      tight: hours < WEIGHIN_TIGHT_HOURS,
+    }
+  }
+
   return {
     showDate,
     startDate: shift(showDate, -7),
@@ -213,6 +301,7 @@ export function buildPeakWeek({
     carbPerKg: gkg,
     stepsTarget: steps,
     loadKcal,
+    weighIn,
     /** Само когато знаем поддръжката и зареждането пада под нея. */
     lowLoad: carbPerKgForSurplus != null ? { tdee, loadKcal, needPerKg: carbPerKgForSurplus } : null,
     days,

@@ -797,3 +797,48 @@
 }
 .endYes { background: rgba(var(--red-rgb), 0.14); border: 1px solid rgba(var(--red-rgb), 0.45); color: var(--red); }
 .endNo  { background: transparent; border: 1px solid var(--panel-border); color: var(--muted); }
+
+/* ── Кантарът ─────────────────────────────────────────────────────── */
+
+/* Белегът в лентата. Точка, не иконка: осем клетки по 40px не побират знак,
+   който да се разчете, а тук важното е само „този ден е различен". */
+.stripScale {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+  margin-top: 1px;
+}
+
+.weighIn {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.weighInHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.weighInLabel {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.weighInWhen {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Фазата на кантара в лентата и в етикета на деня. */
+.ph_weighin  { border-top: 2px solid var(--red); }
+.tag_weighin { color: var(--bg); background: var(--red); }
+

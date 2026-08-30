@@ -84,6 +84,9 @@ export function usePeakWeek(clientId = null) {
         loadDays:        week.load_days,
         cardioMinPerDay: week.cardio_min,
         adjust:          week.adjust_choice ?? ADJUST.hold,
+        weighInDate:     week.weigh_in_date,
+        weighInTime:     week.weigh_in_time,
+        showTime:        week.show_time,
       })
     : null
 
