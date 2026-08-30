@@ -2628,4 +2628,27 @@ export default {
   'pp.rate.shortNow':  'From here the target asks for {n}% of body weight a week, against a norm of {safe}%. {w} weeks short — either the date moves or the target weight does.',
   'pp.buffer':         'buffer',
   'pp.weeksOutShort': '{n} out',
+
+  'pw.setup.gShow':   'THE SHOW',
+  'pw.setup.gYou':    'YOU NOW',
+  'pw.setup.gLoad':   'THE LOAD',
+
+  'pw.setup.division':        'Division',
+  'pw.setup.divisionPh':      'e.g. Classic Physique',
+  'pw.setup.limit':           'Weight cap',
+  'pw.setup.limitPh':         'kg',
+  'pw.setup.limitHint':       'leave empty if the division has no cap',
+  'pw.setup.divisionNotes':   'Requirements',
+  'pw.setup.divisionNotesPh': 'poses, suit, tan, weigh-in time — whatever has to be remembered',
+
+  'pw.setup.weight':     'Weight now',
+  'pw.setup.weightHint': 'carbs, protein and fat are worked out from this',
+  'pw.setup.overLimit':  'You are {n} kg over the cap already, and the load will add more.',
+  'pw.setup.perKgCalc':  '{n} g a day',
+
+  'pw.division':     'DIVISION',
+  'pw.limit':        'cap',
+  'pw.vsLimitNow':   'vs now',
+  'pw.vsLimitLook':  'vs the look',
+  'pw.limitWarn':    'The weight you liked yourself at is {n} kg over the cap. Either the load comes down or the division changes — the scale is not where this gets decided.',
 }

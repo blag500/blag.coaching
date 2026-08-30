@@ -2637,4 +2637,27 @@ export default {
   'pp.rate.shortNow':  'Оттук нататък целта иска {n}% от теглото седмично, при норма {safe}%. Липсват {w} седмици — или се мести датата, или се вдига целевото тегло.',
   'pp.buffer':         'буфер',
   'pp.weeksOutShort': '{n} до сцената',
+
+  'pw.setup.gShow':   'ШОУТО',
+  'pw.setup.gYou':    'ТИ СЕГА',
+  'pw.setup.gLoad':   'ЗАРЕЖДАНЕТО',
+
+  'pw.setup.division':        'Категория',
+  'pw.setup.divisionPh':      'напр. Classic Physique',
+  'pw.setup.limit':           'Таван на теглото',
+  'pw.setup.limitPh':         'кг',
+  'pw.setup.limitHint':       'остави празно, ако категорията няма таван',
+  'pw.setup.divisionNotes':   'Изисквания',
+  'pw.setup.divisionNotesPh': 'пози, облекло, тен, час на претегляне — каквото трябва да се помни',
+
+  'pw.setup.weight':     'Тегло сега',
+  'pw.setup.weightHint': 'на него се смятат въглехидратите, протеинът и мазнините',
+  'pw.setup.overLimit':  'Сега си {n} кг над тавана, а зареждането ще качи още.',
+  'pw.setup.perKgCalc':  '{n} г на ден',
+
+  'pw.division':     'КАТЕГОРИЯ',
+  'pw.limit':        'таван',
+  'pw.vsLimitNow':   'спрямо сега',
+  'pw.vsLimitLook':  'спрямо вида',
+  'pw.limitWarn':    'Теглото, при което си се харесал, е {n} кг над тавана. Или зареждането слиза, или категорията се мени — на кантара това не се решава.',
 }

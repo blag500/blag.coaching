@@ -8,7 +8,7 @@
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
   composes: arrive d1 from '../../styles/arrive.module.css';
 }
 
@@ -49,7 +49,7 @@
 .subtitle {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 
@@ -148,14 +148,15 @@
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
   border-radius: var(--r-lg);
-  padding: 14px 16px 16px;
+  padding: 18px;
 }
 
 .cardTitle {
   font-family: var(--font-heading);
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--muted);
+  font-size: 12.5px;
+  letter-spacing: 0.14em;
+  color: var(--text);
+  opacity: 0.75;
   text-transform: uppercase;
 }
 
@@ -173,17 +174,18 @@
 .chev { color: var(--muted); font-size: 13px; }
 
 .note {
-  margin: 6px 0 0;
+  margin: 10px 0 0;
   font-family: var(--font-body);
-  font-size: 11.5px;
-  line-height: 1.55;
-  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  opacity: 0.72;
 }
 
 .empty {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   font-family: var(--font-body);
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--muted);
   opacity: 0.7;
 }
@@ -195,8 +197,8 @@
   border-left: 2px solid rgba(var(--red-rgb), 0.5);
   border-radius: 0 var(--r-sm) var(--r-sm) 0;
   font-family: var(--font-body);
-  font-size: 11.5px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--text);
 }
 
@@ -206,7 +208,7 @@
   padding: 0;
   color: var(--accent);
   font-family: var(--font-body);
-  font-size: 11.5px;
+  font-size: 13px;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -235,9 +237,9 @@
 .tag_show   { color: var(--bg); background: var(--accent); }
 
 .dayDate {
-  margin-top: 6px;
+  margin-top: 8px;
   font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -270,8 +272,8 @@
 
 .macroLabel {
   font-family: var(--font-body);
-  font-size: 9.5px;
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -306,7 +308,7 @@
 
 .lineLabel {
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -315,7 +317,7 @@
 
 .lineVal {
   font-family: var(--font-body);
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.4;
   color: var(--text);
   text-align: right;
@@ -331,14 +333,14 @@
 .check {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 11px 7px 8px;
+  gap: 8px;
+  padding: 9px 14px 9px 10px;
   background: transparent;
   border: 1px solid var(--panel-border);
   border-radius: var(--r-pill);
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 11.5px;
+  font-size: 13px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
@@ -386,8 +388,8 @@
 
 .lookLabel {
   font-family: var(--font-body);
-  font-size: 9.5px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -401,22 +403,22 @@
 .input {
   flex: 1;
   min-width: 0;
-  height: 42px;
-  padding: 0 12px;
+  height: 50px;
+  padding: 0 14px;
   background: var(--surface-2);
   border: 1px solid var(--panel-border);
   border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
 }
 .input:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.5); }
 
 .ghostBtn {
   flex-shrink: 0;
-  padding: 0 16px;
-  height: 42px;
+  padding: 0 18px;
+  height: 50px;
   background: transparent;
   border: 1px solid var(--panel-border);
   border-radius: var(--r-sm);
@@ -435,8 +437,8 @@
    целевото тегло за деня на шоуто. */
 .lookBtn {
   flex-shrink: 0;
-  width: 46px;
-  height: 42px;
+  width: 54px;
+  height: 50px;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.5);
   border-radius: var(--r-sm);
@@ -449,14 +451,14 @@
 
 .photoBtn {
   width: 100%;
-  margin-top: 6px;
-  min-height: 38px;
+  margin-top: 8px;
+  min-height: 46px;
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.14);
   border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-body);
-  font-size: 11.5px;
+  font-size: 13px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -534,10 +536,10 @@
 /* ── Зареждането ──────────────────────────────────────────────────── */
 
 .loadSummary {
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   font-family: var(--font-body);
-  font-size: 12.5px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--text);
 }
 
@@ -548,22 +550,22 @@
   gap: 14px;
 }
 
-.field { display: flex; flex-direction: column; gap: 6px; }
+.field { display: flex; flex-direction: column; gap: 9px; }
 
 .label {
   font-family: var(--font-body);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text);
+  opacity: 0.82;
 }
 
 .hint {
   font-family: var(--font-body);
-  font-size: 10.5px;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--muted);
-  opacity: 0.8;
 }
 
 .stepper {
@@ -573,8 +575,8 @@
 }
 
 .stepBtn {
-  width: 42px;
-  height: 42px;
+  width: 50px;
+  height: 50px;
   background: var(--surface-2);
   border: 1px solid var(--panel-border);
   border-radius: var(--r-sm);
@@ -598,7 +600,7 @@
 
 .seg {
   flex: 1;
-  min-height: 40px;
+  min-height: 50px;
   background: transparent;
   border: 1px solid var(--panel-border);
   border-radius: var(--r-sm);
@@ -616,19 +618,19 @@
 
 .rules {
   list-style: none;
-  margin: 10px 0 0;
+  margin: 14px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .rule {
   position: relative;
-  padding-left: 16px;
+  padding-left: 18px;
   font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 13.5px;
+  line-height: 1.65;
   color: var(--text);
 }
 .rule::before {
@@ -646,10 +648,10 @@
 
 .never {
   position: relative;
-  padding-left: 16px;
+  padding-left: 18px;
   font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 13.5px;
+  line-height: 1.65;
   color: var(--text);
 }
 .never::before {
@@ -663,9 +665,9 @@
 }
 
 .source {
-  margin: 12px 0 0;
+  margin: 16px 0 0;
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   opacity: 0.65;
 }
@@ -675,19 +677,69 @@
 .setup {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  border-radius: var(--r-lg);
-  padding: 16px;
+  gap: 18px;
 }
 
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* Групите носят целия ремонт на четимостта: девет полета в един списък с
+   обяснение под всяко се четат като стена, а три групи по три — не. */
+.group {
+  margin: 0;
+  padding: 18px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
+
+.groupTitle {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--panel-border);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.textarea:focus { outline: none; border-color: rgba(var(--accent-rgb), 0.5); }
+
+.divisionName {
+  margin: 10px 0 0;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+
+.divisionNotes {
+  margin: 14px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid rgba(var(--accent-rgb), 0.35);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+  opacity: 0.82;
+  white-space: pre-wrap;
+}
+
+.overLimit  { color: var(--red); }
+.underLimit { color: var(--ok); }
 
 .error {
   margin: 0;

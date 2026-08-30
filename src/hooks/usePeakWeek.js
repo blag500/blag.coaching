@@ -20,6 +20,7 @@ export function usePeakWeek(clientId = null) {
 
   const [week,    setWeek]    = useState(null)
   const [logs,    setLogs]    = useState(empty)
+  const [lastKg,  setLastKg]  = useState(null)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
@@ -36,6 +37,18 @@ export function usePeakWeek(clientId = null) {
       .maybeSingle()
 
     setWeek(row ?? null)
+
+    /* Последното сутрешно тегло. Ползва се, когато седмицата още не е
+       започнала и няма собствени мерения — иначе формулярът отказва да тръгне
+       с „няма записано тегло", без да предлага къде да се въведе. */
+    const { data: wl } = await supabase
+      .from('weight_logs')
+      .select('kg')
+      .eq('user_id', uid)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    setLastKg(wl?.kg ?? null)
 
     if (row) {
       const { data: ls } = await supabase
@@ -57,7 +70,10 @@ export function usePeakWeek(clientId = null) {
      Последното мерене бие полето в профила: то е попълнено веднъж преди месеци,
      а на пикова седмица разликата от три килограма мести зареждането с 150
      грама въглехидрати. */
-  const latestKg = [...logs].reverse().find(l => l.kg != null)?.kg ?? profile?.weight_kg ?? null
+  const latestKg = [...logs].reverse().find(l => l.kg != null)?.kg
+    ?? lastKg
+    ?? profile?.weight_kg
+    ?? null
 
   const plan = week
     ? buildPeakWeek({
@@ -98,14 +114,31 @@ export function usePeakWeek(clientId = null) {
 
   // ── мутации ────────────────────────────────────────────────────────
 
-  async function createWeek(values) {
+  async function createWeek(values, initialKg = null) {
     if (!user) return { error: new Error('not logged in') }
     const { data, error } = await supabase
       .from('peak_weeks')
       .insert({ user_id: user.id, ...values })
       .select().single()
-    if (!error && data) { setWeek(data); setLogs(empty) }
-    return { error }
+    if (error || !data) return { error }
+
+    setWeek(data)
+    setLogs(empty)
+
+    /* Теглото от формуляра става първото мерене на седмицата, а през
+       weight_logs влиза и в кривата на подготовката. Иначе човек го въвежда
+       веднъж, вижда го да изчезва, и го въвежда пак. */
+    if (initialKg) {
+      const { data: log } = await supabase
+        .from('peak_week_logs')
+        .insert({ peak_week_id: data.id, user_id: user.id, date: today, kg: initialKg })
+        .select().single()
+      if (log) setLogs([log])
+      await supabase.from('weight_logs')
+        .upsert({ user_id: user.id, date: today, kg: initialKg }, { onConflict: 'user_id,date' })
+      setLastKg(initialKg)
+    }
+    return { error: null }
   }
 
   async function updateWeek(updates) {

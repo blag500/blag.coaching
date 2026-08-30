@@ -36,77 +36,151 @@ function fmtTime(ts) {
 
 // ── Настройка ────────────────────────────────────────────────────────
 
+/**
+ * Настройката.
+ *
+ * Групирана на три части, защото един списък от девет полета с обяснение под
+ * всяко се чете като стена. Заглавията не са украса — те казват кое поле за
+ * какво пита: шоуто, ти сега, зареждането.
+ */
 function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
   const { t } = useSettings()
   const [form, setForm] = useState({
-    show_date:   prep?.competition_date ?? '',
-    show_name:   prep?.competition_name ?? '',
-    tdee:        String(prep?.tdee ?? tdeeFor(profile) ?? ''),
-    cardio_min:  '',
-    carb_per_kg: String(suggestedCarbPerKg ?? 5),
-    load_days:   3,
+    show_date:      prep?.competition_date ?? '',
+    show_name:      prep?.competition_name ?? '',
+    division:       '',
+    weight_limit:   '',
+    division_notes: '',
+    weight:         latestKg != null ? String(latestKg) : '',
+    tdee:           String(prep?.tdee ?? tdeeFor(profile) ?? ''),
+    cardio_min:     '',
+    carb_per_kg:    String(suggestedCarbPerKg ?? 5),
+    load_days:      3,
   })
   const [saving, setSaving] = useState(false)
   const [error,  setError]  = useState('')
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
+  const kg    = parseFloat(form.weight)
+  const limit = parseFloat(form.weight_limit)
+  const overLimit = Number.isFinite(limit) && Number.isFinite(kg) && kg > limit
+
   async function submit(e) {
     e.preventDefault()
     if (!form.show_date) { setError(t('pw.err.date')); return }
-    if (!latestKg)       { setError(t('pw.err.weight')); return }
+    if (!kg || kg < 30 || kg > 300) { setError(t('pw.err.weight')); return }
     setSaving(true); setError('')
     const { error: err } = await onSave({
-      show_date:   form.show_date,
-      show_name:   form.show_name || null,
-      tdee:        parseInt(form.tdee) || null,
-      cardio_min:  parseInt(form.cardio_min) || 0,
-      carb_per_kg: parseFloat(form.carb_per_kg) || 5,
-      load_days:   Number(form.load_days),
-      prep_id:     prep?.id ?? null,
-    })
+      show_date:      form.show_date,
+      show_name:      form.show_name || null,
+      division:       form.division || null,
+      weight_limit:   Number.isFinite(limit) ? limit : null,
+      division_notes: form.division_notes || null,
+      tdee:           parseInt(form.tdee) || null,
+      cardio_min:     parseInt(form.cardio_min) || 0,
+      carb_per_kg:    parseFloat(form.carb_per_kg) || 5,
+      load_days:      Number(form.load_days),
+      prep_id:        prep?.id ?? null,
+    }, kg)
     setSaving(false)
     if (err) setError(err.message || t('pw.err.save'))
   }
 
   return (
     <form className={styles.setup} onSubmit={submit}>
-      <div className={styles.field}>
-        <label className={styles.label}>{t('pw.setup.showDate')}</label>
-        <input className={styles.input} type="date" required
-          value={form.show_date} onChange={e => set('show_date', e.target.value)} />
-        <span className={styles.hint}>{t('pw.setup.showDateHint')}</span>
+      <div className={styles.group}>
+        <div className={styles.groupTitle}>{t('pw.setup.gShow')}</div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.showDate')}</label>
+          <input className={styles.input} type="date" required
+            value={form.show_date} onChange={e => set('show_date', e.target.value)} />
+          <span className={styles.hint}>{t('pw.setup.showDateHint')}</span>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.showName')}</label>
+          <input className={styles.input} type="text" placeholder={t('pw.setup.showNamePh')}
+            value={form.show_name} onChange={e => set('show_name', e.target.value)} />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.division')}</label>
+          <input className={styles.input} type="text" placeholder={t('pw.setup.divisionPh')}
+            value={form.division} onChange={e => set('division', e.target.value)} />
+        </div>
+
+        {/* Лимитът се въвежда, не се изчислява: таблиците по височина се
+            различават по федерация и по година, а числото, което треньорът
+            знае, е точно. */}
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.limit')}</label>
+          <input className={styles.input} type="number" inputMode="decimal" step="0.1"
+            min="30" max="200" placeholder={t('pw.setup.limitPh')}
+            value={form.weight_limit} onChange={e => set('weight_limit', e.target.value)} />
+          <span className={styles.hint}>{t('pw.setup.limitHint')}</span>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.divisionNotes')}</label>
+          <textarea className={styles.textarea} rows={3}
+            placeholder={t('pw.setup.divisionNotesPh')}
+            value={form.division_notes} onChange={e => set('division_notes', e.target.value)} />
+        </div>
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.label}>{t('pw.setup.showName')}</label>
-        <input className={styles.input} type="text" placeholder={t('pw.setup.showNamePh')}
-          value={form.show_name} onChange={e => set('show_name', e.target.value)} />
-      </div>
+      <div className={styles.group}>
+        <div className={styles.groupTitle}>{t('pw.setup.gYou')}</div>
 
-      <div className={styles.grid2}>
+        <div className={styles.field}>
+          <label className={styles.label}>{t('pw.setup.weight')}</label>
+          <input className={styles.input} type="number" inputMode="decimal" step="0.1"
+            min="30" max="300" required
+            value={form.weight} onChange={e => set('weight', e.target.value)} />
+          <span className={styles.hint}>{t('pw.setup.weightHint')}</span>
+        </div>
+
+        {/* Предупреждението стои под цялото поле, не между него и обяснението
+            му — иначе обяснението изглежда като част от тревогата. */}
+        {overLimit && (
+          <p className={styles.warn}>
+            {t('pw.setup.overLimit', { n: Math.round((kg - limit) * 10) / 10 })}
+          </p>
+        )}
+
         <div className={styles.field}>
           <label className={styles.label}>{t('pw.setup.tdee')}</label>
           <input className={styles.input} type="number" inputMode="numeric" min="1200" max="6000"
             value={form.tdee} onChange={e => set('tdee', e.target.value)} />
           <span className={styles.hint}>{t('pw.setup.tdeeHint')}</span>
         </div>
+
         <div className={styles.field}>
           <label className={styles.label}>{t('pw.setup.cardio')}</label>
-          <input className={styles.input} type="number" inputMode="numeric" min="0" max="180" placeholder="0"
+          <input className={styles.input} type="number" inputMode="numeric" min="0" max="180"
+            placeholder="0"
             value={form.cardio_min} onChange={e => set('cardio_min', e.target.value)} />
           <span className={styles.hint}>{t('pw.setup.cardioHint')}</span>
         </div>
       </div>
 
-      <div className={styles.grid2}>
+      <div className={styles.group}>
+        <div className={styles.groupTitle}>{t('pw.setup.gLoad')}</div>
+
         <div className={styles.field}>
           <label className={styles.label}>{t('pw.setup.perKg')}</label>
           <input className={styles.input} type="number" inputMode="decimal" step="0.1"
             min={CARB_MIN} max={CARB_MAX}
             value={form.carb_per_kg} onChange={e => set('carb_per_kg', e.target.value)} />
-          <span className={styles.hint}>{t('pw.setup.perKgHint')}</span>
+          <span className={styles.hint}>
+            {t('pw.setup.perKgHint')}
+            {Number.isFinite(kg) && form.carb_per_kg
+              ? ' \u00b7 ' + t('pw.setup.perKgCalc', { n: Math.round(kg * parseFloat(form.carb_per_kg)) })
+              : ''}
+          </span>
         </div>
+
         <div className={styles.field}>
           <label className={styles.label}>{t('pw.setup.loadDays')}</label>
           <div className={styles.segRow}>
@@ -123,7 +197,7 @@ function PeakSetup({ onSave, profile, prep, suggestedCarbPerKg, latestKg }) {
       {error && <p className={styles.error}>{error}</p>}
 
       <button className={styles.primaryBtn} type="submit" disabled={saving}>
-        {saving ? '…' : t('pw.setup.start')}
+        {saving ? '\u2026' : t('pw.setup.start')}
       </button>
     </form>
   )
@@ -274,6 +348,66 @@ function LookCard({ pw }) {
           {t('pw.pinLook', { n: lookWeight })}
         </button>
       )}
+    </section>
+  )
+}
+
+/**
+ * Категорията и нейният таван.
+ *
+ * Стои високо, защото при категория с лимит тя мени смисъла на всичко под нея:
+ * зареждането качва два-три килограма за три дни, и при таван това е разликата
+ * между да излезеш и да те претеглят извън класа.
+ */
+function DivisionCard({ week, latestKg, lookWeight }) {
+  const { t } = useSettings()
+  if (!week.division && week.weight_limit == null && !week.division_notes) return null
+
+  const limit = week.weight_limit
+  const over  = limit != null && latestKg != null
+    ? Math.round((latestKg - limit) * 10) / 10
+    : null
+  const lookOver = limit != null && lookWeight != null
+    ? Math.round((lookWeight - limit) * 10) / 10
+    : null
+
+  return (
+    <section className={styles.card}>
+      <div className={styles.cardTitle}>{t('pw.division')}</div>
+      {week.division && <p className={styles.divisionName}>{week.division}</p>}
+
+      {limit != null && (
+        <div className={styles.lookRow}>
+          <div className={styles.lookCell}>
+            <span className={styles.lookValSm}>{limit}</span>
+            <span className={styles.lookLabel}>{t('pw.limit')}</span>
+          </div>
+          {over != null && (
+            <div className={styles.lookCell}>
+              <span className={`${styles.lookValSm} ${over > 0 ? styles.overLimit : styles.underLimit}`}>
+                {over > 0 ? '+' : ''}{over}
+              </span>
+              <span className={styles.lookLabel}>{t('pw.vsLimitNow')}</span>
+            </div>
+          )}
+          {lookOver != null && (
+            <div className={styles.lookCell}>
+              <span className={`${styles.lookValSm} ${lookOver > 0 ? styles.overLimit : styles.underLimit}`}>
+                {lookOver > 0 ? '+' : ''}{lookOver}
+              </span>
+              <span className={styles.lookLabel}>{t('pw.vsLimitLook')}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {limit != null && lookOver != null && lookOver > 0 && (
+        /* Зареждането качва тегло нарочно. При таван това трябва да се каже
+           преди петък, не в събота на кантара. */
+        <p className={styles.warn}>{t('pw.limitWarn', { n: lookOver })}</p>
+      )}
+
+      {week.division_notes && <p className={styles.divisionNotes}>{week.division_notes}</p>}
     </section>
   )
 }
@@ -554,6 +688,8 @@ export default function PeakWeek({ prep = null, runway = null }) {
       </header>
 
       {plan && <DayStrip plan={plan} selected={selected} today={today} onSelect={setSelected} />}
+
+      <DivisionCard week={week} latestKg={pw.latestKg} lookWeight={pw.lookWeight} />
 
       {day && <DayCard day={day} pw={pw} onApplyMacros={updateProfile} />}
 
