@@ -11,7 +11,12 @@
   gap: 12px;
 }
 
+/* Един и същи жест с картите на ДНЕС, а не втори, написан тук. Разделите
+   изплуваха мигновено на място — единствената страница в приложението, която
+   се появяваше вече нарисувана. */
 .sectionCard {
+  composes: arrive glint from '../../styles/arrive.module.css';
+
   display: flex;
   align-items: center;
   gap: 14px;
@@ -20,6 +25,8 @@
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
   border-radius: var(--r-lg);
+  position: relative;
+  overflow: hidden;
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -29,7 +36,7 @@
 
 .sectionCard:not(.sectionCardSoon):active {
   background: var(--surface-2);
-  border-color: rgba(201, 162, 39, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .sectionCardSoon {

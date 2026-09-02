@@ -30,7 +30,7 @@ const SECTIONS = [
     id: 'install',
     titleKey: 'exp.status.title',
     descKey:  'exp.status.desc',
-    accent: '#C9A227',
+    accent: 'var(--accent)',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
         <path d="M12 2v13" />
@@ -54,7 +54,7 @@ const SECTIONS = [
     id: 'products',
     titleKey: 'exp.efficient.title',
     descKey:  'exp.efficient.desc',
-    accent: '#C9A227',
+    accent: 'var(--accent)',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -67,7 +67,7 @@ const SECTIONS = [
     id: 'shopping',
     titleKey: 'exp.shopping.title',
     descKey:  'exp.shopping.desc',
-    accent: '#C9A227',
+    accent: 'var(--accent)',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -98,12 +98,18 @@ export default function Explore({ onMenuOpen }) {
       <AppHeader onMenuOpen={onMenuOpen} title={t('exp.title')} />
 
       <div className={styles.grid}>
-        {SECTIONS.map(s => (
+        {SECTIONS.map((s, i) => (
           <button
             key={s.id}
             className={styles.sectionCard}
             onClick={() => setPage(s.id)}
             type="button"
+            /* Стъпалото е на елемента, не в CSS: списъкът е по-дълъг от
+               четирите стъпки, които arrive описва наготово. Таванът е там,
+               защото осмата карта не бива да чака половин секунда — редът се
+               усеща от първите няколко, останалите само биха забавили
+               страницата. */
+            style={{ animationDelay: `${Math.min(i, 5) * 55}ms` }}
           >
             <div className={styles.cardIcon} style={{ color: s.accent }}>{s.icon}</div>
             <div className={styles.cardText}>
@@ -114,8 +120,12 @@ export default function Explore({ onMenuOpen }) {
           </button>
         ))}
 
-        {COMING_SOON.map(s => (
-          <div key={s.titleKey} className={`${styles.sectionCard} ${styles.sectionCardSoon}`}>
+        {COMING_SOON.map((s, i) => (
+          <div
+            key={s.titleKey}
+            className={`${styles.sectionCard} ${styles.sectionCardSoon}`}
+            style={{ animationDelay: `${Math.min(SECTIONS.length + i, 5) * 55}ms` }}
+          >
             <div className={styles.cardIcon} style={{ color: 'var(--muted)' }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />

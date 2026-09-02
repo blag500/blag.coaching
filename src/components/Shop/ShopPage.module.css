@@ -171,7 +171,12 @@
   padding: 40px 0;
 }
 
+/* Същият жест, който картите на ДНЕС и разделите в Открий вече правят.
+   Решетката с продукти беше последната истинска решетка от карти, която се
+   появяваше наведнъж и вече нарисувана. */
 .card {
+  composes: arrive glint from '../../styles/arrive.module.css';
+
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);

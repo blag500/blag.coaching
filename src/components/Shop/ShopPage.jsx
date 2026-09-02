@@ -84,10 +84,17 @@ export default function ShopPage({ initialOrderSuccess }) {
         <div className={styles.empty}>{t('shop.emptyCat')}</div>
       ) : (
         <div className={styles.grid}>
-          {visible.map(p => {
+          {visible.map((p, i) => {
             const inCart = cart.items.find(i => i.product_id === p.id)
             return (
-              <div key={p.id} className={styles.card}>
+              <div
+                key={p.id}
+                className={styles.card}
+                /* Таван на петата: една решетка може да е от трийсет продукта,
+                   а редът се усеща от първите няколко — останалите биха само
+                   карали страницата да се сглобява пред очите на човека. */
+                style={{ animationDelay: `${Math.min(i, 5) * 50}ms` }}
+              >
                 {p.image_url ? (
                   <img src={p.image_url} className={styles.cardImg} alt={p.name} />
                 ) : (
