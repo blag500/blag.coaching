@@ -12,6 +12,7 @@ import DashboardCards from './DashboardCards'
 import HabitsEditor from './HabitsEditor'
 import UsernameField from './UsernameField'
 import Fold from './Fold'
+import FriendsPage from '../Friends/FriendsPage'
 import ActivityCalendar from './ActivityCalendar'
 import ProgressPhotos from '../ProgressPhotos/ProgressPhotos'
 import { useCheckin } from '../../hooks/useCheckin'
@@ -54,6 +55,8 @@ const MACRO_COLORS = {
 const SEGMENTS = [
   { id: 'today',    key: 'profile.seg.today',    icon: 'dashboard' },
   { id: 'progress', key: 'profile.seg.progress', icon: 'trend'     },
+  /* Адресникът стои преди настройките: хора се отварят по-често от превключватели. */
+  { id: 'friends',  key: 'profile.seg.friends',  icon: 'friends'   },
   { id: 'settings', key: 'profile.seg.settings', icon: 'gear'      },
 ]
 
@@ -337,6 +340,13 @@ export default function Profile({ onMenuOpen, onNavigate }) {
           onNavigate={onNavigate}
           onHabitsSetup={() => setSeg('settings')}
         />
+      )}
+
+      {/* ── ПРИЯТЕЛИ ──
+          Адресник, не стена: фийдът си остава общ. Оттук се стига до профила
+          на човека, а оттам — до ПИШИ. */}
+      {seg === 'friends' && (
+        <FriendsPage onOpenPerson={person => onNavigate?.('chat', { peer: person.id })} />
       )}
 
       {seg === 'progress' && (<>

@@ -38,6 +38,27 @@ export const PROFILE = {
   username: 'test',
   dashboard_cards: null,
   water_target: 8,
+  /* План с два блока: един за вдигане и един за почивка/кардио. Вторият е
+     тук нарочно — той е единственият, който досега не можеше да се отбележи,
+     и без него тестът не вижда точно това, което е поправено. */
+  training_plan: [
+    {
+      id: '0', label: 'Upper A', isRest: false,
+      groups: ['upper'], muscles: [],
+      exercises: [
+        { id: '0-0', name: 'Лежанка', sets: '4', reps: '6–8' },
+        { id: '0-1', name: 'Гребане', sets: '3', reps: '8–10' },
+      ],
+    },
+    {
+      id: '1', label: 'Почивка / Кардио', isRest: true,
+      groups: [], muscles: [],
+      exercises: [
+        { id: '1-0', name: 'Кардио по избор', sets: '1', reps: '30–45 мин' },
+        { id: '1-1', name: 'Подвижност',      sets: '1', reps: '15 мин'    },
+      ],
+    },
+  ],
   habits: [
     { id: 'water',    emoji: '💧',  label: 'Вода 3л'       },
     { id: 'protein',  emoji: '🥩',  label: 'Протеин'       },
@@ -77,13 +98,34 @@ export const TABLES = {
     { id: 's3', user_id: USER_ID, name: 'Омега 3',   dose: '2 капс.', sort: 2 },
   ],
   supplement_logs: [{ id: 1, user_id: USER_ID, supplement_id: 's1', date: today() }],
+  /* Колоната е date. Сериите се групират по нея; ред без нея прави сесия с
+     date: undefined и списъкът пада при подреждането. */
   exercise_logs: [
-    { id: 'e1', user_id: USER_ID, completed_date: today(1), block_label: 'Upper A', exercise_name: 'Лег', weight: 100, reps: 8, sets: 1, set_index: 0 },
+    { id: 'e1', user_id: USER_ID, date: today(1), exercise_name: 'Лежанка', weight: 100, reps: 8, sets: 1, set_index: 0, replaces: null, notes: null },
+    { id: 'e2', user_id: USER_ID, date: today(1), exercise_name: 'Гребане', weight: 80,  reps: 10, sets: 1, set_index: 0, replaces: null, notes: null },
   ],
   workout_completions: [
-    { id: 'wc1', user_id: USER_ID, completed_date: today(), block_label: 'Upper A' },
+    { id: 'wc1', user_id: USER_ID, completed_date: today(1), block_label: 'Upper A' },
   ],
   sleep_logs: [{ id: 'sl1', user_id: USER_ID, date: today(), hours: 7.5, quality: 4 }],
+
+  /* Адресникът: един приет приятел, една покана към мен, една моя покана без
+     отговор. Трите състояния наведнъж, защото празният списък не казва нищо
+     за това как изглежда редът с двата бутона. */
+  friendships: [
+    { id: 'fr1', requester_id: USER_ID, addressee_id: 'u-ivan',  status: 'accepted', created_at: new Date().toISOString() },
+    { id: 'fr2', requester_id: 'u-mara', addressee_id: USER_ID,  status: 'pending',  created_at: new Date().toISOString() },
+    { id: 'fr3', requester_id: USER_ID, addressee_id: 'u-petar', status: 'pending',  created_at: new Date().toISOString() },
+  ],
+  follows: [
+    { follower_id: USER_ID, followee_id: 'u-coach', created_at: new Date().toISOString() },
+  ],
+  feed_authors: [
+    { id: 'u-ivan',  name: 'Иван Петров',  username: 'ivan',  avatar_url: null, role: 'client', bio: null },
+    { id: 'u-mara',  name: 'Мара Илиева',  username: 'mara',  avatar_url: null, role: 'client', bio: null },
+    { id: 'u-petar', name: 'Петър Георгиев', username: 'pesho', avatar_url: null, role: 'client', bio: null },
+    { id: 'u-coach', name: 'Николай Благьов', username: 'blag', avatar_url: null, role: 'coach',  bio: null },
+  ],
 }
 
 const RPC = {

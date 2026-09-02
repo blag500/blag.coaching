@@ -42,7 +42,7 @@
    момента, в който той се връща. Един скрол нагоре връща и двете. */
 .segments {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
   padding: 4px;
   margin: 0 0 16px;
@@ -51,31 +51,38 @@
   border-radius: var(--r-md);
 }
 
+/* Четири дяла, не три — приятелите са четвъртият.
+   Икона и надпис един до друг не се събират: „НАСТРОЙКИ" на 12px с разредка
+   е около 85px, а дялът на телефон е под сто. Затова са един над друг, както
+   в долната лента, където същите четири неща стоят от самото начало. */
 .segment {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 4px;
   background: transparent;
   border: none;
   border-radius: var(--r-sm);
   color: var(--muted);
   font-family: var(--font-heading);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  padding: 9px 4px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  padding: 8px 2px;
   cursor: pointer;
   transition: color 180ms var(--ease-out), background 180ms var(--ease-out);
 }
 
 .segmentIcon { flex-shrink: 0; }
 
-/* НАСТРОЙКИ е двойно по-дълга от ДНЕС, а трите дяла са равни. Под 380px
-   рисунката носи разделa сама и надписът се маха, вместо да се пренася на
-   два реда и да разлюлее лентата. */
-@media (max-width: 380px) {
-  .segmentLabel { display: none; }
-  .segment { padding: 11px 4px; }
+/* Надписът стои под рисунката и се събира и на най-тесния телефон, затова
+   вече няма нужда да се маха. Прекършване на два реда обаче би разлюляло
+   лентата, така че редът е един и точка. */
+.segmentLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .segmentOn {
