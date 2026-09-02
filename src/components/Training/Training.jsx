@@ -55,6 +55,62 @@ function getBlocks(plan) {
   return plan
 }
 
+
+/**
+ * Денят за почивка и кардио.
+ *
+ * Един компонент, защото същата карта се рисува на две места — в списъка с
+ * блокове и в екрана за сесия — а две копия на едно нещо се разминават още
+ * при първата поправка. Разминали се бяха: емоджито легло беше сменено с
+ * рисунка на едното място и остана на другото.
+ *
+ * Блокът се казва „Почивка / Кардио" и носи кардио и подвижност, мерени в
+ * минути. Затова няма дневник със серии — има какво е за деня и бутон, който
+ * казва, че е направено.
+ */
+function RestDayCard({ block, done, marking, onMark, onUnmark, markLabel, doneLabel, unmarkLabel }) {
+  const plan = block.exercises ?? []
+  return (
+    <div className={styles.restCard}>
+      <span className={styles.restIcon}>
+        <Pictogram name="cardio" size={36} />
+      </span>
+      <p className={styles.restTitle}>{block.label}</p>
+
+      {plan.length > 0 && (
+        <ul className={styles.restPlan}>
+          {plan.map(e => (
+            <li key={e.id ?? e.name} className={styles.restPlanRow}>
+              <span className={styles.restPlanName}>{e.name}</span>
+              <span className={styles.restPlanDose}>{e.reps}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button
+        type="button"
+        className={[
+          styles.markDoneBtn,
+          styles.restMark,
+          done ? styles.markDoneDone : styles.markDoneReady,
+        ].join(' ')}
+        onClick={onMark}
+        disabled={marking || done}
+      >
+        <MarkGlyph done={done} />
+        <span>{done ? doneLabel : marking ? '...' : markLabel}</span>
+      </button>
+
+      {done && (
+        <button type="button" className={`${styles.unmarkBtn} ${styles.restMark}`} onClick={onUnmark} disabled={marking}>
+          {unmarkLabel}
+        </button>
+      )}
+    </div>
+  )
+}
+
 const isRestBlock = b => !!b && (b.isRest || /ПОЧИВК|\bREST\b/.test((b.label || '').toUpperCase()))
 
 /** One pictogram per broad group + a rest icon, drawn as inline SVGs so they
@@ -621,11 +677,16 @@ export default function Training({ onMenuOpen }) {
           <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
 
           {rest ? (
-            <div className={styles.restCard}>
-              <span className={styles.restIcon}>🛌</span>
-              <p className={styles.restTitle}>{t('tr.rest')}</p>
-              <p className={styles.restSub}>{t('tr.restSub')}</p>
-            </div>
+            <RestDayCard
+              block={selectedBlock}
+              done={alreadyMarked || justMarked}
+              marking={marking}
+              onMark={handleMarkDone}
+              onUnmark={handleUnmarkDone}
+              markLabel={logDate === todayStr ? t('tr.restLogIt') : t('tr.markRestDate', { date: shortDate(logDate) })}
+              doneLabel={logDate === todayStr ? t('tr.markedToday') : t('tr.markedDate', { date: shortDate(logDate) })}
+              unmarkLabel={t('tr.unmark')}
+            />
           ) : (
             /* Ключът е денят: това, което дневникът помни за деня — разгънатите
                упражнения, заместителите, часовникът за почивка — принадлежи
@@ -639,7 +700,9 @@ export default function Training({ onMenuOpen }) {
             />
           )}
 
-          <button
+          {/* Почивката носи своя бутон вътре в картата, за да стои под плана
+              за деня, а не под празно място. */}
+          {!rest && <button
             className={[
               styles.markDoneBtn,
               allLogged ? styles.markDoneReady : '',
@@ -659,8 +722,8 @@ export default function Training({ onMenuOpen }) {
                 ? (logDate === todayStr ? t('tr.markRest') : t('tr.markRestDate', { date: shortDate(logDate) }))
                 : (logDate === todayStr ? t('tr.markDone') : t('tr.markDoneDate', { date: shortDate(logDate) }))}
             </span>
-          </button>
-          {alreadyMarked && (
+          </button>}
+          {!rest && alreadyMarked && (
             <button className={styles.unmarkBtn} onClick={handleUnmarkDone} disabled={marking} type="button">
               {t('tr.unmark')}
             </button>
@@ -865,9 +928,19 @@ export default function Training({ onMenuOpen }) {
 
           {selectedBlock && !isRestBlock(selectedBlock) && (
             <>
+              {/* Денят се избира тук.
+                  Дотук този екран беше зашит за днес, а изборът на дата
+                  живееше в друг изглед, до който се стигаше само през
+                  календара в ПРЕГЛЕД. Тоест тренировка, вписана вечерта на
+                  следващия ден — най-честият случай — нямаше къде да отиде. */}
+              <DatePicker
+                selectedDate={logDate}
+                onChange={date => { setLogDate(date); setJustMarked(false) }}
+              />
+
               <DayLog
-                key={todayStr}
-                date={todayStr}
+                key={logDate}
+                date={logDate}
                 blockLabels={[selectedBlock.label]}
                 blocks={blocks}
                 onLogged={handleLogged}
@@ -879,28 +952,47 @@ export default function Training({ onMenuOpen }) {
                   people who forget to tap; this is the deliberate signal. */}
               {(() => {
                 const already = completions.some(
-                  c => c.completed_date === todayStr && c.block_label === selectedBlock.label
+                  c => c.completed_date === logDate && c.block_label === selectedBlock.label
                 )
                 const allLogged = (selectedBlock.exercises?.length ?? 0) > 0 &&
                   selectedBlock.exercises.every(e => lifts[e.name]?.today)
                 const done = already || justMarked
                 return (
-                  <button
-                    type="button"
-                    className={[
-                      styles.markDoneBtn,
-                      allLogged ? styles.markDoneReady : '',
-                      done ? styles.markDoneDone : '',
-                    ].join(' ')}
-                    onClick={() => {
-                      setLogDate(todayStr)
-                      handleMarkDone()
-                    }}
-                    disabled={marking || already}
-                  >
-                    <MarkGlyph done={done} />
-                    <span>{done ? t('tr.logged') : marking ? '...' : t('tr.logIt')}</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className={[
+                        styles.markDoneBtn,
+                        allLogged ? styles.markDoneReady : '',
+                        done ? styles.markDoneDone : '',
+                      ].join(' ')}
+                      onClick={handleMarkDone}
+                      disabled={marking || already}
+                    >
+                      <MarkGlyph done={done} />
+                      <span>
+                        {done
+                          ? (logDate === todayStr ? t('tr.logged') : t('tr.markedDate', { date: shortDate(logDate) }))
+                          : marking ? '...'
+                          : (logDate === todayStr ? t('tr.logIt') : t('tr.markDoneDate', { date: shortDate(logDate) }))}
+                      </span>
+                    </button>
+
+                    {/* Отбелязана по погрешка тренировка се маха оттук.
+                        Функцията я имаше от самото начало, но бутонът стоеше
+                        в другия изглед — тоест сгрешеният ден оставаше
+                        сгрешен за всеки, който не знае за календара. */}
+                    {already && (
+                      <button
+                        type="button"
+                        className={styles.unmarkBtn}
+                        onClick={handleUnmarkDone}
+                        disabled={marking}
+                      >
+                        {t('tr.unmark')}
+                      </button>
+                    )}
+                  </>
                 )
               })()}
             </>
@@ -916,43 +1008,26 @@ export default function Training({ onMenuOpen }) {
               днес, и бутонът, който казва, че е направено. */}
           {selectedBlock && isRestBlock(selectedBlock) && (() => {
             const already = completions.some(
-              c => c.completed_date === todayStr && c.block_label === selectedBlock.label
+              c => c.completed_date === logDate && c.block_label === selectedBlock.label
             )
             const done = already || justMarked
-            const plan = selectedBlock.exercises ?? []
             return (
-              <div className={styles.restCard}>
-                <span className={styles.restIcon}>
-                  <Pictogram name="cardio" size={36} />
-                </span>
-                <p className={styles.restTitle}>{selectedBlock.label}</p>
-                <p className={styles.restSub}>{t('tr.restSub')}</p>
-
-                {plan.length > 0 && (
-                  <ul className={styles.restPlan}>
-                    {plan.map(e => (
-                      <li key={e.id ?? e.name} className={styles.restPlanRow}>
-                        <span className={styles.restPlanName}>{e.name}</span>
-                        <span className={styles.restPlanDose}>{e.reps}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                <button
-                  type="button"
-                  className={[
-                    styles.markDoneBtn,
-                    styles.restMark,
-                    done ? styles.markDoneDone : styles.markDoneReady,
-                  ].join(' ')}
-                  onClick={() => { setLogDate(todayStr); handleMarkDone() }}
-                  disabled={marking || already}
-                >
-                  <MarkGlyph done={done} />
-                  <span>{done ? t('tr.logged') : marking ? '...' : t('tr.restLogIt')}</span>
-                </button>
-              </div>
+              <>
+                <DatePicker
+                  selectedDate={logDate}
+                  onChange={date => { setLogDate(date); setJustMarked(false) }}
+                />
+                <RestDayCard
+                  block={selectedBlock}
+                  done={done}
+                  marking={marking}
+                  onMark={handleMarkDone}
+                  onUnmark={handleUnmarkDone}
+                  markLabel={logDate === todayStr ? t('tr.restLogIt') : t('tr.markRestDate', { date: shortDate(logDate) })}
+                  doneLabel={logDate === todayStr ? t('tr.logged') : t('tr.markedDate', { date: shortDate(logDate) })}
+                  unmarkLabel={t('tr.unmark')}
+                />
+              </>
             )
           })()}
         </>
