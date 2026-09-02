@@ -49,7 +49,7 @@ function ReadinessRing({ score }) {
             check-in, while readiness weighs it together with food, habits,
             water and training. Two rings labelled the same thing, showing two
             different numbers, is how the screen was reading before. */}
-        <text x="50" y="60" textAnchor="middle" fill="rgba(242,232,207,0.4)" fontSize="8" fontFamily="var(--font-body)">{t('rec.checkin')}</text>
+        <text x="50" y="60" textAnchor="middle" style={{ fill: 'rgba(var(--text-rgb), 0.4)' }} fontSize="8" fontFamily="var(--font-body)">{t('rec.checkin')}</text>
       </svg>
     </div>
   )
@@ -224,7 +224,7 @@ function HistoryRow({ log }) {
       <span className={styles.histDate}>{d.getDate()} {monthNames('short')[d.getMonth()]}</span>
       {score !== null
         ? <span className={styles.histScore} style={{ color }}>{score}</span>
-        : <span className={styles.histScore} style={{ color: 'rgba(242,232,207,0.2)' }}>—</span>
+        : <span className={styles.histScore} style={{ color: 'rgba(var(--text-rgb), 0.2)' }}>—</span>
       }
       <span className={styles.histSleep}>{log.duration_hours != null ? t('rec.hoursShort', { n: log.duration_hours }) : '—'}</span>
       <span className={styles.histMood}>{log.mood ? MOODS[log.mood - 1] : '—'}</span>

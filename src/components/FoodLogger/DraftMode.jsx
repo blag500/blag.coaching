@@ -267,7 +267,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
                     <div className={styles.projNow} style={{ width: `${pctNow}%`, background: color }} />
                     <div className={styles.projAdd} style={{ width: `${pctAdd}%`, background: color }} />
                   </div>
-                  <span className={styles.projVal} style={{ color: over ? '#ef5350' : 'var(--muted)' }}>
+                  <span className={styles.projVal} style={{ color: over ? 'var(--red)' : 'var(--muted)' }}>
                     {Math.round(projected[k])}/{Math.round(t)}
                   </span>
                 </div>

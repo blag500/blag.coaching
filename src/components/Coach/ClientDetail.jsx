@@ -1684,7 +1684,7 @@ function CheckinTrends({ checkins }) {
             <span className={styles.trendsStatVal}>
               {gymCounts[2] > 0 && <span style={{ color: '#66BB6A' }}>↑{gymCounts[2]} </span>}
               {gymCounts[1] > 0 && <span style={{ color: 'var(--accent)' }}>={gymCounts[1]} </span>}
-              {gymCounts[0] > 0 && <span style={{ color: '#EF5350' }}>↓{gymCounts[0]}</span>}
+              {gymCounts[0] > 0 && <span style={{ color: 'var(--red)' }}>↓{gymCounts[0]}</span>}
             </span>
             <span className={styles.trendsStatLabel}>{t('cd.gym')}</span>
           </div>
@@ -1696,7 +1696,7 @@ function CheckinTrends({ checkins }) {
             </span>
             <span className={styles.trendsStatLabel}>
               {wDelta !== null
-                ? <span style={{ color: wDelta < 0 ? '#66BB6A' : '#EF5350' }}>
+                ? <span style={{ color: wDelta < 0 ? 'var(--ok)' : 'var(--red)' }}>
                     {t('cd.weightDelta', { sign: wDelta > 0 ? '+' : '', n: wDelta })}
                   </span>
                 : t('cd.latest')}
@@ -1967,11 +1967,11 @@ function CoachTaskRow({ task, onToggle, onDelete }) {
       <div style={{ flex: 1 }}>
         <div style={{
           fontFamily: 'var(--font-body)', fontSize: 14,
-          color: isOverdue ? '#ef5350' : 'var(--text)',
+          color: isOverdue ? 'var(--red)' : 'var(--text)',
           textDecoration: task.done ? 'line-through' : 'none',
         }}>{task.text}</div>
         {task.due_date && (
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: isOverdue ? '#ef5350' : 'var(--muted)', marginTop: 3 }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: isOverdue ? 'var(--red)' : 'var(--muted)', marginTop: 3 }}>
             {isOverdue ? '⚠ ' : ''}{task.due_date}
           </div>
         )}

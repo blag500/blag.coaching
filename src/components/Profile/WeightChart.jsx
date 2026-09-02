@@ -112,8 +112,8 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
       >
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#C9A227" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#C9A227" stopOpacity="0"    />
+            <stop offset="0%"   style={{ stopColor: 'var(--accent)', stopOpacity: 0.28 }} />
+            <stop offset="100%" style={{ stopColor: 'var(--accent)', stopOpacity: 0 }} />
           </linearGradient>
         </defs>
 
@@ -133,9 +133,9 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
           <>
             <line
               x1={PAD_L} y1={goalY} x2={W - PAD_R} y2={goalY}
-              stroke="#C9A227" strokeWidth="1.2" strokeDasharray="5,4" opacity="0.5"
+              style={{ stroke: 'var(--accent)' }} strokeWidth="1.2" strokeDasharray="5,4" opacity="0.5"
             />
-            <text x={W - PAD_R + 2} y={goalY + 3} fontSize="7" fill="#C9A227" opacity="0.7">{t('wc.goalTick')}</text>
+            <text x={W - PAD_R + 2} y={goalY + 3} fontSize="7" style={{ fill: 'var(--accent)' }} opacity="0.7">{t('wc.goalTick')}</text>
           </>
         )}
 
@@ -144,14 +144,14 @@ export default function WeightChart({ weights, targetWeight, gradId = 'wcGrad', 
         <path
           d={linePath}
           fill="none"
-          stroke="#C9A227"
+          style={{ stroke: 'var(--accent)' }}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
 
-        <circle cx={last.x} cy={last.y} r="7" fill="none" stroke="#C9A227" strokeOpacity="0.22" strokeWidth="2" />
-        <circle cx={last.x} cy={last.y} r="3.5" fill="#C9A227" />
+        <circle cx={last.x} cy={last.y} r="7" fill="none" style={{ stroke: 'var(--accent)' }} strokeOpacity="0.22" strokeWidth="2" />
+        <circle cx={last.x} cy={last.y} r="3.5" style={{ fill: 'var(--accent)' }} />
 
         {xLabelIdxs.map(idx => (
           <text

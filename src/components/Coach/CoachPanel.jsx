@@ -422,7 +422,7 @@ export default function CoachPanel() {
                                   className={styles.kcalBarFill}
                                   style={{
                                     width: `${Math.min(100, Math.round(((s?.kcalToday || 0) / client.calories) * 100))}%`,
-                                    background: (s?.kcalToday || 0) > client.calories ? '#ef5350' : 'var(--accent)',
+                                    background: (s?.kcalToday || 0) > client.calories ? 'var(--red)' : 'var(--accent)',
                                   }}
                                 />
                               </div>

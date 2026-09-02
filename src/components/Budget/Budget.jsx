@@ -412,7 +412,7 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
         <line
           x1={PAD.left} y1={PAD.top + cH}
           x2={PAD.left + cW} y2={PAD.top + cH}
-          stroke="rgba(242,232,207,0.08)" strokeWidth="1"
+          style={{ stroke: 'rgba(var(--text-rgb), 0.08)' }} strokeWidth="1"
         />
         <line
           x1={PAD.left} y1={quotaY}
@@ -434,26 +434,26 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
           const fill = day.isToday
             ? 'var(--accent)'
             : day.spent === 0
-              ? 'rgba(242,232,207,0.06)'
+              ? 'rgba(var(--text-rgb), 0.06)'
               : day.spent > dailyQuota
-                ? '#ef5350'
+                ? 'var(--red)'
                 : '#4CAF50'
           const showLabel = i === 0 || i === days.length - 1 || day.isToday || i % labelEvery === 0
           return (
             <g key={day.ds}>
               {day.spent === 0 && (
-                <rect x={bx} y={PAD.top} width={barW} height={cH} fill="rgba(242,232,207,0.04)" rx="2" />
+                <rect x={bx} y={PAD.top} width={barW} height={cH} style={{ fill: 'rgba(var(--text-rgb), 0.04)' }} rx="2" />
               )}
               <rect
                 x={bx} y={bH > 0 ? by : PAD.top + cH - 1}
                 width={barW} height={Math.max(bH, 1)} rx="2"
-                fill={fill} opacity={day.isToday ? 1 : 0.82}
+                style={{ fill }} opacity={day.isToday ? 1 : 0.82}
               />
               {showLabel && (
                 <text
                   x={cx} y={H - 4}
                   textAnchor="middle" fontSize="7" fontFamily="monospace"
-                  fill={day.isToday ? 'var(--accent)' : 'rgba(242,232,207,0.28)'}
+                  style={{ fill: day.isToday ? 'var(--accent)' : 'rgba(var(--text-rgb), 0.28)' }}
                 >
                   {day.day}
                 </text>

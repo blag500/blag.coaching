@@ -57,7 +57,7 @@ export default function PWAInstallPage({ onBack }) {
             </p>
             <button
               className={styles.installBtn}
-              style={{ background: notice ? '#ef5350' : 'var(--accent)' }}
+              style={{ background: notice ? 'var(--red)' : 'var(--accent)' }}
               onClick={toggle}
               disabled={saving}
               type="button"
