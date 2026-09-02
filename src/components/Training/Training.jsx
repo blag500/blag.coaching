@@ -2,11 +2,11 @@ import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { defaultTrainingBlocks } from '../../data/appData'
-import { shareAchievement } from '../../lib/achievements'
 import DayLog from './DayLog'
 import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
+import Pictogram from '../Pictogram/Pictogram'
 import { useLastLifts } from '../../hooks/useLastLifts'
 import { useExerciseMap } from '../../hooks/useExerciseMap'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
@@ -406,13 +406,6 @@ export default function Training({ onMenuOpen }) {
       /* Отбелязаният ден е затворен: следващото идване тръгва от списъка, а не
          от блока, който току-що е приключил. */
       if (logDate === todayStr) rememberStarted(null)
-      /* Тренировката отива и във фийда. Без await: маркирането е свършено и
-         не бива да чака втора заявка, за да махне въртящото се кръгче. */
-      shareAchievement(user.id, {
-        kind: 'training',
-        date: logDate,
-        meta: { block: selectedBlock.label, exercises: selectedBlock.exercises?.length ?? 0 },
-      })
       setTimeout(() => setJustMarked(false), 2500)
     }
     setMarking(false)
@@ -913,13 +906,55 @@ export default function Training({ onMenuOpen }) {
             </>
           )}
 
-          {selectedBlock && isRestBlock(selectedBlock) && (
-            <div className={styles.restCard}>
-              <span className={styles.restIcon}>🛌</span>
-              <p className={styles.restTitle}>{t('tr.rest')}</p>
-              <p className={styles.restSub}>{t('tr.restSub')}</p>
-            </div>
-          )}
+          {/* Ден за почивка и кардио.
+              Дотук това беше картинка: емоджи легло, дума „Почивка" и нищо за
+              натискане. А блокът се казва „Почивка / Кардио" и носи 30–45
+              минути кардио и 15 минути подвижност — тоест на този ден има
+              какво да се свърши и то не можеше да се отбележи никъде.
+              Няма DayLog: тези редове се мерят в минути, а дневникът пита за
+              килограми и повторения. Има го това, което липсваше — какво е за
+              днес, и бутонът, който казва, че е направено. */}
+          {selectedBlock && isRestBlock(selectedBlock) && (() => {
+            const already = completions.some(
+              c => c.completed_date === todayStr && c.block_label === selectedBlock.label
+            )
+            const done = already || justMarked
+            const plan = selectedBlock.exercises ?? []
+            return (
+              <div className={styles.restCard}>
+                <span className={styles.restIcon}>
+                  <Pictogram name="cardio" size={36} />
+                </span>
+                <p className={styles.restTitle}>{selectedBlock.label}</p>
+                <p className={styles.restSub}>{t('tr.restSub')}</p>
+
+                {plan.length > 0 && (
+                  <ul className={styles.restPlan}>
+                    {plan.map(e => (
+                      <li key={e.id ?? e.name} className={styles.restPlanRow}>
+                        <span className={styles.restPlanName}>{e.name}</span>
+                        <span className={styles.restPlanDose}>{e.reps}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <button
+                  type="button"
+                  className={[
+                    styles.markDoneBtn,
+                    styles.restMark,
+                    done ? styles.markDoneDone : styles.markDoneReady,
+                  ].join(' ')}
+                  onClick={() => { setLogDate(todayStr); handleMarkDone() }}
+                  disabled={marking || already}
+                >
+                  <MarkGlyph done={done} />
+                  <span>{done ? t('tr.logged') : marking ? '...' : t('tr.restLogIt')}</span>
+                </button>
+              </div>
+            )
+          })()}
         </>
       )}
 

@@ -932,3 +932,52 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Планът за деня за почивка/кардио. Редовете са в минути, не в килограми,
+   затова не е таблица със серии, а списък: какво и колко дълго. */
+.restPlan {
+  list-style: none;
+  margin: 10px 0 2px;
+  padding: 0;
+  width: 100%;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.restPlanRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+}
+.restPlanName {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+  text-align: left;
+}
+.restPlanDose {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Картата центрира децата си, а бутонът трябва да е широк колкото плана. */
+.restMark {
+  margin-top: 12px;
+  width: 100%;
+  max-width: 260px;
+}
+
+/* Иконата вече е рисувана, не емоджи — размерът идва от svg-то. */
+.restCard .restIcon {
+  font-size: 0;
+  color: var(--accent);
+  line-height: 0;
+}
