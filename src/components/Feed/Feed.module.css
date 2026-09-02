@@ -450,12 +450,18 @@
   margin: 0 0 18px;
 }
 
-/* Метал, не боя.
-   Плътното злато е цвят; златото с градиент през него е материя — и точно
-   затова е запазено за големите запълнени повърхности, където има площ, по
-   която отблясъкът да пропътува. Бутонът е широк колкото страницата, така че
-   е точно такава повърхност. Същият метал носят изборът на план и кръглият
-   бутон в лентата. */
+/* Стъкло.
+   Пано, не запълнена плоскост: тъмно тяло, светъл ръб отгоре, където пада
+   светлината, и мека светлина отдолу, която му дава дебелина. Тъкмо
+   тъмнината между двата ръба прави стъклото стъкло, вместо сиво.
+   Надписът е златен, а не черен — на прозрачна повърхност цветът трябва да
+   е в буквите, защото го няма във фона.
+   Отблясъкът минава веднъж, докато страницата идва: стъклото хваща светлина,
+   но блясък, който се върти постоянно, се превръща в тик.
+   Без backdrop-filter нарочно — зад този бутон стои равна страница, а blur
+   без нещо зад себе си е ГПУ, платено за ефект, който никой не вижда. Така е
+   и навсякъде другаде в приложението: замъгляването е за хедъра, лентата и
+   листовете, където нещата наистина се застъпват. */
 .authorMessage {
   composes: glint from '../../styles/arrive.module.css';
 
@@ -463,23 +469,24 @@
   overflow: hidden;
   display: block;
   width: 100%;
-  background: var(--accent-metal);
-  border: none;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: var(--r-md);
-  color: #0C0A06;
+  color: var(--accent);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.1em;
   padding: 13px;
   margin-bottom: 8px;
   cursor: pointer;
-  /* Ръбът отгоре и сянката отдолу: без тях металът лежи в страницата вместо
-     да стои върху нея. */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.30),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
-    0 6px 18px -6px rgba(var(--accent-rgb), 0.45);
+  box-shadow: var(--glass-shadow);
   -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--dur-state) var(--ease-out);
+}
+
+/* Натиснато: ръбът се запалва. Стъклото не потъмнява — то отразява. */
+.authorMessage:active {
+  border-color: rgba(var(--accent-rgb), 0.55);
 }
 
 /* ── Покана и следване ──
@@ -491,12 +498,15 @@
   margin-bottom: 12px;
 }
 
+/* Същото стъкло, но по-тихо: тези две са до основното действие, не срещу
+   него. Разликата е в надписа и в ръба, не във втори материал. */
 .authorLinkBtn,
 .authorLinkBtnOn {
   flex: 1;
-  padding: 10px 8px;
+  padding: 11px 8px;
   border-radius: var(--r-md);
-  background: transparent;
+  background: var(--glass-bg);
+  box-shadow: var(--glass-shadow);
   font-family: var(--font-heading);
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -507,11 +517,11 @@
 }
 
 .authorLinkBtn {
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--glass-border);
   color: var(--muted);
 }
 
-/* Състояние, не покана: рамката се запалва, когато нещо вече е вярно. */
+/* Състояние, не покана: ръбът се запалва, когато нещо вече е вярно. */
 .authorLinkBtnOn {
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   color: var(--accent);
