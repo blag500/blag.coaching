@@ -16,7 +16,6 @@ import WeightCard from './WeightCard'
 import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import { layout } from './cards'
-import { shareAchievement } from '../../lib/achievements'
 import { haptic } from '../../lib/haptics'
 import styles from './TodayDashboard.module.css'
 
@@ -246,14 +245,13 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
     if (justTrain) award('training')
     if ((justCal || justHabs || justTrain) && calDone && habsDone && trainedToday) {
       award('perfect')
-      /* Идеалният ден отива и във фийда — единственото постижение тук, което
-         значи нещо за друг човек. Останалите три са стъпки към него и
-         публикувани поотделно биха дали четири поста за един ден. */
-      shareAchievement(user?.id, {
-        kind: 'perfect',
-        date: today,
-        meta: { kcal: Math.round(totals.kcal || 0), habits: habits.length },
-      })
+      /* Значката остава; постът във фийда — не.
+         Приложението публикуваше вместо човека: всяка отбелязана тренировка и
+         всеки идеален ден ставаха пост. При пет тренировки седмично това е
+         пет поста, които никой не е искал да напише, и фийдът спира да е
+         място, където някой казва нещо — става лента с касови бележки.
+         Постижението си остава негово: стои в значките, в профила и в
+         статистиките. Ако иска да го сподели, има какво да натисне. */
     }
 
     prevCal.current   = calDone

@@ -29,7 +29,7 @@ function Avatar({ url, name }) {
 }
 
 /** Нишката под поста — чете се чак когато някой я отвори. */
-function Comments({ post, onCountChange }) {
+function Comments({ post, onCountChange, onOpenAuthor, readOnly }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const { comments, loading, addComment, removeComment } = usePostComments(post.id, post)
@@ -58,12 +58,31 @@ function Comments({ post, onCountChange }) {
         <p className={styles.commentsLoading}>…</p>
       ) : comments.map(c => (
         <div key={c.id} className={styles.comment}>
-          <Avatar url={c.author?.avatar_url} name={c.author?.name} />
+          {/* Кръгчето и името на коментиращия водят към него, точно както
+              водят при автора на поста отгоре. Дотук не водеха никъде: човек
+              коментира под теб, а единственият начин да му пишеш беше да го
+              намериш някъде другаде. Един бутон около двете, по същия довод —
+              сочат едно и също място. */}
+          <button
+            type="button"
+            className={styles.commentWhoBtn}
+            onClick={() => c.author && onOpenAuthor?.(c.author)}
+            disabled={readOnly || !c.author}
+          >
+            <Avatar url={c.author?.avatar_url} name={c.author?.name} />
+          </button>
           <div className={styles.commentBody}>
-            <span className={styles.commentAuthor}>
-              {c.author?.name || t('feed.someone')}
-              <span className={styles.commentTime}>{timeAgo(c.created_at, t)}</span>
-            </span>
+            <button
+              type="button"
+              className={styles.commentAuthorBtn}
+              onClick={() => c.author && onOpenAuthor?.(c.author)}
+              disabled={readOnly || !c.author}
+            >
+              <span className={styles.commentAuthor}>
+                {c.author?.name || t('feed.someone')}
+                <span className={styles.commentTime}>{timeAgo(c.created_at, t)}</span>
+              </span>
+            </button>
             <p className={styles.commentText}>{c.body}</p>
           </div>
           {(c.user_id === user?.id || isCoach) && (
@@ -91,7 +110,11 @@ function Comments({ post, onCountChange }) {
 
 /* Какво рисува всеки вид постижение.
    Таблица, а не поредица от if-ове: нов вид е един ред тук плюс два ключа в
-   речника, а не четвърто разклонение в средата на картата. */
+   речника, а не четвърто разклонение в средата на картата.
+
+   Приложението вече не публикува само, но таблицата остава: постовете отпреди
+   това стоят в базата и трябва да продължат да се четат. Изтриването ѝ би
+   оставило историята на фийда празни карти. */
 const ACHIEVEMENTS = {
   training: {
     icon: 'training',
@@ -219,7 +242,12 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
       </footer>}
 
       {!readOnly && openComments && (
-        <Comments post={post} onCountChange={d => onCommentCountChange(post.id, d)} />
+        <Comments
+          post={post}
+          onCountChange={d => onCommentCountChange(post.id, d)}
+          onOpenAuthor={onOpenAuthor}
+          readOnly={readOnly}
+        />
       )}
     </article>
   )

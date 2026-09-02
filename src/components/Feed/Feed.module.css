@@ -613,3 +613,25 @@
   opacity: 0.85;
   margin: -4px 0 8px;
 }
+
+/* Кръгчето и името в коментара са мишени, не текст. Бутонът не носи вид —
+   само прави съдържанието натискаемо, за да не се появи втори стил на едно и
+   също нещо. */
+.commentWhoBtn,
+.commentAuthorBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.commentWhoBtn:disabled,
+.commentAuthorBtn:disabled {
+  cursor: default;
+}
+.commentWhoBtn { flex-shrink: 0; display: flex; }
+.commentAuthorBtn:not(:disabled):active { opacity: 0.6; }
