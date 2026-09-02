@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useCountUp } from '../../hooks/useCountUp'
 import styles from './RingProgress.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 
@@ -13,6 +14,11 @@ export default function RingProgress({ completed, total }) {
 
   const [animOffset, setAnimOffset] = useState(CIRCUMFERENCE)
   const mounted = useRef(false)
+
+  /* Пръстенът се затваря за 900ms; числото в средата му вече беше на място.
+     Сега тръгват заедно — при шест навика това са шест стъпки, които се
+     броят, вместо една цифра, която се е сменила. */
+  const shownDone = useCountUp(completed, { duration: 900 })
 
   useEffect(() => {
     if (!mounted.current) {
@@ -53,7 +59,7 @@ export default function RingProgress({ completed, total }) {
             className={styles.fill}
           />
           <text x="60" y="56" textAnchor="middle" className={styles.scoreNum}>
-            {completed}
+            {shownDone}
           </text>
           <text x="60" y="72" textAnchor="middle" className={styles.scoreTotal}>
             /{total}

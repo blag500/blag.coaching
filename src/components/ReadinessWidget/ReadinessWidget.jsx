@@ -1,11 +1,12 @@
 import { useId } from 'react'
 import { useReadiness } from '../../hooks/useReadiness'
+import { useCountUp } from '../../hooks/useCountUp'
 import { useSettings } from '../../contexts/SettingsContext'
 import Skeleton from '../Skeleton/Skeleton'
 import styles from './ReadinessWidget.module.css'
 
 function scoreColor(score) {
-  if (score === null) return 'rgba(242,232,207,0.2)'
+  if (score === null) return 'rgba(var(--text-rgb), 0.2)'
   if (score >= 80) return '#81C784'
   if (score >= 60) return 'var(--accent)'
   if (score >= 40) return '#ff8a65'
@@ -26,6 +27,12 @@ function ReadinessRing({ score, label, provisional }) {
   // Alive when the score is genuine (not provisional) and worth celebrating.
   // Under 55 the heart stays quiet — this is a signal, not decoration.
   const alive = score !== null && !provisional && score >= 55
+
+  /* Числото се качва, докато дъгата се затваря. Дъгата вече пътуваше половин
+     секунда (stroke-dasharray, по-долу) към резултат, който числото в средата
+     ѝ вече беше обявило — окото вижда края, преди движението да е започнало,
+     и движението спира да значи нещо. Същите 500ms, същата посока. */
+  const shownScore = useCountUp(score ?? 0, { duration: 500 })
 
   return (
     <div className={styles.ringWrap}>
@@ -107,9 +114,9 @@ function ReadinessRing({ score, label, provisional }) {
         <text x="50" y="46" textAnchor="middle" fill={color}
           fontSize="24" fontFamily="var(--font-heading)" letterSpacing="1"
           opacity={provisional ? 0.75 : 1}>
-          {score === null ? '?' : provisional ? `≈${score}` : score}
+          {score === null ? '?' : provisional ? `≈${shownScore}` : shownScore}
         </text>
-        <text x="50" y="59" textAnchor="middle" fill="rgba(242,232,207,0.35)"
+        <text x="50" y="59" textAnchor="middle" style={{ fill: 'rgba(var(--text-rgb), 0.35)' }}
           fontSize="7" fontFamily="var(--font-body)">
           {label}
         </text>

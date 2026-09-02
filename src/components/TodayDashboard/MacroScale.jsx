@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useCountUp } from '../../hooks/useCountUp'
 import Confetti from './Confetti'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './MacroScale.module.css'
@@ -72,42 +73,7 @@ export default function MacroScale({ macros, label, log = [], t }) {
       </div>
 
       <div className={styles.rows}>
-        {rows.map((m, i) => {
-          const pct = m.target > 0 ? Math.min(m.val / m.target, 1) : 0
-          const colour = m.state === 'over' ? '#ef5350' : m.color
-          return (
-            <div key={m.key} className={styles.row}>
-              <span
-                className={styles.icon}
-                style={{ color: m.state === 'under' ? 'var(--muted)' : colour }}
-              >
-                <Pictogram name={m.key} size={18} />
-              </span>
-              <div className={styles.track}>
-                <div
-                  className={`${styles.fill} ${m.state === 'hit' ? styles.fillHit : ''}`}
-                  style={{
-                    width: poured ? `${pct * 100}%` : '0%',
-                    /* Градиентът е на макроса, не на лентата: същият тон,
-                       но с дълбочина, за да чете лентата като налято, а не
-                       като запълнено. */
-                    background: m.grad ?? colour,
-                    '--glow': m.glow ?? colour,
-                    // Staggered so the four bars pour in a wave, not in unison.
-                    transitionDelay: poured ? `${i * 80}ms` : '0ms',
-                  }}
-                />
-                {/* Where the band opens, so the bar shows what it is aiming at
-                    rather than only how far along it is. */}
-                {m.target > 0 && <span className={styles.mark} style={{ left: `${HIT_FROM * 100}%` }} />}
-              </div>
-              <span className={styles.val} style={{ color: m.state === 'under' ? 'var(--muted)' : colour }}>
-                {m.val}
-                <span className={styles.target}>/{m.target}</span>
-              </span>
-            </div>
-          )
-        })}
+        {rows.map((m, i) => <MacroRow key={m.key} m={m} i={i} poured={poured} />)}
       </div>
 
       {/* The whole day's log lives on the other side of this card rather than in
@@ -158,6 +124,56 @@ export default function MacroScale({ macros, label, log = [], t }) {
       </button>
     </div>
       </div>
+    </div>
+  )
+}
+
+/* Един ред: иконата, лентата и числото.
+ *
+ * Отделен компонент само защото числото има свой брояч, а кука не се вика в
+ * цикъл — броят на макросите е четири и днес не се мени, но правило, което
+ * държи само докато никой не пипа масива, не е правило. */
+function MacroRow({ m, i, poured }) {
+  const pct    = m.target > 0 ? Math.min(m.val / m.target, 1) : 0
+  const colour = m.state === 'over' ? 'var(--red)' : m.color
+
+  /* Числото пътува със същата вълна като лентата под него. Без това лентата се
+     наливаше половин секунда към стойност, която числото отдясно вече беше
+     обявило — движение и резултат, които си противоречат.
+     Тръгва чак когато лентата тръгне: докато картата е още на нула, броенето
+     би текло зад невидима лента. */
+  const shown = useCountUp(poured ? m.val : 0, { duration: 620, delay: i * 80 })
+
+  return (
+    <div className={styles.row}>
+      <span
+        className={styles.icon}
+        style={{ color: m.state === 'under' ? 'var(--muted)' : colour }}
+      >
+        <Pictogram name={m.key} size={18} />
+      </span>
+      <div className={styles.track}>
+        <div
+          className={`${styles.fill} ${m.state === 'hit' ? styles.fillHit : ''}`}
+          style={{
+            width: poured ? `${pct * 100}%` : '0%',
+            /* Градиентът е на макроса, не на лентата: същият тон,
+               но с дълбочина, за да чете лентата като налято, а не
+               като запълнено. */
+            background: m.grad ?? colour,
+            '--glow': m.glow ?? colour,
+            // Staggered so the four bars pour in a wave, not in unison.
+            transitionDelay: poured ? `${i * 80}ms` : '0ms',
+          }}
+        />
+        {/* Where the band opens, so the bar shows what it is aiming at
+            rather than only how far along it is. */}
+        {m.target > 0 && <span className={styles.mark} style={{ left: `${HIT_FROM * 100}%` }} />}
+      </div>
+      <span className={styles.val} style={{ color: m.state === 'under' ? 'var(--muted)' : colour }}>
+        {shown}
+        <span className={styles.target}>/{m.target}</span>
+      </span>
     </div>
   )
 }
