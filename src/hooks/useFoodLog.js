@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { haptic } from '../lib/haptics'
 import { useAuth } from '../contexts/AuthContext'
 
 export function todayStr() {
@@ -83,13 +84,20 @@ export function useFoodLog() {
       meal_type: mealType,
     }
     const tempId = `temp-${Date.now()}`
+    /* Потвърждението е тук, при оптимистичното вписване, а не след отговора на
+       сървъра: редът вече е на екрана, и вибрация, която идва след мрежата, би
+       се усетила като закъсняло ехо на нещо, което вече е станало. */
     setLog(prev => [...prev, { ...entry, id: tempId }])
+    haptic('success')
     const { data, error } = await supabase.from('food_logs').insert(entry).select().single()
     if (data) {
       setLog(prev => prev.map(e => e.id === tempId ? data : e))
     } else {
       console.error('food_logs insert failed:', error)
       setLog(prev => prev.filter(e => e.id !== tempId))
+      /* Редът изчезва обратно от списъка — и това трябва да се усети, иначе
+         храна, вписана в асансьора, тихо не е вписана. */
+      haptic('reject')
     }
   }
 
@@ -109,12 +117,14 @@ export function useFoodLog() {
     }
     const tempId = `temp-${Date.now()}`
     setLog(prev => [...prev, { ...entry, id: tempId }])
+    haptic('success')
     const { data, error } = await supabase.from('food_logs').insert(entry).select().single()
     if (data) {
       setLog(prev => prev.map(e => e.id === tempId ? data : e))
     } else {
       console.error('food_logs raw insert failed:', error)
       setLog(prev => prev.filter(e => e.id !== tempId))
+      haptic('reject')
     }
   }
 
@@ -132,6 +142,7 @@ export function useFoodLog() {
   }
 
   async function removeEntry(id) {
+    haptic('tap')
     setLog(prev => prev.filter(e => e.id !== id))
     await supabase.from('food_logs').delete().eq('id', id)
   }

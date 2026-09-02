@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { haptic } from '../../lib/haptics'
 import styles from './HabitCheckbox.module.css'
 
 export default function HabitCheckbox({ habit, checked, onToggle, index }) {
@@ -7,7 +8,7 @@ export default function HabitCheckbox({ habit, checked, onToggle, index }) {
 
   useEffect(() => {
     if (checked && !prevChecked.current) {
-      navigator.vibrate?.(10)
+      haptic('toggle')
       setJustChecked(true)
       const t = setTimeout(() => setJustChecked(false), 450)
       return () => clearTimeout(t)

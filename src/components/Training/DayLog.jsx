@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
+import { haptic } from '../../lib/haptics'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
@@ -219,7 +220,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       setNow(Date.now())
       if (!buzzedRef.current && (Date.now() - rest.since) / 1000 >= REST_TARGET) {
         buzzedRef.current = true
-        navigator.vibrate?.(180)
+        haptic('alarm')
       }
     }, 1000)
     return () => clearInterval(id)
@@ -318,6 +319,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       [name]: prev[name].map((x, j) => (j === i ? { ...x, id: data.id, created_at: data.created_at } : x)),
     }))
     setSaved(key)
+    /* Записаната серия се потвърждава и с пръст, не само с отметка на екрана:
+       телефонът често е оставен настрани, а погледът е на щангата. */
+    haptic('success')
     setTimeout(() => setSaved(s => (s === key ? null : s)), 1400)
     if (isNew) startRest(name)
     onLogged?.()

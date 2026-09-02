@@ -1,4 +1,5 @@
 import { useWaterLog } from '../../hooks/useWaterLog'
+import { haptic } from '../../lib/haptics'
 import styles from './WaterTracker.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 
@@ -32,7 +33,7 @@ export default function WaterTracker() {
             key={i}
             type="button"
             className={`${styles.glass} ${i < glasses ? styles.glassFull : ''}`}
-            onClick={() => add(i < glasses ? -(glasses - i) : i + 1 - glasses)}
+            onClick={() => { haptic('toggle'); add(i < glasses ? -(glasses - i) : i + 1 - glasses) }}
             aria-label={t('wt.glassAria', { n: i + 1 })}
           >
             <GlassIcon filled={i < glasses} />
@@ -45,10 +46,10 @@ export default function WaterTracker() {
       </div>
 
       <div className={styles.btns}>
-        <button type="button" className={styles.btn} onClick={() => add(-1)} disabled={glasses === 0} aria-label={t('wt.less')}>
+        <button type="button" className={styles.btn} onClick={() => { haptic('tap'); add(-1) }} disabled={glasses === 0} aria-label={t('wt.less')}>
           −
         </button>
-        <button type="button" className={`${styles.btn} ${styles.btnAdd}`} onClick={() => add(1)} aria-label={t('wt.moreAria')}>
+        <button type="button" className={`${styles.btn} ${styles.btnAdd}`} onClick={() => { haptic('toggle'); add(1) }} aria-label={t('wt.moreAria')}>
           {t('wt.more')}
         </button>
       </div>

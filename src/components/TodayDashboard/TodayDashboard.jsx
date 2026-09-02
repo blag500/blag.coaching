@@ -17,6 +17,7 @@ import ReadinessWidget from '../ReadinessWidget/ReadinessWidget'
 import AppHeader from '../AppHeader/AppHeader'
 import { layout } from './cards'
 import { shareAchievement } from '../../lib/achievements'
+import { haptic } from '../../lib/haptics'
 import styles from './TodayDashboard.module.css'
 
 // A colour per habit, for when it is done.
@@ -161,6 +162,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
 
     setHabitsCheer(true)
     setBurst(b => b + 1)
+    haptic('celebrate')
     const timer = setTimeout(() => setHabitsCheer(false), 1000)
     return () => clearTimeout(timer)
   }, [completedHabits, habits.length])
@@ -180,6 +182,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
 
     setSuppCheer(true)
     setSuppBurst(b => b + 1)
+    haptic('celebrate')
     const timer = setTimeout(() => setSuppCheer(false), 1000)
     return () => clearTimeout(timer)
   }, [suppTakenCount, suppTotal])
@@ -196,6 +199,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
     prevWaterFull.current = waterFull
     if (was === null || !waterFull || was) return
     setWaterBurst(b => b + 1)
+    haptic('celebrate')
   }, [waterFull])
 
   // ── Water drop ripple ──
@@ -256,7 +260,10 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
     prevHabs.current  = habsDone
     prevTrain.current = trainedToday
 
-    if (earned.length) setBadgeQueue(q => [...q, ...earned])
+    if (earned.length) {
+      setBadgeQueue(q => [...q, ...earned])
+      haptic('celebrate')
+    }
   }, [calDone, habsDone, trainedToday])
 
   const { visible } = layout(profile?.dashboard_cards)
@@ -305,7 +312,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
               key={h.id}
               type="button"
               className={`${styles.habitChip} ${checked[h.id] ? styles.habitChipOn : ''}`}
-              onClick={() => toggleHabit(h.id)}
+              onClick={() => { haptic('toggle'); toggleHabit(h.id) }}
               aria-pressed={!!checked[h.id]}
               title={h.label}
               style={{
@@ -367,7 +374,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
           className={styles.waterBtn}
           /* Stops the tap reaching the card, so adding a glass never doubles
              as a celebration. */
-          onClick={e => { e.stopPropagation(); addWater(1) }}
+          onClick={e => { e.stopPropagation(); haptic('toggle'); addWater(1) }}
           aria-label={t('today.addGlass')}
         >+</button>
       </div>
@@ -411,7 +418,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
               key={s.id}
               type="button"
               className={`${styles.habitChip} ${suppTaken[s.id] ? styles.habitChipOn : ''}`}
-              onClick={() => toggleSupp(s.id)}
+              onClick={() => { haptic('toggle'); toggleSupp(s.id) }}
               aria-pressed={!!suppTaken[s.id]}
               title={s.dose ? `${s.name} · ${s.dose}` : s.name}
               style={{
@@ -453,7 +460,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
                 <button
                   type="button"
                   className={`${styles.recOrderBtn} ${inCart ? styles.recOrderBtnDone : ''}`}
-                  onClick={() => { if (!inCart) { cart.addItem(p); onNavigate('shop') } }}
+                  onClick={() => { if (!inCart) { haptic('tap'); cart.addItem(p); onNavigate('shop') } }}
                 >
                   {inCart ? '✓' : t('today.shopOrder')}
                 </button>

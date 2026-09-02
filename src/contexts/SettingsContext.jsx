@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { syncLocale, tr } from '../utils/locale'
+import { hapticsEnabled, setHapticsEnabled } from '../lib/haptics'
 
 const SettingsContext = createContext(null)
 
@@ -19,6 +20,11 @@ export function SettingsProvider({ children }) {
   const [restTimer, setRestTimerState] = useState(() =>
     localStorage.getItem('blag_rest_timer') !== '0'
   )
+  /* Вибрацията при докосване. Включена по подразбиране, изключваема оттук —
+     на някои телефони моторчето е шумно и в тиха стая се чува повече, отколкото
+     се усеща. Истината живее в lib/haptics, защото се чете и извън React;
+     тук стои само отражението ѝ, за да може превключвателят да се пренарисува. */
+  const [haptics, setHapticsState] = useState(hapticsEnabled)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -42,6 +48,7 @@ export function SettingsProvider({ children }) {
   function setTheme(v) { setThemeState(v) }
   function setLang(v)  { setLangState(v) }
   function setRestTimer(v) { setRestTimerState(!!v) }
+  function setHaptics(v) { setHapticsEnabled(!!v); setHapticsState(!!v) }
 
   /* Делегира на tr(), за да няма две реализации на един и същ превод.
      syncLocale(lang) горе вече е записал езика при този рендер. */
@@ -50,7 +57,7 @@ export function SettingsProvider({ children }) {
   }
 
   return (
-    <SettingsContext.Provider value={{ theme, setTheme, lang, setLang, restTimer, setRestTimer, t }}>
+    <SettingsContext.Provider value={{ theme, setTheme, lang, setLang, restTimer, setRestTimer, haptics, setHaptics, t }}>
       {children}
     </SettingsContext.Provider>
   )

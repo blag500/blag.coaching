@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useWaterLog } from '../../hooks/useWaterLog'
+import { haptic } from '../../lib/haptics'
 import styles from './BottomNav.module.css'
 
 const NutritionIcon = () => (
@@ -182,7 +183,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
     if (action.id === 'water') {
       addWater(1)
       setWaterFlash(true)
-      navigator.vibrate?.(10)
+      haptic('toggle')
       setTimeout(() => setWaterFlash(false), 600)
     } else {
       onTabChange(action.tab)
@@ -225,8 +226,11 @@ export default function BottomNav({ activeTab, onTabChange }) {
           <button
             key={tab.id}
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => { haptic('nav'); onTabChange(tab.id) }}
             aria-label={t(tab.key)}
+            /* Кой раздел е отворен, казано и с думи. Дотук го казваше само
+               овалът отдолу — тоест на човек, който гледа. */
+            aria-current={activeTab === tab.id ? 'page' : undefined}
             type="button"
           >
             <span className={styles.iconWrap}><tab.Icon /></span>
@@ -242,7 +246,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                 <button
                   key={action.id}
                   className={`${styles.actionItem} ${action.id === 'water' && waterFlash ? styles.actionItemFlash : ''}`}
-                  onClick={() => handleAction(action)}
+                  onClick={() => { if (action.id !== 'water') haptic('tap'); handleAction(action) }}
                   type="button"
                   style={{ animationDelay: `${(ACTIONS.length - 1 - i) * 40}ms` }}
                 >
@@ -254,7 +258,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
           )}
           <button
             className={`${styles.fabCenter} ${open ? styles.fabOpen : ''}`}
-            onClick={() => setOpen(o => !o)}
+            onClick={() => { haptic('tap'); setOpen(o => !o) }}
             type="button"
             aria-label={t('nav.action.quickAdd')}
             aria-expanded={open}
@@ -270,8 +274,11 @@ export default function BottomNav({ activeTab, onTabChange }) {
           <button
             key={tab.id}
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => onTabChange(tab.id)}
+            onClick={() => { haptic('nav'); onTabChange(tab.id) }}
             aria-label={t(tab.key)}
+            /* Кой раздел е отворен, казано и с думи. Дотук го казваше само
+               овалът отдолу — тоест на човек, който гледа. */
+            aria-current={activeTab === tab.id ? 'page' : undefined}
             type="button"
           >
             <span className={styles.iconWrap}><tab.Icon /></span>
@@ -282,7 +289,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
         {/* Small dock handle — tap or swipe right to hide the bar */}
         <button
           className={styles.dockHandle}
-          onClick={() => setHidden(true)}
+          onClick={() => { haptic('tap'); setHidden(true) }}
           type="button"
           aria-label={t('nav.hideNav')}
         >
