@@ -90,7 +90,7 @@
 .empty { visibility: hidden; }
 
 .hasWork {
-  background: rgba(255, 183, 77, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .today {

@@ -450,15 +450,15 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #EF5350;
+  background: var(--red);
   box-shadow:
-    0 0 24px -4px rgba(239, 83, 80, 0.65),
+    0 0 24px -4px rgba(var(--red-rgb), 0.65),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .notifyDone {
   text-align: center;
-  color: #7BC97F;
+  color: var(--ok);
   font-family: var(--font-body);
   font-size: 12.5px;
   margin: 0;
@@ -513,7 +513,7 @@
   border: 1.5px solid var(--border);
   border-radius: var(--r-lg);
   cursor: pointer;
-  color: rgba(242, 232, 207, 0.35);
+  color: rgba(var(--text-rgb), 0.35);
   -webkit-tap-highlight-color: transparent;
   transition: border-color 180ms, color 180ms, background 180ms, box-shadow 180ms;
 }
@@ -732,7 +732,7 @@
 .error {
   font-family: var(--font-body);
   font-size: 12px;
-  color: #ef5350;
+  color: var(--red);
   margin: 8px 0 0;
 }
 

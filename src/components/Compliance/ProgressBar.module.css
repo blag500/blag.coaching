@@ -52,7 +52,7 @@
   height: 100%;
   background: var(--accent);
   border-radius: var(--r-xs);
-  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.45s var(--ease-glide);
 }
 
 .complete {

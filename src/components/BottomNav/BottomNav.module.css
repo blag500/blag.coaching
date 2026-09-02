@@ -17,8 +17,8 @@
   padding: 0 4px;
   overflow: visible;
   transition:
-    transform 460ms cubic-bezier(0.22, 1.2, 0.36, 1),
-    opacity   360ms cubic-bezier(0.22, 1.0, 0.36, 1);
+    transform 460ms var(--ease-spring-soft),
+    opacity   360ms var(--ease-glide);
 }
 
 /* Docked away to the right. translateX is fine here — the bar is not on
@@ -71,7 +71,7 @@
   height: 44px;
   background: none;
   border: none;
-  color: rgba(242, 232, 207, 0.28);
+  color: rgba(var(--text-rgb), 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,7 +92,7 @@
   gap: 2px;
   background: none;
   border: none;
-  color: rgba(242, 232, 207, 0.45);
+  color: rgba(var(--text-rgb), 0.45);
   transition: color 200ms var(--ease-out);
   padding: 6px 2px;
   position: relative;
@@ -115,11 +115,11 @@
   content: '';
   position: absolute;
   inset: 4px 2px;
-  background: rgba(38, 33, 20, 0.90);
+  background: var(--chrome-active);
   border-radius: var(--r-xl);
   opacity: 0;
   transform: scale(0.84);
-  transition: opacity 200ms var(--ease-out), transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 200ms var(--ease-out), transform 220ms var(--ease-spring);
 }
 
 .tab.active::before {
@@ -145,7 +145,7 @@
 }
 
 .tab.active .iconWrap {
-  animation: iconPop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation: iconPop 0.38s var(--ease-spring) both;
 }
 
 @keyframes iconPop {
@@ -198,7 +198,7 @@
 }
 
 .fabCenter svg {
-  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 220ms var(--ease-spring);
 }
 
 .fabOpen svg {
@@ -237,7 +237,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 18px 10px 14px;
-  background: rgba(28, 24, 14, 0.94);
+  background: var(--chrome-sheet);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--accent-rgb), 0.20);
@@ -250,7 +250,7 @@
 }
 
 .actionItem:active {
-  background: rgba(40, 34, 18, 0.96);
+  background: var(--chrome-sheet-active);
 }
 
 @keyframes actionIn {

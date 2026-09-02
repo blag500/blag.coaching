@@ -115,7 +115,7 @@
   font-family: var(--font-heading);
   font-size: 30px;
   letter-spacing: 0.01em;
-  color: rgba(242, 232, 207, 0.35);
+  color: rgba(var(--text-rgb), 0.35);
   cursor: pointer;
   position: relative;
   line-height: 1;
@@ -229,12 +229,12 @@
 .error {
   margin: 2px 0 0;
   font-size: 12px;
-  color: #EF5350;
+  color: var(--red);
   text-align: center;
   padding: 8px 12px;
-  background: rgba(239, 83, 80, 0.08);
+  background: rgba(var(--red-rgb), 0.08);
   border-radius: 10px;
-  border: 1px solid rgba(239, 83, 80, 0.2);
+  border: 1px solid rgba(var(--red-rgb), 0.2);
 }
 
 .info {

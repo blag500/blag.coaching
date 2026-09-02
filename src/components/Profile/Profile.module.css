@@ -401,7 +401,7 @@
 
 .pwError {
   margin: 0;
-  color: #EF5350;
+  color: var(--red);
   font-family: var(--font-body);
   font-size: 12px;
 }
@@ -609,7 +609,7 @@
   line-height: 1;
 }
 
-.weightStatVal.up   { color: #ef5350; }
+.weightStatVal.up   { color: var(--red); }
 .weightStatVal.down { color: #66BB6A; }
 
 .weightStatLabel {
@@ -665,7 +665,7 @@
   border-bottom: none;
 }
 
-.deltaUp   { color: #ef5350; }
+.deltaUp   { color: var(--red); }
 .deltaDown { color: #66BB6A; }
 .deltaNeutral { color: var(--muted); }
 
@@ -683,7 +683,7 @@
 
 .weightDeleteBtn:hover {
   opacity: 1;
-  color: #ef5350;
+  color: var(--red);
 }
 
 .weightMoreBtn {
@@ -793,7 +793,7 @@
   opacity: 0.7;
   margin-top: 6px;
 }
-.usernameHintBad  { color: #ef5350; opacity: 1; }
+.usernameHintBad  { color: var(--red); opacity: 1; }
 .usernameHintGood { color: #66BB6A; opacity: 1; }
 
 /* ── Сгъване ──────────────────────────────────────────────────────

@@ -86,7 +86,7 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.remove:active { color: #ef5350; border-color: rgba(239, 83, 80, 0.4); }
+.remove:active { color: var(--red); border-color: rgba(var(--red-rgb), 0.4); }
 
 .actions {
   display: flex;
@@ -131,7 +131,7 @@
 
 .err {
   margin: 4px 0 0;
-  color: #ef5350;
+  color: var(--red);
   font-family: var(--font-body);
   font-size: 12px;
 }

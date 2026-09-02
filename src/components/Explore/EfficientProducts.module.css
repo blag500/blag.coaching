@@ -44,7 +44,7 @@
   width: 100%;
   padding: 14px;
   background: var(--accent-dim);
-  border: 1px dashed rgba(201, 162, 39, 0.4);
+  border: 1px dashed rgba(var(--accent-rgb), 0.4);
   border-radius: var(--r-md);
   color: var(--accent);
   font-family: var(--font-heading);
@@ -57,7 +57,7 @@
 }
 
 .contributeBtn:active {
-  background: rgba(201, 162, 39, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   border-color: var(--accent);
 }
 
@@ -240,7 +240,7 @@
 
 .sortBtnActive {
   background: var(--accent-dim);
-  border-color: rgba(201, 162, 39, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
   color: var(--accent);
 }
 
@@ -302,7 +302,7 @@
   display: inline-block;
   padding: 4px 9px;
   background: var(--accent-dim);
-  border: 1px solid rgba(201, 162, 39, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   border-radius: var(--r-lg);
   font-family: var(--font-body);
   font-size: 11px;
@@ -363,12 +363,12 @@
 
 .likeBtn:active {
   background: var(--accent-dim);
-  border-color: rgba(201, 162, 39, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .likeBtnActive {
   background: var(--accent-dim);
-  border-color: rgba(201, 162, 39, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .likeCount {

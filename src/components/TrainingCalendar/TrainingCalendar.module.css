@@ -507,9 +507,9 @@
 }
 
 .deleteSessionBtn:active {
-  border-color: #ef5350;
-  color: #ef5350;
-  background: rgba(239, 83, 80, 0.08);
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(var(--red-rgb), 0.08);
 }
 
 /* Form bottom sheet */

@@ -197,7 +197,7 @@
 .barFill {
   width: 100%;
   border-radius: 4px 4px 0 0;
-  transition: height 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: height 500ms var(--ease-glide);
   min-height: 0;
 }
 

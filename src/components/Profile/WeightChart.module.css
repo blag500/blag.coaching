@@ -39,7 +39,7 @@
   line-height: 1;
 }
 
-.statPos { color: #ef5350; }
+.statPos { color: var(--red); }
 .statNeg { color: #66BB6A; }
 
 .pills {

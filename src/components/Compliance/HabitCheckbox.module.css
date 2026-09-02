@@ -76,7 +76,7 @@
 }
 
 .indicatorBounce {
-  animation: checkBounce 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: checkBounce 0.42s var(--ease-spring) both;
 }
 
 @keyframes checkBounce {

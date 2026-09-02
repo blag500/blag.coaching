@@ -163,5 +163,5 @@
   margin: 0;
   font-family: var(--font-body);
   font-size: 11px;
-  color: var(--danger, #EF5350);
+  color: var(--danger, var(--red));
 }

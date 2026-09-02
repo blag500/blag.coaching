@@ -85,7 +85,7 @@
 
 .glassFull {
   color: #42A5F5;
-  animation: glassPop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  animation: glassPop 0.32s var(--ease-spring) both;
 }
 
 @keyframes glassPop {

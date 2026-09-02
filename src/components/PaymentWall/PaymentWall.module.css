@@ -142,7 +142,7 @@
 .error {
   font-family: var(--font-body);
   font-size: 0.78rem;
-  color: #ef5350;
+  color: var(--red);
   text-align: center;
 }
 
@@ -161,7 +161,7 @@
   width: 100%;
   max-width: 360px;
   background: var(--surface-1);
-  border: 1px solid #ef5350;
+  border: 1px solid var(--red);
   border-radius: var(--r-md);
   padding: 28px 24px;
   display: flex;
@@ -193,7 +193,7 @@
   text-align: center;
   padding: 12px;
   border-radius: var(--r-sm);
-  background: #ef5350;
+  background: var(--red);
   font-family: var(--font-heading);
   font-size: 1rem;
   letter-spacing: 0.04em;

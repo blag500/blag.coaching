@@ -126,7 +126,7 @@
 }
 
 .taskRowOverdue .taskText {
-  color: #ef5350;
+  color: var(--red);
 }
 
 /* Checkbox */
@@ -204,7 +204,7 @@
 }
 
 .dateTagOverdue {
-  color: #ef5350;
+  color: var(--red);
 }
 
 /* Delete */
@@ -394,7 +394,7 @@
 }
 
 .metaBtnPrioActive {
-  background: rgba(239, 83, 80, 0.1);
-  color: #ef5350;
-  border-color: rgba(239, 83, 80, 0.3);
+  background: rgba(var(--red-rgb), 0.1);
+  color: var(--red);
+  border-color: rgba(var(--red-rgb), 0.3);
 }

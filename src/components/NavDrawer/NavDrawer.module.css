@@ -281,7 +281,7 @@
   min-width: 18px;
   height: 18px;
   border-radius: var(--r-sm);
-  background: #ef5350;
+  background: var(--red);
   color: #fff;
   font-family: var(--font-body);
   font-size: 10px;

@@ -441,7 +441,7 @@
 .saveError {
   font-family: var(--font-body);
   font-size: 12px;
-  color: #ef5350;
+  color: var(--red);
   margin: 0;
 }
 

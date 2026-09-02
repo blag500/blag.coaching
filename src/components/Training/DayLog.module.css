@@ -85,7 +85,7 @@
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(242, 232, 207, 0.35);
+  color: rgba(var(--text-rgb), 0.35);
   text-align: center;
 }
 .hPrev { text-align: left; padding-left: 4px; }
@@ -95,7 +95,7 @@
 .setNo {
   font-family: var(--font-body);
   font-size: 12px;
-  color: rgba(242, 232, 207, 0.35);
+  color: rgba(var(--text-rgb), 0.35);
   text-align: center;
 }
 
@@ -113,7 +113,7 @@
   background: none;
   border: none;
   padding: 4px 4px;
-  color: rgba(242, 232, 207, 0.5);
+  color: rgba(var(--text-rgb), 0.5);
   font-family: var(--font-body);
   font-size: 11px;
   text-align: left;
@@ -131,7 +131,7 @@
 }
 .prevChip:disabled {
   cursor: default;
-  color: rgba(242, 232, 207, 0.2);
+  color: rgba(var(--text-rgb), 0.2);
 }
 
 .field {
@@ -189,10 +189,10 @@
     rgba(123, 201, 127, 0.35) 0%,
     rgba(123, 201, 127, 0.15) 100%);
   border-color: rgba(123, 201, 127, 0.6);
-  color: #7BC97F;
+  color: var(--ok);
 }
 
-.checkFlash { animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.checkFlash { animation: checkPop 0.4s var(--ease-spring); }
 @keyframes checkPop {
   0%   { transform: scale(1); }
   50%  { transform: scale(1.14); }
@@ -486,7 +486,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  animation: lbCardIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  animation: lbCardIn 0.22s var(--ease-glide);
 }
 
 .lightboxImg {
@@ -561,7 +561,7 @@
     rgba(123, 201, 127, 0.08) 100%);
   border: 1px solid rgba(123, 201, 127, 0.55);
   border-radius: var(--r-sm);
-  color: #7BC97F;
+  color: var(--ok);
   font-family: var(--font-heading);
   font-size: 12px;
   letter-spacing: 0.08em;

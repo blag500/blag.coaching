@@ -117,7 +117,7 @@
 .sendError {
   font-family: var(--font-body);
   font-size: 11px;
-  color: #ef5350;
+  color: var(--red);
   padding: 4px 12px 0;
   text-align: center;
   flex-shrink: 0;

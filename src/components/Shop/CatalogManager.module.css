@@ -181,7 +181,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.delBtn:active { opacity: 1; color: #ef5350; }
+.delBtn:active { opacity: 1; color: var(--red); }
 
 /* ── Form overlay ── */
 .formOverlay {
@@ -298,7 +298,7 @@
 .error {
   font-family: var(--font-body);
   font-size: 12px;
-  color: #ef5350;
+  color: var(--red);
 }
 
 .formActions {

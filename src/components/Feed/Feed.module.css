@@ -25,7 +25,7 @@
 .errorMsg {
   font-family: var(--font-body);
   font-size: 11px;
-  color: #ef5350;
+  color: var(--red);
   margin: 8px 2px;
 }
 
@@ -184,7 +184,7 @@
   background: transparent;
   color: var(--muted);
 }
-.postDropYes { border-color: #ef5350; color: #ef5350; }
+.postDropYes { border-color: var(--red); color: var(--red); }
 
 .postBody {
   font-family: var(--font-body);

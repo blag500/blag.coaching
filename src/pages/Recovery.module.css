@@ -252,7 +252,7 @@
 }
 
 .saveBtn:disabled { opacity: 0.35; cursor: default; }
-.saveBtnDone { background: #81C784; }
+.saveBtnDone { background: var(--ok); }
 
 /* ── History ────────────────────────────────────────────────────────────────── */
 

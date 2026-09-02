@@ -213,7 +213,7 @@
 
 .del:active {
   opacity: 1;
-  color: #ef5350;
+  color: var(--red);
 }
 
 /* ── Add form ── */

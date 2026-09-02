@@ -253,7 +253,7 @@
 .sendError {
   font-family: var(--font-body);
   font-size: 11px;
-  color: #ef5350;
+  color: var(--red);
   text-align: center;
   margin: 0 0 6px;
 }

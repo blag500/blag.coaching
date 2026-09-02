@@ -16,7 +16,7 @@
   left: 0;
   border-radius: 1px;
   will-change: transform, opacity;
-  animation: fly 900ms cubic-bezier(0.16, 0.7, 0.35, 1) both;
+  animation: fly 900ms var(--ease-glide) both;
 }
 
 @keyframes fly {

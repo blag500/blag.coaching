@@ -67,7 +67,7 @@
   transition: height 300ms var(--ease-out);
 }
 
-.barOver { background: linear-gradient(180deg, #EF5350 0%, #C62828 100%); }
+.barOver { background: linear-gradient(180deg, var(--red) 0%, #C62828 100%); }
 .barEmpty { background: rgba(255, 255, 255, 0.06); }
 
 .targetLine {
@@ -113,13 +113,13 @@
 
 .deltaLabel { color: var(--muted); }
 .deltaVal { color: var(--text); font-family: var(--font-heading); font-size: 13px; }
-.over  { color: #EF5350; }
-.under { color: #FFB74D; }
+.over  { color: var(--red); }
+.under { color: var(--accent); }
 
 .perfect {
   font-family: var(--font-body);
   font-size: 12px;
-  color: #7BC97F;
+  color: var(--ok);
   text-align: center;
   margin: 6px 0 0;
 }
@@ -270,8 +270,8 @@
 .applyBtn:active { transform: scale(0.97); }
 .applyBtn:disabled { opacity: 0.6; cursor: default; }
 .applyBtnDone {
-  background: #7BC97F;
-  box-shadow: 0 0 18px rgba(129, 199, 132, 0.4);
+  background: var(--ok);
+  box-shadow: 0 0 18px rgba(var(--ok-rgb), 0.4);
 }
 
 .applyHint {

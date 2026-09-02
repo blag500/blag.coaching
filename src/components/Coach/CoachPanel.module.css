@@ -449,9 +449,9 @@
 }
 
 .cancelSessionBtn:active {
-  border-color: #ef5350;
-  color: #ef5350;
-  background: rgba(239, 83, 80, 0.08);
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(var(--red-rgb), 0.08);
 }
 
 /* Sessions section header */
@@ -690,9 +690,9 @@
   flex-shrink: 0;
   padding: 10px 16px;
   background: transparent;
-  border: 1px solid #ef5350;
+  border: 1px solid var(--red);
   border-radius: var(--r-sm);
-  color: #ef5350;
+  color: var(--red);
   font-family: var(--font-heading);
   font-size: 12px;
   letter-spacing: 0.08em;

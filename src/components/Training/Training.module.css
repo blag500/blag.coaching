@@ -643,7 +643,7 @@
 .blockRowIcon svg { width: 18px; height: 18px; }
 
 .blockRowIconRest {
-  color: rgba(242, 232, 207, 0.5);
+  color: rgba(var(--text-rgb), 0.5);
   border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.03);
 }
@@ -693,11 +693,11 @@
   text-transform: uppercase;
 }
 .blockRowReady {
-  background: rgba(129, 199, 132, 0.14);
-  color: #81C784;
+  background: rgba(var(--ok-rgb), 0.14);
+  color: var(--ok);
 }
 .blockRowWait {
-  background: rgba(255, 183, 77, 0.14);
+  background: rgba(var(--accent-rgb), 0.14);
   color: var(--accent);
 }
 

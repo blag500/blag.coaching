@@ -181,7 +181,7 @@
   color: var(--muted);
 }
 
-.forgetBtn:active { color: #ef5350; border-color: rgba(239, 83, 80, 0.5); }
+.forgetBtn:active { color: var(--red); border-color: rgba(var(--red-rgb), 0.5); }
 
 .addBtn:disabled,
 .renameBtn:disabled,

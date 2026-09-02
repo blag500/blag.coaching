@@ -37,7 +37,7 @@
 
 .scoreCorrect { color: #66BB6A; }
 .scoreSep     { color: var(--muted); }
-.scoreWrong   { color: #ef5350; }
+.scoreWrong   { color: var(--red); }
 
 /* ── Progress bar ── */
 .progressWrap {
@@ -193,12 +193,12 @@
 .optCorrect .optLetter { color: #66BB6A; }
 
 .optWrong {
-  background: rgba(239, 83, 80, 0.12);
-  border-color: #ef5350;
-  color: #ef5350;
+  background: rgba(var(--red-rgb), 0.12);
+  border-color: var(--red);
+  color: var(--red);
 }
 
-.optWrong .optLetter { color: #ef5350; }
+.optWrong .optLetter { color: var(--red); }
 
 .optDim {
   opacity: 0.35;
@@ -224,8 +224,8 @@
 }
 
 .explainFail {
-  background: rgba(239, 83, 80, 0.08);
-  border-color: rgba(239, 83, 80, 0.25);
+  background: rgba(var(--red-rgb), 0.08);
+  border-color: rgba(var(--red-rgb), 0.25);
 }
 
 .explainVerdict {
@@ -236,7 +236,7 @@
 }
 
 .explainOk  .explainVerdict { color: #66BB6A; }
-.explainFail .explainVerdict { color: #ef5350; }
+.explainFail .explainVerdict { color: var(--red); }
 
 .explainText {
   font-family: var(--font-body);
@@ -326,7 +326,7 @@
 
 .summaryFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #81C784);
+  background: linear-gradient(90deg, var(--accent), var(--ok));
   border-radius: var(--r-xs);
   transition: width 0.6s ease;
 }
@@ -549,7 +549,7 @@
 
 .calDotGreen  { background: #66BB6A; }
 .calDotYellow { background: #FFA726; }
-.calDotRed    { background: #ef5350; }
+.calDotRed    { background: var(--red); }
 
 .calLegend {
   display: flex;

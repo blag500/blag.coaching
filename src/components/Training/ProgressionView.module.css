@@ -269,7 +269,7 @@
 }
 
 .statUp   { color: #66bb6a; }
-.statDown { color: #ef5350; }
+.statDown { color: var(--red); }
 
 /* Table */
 .tableWrap {
@@ -360,11 +360,11 @@
 .editRowBtn:hover { background: rgba(var(--accent-rgb), 0.18); }
 
 .deleteRowBtn {
-  background: rgba(239, 83, 80, 0.08);
-  border: 1px solid rgba(239, 83, 80, 0.2);
-  color: #ef5350;
+  background: rgba(var(--red-rgb), 0.08);
+  border: 1px solid rgba(var(--red-rgb), 0.2);
+  color: var(--red);
 }
-.deleteRowBtn:hover { background: rgba(239, 83, 80, 0.15); }
+.deleteRowBtn:hover { background: rgba(var(--red-rgb), 0.15); }
 
 .saveRowBtn {
   background: rgba(102, 187, 106, 0.12);

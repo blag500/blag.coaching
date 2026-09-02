@@ -66,7 +66,7 @@
   width: 100%;
   background: rgba(var(--accent-rgb),0.45);
   border-radius: var(--r-xs);
-  transition: height 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: height 0.55s var(--ease-out);
 }
 
 .barFill.barDone {

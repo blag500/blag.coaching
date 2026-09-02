@@ -187,7 +187,7 @@
 /* Newest glass: a soft ripple radiates out once, then leaves the drop lit. A
    pseudo-ring rather than a scale so the drop itself doesn't twitch. */
 .waterDropRipple {
-  animation: dropPop 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: dropPop 500ms var(--ease-spring);
 }
 .waterDropRipple::after {
   content: '';
@@ -318,7 +318,7 @@
 }
 
 .legendOver {
-  color: #ef5350;
+  color: var(--red);
 }
 
 .legendTarget {
@@ -530,7 +530,7 @@
 .metricBarFill {
   height: 100%;
   border-radius: var(--r-xs);
-  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.7s var(--ease-glide);
 }
 
 .metricTarget {

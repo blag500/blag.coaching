@@ -44,7 +44,7 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   color: var(--text);
-  animation: dialIn 250ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: dialIn 250ms var(--ease-spring) both;
   white-space: nowrap;
 }
 
@@ -91,12 +91,12 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
-  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition: transform 300ms var(--ease-spring),
               box-shadow 200ms ease;
 }
 
 .fab svg {
-  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 300ms var(--ease-spring);
 }
 
 .fabOpen {
