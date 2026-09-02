@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { tr } from '../utils/locale'
 
 /* Приятели и следване.
  *
@@ -24,9 +25,28 @@ async function authorsByIds(ids) {
   return Object.fromEntries((data ?? []).map(a => [a.id, a]))
 }
 
+/**
+ * Известие до отсрещния човек.
+ *
+ * Мълчи при неуспех и не се чака. Поканата вече е записана; ако push услугата
+ * мълчи или онзи не е разрешил известия, това не е грешка, за която да се
+ * съобщава на човека, натиснал бутона.
+ *
+ * Текстът тръгва на езика на изпращача — същото прави и известието за
+ * харесване. Правилното би било на езика на получателя, но той се знае само
+ * в базата, а не тук.
+ */
+function notify(toUserId, title, body) {
+  if (!toUserId) return
+  supabase.functions.invoke('send-push', {
+    body: { toUserId, title, body, tag: 'friends' },
+  }).catch(() => {})
+}
+
 export function useFriends() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const me = user?.id ?? null
+  const myName = profile?.name || 'Blag'
 
   const [friends,  setFriends]  = useState([])   // приети, взаимни
   const [incoming, setIncoming] = useState([])   // покани към мен
@@ -109,21 +129,30 @@ export function useFriends() {
     const { error: err } = await supabase
       .from('friendships')
       .insert({ requester_id: me, addressee_id: otherId })
-    if (!err) await load()
+    if (!err) {
+      notify(otherId, myName, tr('fr.push.invited'))
+      await load()
+    }
     /* Уникалният индекс по подредената двойка е това, което спира втора
        покана между същите двама — включително когато другият вече е поканил
        мен. В този случай грешката не е грешка, а „вече има връзка". */
     return { error: err?.message ?? null }
-  }, [me, load])
+  }, [me, load, myName])
 
   const accept = useCallback(async (linkId) => {
+    /* Кой е поканил се чете преди заявката: след нея редът вече не е в
+       „получени" и няма откъде да се вземе. */
+    const asked = incoming.find(l => l.id === linkId)?.otherId ?? null
     const { error: err } = await supabase
       .from('friendships')
       .update({ status: 'accepted', responded_at: new Date().toISOString() })
       .eq('id', linkId)
-    if (!err) await load()
+    if (!err) {
+      notify(asked, myName, tr('fr.push.accepted'))
+      await load()
+    }
     return { error: err?.message ?? null }
-  }, [load])
+  }, [load, incoming, myName])
 
   /** Отказ, отмяна на своя покана и разприятеляване са едно и също действие. */
   const unlink = useCallback(async (linkId) => {
@@ -137,9 +166,12 @@ export function useFriends() {
     const { error: err } = await supabase
       .from('follows')
       .insert({ follower_id: me, followee_id: otherId })
-    if (!err) await load()
+    if (!err) {
+      notify(otherId, myName, tr('fr.push.followed'))
+      await load()
+    }
     return { error: err?.message ?? null }
-  }, [me, load])
+  }, [me, load, myName])
 
   const unfollow = useCallback(async (otherId) => {
     if (!me) return { error: 'no user' }

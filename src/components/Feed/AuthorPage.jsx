@@ -6,6 +6,8 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { loc } from '../../utils/locale'
 import PostCard from './PostCard'
 import styles from './Feed.module.css'
+import { useFriends } from '../../hooks/useFriends'
+import { haptic } from '../../lib/haptics'
 
 /**
  * Човекът зад поста, на цяла страница.
@@ -33,6 +35,20 @@ export default function AuthorPage({ author, onClose, onMessage }) {
   const { t } = useSettings()
   const [posts, setPosts]     = useState([])
   const [loading, setLoading] = useState(true)
+  const [linkBusy, setLinkBusy] = useState(false)
+
+  const { relationTo, isFollowing, invite, accept, unlink, follow, unfollow } = useFriends()
+  const rel      = relationTo(author?.id)
+  const followed = isFollowing(author?.id)
+
+  /* Един бутон в движение наведнъж: докато заявката пътува, и двата се
+     заключват, за да не тръгне втора покана към същия човек. */
+  async function act(fn) {
+    setLinkBusy(true)
+    haptic('tap')
+    await fn()
+    setLinkBusy(false)
+  }
 
   const authorId = author?.id
 
@@ -117,9 +133,53 @@ export default function AuthorPage({ author, onClose, onMessage }) {
 
       <div className={styles.authorBody}>
         {!isMe && (
-          <button type="button" className={styles.authorMessage} onClick={onMessage}>
-            {t('feed.message')}
-          </button>
+          <>
+            <button type="button" className={styles.authorMessage} onClick={onMessage}>
+              {t('feed.message')}
+            </button>
+
+            {/* Поканата и следването стоят там, където човекът вече е стигнал.
+                Дотук се стигаше дотук — до лицето и името му — и единственото
+                възможно нещо беше да му пишеш; за да го добавиш, трябваше да
+                излезеш и да го потърсиш по име в друг раздел. */}
+            <div className={styles.authorLinkRow}>
+              {rel.kind === 'none' && (
+                <button type="button" className={styles.authorLinkBtn}
+                  disabled={linkBusy}
+                  onClick={() => act(() => invite(author.id))}>
+                  {t('fr.add')}
+                </button>
+              )}
+              {rel.kind === 'sent' && (
+                <button type="button" className={styles.authorLinkBtn}
+                  disabled={linkBusy}
+                  onClick={() => act(() => unlink(rel.linkId))}>
+                  {t('fr.cancel')}
+                </button>
+              )}
+              {rel.kind === 'received' && (
+                <button type="button" className={styles.authorLinkBtnOn}
+                  disabled={linkBusy}
+                  onClick={() => act(() => accept(rel.linkId))}>
+                  {t('fr.accept')}
+                </button>
+              )}
+              {rel.kind === 'friend' && (
+                <button type="button" className={styles.authorLinkBtnOn}
+                  disabled={linkBusy}
+                  onClick={() => act(() => unlink(rel.linkId))}>
+                  {t('fr.friend')}
+                </button>
+              )}
+
+              <button type="button"
+                className={followed ? styles.authorLinkBtnOn : styles.authorLinkBtn}
+                disabled={linkBusy}
+                onClick={() => act(() => (followed ? unfollow(author.id) : follow(author.id)))}>
+                {followed ? t('fr.following') : t('fr.follow')}
+              </button>
+            </div>
+          </>
         )}
 
         {author.bio

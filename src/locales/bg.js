@@ -76,6 +76,12 @@ export default {
   'fr.unfollow':          'СПРИ',
   'fr.message':           'ПИШИ',
   'fr.emptyFriends':      'Още никого. Потърси по име или по краткото име и изпрати покана.',
+  'supp.calendar':        'КОГА КАКВО Е ВЗЕТО',
+  'feed.posted':          'Публикувано.',
+  'feed.push.photo':      'сподели снимка',
+  'fr.push.invited':      'те покани за приятел',
+  'fr.push.accepted':     'прие поканата ти',
+  'fr.push.followed':     'вече те следва',
 
 
   'nav.orders':       'ПОРЪЧКИ',

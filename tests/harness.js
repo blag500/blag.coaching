@@ -97,7 +97,13 @@ export const TABLES = {
     { id: 's2', user_id: USER_ID, name: 'Витамин D', dose: '4000 IU', sort: 1 },
     { id: 's3', user_id: USER_ID, name: 'Омега 3',   dose: '2 капс.', sort: 2 },
   ],
-  supplement_logs: [{ id: 1, user_id: USER_ID, supplement_id: 's1', date: today() }],
+  /* Приети през последните дни — за да има какво да рисува календарът.
+     Креатинът се пие всеки ден, витаминът през ден, омегата рядко. */
+  supplement_logs: [
+    ...[0, 1, 2, 3, 4, 5, 6].map((d, i) => ({ id: `sl-c${i}`, user_id: USER_ID, supplement_id: 's1', date: today(d) })),
+    ...[0, 2, 4, 6].map((d, i)          => ({ id: `sl-d${i}`, user_id: USER_ID, supplement_id: 's2', date: today(d) })),
+    ...[1, 5].map((d, i)                => ({ id: `sl-o${i}`, user_id: USER_ID, supplement_id: 's3', date: today(d) })),
+  ],
   /* Колоната е date. Сериите се групират по нея; ред без нея прави сесия с
      date: undefined и списъкът пада при подреждането. */
   exercise_logs: [
@@ -112,6 +118,11 @@ export const TABLES = {
   /* Адресникът: един приет приятел, една покана към мен, една моя покана без
      отговор. Трите състояния наведнъж, защото празният списък не казва нищо
      за това как изглежда редът с двата бутона. */
+  /* Пост от друг човек — за да има чие лице да се отвори от фийда. */
+  posts: [
+    { id: 'p1', user_id: 'u-ivan', body: 'Първа тренировка от седмицата.', photo_url: null,
+      created_at: new Date().toISOString(), kind: 'post', meta: null, post_likes: [], post_comments: [] },
+  ],
   friendships: [
     { id: 'fr1', requester_id: USER_ID, addressee_id: 'u-ivan',  status: 'accepted', created_at: new Date().toISOString() },
     { id: 'fr2', requester_id: 'u-mara', addressee_id: USER_ID,  status: 'pending',  created_at: new Date().toISOString() },

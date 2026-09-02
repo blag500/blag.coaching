@@ -53,6 +53,33 @@ function shape(row, myId, authors) {
 }
 
 /**
+ * Кой да научи, че си публикувал.
+ *
+ * Приятелите и онези, които те следват — и никой друг. Общият фийд остава
+ * общ и всеки може да прочете поста; но да бъде събуден за него е друго
+ * нещо, и то се дължи само на хората, които са казали, че им е интересно.
+ * Точно за това служи следването.
+ *
+ * И двата списъка се четат от телефона, защото RLS ги пуска: своите връзки
+ * и своите последователи всеки вижда. Няма нужда от функция със служебен
+ * ключ, за да се разбере кой е приятел на кого.
+ */
+async function audienceFor(me) {
+  const [links, followers] = await Promise.all([
+    supabase.from('friendships')
+      .select('requester_id, addressee_id')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${me},addressee_id.eq.${me}`),
+    supabase.from('follows').select('follower_id').eq('followee_id', me),
+  ])
+  const ids = new Set()
+  for (const l of links.data ?? []) ids.add(l.requester_id === me ? l.addressee_id : l.requester_id)
+  for (const f of followers.data ?? []) ids.add(f.follower_id)
+  ids.delete(me)
+  return [...ids]
+}
+
+/**
  * Известие до автора на поста.
  *
  * Мълчи при неуспех и не се чака: сърцето вече е нарисувано на екрана, а
@@ -128,8 +155,27 @@ export function useFeed() {
       authorCache.current = { ...authorCache.current, ...(await fetchAuthors([user.id])) }
     }
     setPosts(prev => [shape(data, user.id, authorCache.current), ...prev])
+
+    /* Известието тръгва след като редът е записан, и не се чака.
+       Публикуването е свършено в мига, в който постът е в базата; ако push
+       услугата мълчи или таблиците за приятели още не съществуват, човекът
+       не бива да види грешка за нещо, което е станало. */
+    audienceFor(user.id)
+      .then(ids => {
+        if (ids.length === 0) return
+        return supabase.functions.invoke('send-push', {
+          body: {
+            toUserIds: ids,
+            title: myName,
+            body: (body?.trim() || tr('feed.push.photo')).slice(0, 120),
+            tag: 'feed',
+          },
+        })
+      })
+      .catch(() => {})
+
     return { data }
-  }, [user?.id])
+  }, [user?.id, myName])
 
   const removePost = useCallback(async (id) => {
     const before = posts

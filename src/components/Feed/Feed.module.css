@@ -450,20 +450,75 @@
   margin: 0 0 18px;
 }
 
+/* Метал, не боя.
+   Плътното злато е цвят; златото с градиент през него е материя — и точно
+   затова е запазено за големите запълнени повърхности, където има площ, по
+   която отблясъкът да пропътува. Бутонът е широк колкото страницата, така че
+   е точно такава повърхност. Същият метал носят изборът на план и кръглият
+   бутон в лентата. */
 .authorMessage {
+  composes: glint from '../../styles/arrive.module.css';
+
+  position: relative;
+  overflow: hidden;
   display: block;
   width: 100%;
-  background: var(--accent);
+  background: var(--accent-metal);
   border: none;
   border-radius: var(--r-md);
   color: #0C0A06;
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.1em;
-  padding: 12px;
+  padding: 13px;
   margin-bottom: 8px;
   cursor: pointer;
+  /* Ръбът отгоре и сянката отдолу: без тях металът лежи в страницата вместо
+     да стои върху нея. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 6px 18px -6px rgba(var(--accent-rgb), 0.45);
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Покана и следване ──
+   Празни до плътния: на един ред стои едно основно действие, а тези две са
+   до него, не срещу него. */
+.authorLinkRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.authorLinkBtn,
+.authorLinkBtnOn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--r-md);
+  background: transparent;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--dur-state) var(--ease-out),
+              border-color var(--dur-state) var(--ease-out);
+}
+
+.authorLinkBtn {
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+}
+
+/* Състояние, не покана: рамката се запалва, когато нещо вече е вярно. */
+.authorLinkBtnOn {
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+}
+
+.authorLinkBtn:disabled,
+.authorLinkBtnOn:disabled { opacity: 0.5; cursor: default; }
 
 
 /* ── Профилът на автора ───────────────────────────────────────────
@@ -635,3 +690,29 @@
 }
 .commentWhoBtn { flex-shrink: 0; display: flex; }
 .commentAuthorBtn:not(:disabled):active { opacity: 0.6; }
+
+/* Публикувано. Стои три секунди и си отива — потвърждение, което трябва да се
+   затваря на ръка, е втора задача след първата. */
+.composerPosted {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: rgba(var(--ok-rgb), 0.10);
+  border: 1px solid rgba(var(--ok-rgb), 0.35);
+  color: var(--ok);
+  font-family: var(--font-body);
+  font-size: 12px;
+  animation: postedIn 260ms var(--ease-spring) both;
+}
+
+@keyframes postedIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composerPosted { animation: none; }
+}

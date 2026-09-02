@@ -75,6 +75,12 @@ export default {
   'fr.unfollow':          'UNFOLLOW',
   'fr.message':           'MESSAGE',
   'fr.emptyFriends':      'Nobody yet. Search by name or username and send a request.',
+  'supp.calendar':        'WHAT WAS TAKEN, WHEN',
+  'feed.posted':          'Posted.',
+  'feed.push.photo':      'shared a photo',
+  'fr.push.invited':      'sent you a friend request',
+  'fr.push.accepted':     'accepted your request',
+  'fr.push.followed':     'is now following you',
 
 
   'nav.orders':       'ORDERS',

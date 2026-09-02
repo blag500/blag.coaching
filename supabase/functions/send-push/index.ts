@@ -22,8 +22,18 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: CORS })
   }
 
-  const { toUserId, title, body, tag } = await req.json()
-  if (!toUserId) {
+  /* Един получател или списък.
+     Дотук функцията знаеше само за един човек, което значеше, че известие до
+     петима е пет обиколки от телефона до сървъра — а телефонът чака, докато
+     публикува. toUserIds приема списък наведнъж; toUserId остава, защото
+     харесванията и коментарите го ползват и няма причина да се пипат. */
+  const { toUserId, toUserIds, title, body, tag } = await req.json()
+  const recipients: string[] = [
+    ...(Array.isArray(toUserIds) ? toUserIds : []),
+    ...(toUserId ? [toUserId] : []),
+  ].filter((v, i, a) => v && a.indexOf(v) === i)
+
+  if (recipients.length === 0) {
     return new Response('missing toUserId', { status: 400, headers: CORS })
   }
 
@@ -31,7 +41,7 @@ Deno.serve(async (req) => {
   const { data: subs } = await supabase
     .from('push_subscriptions')
     .select('endpoint, subscription')
-    .eq('user_id', toUserId)
+    .in('user_id', recipients)
 
   if (!subs?.length) {
     return new Response(JSON.stringify({ sent: 0 }), {
