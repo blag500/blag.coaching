@@ -1,7 +1,6 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
-import HelpPage from './pages/HelpPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
@@ -10,32 +9,14 @@ import NutritionCards from './components/NutritionCards/NutritionCards'
 import Compliance from './components/Compliance/Compliance'
 import Training from './components/Training/Training'
 import Profile from './components/Profile/Profile'
-import CoachPanel from './components/Coach/CoachPanel'
-import CoachMyDay from './components/Coach/CoachMyDay'
 import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
 import ChatPage from './components/Chat/ChatPage'
-import Explore from './components/Explore/Explore'
-import CalorieCalculator from './components/CalorieCalculator/CalorieCalculator'
-import Onboarding from './components/Onboarding/Onboarding'
 import RegistrationSuccess from './components/RegistrationSuccess/RegistrationSuccess'
 import PlanSelector from './components/PlanSelector/PlanSelector'
-import LandingPage from './components/LandingPage/LandingPage'
-import CheckinPage from './components/Checkin/CheckinPage'
 import WelcomeOverlay from './components/Auth/WelcomeOverlay'
-import TrainingCalendar from './components/TrainingCalendar/TrainingCalendar'
-import LearnPage from './components/Learn/LearnPage'
-import Recovery from './pages/Recovery'
 import TodayDashboard from './components/TodayDashboard/TodayDashboard'
 import FeedPage from './components/Feed/FeedPage'
-import RewardsPage from './components/Rewards/RewardsPage'
-import Budget from './components/Budget/Budget'
-import Tasks from './components/Tasks/Tasks'
-import PrepProtocol from './components/PrepProtocol/PrepProtocol'
-import PosingPage from './components/Posing/PosingPage'
-import SupplementsPage from './components/Supplements/SupplementsPage'
-import ShopPage from './components/Shop/ShopPage'
-import OrdersPanel from './components/Coach/OrdersPanel'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
@@ -48,9 +29,53 @@ import { trackPage } from './lib/analytics'
 import { tr } from './utils/locale'
 import styles from './App.module.css'
 
+/* Разделянето по маршрути.
+ *
+ * Всичко тук се внасяше отгоре, наведнъж: 1,48 MB в един файл, който всеки
+ * клиент тегли, преди да види първия екран. Вътре имаше треньорския панел
+ * (близо две хиляди реда, за един човек от тринайсет), помощната страница,
+ * лендингът — който човек с инсталирано приложение не вижда никога — и
+ * онбордингът, който се минава веднъж в живота на акаунта.
+ *
+ * Разделите от долната лента НЕ са тук и това е нарочно: пейджърът строи
+ * съседната страница в началото на хода и я пуска да пътува веднага. Страница,
+ * която в този момент тръгне да се тегли, би пътувала празна.
+ */
+const HelpPage = lazy(() => import('./pages/HelpPage'))
+const LandingPage = lazy(() => import('./components/LandingPage/LandingPage'))
+const Onboarding = lazy(() => import('./components/Onboarding/Onboarding'))
+const CoachPanel = lazy(() => import('./components/Coach/CoachPanel'))
+const CoachMyDay = lazy(() => import('./components/Coach/CoachMyDay'))
+const OrdersPanel = lazy(() => import('./components/Coach/OrdersPanel'))
+const Budget = lazy(() => import('./components/Budget/Budget'))
+const ShopPage = lazy(() => import('./components/Shop/ShopPage'))
+const CalorieCalculator = lazy(() => import('./components/CalorieCalculator/CalorieCalculator'))
+const LearnPage = lazy(() => import('./components/Learn/LearnPage'))
+const PrepProtocol = lazy(() => import('./components/PrepProtocol/PrepProtocol'))
+const PosingPage = lazy(() => import('./components/Posing/PosingPage'))
+const TrainingCalendar = lazy(() => import('./components/TrainingCalendar/TrainingCalendar'))
+const RewardsPage = lazy(() => import('./components/Rewards/RewardsPage'))
+const CheckinPage = lazy(() => import('./components/Checkin/CheckinPage'))
+const SupplementsPage = lazy(() => import('./components/Supplements/SupplementsPage'))
+const Explore = lazy(() => import('./components/Explore/Explore'))
+const Recovery = lazy(() => import('./pages/Recovery'))
+const Tasks = lazy(() => import('./components/Tasks/Tasks'))
+
+
 /* Фийдът зае мястото, което таблото освободи, когато се прибра в Профил.
    Редът е същият, само първият адрес е друг. */
 const NAV_ORDER = ['feed', 'nutrition', 'training', 'profile']
+
+
+/* Чакането, докато една отложена страница пристига. Същата точка, която стои
+   и докато сесията се чете — за човека това е едно и също събитие. */
+function PageLoader({ children }) {
+  return (
+    <Suspense fallback={<div className={styles.loadingScreen}><span className={styles.loadingDot} /></div>}>
+      {children}
+    </Suspense>
+  )
+}
 
 // Goal ids → the word the success chip shows after the calorie target.
 const GOAL_KEY = { cut: 'goal.cut', maintain: 'goal.maintain', bulk: 'goal.bulk' }
@@ -206,13 +231,15 @@ function AppShell() {
   if (!session) {
     if (!landingSeen) {
       return (
-        <LandingPage
-          onContinue={typed => {
-            if (typeof typed === 'string') setAuthEmail(typed)
-            setAuthMode('register'); setLandingSeen(true)
-          }}
-          onLogin={() => { setAuthMode('login'); setLandingSeen(true) }}
-        />
+        <PageLoader>
+          <LandingPage
+            onContinue={typed => {
+              if (typeof typed === 'string') setAuthEmail(typed)
+              setAuthMode('register'); setLandingSeen(true)
+            }}
+            onLogin={() => { setAuthMode('login'); setLandingSeen(true) }}
+          />
+        </PageLoader>
       )
     }
     return <AuthScreen initialMode={authMode} initialEmail={authEmail} onBack={() => setLandingSeen(false)} />
@@ -249,11 +276,13 @@ function AppShell() {
     // Everyone else goes through the self-serve flow which ends with the coach upsell.
     const coached = profile.plan === 'pro' || profile.plan === 'coaching'
     return (
-      <Onboarding
-        isCoachingIntake={coached}
-        onComplete={name => setOnboardName(name || '')}
-        onError={() => setOnboardName(null)}
-      />
+      <PageLoader>
+        <Onboarding
+          isCoachingIntake={coached}
+          onComplete={name => setOnboardName(name || '')}
+          onError={() => setOnboardName(null)}
+        />
+      </PageLoader>
     )
   }
 
@@ -343,7 +372,9 @@ function AppShell() {
              останалите табове работят и човекът има къде да отиде. */
           render={tab => (
             <div key={tab} className={styles.page} data-dir={tab === activeTab ? slideDir : 'none'}>
-              <ErrorBoundary key={tab}>{pages[tab] ?? null}</ErrorBoundary>
+              <ErrorBoundary key={tab}>
+                <PageLoader>{pages[tab] ?? null}</PageLoader>
+              </ErrorBoundary>
             </div>
           )}
         />
@@ -357,7 +388,7 @@ function AppShell() {
 }
 
 export default function App() {
-  if (window.location.pathname === '/help') return <HelpPage />
+  if (window.location.pathname === '/help') return <PageLoader><HelpPage /></PageLoader>
   /* Password recovery — линкът от 'забравена парола' писмото носи session
      token в URL fragment-а и трябва да падне на дедициран екран за нова
      парола, не на onboarding gate-а на AppShell. Стои вътре в providers

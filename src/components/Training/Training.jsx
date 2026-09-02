@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { defaultTrainingBlocks } from '../../data/appData'
 import { shareAchievement } from '../../lib/achievements'
 import DayLog from './DayLog'
-import TrainingEditor from '../Coach/TrainingEditor'
 import ProgressionView from './ProgressionView'
 import DatePicker from '../DatePicker/DatePicker'
 import AppHeader from '../AppHeader/AppHeader'
@@ -12,7 +11,6 @@ import { useLastLifts } from '../../hooks/useLastLifts'
 import { useExerciseMap } from '../../hooks/useExerciseMap'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import MuscleStatus from './MuscleStatus'
-import MuscleMap from './MuscleMap'
 import WeeklyReport from './WeeklyReport'
 import MonthCalendar from './MonthCalendar'
 import TrainingDashboard from './TrainingDashboard'
@@ -22,6 +20,14 @@ import { muscleRecovery, blockReadiness, groupLastTouch, resolveGroups, GROUP_CO
 import { trainingStats, agoLabel, bigNum, iso, dayDate, monthsShort, sessionTitle } from '../../utils/training'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Training.module.css'
+
+/* Двете най-тежки поддървета на страницата, отложени.
+   Картата на мускулите носи body-muscles (около 400 KB анатомия) и се рисува
+   само в раздел ТЯЛО; редакторът на плана е на треньора и се отваря нарочно.
+   И двете стояха в първия файл, който всеки клиент тегли, преди да види
+   каквото и да е. */
+const MuscleMap     = lazy(() => import('./MuscleMap'))
+const TrainingEditor = lazy(() => import('../Coach/TrainingEditor'))
 import { loc } from '../../utils/locale'
 
 // The same dumbbell the bottom nav draws, so the empty state speaks the app's
@@ -447,11 +453,13 @@ export default function Training({ onMenuOpen }) {
           onBack={() => setEditing(false)}
           title={t('tr.header')}
         />
-        <TrainingEditor
-          initialPlan={isOldFormat(profile?.training_plan) ? null : profile?.training_plan}
-          onSave={handleSavePlan}
-          saving={savingPlan}
-        />
+        <Suspense fallback={null}>
+          <TrainingEditor
+            initialPlan={isOldFormat(profile?.training_plan) ? null : profile?.training_plan}
+            onSave={handleSavePlan}
+            saving={savingPlan}
+          />
+        </Suspense>
       </div>
     )
   }
@@ -987,7 +995,9 @@ export default function Training({ onMenuOpen }) {
       {homeTab === 'body' && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{t('tr.sectionMuscles')}</h2>
-          <MuscleMap recovery={recovery} sessions={sessions} completions={enrichedCompletions} groupsByLabel={groupsByLabel} />
+          <Suspense fallback={null}>
+            <MuscleMap recovery={recovery} sessions={sessions} completions={enrichedCompletions} groupsByLabel={groupsByLabel} />
+          </Suspense>
           <MuscleStatus completions={completions} recovery={recovery} />
         </section>
       )}

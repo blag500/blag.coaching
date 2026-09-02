@@ -1,17 +1,17 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useWeightLog } from '../../hooks/useWeightLog'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import { parseWeight } from '../../utils/weight'
 import { supabase } from '../../lib/supabase'
+import { haptic } from '../../lib/haptics'
 import WeightChart from './WeightChart'
 import NotificationSettings from './NotificationSettings'
 import DashboardCards from './DashboardCards'
 import HabitsEditor from './HabitsEditor'
 import UsernameField from './UsernameField'
 import Fold from './Fold'
-import TrainingEditor from '../Coach/TrainingEditor'
 import ActivityCalendar from './ActivityCalendar'
 import ProgressPhotos from '../ProgressPhotos/ProgressPhotos'
 import { useCheckin } from '../../hooks/useCheckin'
@@ -22,6 +22,9 @@ import TodayDashboard from '../TodayDashboard/TodayDashboard'
 import Pictogram from '../Pictogram/Pictogram'
 import { layout } from '../TodayDashboard/cards'
 import styles from './Profile.module.css'
+
+/* Редакторът на плана е на треньора; клиентският профил не бива да го тегли. */
+const TrainingEditor = lazy(() => import('../Coach/TrainingEditor'))
 import { loc } from '../../utils/locale'
 
   function calcStreak(history) {
@@ -56,7 +59,7 @@ const SEGMENTS = [
 
 export default function Profile({ onMenuOpen, onNavigate }) {
   const { profile, user, updateProfile, signOut } = useAuth()
-  const { theme, setTheme, lang, setLang, restTimer, setRestTimer, t } = useSettings()
+  const { theme, setTheme, lang, setLang, restTimer, setRestTimer, haptics, setHaptics, t } = useSettings()
   const { weights, todayEntry, trend, addWeight, removeWeight } = useWeightLog()
   const history = useHabitHistory()
   /* profiles.target_weight, not localStorage.
@@ -570,11 +573,13 @@ export default function Profile({ onMenuOpen, onNavigate }) {
       {/* Coach: Edit own training plan */}
       {isCoach && (
         <Fold id="coachplan" title={t('profile.myPlan')}>
-          <TrainingEditor
-            initialPlan={profile.training_plan}
-            onSave={handleSaveCoachPlan}
-            saving={savingCoachPlan}
-          />
+          <Suspense fallback={null}>
+            <TrainingEditor
+              initialPlan={profile.training_plan}
+              onSave={handleSaveCoachPlan}
+              saving={savingCoachPlan}
+            />
+          </Suspense>
         </Fold>
       )}
 
@@ -682,6 +687,28 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             >{t('profile.restTimer.off')}</button>
           </div>
         </div>
+        {/* Показва се само там, където има какво да се превключи. На iPhone
+            navigator.vibrate не съществува и редът би обещавал нещо, което
+            телефонът не може да направи. */}
+        {typeof navigator !== 'undefined' && 'vibrate' in navigator && (
+          <div className={styles.settingsRow}>
+            <span className={styles.settingsLabel}>{t('profile.haptics')}</span>
+            <div className={styles.toggleGroup}>
+              <button
+                type="button"
+                className={`${styles.toggleBtn} ${haptics ? styles.toggleBtnActive : ''}`}
+                /* Включването вибрира веднъж: превключвателят показва какво
+                   включва, вместо да го обещава с думи. */
+                onClick={() => { setHaptics(true); haptic('toggle') }}
+              >{t('profile.haptics.on')}</button>
+              <button
+                type="button"
+                className={`${styles.toggleBtn} ${!haptics ? styles.toggleBtnActive : ''}`}
+                onClick={() => setHaptics(false)}
+              >{t('profile.haptics.off')}</button>
+            </div>
+          </div>
+        )}
       </Fold>
 
       {/* Password change — lives here rather than on the auth screen, where a
