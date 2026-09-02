@@ -41,7 +41,15 @@ function computeStreak(historyLogs, supplements) {
   return streak
 }
 
-export function useSupplements(userId = null) {
+/**
+ * @param {string|null} userId  чужд профил (треньорът гледа клиент)
+ * @param {object} opts
+ * @param {number} opts.historyDays колко назад да се четат приетите. Таблото
+ *   иска шейсет — толкова му трябват за сериите. Календарът на страницата се
+ *   прелиства назад с месеци и там шейсет дни значат празни клетки, за които
+ *   няма как да се разбере дали са празни, или просто не са прочетени.
+ */
+export function useSupplements(userId = null, { historyDays = 60 } = {}) {
   const { user } = useAuth()
   const uid = userId ?? user?.id
 
@@ -53,7 +61,7 @@ export function useSupplements(userId = null) {
   const load = useCallback(async () => {
     if (!uid) return
     const date    = todayStr()
-    const since   = dateOffsetStr(59)
+    const since   = dateOffsetStr(historyDays - 1)
     const [suppRes, logRes, histRes] = await Promise.all([
       supabase.from('supplements').select('*').eq('user_id', uid).order('sort_order').order('created_at'),
       supabase.from('supplement_logs').select('supplement_id').eq('user_id', uid).eq('date', date),
@@ -65,7 +73,7 @@ export function useSupplements(userId = null) {
     setTaken(map)
     setHistoryLogs(histRes.data || [])
     setLoading(false)
-  }, [uid])
+  }, [uid, historyDays])
 
   useEffect(() => {
     if (!uid) return
@@ -125,6 +133,10 @@ export function useSupplements(userId = null) {
   return {
     supplements,
     taken,
+    /* Приетите за целия прочетен период. Календарът се рисува от тях, а
+       таблото пише в същата таблица — затова отметка, направена в ДНЕС,
+       се появява в календара без нищо помежду им. */
+    historyLogs,
     loading,
     toggle,
     addSupplement,

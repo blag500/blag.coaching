@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useSupplements } from '../../hooks/useSupplements'
 import { useSettings } from '../../contexts/SettingsContext'
+import MonthCalendar from '../Training/MonthCalendar'
 import styles from './SupplementsPage.module.css'
 
 const TIMING_KEYS = [
@@ -9,7 +10,11 @@ const TIMING_KEYS = [
 ]
 
 export default function SupplementsPage() {
-  const { supplements, taken, loading, toggle, addSupplement, removeSupplement, takenCount, totalCount, streak, getSupplementStreak } = useSupplements()
+  /* Година назад, не два месеца: календарът се прелиства и празна клетка,
+     която просто не е прочетена, изглежда точно като ден, в който нищо не е
+     взето. */
+  const { supplements, taken, historyLogs, loading, toggle, addSupplement, removeSupplement, takenCount, totalCount, streak, getSupplementStreak } =
+    useSupplements(null, { historyDays: 365 })
   const { t } = useSettings()
   const [showAdd, setShowAdd] = useState(false)
   const [newName, setNewName] = useState('')
@@ -27,6 +32,32 @@ export default function SupplementsPage() {
     setShowAdd(false)
     setSaving(false)
   }
+
+  /* Календарът е буквално този от тренировките, а не негово копие.
+     „Идентичен" се постига най-сигурно, като е същият компонент: две копия на
+     една решетка се разминават при първата поправка — и точно това вече се
+     беше случило другаде в приложението.
+     Той пита за „завършвания" с етикет и дата, така че приетите се превеждат
+     на неговия език: една добавка е един етикет, един ден е един ред. Цветът
+     идва от името, значи всяка добавка държи своя от месец на месец. */
+  const suppName = useMemo(
+    () => Object.fromEntries(supplements.map(s => [s.id, s.name])),
+    [supplements],
+  )
+
+  const calendarCompletions = useMemo(
+    () => historyLogs
+      .map(l => ({ completed_date: l.date, block_label: suppName[l.supplement_id] }))
+      // Изтрита добавка оставя редове без име; те не се рисуват, вместо да
+      // добавят точка, за която никой не може да каже каква е била.
+      .filter(c => c.block_label),
+    [historyLogs, suppName],
+  )
+
+  const calendarBlocks = useMemo(
+    () => supplements.map(s => ({ label: s.name })),
+    [supplements],
+  )
 
   if (loading) return null
 
@@ -142,6 +173,16 @@ export default function SupplementsPage() {
         <button className={styles.addBtn} onClick={() => setShowAdd(true)} type="button">
           {t('supp.addBtn')}
         </button>
+      )}
+
+      {/* ── Кога какво е взето ──
+          Чете същата таблица, в която пишат чиповете в ДНЕС, така че отметка,
+          направена на таблото, се появява тук без нищо помежду им. */}
+      {supplements.length > 0 && (
+        <section className={styles.calendarSection}>
+          <h2 className={styles.calendarTitle}>{t('supp.calendar')}</h2>
+          <MonthCalendar completions={calendarCompletions} blocks={calendarBlocks} />
+        </section>
       )}
     </div>
   )

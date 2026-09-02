@@ -329,3 +329,20 @@
 .saveBtn:disabled {
   opacity: 0.4;
 }
+
+/* ── Календарът ── */
+.calendarSection {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calendarTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-weight: normal;
+}
