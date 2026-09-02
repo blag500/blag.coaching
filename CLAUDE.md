@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev        # Start Vite dev server (localhost:5173)
 npm run build      # Production build → dist/
 npm run preview    # Preview production build locally
-npm test           # Run Playwright e2e tests
+npm test           # Run Playwright e2e tests (chromium + mobile chromium + iOS webkit)
 ```
 
 Deploy by pushing to the main branch (Netlify / static host watching the repo). No manual deploy step needed. Supabase Edge Functions are deployed separately via `supabase functions deploy send-push`.
@@ -40,6 +40,23 @@ Deploy by pushing to the main branch (Netlify / static host watching the repo). 
 **Push notifications:** `usePushNotifications` hook registers the browser for Web Push and stores the subscription in Supabase (`push_subscriptions` table). The `send-push` Deno Edge Function (VAPID via `web-push`) sends notifications when messages are sent.
 
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
+
+## Testing
+
+Tests run against a **mocked Supabase** — `tests/harness.js` seeds a fake session into
+`localStorage` and intercepts every request to `*.supabase.co`, answering from in-memory
+tables. Nothing touches the production database, and no account is needed to reach the
+screens behind the auth wall.
+
+```bash
+npm test                                      # the smoke suite, all three projects
+npx playwright test shots --project=mobile    # screenshots of every tab × every theme → shots/
+```
+
+`tests/shots.spec.js` is not an assertion suite — it is a way to *look* at the app. Run it
+after any change to colour, motion, or glass and read the PNGs in `shots/`.
+
+The `ios` project needs a one-time `npx playwright install webkit`.
 
 ## Database
 

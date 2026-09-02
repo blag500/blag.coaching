@@ -1,101 +1,108 @@
 import { test, expect } from '@playwright/test'
+import { enterApp } from './harness.js'
 
-test.describe('Bottom navigation', () => {
+/* Смоук набор срещу приложението, каквото е.
+ *
+ * Предишният беше писан срещу версия с четири раздела на английски, „food log"
+ * и SOS бутон — двайсет и шест провала, всичките от години. Тест, който винаги
+ * е червен, е същото като никакъв тест: следващият истински провал няма да се
+ * забележи сред останалите.
+ *
+ * Тук всичко минава през харнеса: сесия в localStorage и Supabase, посрещнат
+ * от таблици в паметта. Нищо не отива към продукционната база.
+ */
+
+/* Пейджърът нарочно преглъща втори натиск, докато страницата още пътува —
+   четиристотин милисекунди мълчание са по-малкото зло от две страници, които
+   се разминават. Затова тук не се цъка наред, а се чака разделът да кацне. */
+async function goTab(page, label) {
+  const tab = page.locator('nav').first().locator('button', { hasText: label }).first()
+  await tab.click()
+  await expect(tab).toHaveAttribute('aria-current', 'page', { timeout: 10000 })
+}
+
+test.describe('Влизане и навигация', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    test.setTimeout(60000)
+    await enterApp(page)
   })
 
-  test('shows 4 nav tabs', async ({ page }) => {
-    const tabs = page.locator('nav[aria-label="Основна навигация"] button')
-    await expect(tabs).toHaveCount(4)
+  test('минава сплаша и стига до лентата', async ({ page }) => {
+    const nav = page.locator('nav').first()
+    await expect(nav).toBeVisible()
+    // Четири раздела и бутонът за действие между тях.
+    for (const label of ['ФИЙД', 'ХРАНЕНЕ', 'ТРЕНИРОВКА', 'ПРОФИЛ']) {
+      await expect(nav.locator('button', { hasText: label }).first()).toBeVisible()
+    }
   })
 
-  test('nutrition tab is active by default', async ({ page }) => {
-    const nutritionTab = page.getByRole('button', { name: /nutrition/i })
-    await expect(nutritionTab).toHaveAttribute('aria-current', 'page')
-  })
+  test('всеки раздел се отваря', async ({ page }) => {
+    await goTab(page, 'ХРАНЕНЕ')
+    await expect(page.getByText('ПРИЕМ ДНЕС')).toBeVisible()
 
-  test('switches to food log tab', async ({ page }) => {
-    await page.getByRole('button', { name: /food log/i }).click()
-    await expect(page.getByRole('heading', { name: /food log/i })).toBeVisible()
-  })
+    await goTab(page, 'ПРОФИЛ')
+    await expect(page.getByText('НАВИЦИ ДНЕС')).toBeVisible()
 
-  test('switches to habits tab', async ({ page }) => {
-    await page.getByRole('button', { name: /habits/i }).click()
-    await expect(page.getByRole('heading', { name: /habits/i })).toBeVisible()
-  })
-
-  test('switches to training tab', async ({ page }) => {
-    await page.getByRole('button', { name: /training/i }).click()
-    await expect(page.getByRole('heading', { name: /training/i })).toBeVisible()
+    await goTab(page, 'ТРЕНИРОВКА')
+    await goTab(page, 'ФИЙД')
   })
 })
 
-test.describe('Nutrition flip cards', () => {
+test.describe('Табло ДНЕС', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
+    test.setTimeout(60000)
+    await enterApp(page)
+    await goTab(page, 'ПРОФИЛ')
+    await expect(page.getByText('НАВИЦИ ДНЕС')).toBeVisible()
   })
 
-  test('shows 4 flip cards', async ({ page }) => {
-    const cards = page.locator('[role="button"][aria-label*="натисни"]')
-    await expect(cards).toHaveCount(4)
+  test('макросите стигат стойностите си', async ({ page }) => {
+    /* Числата се качват — затова се чака резултатът, а не се чете първият
+       кадър. 1302 kcal е сборът на четирите реда в харнеса; ако броячът
+       спре по средата или подмине целта, това пада. */
+    await expect(page.getByText('1302', { exact: false }).first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('/2400').first()).toBeVisible()
   })
 
-  test('flips card on click', async ({ page }) => {
-    const card = page.locator('[role="button"][aria-label*="PROTEIN"]')
-    await expect(card).toHaveAttribute('aria-pressed', 'false')
-    await card.click()
-    await expect(card).toHaveAttribute('aria-pressed', 'true')
+  test('навик се отмята и се връща', async ({ page }) => {
+    const chip = page.getByRole('button', { name: 'Без захар' }).first()
+    await expect(chip).toHaveAttribute('aria-pressed', 'false')
+    await chip.click()
+    await expect(chip).toHaveAttribute('aria-pressed', 'true')
+    await chip.click()
+    await expect(chip).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test('чаша вода се добавя', async ({ page }) => {
+    await expect(page.getByText('5/8')).toBeVisible()
+    await page.getByRole('button', { name: /чаша|glass/i }).first().click()
+    await expect(page.getByText('6/8')).toBeVisible()
+  })
+
+  test('готовността се показва', async ({ page }) => {
+    await expect(page.getByText('ГОТОВНОСТ')).toBeVisible()
   })
 })
 
-test.describe('Daily compliance tracker', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/')
-    await page.getByRole('button', { name: /habits/i }).click()
-  })
+test.describe('Теми', () => {
+  /* Пази поправка, която вече е била счупена веднъж: долната лента държеше
+     кремав текст и почти черен овал, записани на ръка. На светла тема това
+     значеше надписи, които не се четат, и активен раздел с тъмен текст върху
+     тъмно. Токенът --text-rgb е причината да не се повтори — тестът пази
+     него, а не конкретния цвят. */
+  for (const [theme, dark] of [['dark', true], ['light', false], ['glass', true]]) {
+    test(`лентата се чете на тема ${theme}`, async ({ page }) => {
+      test.setTimeout(60000)
+      await enterApp(page, { theme })
 
-  test('shows 6 habit checkboxes', async ({ page }) => {
-    const habits = page.locator('[role="checkbox"]')
-    await expect(habits).toHaveCount(6)
-  })
+      const tab = page.locator('nav').first().locator('button', { hasText: 'ФИЙД' }).first()
+      const rgb = await tab.evaluate(el => getComputedStyle(el).color)
+      const [r, g, b] = rgb.match(/[\d.]+/g).map(Number)
+      const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
 
-  test('toggles habit on click', async ({ page }) => {
-    const first = page.locator('[role="checkbox"]').first()
-    await expect(first).toHaveAttribute('aria-checked', 'false')
-    await first.click()
-    await expect(first).toHaveAttribute('aria-checked', 'true')
-  })
-
-  test('shows SOS button', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /sos/i })).toBeVisible()
-  })
-})
-
-test.describe('Training split', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/')
-    await page.getByRole('button', { name: /training/i }).click()
-  })
-
-  test('shows 7 day pills', async ({ page }) => {
-    const pills = page.locator('[role="tab"]')
-    await expect(pills).toHaveCount(7)
-  })
-
-  test('switches day on pill click', async ({ page }) => {
-    await page.getByRole('tab', { name: /пон/i }).click()
-    await expect(page.getByText('Понеделник')).toBeVisible()
-  })
-})
-
-test.describe('Food logger', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/')
-    await page.getByRole('button', { name: /food log/i }).click()
-  })
-
-  test('shows search input', async ({ page }) => {
-    await expect(page.getByRole('textbox', { name: /търси храна/i })).toBeVisible()
-  })
+      // Светъл текст върху тъмна тема, тъмен върху светла. Обратното е бъгът.
+      if (dark) expect(luma).toBeGreaterThan(0.5)
+      else      expect(luma).toBeLessThan(0.5)
+    })
+  }
 })

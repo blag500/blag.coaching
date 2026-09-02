@@ -7,3 +7,7 @@ dist/
 # Playwright MCP scratch output (snapshots, console logs, screenshots)
 .playwright-mcp/
 test-results/
+
+# Снимките от tests/shots.spec.js — поглед, не запис
+shots/
+playwright-report/
