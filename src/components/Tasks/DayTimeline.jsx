@@ -53,6 +53,13 @@ export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOp
      едно дърпане е трийсет кадъра, а трийсет заявки за едно влачене са
      точно толкова заявки повече, отколкото трябва. Записът е при пускане. */
   const [drag, setDrag] = useState(null)   // { id, minutes }
+  /* Кога е свършило последното дърпане.
+     Гълтането на следващия click е първата защита, но тя разчита събитието
+     да мине през фазата на хващане там, където го чакаме. Това тук не
+     прихваща нищо — самите обработчици проверяват дали току-що не се е
+     дърпало и мълчат. Две защити, защото първата не успях да докажа с тест. */
+  const draggedAt = useRef(0)
+  const recentlyDragged = () => Date.now() - draggedAt.current < 400
 
   // Часовникът тиктака веднъж в минута — линията на „сега" е права само ако се
   // мести. По-често от това не се вижда, по-рядко — лъже.
@@ -127,6 +134,23 @@ export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOp
       const deltaMin = ((ev.clientY - startY) / HOUR_PX) * 60
       const next = Math.max(SNAP_MIN, Math.round((baseMin + deltaMin) / SNAP_MIN) * SNAP_MIN)
       setDrag(null)
+
+      /* След пускането браузърът праща и click — върху това, което е под
+         пръста в този миг. Ако е тялото на блока, задачата се отмята готова;
+         ако дърпането е слязло под него — празният час пита за нова задача.
+         И двете са отговор на жест, който човекът не е правил.
+         Затова следващият click се преглъща — в фазата на хващане, преди да е
+         стигнал до който и да е бутон. С таймер, защото с мишка такъв click
+         може и да не дойде, а слушател, който чака вечно, би изял следващото
+         истинско натискане. */
+      const swallow = clickEv => {
+        clickEv.preventDefault()
+        clickEv.stopPropagation()
+      }
+      draggedAt.current = Date.now()
+      window.addEventListener('click', swallow, { capture: true, once: true })
+      setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 400)
+
       if (next !== baseMin) { haptic('toggle'); onResize?.(item.id, next) }
     }
     window.addEventListener('pointermove', move)
@@ -146,7 +170,10 @@ export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOp
               <button
                 type="button"
                 className={styles.hourSlot}
-                onClick={() => { haptic('tap'); onPickSlot?.(`${String(h).padStart(2, '0')}:00`) }}
+                onClick={() => {
+                  if (recentlyDragged()) return
+                  haptic('tap'); onPickSlot?.(`${String(h).padStart(2, '0')}:00`)
+                }}
                 aria-label={t('tl.addAt', { time: fmtHour(h) })}
               />
             </div>
@@ -194,7 +221,10 @@ export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOp
                 <button
                   type="button"
                   className={styles.blockBody}
-                  onClick={() => { haptic('tap'); onOpenTask?.(item) }}
+                  onClick={() => {
+                    if (recentlyDragged()) return
+                    haptic('tap'); onOpenTask?.(item)
+                  }}
                 >
                   <span className={styles.blockText}>{item.text}</span>
                   <span className={styles.blockTime}>
