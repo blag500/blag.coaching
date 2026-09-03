@@ -1,5 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../contexts/AuthContext'
 import { useTasks } from '../../hooks/useTasks'
+import DayTimeline from './DayTimeline'
 import { useTaskSuggestions } from '../../hooks/useTaskSuggestions'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Tasks.module.css'
@@ -18,7 +21,8 @@ function getTimeBucket(due_date) {
 }
 
 export default function Tasks() {
-  const { tasks, loading, addTask, toggleTask, deleteTask } = useTasks()
+  const { tasks, loading, addTask, updateTask, toggleTask, deleteTask } = useTasks()
+  const { user } = useAuth()
   const { suggestions, dismiss } = useTaskSuggestions()
   const { t } = useSettings()
   const [text, setText]       = useState('')
@@ -53,6 +57,45 @@ export default function Tasks() {
     setSaving(false)
     inputRef.current?.focus()
   }
+
+  /* Кога е тренирал днес — от самите серии.
+     Няма отделен запис за час на тренировката и не трябва да има: времето,
+     по което човек е вдигал, е в сериите, и то е истинското. Ден без вписани
+     серии просто няма блок — по-добре, отколкото да се измисли час,
+     който никой не е казал. */
+  const [workoutSpan, setWorkoutSpan] = useState(null)
+  useEffect(() => {
+    if (!user?.id) return
+    let alive = true
+    Promise.all([
+      supabase.from('exercise_logs').select('created_at').eq('user_id', user.id).eq('date', TODAY()),
+      supabase.from('workout_completions').select('block_label').eq('user_id', user.id).eq('completed_date', TODAY()),
+    ]).then(([logs, done]) => {
+      if (!alive) return
+      const stamps = (logs.data ?? []).map(r => new Date(r.created_at)).filter(d => !Number.isNaN(+d))
+      if (stamps.length === 0) { setWorkoutSpan(null); return }
+      const toH = d => d.getHours() + d.getMinutes() / 60
+      const start = Math.min(...stamps.map(toH))
+      const end   = Math.max(...stamps.map(toH))
+      setWorkoutSpan({
+        start,
+        // Една серия е точка, не отсечка — получава половин час, за да се види.
+        end: end - start < 0.5 ? start + 0.5 : end,
+        label: done.data?.[0]?.block_label || t('tl.workout'),
+      })
+    })
+    return () => { alive = false }
+  }, [user?.id])
+
+  /** Задача, вписана директно в час от линията. */
+  async function handleSlot(time) {
+    const what = window.prompt(t('tl.promptWhat'))
+    if (!what || !what.trim()) return
+    await addTask({ text: what, due_date: TODAY(), start_time: time, duration_min: 60 })
+  }
+
+  /** Натиснат блок — отмята се готов. */
+  function handleBlock(task) { toggleTask(task.id) }
 
   async function handleAddSuggestion(s) {
     await addTask({ text: s.text, priority: s.priority, due_date: s.due_date })
@@ -93,6 +136,23 @@ export default function Tasks() {
           ))}
         </div>
       )}
+
+      {/* Денът като линия.
+          Списъкът отдолу казва какво има за вършене; тук се вижда кога.
+          Задача без час не се появява тук — тя си е ред в списъка. */}
+      <div className={styles.timelineBlock}>
+        <div className={styles.timelineHead}>
+          <span className={styles.timelineLabel}>{t('tl.title')}</span>
+          <span className={styles.timelineHint}>{t('tl.hint')}</span>
+        </div>
+        <DayTimeline
+          date={TODAY()}
+          tasks={tasks}
+          workoutSpan={workoutSpan}
+          onPickSlot={handleSlot}
+          onOpenTask={handleBlock}
+        />
+      </div>
 
       {/* Time buckets */}
       {todayTasks.length > 0 && (

@@ -695,6 +695,11 @@ export default {
 
   // Tasks (заглавия и общи)
   'tasks.title':                   'ЗАДАЧИ',
+  'tl.title':      'ДНЕС ПО ЧАСОВЕ',
+  'tl.hint':       'натисни час, за да добавиш',
+  'tl.addAt':      'Добави в {time}',
+  'tl.workout':    'Тренировка',
+  'tl.promptWhat': 'Какво има в този час?',
   'chatp.today':                   'ДНЕС',
   'chatp.yesterday':               'ВЧЕРА',
   'chatp.chats':                   'ЧАТОВЕ',

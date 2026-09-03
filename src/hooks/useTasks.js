@@ -26,13 +26,32 @@ export function useTasks() {
     setLoading(false)
   }
 
-  async function addTask({ text, category = 'general', priority = 1, due_date = null }) {
+  async function addTask({ text, category = 'general', priority = 1, due_date = null, start_time = null, duration_min = null }) {
     const { data } = await supabase
       .from('tasks')
-      .insert({ user_id: user.id, text: text.trim(), category, priority, due_date })
+      .insert({ user_id: user.id, text: text.trim(), category, priority, due_date, start_time, duration_min })
       .select()
       .single()
     if (data) setTasks(prev => sortTasks([data, ...prev]))
+    return data ?? null
+  }
+
+  /* Часът и продължителността се менят и след вписване — задача се премества по
+     линията, а не се трие и пише наново. Оптимистично, с връщане назад
+     при отказ: блок, който се връща след секунда, казва истината по-добре от
+     кръгче, което се върти над цялата линия. */
+  async function updateTask(id, patch) {
+    const before = tasks
+    setTasks(prev => sortTasks(prev.map(t => (t.id === id ? { ...t, ...patch } : t))))
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) { setTasks(before); return { error: error.message } }
+    setTasks(prev => sortTasks(prev.map(t => (t.id === id ? data : t))))
+    return { data }
   }
 
   async function toggleTask(id) {
@@ -52,7 +71,7 @@ export function useTasks() {
     setTasks(prev => prev.filter(t => t.id !== id))
   }
 
-  return { tasks, loading, addTask, toggleTask, deleteTask }
+  return { tasks, loading, addTask, updateTask, toggleTask, deleteTask }
 }
 
 // Coach-side: fetch + push tasks for a specific client

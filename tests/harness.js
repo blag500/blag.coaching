@@ -133,6 +133,14 @@ export const TABLES = {
   ],
   /* Заготовки — две за гърди и една без папка, за да се види и подредбата,
      и подреждането по мускулна група в молива. */
+  /* Задачи с час — за времевата линия. Една се застъпва с друга,
+     за да се види деленето по ширина. */
+  tasks: [
+    { id: 't1', user_id: USER_ID, text: 'Обаждане на клиент', done: false, priority: 2, category: 'general', due_date: today(), start_time: '09:00:00', duration_min: 60, created_at: new Date().toISOString() },
+    { id: 't2', user_id: USER_ID, text: 'Пазар', done: false, priority: 1, category: 'general', due_date: today(), start_time: '09:30:00', duration_min: 45, created_at: new Date().toISOString() },
+    { id: 't3', user_id: USER_ID, text: 'Напиши пост', done: true, priority: 1, category: 'general', due_date: today(), start_time: '13:00:00', duration_min: 30, created_at: new Date().toISOString() },
+    { id: 't4', user_id: USER_ID, text: 'Без час — стои само в списъка', done: false, priority: 1, category: 'general', due_date: null, start_time: null, duration_min: null, created_at: new Date().toISOString() },
+  ],
   exercise_library: [
     { id: 'el1', user_id: USER_ID, name: 'Дъмбели на наклон', folder: 'Заместители за гърди', scheme: '3 × 8–10', muscle: 'chest', created_at: new Date().toISOString() },
     { id: 'el2', user_id: USER_ID, name: 'Кросовер', folder: 'Заместители за гърди', scheme: '3 × 12', muscle: 'chest', created_at: new Date().toISOString() },

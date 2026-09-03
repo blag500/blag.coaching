@@ -694,6 +694,11 @@ export default {
 
   // Tasks
   'tasks.title':                   'TASKS',
+  'tl.title':      'TODAY BY THE HOUR',
+  'tl.hint':       'tap an hour to add',
+  'tl.addAt':      'Add at {time}',
+  'tl.workout':    'Training',
+  'tl.promptWhat': 'What is at this hour?',
   'chatp.today':                   'TODAY',
   'chatp.yesterday':               'YESTERDAY',
   'chatp.chats':                   'CHATS',
