@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { haptic } from '../../lib/haptics'
+import { useExerciseLibrary } from '../../hooks/useExerciseLibrary'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
@@ -114,6 +115,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
 
   const { byName: photos } = useExercisePhotos()
   const { map: exerciseMap, setGroup: setExerciseGroup, clearGroup: clearExerciseGroup } = useExerciseMap()
+  /* Заготовките — четат се веднъж за целия дневник, а не при всяко
+     отваряне на молива: списъкът е един и същият за всички редове. */
+  const { items: libItems } = useExerciseLibrary()
   const [zoom, setZoom] = useState(null)
 
   // Autosave reads the newest values from a ref: a debounced call fired from a
@@ -544,6 +548,42 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
                       >{t('dl.swapUndo')}</button>
                     )}
                   </div>
+
+                  {/* Заготовките.
+                      Полето отгоре остава — винаги има упражнение, което го няма
+                      в никакъв списък. Но честият случай е друг: същите три-четири
+                      заместителя, писани на ръка отново и отново, всеки път малко
+                      инак изписани — откъдето статистиката има три упражнения за едно.
+                      Първо се показват тези от същата мускулна група: когато заменяш
+                      лежанка, търсиш друго за гърди, а не клек. */}
+                  {libItems.length > 0 && (() => {
+                    const want = exerciseMap[ex.name] ?? null
+                    const sorted = want
+                      ? [...libItems].sort((a, b) =>
+                          (b.muscle === want) - (a.muscle === want))
+                      : libItems
+                    return (
+                      <div className={styles.swapLib}>
+                        <span className={styles.swapLibLabel}>{t('dl.fromLibrary')}</span>
+                        <div className={styles.swapLibChips}>
+                          {sorted.slice(0, 12).map(it => (
+                            <button
+                              key={it.id}
+                              type="button"
+                              className={`${styles.swapLibChip} ${want && it.muscle === want ? styles.swapLibChipHit : ''}`}
+                              onClick={() => {
+                                haptic('toggle')
+                                setSwap(p => ({ ...p, [ex.name]: it.name }))
+                                setEditing(null)
+                              }}
+                            >
+                              {it.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
 
                   <div className={styles.swapGroups}>
                     <span className={styles.swapGroupsLabel}>{t('dl.muscleGroup')}</span>

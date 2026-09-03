@@ -54,6 +54,7 @@ const LearnPage = lazy(() => import('./components/Learn/LearnPage'))
 const PrepProtocol = lazy(() => import('./components/PrepProtocol/PrepProtocol'))
 const PosingPage = lazy(() => import('./components/Posing/PosingPage'))
 const TrainingCalendar = lazy(() => import('./components/TrainingCalendar/TrainingCalendar'))
+const ExerciseLibrary = lazy(() => import('./components/Training/ExerciseLibrary'))
 const RewardsPage = lazy(() => import('./components/Rewards/RewardsPage'))
 const CheckinPage = lazy(() => import('./components/Checkin/CheckinPage'))
 const SupplementsPage = lazy(() => import('./components/Supplements/SupplementsPage'))
@@ -317,6 +318,8 @@ function AppShell() {
     coachday:   <CoachMyDay />,
     explore:    <Explore onMenuOpen={openMenu} />,
     calendar:   <TrainingCalendar />,
+    /* Заготовките за заместване на упражнение в дневника. */
+    library:    <ExerciseLibrary onMenuOpen={openMenu} />,
     learn:      <LearnPage />,
     chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} />,
     rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,

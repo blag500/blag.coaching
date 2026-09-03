@@ -153,6 +153,9 @@ const CLIENT_SECTIONS = [
       { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
       { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
+      // Заготовките стоят до тренировката, защото се пълнят оттам и се
+      // ползват там — не са ресурс, а част от вписването.
+      { id: 'library',    key: 'nav.library',      Icon: TrainingIcon  },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
       // { id: 'shop', ... } — магазинът е скрит за клиенти до пускането му (само треньор го вижда)

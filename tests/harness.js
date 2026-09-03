@@ -131,6 +131,13 @@ export const TABLES = {
   follows: [
     { follower_id: USER_ID, followee_id: 'u-coach', created_at: new Date().toISOString() },
   ],
+  /* Заготовки — две за гърди и една без папка, за да се види и подредбата,
+     и подреждането по мускулна група в молива. */
+  exercise_library: [
+    { id: 'el1', user_id: USER_ID, name: 'Дъмбели на наклон', folder: 'Заместители за гърди', scheme: '3 × 8–10', muscle: 'chest', created_at: new Date().toISOString() },
+    { id: 'el2', user_id: USER_ID, name: 'Кросовер', folder: 'Заместители за гърди', scheme: '3 × 12', muscle: 'chest', created_at: new Date().toISOString() },
+    { id: 'el3', user_id: USER_ID, name: 'Лицева опора', folder: null, scheme: null, muscle: null, created_at: new Date().toISOString() },
+  ],
   feed_authors: [
     { id: 'u-ivan',  name: 'Иван Петров',  username: 'ivan',  avatar_url: null, role: 'client', bio: null },
     { id: 'u-mara',  name: 'Мара Илиева',  username: 'mara',  avatar_url: null, role: 'client', bio: null },

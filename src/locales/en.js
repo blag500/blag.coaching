@@ -84,6 +84,23 @@ export default {
 
 
   'nav.orders':       'ORDERS',
+  'nav.library':          'PRESETS',
+  'lib.title':            'PRESETS',
+  'lib.lead':             'Exercises you swap in quickly when something in the plan is not on today. Picked from the pencil in the log.',
+  'lib.empty':            'Nothing yet. Add the exercises you swap in most often — after that they are one tap away.',
+  'lib.noFolder':         'NO FOLDER',
+  'lib.addBtn':           '+ ADD EXERCISE',
+  'lib.namePh':           'Exercise name',
+  'lib.schemePh':         'e.g. 3 × 8–10 (optional)',
+  'lib.folderPh':         'Folder, e.g. Chest swaps',
+  'lib.musclePh':         'Muscle group (optional)',
+  'lib.save':             'SAVE',
+  'lib.cancel':           'CANCEL',
+  'lib.remove':           'Remove',
+  'lib.err.duplicate':    'Already in the list.',
+  'lib.err.save':         'Not saved. Try again.',
+  'dl.fromLibrary':       'FROM PRESETS',
+
   'today.shop':       'SHOP',
   'today.shopSub':    'Fast delivery · Macros included',
   'today.shopRec':    'COMPLETE YOUR DAY',

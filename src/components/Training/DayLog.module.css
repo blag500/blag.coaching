@@ -718,3 +718,47 @@
   background: var(--accent);
 }
 .halfBtnDim { opacity: 0.35; }
+
+/* ── Заготовките в молива ──
+   Хапчета, не падащ списък: три-четири заместителя се четат наведнъж, а
+   падащият списък иска отваряне, за да покаже това, което и без него се
+   побира. */
+.swapLib {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.swapLibLabel {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.swapLibChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.swapLibChip {
+  padding: 7px 11px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--dur-state) var(--ease-out);
+}
+
+/* Същата мускулна група като заменяното: тези са отговорът в повечето случаи,
+   затова носят ръба на акцента, а не собствен цвят — редът си остава един. */
+.swapLibChipHit {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  color: var(--accent);
+}
