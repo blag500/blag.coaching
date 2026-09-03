@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
-import { FINE_MUSCLES } from '../../utils/recovery'
+import { FINE_MUSCLES, GROUP_LABEL_KEYS } from '../../utils/recovery'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './TrainingEditor.module.css'
 
@@ -13,6 +13,26 @@ const GROUP_OPTIONS = FINE_MUSCLES.map(m => ({
   id: m.id,
   labelKey: m.labelKey,
 }))
+
+/* Два списъка, разделени по кръста.
+ *
+ * Дотук тук стояха осемнайсет хапчета едно до друго — и то празни, защото
+ * чипът рисуваше g.label, а обектът има само labelKey. Изборът беше
+ * гадаене по местоположение.
+ *
+ * Кръстът е границата, защото тя е една и всеки знае къде е. Коремът,
+ * косите и долният гръб са над него — трупът е горна част. */
+const LOWER_IDS = new Set(['quads', 'hamstrings', 'glutes', 'adductors', 'abductors', 'calves'])
+
+/* Как се казва един записан идентификатор.
+   Планове от преди фините мускули пазят широката група — 'upper', 'lower',
+   'pull', 'extra'. Без това те не се намират в списъка с фините и блокът
+   изглежда без избрани групи, без да е — тоест мълчаливо лъже. */
+function groupLabelKey(id) {
+  return GROUP_OPTIONS.find(g => g.id === id)?.labelKey ?? GROUP_LABEL_KEYS[id] ?? null
+}
+const UPPER_OPTIONS = GROUP_OPTIONS.filter(g => !LOWER_IDS.has(g.id))
+const LOWER_OPTIONS = GROUP_OPTIONS.filter(g =>  LOWER_IDS.has(g.id))
 
 function freshBlock(pos) {
   return {
@@ -156,28 +176,56 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                   const empty = chosen.size === 0
                   const summary = empty
                     ? t('te.needsChoice')
-                    : GROUP_OPTIONS.filter(g => chosen.has(g.id)).map(g => t(g.labelKey).toUpperCase()).join(' · ')
+                    : [...chosen].map(id => groupLabelKey(id)).filter(Boolean).map(k => t(k).toUpperCase()).join(' · ')
                   return (
                     <div className={styles.fieldRow}>
                       <label className={styles.fieldLabel}>{t('te.mannequinGroups')}</label>
-                      <details className={`${styles.muscleDrop} ${empty ? styles.muscleDropEmpty : ''}`}>
-                        <summary className={styles.muscleSummary}>
-                          <span className={styles.muscleSummaryText}>{summary}</span>
-                          <span className={styles.muscleChevron} aria-hidden="true">▾</span>
-                        </summary>
-                        <div className={styles.muscleGrid}>
-                          {GROUP_OPTIONS.map(g => (
-                            <button
-                              key={g.id}
-                              type="button"
-                              className={`${styles.chip} ${chosen.has(g.id) ? styles.chipOn : ''}`}
-                              onClick={() => toggleGroup(block.id, g.id)}
-                            >
-                              {g.label}
-                            </button>
-                          ))}
+
+                      {/* Избраното — винаги видимо, с х за махане. Падащият списък
+                          добавя; той не е мястото, където се чете какво вече е избрано. */}
+                      {!empty && (
+                        <div className={styles.muscleChosen}>
+                          {[...chosen].map(id => {
+                            const key = groupLabelKey(id)
+                            if (!key) return null
+                            return (
+                              <button
+                                key={id}
+                                type="button"
+                                className={styles.chipOn}
+                                onClick={() => toggleGroup(block.id, id)}
+                                aria-label={t('te.muscleRemove', { name: t(key) })}
+                              >
+                                {t(key)} <span aria-hidden="true">×</span>
+                              </button>
+                            )
+                          })}
                         </div>
-                      </details>
+                      )}
+
+                      <div className={styles.muscleSelects}>
+                        {[
+                          { key: 'te.upperHalf', opts: UPPER_OPTIONS },
+                          { key: 'te.lowerHalf', opts: LOWER_OPTIONS },
+                        ].map(({ key, opts }) => (
+                          <select
+                            key={key}
+                            className={`${styles.muscleSelect} ${empty ? styles.muscleSelectEmpty : ''}`}
+                            value=""
+                            onChange={e => { if (e.target.value) toggleGroup(block.id, e.target.value) }}
+                            aria-label={t(key)}
+                          >
+                            <option value="">{t(key)}</option>
+                            {opts.map(g => (
+                              <option key={g.id} value={g.id} disabled={chosen.has(g.id)}>
+                                {t(g.labelKey)}
+                              </option>
+                            ))}
+                          </select>
+                        ))}
+                      </div>
+
+                      {empty && <p className={styles.muscleNeed}>{summary}</p>}
                     </div>
                   )
                 })()}

@@ -587,3 +587,44 @@
   color: var(--bg);
 }
 .modalSave:disabled { opacity: 0.45; cursor: default; }
+
+/* ── Мускулните групи ──
+   Два падащи списъка, разделени по кръста, плюс избраното над тях. Дотук
+   осемнайсет хапчета стояха едно до друго и трябваше да се четат едно по едно,
+   за да се намери търсеното — а те бяха и празни. */
+.muscleChosen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.muscleSelects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.muscleSelect {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+/* Нищо избрано: ръбът пита. Блокът без група оставя манекена тъмен, което е
+   мълчалив провал — по-добре е полето да го каже, преди планът да се запази. */
+.muscleSelectEmpty {
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+.muscleNeed {
+  margin: 6px 0 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+}

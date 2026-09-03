@@ -211,6 +211,9 @@ const COACH_SECTIONS = [
       { id: 'nutrition',  key: 'nav.nutrition',     Icon: NutritionIcon },
       { id: 'compliance', key: 'nav.habits',        Icon: HabitsIcon    },
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
+      // Треньорът също тренира — заготовките бяха само в клиентското
+      // чекмедже, тоест единственият човек, който ги поиска, не ги виждаше.
+      { id: 'library',    key: 'nav.library',      Icon: TrainingIcon  },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
       { id: 'shop',        key: 'nav.shop',        Icon: ShopIcon       },
