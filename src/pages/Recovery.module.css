@@ -426,3 +426,16 @@
   line-height: 1.45;
   color: var(--muted);
 }
+
+/* Рисунката пред заглавието. Заглавието е ред от главни букви, така че
+   иконата стои на средната им линия, не на базовата — иначе виси надолу. */
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  color: var(--accent);
+}

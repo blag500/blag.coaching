@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import Pictogram from '../components/Pictogram/Pictogram'
 import { useSleepLogs, calcReadiness } from '../hooks/useSleepLogs'
 import { useWaterLog } from '../hooks/useWaterLog'
 import ReadinessWidget from '../components/ReadinessWidget/ReadinessWidget'
@@ -316,7 +317,7 @@ export default function Recovery() {
 
         {/* Sleep */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>🌙 {t('rec.sleep')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="sleep" size={17} className={styles.cardIcon} />{t('rec.sleep')}</h2>
           <div className={styles.field}>
             <label className={styles.label}>{t('rec.duration')}</label>
             <input className={styles.input} type="number" min="0" max="24" step="0.5"
@@ -330,25 +331,25 @@ export default function Recovery() {
 
         {/* Hydration — auto-saves via useWaterLog on each click */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>💧 {t('rec.hydration')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="water" size={17} className={styles.cardIcon} />{t('rec.hydration')}</h2>
           <HydrationCounter value={waterGlasses} onChange={setWater} />
         </section>
 
         {/* Energy */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>⚡ {t('rec.energy')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="energy" size={17} className={styles.cardIcon} />{t('rec.energy')}</h2>
           <ScaleRating value={energy} onChange={setEnergy} labels={[t('rec.energyLow'), t('rec.energyHigh')]} />
         </section>
 
         {/* Stress */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>🧠 {t('rec.stress')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="stress" size={17} className={styles.cardIcon} />{t('rec.stress')}</h2>
           <ScaleRating value={stress} onChange={setStress} labels={[t('rec.stressLow'), t('rec.stressHigh')]} />
         </section>
 
         {/* Soreness */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>💪 {t('rec.soreness')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="fatigue" size={17} className={styles.cardIcon} />{t('rec.soreness')}</h2>
           {/* Едно изречение, защото числото се прилага върху всички мускулни
               групи еднакво. Докато полето питаше за мускулна умора, крепатурата
               в гърдите от вчера сваляше готовността за днешния краков ден. */}
@@ -358,13 +359,13 @@ export default function Recovery() {
 
         {/* Mood */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>😊 {t('rec.mood')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="mood" size={17} className={styles.cardIcon} />{t('rec.mood')}</h2>
           <MoodPicker value={mood} onChange={setMood} />
         </section>
 
         {/* Notes */}
         <section className={styles.card}>
-          <h2 className={styles.cardTitle}>📝 {t('rec.notes')}</h2>
+          <h2 className={styles.cardTitle}><Pictogram name="note" size={17} className={styles.cardIcon} />{t('rec.notes')}</h2>
           <input className={styles.input} placeholder={t('rec.notesPh')}
             value={notes} onChange={e => setNotes(e.target.value)} />
         </section>
