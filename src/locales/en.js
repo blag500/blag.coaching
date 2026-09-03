@@ -698,6 +698,7 @@ export default {
   'tl.hint':       'tap an hour to add',
   'tl.addAt':      'Add at {time}',
   'tl.workout':    'Training',
+  'tl.resize':     'Change duration: {name}',
   'tl.promptWhat': 'What is at this hour?',
   'chatp.today':                   'TODAY',
   'chatp.yesterday':               'YESTERDAY',

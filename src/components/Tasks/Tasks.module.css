@@ -1,5 +1,8 @@
 .page {
-  padding: 16px 16px 0;
+  /* Горният отстъп е безопасната зона плюс въздух. Без нея заглавието
+     стоеше под челката на телефона — единствената страница без собствен
+     хедър, който иначе го прави вместо нея. */
+  padding: calc(env(safe-area-inset-top) + 16px) 16px 0;
   display: flex;
   flex-direction: column;
   min-height: 100%;

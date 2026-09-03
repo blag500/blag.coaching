@@ -19,6 +19,13 @@ import styles from './DayTimeline.module.css'
 const HOUR_PX = 52          // височина на един час
 const DAY_START = 5         // линията започва в 5 сутринта
 const DAY_END   = 24
+/* Въздух над първия час.
+   Надписът на часа седи над чертата си; без този отстъп първият
+   излиза извън платното и се вижда срязан наполовина. */
+const PAD_TOP = 12
+/* Дърпането се лепи на четвърт час. По-фино от това значи да се цели с
+   пръст в три пиксела, а никой не планира деня си в седемминутни крачки. */
+const SNAP_MIN = 15
 
 /** "18:30:00" → 18.5 */
 function hhmmToHours(t) {
@@ -38,10 +45,14 @@ function fmtClock(hours) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
-export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOpenTask }) {
+export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOpenTask, onResize }) {
   const { t } = useSettings()
   const scrollRef = useRef(null)
   const [now, setNow] = useState(() => new Date())
+  /* Докато пръстът е долу, височината живее тук и не се пише в базата:
+     едно дърпане е трийсет кадъра, а трийсет заявки за едно влачене са
+     точно толкова заявки повече, отколкото трябва. Записът е при пускане. */
+  const [drag, setDrag] = useState(null)   // { id, minutes }
 
   // Часовникът тиктака веднъж в минута — линията на „сега" е права само ако се
   // мести. По-често от това не се вижда, по-рядко — лъже.
@@ -92,13 +103,41 @@ export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOp
     el.scrollTop = Math.max(0, (focus - DAY_START) * HOUR_PX - 80)
   }, [date])
 
-  function topFor(h)    { return (h - DAY_START) * HOUR_PX }
+  function topFor(h)    { return PAD_TOP + (h - DAY_START) * HOUR_PX }
   function heightFor(a, b) { return Math.max(22, (b - a) * HOUR_PX) }
+
+  /** Дърпане за долния ръб: мени се колко трае, не кога започва. */
+  function startResize(e, item) {
+    e.preventDefault()
+    e.stopPropagation()
+    const startY = e.clientY
+    const baseMin = Math.max(SNAP_MIN, item.duration_min || 45)
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    haptic('tap')
+
+    const move = ev => {
+      const deltaMin = ((ev.clientY - startY) / HOUR_PX) * 60
+      const next = Math.max(SNAP_MIN, Math.round((baseMin + deltaMin) / SNAP_MIN) * SNAP_MIN)
+      setDrag(d => (d && d.minutes === next ? d : { id: item.id, minutes: next }))
+    }
+    const up = ev => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+      const deltaMin = ((ev.clientY - startY) / HOUR_PX) * 60
+      const next = Math.max(SNAP_MIN, Math.round((baseMin + deltaMin) / SNAP_MIN) * SNAP_MIN)
+      setDrag(null)
+      if (next !== baseMin) { haptic('toggle'); onResize?.(item.id, next) }
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+  }
 
   return (
     <div className={styles.wrap}>
       <div className={styles.scroller} ref={scrollRef}>
-        <div className={styles.canvas} style={{ height: (DAY_END - DAY_START) * HOUR_PX }}>
+        <div className={styles.canvas} style={{ height: PAD_TOP + (DAY_END - DAY_START) * HOUR_PX }}>
           {hours.map(h => (
             <div key={h} className={styles.hourRow} style={{ top: topFor(h), height: HOUR_PX }}>
               <span className={styles.hourLabel}>{fmtHour(h)}</span>
@@ -129,30 +168,53 @@ export default function DayTimeline({ date, tasks, workoutSpan, onPickSlot, onOp
             </div>
           )}
 
-          {laidOut.map(item => (
-            <button
-              key={item.id}
-              type="button"
-              /* Къс блок носи само името. Два реда в двайсет и шест пиксела
-                 значат изрязан текст, а часът го пише и линейката отляво. */
-              className={[
-                styles.block,
-                item.done ? styles.blockDone : '',
-                item.priority >= 2 ? styles.blockHigh : '',
-                (item._end - item._start) * HOUR_PX < 44 ? styles.blockShort : '',
-              ].join(' ')}
-              style={{
-                top: topFor(item._start),
-                height: heightFor(item._start, item._end),
-                left: `calc(46px + ${(item._col / item._cols) * 100}% * 0.86)`,
-                width: `calc(${(1 / item._cols) * 100}% * 0.86 - 6px)`,
-              }}
-              onClick={() => { haptic('tap'); onOpenTask?.(item) }}
-            >
-              <span className={styles.blockText}>{item.text}</span>
-              <span className={styles.blockTime}>{fmtClock(item._start)}</span>
-            </button>
-          ))}
+          {laidOut.map(item => {
+            // Докато се дърпа, блокът следва пръста, не базата.
+            const live = drag?.id === item.id ? drag.minutes : null
+            const height = live != null
+              ? Math.max(22, (live / 60) * HOUR_PX)
+              : heightFor(item._start, item._end)
+            return (
+              <div
+                key={item.id}
+                className={[
+                  styles.block,
+                  item.done ? styles.blockDone : '',
+                  item.priority >= 2 ? styles.blockHigh : '',
+                  height < 44 ? styles.blockShort : '',
+                  live != null ? styles.blockDragging : '',
+                ].join(' ')}
+                style={{
+                  top: topFor(item._start),
+                  height,
+                  left: `calc(46px + ${(item._col / item._cols) * 100}% * 0.86)`,
+                  width: `calc(${(1 / item._cols) * 100}% * 0.86 - 6px)`,
+                }}
+              >
+                <button
+                  type="button"
+                  className={styles.blockBody}
+                  onClick={() => { haptic('tap'); onOpenTask?.(item) }}
+                >
+                  <span className={styles.blockText}>{item.text}</span>
+                  <span className={styles.blockTime}>
+                    {live != null
+                      ? `${fmtClock(item._start)} · ${live} мин`
+                      : fmtClock(item._start)}
+                  </span>
+                </button>
+
+                {/* Дръжката е долният ръб. По-висока е от чертата, която се
+                    вижда: пръстът е по-широк от пиксел. */}
+                <span
+                  className={styles.blockGrip}
+                  onPointerDown={e => startResize(e, item)}
+                  role="separator"
+                  aria-label={t('tl.resize', { name: item.text })}
+                />
+              </div>
+            )
+          })}
 
           {nowVisible && (
             <div className={styles.nowLine} style={{ top: topFor(nowH) }}>

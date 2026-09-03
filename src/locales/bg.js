@@ -699,6 +699,7 @@ export default {
   'tl.hint':       'натисни час, за да добавиш',
   'tl.addAt':      'Добави в {time}',
   'tl.workout':    'Тренировка',
+  'tl.resize':     'Промени колко трае: {name}',
   'tl.promptWhat': 'Какво има в този час?',
   'chatp.today':                   'ДНЕС',
   'chatp.yesterday':               'ВЧЕРА',

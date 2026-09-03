@@ -50,7 +50,10 @@ export function useTasks() {
       .select()
       .single()
     if (error) { setTasks(before); return { error: error.message } }
-    setTasks(prev => sortTasks(prev.map(t => (t.id === id ? data : t))))
+    /* Слива, не подменя. Заявката праща само променените полета и ако
+       отговорът някога се върне частичен, подмяната би изтрила текста и часа
+       на задачата — тоест тя изчезва от линията, вместо да се смени. */
+    setTasks(prev => sortTasks(prev.map(t => (t.id === id ? { ...t, ...data } : t))))
     return { data }
   }
 

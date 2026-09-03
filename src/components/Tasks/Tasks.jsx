@@ -151,6 +151,7 @@ export default function Tasks() {
           workoutSpan={workoutSpan}
           onPickSlot={handleSlot}
           onOpenTask={handleBlock}
+          onResize={(id, minutes) => updateTask(id, { duration_min: minutes })}
         />
       </div>
 

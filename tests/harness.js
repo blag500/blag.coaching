@@ -242,10 +242,23 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg' }
 
     // Писането се потвърждава, но не се помни: тестовете гледат какво прави
     // интерфейсът в момента на жеста, а не какво би върнала базата после.
+    //
+    // PATCH обаче трябва да върне ЦЕЛИЯ ред, както прави PostgREST — само
+    // пратените полета значат, че приложението подменя реда с огризка и
+    // задачата изчезва от екрана. Това не е бъг в приложението, а харнес,
+    // който лъже; а харнес, който лъже, е по-лош от липсващ.
     if (req.method() !== 'GET') {
       let sent = null
       try { sent = JSON.parse(req.postData() || 'null') } catch { /* празно тяло */ }
       const row = Array.isArray(sent) ? sent[0] : sent
+
+      if (req.method() === 'PATCH') {
+        const id = new URL(req.url()).searchParams.get('id')?.replace(/^eq\./, '')
+        const existing = (tables[table] ?? []).find(r => String(r.id) === String(id)) ?? {}
+        const merged = { ...existing, ...(row || {}) }
+        return json(route, wantsSingle(req) ? merged : [merged])
+      }
+
       const echoed = { id: `new-${Date.now()}`, created_at: new Date().toISOString(), ...(row || {}) }
       return json(route, wantsSingle(req) ? echoed : [echoed], 201)
     }
