@@ -415,3 +415,14 @@
 .breakdown {
   margin-bottom: 16px;
 }
+
+/* Уточнение под заглавието на карта. Едно изречение, което казва как да се
+   чете скалата — там, където въпросът и употребата на отговора не съвпадат
+   от само себе си. */
+.cardHint {
+  margin: -2px 0 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}

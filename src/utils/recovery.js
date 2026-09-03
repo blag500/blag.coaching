@@ -150,14 +150,23 @@ export function resolveGroups(block, exerciseMap = null) {
 }
 
 /**
- * How much the day's soreness holds everything back.
+ * How much the day's fatigue holds everything back.
  *
- * Soreness is reported for the body, not per muscle, so it cannot slow one
- * group and not another — but it can say the whole body is not ready. Hours
- * since training is a clock; this is the person. A clock that ignores someone
- * saying they are wrecked is the reason people stop trusting these numbers.
+ * The number damps every group by the same factor, and that is now correct —
+ * but it was not always. Полето питаше за „мускулна умора", а отговорът се
+ * прилагаше върху цялото тяло: човек с крепатура в гърдите от вчера
+ * отчиташе четворка, и днешният краков ден го отнасяше с него,
+ * въпреки че краката са почивали. Сега полето пита за общата умора на
+ * тялото — а тя наистина важи за всяка група еднакво.
  *
- * 1 and 2 out of 5 change nothing: mild stiffness is training, not damage.
+ * Часовете от тренировката са часовник; това е човекът. Часовник, който
+ * не чува някого да казва, че е смазан, е причината хората да спрат да
+ * вярват на тези числа.
+ *
+ * 1 и 2 от 5 не менят нищо: леката скованост е тренировка, не щета.
+ *
+ * Името на колоната в базата остава `soreness`: преименуването би
+ * счупило всичко вписано досега, а скалата 1–5 значи същото.
  */
 export function sorenessDamping(soreness) {
   if (!soreness || soreness <= 2) return 1

@@ -349,6 +349,10 @@ export default function Recovery() {
         {/* Soreness */}
         <section className={styles.card}>
           <h2 className={styles.cardTitle}>💪 {t('rec.soreness')}</h2>
+          {/* Едно изречение, защото числото се прилага върху всички мускулни
+              групи еднакво. Докато полето питаше за мускулна умора, крепатурата
+              в гърдите от вчера сваляше готовността за днешния краков ден. */}
+          <p className={styles.cardHint}>{t('rec.sorenessHint')}</p>
           <ScaleRating value={soreness} onChange={setSoreness} labels={[t('rec.sorenessLow'), t('rec.sorenessHigh')]} />
         </section>
 
