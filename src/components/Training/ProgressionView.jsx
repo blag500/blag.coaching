@@ -3,6 +3,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import BlockCompare from './BlockCompare'
 import { useSettings } from '../../contexts/SettingsContext'
+import { useExerciseAliases } from '../../hooks/useExerciseAliases'
+import { haptic } from '../../lib/haptics'
 import styles from './ProgressionView.module.css'
 
 // ── Chart ────────────────────────────────────────────────────────────────────
@@ -190,7 +192,82 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
 
 // ── Level 2: progression for one exercise ────────────────────────────────────
 
-function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate, embedded }) {
+
+/**
+ * „Това е същото като…"
+ *
+ * Дневникът пази това, което е било написано в деня; тук се казва кои имена са
+ * едно движение. Ръчно, защото автоматичното сливане по близко име рано или
+ * късно слепва наклонена и равна лежанка — а сгрешено обединяване се забелязва
+ * месеци по-късно, когато кривата вече е излъгала.
+ */
+function MergeBar({ name, allNames, mergedInto, onMerge, onUnmerge }) {
+  const { t } = useSettings()
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  const absorbed = mergedInto?.(name) ?? []
+  // Всичко останало, което може да се влее тук — без самото него и без вече
+  // влетите.
+  const options = allNames.filter(n => n !== name)
+
+  async function run(fn) {
+    setBusy(true)
+    haptic('tap')
+    await fn()
+    setBusy(false)
+    setOpen(false)
+  }
+
+  return (
+    <div className={styles.mergeBar}>
+      {absorbed.length > 0 && (
+        <div className={styles.mergeList}>
+          {absorbed.map(a => (
+            <button
+              key={a}
+              type="button"
+              className={styles.mergeChip}
+              disabled={busy}
+              onClick={() => run(() => onUnmerge?.(a))}
+              title={t('pv.unmerge')}
+            >
+              {a} <span aria-hidden="true">×</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!open ? (
+        options.length > 0 && (
+          <button type="button" className={styles.mergeBtn} onClick={() => setOpen(true)}>
+            {t('pv.mergeWith')}
+          </button>
+        )
+      ) : (
+        <div className={styles.mergePicker}>
+          <span className={styles.mergeHint}>{t('pv.mergeHint', { name })}</span>
+          <div className={styles.mergeOptions}>
+            {options.map(n => (
+              <button
+                key={n}
+                type="button"
+                className={styles.mergeOption}
+                disabled={busy}
+                onClick={() => run(() => onMerge?.(name, n))}
+              >{n}</button>
+            ))}
+          </div>
+          <button type="button" className={styles.mergeCancel} onClick={() => setOpen(false)}>
+            {t('pv.mergeCancel')}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate, embedded, allNames = [], mergedInto, onMerge, onUnmerge }) {
   const { t } = useSettings()
   const [range, setRange] = useState('ALL')
 
@@ -227,6 +304,14 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
         </div>
       )}
       <h3 className={styles.exTitle}>{exerciseName}</h3>
+
+      <MergeBar
+        name={exerciseName}
+        allNames={allNames}
+        mergedInto={mergedInto}
+        onMerge={onMerge}
+        onUnmerge={onUnmerge}
+      />
 
       <div className={styles.rangeBar}>
         {RANGES.map(r => (
@@ -442,6 +527,8 @@ export default function ProgressionView({
   const setSelectedBlock = onSelectBlockProp ?? setInnerBlock
   const setSelectedEx    = onSelectExProp    ?? setInnerEx
 
+  const { resolve: resolveAlias, mergedInto, merge, unmerge } = useExerciseAliases()
+
   useEffect(() => {
     if (!user) return
     supabase
@@ -452,14 +539,19 @@ export default function ProgressionView({
       .then(({ data }) => { if (data) setAllLogsArr(data); setLoading(false) })
   }, [user?.id])
 
+  /* Групира се по каноничното име, не по написаното.
+     Без това „Лежанка" и „Лежанка с щанга" са две криви за едно
+     движение, а осем седмици прогрес, разцепен на две, не показва
+     прогрес. Самите вписвания остават с името от деня. */
   const allLogs = useMemo(() => {
     const m = {}
     for (const log of allLogsArr) {
-      if (!m[log.exercise_name]) m[log.exercise_name] = []
-      m[log.exercise_name].push(log)
+      const name = resolveAlias(log.exercise_name)
+      if (!m[name]) m[name] = []
+      m[name].push(log)
     }
     return m
-  }, [allLogsArr])
+  }, [allLogsArr, resolveAlias])
 
   async function handleDelete(id) {
     await supabase.from('exercise_logs').delete().eq('id', id)
@@ -481,7 +573,15 @@ export default function ProgressionView({
   if (selectedBlock && selectedEx) {
     return (
       <ExerciseProgression
-        exerciseName={selectedEx}
+        allNames={Object.keys(allLogs)}
+        mergedInto={mergedInto}
+        onMerge={merge}
+        onUnmerge={unmerge}
+        /* Каноничното име, не избраното.
+           Планът сочи към „Лежанка", но тя може вече да е влязла в
+           „Лежанка с щанга". Без това екранът опустява веднага след
+           обединяването: името, на което стоиш, вече не е ключ в данните. */
+        exerciseName={resolveAlias(selectedEx)}
         allLogs={allLogs}
         blockLabel={selectedBlock.label}
         onBack={() => setSelectedEx(null)}

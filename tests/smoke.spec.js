@@ -178,3 +178,33 @@ test.describe('Времевата линия', () => {
     await expect(page.getByText('ПРЕПОРЪКИ')).toHaveCount(0)
   })
 })
+
+test.describe('Прогресия', () => {
+  /* Две имена за едно движение са най-честият начин осем седмици прогрес да
+     се разцепят на две криви. Тестът пази точно това — и вече хвана един
+     истински бъг: след обединяване екранът оставаше на изчезнало име. */
+  test('обединяване на две имена дава една прогресия', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.locator('nav').first().locator('button', { hasText: 'ТРЕНИРОВКА' }).first().click()
+    await page.waitForTimeout(2000)
+    await page.locator('[role="tab"], [class*="homeTab"]').nth(1).click().catch(() => {})
+    await page.waitForTimeout(1000)
+    await page.locator('button', { hasText: 'Upper A' }).first().click()
+    await page.waitForTimeout(800)
+    await page.locator('button', { hasText: 'Лежанка' }).first().click()
+    await page.waitForTimeout(1000)
+
+    // Само своите вписвания: едно
+    const entries = page.locator('[class*="statVal"]').first()
+    await expect(entries).toHaveText('1')
+
+    await page.locator('button', { hasText: 'Това е същото като' }).first().click()
+    await page.waitForTimeout(400)
+    await page.locator('button', { hasText: 'Лежанка с щанга' }).first().click()
+    await page.waitForTimeout(1500)
+
+    // След обединяването кривата носи и двете
+    await expect(entries).toHaveText('2')
+  })
+})

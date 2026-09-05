@@ -109,6 +109,7 @@ export const TABLES = {
   exercise_logs: [
     { id: 'e1', user_id: USER_ID, date: today(1), exercise_name: 'Лежанка', weight: 100, reps: 8, sets: 1, set_index: 0, replaces: null, notes: null },
     { id: 'e2', user_id: USER_ID, date: today(1), exercise_name: 'Гребане', weight: 80,  reps: 10, sets: 1, set_index: 0, replaces: null, notes: null },
+    { id: 'e3', user_id: USER_ID, date: today(3), exercise_name: 'Лежанка с щанга', weight: 95, reps: 8, sets: 1, set_index: 0, replaces: null, notes: null },
   ],
   workout_completions: [
     { id: 'wc1', user_id: USER_ID, completed_date: today(1), block_label: 'Upper A' },
@@ -141,6 +142,9 @@ export const TABLES = {
     { id: 't3', user_id: USER_ID, text: 'Напиши пост', done: true, priority: 1, category: 'general', due_date: today(), start_time: '13:00:00', duration_min: 30, created_at: new Date().toISOString() },
     { id: 't4', user_id: USER_ID, text: 'Без час — стои само в списъка', done: false, priority: 1, category: 'general', due_date: null, start_time: null, duration_min: null, created_at: new Date().toISOString() },
   ],
+  /* Същото движение, писано по два начина — точно случаят, заради който
+     съществува обединяването. */
+  exercise_aliases: [],
   exercise_library: [
     { id: 'el1', user_id: USER_ID, name: 'Дъмбели на наклон', folder: 'Заместители за гърди', scheme: '3 × 8–10', muscle: 'chest', created_at: new Date().toISOString() },
     { id: 'el2', user_id: USER_ID, name: 'Кросовер', folder: 'Заместители за гърди', scheme: '3 × 12', muscle: 'chest', created_at: new Date().toISOString() },
@@ -174,6 +178,21 @@ function json(route, body, status = 200) {
     headers: { ...CORS, 'content-type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+/* Филтрите на PostgREST, колкото трябват тук: `col=eq.value`.
+   Ред без нито един разпознат филтър се смята за незасегнат — по-добре
+   заявка, която не изтрива нищо, отколкото такава, която изтрива всичко. */
+function matchesFilters(row, url) {
+  const params = new URL(url).searchParams
+  let seen = 0
+  for (const [col, raw] of params.entries()) {
+    if (col === 'select' || col === 'order' || col === 'limit' || col === 'offset') continue
+    if (!String(raw).startsWith('eq.')) continue
+    seen++
+    if (String(row[col]) !== String(raw).slice(3)) return false
+  }
+  return seen > 0
 }
 
 /** single() и maybeSingle() искат обект, не масив — казват го в Accept. */
@@ -240,27 +259,53 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg' }
     const table = path.match(/\/rest\/v1\/([a-z_]+)$/)?.[1]
     if (!table) return json(route, [])
 
-    // Писането се потвърждава, но не се помни: тестовете гледат какво прави
-    // интерфейсът в момента на жеста, а не какво би върнала базата после.
-    //
-    // PATCH обаче трябва да върне ЦЕЛИЯ ред, както прави PostgREST — само
-    // пратените полета значат, че приложението подменя реда с огризка и
-    // задачата изчезва от екрана. Това не е бъг в приложението, а харнес,
-    // който лъже; а харнес, който лъже, е по-лош от липсващ.
+    /* Писането се помни до края на теста.
+     *
+     * Дотук писането само се потвърждаваше и следващото четене го
+     * нямаше. Значеше, че всичко, което се записва и после се пречита —
+     * обединяване на упражнения, добавяне на приятел, заготовка — не може
+     * да се тества изобщо.
+     *
+     * Състоянието живее в `tables` — копие за този тест, не общо за
+     * набора: два теста, които си делят базата, се влияят по ред, който
+     * никой не е писал.
+     */
     if (req.method() !== 'GET') {
       let sent = null
       try { sent = JSON.parse(req.postData() || 'null') } catch { /* празно тяло */ }
-      const row = Array.isArray(sent) ? sent[0] : sent
+      const rowsIn = Array.isArray(sent) ? sent : [sent].filter(Boolean)
+      if (!tables[table]) tables[table] = []
 
-      if (req.method() === 'PATCH') {
-        const id = new URL(req.url()).searchParams.get('id')?.replace(/^eq\./, '')
-        const existing = (tables[table] ?? []).find(r => String(r.id) === String(id)) ?? {}
-        const merged = { ...existing, ...(row || {}) }
-        return json(route, wantsSingle(req) ? merged : [merged])
+      if (req.method() === 'DELETE') {
+        const keep = tables[table].filter(r => !matchesFilters(r, req.url()))
+        tables[table] = keep
+        return json(route, [])
       }
 
-      const echoed = { id: `new-${Date.now()}`, created_at: new Date().toISOString(), ...(row || {}) }
-      return json(route, wantsSingle(req) ? echoed : [echoed], 201)
+      if (req.method() === 'PATCH') {
+        const patch = rowsIn[0] || {}
+        const out = []
+        tables[table] = tables[table].map(r => {
+          if (!matchesFilters(r, req.url())) return r
+          const merged = { ...r, ...patch }
+          out.push(merged)
+          return merged
+        })
+        /* PATCH връща ЦЕЛИЯ ред, както прави PostgREST. Само пратените
+           полета значат, че приложението подменя реда с огризка и той
+           изчезва от екрана — бъг, който вече беше гонен в приложението,
+           а живееше тук. */
+        const first = out[0] ?? { ...patch }
+        return json(route, wantsSingle(req) ? first : out)
+      }
+
+      const stored = rowsIn.map(r => ({
+        id: `new-${Math.random().toString(36).slice(2, 10)}`,
+        created_at: new Date().toISOString(),
+        ...r,
+      }))
+      tables[table].push(...stored)
+      return json(route, wantsSingle(req) ? stored[0] : stored, 201)
     }
 
     const rows = tables[table] ?? []

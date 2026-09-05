@@ -422,3 +422,90 @@
   color: var(--muted);
   margin: 10px 0 0;
 }
+
+/* ── „Това е същото като…" ──
+   Тих ред под заглавието: обединяването е поправка, която се прави веднъж на
+   упражнение, а не действие, което трябва да се вижда всеки път. */
+.mergeBar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.mergeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Влетите имена: чипове с ×, защото разделянето трябва да е толкова лесно,
+   колкото и обединяването — иначе една грешка се живее с месеци. */
+.mergeChip {
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mergeBtn {
+  align-self: flex-start;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 11px;
+  opacity: 0.8;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mergePicker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+}
+
+.mergeHint {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mergeOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mergeOption {
+  padding: 7px 11px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mergeCancel {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+}
