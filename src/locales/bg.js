@@ -1690,6 +1690,8 @@ export default {
   'pv.mergeWith':   'Това е същото като…',
   'pv.mergeHint':   'В кое да се влее „{name}"?',
   'pv.mergeCancel': 'Отказ',
+  'pv.mergePick':   '— избери упражнение —',
+  'pv.mergeOther':  'ИЗВЪН ПЛАНА',
   'pv.unmerge':     'Раздели обратно',
   "pv.noWeight": "Няма данни за тегло.",
   "pv.thDate": "Дата",

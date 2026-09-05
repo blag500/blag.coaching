@@ -1683,6 +1683,8 @@ export default {
   'pv.mergeWith':   'This is the same as…',
   'pv.mergeHint':   'Merge “{name}” into which?',
   'pv.mergeCancel': 'Cancel',
+  'pv.mergePick':   '— pick an exercise —',
+  'pv.mergeOther':  'NOT IN THE PLAN',
   'pv.unmerge':     'Split back out',
   "pv.noWeight": "No weight data.",
   "pv.thDate": "Date",

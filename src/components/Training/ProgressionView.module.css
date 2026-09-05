@@ -482,6 +482,19 @@
   color: var(--muted);
 }
 
+/* Падащият списък с групи по блок. Родният контрол носи групите наготово и
+   на телефон се отваря като списък през целия екран — по-четимо от каквото и
+   да е нарисувано тук. */
+.mergeSelect {
+  width: 100%;
+  padding: 11px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
 .mergeOptions {
   display: flex;
   flex-wrap: wrap;

@@ -201,15 +201,37 @@ function ExerciseTable({ entries, onDelete, onUpdate }) {
  * късно слепва наклонена и равна лежанка — а сгрешено обединяване се забелязва
  * месеци по-късно, когато кривата вече е излъгала.
  */
-function MergeBar({ name, allNames, mergedInto, onMerge, onUnmerge }) {
+function MergeBar({ name, allNames, blocks = [], mergedInto, onMerge, onUnmerge }) {
   const { t } = useSettings()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const absorbed = mergedInto?.(name) ?? []
-  // Всичко останало, което може да се влее тук — без самото него и без вече
-  // влетите.
-  const options = allNames.filter(n => n !== name)
+
+  /* Списъкът, разделен на блокове.
+     Плосък облак от всяко име, което някога е вписвано, става нечетим още на
+     двайсетото упражнение — а въпросът „в кое да се влее" почти винаги има
+     отговор в блока, от който идва другото име. Затова падащ списък с групи:
+     блокът дава контекста, изборът е едно упражнение.
+     Накрая стои група за онова, което не е в никой план — заместители,
+     вписани в движение, и упражнения от стари програми. */
+  const groups = useMemo(() => {
+    const taken = new Set([name])
+    const out = []
+    const seen = new Set()
+    for (const b of blocks ?? []) {
+      const names = (b.exercises ?? [])
+        .map(e => e.name)
+        .filter(n => n && allNames.includes(n) && !taken.has(n) && !seen.has(n))
+      for (const n of names) seen.add(n)
+      if (names.length) out.push({ label: b.label, names })
+    }
+    const rest = allNames.filter(n => !taken.has(n) && !seen.has(n))
+    if (rest.length) out.push({ label: t('pv.mergeOther'), names: rest })
+    return out
+  }, [allNames, blocks, name, t])
+
+  const total = groups.reduce((n, g) => n + g.names.length, 0)
 
   async function run(fn) {
     setBusy(true)
@@ -239,7 +261,7 @@ function MergeBar({ name, allNames, mergedInto, onMerge, onUnmerge }) {
       )}
 
       {!open ? (
-        options.length > 0 && (
+        total > 0 && (
           <button type="button" className={styles.mergeBtn} onClick={() => setOpen(true)}>
             {t('pv.mergeWith')}
           </button>
@@ -247,17 +269,20 @@ function MergeBar({ name, allNames, mergedInto, onMerge, onUnmerge }) {
       ) : (
         <div className={styles.mergePicker}>
           <span className={styles.mergeHint}>{t('pv.mergeHint', { name })}</span>
-          <div className={styles.mergeOptions}>
-            {options.map(n => (
-              <button
-                key={n}
-                type="button"
-                className={styles.mergeOption}
-                disabled={busy}
-                onClick={() => run(() => onMerge?.(name, n))}
-              >{n}</button>
+          <select
+            className={styles.mergeSelect}
+            defaultValue=""
+            disabled={busy}
+            onChange={e => { if (e.target.value) run(() => onMerge?.(name, e.target.value)) }}
+            aria-label={t('pv.mergeHint', { name })}
+          >
+            <option value="">{t('pv.mergePick')}</option>
+            {groups.map(g => (
+              <optgroup key={g.label} label={g.label}>
+                {g.names.map(n => <option key={n} value={n}>{n}</option>)}
+              </optgroup>
             ))}
-          </div>
+          </select>
           <button type="button" className={styles.mergeCancel} onClick={() => setOpen(false)}>
             {t('pv.mergeCancel')}
           </button>
@@ -267,7 +292,7 @@ function MergeBar({ name, allNames, mergedInto, onMerge, onUnmerge }) {
   )
 }
 
-function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate, embedded, allNames = [], mergedInto, onMerge, onUnmerge }) {
+function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDelete, onUpdate, embedded, allNames = [], blocks = [], mergedInto, onMerge, onUnmerge }) {
   const { t } = useSettings()
   const [range, setRange] = useState('ALL')
 
@@ -308,6 +333,7 @@ function ExerciseProgression({ exerciseName, allLogs, onBack, blockLabel, onDele
       <MergeBar
         name={exerciseName}
         allNames={allNames}
+        blocks={blocks}
         mergedInto={mergedInto}
         onMerge={onMerge}
         onUnmerge={onUnmerge}
@@ -574,6 +600,7 @@ export default function ProgressionView({
     return (
       <ExerciseProgression
         allNames={Object.keys(allLogs)}
+        blocks={blocks}
         mergedInto={mergedInto}
         onMerge={merge}
         onUnmerge={unmerge}

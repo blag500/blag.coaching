@@ -201,7 +201,7 @@ test.describe('Прогресия', () => {
 
     await page.locator('button', { hasText: 'Това е същото като' }).first().click()
     await page.waitForTimeout(400)
-    await page.locator('button', { hasText: 'Лежанка с щанга' }).first().click()
+    await page.locator('[class*="mergeSelect"]').first().selectOption('Лежанка с щанга')
     await page.waitForTimeout(1500)
 
     // След обединяването кривата носи и двете
