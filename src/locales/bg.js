@@ -677,6 +677,7 @@ export default {
   'sl.itemPh':                     'Артикул...',
   'sl.qtyPh':                      'Кол.',
   'sl.noHistory':                  'Все още няма архивирани списъци.',
+  'sl.calendar':   'КОГА КАКВО Е КУПЕНО',
   'sl.histSummary':                '{total} артикула · {pct}% отметнати',
 
   // Shop page

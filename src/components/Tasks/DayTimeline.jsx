@@ -24,7 +24,11 @@ import styles from './DayTimeline.module.css'
  */
 
 const HOUR_PX   = 52
-const DAY_START = 5
+/* Цялото денонощие, както е в Google Calendar.
+   Линията започваше в 5 и свършваше в 23:00 — тоест смяна до полунощ
+   нямаше къде да се впише, а нощната работа изобщо не съществуваше.
+   Ден, който изключва часове, кара човека да си ги записва другаде. */
+const DAY_START = 0
 const DAY_END   = 24
 /* Въздух над първия час: надписът седи над чертата си и без това излиза
    извън платното и се вижда срязан. */
@@ -127,6 +131,7 @@ export default function DayTimeline({
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
+    // Без „сега" — там, където денят обикновено започва.
     const focus = nowVisible ? nowH : 8
     el.scrollTop = Math.max(0, (focus - DAY_START) * HOUR_PX - 80)
   }, [date])

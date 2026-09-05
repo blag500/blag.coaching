@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
+import MonthCalendar from '../Training/MonthCalendar'
 import styles from './ShoppingList.module.css'
 import { loc } from '../../utils/locale'
 
@@ -166,6 +167,38 @@ export default function ShoppingList({ onBack }) {
     setHistLoaded(true)
   }
 
+  /* Купеното, преведено на езика на календара: един артикул е един
+     етикет в деня, в който е отметнат.
+     Историята отпреди миграция 101 няма час и не се рисува — по-добре
+     липсваща точка, отколкото измислена дата. */
+  const boughtByDay = useMemo(() => {
+    const out = []
+    for (const session of history) {
+      for (const it of session.items ?? []) {
+        if (!it.checked || !it.checked_at) continue
+        out.push({
+          completed_date: String(it.checked_at).slice(0, 10),
+          block_label: it.quantity ? `${it.name} · ${it.quantity}` : it.name,
+        })
+      }
+    }
+    for (const it of items) {
+      if (!it.checked || !it.checked_at) continue
+      out.push({
+        completed_date: String(it.checked_at).slice(0, 10),
+        block_label: it.quantity ? `${it.name} · ${it.quantity}` : it.name,
+      })
+    }
+    return out
+  }, [history, items])
+
+  /* Цвят по име, както е и при блоковете: една и съща покупка държи
+     тона си от месец на месец. */
+  const boughtBlocks = useMemo(
+    () => [...new Set(boughtByDay.map(b => b.block_label))].map(label => ({ label })),
+    [boughtByDay],
+  )
+
   async function addItem() {
     if (!nameInput.trim() || !activeList) return
     const payload = {
@@ -181,8 +214,13 @@ export default function ShoppingList({ onBack }) {
   }
 
   async function toggleItem(id, checked) {
-    await supabase.from('shopping_items').update({ checked: !checked }).eq('id', id)
-    setItems(prev => prev.map(i => i.id === id ? { ...i, checked: !i.checked } : i))
+    /* Отметката и часът й вървят заедно: снеме ли се отметката, часът
+       пада с нея. Ред, който твърди „купено", без да знае кога, е по-лош
+       от ред, който мълчи. */
+    const next = !checked
+    const checked_at = next ? new Date().toISOString() : null
+    await supabase.from('shopping_items').update({ checked: next, checked_at }).eq('id', id)
+    setItems(prev => prev.map(i => i.id === id ? { ...i, checked: next, checked_at } : i))
   }
 
   async function deleteItem(id) {
@@ -335,6 +373,18 @@ export default function ShoppingList({ onBack }) {
           ) : (
             <>
               {history.length > 0 && <WeekStrip history={history} t={t} />}
+
+              {/* Кога какво е купено.
+                  Буквално календарът от Тренировка, а не негово копие — той
+                  пита за „завършвания" с етикет и дата, така че една покупка
+                  е един етикет в деня, в който е отметната. Натискане на дата
+                  разгъва точно тези артикули. */}
+              {boughtByDay.length > 0 && (
+                <section className={styles.calendarSection}>
+                  <h2 className={styles.calendarTitle}>{t('sl.calendar')}</h2>
+                  <MonthCalendar completions={boughtByDay} blocks={boughtBlocks} />
+                </section>
+              )}
               {history.length === 0 ? (
                 <p className={styles.empty}>{t('sl.noHistory')}</p>
               ) : (

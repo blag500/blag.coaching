@@ -676,6 +676,7 @@ export default {
   'sl.itemPh':                     'Item...',
   'sl.qtyPh':                      'Qty',
   'sl.noHistory':                  'No archived lists yet.',
+  'sl.calendar':   'WHAT WAS BOUGHT, WHEN',
   'sl.histSummary':                '{total} items · {pct}% checked',
 
   // Shop page
