@@ -766,6 +766,7 @@ export default {
   'tasks.slot.week':         '+7 ДНИ',
   'tasks.slot.later':        'БЕЗ ДАТА',
   'tasks.important':         '! ВАЖНО',
+  'tasks.timeHint':          'Напиши час в самия текст — напр. „Тренировка 18:00 1ч" — и задачата сяда на линията.',
   'tasks.fromCoach':         'от треньора',
   'tasks.delete':            'Изтрий',
   'tasks.date.today':        'Днес',

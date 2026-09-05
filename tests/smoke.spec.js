@@ -148,4 +148,33 @@ test.describe('Времевата линия', () => {
     await page.waitForTimeout(500)
     await expect(page.getByPlaceholder('Какво има тогава?')).toHaveCount(0)
   })
+
+  test('час, написан в текста, слага задачата на линията', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.locator('header button').first().click()
+    await page.waitForTimeout(700)
+    await page.locator('button', { hasText: 'ЗАДАЧИ' }).first().click()
+    await page.waitForTimeout(1800)
+
+    await page.getByPlaceholder('Нова задача...').fill('Масаж 16:00 90м')
+    await page.locator('[class*="submitBtn"]').first().click()
+    await page.waitForTimeout(800)
+
+    // Името е без часа, а блокът е на линията
+    const block = page.locator('[class*="block_"]').filter({ hasText: 'Масаж' }).first()
+    await expect(block).toBeVisible()
+    await expect(block).not.toContainText('16:00 90')
+    await page.screenshot({ path: 'shots/quick.png' })
+  })
+
+  test('препоръките ги няма', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.locator('header button').first().click()
+    await page.waitForTimeout(700)
+    await page.locator('button', { hasText: 'ЗАДАЧИ' }).first().click()
+    await page.waitForTimeout(1500)
+    await expect(page.getByText('ПРЕПОРЪКИ')).toHaveCount(0)
+  })
 })

@@ -765,6 +765,7 @@ export default {
   'tasks.slot.week':         '+7 DAYS',
   'tasks.slot.later':        'NO DATE',
   'tasks.important':         '! IMPORTANT',
+  'tasks.timeHint':          'Write the hour in the text — e.g. “Training 18:00 1h” — and the task lands on the timeline.',
   'tasks.fromCoach':         'from coach',
   'tasks.delete':            'Delete',
   'tasks.date.today':        'Today',

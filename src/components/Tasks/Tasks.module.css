@@ -430,3 +430,14 @@
   color: var(--muted);
   opacity: 0.7;
 }
+
+/* Един ред, който казва как се задава час. Не е предупреждение — затова е
+   тих и стои под чиповете, не над полето. */
+.addHint {
+  margin: 0 2px 8px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--muted);
+  opacity: 0.75;
+}

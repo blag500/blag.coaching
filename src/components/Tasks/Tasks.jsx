@@ -3,8 +3,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTasks } from '../../hooks/useTasks'
 import DayTimeline from './DayTimeline'
+import { parseQuickTime } from '../../utils/quickTime'
 import TaskSheet from './TaskSheet'
-import { useTaskSuggestions } from '../../hooks/useTaskSuggestions'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Tasks.module.css'
 import { loc } from '../../utils/locale'
@@ -24,7 +24,6 @@ function getTimeBucket(due_date) {
 export default function Tasks() {
   const { tasks, loading, addTask, updateTask, toggleTask, deleteTask } = useTasks()
   const { user } = useAuth()
-  const { suggestions, dismiss } = useTaskSuggestions()
   const { t } = useSettings()
   const [text, setText]       = useState('')
   const [dueSlot, setDueSlot] = useState('later')  // 'today' | 'week' | 'later'
@@ -49,10 +48,23 @@ export default function Tasks() {
   async function handleAdd() {
     if (!text.trim() || saving) return
     setSaving(true)
+
+    /* Часът се чете от написаното: „Тренировка 18:00 1ч".
+       Без това полето и линията бяха два несвързани начина да се запише
+       едно и също нещо. */
+    const parsed = parseQuickTime(text)
+    const name = parsed.text || text.trim()
+
+    /* Час без ден е днешният: задача в 18:00 „без дата" няма къде да
+       се нарисува. Ако е избран друг ден, часът важи за него. */
+    const due = dueDateForSlot(dueSlot) ?? (parsed.startTime ? TODAY() : null)
+
     await addTask({
-      text,
+      text: name,
       priority: highPrio ? 2 : 1,
-      due_date: dueDateForSlot(dueSlot),
+      due_date: due,
+      start_time: parsed.startTime,
+      duration_min: parsed.startTime ? (parsed.minutes ?? 60) : null,
     })
     setText('')
     setSaving(false)
@@ -95,11 +107,6 @@ export default function Tasks() {
   /** Натиснат блок — отмята се готов. */
   function handleBlock(task) { toggleTask(task.id) }
 
-  async function handleAddSuggestion(s) {
-    await addTask({ text: s.text, priority: s.priority, due_date: s.due_date })
-    dismiss(s.id)
-  }
-
   if (loading) return <div className={styles.page} />
 
   return (
@@ -110,30 +117,6 @@ export default function Tasks() {
           <span className={styles.badge}>{t('tasks.active', { n: active.length })}</span>
         )}
       </div>
-
-      {/* Smart suggestions */}
-      {suggestions.length > 0 && (
-        <div className={styles.suggestionsBlock}>
-          <div className={styles.suggestionsLabel}>{t('tasks.suggestions')}</div>
-          {suggestions.map(s => (
-            <div key={s.id} className={styles.suggestionCard}>
-              <span className={styles.suggestionIcon}>{s.icon}</span>
-              <span className={styles.suggestionText}>{s.text}</span>
-              <button
-                className={styles.suggestionAdd}
-                onClick={() => handleAddSuggestion(s)}
-                type="button"
-              >{t('tasks.suggestAdd')}</button>
-              <button
-                className={styles.suggestionDismiss}
-                onClick={() => dismiss(s.id)}
-                type="button"
-                aria-label={t('tasks.hide')}
-              >×</button>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Денът като линия.
           Списъкът отдолу казва какво има за вършене; тук се вижда кога.
@@ -182,7 +165,7 @@ export default function Tasks() {
         <Section label={t('tasks.later')} tasks={laterTasks} onToggle={toggleTask} onDelete={deleteTask} />
       )}
 
-      {active.length === 0 && suggestions.length === 0 && (
+      {active.length === 0 && (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>✓</div>
           <div>{t('tasks.emptyMain')}<br />{t('tasks.emptySub')}</div>
@@ -212,6 +195,10 @@ export default function Tasks() {
 
       {/* Add form */}
       <div className={styles.addForm}>
+        {/* Над полето, не под чиповете: формулярът стои на дъното и всичко
+            след тях попада под долната лента. Жестът се научава веднъж и
+            се помни, но без този ред никой няма да се сети да напише час. */}
+        <p className={styles.addHint}>{t('tasks.timeHint')}</p>
         <div className={styles.addRow}>
           <input
             ref={inputRef}
@@ -248,6 +235,7 @@ export default function Tasks() {
             type="button"
           >{t('tasks.important')}</button>
         </div>
+
       </div>
     </div>
   )
@@ -267,14 +255,12 @@ function Section({ label, tasks, onToggle, onDelete }) {
 function TaskRow({ task, onToggle, onDelete }) {
   const { t } = useSettings()
   const today    = TODAY()
-  const isOverdue = task.due_date && task.due_date < today && !task.done
   const isCoach   = !!task.created_by
 
   return (
     <div className={[
       styles.taskRow,
       task.done     ? styles.taskRowDone    : '',
-      isOverdue     ? styles.taskRowOverdue : '',
     ].join(' ')}>
       <button
         className={`${styles.check} ${task.done ? styles.checkDone : ''}`}
@@ -298,9 +284,13 @@ function TaskRow({ task, onToggle, onDelete }) {
           {isCoach && !task.done && (
             <span className={styles.coachTag}>{t('tasks.fromCoach')}</span>
           )}
+          {/* Без червено и без възклицателна.
+              Списък, в който половината редове крещят, е списък, в който
+              нищо не крещи: червеното губи смисъл, щом е на всеки втори ред.
+              Датата си остава — тя казва същото, без да вика. */}
           {task.due_date && !task.done && (
-            <span className={`${styles.dateTag} ${isOverdue ? styles.dateTagOverdue : ''}`}>
-              {isOverdue ? '⚠ ' : ''}{formatDate(task.due_date, t)}
+            <span className={styles.dateTag}>
+              {formatDate(task.due_date, t)}
             </span>
           )}
         </div>
