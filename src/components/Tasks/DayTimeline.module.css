@@ -10,7 +10,10 @@
    деветнайсет часа и ако той разтяга страницата, списъкът със задачи отдолу
    се озовава на два екрана разстояние. */
 .scroller {
-  max-height: 380px;
+  /* По-висока, за да се вижда повече от деня наведнъж. Спрямо височината
+     на прозореца, не в пиксели: на малък телефон фиксирани шестстотин
+     пиксела избутват списъка съвсем от екрана. */
+  max-height: min(62vh, 620px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -18,6 +21,11 @@
 
 .canvas {
   position: relative;
+  /* Влаченето не маркира текст. Без това едно дърпане с мишка избира
+     половината страница, а на тъч дългото натискане вика лупата на iOS. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .hourRow {
@@ -28,6 +36,7 @@
 }
 
 .hourLabel {
+  pointer-events: none;
   position: absolute;
   top: -7px;
   left: 8px;
@@ -214,4 +223,30 @@
   z-index: 5;
   border-color: var(--accent);
   box-shadow: 0 8px 22px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Празният час вече не е бутон, а място: жестът за създаване е натисни-и-
+   задръж върху платното, а бутон под пръста би отговорил на всяко докосване. */
+.hourSlot { pointer-events: none; }
+
+/* Изрязваното в момента. Пунктир, защото още не съществува — плътна рамка би
+   твърдяла, че вече е записано. */
+.ghost {
+  position: absolute;
+  left: 46px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px dashed rgba(var(--accent-rgb), 0.6);
+  border-radius: var(--r-sm);
+  background: rgba(var(--accent-rgb), 0.10);
+  pointer-events: none;
+}
+
+.ghostTime {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }

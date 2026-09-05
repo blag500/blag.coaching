@@ -106,3 +106,46 @@ test.describe('Теми', () => {
     })
   }
 })
+
+test.describe('Времевата линия', () => {
+  /* Жестовете тук не са украса: линията е единственият екран, на който нещо
+     се създава с влачене, а тези два теста вече хванаха сгрешена мишена —
+     натискането падаше в реда за часа вместо в платното. */
+  async function openTasks(page) {
+    await enterApp(page)
+    await page.locator('header button').first().click()
+    await page.waitForTimeout(700)
+    await page.locator('button', { hasText: 'ЗАДАЧИ' }).first().click()
+    await page.waitForTimeout(1800)
+  }
+
+  test('задържане върху празно изрязва и пита за име', async ({ page }) => {
+    test.setTimeout(90000)
+    await openTasks(page)
+    // Видимата част на линията, не цялото платно: то е превъртяно и горният му
+    // ръб стои извън екрана.
+    const view = page.locator('[class*="scroller"]').first()
+    const b = await view.boundingBox()
+    const x = b.x + b.width - 40
+    const y = b.y + b.height - 120
+
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.waitForTimeout(420)              // задържането
+    await page.mouse.move(x, y + 90, { steps: 8 })
+    await page.mouse.up()
+    await page.waitForTimeout(500)
+
+    await expect(page.getByPlaceholder('Какво има тогава?')).toBeVisible()
+  })
+
+  test('кратко натискане не изрязва нищо', async ({ page }) => {
+    test.setTimeout(90000)
+    await openTasks(page)
+    const view = page.locator('[class*="scroller"]').first()
+    const b = await view.boundingBox()
+    await page.mouse.click(b.x + b.width - 40, b.y + b.height - 120)
+    await page.waitForTimeout(500)
+    await expect(page.getByPlaceholder('Какво има тогава?')).toHaveCount(0)
+  })
+})

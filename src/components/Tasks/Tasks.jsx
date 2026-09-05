@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTasks } from '../../hooks/useTasks'
 import DayTimeline from './DayTimeline'
+import TaskSheet from './TaskSheet'
 import { useTaskSuggestions } from '../../hooks/useTaskSuggestions'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Tasks.module.css'
@@ -87,12 +88,9 @@ export default function Tasks() {
     return () => { alive = false }
   }, [user?.id])
 
-  /** Задача, вписана директно в час от линията. */
-  async function handleSlot(time) {
-    const what = window.prompt(t('tl.promptWhat'))
-    if (!what || !what.trim()) return
-    await addTask({ text: what, due_date: TODAY(), start_time: time, duration_min: 60 })
-  }
+  /* Изрязаното от линията, което чака име.
+     Часът и дължината са вече казани с пръста; листът пита само какво е. */
+  const [pending, setPending] = useState(null)   // { start, minutes }
 
   /** Натиснат блок — отмята се готов. */
   function handleBlock(task) { toggleTask(task.id) }
@@ -149,11 +147,29 @@ export default function Tasks() {
           date={TODAY()}
           tasks={tasks}
           workoutSpan={workoutSpan}
-          onPickSlot={handleSlot}
           onOpenTask={handleBlock}
           onResize={(id, minutes) => updateTask(id, { duration_min: minutes })}
+          onMove={(id, start_time) => updateTask(id, { start_time })}
+          onCreate={setPending}
         />
       </div>
+
+      <TaskSheet
+        open={!!pending}
+        start={pending?.start}
+        minutes={pending?.minutes}
+        onCancel={() => setPending(null)}
+        onSave={async ({ text: what, priority }) => {
+          await addTask({
+            text: what,
+            priority,
+            due_date: TODAY(),
+            start_time: pending.start,
+            duration_min: pending.minutes,
+          })
+          setPending(null)
+        }}
+      />
 
       {/* Time buckets */}
       {todayTasks.length > 0 && (
