@@ -464,6 +464,39 @@
   cursor: default;
 }
 
+/* Три бутона на един ред: буквите слизат с една стъпка, за да се поберат
+   „ЯСТИЕ ЕТИКЕТ БАРКОД" на тесен телефон, без да се пренася последният. */
+.foodPhotoBtn,
+.labelScanBtn,
+.barcodeBtn {
+  flex: 1 1 30%;
+  min-width: 96px;
+  font-size: 12px;
+}
+
+/* Баркод — зеленото на въглехидратите, за да се различава от другите два:
+   ястието и етикетът са четене на снимка, а това е четене на номер. */
+.barcodeBtn {
+  padding: 11px 8px;
+  background: rgba(102, 187, 106, 0.08);
+  border: 1px solid rgba(102, 187, 106, 0.28);
+  border-radius: var(--radius);
+  color: #81C784;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.barcodeBtn:active {
+  background: rgba(102, 187, 106, 0.16);
+}
+
 /* Етикет button — blue/OCR tone */
 .labelScanBtn {
   flex: 1;

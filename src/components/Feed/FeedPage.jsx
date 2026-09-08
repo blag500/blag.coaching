@@ -7,6 +7,7 @@ import PostComposer from './PostComposer'
 import PostCard from './PostCard'
 import Pictogram from '../Pictogram/Pictogram'
 import AuthorPage from './AuthorPage'
+import SearchResults, { SearchField } from './FeedSearch'
 import styles from './Feed.module.css'
 
 /**
@@ -21,6 +22,10 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
   const { profile } = useAuth()
   const { t } = useSettings()
   const [author, setAuthor] = useState(null)
+  const [term, setTerm] = useState('')
+  /* Две букви, преди да се пита нещо: една буква намира половината хора и
+     всеки трети пост, тоест не намира нищо. */
+  const searching = term.trim().length >= 2
   const {
     posts, loading, error, hasMore,
     loadMore, addPost, removePost, toggleLike, bumpCommentCount,
@@ -36,7 +41,9 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
         onAvatarClick={() => onNavigate('profile')}
       />
 
-      <PostComposer onPost={addPost} />
+      <SearchField term={term} onTerm={setTerm} />
+
+      {!searching && <PostComposer onPost={addPost} />}
 
       {author && (
         <AuthorPage
@@ -48,7 +55,9 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
 
       {error && <p className={styles.errorMsg}>{error}</p>}
 
-      {loading ? (
+      {searching ? (
+        <SearchResults term={term} onOpenAuthor={setAuthor} />
+      ) : loading ? (
         <div className={styles.skeletons}>
           {[0, 1, 2].map(i => <div key={i} className={styles.skeleton} />)}
         </div>

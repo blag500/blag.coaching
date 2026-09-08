@@ -48,6 +48,13 @@ export default {
   'feed.ago.hour':             'преди {n} ч',
   'feed.ago.day':              'преди {n} дни',
 
+  // ── Търсене във фийда ─────────────────────────────────────────────
+  'search.placeholder':        'Търси хора и постове',
+  'search.people':             'ХОРА',
+  'search.posts':              'ПОСТОВЕ',
+  'search.none':               'НИЩО НАМЕРЕНО',
+  'search.noneSub':            'Опитай с име, кратко име или дума от поста.',
+
   // ── Разделите в Профил ────────────────────────────────────────────
   'profile.seg.today':    'ДНЕС',
   'profile.seg.progress': 'ПРОГРЕС',
@@ -1375,6 +1382,9 @@ export default {
 
   // Wave 4c — FoodSearch (AI, баркод, скорошни, препоръки, ръчно)
   "fs.mode.barcode": "БАРКОД",
+  "fs.barcode": "Баркод",
+  "fs.mode.manual": "РЪЧНО",
+  "fs.barcodeTitle": "Сканирай баркод — макросите идват от базата",
   "fs.mode.history": "ИСТОРИЯ",
   "fs.mode.draft": "ЧЕРНОВА",
   "fs.mode.bot": "БОТ",

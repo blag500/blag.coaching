@@ -47,6 +47,13 @@ export default {
   'feed.ago.hour':             '{n} h ago',
   'feed.ago.day':              '{n} d ago',
 
+  // ── Feed search ───────────────────────────────────────────────────
+  'search.placeholder':        'Search people and posts',
+  'search.people':             'PEOPLE',
+  'search.posts':              'POSTS',
+  'search.none':               'NOTHING FOUND',
+  'search.noneSub':            'Try a name, a username, or a word from the post.',
+
   // ── Profile segments ──────────────────────────────────────────────
   'profile.seg.today':    'TODAY',
   'profile.seg.progress': 'PROGRESS',
@@ -1368,6 +1375,9 @@ export default {
 
   // Wave 4c — FoodSearch (AI, баркод, скорошни, препоръки, ръчно)
   "fs.mode.barcode": "BARCODE",
+  "fs.barcode": "Barcode",
+  "fs.mode.manual": "MANUAL",
+  "fs.barcodeTitle": "Scan a barcode — macros come from the database",
   "fs.mode.history": "HISTORY",
   "fs.mode.draft": "DRAFT",
   "fs.mode.bot": "BOT",

@@ -62,6 +62,19 @@ function ScanLabelIcon() {
   )
 }
 
+function BarcodeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" width="16" height="16" aria-hidden="true">
+      <line x1="4"  y1="5" x2="4"  y2="19"/>
+      <line x1="7.5" y1="5" x2="7.5" y2="19"/>
+      <line x1="11" y1="5" x2="11" y2="15"/>
+      <line x1="14.5" y1="5" x2="14.5" y2="19"/>
+      <line x1="18" y1="5" x2="18" y2="15"/>
+      <line x1="20.5" y1="5" x2="20.5" y2="19"/>
+    </svg>
+  )
+}
+
 // ─── Raw/Cooked classification ────────────────────────────────────────────────
 // level 2 = warning + correction toggle
 // level 1 = warning only
@@ -135,7 +148,11 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
       <div className={styles.modeBar}>
         {[
           { id: 'ai',      label: 'AI',      icon: '◈' },
-          { id: 'barcode', label: t('fs.mode.barcode'), icon: '▥' },
+          /* Баркодът вече не е раздел: той стои до ЯСТИЕ и ЕТИКЕТ, при
+             другите два начина да снимаш храна вместо да я описваш. Мястото
+             му тук се връща на ръчното въвеждане, което беше написано, но
+             никъде не се отваряше. */
+          { id: 'manual',  label: t('fs.mode.manual'),  icon: '+' },
           { id: 'history', label: t('fs.mode.history'), icon: '↺' },
           { id: 'draft',   label: t('fs.mode.draft'),   icon: '✎' },
           { id: 'bot',     label: t('fs.mode.bot'),     icon: '◉' },
@@ -153,9 +170,10 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
         ))}
       </div>
 
-      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} />}
+      {mode === 'ai'      && <AiMode onAdd={onAdd} onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} onScanBarcode={() => setMode('barcode')} />}
       {mode === 'history' && <HistoryMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} />}
-      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} />}
+      {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} />}
+      {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} onCancel={() => setMode('ai')} />}
       {mode === 'draft'   && <DraftMode onAddRaw={onAddRaw} totals={totals} targets={targets} />}
       {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
@@ -165,7 +183,7 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
 
 // ─── AI macro lookup mode ────────────────────────────────────────────────────
 
-function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
+function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded, onScanBarcode }) {
   const { t } = useSettings()
   const [query, setQuery]           = useState('')
   const [loading, setLoading]       = useState(false)
@@ -392,6 +410,20 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded }) {
           {labelLoading
             ? <><span className={styles.spinner} style={{ marginLeft: 6 }} />{t('fs.reading')}</>
             : t('fs.label')}
+        </button>
+
+        {/* Третият начин да не пишеш нищо. Баркодът не е разпознаване — той
+            чете номер и пита база — но човекът, застанал с телефон пред
+            храната, не търси по това кой я разчита, а по това, че не му се
+            пише. */}
+        <button
+          className={styles.barcodeBtn}
+          onClick={onScanBarcode}
+          type="button"
+          title={t('fs.barcodeTitle')}
+        >
+          <BarcodeIcon />
+          {t('fs.barcode')}
         </button>
       </div>
 
@@ -627,7 +659,7 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
 
 // ─── Barcode scan mode ───────────────────────────────────────────────────────
 
-function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
+function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded, onCancel }) {
   const { t } = useSettings()
   const [scanning, setScanning] = useState(true)
   const [result, setResult]     = useState(null)
@@ -659,9 +691,12 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
 
   if (scanning) {
     return (
+      /* Затварянето връща там, откъдето се е тръгнало. Досега гасеше
+         камерата и оставяше екран „продуктът не е намерен" — отговор на
+         въпрос, който никой не е задал. */
       <BarcodeScanner
         onFound={handleFound}
-        onClose={() => setScanning(false)}
+        onClose={onCancel}
       />
     )
   }
@@ -725,7 +760,7 @@ function BarcodeMode({ onAddRaw, meal, onMealChange, onAdded }) {
 
 // ─── Manual entry mode ───────────────────────────────────────────────────────
 
-function ManualMode({ onAddRaw }) {
+function ManualMode({ onAddRaw, meal, onMealChange }) {
   const { t } = useSettings()
   const empty = { name: '', kcal: '', protein: '', carbs: '', fat: '', grams: '' }
   const [form, setForm] = useState(empty)
@@ -783,6 +818,7 @@ function ManualMode({ onAddRaw }) {
           </div>
         ))}
       </div>
+      {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
       <button
         className={`${styles.addBtn} ${added ? styles.addBtnDone : ''}`}
         onClick={handleAdd}

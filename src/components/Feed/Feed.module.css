@@ -726,3 +726,107 @@
 @media (prefers-reduced-motion: reduce) {
   .composerPosted { animation: none; }
 }
+
+/* ── Търсене ──────────────────────────────────────────────────────
+   Полето стои под лентата, а не в нея: в лентата има място само за
+   иконка, а иконка, която крие полето, иска едно натискане повече от
+   всеки, който търси човек по име — тоест от почти всеки. */
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 12px 0 14px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 11px 34px 11px 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--dur-state) var(--ease-out);
+  -webkit-appearance: none;
+}
+.searchInput:focus { border-color: var(--accent); }
+.searchInput::placeholder { color: var(--muted); opacity: 0.8; }
+/* Кръстчето на браузъра се маха: то стои на друго място от нашето и двете
+   заедно се четат като две различни неща. */
+.searchInput::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.searchClear {
+  position: absolute;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Резултати ── */
+.hitSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.hitTitle {
+  margin: 0 2px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-weight: normal;
+}
+
+.hitRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hitWho {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hitName {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hitHandle {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}

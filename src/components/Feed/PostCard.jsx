@@ -29,7 +29,7 @@ function Avatar({ url, name }) {
 }
 
 /** Нишката под поста — чете се чак когато някой я отвори. */
-function Comments({ post, onCountChange, onOpenAuthor, readOnly }) {
+function Comments({ post, onCountChange, onOpenAuthor }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const { comments, loading, addComment, removeComment } = usePostComments(post.id, post)
@@ -67,7 +67,7 @@ function Comments({ post, onCountChange, onOpenAuthor, readOnly }) {
             type="button"
             className={styles.commentWhoBtn}
             onClick={() => c.author && onOpenAuthor?.(c.author)}
-            disabled={readOnly || !c.author}
+            disabled={!onOpenAuthor || !c.author}
           >
             <Avatar url={c.author?.avatar_url} name={c.author?.name} />
           </button>
@@ -76,7 +76,7 @@ function Comments({ post, onCountChange, onOpenAuthor, readOnly }) {
               type="button"
               className={styles.commentAuthorBtn}
               onClick={() => c.author && onOpenAuthor?.(c.author)}
-              disabled={readOnly || !c.author}
+              disabled={!onOpenAuthor || !c.author}
             >
               <span className={styles.commentAuthor}>
                 {c.author?.name || t('feed.someone')}
@@ -160,7 +160,10 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
   return (
     <article className={`${styles.post} ${achievement ? styles.postAchievement : ''}`}>
       <header className={styles.postHead}>
-        {/* Кръгчето и името водят към човека. Един бутон около двете, а не
+        {/* Кръгчето и името водят към човека. Заключени са само когато няма
+            къде да водят: в профила картите вървят без onOpenAuthor, а в
+            резултатите от търсене са за четене — но човекът зад поста е точно
+            това, което търсещият гони. Един бутон около двете, а не
             два поотделно: те сочат едно и също място, а две мишени, залепени
             една за друга, се различават само от някого, който вече знае, че
             са две. */}
@@ -168,7 +171,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           type="button"
           className={styles.postWhoBtn}
           onClick={() => post.author && onOpenAuthor?.(post.author)}
-          disabled={readOnly || !post.author}
+          disabled={!onOpenAuthor || !post.author}
         >
         <Avatar url={post.author?.avatar_url} name={post.author?.name} />
         <div className={styles.postWho}>
@@ -246,7 +249,6 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           post={post}
           onCountChange={d => onCommentCountChange(post.id, d)}
           onOpenAuthor={onOpenAuthor}
-          readOnly={readOnly}
         />
       )}
     </article>
