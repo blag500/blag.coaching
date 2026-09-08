@@ -59,6 +59,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   const hold  = useRef(null)           // pending long-press { timer, x, y }
   const drag  = useRef(null)           // live drag { entry, startY, grabY }
   const dragIdRef = useRef(null)
+  // Последното известно място на пръста. При самопревъртане пръстът стои
+  // неподвижен и pointermove мълчи, а редът пак трябва да се прерисува —
+  // затова положението живее в реф, а не само в събитието.
+  const point = useRef({ x: 0, y: 0 })
 
   function cancelHold() {
     if (hold.current) { clearTimeout(hold.current.timer); hold.current = null }
@@ -80,6 +84,24 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     return null
   }
 
+  /** Рисува влачения ред там, където е пръстът в момента. Едно място, а не
+   *  две: движението на пръста и пълзенето на страницата местят реда по
+   *  същата сметка, и ако бяха две, щяха да се разминат в мига, в който
+   *  двете се случат наведнъж. */
+  function paintDrag() {
+    const d = drag.current
+    if (!d) return
+    const el = rowEls.current.get(d.entry.id)
+    if (!el) return
+    const { x, y } = point.current
+    const shift = (y - d.grabY) - d.slotTop + (window.scrollY - d.startScroll)
+    el.style.transition = 'none'
+    el.style.transform = `translateY(${shift}px)`
+    setHoverMeal(findMealAt(x, y))
+  }
+  const paintRef = useRef(paintDrag)
+  paintRef.current = paintDrag
+
   /** Pointer down on the grip starts a drag immediately — the whole point of
    *  a visible handle is that its meaning is unambiguous. The rest of the row
    *  keeps its taps for edit/remove/photo. */
@@ -98,7 +120,11 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     el.style.transition = 'none'
     el.style.willChange = 'transform'
     const slotTop = el.getBoundingClientRect().top
-    drag.current = { entry, grabY: e.clientY - slotTop, slotTop }
+    // slotTop е спрямо прозореца, а прозорецът ще се движи под пръста.
+    // Превъртяното се вади наум при всяко рисуване, иначе редът изостава
+    // с точно толкова, с колкото е пропълзяла страницата.
+    drag.current = { entry, grabY: e.clientY - slotTop, slotTop, startScroll: window.scrollY }
+    point.current = { x: e.clientX, y: e.clientY }
     dragIdRef.current = entry.id
     setDragId(entry.id)
     // Some iOS PWAs stop firing pointermove on window if the source element
@@ -123,12 +149,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       }
       const d = drag.current
       if (!d) return
-      const el = rowEls.current.get(d.entry.id)
-      if (!el) return
-      const shift = (e.clientY - d.grabY) - d.slotTop
-      el.style.transition = 'none'
-      el.style.transform = `translateY(${shift}px)`
-      setHoverMeal(findMealAt(e.clientX, e.clientY))
+      point.current = { x: e.clientX, y: e.clientY }
+      paintRef.current()
     }
     function onUp(e) {
       cancelHold()
@@ -168,6 +190,43 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     const block = e => e.preventDefault()
     window.addEventListener('touchmove', block, { passive: false })
     return () => window.removeEventListener('touchmove', block)
+  }, [dragId])
+
+  // Самопревъртане при влачене.
+  //
+  // Списъкът е по-дълъг от екрана, а докато редът е вдигнат, страницата е
+  // заключена — единственият начин да стигнеш до закуската, когато държиш
+  // последното ястие, беше да няма такъв. Пръст в горната или долната ивица
+  // кара страницата да пълзи, толкова по-бързо, колкото по-навън е — както
+  // при всяко влачене, което си виждал, и без ново движение за учене.
+  //
+  // Долната ивица е по-дебела: там стои лентата с разделите и пръстът стига
+  // до ръба по-рано, отколкото до дъното на прозореца.
+  useEffect(() => {
+    if (!dragId) return
+    const EDGE_TOP = 96
+    const EDGE_BOT = 132
+    const MAX_STEP = 15      // пиксели на кадър в най-крайното положение
+
+    let raf = 0
+    const tick = () => {
+      const h = window.innerHeight
+      const y = point.current.y
+      let step = 0
+      if (y < EDGE_TOP)      step = -MAX_STEP * (1 - y / EDGE_TOP)
+      else if (y > h - EDGE_BOT) step =  MAX_STEP * (1 - (h - y) / EDGE_BOT)
+
+      if (step) {
+        const before = window.scrollY
+        window.scrollBy(0, step)
+        // В края на страницата scrollBy не мърда нищо; тогава и рисуване не
+        // трябва, иначе редът трепти на място.
+        if (window.scrollY !== before) paintRef.current()
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [dragId])
 
   const photoInputRef  = useRef()

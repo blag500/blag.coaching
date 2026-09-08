@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { enterApp } from './harness.js'
+import { enterApp, TABLES, USER_ID, today } from './harness.js'
 
 /* Смоук набор срещу приложението, каквото е.
  *
@@ -206,5 +206,55 @@ test.describe('Прогресия', () => {
 
     // След обединяването кривата носи и двете
     await expect(entries).toHaveText('2')
+  })
+})
+
+
+test.describe('Дневникът с храната', () => {
+  /* Списъкът е по-дълъг от екрана, а докато редът е вдигнат, страницата е
+     заключена — иначе тя щеше да се плъзга под пръста. Значи вдигнатият ред
+     трябва сам да кара страницата да пълзи, щом пръстът стигне ръба; без
+     това последното ястие не може да се премести в закуската, защото
+     закуската е три екрана нагоре. */
+  test('влаченият ред кара страницата да пълзи към горния ръб', async ({ page }) => {
+    test.setTimeout(90000)
+
+    // Толкова редове, че екранът да не ги побира.
+    const seeded = TABLES.food_logs.slice()
+    for (let i = 0; i < 24; i++) {
+      TABLES.food_logs.push({
+        id: `fx${i}`, user_id: USER_ID, date: today(), name: `Продукт ${i}`,
+        grams: 100, kcal: 100, protein: 10, carbs: 10, fat: 1,
+        meal_type: 'dinner', estimated: null,
+      })
+    }
+
+    try {
+      await enterApp(page)
+      await goTab(page, 'ХРАНЕНЕ')
+      const grips = page.locator('[aria-label="Влачи, за да преместиш"]')
+      await expect(grips.first()).toBeVisible({ timeout: 15000 })
+
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+      await page.waitForTimeout(300)
+      const before = await page.evaluate(() => window.scrollY)
+      expect(before).toBeGreaterThan(200)
+
+      const grip = grips.last()
+      const box = await grip.boundingBox()
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+      await page.mouse.down()
+      // Пръстът отива в горната ивица и стои там — движение вече няма,
+      // пълзенето трябва да продължи само.
+      await page.mouse.move(box.x + box.width / 2, 24, { steps: 8 })
+      await page.waitForTimeout(600)
+      const after = await page.evaluate(() => window.scrollY)
+      await page.mouse.up()
+
+      expect(after).toBeLessThan(before - 100)
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
   })
 })
