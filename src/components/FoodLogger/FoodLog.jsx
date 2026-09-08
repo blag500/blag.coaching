@@ -63,6 +63,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   // неподвижен и pointermove мълчи, а редът пак трябва да се прерисува —
   // затова положението живее в реф, а не само в събитието.
   const point = useRef({ x: 0, y: 0 })
+  // Вторият пръст: този, който върти страницата, докато първият държи.
+  const scroller = useRef(null)     // { pointerId, startY, startScroll }
 
   function cancelHold() {
     if (hold.current) { clearTimeout(hold.current.timer); hold.current = null }
@@ -108,6 +110,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   function onGripPointerDown(e, entry) {
     if (editingId != null) return
     if (e.button != null && e.button !== 0) return
+    // Втори пръст върху друга дръжка не започва втора влачба: едно ястие в
+    // ръката, иначе drag.current се презаписва и първият ред остава вдигнат
+    // завинаги.
+    if (drag.current) return
     e.preventDefault()
     e.stopPropagation()
     cancelHold()
@@ -123,7 +129,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     // slotTop е спрямо прозореца, а прозорецът ще се движи под пръста.
     // Превъртяното се вади наум при всяко рисуване, иначе редът изостава
     // с точно толкова, с колкото е пропълзяла страницата.
-    drag.current = { entry, grabY: e.clientY - slotTop, slotTop, startScroll: window.scrollY }
+    drag.current = { entry, grabY: e.clientY - slotTop, slotTop, startScroll: window.scrollY, pointerId: e.pointerId }
     point.current = { x: e.clientX, y: e.clientY }
     dragIdRef.current = entry.id
     setDragId(entry.id)
@@ -139,7 +145,37 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   onEditRef.current = onEdit
 
   useEffect(() => {
+    /** Докъде стига превъртането на страницата. */
+    function maxScroll() {
+      const el = document.scrollingElement || document.documentElement
+      return Math.max(0, el.scrollHeight - window.innerHeight)
+    }
+
+    /* Втори пръст, докато ястието е в ръката.
+     *
+     * Страницата не се превърта сама: дръжката е с touch-action: none, а
+     * браузърът смята позволеното за целия жест като сечение на всички
+     * докосвания — щом първото не превърта, не превърта и вторият пръст,
+     * колкото и да го дърпаш. Проверено, не предположено.
+     *
+     * Затова превъртането се смята тук: пръстът мести страницата един към
+     * един, точно както би я местил сам. Сметката е абсолютна, спрямо
+     * мястото, откъдето е тръгнал — ако някой браузър все пак превърти сам,
+     * двете дават едно и също число и не се бият. */
+    function onDown(e) {
+      const d = drag.current
+      if (!d || scroller.current) return
+      if (e.pointerId === d.pointerId) return
+      scroller.current = { pointerId: e.pointerId, startY: e.clientY, startScroll: window.scrollY }
+    }
+
     function onMove(e) {
+      const sc = scroller.current
+      if (sc && e.pointerId === sc.pointerId) {
+        const want = sc.startScroll - (e.clientY - sc.startY)
+        window.scrollTo(0, Math.min(Math.max(want, 0), maxScroll()))
+        return
+      }
       // Still deciding whether this is a drag or a scroll.
       if (hold.current) {
         const dx = Math.abs(e.clientX - hold.current.x)
@@ -149,13 +185,23 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       }
       const d = drag.current
       if (!d) return
+      // Само пръстът, който държи реда. Вторият пръст върти страницата и
+      // неговите движения нямат нищо общо с това къде стои ястието — без
+      // тази проверка редът скача при него.
+      if (d.pointerId != null && e.pointerId !== d.pointerId) return
       point.current = { x: e.clientX, y: e.clientY }
       paintRef.current()
     }
     function onUp(e) {
+      if (scroller.current && e.pointerId === scroller.current.pointerId) {
+        scroller.current = null
+        return
+      }
       cancelHold()
       const d = drag.current
       if (!d) { setHoverMeal(null); return }
+      // Вдигнатият втори пръст не пуска ястието.
+      if (d.pointerId != null && e.pointerId !== d.pointerId) return
       const el = rowEls.current.get(d.entry.id)
       if (el) {
         el.style.transition = 'transform 180ms cubic-bezier(.2,.7,.3,1)'
@@ -170,26 +216,38 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       }
       drag.current = null
       dragIdRef.current = null
+      scroller.current = null
       setDragId(null)
       setHoverMeal(null)
     }
+    window.addEventListener('pointerdown', onDown)
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
     return () => {
+      window.removeEventListener('pointerdown', onDown)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)
     }
   }, [])
 
-  // Refuse touchmove while a drag is live so the page can't scroll under it.
-  // touch-action cannot flip mid-gesture, so this is the only path.
+  // Един пръст държи ястието, друг върти страницата.
+  //
+  // Дотук всеки touchmove се отменяше, докато редът е вдигнат — цялата
+  // страница беше заключена, включително за втория пръст. Не е трябвало да
+  // бъде: дръжката е с touch-action: none, значи пръстът, който тръгва от
+  // нея, така или иначе не превърта нищо. Заключването пазеше от нещо, което
+  // няма как да се случи, и в замяна отнемаше единствения естествен изход,
+  // когато списъкът е по-дълъг от екрана.
+  //
+  // Остава да се прерисува редът, докато страницата бяга под него: пръстът
+  // не е мръднал, но мястото под него — да.
   useEffect(() => {
     if (!dragId) return
-    const block = e => e.preventDefault()
-    window.addEventListener('touchmove', block, { passive: false })
-    return () => window.removeEventListener('touchmove', block)
+    const onScroll = () => paintRef.current()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [dragId])
 
   // Самопревъртане при влачене.

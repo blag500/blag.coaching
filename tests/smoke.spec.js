@@ -257,4 +257,83 @@ test.describe('Дневникът с храната', () => {
       TABLES.food_logs.push(...seeded)
     }
   })
+
+  /* Един пръст държи ястието, друг върти страницата — и то работи, защото
+     дръжката е с touch-action: none и пръстът от нея не превърта нищо.
+     Тестът минава през CDP, защото Playwright знае само едно докосване, а
+     тук целият смисъл е във второто. */
+  test('втори пръст върти страницата, докато първият държи ястието', async ({ page, browserName }, testInfo) => {
+    // Две докосвания наведнъж се пращат само през CDP, а CDP го има само на
+    // Chromium — и то на профил с екран за пипане. WebKit остава за телефона.
+    test.skip(browserName !== 'chromium' || !testInfo.project.use.hasTouch,
+      'иска Chromium с докосване (профил mobile)')
+    test.setTimeout(90000)
+
+    const seeded = TABLES.food_logs.slice()
+    for (let i = 0; i < 24; i++) {
+      TABLES.food_logs.push({
+        id: `ft${i}`, user_id: USER_ID, date: today(), name: `Продукт ${i}`,
+        grams: 100, kcal: 100, protein: 10, carbs: 10, fat: 1,
+        meal_type: 'dinner', estimated: null,
+      })
+    }
+
+    try {
+      await enterApp(page)
+      await goTab(page, 'ХРАНЕНЕ')
+      const grips = page.locator('[aria-label="Влачи, за да преместиш"]')
+      await expect(grips.first()).toBeVisible({ timeout: 15000 })
+
+      await page.evaluate(() => window.scrollTo(0, 400))
+      await page.waitForTimeout(300)
+      const before = await page.evaluate(() => window.scrollY)
+
+      // Първият пръст хваща ястието в средата на екрана — далеч от ивиците,
+      // за да не се намеси самопревъртането и да отчетем чуждо движение.
+      // Дръжките под сгъвката имат кутия извън прозореца; търси се първата,
+      // която наистина се вижда.
+      const vh = page.viewportSize().height
+      const mid = vh / 2
+      let box = null
+      for (let i = 0; i < await grips.count(); i++) {
+        const b = await grips.nth(i).boundingBox()
+        if (b && b.y > 200 && b.y < vh - 240) { box = b; break }
+      }
+      expect(box).not.toBeNull()
+      const gx = box.x + box.width / 2
+      const gy = box.y + box.height / 2
+
+      const cdp = await page.context().newCDPSession(page)
+      const one = { x: gx, y: gy, id: 1 }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [one] })
+      await page.waitForTimeout(150)
+
+      const row = page.locator('[class*="entryDragging"]')
+      await expect(row).toHaveCount(1)
+      const grabbed = await row.evaluate(el => el.style.transform)
+
+      // Вторият пръст тръгва отдолу и дърпа страницата нагоре.
+      const two = y => ({ x: gx + 150, y, id: 2 })
+      const from = vh - 200
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [one, two(from)] })
+      for (let dy = 20; dy <= 200; dy += 20) {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [one, two(from - dy)] })
+        await page.waitForTimeout(16)
+      }
+      await page.waitForTimeout(150)
+
+      const after = await page.evaluate(() => window.scrollY)
+      // Ястието още е в ръката, не е скочило при втория пръст и е отчело
+      // изминалото под него.
+      await expect(row).toHaveCount(1)
+      const still = await row.evaluate(el => el.style.transform)
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+
+      expect(after).toBeGreaterThan(before + 150)
+      expect(still).not.toBe(grabbed)
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
+  })
 })
