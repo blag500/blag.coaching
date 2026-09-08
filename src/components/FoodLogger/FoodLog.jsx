@@ -54,7 +54,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   const SCROLL_CANCEL_PX = 8
 
   const [dragId, setDragId] = useState(null)
-  const [hoverMeal, setHoverMeal] = useState(null)
   const rowEls = useRef(new Map())     // entry id → element
   const hold  = useRef(null)           // pending long-press { timer, x, y }
   const drag  = useRef(null)           // live drag { entry, startY, grabY }
@@ -69,9 +68,14 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   // хващането. Виж measureZones — четенето им на всеки кадър беше половината
   // от забавянето.
   const zones     = useRef([])
-  const hoverRef  = useRef(null)    // огледало на hoverMeal, за да не се пипа React напразно
+  const hoverEl   = useRef(null)    // осветената в момента секция
   const wantScroll = useRef(null)   // накъде вторият пръст иска страницата
   const lastShift = useRef(null)
+  // Превъртането се води тук, а не се чете от прозореца: четенето по средата
+  // на кадър кара браузъра да преподреди страницата, за да отговори точно.
+  const scrollY   = useRef(0)
+  const maxY      = useRef(0)
+  const fling     = useRef(0)       // скорост след пускане, в пиксели на кадър
 
   function cancelHold() {
     if (hold.current) { clearTimeout(hold.current.timer); hold.current = null }
@@ -91,15 +95,15 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     const sy = window.scrollY
     zones.current = [...document.querySelectorAll('[data-drop-meal]')].map(el => {
       const r = el.getBoundingClientRect()
-      return { meal: el.getAttribute('data-drop-meal'), top: r.top + sy, bottom: r.bottom + sy }
+      return { el, meal: el.getAttribute('data-drop-meal'), top: r.top + sy, bottom: r.bottom + sy }
     })
   }
 
   /** Коя секция е под тази височина на екрана. Чиста сметка, без четене. */
-  function mealAtY(y) {
-    const doc = y + window.scrollY
+  function zoneAtY(y, sy = window.scrollY) {
+    const doc = y + sy
     for (const z of zones.current) {
-      if (doc >= z.top && doc <= z.bottom) return z.meal
+      if (doc >= z.top && doc <= z.bottom) return z
     }
     return null
   }
@@ -133,8 +137,12 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     drag.current = { entry, grabY: e.clientY - slotTop, slotTop, startScroll: window.scrollY, pointerId: e.pointerId }
     point.current = { x: e.clientX, y: e.clientY }
     dragIdRef.current = entry.id
-    hoverRef.current = null
+    hoverEl.current = null
     lastShift.current = null
+    fling.current = 0
+    scrollY.current = window.scrollY
+    const doc = document.scrollingElement || document.documentElement
+    maxY.current = Math.max(0, doc.scrollHeight - window.innerHeight)
     setDragId(entry.id)
     // Some iOS PWAs stop firing pointermove on window if the source element
     // hadn't captured — captureEvents on the grip keeps them coming.
@@ -169,7 +177,11 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       const d = drag.current
       if (!d || scroller.current) return
       if (e.pointerId === d.pointerId) return
-      scroller.current = { pointerId: e.pointerId, startY: e.clientY, startScroll: window.scrollY }
+      scroller.current = {
+        pointerId: e.pointerId, startY: e.clientY, startScroll: scrollY.current,
+        lastY: e.clientY, lastT: e.timeStamp || performance.now(), vel: 0,
+      }
+      fling.current = 0            // нов пръст спира предишното засилване
     }
 
     function onMove(e) {
@@ -179,6 +191,15 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         // Пръстът дава по няколко събития на кадър, а всяко scrollTo е
         // отделно превъртане, отделно събитие и отделно рисуване.
         wantScroll.current = sc.startScroll - (e.clientY - sc.startY)
+        // Скоростта — за засилването след пускане. Смесва се със старата,
+        // защото едно събитие лови и трепването на пръста, а засилването
+        // трябва да носи посоката на движението, не последния милиметър.
+        const now = e.timeStamp || performance.now()
+        const dt  = Math.max(now - sc.lastT, 1)
+        const inst = ((sc.lastY - e.clientY) / dt) * 16
+        sc.vel = sc.vel * 0.7 + inst * 0.3
+        sc.lastY = e.clientY
+        sc.lastT = now
         return
       }
       // Still deciding whether this is a drag or a scroll.
@@ -199,12 +220,17 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     }
     function onUp(e) {
       if (scroller.current && e.pointerId === scroller.current.pointerId) {
+        // Засилване. Пръст, който отхвърчи и спира като закован, е усещането
+        // на нещо евтино — истинското превъртане носи ръката още малко.
+        // Праг от два пиксела на кадър, за да не се плъзга след бавно пускане.
+        const v = scroller.current.vel
+        fling.current = Math.abs(v) > 2 ? Math.max(Math.min(v, 60), -60) : 0
         scroller.current = null
         return
       }
       cancelHold()
       const d = drag.current
-      if (!d) { setHoverMeal(null); return }
+      if (!d) return
       // Вдигнатият втори пръст не пуска ястието.
       if (d.pointerId != null && e.pointerId !== d.pointerId) return
       const el = rowEls.current.get(d.entry.id)
@@ -215,7 +241,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         // Restore the entrance-animation slot after the settle transition ends.
         setTimeout(() => { if (el) el.style.animation = '' }, 220)
       }
-      const target = mealAtY(e.clientY)
+      const zone = zoneAtY(e.clientY, scrollY.current)
+      const target = zone?.meal ?? null
       if (target && target !== '_other' && target !== d.entry.meal_type) {
         onEditRef.current?.(d.entry.id, { meal_type: target })
       }
@@ -223,9 +250,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       dragIdRef.current = null
       scroller.current = null
       wantScroll.current = null
-      hoverRef.current = null
+      fling.current = 0
+      hoverEl.current?.classList.remove(styles.mealGroupHover)
+      hoverEl.current = null
       setDragId(null)
-      setHoverMeal(null)
     }
     window.addEventListener('pointerdown', onDown)
     window.addEventListener('pointermove', onMove)
@@ -239,13 +267,18 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     }
   }, [])
 
-  // Един кадър, едно рисуване.
+  // Един кадър, едно рисуване — и нито едно четене.
   //
-  // Три неща искат да местят реда наведнъж: пръстът, който го държи, вторият
-  // пръст, който върти страницата, и самопревъртането при ръба. Дотук всяко
-  // от тях рисуваше само за себе си, в момента, в който се сети — по няколко
-  // пъти на кадър, всеки път с четене на разположението. Сега те само
-  // записват какво искат, а рисуването е едно, по такта на браузъра.
+  // Четири неща искат да местят страницата и реда: пръстът, който държи
+  // ястието, вторият пръст, който върти, засилването след неговото пускане и
+  // самопревъртането при ръба. Всички те само записват какво искат. Кадърът
+  // ги събира, стига до едно число и пише два пъти: превъртането и реда.
+  //
+  // Ключът е, че кадърът нищо не чете. window.scrollY по средата на кадър
+  // кара браузъра да преподреди страницата, за да отговори точно — а точно
+  // това забавяше: пишеш transform, питаш докъде си, браузърът смята наново
+  // целия списък. Затова превъртането се води тук и се сверява с прозореца
+  // само при хващането.
   //
   // Списъкът е по-дълъг от екрана, а докато редът е вдигнат, страницата не се
   // превърта сама. Пръст в горната или долната ивица я кара да пълзи, толкова
@@ -256,11 +289,7 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
     const EDGE_TOP = 96
     const EDGE_BOT = 132
     const MAX_STEP = 15      // пиксели на кадър в най-крайното положение
-
-    const maxScroll = () => {
-      const el = document.scrollingElement || document.documentElement
-      return Math.max(0, el.scrollHeight - window.innerHeight)
-    }
+    const DECAY    = 0.94    // колко от засилването остава след един кадър
 
     let raf = 0
     const frame = () => {
@@ -268,35 +297,55 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
       const d = drag.current
       if (!d) return
 
-      // 1. Страницата: първо желанието на втория пръст, после ръбът.
+      // 1. Докъде да стигне страницата този кадър.
+      let y = scrollY.current
       if (wantScroll.current != null) {
-        window.scrollTo(0, Math.min(Math.max(wantScroll.current, 0), maxScroll()))
+        y = wantScroll.current
         wantScroll.current = null
+      } else if (fling.current) {
+        y += fling.current
+        fling.current *= DECAY
+        if (Math.abs(fling.current) < 0.4) fling.current = 0
       }
-      const h = window.innerHeight
-      const y = point.current.y
-      let step = 0
-      if (y < EDGE_TOP)          step = -MAX_STEP * (1 - y / EDGE_TOP)
-      else if (y > h - EDGE_BOT) step =  MAX_STEP * (1 - (h - y) / EDGE_BOT)
-      if (step) window.scrollBy(0, step)
+      const py = point.current.y
+      const h  = window.innerHeight
+      if (py < EDGE_TOP)          y -= MAX_STEP * (1 - py / EDGE_TOP)
+      else if (py > h - EDGE_BOT) y += MAX_STEP * (1 - (h - py) / EDGE_BOT)
 
-      // 2. Редът. Написаното се сравнява, за да не се пипа стилът напразно,
-      //    когато нищо не е мръднало — а при държан пръст това е всеки кадър.
+      y = Math.min(Math.max(y, 0), maxY.current)
+      if (y !== scrollY.current) {
+        // В края спира и засилването — иначе продължава да се хаби кадри
+        // срещу стена.
+        if (y === 0 || y === maxY.current) fling.current = 0
+        scrollY.current = y
+        window.scrollTo(0, y)
+      } else if (fling.current && (y === 0 || y === maxY.current)) {
+        fling.current = 0
+      }
+
+      // 2. Редът. Сравнява се написаното, за да не се пипа стилът напразно —
+      //    при държан пръст и спряла страница това е всеки кадър.
       const el = rowEls.current.get(d.entry.id)
       if (el) {
-        const shift = Math.round((y - d.grabY) - d.slotTop + (window.scrollY - d.startScroll))
+        const shift = Math.round((py - d.grabY) - d.slotTop + (y - d.startScroll))
         if (shift !== lastShift.current) {
           lastShift.current = shift
           el.style.transform = `translateY(${shift}px)`
         }
       }
 
-      // 3. Осветената секция. React се пипа само когато отговорът се смени.
-      const m = mealAtY(y)
-      if (m !== hoverRef.current) {
-        hoverRef.current = m
-        setHoverMeal(m)
+      // 3. Осветената секция. Класът се слага направо върху нея, а не през
+      //    React: едно състояние тук значеше цял списък наново при всяко
+      //    минаване покрай граница между хранения, а списъкът е четирийсет
+      //    реда. Слагането е и самолечебно — ако React прерисува междувременно
+      //    и изчисти класа, следващият кадър го връща.
+      const z = zoneAtY(py, y)
+      const lit = z && z.meal !== '_other' && z.meal !== d.entry.meal_type ? z.el : null
+      if (lit !== hoverEl.current) {
+        hoverEl.current?.classList.remove(styles.mealGroupHover)
+        hoverEl.current = lit
       }
+      lit?.classList.add(styles.mealGroupHover)
     }
     raf = requestAnimationFrame(frame)
     return () => cancelAnimationFrame(raf)
@@ -594,7 +643,9 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         return (
           <section
             key={group.id}
-            className={`${styles.mealGroup} ${hoverMeal === group.id && dragId && drag.current?.entry?.meal_type !== group.id ? styles.mealGroupHover : ''}`}
+            /* Осветяването при влачене се слага от кадъра, направо върху
+               възела — виж кадъра по-горе. Тук няма какво да се знае. */
+            className={styles.mealGroup}
             data-drop-meal={group.legacy ? '_other' : group.id}
           >
             <div className={styles.mealHead}>
