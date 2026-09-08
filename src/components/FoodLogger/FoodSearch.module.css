@@ -35,6 +35,13 @@
   font-size: 15px;
   line-height: 1;
   opacity: 0.7;
+  /* Слотът носи и знак, и рисунка: без flex рисуваната иконка сяда на
+     базовата линия на текста и реди се с два пиксела по-ниско от глифовете
+     до нея. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 15px;
 }
 
 .modeBtnActive {
@@ -72,11 +79,22 @@
 }
 
 .macroLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-heading);
   font-size: 10px;
   letter-spacing: 0.1em;
   color: var(--muted);
 }
+
+/* Цветовете на макросите, същите като в пръстена и в лентите. Носи ги само
+   знакът: оцветен надпис би се борил с полето под него за вниманието. */
+.toneKcal    { color: var(--accent); }
+.toneProtein { color: var(--macro-protein); }
+.toneCarbs   { color: var(--macro-carbs); }
+.toneFat     { color: var(--macro-fat); }
+.toneGrams   { color: var(--muted); }
 
 .macroInput {
   padding: 10px 10px;
@@ -464,16 +482,6 @@
   cursor: default;
 }
 
-/* Три бутона на един ред: буквите слизат с една стъпка, за да се поберат
-   „ЯСТИЕ ЕТИКЕТ БАРКОД" на тесен телефон, без да се пренася последният. */
-.foodPhotoBtn,
-.labelScanBtn,
-.barcodeBtn {
-  flex: 1 1 30%;
-  min-width: 96px;
-  font-size: 12px;
-}
-
 /* Баркод — зеленото на въглехидратите, за да се различава от другите два:
    ястието и етикетът са четене на снимка, а това е четене на номер. */
 .barcodeBtn {
@@ -519,6 +527,20 @@
 
 .labelScanBtn:active {
   background: rgba(66, 165, 245, 0.16);
+}
+
+/* Трите на един ред са едно нещо в три цвята, затова са и с една големина:
+   основа нула и еднакво разтягане, тоест ширината идва от реда, не от това
+   колко букви има думата вътре. Правилото стои след трите, защото всяко от
+   тях само по себе си казва flex: 1.
+   Буквите слизат с една стъпка, за да се поберат трите на тесен телефон. */
+.foodPhotoBtn,
+.labelScanBtn,
+.barcodeBtn {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .labelScanBtn:disabled {

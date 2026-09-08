@@ -152,7 +152,7 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
              другите два начина да снимаш храна вместо да я описваш. Мястото
              му тук се връща на ръчното въвеждане, което беше написано, но
              никъде не се отваряше. */
-          { id: 'manual',  label: t('fs.mode.manual'),  icon: '+' },
+          { id: 'manual',  label: t('fs.mode.manual'),  icon: <Pictogram name="hand" size={15} /> },
           { id: 'history', label: t('fs.mode.history'), icon: '↺' },
           { id: 'draft',   label: t('fs.mode.draft'),   icon: '✎' },
           { id: 'bot',     label: t('fs.mode.bot'),     icon: '◉' },
@@ -797,15 +797,21 @@ function ManualMode({ onAddRaw, meal, onMealChange }) {
         onChange={e => set('name', e.target.value)}
       />
       <div className={styles.macroGrid}>
+        {/* Същите знаци и същите цветове, с които макросите стоят навсякъде
+            другаде в приложението. Пет еднакви полета с надписи отгоре се
+            четат едно по едно; цветът казва кое е кое, преди да е прочетено. */}
         {[
-          { key: 'kcal',    label: t('fs.manualKcal'), required: true },
-          { key: 'protein', label: t('fs.manualProtein') },
-          { key: 'carbs',   label: t('fs.manualCarbs') },
-          { key: 'fat',     label: t('fs.manualFat') },
-          { key: 'grams',   label: t('fs.manualGrams') },
-        ].map(({ key, label, required }) => (
+          { key: 'kcal',    label: t('fs.manualKcal'), required: true, icon: 'kcal',    tone: styles.toneKcal },
+          { key: 'protein', label: t('fs.manualProtein'), icon: 'protein', tone: styles.toneProtein },
+          { key: 'carbs',   label: t('fs.manualCarbs'),   icon: 'carbs',   tone: styles.toneCarbs },
+          { key: 'fat',     label: t('fs.manualFat'),     icon: 'fat',     tone: styles.toneFat },
+          { key: 'grams',   label: t('fs.manualGrams'),   icon: 'weight',  tone: styles.toneGrams },
+        ].map(({ key, label, required, icon, tone }) => (
           <div key={key} className={styles.macroField}>
-            <label className={styles.macroLabel}>{label}{required && ' *'}</label>
+            <label className={styles.macroLabel}>
+              <Pictogram name={icon} size={14} className={tone} />
+              {label}{required && ' *'}
+            </label>
             <input
               className={styles.macroInput}
               type="number"
