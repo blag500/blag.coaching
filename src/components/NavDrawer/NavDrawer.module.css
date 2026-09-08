@@ -9,8 +9,10 @@
 
 /* Lighter than it was: the panel is glass now, and a heavy veil behind glass
    just makes the glass dark. */
+/* Булото също слиза с една стъпка: през по-прозрачно стъкло се вижда точно
+   толкова, колкото има зад него, а зад него дотук стоеше половин черно. */
 .backdropVisible {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.42);
   pointer-events: all;
 }
 
@@ -31,11 +33,15 @@
       rgba(var(--accent-rgb), 0.08) 0%,
       rgba(var(--accent-rgb), 0.02) 42%,
       transparent 70%),
+    /* Една идея по-прозрачна: 0.86/0.72 → 0.74/0.60. Замъгляването се вдига
+       заедно с това, защото през по-тънко стъкло страницата отзад тръгва да
+       се чете като текст, а стъклото трябва да пропуска светлина и цвят, не
+       думи. */
     linear-gradient(to bottom,
-      rgba(var(--bg-rgb), 0.86) 0%,
-      rgba(var(--bg-rgb), 0.72) 100%);
-  backdrop-filter: blur(34px) saturate(170%);
-  -webkit-backdrop-filter: blur(34px) saturate(170%);
+      rgba(var(--bg-rgb), 0.74) 0%,
+      rgba(var(--bg-rgb), 0.60) 100%);
+  backdrop-filter: blur(38px) saturate(170%);
+  -webkit-backdrop-filter: blur(38px) saturate(170%);
   border-right: 1px solid rgba(var(--accent-rgb), 0.22);
   box-shadow:
     inset -1px 0 0 rgba(255, 255, 255, 0.05),
