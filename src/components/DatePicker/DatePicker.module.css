@@ -232,16 +232,69 @@
           mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
 }
 
+/* Релсата, по която вървят дните.
+   Дотук дъгата беше само в движението: единайсет числа, увиснали в тъмното,
+   които просто спираха да ги има. Окото няма как да разбере, че редът
+   продължава, ако нищо не продължава.
+   Кръгът е същият, с който се движат дните — радиус 2000 — но нарисуван като
+   елипса: полуоси 1000 и 500 дават в горната си точка радиус на кривина
+   a²/b = 2000, а елипса от 2000×500 тежи много по-малко от кръг от 4000×4000.
+   На най-далечния ден разликата между двете криви е под пиксел. */
+.arcRail {
+  position: absolute;
+  left: 50%;
+  top: 62px;
+  width: 2000px;
+  height: 500px;
+  margin-left: -1000px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  pointer-events: none;
+  /* Мерките са в пиксели от средата, не в проценти: процентите тук се броят
+     спрямо двете хиляди на елипсата, а не спрямо лентата, и целият преход би
+     паднал далеч извън екрана. Релсата е най-ярка под отметката и гасне
+     навън; последното ѝ гасене го довършва маската на самата лента. */
+  -webkit-mask-image: linear-gradient(90deg,
+    transparent calc(50% - 240px),
+    rgba(0, 0, 0, 0.6) calc(50% - 80px),
+    #000 50%,
+    rgba(0, 0, 0, 0.6) calc(50% + 80px),
+    transparent calc(50% + 240px));
+          mask-image: linear-gradient(90deg,
+    transparent calc(50% - 240px),
+    rgba(0, 0, 0, 0.6) calc(50% - 80px),
+    #000 50%,
+    rgba(0, 0, 0, 0.6) calc(50% + 80px),
+    transparent calc(50% + 240px));
+}
+
+/* Светлината над горната точка. „Сега" трябва да е осветено място, а не
+   празнина с чертичка над нея — така отметката, числото и релсата стават
+   едно нещо, вместо три несвързани знака. */
+.arcHalo {
+  position: absolute;
+  left: 50%;
+  top: 34px;
+  width: 300px;
+  height: 116px;
+  margin: -58px 0 0 -150px;
+  pointer-events: none;
+  background: radial-gradient(50% 50% at 50% 50%,
+    rgba(var(--accent-rgb), 0.1) 0%,
+    rgba(var(--accent-rgb), 0.04) 45%,
+    transparent 72%);
+}
+
 /* Отметката за „тук". Тънка светла черта над горната точка на дъгата. */
 .arcMark {
   position: absolute;
   left: 50%;
   top: 0;
   width: 1px;
-  height: 8px;
+  height: 10px;
   margin-left: -0.5px;
   background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .arcDay {

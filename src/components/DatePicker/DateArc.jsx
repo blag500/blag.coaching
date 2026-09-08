@@ -309,6 +309,15 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth, ca
         role="group"
         aria-label={t('dp.arcAria')}
       >
+        {/* Пътят, по който вървят дните. Без него дните висят във въздуха и
+            редът започва и свършва в нищо; с него става ясно, че дъгата
+            продължава и от двете страни, а екранът просто свършва по-рано.
+            Кривината е същата, с която се движат самите дни. */}
+        <span className={styles.arcRail} aria-hidden="true" />
+        {/* Светлината над горната точка. „Сега" е осветено място, а не
+            празнина с чертичка над нея. */}
+        <span className={styles.arcHalo} aria-hidden="true" />
+
         {/* Отметката, която казва къде е „сега" — дъгата се върти под нея. */}
         <span className={styles.arcMark} aria-hidden="true" />
 
