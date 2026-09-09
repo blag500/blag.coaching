@@ -48,9 +48,22 @@
   to   { opacity: 1; transform: translateY(0) scale(1) }
 }
 
-.emoji {
-  font-size: 54px;
-  line-height: 1;
+/* Знакът в кръг от собствения цвят: емоджито си носеше своя фон, контурът
+   няма — а без нещо зад него наградата изглежда като изречение с картинка
+   отпред, не като награда. */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 2px;
+  border-radius: 50%;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
+    0 0 34px -10px rgba(var(--accent-rgb), 0.8);
 }
 
 .label {

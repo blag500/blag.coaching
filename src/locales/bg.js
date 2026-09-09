@@ -179,6 +179,7 @@ export default {
   'badge.perfect.label':  'ПЕРФЕКТЕН ДЕН',
   'badge.perfect.sub':    'Постигна всички цели за деня!',
   'badge.dismiss':      'Натисни, за да затвориш',
+  'streak.title':       '{n} дни подред',
 
   // ReadinessWidget
   'readiness.title':    'ГОТОВНОСТ',

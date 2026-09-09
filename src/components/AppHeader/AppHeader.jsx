@@ -1,4 +1,6 @@
 import { useSettings } from '../../contexts/SettingsContext'
+import { useRewards } from '../../contexts/RewardsContext'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './AppHeader.module.css'
 
 /**
@@ -20,6 +22,10 @@ export default function AppHeader({
   action = null,
 }) {
   const { t } = useSettings()
+  /* Низът стои на снимката, защото лентата е единственото, което го има на
+     всеки екран. Значка, която се вижда само на едно място, не отчита нищо —
+     тя просто седи там. */
+  const { streak } = useRewards()
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
@@ -49,20 +55,33 @@ export default function AppHeader({
         <div className={styles.right}>
           {action}
           {onAvatarClick && (
-            <button
-              className={styles.avatarBtn}
-              onClick={onAvatarClick}
-              type="button"
-              aria-label={avatarEditable ? t('header.changePhoto') : t('header.profile')}
-            >
-              {avatarUrl
-                ? <img src={avatarUrl} className={styles.avatarImg} alt="" />
-                : <span className={styles.avatarInitial}>{avatarInitial}</span>
-              }
-              {avatarEditable && (
-                <span className={styles.avatarOverlay}>{avatarBusy ? '…' : '✎'}</span>
+            /* Обвивка, защото самият бутон е с overflow: hidden — кръглата
+               снимка го иска, а значката трябва да излиза извън кръга. */
+            <span className={styles.avatarWrap}>
+              <button
+                className={styles.avatarBtn}
+                onClick={onAvatarClick}
+                type="button"
+                aria-label={avatarEditable ? t('header.changePhoto') : t('header.profile')}
+              >
+                {avatarUrl
+                  ? <img src={avatarUrl} className={styles.avatarImg} alt="" />
+                  : <span className={styles.avatarInitial}>{avatarInitial}</span>
+                }
+                {avatarEditable && (
+                  <span className={styles.avatarOverlay}>{avatarBusy ? '…' : '✎'}</span>
+                )}
+              </button>
+              {/* Един ден не е низ. Значката се появява на втория — иначе
+                  всеки, който е отворил приложението веднъж, носи горд знак
+                  за нищо. */}
+              {streak > 1 && (
+                <span className={styles.streak} title={t('streak.title', { n: streak })}>
+                  <Pictogram name="flame" size={11} />
+                  {streak}
+                </span>
               )}
-            </button>
+            </span>
           )}
         </div>
       </div>

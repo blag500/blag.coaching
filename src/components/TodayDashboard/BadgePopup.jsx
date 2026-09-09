@@ -1,9 +1,13 @@
 import { useEffect } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import Confetti from './Confetti'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './BadgePopup.module.css'
 
-const EMOJIS = { calories: '🥗', habits: '✅', training: '💪', perfect: '⭐' }
+/* Рисуваният набор, не емоджита: те носят собствена палитра и собствен почерк
+   и никога не седят вътре в дизайна, а върху него — това е причината
+   Pictogram да съществува. */
+const ICONS = { calories: 'kcal', habits: 'check', training: 'training', perfect: 'star' }
 
 /**
  * Спечелената награда, отпред.
@@ -37,7 +41,7 @@ export default function BadgePopup({ badge, onDone }) {
     >
       <div className={styles.popup}>
         <Confetti burst={badge} />
-        <span className={styles.emoji}>{EMOJIS[badge]}</span>
+        <span className={styles.icon}><Pictogram name={ICONS[badge]} size={44} /></span>
         <span className={styles.label}>{t(`badge.${badge}.label`)}</span>
         <span className={styles.sub}>{t(`badge.${badge}.sub`)}</span>
         <span className={styles.hint}>{t('badge.dismiss')}</span>

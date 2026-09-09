@@ -389,6 +389,30 @@ test.describe('Награди', () => {
     await expect(popup).toHaveCount(0)
   })
 
+  /* Низът брои дни с вписано нещо, а днешният ден не го къса, докато е още
+     празен — денят не е свършил. Тук са пет поред, значи значката казва пет. */
+  test('низът брои дните подред и стои на снимката', async ({ page }) => {
+    test.setTimeout(90000)
+    const seeded = TABLES.food_logs.slice()
+    for (let d = 0; d < 5; d++) {
+      TABLES.food_logs.push({
+        id: `fstr${d}`, user_id: USER_ID, date: today(d), name: 'Ден',
+        grams: 100, kcal: 500, protein: 10, carbs: 10, fat: 1,
+        meal_type: 'lunch', estimated: null,
+      })
+    }
+    try {
+      await enterApp(page)
+      await goTab(page, 'ХРАНЕНЕ')
+      const streak = page.locator('header [class*="streak"]').first()
+      await expect(streak).toBeVisible({ timeout: 15000 })
+      await expect(streak).toHaveText('5')
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
+  })
+
   /* Обратното е също толкова важно: ден, който вече е изпълнен, не е
      постижение, случило се сега. Наградата тръгва от преминаване, а докато
      мрежата мълчи, празният ден е неизвестен, не празен — точно там се

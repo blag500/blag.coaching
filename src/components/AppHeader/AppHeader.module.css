@@ -153,6 +153,37 @@
 /* The one photograph in the whole interface, so it gets a frame: a gold rim
    with a dark gap between it and the picture, which is how a portrait is
    mounted rather than merely cropped round. */
+/* Снимката и значката. Кръгът реже съдържанието си, значи значката не може
+   да живее вътре в него. */
+.avatarWrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* Колко дни подред. Малка и постоянна: тя не е новина, а състояние — затова
+   не мига, не подскача и не иска нищо. */
+.streak {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+  padding: 0 5px 0 4px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  box-shadow: 0 0 10px -3px rgba(var(--accent-rgb), 0.7);
+}
+
 .avatarBtn {
   position: relative;
   width: 38px;

@@ -178,6 +178,7 @@ export default {
   'badge.perfect.label':  'PERFECT DAY',
   'badge.perfect.sub':    'All daily goals achieved!',
   'badge.dismiss':      'Tap to close',
+  'streak.title':       '{n} days in a row',
 
   // ReadinessWidget
   'readiness.title':    'READINESS',
