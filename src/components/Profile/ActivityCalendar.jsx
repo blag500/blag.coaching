@@ -32,9 +32,14 @@ export default function ActivityCalendar() {
   const [month,       setMonth]       = useState(() => new Date().getMonth())
   const [actMap,      setActMap]      = useState(new Map())
   const [selectedDay, setSelectedDay] = useState(null)
+  /* Докато седемте заявки не се върнат, празният месец не е празен, а
+     неизвестен — а календар, който за миг казва „нищо не си правил", е
+     по-лош от календар, който още не казва нищо. */
+  const [loading,     setLoading]     = useState(true)
 
   useEffect(() => {
     if (!user) return
+    setLoading(true)
     const mm   = String(month + 1).padStart(2, '0')
     const from = `${year}-${mm}-01`
     const last = new Date(year, month + 1, 0).getDate()
@@ -71,6 +76,7 @@ export default function ActivityCalendar() {
       })
 
       setActMap(map)
+      setLoading(false)
     })
   }, [user?.id, year, month])
 
@@ -160,8 +166,8 @@ export default function ActivityCalendar() {
               onClick={() => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
             >
               <span
-                className={styles.heatDot}
-                style={{ background: isFuture ? 'transparent' : heatColor(count) }}
+                className={`${styles.heatDot} ${loading && !isFuture ? styles.heatDotWaiting : ''}`}
+                style={{ background: isFuture || loading ? 'transparent' : heatColor(count) }}
               />
               <span className={styles.dayNum}>{day}</span>
             </button>

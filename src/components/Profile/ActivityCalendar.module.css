@@ -224,3 +224,20 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+
+/* Изчакването. Не празно и не пълно — тих пулс, който казва „още броя".
+   Дотук месецът се рисуваше студен, докато седемте заявки се върнат, и всяко
+   отваряне на профила започваше с един кадър, в който нищо не си правил. */
+.heatDotWaiting {
+  background: var(--surface-2) !important;
+  animation: waiting 1.4s ease-in-out infinite;
+}
+
+@keyframes waiting {
+  0%, 100% { opacity: 0.25 }
+  50%      { opacity: 0.6 }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heatDotWaiting { animation: none; opacity: 0.35 }
+}
