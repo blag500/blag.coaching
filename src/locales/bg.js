@@ -889,6 +889,8 @@ export default {
   'rf.saving':          'Запазва...',
   'rf.saveChanges':     'Запази промените',
   'rf.saveRecipe':      'Запази рецептата',
+  'rf.draftBack':       'Върнах недовършеното',
+  'rf.startOver':       'Начисто',
 
   // Posing — pose names, descriptions and cues
   'pose.fdb.name':  'ФРОНТ ДВОЕН БИЦЕП',
@@ -1352,6 +1354,12 @@ export default {
   "rb.calories": "Калории",
   "rb.phKcalReq": "ккал *",
   "rb.serving": "Порция (g)",
+  "rb.modePer100": "НА 100 Г",
+  "rb.modeUsed": "ЗА КОЛИЧЕСТВОТО",
+  "rb.rowGives": "дава {n} ккал",
+  "rb.needGrams": "сложи грамажа",
+  "rb.draftBack": "Върнах недовършеното",
+  "rb.startOver": "Начисто",
   "rb.cancel": "Отмени",
   "rb.save": "Запази",
 

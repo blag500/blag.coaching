@@ -436,3 +436,39 @@ test.describe('Награди', () => {
     }
   })
 })
+
+
+test.describe('Рецепти', () => {
+  /* Рецептата се пише вътре в раздел, който се сменя със замятане на пръст.
+     Дотук едно погрешно замятане изтриваше събраните съставки, без нищо да се
+     е счупило — просто сменена страница. Черновата прави излизането
+     прекъсване, а не загуба. */
+  test('недовършената рецепта се връща след излизане', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await goTab(page, 'ХРАНЕНЕ')
+    await page.locator('button', { hasText: 'РЕЦЕПТИ' }).first().click()
+    await page.waitForTimeout(800)
+    await page.locator('[class*="newBtn"]').first().click()
+    await page.waitForTimeout(600)
+
+    const nameInput = page.locator('input[placeholder*="рецептата"]')
+    await expect(nameInput).toBeVisible({ timeout: 10000 })
+    await nameInput.fill('Овесена каша')
+    await page.waitForTimeout(400)
+
+    // Излизане: стрелката назад е същото размонтиране като смяна на раздел.
+    await page.locator('[class*="backBtn"]').first().click()
+    await page.waitForTimeout(500)
+    await expect(nameInput).toHaveCount(0)
+
+    await page.locator('[class*="newBtn"]').first().click()
+    await page.waitForTimeout(600)
+    await expect(page.locator('text=Върнах недовършеното')).toBeVisible()
+    await expect(nameInput).toHaveValue('Овесена каша')
+
+    // И начисто наистина чисти.
+    await page.locator('button', { hasText: 'Начисто' }).click()
+    await expect(nameInput).toHaveValue('')
+  })
+})

@@ -888,6 +888,8 @@ export default {
   'rf.saving':          'Saving...',
   'rf.saveChanges':     'Save changes',
   'rf.saveRecipe':      'Save recipe',
+  'rf.draftBack':       'Picked up where you left off',
+  'rf.startOver':       'Start over',
 
   // Posing — pose names, descriptions and cues
   'pose.fdb.name':  'FRONT DOUBLE BICEPS',
@@ -1345,6 +1347,12 @@ export default {
   "rb.calories": "Calories",
   "rb.phKcalReq": "kcal *",
   "rb.serving": "Serving (g)",
+  "rb.modePer100": "PER 100 G",
+  "rb.modeUsed": "FOR THE AMOUNT",
+  "rb.rowGives": "gives {n} kcal",
+  "rb.needGrams": "add the grams",
+  "rb.draftBack": "Picked up where you left off",
+  "rb.startOver": "Start over",
   "rb.cancel": "Cancel",
   "rb.save": "Save",
 

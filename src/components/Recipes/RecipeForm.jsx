@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import EstimateFlag from '../EstimateFlag/EstimateFlag'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
@@ -14,6 +14,32 @@ function CameraIcon({ size = 16 }) {
       <circle cx="12" cy="13" r="4"/>
     </svg>
   )
+}
+
+/* Черновата.
+ *
+ * Рецептата се пише вътре в раздел, който се сменя със замятане на пръст.
+ * Едно погрешно замятане размонтира екрана и осемте съставки, които човекът
+ * е събирал с търсене, баркод и ръка, ги няма — а нищо не е казало, че ще
+ * стане така, защото нищо не се е счупило: просто е сменена страница.
+ *
+ * Затова написаното живее извън компонента. Излизането спира да е загуба и
+ * става прекъсване.
+ *
+ * Снимката не се пази: File не се сериализира, а да се държи цяла снимка в
+ * localStorage би изяло квотата на пръв опит. Тя е и единственото, което се
+ * връща с едно натискане. */
+const DRAFT_KEY = 'blag_recipe_form_draft'
+
+function readDraft() {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null') }
+  catch { return null }
+}
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY) } catch { /* частен режим */ }
+}
+function draftHasContent(d) {
+  return !!d && (d.name?.trim() || (d.ingredients || []).length > 0)
 }
 
 function calcTotals(ingredients) {
@@ -33,18 +59,29 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   const { t } = useSettings()
   const isCoach = profile?.role === 'coach'
 
-  const [name, setName]             = useState(recipe?.name || '')
+  /* Черновата важи само за нова рецепта. Отваряш ли съществуваща, тя носи
+     своите стойности — чужда чернова върху нея би била тихо разваляне на
+     чуждо ястие. */
+  const draft0 = useRef(recipe ? null : (draftHasContent(readDraft()) ? readDraft() : null)).current
+
+  const [name, setName]             = useState(recipe?.name || draft0?.name || '')
   const [photoFile, setPhotoFile]   = useState(null)
   const [photoPreview, setPhotoPreview] = useState(recipe?.photo_url || '')
-  const [ingredients, setIngredients] = useState(recipe?.ingredients || [])
-  const [servings, setServings]     = useState(String(recipe?.servings ?? 1))
-  const [isShared, setIsShared]     = useState(recipe?.is_shared || false)
+  const [ingredients, setIngredients] = useState(recipe?.ingredients || draft0?.ingredients || [])
+  const [servings, setServings]     = useState(String(recipe?.servings ?? draft0?.servings ?? 1))
+  const [isShared, setIsShared]     = useState(recipe?.is_shared || draft0?.isShared || false)
+  const [draftBack, setDraftBack]   = useState(!!draft0)
   const [saving, setSaving]         = useState(false)
   const [saveError, setSaveError]   = useState(null)
 
   // Ingredient picker
   const [pickerOpen, setPickerOpen]     = useState(false)
-  const [pickerTab, setPickerTab]       = useState('ai') // 'ai' | 'manual'
+  /* Кой начин е ползвал последно. Човек, който въвежда осем съставки на ръка,
+     ги въвежда по един и същи начин — а панелът се връщаше на търсенето при
+     всяко отваряне и искаше по едно излишно натискане на съставка. */
+  const [pickerTab, setPickerTab]       = useState(() => {
+    try { return localStorage.getItem('blag_recipe_picker_tab') || 'ai' } catch { return 'ai' }
+  })
   const [pickerQuery, setPickerQuery]   = useState('')
   const [pickerLoading, setPickerLoading] = useState(false)
   const [pickerResults, setPickerResults] = useState([])
@@ -60,6 +97,23 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
 
   const photoInputRef = useRef(null)
 
+  /* Пише се при всяка промяна, а не при излизане: излизането може и да не мине
+     през нас — замятане към друг раздел, презареждане, убито приложение. */
+  useEffect(() => {
+    if (recipe) return
+    const d = { name, ingredients, servings, isShared }
+    if (!draftHasContent(d)) { clearDraft(); return }
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) } catch { /* частен режим */ }
+  }, [recipe, name, ingredients, servings, isShared])
+
+  /** Начисто — единственият начин недовършеното да бъде наистина изхвърлено. */
+  function startOver() {
+    clearDraft()
+    setName(''); setIngredients([]); setServings('1'); setIsShared(false)
+    setPhotoFile(null); setPhotoPreview('')
+    setDraftBack(false)
+  }
+
   const totals     = calcTotals(ingredients)
   const totalGrams = ingredients.reduce((s, i) => s + (i.grams || 0), 0)
   const numServings = parseFloat(servings) || 1
@@ -74,9 +128,12 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   }
 
   // ── Ingredient picker ────────────────────────────────────────────────────────
+  useEffect(() => {
+    try { localStorage.setItem('blag_recipe_picker_tab', pickerTab) } catch { /* частен режим */ }
+  }, [pickerTab])
+
   function openPicker() {
     setPickerOpen(true)
-    setPickerTab('ai')
     setPending(null)
     setPickerQuery('')
     setPickerResults([])
@@ -96,8 +153,11 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         fat:     parseFloat(manual.fat)     || 0,
       },
     }])
+    /* Панелът остава отворен. Рецептата рядко е от една съставка, а
+       затварянето след всяка означаваше две излишни натискания на съставка —
+       отвори пак и се върни на ръчното. Добавената вече се вижда в списъка
+       отгоре, значи и без затваряне е ясно, че е приета. */
     setManual(emptyManual)
-    setPickerOpen(false)
   }
 
   async function handlePickerSearch() {
@@ -138,8 +198,10 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
       grams:   g,
       per100g: pending.per100g,
     }])
+    /* Същото и тук: следващата съставка се търси веднага. */
     setPending(null)
-    setPickerOpen(false)
+    setPickerQuery('')
+    setPickerResults([])
   }
 
   function updateGrams(idx, val) {
@@ -191,6 +253,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
     }
 
     if (err) { console.error('Recipe save error:', err); setSaveError(err.message || t('rf.saveErr')); setSaving(false); return }
+    clearDraft()
     onSave(data)
   }
 
@@ -204,6 +267,17 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         <button className={styles.backBtn} onClick={onCancel} type="button">←</button>
         <span className={styles.title}>{recipe ? t('rf.editTitle') : t('rf.newTitle')}</span>
       </div>
+
+      {/* Казва се, защото иначе човек, който е излязъл по невнимание веднъж,
+          просто не отваря пак. */}
+      {draftBack && (
+        <div className={styles.draftBar}>
+          <span>{t('rf.draftBack')}</span>
+          <button className={styles.draftClear} onClick={startOver} type="button">
+            {t('rf.startOver')}
+          </button>
+        </div>
+      )}
 
       {/* Photo */}
       <div className={styles.photoBox} onClick={() => photoInputRef.current?.click()}>
