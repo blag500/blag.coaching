@@ -318,4 +318,16 @@ export async function enterApp(page, opts = {}) {
   await signIn(page, opts)
   await page.goto('/')
   await page.locator('nav').first().waitFor({ state: 'visible', timeout: 20000 })
+
+  /* Поздравът за новия ден стои пред екрана и чака натискане — точно както
+     ще го чака и клиентът. Всеки тест, който не е за него, започва след
+     него; който е за него, го иска с keepGreeting. */
+  if (!opts.keepGreeting) {
+    const greeting = page.locator('[role="dialog"]')
+    await greeting.waitFor({ state: 'visible', timeout: 6000 }).catch(() => {})
+    if (await greeting.count()) {
+      await greeting.first().click({ position: { x: 10, y: 10 } }).catch(() => {})
+      await greeting.first().waitFor({ state: 'detached', timeout: 4000 }).catch(() => {})
+    }
+  }
 }

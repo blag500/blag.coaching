@@ -389,6 +389,60 @@ test.describe('Награди', () => {
     await expect(popup).toHaveCount(0)
   })
 
+  /* Първото отваряне за деня. Другите награди чакат да свършиш нещо; тази
+     чака само да се появиш — и носи числото на низа. */
+  test('първото отваряне за деня вдига поздрав с низа', async ({ page }) => {
+    test.setTimeout(90000)
+    const seeded = TABLES.food_logs.slice()
+    for (let d = 0; d < 4; d++) {
+      TABLES.food_logs.push({
+        id: `fnd${d}`, user_id: USER_ID, date: today(d), name: 'Ден',
+        grams: 100, kcal: 900, protein: 10, carbs: 10, fat: 1,
+        meal_type: 'lunch', estimated: null,
+      })
+    }
+    try {
+      await enterApp(page, { keepGreeting: true })
+      const popup = page.locator('[role="dialog"]')
+      await expect(popup).toBeVisible({ timeout: 15000 })
+      await expect(popup).toContainText('НОВ ДЕН')
+      await expect(popup).toContainText('Ден 4 подред')
+      await popup.click({ position: { x: 10, y: 10 } })
+      await expect(popup).toHaveCount(0)
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
+  })
+
+  /* Страницата с наградите: спечелените отпред, останалите угаснали и
+     подредени по близост. Смята се от вписаното, значи важи и назад. */
+  test('страницата с наградите показва спечеленото и следващото', async ({ page }) => {
+    test.setTimeout(90000)
+    const seeded = TABLES.food_logs.slice()
+    for (let d = 0; d < 9; d++) {
+      TABLES.food_logs.push({
+        id: `faw${d}`, user_id: USER_ID, date: today(d), name: 'Ден',
+        grams: 100, kcal: 2200, protein: 10, carbs: 10, fat: 1,
+        meal_type: 'lunch', estimated: null,
+      })
+    }
+    try {
+      await enterApp(page)
+      await page.locator('header button').first().click()
+      await page.waitForTimeout(600)
+      await page.locator('button', { hasText: 'НАГРАДИ' }).first().click()
+      await page.waitForTimeout(2500)
+
+      // Девет дни поред: седмицата е взета, месецът още не.
+      await expect(page.locator('text=СЕДМИЦА').first()).toBeVisible()
+      await expect(page.locator('text=9 от 30').first()).toBeVisible()
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
+  })
+
   /* Низът брои дни с вписано нещо, а днешният ден не го къса, докато е още
      празен — денят не е свършил. Тук са пет поред, значи значката казва пет. */
   test('низът брои дните подред и стои на снимката', async ({ page }) => {

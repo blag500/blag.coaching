@@ -55,6 +55,7 @@ const STREAK_CACHE  = 'blag_streak'
 function useStreak() {
   const { user } = useAuth()
   const uid = user?.id
+  const [ready, setReady] = useState(false)
   const [streak, setStreak] = useState(() => {
     try {
       const c = JSON.parse(localStorage.getItem(STREAK_CACHE) || 'null')
@@ -66,7 +67,7 @@ function useStreak() {
     if (!uid) return
     try {
       const c = JSON.parse(localStorage.getItem(STREAK_CACHE) || 'null')
-      if (c && c.date === todayKey() && c.uid === uid) { setStreak(c.value); return }
+      if (c && c.date === todayKey() && c.uid === uid) { setStreak(c.value); setReady(true); return }
     } catch { /* сметката пак ще се направи */ }
 
     let alive = true
@@ -90,6 +91,7 @@ function useStreak() {
       while (i < STREAK_WINDOW && active.has(shiftIso(i))) { n++; i++ }
 
       setStreak(n)
+      setReady(true)
       try {
         localStorage.setItem(STREAK_CACHE, JSON.stringify({ date: todayKey(), uid, value: n }))
       } catch { /* частен режим */ }
@@ -98,7 +100,7 @@ function useStreak() {
     return () => { alive = false }
   }, [uid])
 
-  return streak
+  return [streak, ready]
 }
 
 export function RewardsProvider({ children }) {
@@ -141,7 +143,22 @@ export function RewardsProvider({ children }) {
     if (s.calories && s.habits && s.training) award('perfect')
   }, [award])
 
-  const streak = useStreak()
+  const [streak, streakReady] = useStreak()
+
+  /* Първото отваряне за деня.
+   *
+   * Другите награди чакат да свършиш нещо; тази чака само да се появиш — и
+   * точно затова е първата, която човек вижда, вместо празен екран с числа
+   * от вчера. Веднъж на ден: пази я същият дневен ключ като останалите.
+   *
+   * Чака низа, защото носи неговото число, а то идва след мрежата. Без това
+   * изчакване поздравът щеше да казва „ден 0 подред" на всеки, всеки път. */
+  const greeted = useRef(false)
+  useEffect(() => {
+    if (greeted.current || !streakReady) return
+    greeted.current = true
+    award('newday')
+  }, [streakReady, award])
 
   const value = { report, award, streak }
 
@@ -154,6 +171,7 @@ export function RewardsProvider({ children }) {
       {queue[0] && createPortal(
         <BadgePopup
           badge={queue[0]}
+          streak={streak}
           onDone={() => setQueue(q => q.slice(1))}
         />,
         document.body,

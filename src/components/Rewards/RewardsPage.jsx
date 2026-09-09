@@ -3,6 +3,9 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { defaultHabits } from '../../data/appData'
+import { useAwardStats } from '../../hooks/useAwardStats'
+import AwardsGrid from './AwardsGrid'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './RewardsPage.module.css'
 
 function pad(n) { return String(n).padStart(2, '0') }
@@ -16,6 +19,7 @@ export default function RewardsPage({ onBack }) {
   const [month, setMonth] = useState(now.getMonth())
   const [days,  setDays]  = useState({})
   const [loading, setLoading] = useState(true)
+  const { stats } = useAwardStats()
 
   const habits      = profile?.habits?.length > 0 ? profile.habits : defaultHabits(t)
   const totalHabits = habits.length
@@ -103,12 +107,16 @@ export default function RewardsPage({ onBack }) {
         </div>
       </header>
 
+      {/* Спечеленото. Стои първо, защото страницата се отваря заради него —
+          календарът отдолу отговаря на „кога", а това на „какво". */}
+      {stats && <AwardsGrid stats={stats} />}
+
       {/* Stats */}
       <div className={styles.statsRow}>
-        <StatChip emoji="⭐" count={perfectN} label={t('rew.stat.perfect')}  accent />
-        <StatChip emoji="🥗" count={calN}     label={t('rew.stat.calories')} />
-        <StatChip emoji="✅" count={habN}     label={t('rew.stat.habits')} />
-        <StatChip emoji="💪" count={trN}      label={t('rew.stat.training')} />
+        <StatChip icon="star" count={perfectN} label={t('rew.stat.perfect')}  accent />
+        <StatChip icon="kcal" count={calN}     label={t('rew.stat.calories')} />
+        <StatChip icon="check" count={habN}     label={t('rew.stat.habits')} />
+        <StatChip icon="training" count={trN}      label={t('rew.stat.training')} />
       </div>
 
       {/* Month nav */}
@@ -139,12 +147,12 @@ export default function RewardsPage({ onBack }) {
                 {!future && (
                   <div className={styles.badges}>
                     {info.perfect ? (
-                      <span className={styles.badge}>⭐</span>
+                      <span className={styles.badge}><Pictogram name="star" size={11} /></span>
                     ) : (
                       <>
-                        {info.calBadge && <span className={styles.badge}>🥗</span>}
-                        {info.habBadge && <span className={styles.badge}>✅</span>}
-                        {info.trBadge  && <span className={styles.badge}>💪</span>}
+                        {info.calBadge && <span className={styles.badge}><Pictogram name="kcal" size={11} /></span>}
+                        {info.habBadge && <span className={styles.badge}><Pictogram name="check" size={11} /></span>}
+                        {info.trBadge  && <span className={styles.badge}><Pictogram name="training" size={11} /></span>}
                       </>
                     )}
                   </div>
@@ -157,19 +165,19 @@ export default function RewardsPage({ onBack }) {
 
       {/* Legend */}
       <div className={styles.legend}>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>⭐</span><span className={styles.legendText}>{t('rew.legend.perfect')}</span></div>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>🥗</span><span className={styles.legendText}>{t('rew.legend.calories')}</span></div>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>✅</span><span className={styles.legendText}>{t('rew.legend.habits')}</span></div>
-        <div className={styles.legendItem}><span className={styles.legendEmoji}>💪</span><span className={styles.legendText}>{t('rew.legend.training')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}><Pictogram name="star" size={12} /></span><span className={styles.legendText}>{t('rew.legend.perfect')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}><Pictogram name="kcal" size={12} /></span><span className={styles.legendText}>{t('rew.legend.calories')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}><Pictogram name="check" size={12} /></span><span className={styles.legendText}>{t('rew.legend.habits')}</span></div>
+        <div className={styles.legendItem}><span className={styles.legendEmoji}><Pictogram name="training" size={12} /></span><span className={styles.legendText}>{t('rew.legend.training')}</span></div>
       </div>
     </div>
   )
 }
 
-function StatChip({ emoji, count, label, accent }) {
+function StatChip({ icon, count, label, accent }) {
   return (
     <div className={`${styles.chip} ${accent ? styles.chipAccent : ''}`}>
-      <span className={styles.chipEmoji}>{emoji}</span>
+      <span className={styles.chipEmoji}><Pictogram name={icon} size={15} /></span>
       <span className={styles.chipNum}>{count}</span>
       <span className={styles.chipLabel}>{label}</span>
     </div>

@@ -7,7 +7,7 @@ import styles from './BadgePopup.module.css'
 /* Рисуваният набор, не емоджита: те носят собствена палитра и собствен почерк
    и никога не седят вътре в дизайна, а върху него — това е причината
    Pictogram да съществува. */
-const ICONS = { calories: 'kcal', habits: 'check', training: 'training', perfect: 'star' }
+const ICONS = { calories: 'kcal', habits: 'check', training: 'training', perfect: 'star', newday: 'flame' }
 
 /**
  * Спечелената награда, отпред.
@@ -20,7 +20,7 @@ const ICONS = { calories: 'kcal', habits: 'check', training: 'training', perfect
  * Няма таймер нарочно. Наградата е рядка — по една на ден, най-много четири —
  * и не е известие, което да гони вниманието и да се маха учтиво.
  */
-export default function BadgePopup({ badge, onDone }) {
+export default function BadgePopup({ badge, streak = 0, onDone }) {
   const { t } = useSettings()
 
   useEffect(() => {
@@ -43,7 +43,13 @@ export default function BadgePopup({ badge, onDone }) {
         <Confetti burst={badge} />
         <span className={styles.icon}><Pictogram name={ICONS[badge]} size={44} /></span>
         <span className={styles.label}>{t(`badge.${badge}.label`)}</span>
-        <span className={styles.sub}>{t(`badge.${badge}.sub`)}</span>
+        <span className={styles.sub}>
+          {/* Поздравът за деня носи число, останалите — не. Ден първи няма
+              какво да брои, затова му се казва друго. */}
+          {badge === 'newday'
+            ? (streak > 1 ? t('badge.newday.sub', { n: streak }) : t('badge.newday.subFirst'))
+            : t(`badge.${badge}.sub`)}
+        </span>
         <span className={styles.hint}>{t('badge.dismiss')}</span>
       </div>
     </div>
