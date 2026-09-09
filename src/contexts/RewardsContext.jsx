@@ -172,7 +172,16 @@ export function RewardsProvider({ children }) {
         <BadgePopup
           badge={queue[0]}
           streak={streak}
-          onDone={() => setQueue(q => q.slice(1))}
+          onDone={() => setQueue(q => {
+            const rest = q.slice(1)
+            /* Затворена последна награда. Мигът, в който човекът тъкмо е
+               видял колко е събрал, е и единственият, в който има смисъл да
+               го питаш дали да му напомняме — виж NotificationPrompt. */
+            if (rest.length === 0) {
+              window.dispatchEvent(new CustomEvent('blag:celebrated', { detail: { streak } }))
+            }
+            return rest
+          })}
         />,
         document.body,
       )}
