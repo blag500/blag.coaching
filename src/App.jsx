@@ -2,6 +2,8 @@ import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 're
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { RewardsProvider } from './contexts/RewardsContext'
+import OutboxBanner from './components/OutboxBanner/OutboxBanner'
+import { startOutbox } from './lib/outbox'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
@@ -361,6 +363,7 @@ function AppShell() {
       />
 
       <UpdateBanner />
+      <OutboxBanner />
       <NotificationPrompt />
       <main className={styles.content}>
         <SwipePager

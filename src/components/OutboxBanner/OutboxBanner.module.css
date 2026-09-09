@@ -1,0 +1,64 @@
+/* Стои под лентата за нова версия — тя е по-рядка и по-важна, когато я има.
+   Отдолу, не отгоре: чакащият запис не спира работата, а лентата отгоре
+   бута цялото съдържание надолу всеки път, когато сигналът трепне. */
+.banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(env(safe-area-inset-bottom) + 92px);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: var(--r-pill);
+  background: var(--panel-solid, var(--surface-1));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: rise 260ms var(--ease-out) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+/* Пулсът казва „още работи", без да пише нищо. */
+.dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.35 }
+  50%      { opacity: 1 }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.action {
+  flex-shrink: 0;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner { animation: none }
+  .dot    { animation: none; opacity: 1 }
+}

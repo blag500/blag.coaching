@@ -563,3 +563,32 @@ test.describe('Рецепти', () => {
     await expect(page.locator('input[placeholder="Съставка"]').first()).toHaveValue('Овесени ядки')
   })
 })
+
+
+test.describe('Без мрежа', () => {
+  /* Дотук неуспешният запис махаше отметката и вибрираше — вибрация в джоба,
+     след като телефонът е прибран, значи тихо неотчетено. Сега записът чака,
+     вижда се, че чака, и тръгва сам, щом мрежата се върне. */
+  test('отметка без мрежа остава и чака, после заминава', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await goTab(page, 'ПРОФИЛ')
+    await page.waitForTimeout(1200)
+
+    // Мрежата пада само за навиците — останалото продължава да работи,
+    // както би било при слаб сигнал.
+    await page.route('**/*.supabase.co/**/habit_completions**', r => r.abort())
+
+    const chip = page.locator('button', { hasText: '10 000 крачки' }).first()
+    await chip.click()
+    await page.waitForTimeout(800)
+
+    const banner = page.locator('text=Незаписано: 1')
+    await expect(banner).toBeVisible({ timeout: 10000 })
+
+    // Мрежата се връща и опашката тръгва сама при натискане.
+    await page.unroute('**/*.supabase.co/**/habit_completions**')
+    await page.locator('button', { hasText: 'ОПИТАЙ' }).click()
+    await expect(banner).toHaveCount(0, { timeout: 10000 })
+  })
+})

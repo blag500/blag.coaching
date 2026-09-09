@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { haptic } from '../lib/haptics'
 import { useAuth } from '../contexts/AuthContext'
+import { enqueue } from '../lib/outbox'
 
 export function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -72,6 +73,13 @@ export function useFoodLog() {
 
   useEffect(() => { fetchLog() }, [fetchLog])
 
+  /* Щом опашката е изпратила нещо, денят на екрана е стар. */
+  useEffect(() => {
+    const again = () => fetchLog()
+    window.addEventListener('blag:outbox-sent', again)
+    return () => window.removeEventListener('blag:outbox-sent', again)
+  }, [fetchLog])
+
   /** `food.estimated` is set by whichever route produced it — a model's reading
    *  is carried into the row so the day can still be read honestly later. */
   async function addEntry(food, grams, mealType = null) {
@@ -99,11 +107,10 @@ export function useFoodLog() {
     if (data) {
       setLog(prev => prev.map(e => e.id === tempId ? data : e))
     } else {
-      console.error('food_logs insert failed:', error)
-      setLog(prev => prev.filter(e => e.id !== tempId))
-      /* Редът изчезва обратно от списъка — и това трябва да се усети, иначе
-         храна, вписана в асансьора, тихо не е вписана. */
-      haptic('reject')
+      /* Дотук редът просто изчезваше и телефонът вибрираше. Сега остава на
+         екрана и чака мрежата: храна, вписана в асансьора, е вписана. */
+      console.warn('food_logs insert отложен:', error)
+      enqueue({ table: 'food_logs', op: 'insert', row: entry, tempId })
     }
   }
 
@@ -128,29 +135,43 @@ export function useFoodLog() {
     if (data) {
       setLog(prev => prev.map(e => e.id === tempId ? data : e))
     } else {
-      console.error('food_logs raw insert failed:', error)
-      setLog(prev => prev.filter(e => e.id !== tempId))
-      haptic('reject')
+      console.warn('food_logs insert отложен:', error)
+      enqueue({ table: 'food_logs', op: 'insert', row: entry, tempId })
     }
   }
 
   async function updateEntry(id, updates) {
     setLog(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+    /* Ред, който сървърът още не познава, не се поправя през мрежата —
+       поправката влиза в чакащото добавяне. Виж enqueue. */
+    if (String(id).startsWith('temp-')) {
+      enqueue({ table: 'food_logs', op: 'update', row: updates, match: { id } })
+      return
+    }
     const { data, error } = await supabase
       .from('food_logs')
       .update(updates)
       .eq('id', id)
       .select()
     if (error || !data?.length) {
-      console.error('food_logs update failed:', error)
-      fetchLog()
+      console.warn('food_logs update отложен:', error)
+      enqueue({ table: 'food_logs', op: 'update', row: updates, match: { id } })
     }
   }
 
   async function removeEntry(id) {
     haptic('tap')
     setLog(prev => prev.filter(e => e.id !== id))
-    await supabase.from('food_logs').delete().eq('id', id)
+    if (String(id).startsWith('temp-')) {
+      // Махнато, преди изобщо да е заминало: и двете отпадат.
+      enqueue({ table: 'food_logs', op: 'delete', match: { id } })
+      return
+    }
+    const { error } = await supabase.from('food_logs').delete().eq('id', id)
+    if (error) {
+      console.warn('food_logs delete отложен:', error)
+      enqueue({ table: 'food_logs', op: 'delete', match: { id } })
+    }
   }
 
   async function clearLog() {
