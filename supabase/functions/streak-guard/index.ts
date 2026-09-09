@@ -46,6 +46,18 @@ function iso(offset: number) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
+  /* Пази се сама, а не с JWT.
+     pg_cron вика през net.http_post, който не носи Authorization — платформата
+     би отрязала функцията, преди изобщо да тръгне. Затова verify_jwt е
+     изключен в config.toml, а единственият документ, който cron може да носи,
+     е тайната в адреса. Същото прави и send-reminders; това не е измислено
+     тук, а вече установено в това repo. */
+  const secret = new URL(req.url).searchParams.get('secret')
+  const expected = Deno.env.get('STREAK_SECRET')
+  if (expected && secret !== expected) {
+    return new Response('forbidden', { status: 401, headers: CORS })
+  }
+
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
   const today = iso(0)
   const from  = iso(WINDOW_DAYS)

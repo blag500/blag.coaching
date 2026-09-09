@@ -3,7 +3,12 @@
 --
 -- Преди пускане:
 --   1. supabase functions deploy streak-guard
---   2. Замени <SERVICE_ROLE_KEY> по-долу с ключа на проекта.
+--   2. supabase secrets set STREAK_SECRET=<нещо дълго и случайно>
+--   3. Замени <STREAK_SECRET> по-долу със същата стойност.
+--
+-- Тайната е в адреса, а не в header: pg_cron вика през net.http_post, който
+-- не носи Authorization, и платформата би отрязала функцията преди да тръгне.
+-- Същото важи и за send-reminders — виж коментара в config.toml.
 --
 -- Функцията сама решава до кого да отиде: само хора с абонамент за известия,
 -- с низ от два дни нагоре, чийто днешен ден е още празен. Ако няма такива,
@@ -15,11 +20,9 @@ language plpgsql
 as $$
 begin
   perform net.http_post(
-    url     := 'https://eiltoadzaqbuqdilsfpi.supabase.co/functions/v1/streak-guard',
-    headers := jsonb_build_object(
-      'Content-Type',  'application/json',
-      'Authorization', 'Bearer <SERVICE_ROLE_KEY>'
-    )
+    url     := 'https://eiltoadzaqbuqdilsfpi.supabase.co/functions/v1/streak-guard'
+                 || '?secret=<STREAK_SECRET>',
+    headers := '{"Content-Type":"application/json"}'::jsonb
   );
 end;
 $$;

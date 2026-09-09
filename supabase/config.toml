@@ -10,3 +10,9 @@ project_id = "eiltoadzaqbuqdilsfpi"
 # takes every morning reminder down with it. It has happened once.
 [functions.send-reminders]
 verify_jwt = false
+
+# streak-guard се вика от pg_cron по същия път и със същото ограничение като
+# send-reminders: без Authorization header, значи без JWT проверка. Пази се
+# сам със STREAK_SECRET в адреса.
+[functions.streak-guard]
+verify_jwt = false
