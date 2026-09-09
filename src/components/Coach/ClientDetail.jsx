@@ -16,6 +16,7 @@ import SessionHistory from '../Training/SessionHistory'
 import ExerciseStats from '../Training/ExerciseStats'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import { MEALS, MEAL_LABEL_KEY, defaultMeal } from '../FoodLogger/meals'
+import MealPicker from '../FoodLogger/MealPicker'
 import styles from './ClientDetail.module.css'
 import { loc } from '../../utils/locale'
 
@@ -570,6 +571,8 @@ function NutritionTab({ client }) {
   function startEdit(entry) {
     setEditingId(entry.id)
     setDraft({
+      // Както при клиента: стар ред без хранене остава без избрано хапче.
+      meal:    MEAL_LABEL_KEY[entry.meal_type] ? entry.meal_type : null,
       name:    entry.name,
       grams:   String(entry.grams || 0),
       kcal:    String(entry.kcal),
@@ -598,6 +601,7 @@ function NutritionTab({ client }) {
 
   async function saveEdit(id) {
     const updates = {
+      ...(draft.meal ? { meal_type: draft.meal } : {}),
       name:    draft.name.trim(),
       grams:   parseFloat(draft.grams)              || 0,
       kcal:    Math.round(parseFloat(draft.kcal)     || 0),
@@ -681,6 +685,12 @@ function NutritionTab({ client }) {
             </div>
           ))}
         </div>
+        {/* Кое хранене — същото, което вижда клиентът. */}
+        <MealPicker
+          value={draft.meal}
+          onChange={m => setDraft(prev => ({ ...prev, meal: m }))}
+          label={t('foodlog.editMeal')}
+        />
         <div className={styles.logEditActions}>
           <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">{t('cd.cancel')}</button>
           <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">{t('cd.save')}</button>

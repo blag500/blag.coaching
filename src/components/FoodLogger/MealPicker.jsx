@@ -8,11 +8,14 @@ import styles from './MealPicker.module.css'
  * mode somewhere above. Controlled: the value lives with whoever logs the food,
  * so a "+" on a section and this picker are the same choice.
  */
-export default function MealPicker({ value, onChange }) {
+export default function MealPicker({ value, onChange, label }) {
   const { t } = useSettings()
   return (
     <div className={styles.row}>
-      <span className={styles.label}>{t('nutr.toggle.log').toUpperCase()}</span>
+      {/* Надписът се подава, защото същите четири хапчета значат две неща:
+          в панела за добавяне избираш КЪДЕ отива новото, а в редакцията
+          КЪДЕ да се премести вече вписаното. */}
+      <span className={styles.label}>{(label ?? t('nutr.toggle.log')).toUpperCase()}</span>
       <div className={styles.pills}>
         {MEALS.map(m => (
           <button

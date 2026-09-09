@@ -1224,6 +1224,7 @@ export default {
   'foodlog.lightboxClose': 'Close',
   'foodlog.editName':      'Name',
   'foodlog.editGrams':     'Grams',
+  'foodlog.editMeal':  'Meal',
   'foodlog.editProtein':   'Protein',
   'foodlog.editCarbs':     'Carbs',
   'foodlog.editFat':       'Fat',

@@ -258,6 +258,29 @@ test.describe('Дневникът с храната', () => {
     }
   })
 
+  /* Влаченето стига до съседната секция; за трите екрана нататък е моливът.
+     Тестът върви по краткия път: молив → хапче → запази, и ястието трябва да
+     е сменило секцията си. */
+  test('моливът мести ястието в друго хранене', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await goTab(page, 'ХРАНЕНЕ')
+
+    const row = page.locator('li', { hasText: 'Пилешко филе' }).first()
+    await expect(row).toBeVisible({ timeout: 15000 })
+    // Заварено е в обяда.
+    await expect(page.locator('section', { has: page.getByText('Пилешко филе') })
+      .locator('[class*="mealName"]')).toHaveText('Обяд')
+
+    await page.locator('[aria-label="Редактирай Пилешко филе"]').click()
+    await page.locator('button', { hasText: 'Закуска' }).last().click()
+    await page.locator('button', { hasText: 'Запази' }).click()
+    await page.waitForTimeout(600)
+
+    await expect(page.locator('section', { has: page.getByText('Пилешко филе') })
+      .locator('[class*="mealName"]')).toHaveText('Закуска')
+  })
+
   /* Един пръст държи ястието, друг върти страницата — и то работи, защото
      дръжката е с touch-action: none и пръстът от нея не превърта нищо.
      Тестът минава през CDP, защото Playwright знае само едно докосване, а

@@ -5,6 +5,7 @@ import { MEALS, MEAL_LABEL_KEY } from './meals'
 import { useSettings } from '../../contexts/SettingsContext'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './FoodLog.module.css'
+import MealPicker from './MealPicker'
 
 function UndoIcon() {
   return (
@@ -376,6 +377,10 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
   function startEdit(entry) {
     setEditingId(entry.id)
     setDraft({
+      // Стар ред без хранене остава без избрано хапче, вместо да му се
+      // измисли едно: „не знам кое" е вярното състояние, докато човекът не
+      // каже.
+      meal:    MEAL_LABEL_KEY[entry.meal_type] ? entry.meal_type : null,
       name:    entry.name,
       grams:   String(entry.grams || ''),
       kcal:    String(entry.kcal),
@@ -404,6 +409,9 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
 
   function handleSave(entry) {
     onEdit(entry.id, {
+      // Само ако е избрано: инак редактирането на стар ред без хранене би
+      // го записало като null върху null.
+      ...(draft.meal ? { meal_type: draft.meal } : {}),
       name:    draft.name.trim() || entry.name,
       grams:   parseFloat(draft.grams)              || 0,
       kcal:    Math.round(parseFloat(draft.kcal)     || 0),
@@ -480,6 +488,14 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
             </div>
           ))}
         </div>
+
+        {/* Кое хранене. Влаченето върши същото, но само за съседна секция —
+            за трите екрана нататък молив и четири хапчета са по-краткият път. */}
+        <MealPicker
+          value={draft.meal}
+          onChange={m => setDraft(prev => ({ ...prev, meal: m }))}
+          label={t('foodlog.editMeal')}
+        />
 
         {onPhotoUpload && (
           <div className={styles.editPhotoRow}>

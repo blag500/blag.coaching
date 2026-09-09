@@ -1228,6 +1228,7 @@ export default {
   'foodlog.lightboxClose': 'Затвори',
   'foodlog.editName':      'Наименование',
   'foodlog.editGrams':     'Грамаж',
+  'foodlog.editMeal':  'Хранене',
   'foodlog.editProtein':   'Протеин',
   'foodlog.editCarbs':     'Въгл.',
   'foodlog.editFat':       'Мазн.',
