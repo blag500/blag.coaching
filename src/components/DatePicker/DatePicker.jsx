@@ -8,7 +8,11 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
-export default function DatePicker({ selectedDate, onChange }) {
+/**
+ * @param marks  ден → 1 (има нещо) | 2 (стигната цел). Календарът без тях е
+ *               линийка: всички дни изглеждат еднакво и нищо в него не е твое.
+ */
+export default function DatePicker({ selectedDate, onChange, marks = {} }) {
   const { t } = useSettings()
   const [showCal, setShowCal] = useState(false)
   const wrapRef = useRef(null)
@@ -39,6 +43,7 @@ export default function DatePicker({ selectedDate, onChange }) {
         today={today}
         onChange={onChange}
         calOpen={showCal}
+        marks={marks}
         onOpenMonth={() => setShowCal(v => !v)}
       >
         {/* Връщането към днес се показва само когато си някъде другаде —
@@ -53,12 +58,12 @@ export default function DatePicker({ selectedDate, onChange }) {
           </button>
         )}
       </DateArc>
-      {showCal && <MiniCal selectedDate={selectedDate} onSelect={selectDate} />}
+      {showCal && <MiniCal selectedDate={selectedDate} onSelect={selectDate} marks={marks} />}
     </div>
   )
 }
 
-function MiniCal({ selectedDate, onSelect }) {
+function MiniCal({ selectedDate, onSelect, marks = {} }) {
   const { t } = useSettings()
   const today = todayStr()
   const init = new Date(selectedDate + 'T12:00:00')
@@ -108,6 +113,12 @@ function MiniCal({ selectedDate, onSelect }) {
               type="button"
             >
               {day}
+              {/* Точката е под числото, не върху него: месецът се чете по
+                  числата, а точките се четат като шарка — къде има редица и
+                  къде има дупка. */}
+              {marks[dateStr] && !isSelected && (
+                <span className={`${styles.calDot} ${marks[dateStr] === 2 ? styles.calDotFull : ''}`} />
+              )}
             </button>
           )
         })}

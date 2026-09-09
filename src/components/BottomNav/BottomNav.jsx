@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useWaterLog } from '../../hooks/useWaterLog'
 import { haptic } from '../../lib/haptics'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './BottomNav.module.css'
 
 const NutritionIcon = () => (
@@ -48,10 +49,14 @@ const RIGHT_TABS = [
   { id: 'profile',  key: 'nav.profile',  Icon: ProfileIcon  },
 ]
 
+/* Приложението има свой рисуван набор — виж Pictogram, който е правен точно
+   за да махне емоджитата от навиците: те носят собствена палитра и собствен
+   почерк, значи никога не седят вътре в дизайна, а върху него. Тук бяха
+   останали последните три. */
 const ACTIONS = [
-  { id: 'food',     emoji: '🍽',  labelKey: 'nav.action.food',     tab: 'nutrition' },
-  { id: 'water',    emoji: '💧',  labelKey: 'nav.action.water',    tab: null        },
-  { id: 'training', emoji: '💪',  labelKey: 'nav.action.training', tab: 'training'  },
+  { id: 'food',     icon: 'meal',     labelKey: 'nav.action.food',     tab: 'nutrition' },
+  { id: 'water',    icon: 'water',    labelKey: 'nav.action.water',    tab: null        },
+  { id: 'training', icon: 'training', labelKey: 'nav.action.training', tab: 'training'  },
 ]
 
 const HIDDEN_KEY = 'blag_nav_hidden'
@@ -250,7 +255,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                   type="button"
                   style={{ animationDelay: `${(ACTIONS.length - 1 - i) * 40}ms` }}
                 >
-                  <span className={styles.actionEmoji}>{action.emoji}</span>
+                  <span className={styles.actionIcon}><Pictogram name={action.icon} size={17} /></span>
                   <span className={styles.actionLabel}>{t(action.labelKey)}</span>
                 </button>
               ))}

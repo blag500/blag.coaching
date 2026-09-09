@@ -83,7 +83,7 @@ function stillPreferred() {
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 }
 
-export default function DateArc({ selectedDate, today, onChange, onOpenMonth, calOpen, children }) {
+export default function DateArc({ selectedDate, today, onChange, onOpenMonth, calOpen, marks = {}, children }) {
   const { t } = useSettings()
   const hostRef  = useRef(null)
   const monthRef = useRef(null)
@@ -287,6 +287,7 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth, ca
       dow: t(`daysMon.${(d.getDay() + 6) % 7}`),
       future,
       isToday: dIso === today,
+      mark: marks[dIso] || 0,
       style: { transform: g.transform, opacity: g.opacity, zIndex: g.zIndex },
       dowStyle: { opacity: g.dow },
     })
@@ -338,6 +339,11 @@ export default function DateArc({ selectedDate, today, onChange, onOpenMonth, ca
           >
             <span className={styles.arcDow} style={d.dowStyle}>{d.dow}</span>
             <span className={styles.arcNum}>{d.num}</span>
+            {/* Какво е станало в този ден. Празният ден няма точка — липсата
+                е също информация, и то по-честна от сива точка. */}
+            {d.mark > 0 && (
+              <span className={`${styles.arcDot} ${d.mark === 2 ? styles.arcDotFull : ''}`} />
+            )}
           </button>
         ))}
       </div>

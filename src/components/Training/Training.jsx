@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRewards } from '../../contexts/RewardsContext'
+import { useDayMarks } from '../../hooks/useDayMarks'
 import { defaultTrainingBlocks } from '../../data/appData'
 import DayLog from './DayLog'
 import ProgressionView from './ProgressionView'
@@ -433,6 +434,8 @@ export default function Training({ onMenuOpen }) {
   /* Наградата за тренировка се печели тук, значи трябва да се вижда тук.
      Правилото е в RewardsContext; този екран само казва какво знае. */
   const { report } = useRewards()
+  /* Точките по календара: кои дни носят тренировка. */
+  const dayMarks = useDayMarks('training', logDate)
   const trainedToday = completions.some(c => c.completed_date === todayStr)
   useEffect(() => { report('training', trainedToday, !historyLoading) }, [trainedToday, historyLoading, report])
 
@@ -681,7 +684,7 @@ export default function Training({ onMenuOpen }) {
             </div>
           )}
 
-          <DatePicker selectedDate={logDate} onChange={date => { setLogDate(date); setJustMarked(false) }} />
+          <DatePicker selectedDate={logDate} marks={dayMarks} onChange={date => { setLogDate(date); setJustMarked(false) }} />
 
           {rest ? (
             <RestDayCard
@@ -942,6 +945,7 @@ export default function Training({ onMenuOpen }) {
                   следващия ден — най-честият случай — нямаше къде да отиде. */}
               <DatePicker
                 selectedDate={logDate}
+                marks={dayMarks}
                 onChange={date => { setLogDate(date); setJustMarked(false) }}
               />
 
@@ -1022,6 +1026,7 @@ export default function Training({ onMenuOpen }) {
               <>
                 <DatePicker
                   selectedDate={logDate}
+                  marks={dayMarks}
                   onChange={date => { setLogDate(date); setJustMarked(false) }}
                 />
                 <RestDayCard

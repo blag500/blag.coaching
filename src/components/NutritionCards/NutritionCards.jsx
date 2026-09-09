@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useRewards } from '../../contexts/RewardsContext'
+import { useDayMarks } from '../../hooks/useDayMarks'
 import { useActivityLog } from '../../hooks/useActivityLog'
 import DatePicker from '../DatePicker/DatePicker'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
@@ -61,6 +62,9 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { report } = useRewards()
   const calDone = isToday && targets.kcal > 0 &&
     (totals.kcal || 0) / targets.kcal >= 0.8
+  /* Точките по календара: кои дни са вписани и кои са стигнали целта. */
+  const dayMarks = useDayMarks('food', selectedDate, { target: targets.kcal })
+
   const calKnown = !logLoading && isToday && targets.kcal > 0
   useEffect(() => { report('calories', calDone, calKnown) }, [calDone, calKnown, report])
 
@@ -162,7 +166,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
 
       {view === 'log' ? (
         <>
-          <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
+          <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} marks={dayMarks} />
           <NutritionProgress
             totals={totals}
             targets={targets}

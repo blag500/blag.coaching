@@ -17,6 +17,7 @@ import ExerciseStats from '../Training/ExerciseStats'
 import { useTrainingHistory } from '../../hooks/useTrainingHistory'
 import { MEALS, MEAL_LABEL_KEY, defaultMeal } from '../FoodLogger/meals'
 import MealPicker from '../FoodLogger/MealPicker'
+import { useDayMarks } from '../../hooks/useDayMarks'
 import styles from './ClientDetail.module.css'
 import { loc } from '../../utils/locale'
 
@@ -651,6 +652,9 @@ function NutritionTab({ client }) {
 
   const targetKcal = client.calories || 0
 
+  /* Точките по календара — същите, които вижда клиентът, само за неговия ред. */
+  const dayMarks = useDayMarks('food', selectedDate, { target: targetKcal, userId: client.id })
+
   // One log row in either shape — pulled out so the coach's day can be drawn as
   // meal sections, the same split the client sees.
   function renderLogEntry(entry) {
@@ -754,7 +758,7 @@ function NutritionTab({ client }) {
           </div>
         </div>
       )}
-      <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
+      <DatePicker selectedDate={selectedDate} marks={dayMarks} onChange={setSelectedDate} />
 
       {showAdd ? (
         <div className={styles.addFoodForm}>
@@ -868,6 +872,8 @@ function LiftsTab({ clientId }) {
   const { sessions: clientSessions } = useTrainingHistory(clientId)
   const [statsEx,      setStatsEx]      = useState(null)
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
+  /* Тук дневникът е тренировъчен, значи и точките са за тренировки. */
+  const liftMarks = useDayMarks('training', selectedDate, { userId: clientId })
   const [logs,         setLogs]         = useState([])
   const [loading,      setLoading]      = useState(false)
   const [showAdd,      setShowAdd]      = useState(false)
@@ -1014,7 +1020,7 @@ function LiftsTab({ clientId }) {
       {/* ── DIARY view ── */}
       {subTab === 'log' && (
         <>
-          <DatePicker selectedDate={selectedDate} onChange={setSelectedDate} />
+          <DatePicker selectedDate={selectedDate} marks={liftMarks} onChange={setSelectedDate} />
 
           {showAdd ? (
             <div className={styles.addFoodForm}>
