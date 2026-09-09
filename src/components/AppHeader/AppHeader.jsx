@@ -76,10 +76,22 @@ export default function AppHeader({
                   всеки, който е отворил приложението веднъж, носи горд знак
                   за нищо. */}
               {streak > 1 && (
-                <span className={styles.streak} title={t('streak.title', { n: streak })}>
+                /* Знакът, който показва низа, води до страницата за него.
+                   Съобщение, а не проп: лентата се рисува от двайсетина
+                   екрана и всеки от тях щеше да трябва да знае как се
+                   навигира, за да стигне числото дотук. */
+                <button
+                  type="button"
+                  className={styles.streak}
+                  aria-label={t('streak.title', { n: streak })}
+                  onClick={e => {
+                    e.stopPropagation()
+                    window.dispatchEvent(new CustomEvent('blag:open-rewards'))
+                  }}
+                >
                   <Pictogram name="flame" size={11} />
                   {streak}
-                </span>
+                </button>
               )}
             </span>
           )}

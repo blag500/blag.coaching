@@ -415,6 +415,31 @@ test.describe('Награди', () => {
     }
   })
 
+  /* Двата входа към наградите. Чекмеджето на треньора нямаше такъв ред —
+     единственият човек, който я поиска, нямаше как да стигне до нея. А
+     огънчето в лентата води до страницата за самото него. */
+  test('огънчето води до страницата с наградите', async ({ page }) => {
+    test.setTimeout(90000)
+    const seeded = TABLES.food_logs.slice()
+    for (let d = 0; d < 6; d++) {
+      TABLES.food_logs.push({
+        id: `fst${d}`, user_id: USER_ID, date: today(d), name: 'Ден',
+        grams: 100, kcal: 2200, protein: 10, carbs: 10, fat: 1,
+        meal_type: 'lunch', estimated: null,
+      })
+    }
+    try {
+      await enterApp(page)
+      const streak = page.locator('header [class*="streak"]').first()
+      await expect(streak).toBeVisible({ timeout: 15000 })
+      await streak.click()
+      await expect(page.locator('text=ПЪРВА КРАЧКА').first()).toBeVisible({ timeout: 15000 })
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
+  })
+
   /* Страницата с наградите: спечелените отпред, останалите угаснали и
      подредени по близост. Смята се от вписаното, значи важи и назад. */
   test('страницата с наградите показва спечеленото и следващото', async ({ page }) => {

@@ -246,6 +246,11 @@ const COACH_SECTIONS = [
     labelKey: 'drawer.section.personal',
     tabs: [
       { id: 'profile', key: 'nav.profile', Icon: ProfileIcon },
+      /* Треньорът има цял раздел „моето проследяване" — храна, навици,
+         тренировки. Значи има и низ, и медали, а страницата с тях беше само в
+         клиентското чекмедже: единственият човек, който я поиска, нямаше как
+         да стигне до нея. */
+      { id: 'rewards', key: 'nav.rewards', Icon: MedalIcon },
     ],
   },
 ]

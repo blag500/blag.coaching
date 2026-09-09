@@ -213,6 +213,24 @@ function AppShell() {
   /* A visitor with no session is on their way to the landing page, and that
      page sells coaching — so the mark they see first is the full one. Someone
      already signed in is on their way into the app, which is BLAG. */
+  /* Огънчето в лентата води насам. Слуша се тук, защото навигацията живее
+     тук, а лентата се рисува от всеки екран.
+
+     Мястото е преди първия ранен return, не при останалите помощни функции
+     по-долу: там hook-ът се оказва след условен изход и React пада още при
+     сплаша — тоест приложението изобщо не се появява.
+
+     През реф, а не направо: navigate е нова функция при всяко рисуване, а
+     слушател, който се сваля и качва по няколко пъти в секунда, е разход без
+     полза. */
+  const navRef = useRef(navigate)
+  navRef.current = navigate
+  useEffect(() => {
+    const go = () => navRef.current('rewards')
+    window.addEventListener('blag:open-rewards', go)
+    return () => window.removeEventListener('blag:open-rewards', go)
+  }, [])
+
   if (splash) return (
     <Splash coaching={!session} onDone={() => {
       setSplash(false)
