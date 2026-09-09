@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useRewards } from '../../contexts/RewardsContext'
 import { defaultTrainingBlocks } from '../../data/appData'
 import DayLog from './DayLog'
 import ProgressionView from './ProgressionView'
@@ -228,7 +229,7 @@ export default function Training({ onMenuOpen }) {
   const [justMarked, setJustMarked]     = useState(false)
   const [logDate, setLogDate]           = useState(() => iso(new Date()))
   const { byName: lifts, refresh: refreshLifts } = useLastLifts(logDate)
-  const { sessions, completions, refresh: refreshHistory } = useTrainingHistory()
+  const { sessions, completions, loading: historyLoading, refresh: refreshHistory } = useTrainingHistory()
   // Whether the block on screen was chosen or merely offered.
   const userPicked = useRef(false)
 
@@ -428,6 +429,12 @@ export default function Training({ onMenuOpen }) {
   const alreadyMarked = completions.some(
     c => c.completed_date === logDate && c.block_label === selectedBlock?.label
   )
+
+  /* Наградата за тренировка се печели тук, значи трябва да се вижда тук.
+     Правилото е в RewardsContext; този екран само казва какво знае. */
+  const { report } = useRewards()
+  const trainedToday = completions.some(c => c.completed_date === todayStr)
+  useEffect(() => { report('training', trainedToday, !historyLoading) }, [trainedToday, historyLoading, report])
 
   async function handleSavePlan(newBlocks) {
     setSavingPlan(true)

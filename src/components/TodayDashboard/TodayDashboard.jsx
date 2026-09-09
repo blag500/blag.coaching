@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, Fragment } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
+import { useRewards } from '../../contexts/RewardsContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
 import { useWaterLog } from '../../hooks/useWaterLog'
 import { useSupplements } from '../../hooks/useSupplements'
 import { useShop, recommendProducts } from '../../hooks/useShop'
 import { useCart } from '../../hooks/useCart'
-import BadgePopup from './BadgePopup'
 import Confetti from './Confetti'
 import Pictogram from '../Pictogram/Pictogram'
 import MacroScale from './MacroScale'
@@ -97,8 +97,8 @@ function dateStr(offset = 0) {
 export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = false, onHabitsSetup }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
-  const { log, totals } = useFoodLog()
-  const { habits, checked, toggle: toggleHabit } = useHabitsToday()
+  const { log, totals, loading: logLoading } = useFoodLog()
+  const { habits, checked, toggle: toggleHabit, loading: habitsLoading } = useHabitsToday()
   const { glasses, target: waterTarget, add: addWater } = useWaterLog()
   const {
     supplements, taken: suppTaken, toggle: toggleSupp,
@@ -107,6 +107,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
   const { products: shopProducts } = useShop()
   const cart = useCart()
   const [workouts, setWorkouts] = useState([])
+  const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
 
   const targets = {
     kcal:    profile?.calories ?? 0,
@@ -133,6 +134,7 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
       const merged = [...(ex.data || []), ...(wo.data || [])]
       merged.sort((a, b) => b.completed_date.localeCompare(a.completed_date))
       setWorkouts(merged)
+      setWorkoutsLoaded(true)
     })
   }, [user?.id])
 
@@ -218,51 +220,25 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
     prevGlasses.current = glasses
   }, [glasses])
 
-  // ── Badge detection ──
-  const [badgeQueue, setBadgeQueue] = useState([])
-  const prevCal   = useRef(false)
-  const prevHabs  = useRef(false)
-  const prevTrain = useRef(false)
+  // ── Наградите ──
+  // Правилото и празненството живеят в RewardsContext; таблото само казва
+  // какво вижда. Дотук откриването беше тук, значи наградата се появяваше
+  // само докато човекът гледа таблото — а калориите се достигат в ХРАНЕНЕ и
+  // тренировката се отчита в ТРЕНИРОВКА.
+  const { report } = useRewards()
 
   const kcalPct = Math.min((totals.kcal || 0) / Math.max(targets.kcal || 1, 1), 1)
   const calDone  = targets.kcal > 0 && kcalPct >= 0.8
   const habsDone = habits.length > 0 && completedHabits >= habits.length
 
-  useEffect(() => {
-    const today    = new Date().toISOString().slice(0, 10)
-    const justCal  = calDone     && !prevCal.current
-    const justHabs = habsDone    && !prevHabs.current
-    const justTrain = trainedToday && !prevTrain.current
-    const earned   = []
+  // „Знам ли изобщо" пътува заедно с отговора: докато мрежата мълчи, празният
+  // ден не е празен, а неизвестен.
+  const calKnown  = !logLoading && targets.kcal > 0
+  const habsKnown = !habitsLoading && habits.length > 0
 
-    function award(type) {
-      const k = `blag_badge_${type}_${today}`
-      if (!localStorage.getItem(k)) { localStorage.setItem(k, '1'); earned.push(type) }
-    }
-
-    if (justCal)   award('calories')
-    if (justHabs)  award('habits')
-    if (justTrain) award('training')
-    if ((justCal || justHabs || justTrain) && calDone && habsDone && trainedToday) {
-      award('perfect')
-      /* Значката остава; постът във фийда — не.
-         Приложението публикуваше вместо човека: всяка отбелязана тренировка и
-         всеки идеален ден ставаха пост. При пет тренировки седмично това е
-         пет поста, които никой не е искал да напише, и фийдът спира да е
-         място, където някой казва нещо — става лента с касови бележки.
-         Постижението си остава негово: стои в значките, в профила и в
-         статистиките. Ако иска да го сподели, има какво да натисне. */
-    }
-
-    prevCal.current   = calDone
-    prevHabs.current  = habsDone
-    prevTrain.current = trainedToday
-
-    if (earned.length) {
-      setBadgeQueue(q => [...q, ...earned])
-      haptic('celebrate')
-    }
-  }, [calDone, habsDone, trainedToday])
+  useEffect(() => { report('calories', calDone,  calKnown)  }, [calDone,  calKnown,  report])
+  useEffect(() => { report('habits',   habsDone, habsKnown) }, [habsDone, habsKnown, report])
+  useEffect(() => { report('training', trainedToday, workoutsLoaded) }, [trainedToday, workoutsLoaded, report])
 
   const { visible } = layout(profile?.dashboard_cards)
 
@@ -472,9 +448,6 @@ export default function TodayDashboard({ onNavigate, onMenuOpen, embedded = fals
 
   return (
     <div className={`${styles.page} ${embedded ? styles.pageEmbedded : ''}`}>
-      {badgeQueue[0] && (
-        <BadgePopup badge={badgeQueue[0]} onDone={() => setBadgeQueue(q => q.slice(1))} />
-      )}
       {!embedded && <AppHeader
         onMenuOpen={onMenuOpen}
         eyebrow={greeting}

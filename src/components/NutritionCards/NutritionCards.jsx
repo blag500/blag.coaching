@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { usePane } from '../SwipePager/PaneContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useFoodLog } from '../../hooks/useFoodLog'
+import { useRewards } from '../../contexts/RewardsContext'
 import { useActivityLog } from '../../hooks/useActivityLog'
 import DatePicker from '../DatePicker/DatePicker'
 import { useCustomFoods } from '../../hooks/useCustomFoods'
@@ -30,7 +31,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { chrome: paneChrome } = usePane()
   const { profile } = useAuth()
   const { t } = useSettings()
-  const { log, totals, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
+  const { log, totals, loading: logLoading, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { activities, totalKcalBurned, addActivity, removeActivity } = useActivityLog(selectedDate)
   const { distance, refreshing } = usePullToRefresh(refresh)
   const { foods: customFoods, loading: foodsLoading, saveFood, deleteFood } = useCustomFoods()
@@ -53,6 +54,15 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
     carbs:   profile?.carbs    ?? 0,
     fat:     profile?.fat      ?? 0,
   }
+
+  /* Калориите се събират тук, значи наградата за тях се появява тук.
+     Само за днешния ден: разлистването на минала дата не е постижение,
+     случило се сега. */
+  const { report } = useRewards()
+  const calDone = isToday && targets.kcal > 0 &&
+    (totals.kcal || 0) / targets.kcal >= 0.8
+  const calKnown = !logLoading && isToday && targets.kcal > 0
+  useEffect(() => { report('calories', calDone, calKnown) }, [calDone, calKnown, report])
 
   async function handleSaveCustomFood(data) {
     await saveFood(data)

@@ -39,6 +39,10 @@ export function useFoodLog() {
   const { user } = useAuth()
   const [selectedDate, setSelectedDate] = useState(todayStr())
   const [log, setLog] = useState(() => readCache(user?.id, todayStr()))
+  /* Кешът рисува деня веднага, но той може да е празен или вчерашен. Докато
+     мрежата не отговори, „нула калории" не е факт, а незнание — а награда,
+     раздадена върху незнание, изскача при всяко отваряне. */
+  const [loading, setLoading] = useState(true)
 
   const isToday = selectedDate === todayStr()
 
@@ -46,6 +50,7 @@ export function useFoodLog() {
   // never blanks — the network fetch that follows will replace with fresh data.
   useEffect(() => {
     setLog(readCache(user?.id, selectedDate))
+    setLoading(true)
   }, [user?.id, selectedDate])
 
   const fetchLog = useCallback(async () => {
@@ -62,6 +67,7 @@ export function useFoodLog() {
       writeCache(user.id, selectedDate, data)
       return next
     })
+    setLoading(false)
   }, [user?.id, selectedDate])
 
   useEffect(() => { fetchLog() }, [fetchLog])
@@ -180,7 +186,7 @@ export function useFoodLog() {
   }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 
   return {
-    log, totals, selectedDate, setSelectedDate, isToday,
+    log, totals, loading, selectedDate, setSelectedDate, isToday,
     addEntry, addRawEntry, updateEntry, removeEntry, clearLog,
     uploadMealPhoto, removeMealPhoto,
     refresh: fetchLog,

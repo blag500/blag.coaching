@@ -360,3 +360,55 @@ test.describe('Дневникът с храната', () => {
     }
   })
 })
+
+
+test.describe('Награди', () => {
+  /* Наградата се печели навсякъде, значи трябва да се вижда навсякъде и да
+     иска натискане, за да си отиде. Тестът отмята последните два навика и
+     чака прозорчето отпред. */
+  test('изпълнените навици вдигат прозорче, което чака натискане', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await goTab(page, 'ПРОФИЛ')
+
+    // Четири от шест са отметнати в харнеса; последните два ги затваряме тук.
+    for (const name of ['10 000 крачки', 'Без захар']) {
+      await page.locator('button', { hasText: name }).first().click()
+      await page.waitForTimeout(400)
+    }
+
+    const popup = page.locator('[role="dialog"]')
+    await expect(popup).toBeVisible({ timeout: 10000 })
+    await expect(popup).toContainText('НАВИЦИ')
+
+    // Не си отива само. Изчакваме по-дълго от стария таймер от три секунди.
+    await page.waitForTimeout(3500)
+    await expect(popup).toBeVisible()
+
+    await popup.click({ position: { x: 10, y: 10 } })
+    await expect(popup).toHaveCount(0)
+  })
+
+  /* Обратното е също толкова важно: ден, който вече е изпълнен, не е
+     постижение, случило се сега. Наградата тръгва от преминаване, а докато
+     мрежата мълчи, празният ден е неизвестен, не празен — точно там се
+     раждаше прозорче при всяко отваряне. */
+  test('вече изпълненият ден не вдига прозорче при отваряне', async ({ page }) => {
+    test.setTimeout(90000)
+    const seeded = TABLES.food_logs.slice()
+    TABLES.food_logs.push({
+      id: 'fbig', user_id: USER_ID, date: today(), name: 'Голяма чиния',
+      grams: 1000, kcal: 3000, protein: 100, carbs: 300, fat: 80,
+      meal_type: 'dinner', estimated: null,
+    })
+    try {
+      await enterApp(page)
+      await goTab(page, 'ХРАНЕНЕ')
+      await page.waitForTimeout(2500)
+      await expect(page.locator('[role="dialog"]')).toHaveCount(0)
+    } finally {
+      TABLES.food_logs.length = 0
+      TABLES.food_logs.push(...seeded)
+    }
+  })
+})

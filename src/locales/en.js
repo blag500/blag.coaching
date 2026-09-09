@@ -177,6 +177,7 @@ export default {
   'badge.training.sub':   'Workout logged for today!',
   'badge.perfect.label':  'PERFECT DAY',
   'badge.perfect.sub':    'All daily goals achieved!',
+  'badge.dismiss':      'Tap to close',
 
   // ReadinessWidget
   'readiness.title':    'READINESS',

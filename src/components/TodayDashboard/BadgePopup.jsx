@@ -1,33 +1,46 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
+import Confetti from './Confetti'
 import styles from './BadgePopup.module.css'
 
 const EMOJIS = { calories: '🥗', habits: '✅', training: '💪', perfect: '⭐' }
 
+/**
+ * Спечелената награда, отпред.
+ *
+ * Дотук беше лентичка долу, която сама си отиваше след две секунди и половина
+ * — точно колкото да я подминеш. Ако нещо е достойно да се празнува, то е
+ * достойно да поиска едно натискане: екранът потъмнява, наградата стои в
+ * средата и си отива, когато човекът каже.
+ *
+ * Няма таймер нарочно. Наградата е рядка — по една на ден, най-много четири —
+ * и не е известие, което да гони вниманието и да се маха учтиво.
+ */
 export default function BadgePopup({ badge, onDone }) {
   const { t } = useSettings()
-  const [phase, setPhase] = useState('in')
-  const def = badge ? {
-    emoji: EMOJIS[badge],
-    label: t(`badge.${badge}.label`),
-    sub:   t(`badge.${badge}.sub`),
-  } : null
 
   useEffect(() => {
-    const hide = setTimeout(() => setPhase('out'), 2600)
-    const done = setTimeout(onDone, 3000)
-    return () => { clearTimeout(hide); clearTimeout(done) }
-  }, [])
+    const onKey = e => { if (e.key === 'Escape') onDone() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onDone])
 
-  if (!def) return null
+  if (!badge) return null
+
   return (
-    <div className={`${styles.wrap} ${phase === 'out' ? styles.out : styles.in}`}>
+    <div
+      className={styles.scrim}
+      onClick={onDone}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t(`badge.${badge}.label`)}
+    >
       <div className={styles.popup}>
-        <span className={styles.emoji}>{def.emoji}</span>
-        <div className={styles.text}>
-          <span className={styles.label}>{def.label}</span>
-          <span className={styles.sub}>{def.sub}</span>
-        </div>
+        <Confetti burst={badge} />
+        <span className={styles.emoji}>{EMOJIS[badge]}</span>
+        <span className={styles.label}>{t(`badge.${badge}.label`)}</span>
+        <span className={styles.sub}>{t(`badge.${badge}.sub`)}</span>
+        <span className={styles.hint}>{t('badge.dismiss')}</span>
       </div>
     </div>
   )

@@ -9,6 +9,8 @@ function todayStr() {
 export function useHabitsToday() {
   const { user, profile } = useAuth()
   const [checked, setChecked] = useState({})
+  /* Докато отметките не са дошли, „нищо не е отметнато" не е факт. */
+  const [loading, setLoading] = useState(true)
 
   // Habits are personal — a new client sees an empty list and picks their own
   // in Profile. „Everyone's habits" was nobody's, so no default seed.
@@ -29,6 +31,7 @@ export function useHabitsToday() {
           data.forEach(r => { map[r.habit_id] = r.completed })
           setChecked(map)
         }
+        setLoading(false)
       })
   }, [user?.id])
 
@@ -42,5 +45,5 @@ export function useHabitsToday() {
     )
   }
 
-  return { habits, checked, toggle }
+  return { habits, checked, toggle, loading }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useHabitsToday } from '../../hooks/useHabitsToday'
+import { useRewards } from '../../contexts/RewardsContext'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
 import HabitCheckbox from './HabitCheckbox'
 import RingProgress from './RingProgress'
@@ -29,7 +30,7 @@ function calcCelebStreak(history) {
 }
 
 export default function Compliance() {
-  const { habits, checked, toggle } = useHabitsToday()
+  const { habits, checked, toggle, loading: habitsLoading } = useHabitsToday()
   const history = useHabitHistory()
   const [showCelebration, setShowCelebration] = useState(false)
   const [celebStreak, setCelebStreak] = useState(1)
@@ -37,6 +38,11 @@ export default function Compliance() {
 
   const completedCount = habits.filter(h => checked[h.id]).length
   const allDone = habits.length > 0 && completedCount === habits.length
+
+  /* Навиците се отмятат тук — тук трябва и да се вижда, че са всичките. */
+  const { report } = useRewards()
+  const habitsKnown = !habitsLoading && habits.length > 0
+  useEffect(() => { report('habits', allDone, habitsKnown) }, [allDone, habitsKnown, report])
 
   useEffect(() => {
     if (!allDone) return

@@ -1,65 +1,85 @@
-﻿.wrap {
+/* Наградата стои отпред, а не долу.
+   z-index над 999, защото под него минават менюто и листовете; порталът я
+   слага на body, за да не я закачи трансформацията на табовете. */
+.scrim {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 96px);
-  left: 50%;
-  z-index: 250;
-  pointer-events: none;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+  animation: scrimIn 220ms var(--ease-out) both;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.in {
-  animation: slideUp 0.4s var(--ease-spring) both;
-}
-
-.out {
-  animation: fadeOut 0.4s ease both;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateX(-50%) translateY(24px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; transform: translateX(-50%) translateY(0); }
-  to   { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+@keyframes scrimIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
 }
 
 .popup {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  background: var(--surface-1);
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  padding: 30px 26px 22px;
+  text-align: center;
+  background: var(--panel-solid, var(--surface-1));
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: var(--r-lg);
-  padding: 14px 20px 14px 16px;
-  min-width: 220px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(var(--accent-rgb),0.08);
+  box-shadow:
+    0 24px 70px -12px rgba(0, 0, 0, 0.75),
+    0 0 60px -20px rgba(var(--accent-rgb), 0.55);
+  animation: popIn 320ms var(--ease-spring) both;
+}
+
+/* Идва отдолу и малко отдалеч — както се подава нещо в ръката, а не както
+   изскача известие. */
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.94) }
+  to   { opacity: 1; transform: translateY(0) scale(1) }
 }
 
 .emoji {
-  font-size: 34px;
+  font-size: 54px;
   line-height: 1;
-  flex-shrink: 0;
-}
-
-.text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
 }
 
 .label {
   font-family: var(--font-heading);
-  font-size: 17px;
-  letter-spacing: 0.1em;
+  font-size: 24px;
+  letter-spacing: 0.12em;
   color: var(--accent);
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .sub {
   font-family: var(--font-body);
-  font-size: 10px;
-  color: var(--muted);
-  line-height: 1.4;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  opacity: 0.85;
 }
 
+/* Казва как се затваря. Единствената задача на прозорчето, която не е
+   очевидна от само себе си. */
+.hint {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim, .popup { animation: none }
+}

@@ -178,6 +178,7 @@ export default {
   'badge.training.sub':   'Тренировката е отчетена за днес!',
   'badge.perfect.label':  'ПЕРФЕКТЕН ДЕН',
   'badge.perfect.sub':    'Постигна всички цели за деня!',
+  'badge.dismiss':      'Натисни, за да затвориш',
 
   // ReadinessWidget
   'readiness.title':    'ГОТОВНОСТ',

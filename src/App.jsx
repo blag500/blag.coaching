@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
+import { RewardsProvider } from './contexts/RewardsContext'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
@@ -406,7 +407,11 @@ export default function App() {
   return (
     <SettingsProvider>
       <AuthProvider>
-        <AppShell />
+        {/* Наградите стоят над цялото приложение, защото се печелят навсякъде
+            в него — виж RewardsContext. */}
+        <RewardsProvider>
+          <AppShell />
+        </RewardsProvider>
       </AuthProvider>
     </SettingsProvider>
   )
