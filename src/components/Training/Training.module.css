@@ -471,6 +471,10 @@
 }
 
 .chapter {
+  composes: arrive from '../../styles/arrive.module.css';
+  /* Едно след друго. Шейсет милисекунди е достатъчно, за да се усети
+     последователност, и малко, за да не забави отварянето. */
+  animation-delay: calc(var(--i, 0) * 60ms);
   position: relative;
   padding: 0;
 }
@@ -510,9 +514,8 @@
   text-align: left;
   -webkit-tap-highlight-color: transparent;
   opacity: 0.45;
-  transition: opacity 200ms;
+  transition: opacity 200ms, transform 140ms var(--ease-out);
 }
-.chapterHit:active { transform: none; }
 .chapterDue .chapterHit { opacity: 1; }
 .chapterRest .chapterHit { opacity: 0.32; }
 
@@ -980,4 +983,41 @@
   font-size: 0;
   color: var(--accent);
   line-height: 0;
+}
+
+/* Името и знакът му на един ред. */
+.chapterTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+/* Знакът на групата. Цветът идва от --face на реда, а тинтът се вади от него
+   с color-mix — една променлива вместо два твърдо изписани rgba за всяка
+   група, точно както при чиповете с навиците. */
+.chapterIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--face, var(--accent));
+  background: color-mix(in srgb, var(--face, var(--accent)) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--face, var(--accent)) 30%, transparent);
+  /* Чакащите блокове са смълчани заедно с реда си; редът, който е наред,
+     носи цвета си напълно. */
+  transition: opacity 200ms var(--ease-out);
+}
+
+/* Редът е широк колкото екрана — свиването е едва доловимо нарочно. Толкова
+   голяма мишена, свита с четири процента, изглежда като поддала се страница. */
+.chapterHit:active {
+  transform: scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapterHit:active { transform: none }
 }

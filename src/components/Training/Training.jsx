@@ -313,6 +313,23 @@ export default function Training({ onMenuOpen }) {
 
   // Label → groups. Explicit group ticks in the editor beat the label-based
   // classifier, so a "Ден 1" block still lights up the mannequin.
+  /* Лицето на блока.
+   *
+   * Същият похват като чиповете с навиците в ДНЕС: един цвят, носен от една
+   * променлива, и рисунка до името. Цветът никога не е това, което ги
+   * различава — името и знакът вършат тази работа — той само дава на реда
+   * собствена тежест, за да не е списъкът шест еднакви сиви реда.
+   *
+   * Блокът пипа повече от една група; тук се взима първата, защото това е
+   * лице, не отчет. Кой мускул кога е пипан пише в реда отдолу.
+   */
+  const GROUP_FACE = {
+    upper: { icon: 'upper', color: '#FF8A65' },
+    pull:  { icon: 'pull',  color: '#42A5F5' },
+    lower: { icon: 'lower', color: '#66BB6A' },
+    extra: { icon: 'extra', color: '#AB47BC' },
+  }
+
   const groupsByLabel = useMemo(() => {
     const out = {}
     for (const b of blocks ?? []) out[b.label] = resolveGroups(b, exerciseMap)
@@ -856,6 +873,7 @@ export default function Training({ onMenuOpen }) {
                  групата има един часовник. Тук пише кога групата е пипана и
                  от кого; кой блок кога е ред остава работа на ротацията. */
               const touch = isRest ? null : groupLastTouch(block, enrichedCompletions, groupsByLabel, exerciseMap)
+              const face = isRest ? null : GROUP_FACE[[...(groupsByLabel[block.label] ?? [])][0]]
               const meta = isRest
                 ? t('tr.metaRest')
                 : last
@@ -877,6 +895,9 @@ export default function Training({ onMenuOpen }) {
                     isRest ? styles.chapterRest : '',
                     started ? styles.chapterStarted : '',
                   ].join(' ')}
+                  /* Пристигат едно след друго, по шейсет милисекунди. Списък,
+                     който се появява наведнъж, изглежда нарисуван предварително. */
+                  style={{ '--i': i, '--face': face?.color ?? 'var(--muted)' }}
                 >
                   <button
                     type="button"
@@ -891,7 +912,14 @@ export default function Training({ onMenuOpen }) {
                   >
                     <span className={styles.chapterNo}>{String(i + 1).padStart(2, '0')}</span>
                     <span className={styles.chapterText}>
-                      <span className={styles.chapterName}>{block.label}</span>
+                      <span className={styles.chapterTitleRow}>
+                        {face && (
+                          <span className={styles.chapterIcon}>
+                            <Pictogram name={face.icon} size={15} />
+                          </span>
+                        )}
+                        <span className={styles.chapterName}>{block.label}</span>
+                      </span>
                       <span className={styles.chapterMeta}>
                         {/* Започнатото се казва вместо готовността: щом днес вече
                             е вдиган сет тук, въпросът „възстановен ли си" е
