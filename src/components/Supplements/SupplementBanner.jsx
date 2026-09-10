@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './SupplementBanner.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 export default function SupplementBanner({ count, onNavigate, onDismiss }) {
   const { t } = useSettings()
@@ -11,7 +12,7 @@ export default function SupplementBanner({ count, onNavigate, onDismiss }) {
 
   return (
     <div className={styles.banner} role="alert">
-      <span className={styles.icon}>💊</span>
+      <span className={styles.icon}><Pictogram name="capsule" size={16} /></span>
       <span className={styles.text}>
         {count === 1 ? t('sb.one') : t('sb.many', { n: count })}
       </span>

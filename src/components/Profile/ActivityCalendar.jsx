@@ -4,13 +4,14 @@ import { useAuth } from '../../contexts/AuthContext'
 import styles from './ActivityCalendar.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 import { loc } from '../../utils/locale'
+import Pictogram from '../Pictogram/Pictogram'
 
 const CATEGORIES = [
-  { key: 'training', color: 'var(--accent)', labelKey: 'ac.training', emoji: '💪' },
-  { key: 'food',     color: '#66BB6A', labelKey: 'ac.food',   emoji: '🥗' },
-  { key: 'habits',   color: '#4FC3F7', labelKey: 'ac.habits', emoji: '✅' },
-  { key: 'weight',   color: '#F06292', labelKey: 'ac.weight', emoji: '⚖️' },
-  { key: 'sleep',    color: '#CE93D8', labelKey: 'ac.sleep',  emoji: '😴' },
+  { key: 'training', color: 'var(--accent)', labelKey: 'ac.training', icon: 'training' },
+  { key: 'food',     color: '#66BB6A', labelKey: 'ac.food',   icon: 'kcal' },
+  { key: 'habits',   color: '#4FC3F7', labelKey: 'ac.habits', icon: 'check' },
+  { key: 'weight',   color: '#F06292', labelKey: 'ac.weight', icon: 'weight' },
+  { key: 'sleep',    color: '#CE93D8', labelKey: 'ac.sleep',  icon: 'sleep' },
 ]
 
 
@@ -130,10 +131,10 @@ export default function ActivityCalendar() {
     <div>
       {/* Monthly stats */}
       <div className={styles.stats}>
-        <StatChip emoji="📅" value={monthStats.activeDays} label={t('ac.activeDays')} />
-        <StatChip emoji="💪" value={monthStats.training}   label={t('ac.workouts')} />
-        <StatChip emoji="🥗" value={monthStats.food}       label={t('ac.foodDays')} />
-        <StatChip emoji="✅" value={monthStats.habits}     label={t('ac.habitDays')} />
+        <StatChip icon="calendar" value={monthStats.activeDays} label={t('ac.activeDays')} />
+        <StatChip icon="training" value={monthStats.training}   label={t('ac.workouts')} />
+        <StatChip icon="kcal" value={monthStats.food}       label={t('ac.foodDays')} />
+        <StatChip icon="check" value={monthStats.habits}     label={t('ac.habitDays')} />
       </div>
 
       {/* Month navigation */}
@@ -194,10 +195,10 @@ export default function ActivityCalendar() {
             <p className={styles.detailEmpty}>{t('ac.detailEmpty')}</p>
           ) : (
             <div className={styles.detailRow}>
-              {CATEGORIES.map(({ key, color, labelKey, emoji }) =>
+              {CATEGORIES.map(({ key, color, labelKey, icon }) =>
                 selAct[key] ? (
                   <span key={key} className={styles.detailBadge} style={{ borderColor: color + '55', color }}>
-                    {emoji} {t(labelKey)}
+                    <Pictogram name={icon} size={13} /> {t(labelKey)}
                   </span>
                 ) : null
               )}
@@ -209,10 +210,10 @@ export default function ActivityCalendar() {
   )
 }
 
-function StatChip({ emoji, value, label }) {
+function StatChip({ icon, value, label }) {
   return (
     <div className={styles.statChip}>
-      <span className={styles.statEmoji}>{emoji}</span>
+      <span className={styles.statEmoji}><Pictogram name={icon} size={15} /></span>
       <span className={styles.statValue}>{value}</span>
       <span className={styles.statLabel}>{label}</span>
     </div>

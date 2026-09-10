@@ -1,13 +1,14 @@
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './WelcomeOverlay.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 const STEP_KEYS = [
-  { icon: '🥗', key: 'nutrition'  },
-  { icon: '💪', key: 'training'   },
-  { icon: '📊', key: 'progress'   },
-  { icon: '💬', key: 'messages'   },
-  { icon: '📸', key: 'mealphotos' },
-  { icon: '✅', key: 'habits'     },
+  { icon: 'kcal', key: 'nutrition'  },
+  { icon: 'training', key: 'training'   },
+  { icon: 'trend', key: 'progress'   },
+  { icon: 'chat', key: 'messages'   },
+  { icon: 'camera', key: 'mealphotos' },
+  { icon: 'check', key: 'habits'     },
 ]
 
 export default function WelcomeOverlay({ onDone }) {
@@ -21,7 +22,7 @@ export default function WelcomeOverlay({ onDone }) {
         <ul className={styles.steps}>
           {STEP_KEYS.map(s => (
             <li key={s.key} className={styles.step}>
-              <span className={styles.stepIcon}>{s.icon}</span>
+              <span className={styles.stepIcon}><Pictogram name={s.icon} size={22} /></span>
               <div>
                 <p className={styles.stepLabel}>{t(`welcome.step.${s.key}.label`)}</p>
                 <p className={styles.stepDesc}>{t(`welcome.step.${s.key}.desc`)}</p>

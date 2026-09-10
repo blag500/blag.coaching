@@ -5,6 +5,7 @@ import { registerPushSubscription } from '../../hooks/usePushNotifications'
 import { useReminderSettings } from '../../hooks/useReminderSettings'
 import styles from './NotificationSettings.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import Pictogram from '../Pictogram/Pictogram'
 
 const DEFAULT = { enabled: false, morningTime: '08:00', eveningTime: '21:00' }
 
@@ -31,13 +32,13 @@ function scheduleNotifications(t, settings) {
    имейлът стои зад изключен флаг — преименуването на седем колони заради
    името им не си струва миграция, но интерфейсът вече не бива да лъже. */
 export const REMINDERS = [
-  { key: 'checkin_email',     emoji: '🌅', labelKey: 'ns.checkin',     time: '07:00' },
-  { key: 'weight_email',      emoji: '⚖️', labelKey: 'ns.weight',      time: '07:30' },
-  { key: 'habits_email',      emoji: '✅', labelKey: 'ns.habits',      time: '08:00' },
-  { key: 'supplements_email', emoji: '💊', labelKey: 'ns.supplements', time: '08:30' },
-  { key: 'water_email',       emoji: '💧', labelKey: 'ns.water',       time: '14:00' },
-  { key: 'food_email',        emoji: '🍽', labelKey: 'ns.food',        time: '16:00' },
-  { key: 'training_email',    emoji: '💪', labelKey: 'ns.training',    time: '19:00' },
+  { key: 'checkin_email',     icon: 'calendar', labelKey: 'ns.checkin',     time: '07:00' },
+  { key: 'weight_email',      icon: 'weight', labelKey: 'ns.weight',      time: '07:30' },
+  { key: 'habits_email',      icon: 'check', labelKey: 'ns.habits',      time: '08:00' },
+  { key: 'supplements_email', icon: 'capsule', labelKey: 'ns.supplements', time: '08:30' },
+  { key: 'water_email',       icon: 'water', labelKey: 'ns.water',       time: '14:00' },
+  { key: 'food_email',        icon: 'meal', labelKey: 'ns.food',        time: '16:00' },
+  { key: 'training_email',    icon: 'training', labelKey: 'ns.training',    time: '19:00' },
 ]
 
 export default function NotificationSettings() {
@@ -157,7 +158,7 @@ export function ReminderListCard({ email, toggle, toggleAll, loading, saving }) 
         <div className={`${styles.emailList} ${!email.email_enabled ? styles.emailListDisabled : ''}`}>
           {REMINDERS.map(r => (
             <div key={r.key} className={styles.emailRow}>
-              <span className={styles.emailEmoji}>{r.emoji}</span>
+              <span className={styles.emailEmoji}><Pictogram name={r.icon} size={15} /></span>
               <span className={styles.emailLabel}>{t(r.labelKey)}</span>
               <span className={styles.emailTime}>{r.time}</span>
               <button
