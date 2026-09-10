@@ -83,6 +83,12 @@
 }
 
 .item {
+  /* Пристигането е споделеното, не собствено копие — виж arrive.module.css.
+     composes стои при първата дефиниция на класа: втора дефиниция със същото
+     име не го наследява и жестът тихо не се прилага. */
+  composes: arrive from '../../styles/arrive.module.css';
+  animation-delay: calc(var(--i, 0) * 45ms);
+
   border-bottom: 1px solid var(--border);
 }
 
@@ -348,3 +354,18 @@
 
 .logBtn:active { opacity: 0.85; }
 
+
+/* Каноничните цветове на трите макроса. Същите, с които са нарисувани
+   лентите в ДНЕС и числата в дневника: един макрос, един цвят, навсякъде. */
+.macroP { color: var(--macro-protein); opacity: 0.85 }
+.macroC { color: var(--macro-carbs);   opacity: 0.85 }
+.macroF { color: var(--macro-fat);     opacity: 0.85 }
+
+.metaKcal { color: var(--text); opacity: 0.75 }
+.metaSep  { opacity: 0.35 }
+
+.thumbPlaceholder { color: var(--muted) }
+
+@media (prefers-reduced-motion: reduce) {
+  .item { animation: none }
+}

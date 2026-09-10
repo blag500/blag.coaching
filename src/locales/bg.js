@@ -893,6 +893,7 @@ export default {
   'rl.emptyMain':       'Нямаш рецепти. Добави първата!',
   'rl.emptyMatch':      'Няма намерени рецепти.',
   'rl.summary':         '{kcal} ккал · {servings} порции · {grams}g',
+  'rl.servingsShort':   '{n} порции',
   'rl.addAria':         'Добави {name}',
   'rl.expandedTotal':   '{kcal} ккал · П{p}g · В{c}g · М{f}g',
   'rl.expandedMeta':    '{servings} порции · {grams}g общо',

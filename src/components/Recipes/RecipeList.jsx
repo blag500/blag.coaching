@@ -4,6 +4,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import RecipeForm from './RecipeForm'
 import styles from './RecipeList.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 function calcTotals(ingredients) {
   return (ingredients || []).reduce((acc, ing) => {
@@ -133,7 +134,7 @@ export default function RecipeList({ onAddRaw }) {
         </p>
       ) : (
         <ul className={styles.list}>
-          {filtered.map(recipe => {
+          {filtered.map((recipe, i) => {
             const totals  = calcTotals(recipe.ingredients)
             const isExp   = expanded === recipe.id
             const s       = parseFloat(servingVal) || 1
@@ -143,17 +144,37 @@ export default function RecipeList({ onAddRaw }) {
               : g / (recipe.total_grams || 100)
 
             return (
-              <li key={recipe.id} className={`${styles.item} ${isExp ? styles.itemExpanded : ''}`}>
+              <li
+                key={recipe.id}
+                className={`${styles.item} ${isExp ? styles.itemExpanded : ''}`}
+                /* Само първите шест: стълбата има смисъл при отваряне на
+                   списъка, не при трийсетата рецепта надолу. */
+                style={i < 6 ? { '--i': i } : undefined}
+              >
                 {!isExp ? (
                   <div className={styles.row} onClick={() => openRecipe(recipe)}>
                     {recipe.photo_url
                       ? <img src={recipe.photo_url} className={styles.thumb} alt="" />
-                      : <div className={styles.thumbPlaceholder}>🍽</div>
+                      : <div className={styles.thumbPlaceholder}><Pictogram name="meal" size={20} /></div>
                     }
                     <div className={styles.info}>
                       <span className={styles.name}>{recipe.name}</span>
                       <span className={styles.meta}>
-                        {t('rl.summary', { kcal: Math.round(totals.kcal), servings: recipe.servings, grams: recipe.total_grams })}
+                        {/* Същият ред като в дневника: трите макроса със
+                            своите цветове, за да се сравняват рецепти с
+                            поглед, не с четене. Порциите и грамажът остават
+                            отзад — те казват колко, не какво. */}
+                        <span className={styles.metaKcal}>
+                          {Math.round(totals.kcal)} {t('unit.kcal')}
+                        </span>
+                        <span className={styles.metaSep}> · </span>
+                        <span className={styles.macroP}>{t('nutr.card.pShort')}{Math.round(totals.protein)}</span>
+                        <span className={styles.metaSep}> · </span>
+                        <span className={styles.macroC}>{t('nutr.card.cShort')}{Math.round(totals.carbs)}</span>
+                        <span className={styles.metaSep}> · </span>
+                        <span className={styles.macroF}>{t('nutr.card.fShort')}{Math.round(totals.fat)}</span>
+                        <span className={styles.metaSep}> · </span>
+                        <span>{t('rl.servingsShort', { n: recipe.servings })}</span>
                       </span>
                     </div>
                     <button

@@ -892,6 +892,7 @@ export default {
   'rl.emptyMain':       'No recipes yet. Add your first!',
   'rl.emptyMatch':      'No matching recipes.',
   'rl.summary':         '{kcal} kcal · {servings} servings · {grams}g',
+  'rl.servingsShort':   '{n} servings',
   'rl.addAria':         'Add {name}',
   'rl.expandedTotal':   '{kcal} kcal · P{p}g · C{c}g · F{f}g',
   'rl.expandedMeta':    '{servings} servings · {grams}g total',
