@@ -5,6 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import BarcodeScanner from '../FoodLogger/BarcodeScanner'
 import styles from './RecipeForm.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 function CameraIcon({ size = 16 }) {
   return (
@@ -384,7 +385,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
                       onClick={() => setScanning(true)}
                       type="button"
                       title={t('rf.barcode')}
-                    >📷</button>
+                    ><Pictogram name="camera" size={15} /></button>
                   </div>
                   {pickerError && <p className={styles.pickerError}>{pickerError}</p>}
                   {pickerResults.length > 0 && <EstimateFlag />}

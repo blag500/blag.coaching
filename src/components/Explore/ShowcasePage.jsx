@@ -5,6 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { defaultHabits } from '../../data/appData'
 import styles from './ShowcasePage.module.css'
 import { loc } from '../../utils/locale'
+import Pictogram from '../Pictogram/Pictogram'
 
 const CATEGORIES = [
   { id: null,        labelKey: 'sc.cat.all' },
@@ -242,7 +243,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
         {trainingStreak > 0 && (
           <div className={styles.streakBadge}>
             <span className={styles.streakNum}>{trainingStreak}</span>
-            <span className={styles.streakLabel}>🔥</span>
+            <span className={styles.streakLabel}><Pictogram name="flame" size={15} /></span>
           </div>
         )}
       </div>
@@ -257,7 +258,7 @@ function CoachLiveCard({ data, onPhotoClick }) {
           return (
             <div key={d.date} className={styles.dotCol}>
               <div className={`${styles.dot} ${d.trained ? styles.dotDone : ''} ${isToday ? styles.dotToday : ''}`}>
-                {d.trained && <span className={styles.dotEmoji}>💪</span>}
+                {d.trained && <span className={styles.dotEmoji}><Pictogram name="training" size={11} /></span>}
               </div>
               {label && <span className={styles.dotWorkoutLabel}>{label}</span>}
               <span className={`${styles.dotLabel} ${isToday ? styles.dotLabelToday : ''}`}>

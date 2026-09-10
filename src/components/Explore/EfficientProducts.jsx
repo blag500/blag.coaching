@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './EfficientProducts.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 const FORM_EMPTY = { name: '', source: '', price: '', indicator: '' }
 
@@ -127,7 +128,7 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
                 type="button"
                 aria-label={t('ep.like')}
               >
-                💪 {likeCount > 0 && <span className={styles.likeCount}>{likeCount}</span>}
+                <Pictogram name="training" size={14} /> {likeCount > 0 && <span className={styles.likeCount}>{likeCount}</span>}
               </button>
             </div>
           </>

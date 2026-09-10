@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { useMealLibrary } from '../../hooks/useMealLibrary'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './MealCards.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 // ── System meals (hardcoded) ──────────────────────────────────────────────────
 
@@ -449,7 +450,7 @@ function AddMealModal({ onSave, onClose, onUploadPhoto }) {
             type="button"
             className={styles.photoPickBtn}
             onClick={() => photoInputRef.current?.click()}
-          >📷 ИЗБЕРИ СНИМКА</button>
+          ><Pictogram name="camera" size={14} /> ИЗБЕРИ СНИМКА</button>
         )}
 
       </div>

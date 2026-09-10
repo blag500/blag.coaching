@@ -2,6 +2,7 @@ import { useAllOrders } from '../../hooks/useShop'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './OrdersPanel.module.css'
 import { loc } from '../../utils/locale'
+import Pictogram from '../Pictogram/Pictogram'
 
 const STATUS_LABEL_KEYS = {
   pending_payment: 'op.status.pending_payment',
@@ -116,7 +117,7 @@ function OrderCard({ order, onAdvance }) {
         <div className={styles.address}>📍 {order.delivery_address}</div>
       )}
       {order.delivery_notes && (
-        <div className={styles.notes}>💬 {order.delivery_notes}</div>
+        <div className={styles.notes}><Pictogram name="chat" size={13} /> {order.delivery_notes}</div>
       )}
 
       {nextKey && onAdvance && (

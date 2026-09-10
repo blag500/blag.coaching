@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { LEARN_CARDS } from '../../data/learnCards'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './LearnPage.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 // ── Helpers ───────────────────────────────────────────────────
 const QUIZ_SIZE = 10  // cards per session
@@ -361,7 +362,7 @@ function HistoryView({ todayResult, history, onReplay }) {
         <h1 className={styles.title}>{t('nav.learn')}</h1>
         {streak > 0 && (
           <div className={styles.streakBadge}>
-            🔥 {streak} {streak === 1 ? t('learn.day.one') : t('learn.day.many')}
+            <Pictogram name="flame" size={13} /> {streak} {streak === 1 ? t('learn.day.one') : t('learn.day.many')}
           </div>
         )}
       </header>

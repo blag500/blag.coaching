@@ -4,6 +4,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './Chat.module.css'
 import { loc } from '../../utils/locale'
+import Pictogram from '../Pictogram/Pictogram'
 
 export default function Chat({ clientId, clientName, onClose }) {
   const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
@@ -183,7 +184,7 @@ export default function Chat({ clientId, clientName, onClose }) {
           type="button"
           aria-label={t('chat.sendImg')}
         >
-          {uploading ? '…' : '📷'}
+          {uploading ? '…' : <Pictogram name="camera" size={17} />}
         </button>
         <input
           className={styles.field}

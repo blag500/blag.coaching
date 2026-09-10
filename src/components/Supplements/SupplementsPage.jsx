@@ -3,6 +3,7 @@ import { useSupplements } from '../../hooks/useSupplements'
 import { useSettings } from '../../contexts/SettingsContext'
 import MonthCalendar from '../Training/MonthCalendar'
 import styles from './SupplementsPage.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 const TIMING_KEYS = [
   'supp.time.morning', 'supp.time.fasted', 'supp.time.preTrain',
@@ -73,7 +74,7 @@ export default function SupplementsPage() {
         <div className={styles.headerRight}>
           {streak > 1 && (
             <div className={styles.streakBadge}>
-              <span className={styles.streakFire}>🔥</span>
+              <span className={styles.streakFire}><Pictogram name="flame" size={16} /></span>
               <span className={styles.streakNum}>{streak}</span>
             </div>
           )}
@@ -112,7 +113,7 @@ export default function SupplementsPage() {
                       <span className={styles.meta}>{[s.dose, s.timing].filter(Boolean).join(' · ')}</span>
                     )}
                     {suppStreak > 1 && (
-                      <span className={styles.suppStreak}>🔥 {suppStreak}</span>
+                      <span className={styles.suppStreak}><Pictogram name="flame" size={11} /> {suppStreak}</span>
                     )}
                   </div>
                 </div>

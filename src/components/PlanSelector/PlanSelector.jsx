@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './PlanSelector.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 const PLANS = {
   free: {
@@ -11,10 +12,10 @@ const PLANS = {
     ctaKey: 'plan.free.cta',
     ctaStyle: 'free',
     features: [
-      { icon: '🍽', titleKey: 'plan.free.f1.title', subKey: 'plan.free.f1.sub' },
-      { icon: '🏋', titleKey: 'plan.free.f2.title', subKey: 'plan.free.f2.sub' },
-      { icon: '📊', titleKey: 'plan.free.f3.title', subKey: 'plan.free.f3.sub' },
-      { icon: '🔔', titleKey: 'plan.free.f4.title', subKey: 'plan.free.f4.sub' },
+      { icon: 'meal', titleKey: 'plan.free.f1.title', subKey: 'plan.free.f1.sub' },
+      { icon: 'training', titleKey: 'plan.free.f2.title', subKey: 'plan.free.f2.sub' },
+      { icon: 'trend', titleKey: 'plan.free.f3.title', subKey: 'plan.free.f3.sub' },
+      { icon: 'bell', titleKey: 'plan.free.f4.title', subKey: 'plan.free.f4.sub' },
       { icon: '♾', titleKey: 'plan.free.f5.title', subKey: 'plan.free.f5.sub' },
     ],
   },
@@ -79,7 +80,7 @@ export default function PlanSelector({ onSelect, onSaved }) {
         </p>
         {plan.features.map(f => (
           <div key={f.titleKey} className={styles.row}>
-            <span className={styles.rowIcon}>{f.icon}</span>
+            <span className={styles.rowIcon}><Pictogram name={f.icon} size={18} /></span>
             <div className={styles.rowText}>
               <span className={styles.rowTitle}>{t(f.titleKey)}</span>
               <span className={styles.rowSub}>{t(f.subKey)}</span>

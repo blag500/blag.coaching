@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './MealBot.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -10,34 +11,34 @@ const QUESTIONS = {
   timing: {
     textKey: 'mb.q.timing',
     options: [
-      { value: 'pre',    emoji: '🏋️', labelKey: 'mb.timing.pre'    },
-      { value: 'post',   emoji: '💪', labelKey: 'mb.timing.post'   },
-      { value: 'normal', emoji: '🍽',  labelKey: 'mb.timing.normal' },
+      { value: 'pre',    icon: 'energy',   labelKey: 'mb.timing.pre'    },
+      { value: 'post',   icon: 'training', labelKey: 'mb.timing.post'   },
+      { value: 'normal', icon: 'meal',     labelKey: 'mb.timing.normal' },
     ],
   },
   taste: {
     textKey: 'mb.q.craving',
     options: [
-      { value: 'salty', emoji: '🧂', labelKey: 'mb.craving.salty' },
-      { value: 'sweet', emoji: '🍫', labelKey: 'mb.craving.sweet' },
-      { value: 'any',   emoji: '🤷', labelKey: 'mb.craving.any'   },
+      { value: 'salty', labelKey: 'mb.craving.salty' },
+      { value: 'sweet', labelKey: 'mb.craving.sweet' },
+      { value: 'any',   labelKey: 'mb.craving.any'   },
     ],
   },
   cooking: {
     textKey: 'mb.q.effort',
     options: [
-      { value: 'none',  emoji: '⚡',  labelKey: 'mb.effort.none'  },
-      { value: 'quick', emoji: '🥗', labelKey: 'mb.effort.quick' },
-      { value: 'full',  emoji: '👨‍🍳', labelKey: 'mb.effort.full'  },
+      { value: 'none',  labelKey: 'mb.effort.none'  },
+      { value: 'quick', labelKey: 'mb.effort.quick' },
+      { value: 'full',  labelKey: 'mb.effort.full'  },
     ],
   },
   calories: {
     textKey: 'mb.q.size',
     options: [
-      { value: 'light',    emoji: '🥗', labelKey: 'mb.size.light'    },
-      { value: 'moderate', emoji: '🍱', labelKey: 'mb.size.moderate' },
-      { value: 'heavy',    emoji: '🍖', labelKey: 'mb.size.heavy'    },
-      { value: 'any',      emoji: '🎯', labelKey: 'mb.size.any'      },
+      { value: 'light',    labelKey: 'mb.size.light'    },
+      { value: 'moderate', labelKey: 'mb.size.moderate' },
+      { value: 'heavy',    labelKey: 'mb.size.heavy'    },
+      { value: 'any',      labelKey: 'mb.size.any'      },
     ],
   },
 }
@@ -53,10 +54,10 @@ const REACTION_KEYS = {
 const FLOW = ['timing', 'taste', 'cooking', 'calories']
 
 const MACRO_META = {
-  protein: { labelKey: 'mb.macro.protein', emoji: '🥩', unit: 'g' },
-  carbs:   { labelKey: 'mb.macro.carbs',   emoji: '🍞', unit: 'g' },
-  fat:     { labelKey: 'mb.macro.fat',     emoji: '🧈', unit: 'g' },
-  kcal:    { labelKey: 'mb.macro.kcal',    emoji: '🔥', unitKey: 'mb.unit.kcal' },
+  protein: { labelKey: 'mb.macro.protein', icon: 'protein', unit: 'g' },
+  carbs:   { labelKey: 'mb.macro.carbs',   icon: 'carbs',   unit: 'g' },
+  fat:     { labelKey: 'mb.macro.fat',     icon: 'fat',     unit: 'g' },
+  kcal:    { labelKey: 'mb.macro.kcal',    icon: 'kcal',    unitKey: 'mb.unit.kcal' },
 }
 
 /** Мерната единица на макроса — калориите са единствените с преводима. */
@@ -212,7 +213,7 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)) }
 function BotBubble({ text }) {
   return (
     <div className={styles.bubbleRow}>
-      <span className={styles.avatar}>🤖</span>
+      <span className={styles.avatar}><Pictogram name="chat" size={15} /></span>
       <div className={`${styles.bubble} ${styles.botBubble}`}>
         {text.split('\n').map((line, i, arr) => (
           <span key={i}>{parseBold(line)}{i < arr.length - 1 && <br />}</span>
@@ -233,7 +234,7 @@ function UserBubble({ text }) {
 function TypingIndicator() {
   return (
     <div className={styles.bubbleRow}>
-      <span className={styles.avatar}>🤖</span>
+      <span className={styles.avatar}><Pictogram name="chat" size={15} /></span>
       <div className={`${styles.bubble} ${styles.botBubble} ${styles.typing}`}>
         <span /><span /><span />
       </div>
@@ -305,7 +306,9 @@ export default function MealBot({ onAddRaw }) {
 
   async function handleOption(qKey, opt) {
     const s = sessionRef.current
-    addUser(`${opt.emoji} ${t(opt.labelKey)}`)
+    /* Ехото е текст в мехур, не интерфейс — там пиктограма не влиза.
+       Надписът стига: „Солено" се чете точно толкова добре без солницата. */
+    addUser(t(opt.labelKey))
     const newPrefs = { ...prefs, [qKey]: opt.value }
     setPrefs(newPrefs)
     await botSay(t(REACTION_KEYS[qKey][opt.value]), s)
@@ -350,7 +353,7 @@ export default function MealBot({ onAddRaw }) {
 
     await botSay(
       `${t('mb.foundIt')}\n\n` +
-      `🍴 **${top.name}**\n` +
+      `**${top.name}**\n` +
       `${t('mb.suggestMacros', {
         kcal: Math.round(top.kcal),
         p: Math.round(top.protein * 10) / 10,
@@ -376,7 +379,7 @@ export default function MealBot({ onAddRaw }) {
     addUser(t('mb.showOther'))
     const item = suggestions[next]
     await botSay(
-      `${t('mb.oneMore')}\n\n🍴 **${item.name}**\n` +
+      `${t('mb.oneMore')}\n\n**${item.name}**\n` +
       `${t('mb.nextMacros', {
         kcal: Math.round(item.kcal),
         p: Math.round(item.protein * 10) / 10,
@@ -474,7 +477,6 @@ export default function MealBot({ onAddRaw }) {
 
     const deficitLines = Object.entries(deficits)
       .map(([k, v]) => t('mb.deficitLine', {
-        emoji: MACRO_META[k].emoji,
         label: t(MACRO_META[k].labelKey),
         v,
         unit: macroUnit(t, MACRO_META[k]),
@@ -491,7 +493,7 @@ export default function MealBot({ onAddRaw }) {
   async function handleMacroPick(macro) {
     const s = sessionRef.current
     const m = MACRO_META[macro]
-    addUser(t('mb.coverMacro', { emoji: m.emoji, label: t(m.labelKey) }))
+    addUser(t('mb.coverMacro', { label: t(m.labelKey) }))
 
     await botSay(t('mb.analysingMacro', { label: t(m.labelKey).toLowerCase() }), s)
     if (sessionRef.current !== s) return
@@ -624,7 +626,7 @@ export default function MealBot({ onAddRaw }) {
                 onClick={() => handleOption(step, opt)}
                 type="button"
               >
-                <span className={styles.optEmoji}>{opt.emoji}</span>
+                {opt.icon && <span className={styles.optEmoji}><Pictogram name={opt.icon} size={15} /></span>}
                 {t(opt.labelKey)}
               </button>
             ))}
@@ -658,7 +660,7 @@ export default function MealBot({ onAddRaw }) {
                   onClick={() => handleMacroPick(macro)}
                   type="button"
                 >
-                  <span className={styles.optEmoji}>{m.emoji}</span>
+                  {m.icon && <span className={styles.optEmoji}><Pictogram name={m.icon} size={15} /></span>}
                   {t('mb.macroNeeded', { label: t(m.labelKey), gap, unit: macroUnit(t, m) })}
                 </button>
               )

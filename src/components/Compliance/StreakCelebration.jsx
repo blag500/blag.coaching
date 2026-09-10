@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import styles from './StreakCelebration.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import Pictogram from '../Pictogram/Pictogram'
 
 const COLORS = ['var(--accent)', '#ffd54f', '#fff9c4', '#ffe082', '#fff176', '#ffcc02']
 
@@ -50,7 +51,7 @@ export default function StreakCelebration({ streak, onDone }) {
       </div>
 
       <div className={styles.card}>
-        <span className={styles.fire}>🔥</span>
+        <span className={styles.fire}><Pictogram name="flame" size={44} /></span>
         <p className={styles.streakNum}>{streak}</p>
         <p className={styles.streakLabel}>{t('scel.streakLabel')}</p>
         <p className={styles.sub}>{t('scel.sub')}</p>

@@ -7,6 +7,7 @@ import ClientDetail from './ClientDetail'
 import Chat from '../Chat/Chat'
 import { supabase } from '../../lib/supabase'
 import styles from './CoachPanel.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 const STATUS_LABEL_KEYS = {
   pending:   'cp.status.pending',
@@ -463,7 +464,7 @@ export default function CoachPanel() {
                 {unreadByUser[coach.id] > 0 && (
                   <span className={styles.badge}>{unreadByUser[coach.id] > 9 ? '9+' : unreadByUser[coach.id]}</span>
                 )}
-                <span className={styles.chevron}>💬</span>
+                <span className={styles.chevron}><Pictogram name="chat" size={14} /></span>
               </button>
             ))}
           </div>

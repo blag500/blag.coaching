@@ -5,6 +5,7 @@ import { useHabitsToday } from '../../hooks/useHabitsToday'
 import styles from './CoachMyDay.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 import { loc } from '../../utils/locale'
+import Pictogram from '../Pictogram/Pictogram'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
@@ -69,7 +70,7 @@ export default function CoachMyDay() {
           disabled={trainLoading}
           type="button"
         >
-          <span className={styles.trainEmoji}>{trained ? '💪' : '💤'}</span>
+          <span className={styles.trainEmoji}><Pictogram name={trained ? 'training' : 'sleep'} size={15} /></span>
           <span>{trained ? t('cmd.trainedToday') : t('cmd.markTraining')}</span>
         </button>
         <p className={styles.trainHint}>

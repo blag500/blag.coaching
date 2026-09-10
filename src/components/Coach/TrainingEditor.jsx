@@ -285,7 +285,7 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                             onClick={() => setModal({ blockId: block.id, exercise: ex })}
                           >
                             <span className={`${styles.exThumb} ${url ? styles.exThumbHas : ''}`}>
-                              {url ? <img src={url} alt="" className={styles.exThumbImg} /> : '📷'}
+                              {url ? <img src={url} alt="" className={styles.exThumbImg} /> : <Pictogram name="camera" size={15} />}
                             </span>
                             <span className={styles.exBody}>
                               <span className={styles.exName}>
