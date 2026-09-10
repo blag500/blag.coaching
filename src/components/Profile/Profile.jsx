@@ -654,7 +654,7 @@ export default function Profile({ onMenuOpen, onNavigate }) {
               type="button"
               className={`${styles.toggleBtn} ${theme === 'dark'  ? styles.toggleBtnActive : ''}`}
               onClick={() => setTheme('dark')}
-            >🌙 {t('settings.theme.dark')}</button>
+            ><Pictogram name="sleep" size={13} /> {t('settings.theme.dark')}</button>
             <button
               type="button"
               className={`${styles.toggleBtn} ${theme === 'light' ? styles.toggleBtnActive : ''}`}
@@ -664,7 +664,7 @@ export default function Profile({ onMenuOpen, onNavigate }) {
               type="button"
               className={`${styles.toggleBtn} ${theme === 'glass' ? styles.toggleBtnActive : ''}`}
               onClick={() => setTheme('glass')}
-            >💎 {t('settings.theme.glass')}</button>
+            ><Pictogram name="gem" size={13} /> {t('settings.theme.glass')}</button>
           </div>
         </div>
         <div className={styles.settingsRow}>

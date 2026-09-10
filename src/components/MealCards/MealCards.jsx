@@ -213,7 +213,7 @@ function MealCard({ meal, onDelete, canDelete }) {
             )}
             {meal.availability && (
               <div className={styles.footerItem}>
-                <span className={styles.footerIcon}>📍</span>
+                <span className={styles.footerIcon}><Pictogram name="pin" size={13} /></span>
                 <span className={styles.footerText}>{meal.availability}</span>
               </div>
             )}

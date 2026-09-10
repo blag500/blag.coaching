@@ -19,6 +19,7 @@ import MealCards from '../MealCards/MealCards'
 import RecipeBuilder from '../FoodLogger/RecipeBuilder'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './NutritionCards.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 function greetingKey() {
   const h = new Date().getHours()
@@ -156,7 +157,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
 
       {!targets.kcal && (
         <button className={styles.setupPrompt} onClick={() => onNavigate?.('explore')} type="button">
-          <span className={styles.setupIcon}>🎯</span>
+          <span className={styles.setupIcon}><Pictogram name="target" size={22} /></span>
           <div className={styles.setupText}>
             <span className={styles.setupTitle}>{t('nutr.setupTitle')}</span>
             <span className={styles.setupDesc}>{t('nutr.setupDesc')}</span>
@@ -353,7 +354,7 @@ function CustomFoodCard({ t, food, servings, onServingsChange, onLog, onDelete }
               {t('nutr.card.log')}
             </button>
             <button className={styles.delBtn} onClick={onDelete} type="button" aria-label={t('foodlog.delete')}>
-              🗑
+              <Pictogram name="trash" size={15} />
             </button>
           </div>
         </div>

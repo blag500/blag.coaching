@@ -20,6 +20,7 @@ import MealPicker from '../FoodLogger/MealPicker'
 import { useDayMarks } from '../../hooks/useDayMarks'
 import styles from './ClientDetail.module.css'
 import { loc } from '../../utils/locale'
+import Pictogram from '../Pictogram/Pictogram'
 
 const TABS = [
   { id: 'progress',   labelKey: 'cd.tab.progress' },
@@ -372,7 +373,7 @@ function GoalsTab({ client, edits, setEdits, onSave, saving, saved }) {
             <div className={styles.intakeRow}>
               {client.phone && (
                 <a href={`tel:${client.phone}`} className={styles.intakePhone}>
-                  📞 {client.phone}
+                  <Pictogram name="phone" size={13} /> {client.phone}
                 </a>
               )}
               {client.intake_call_time && (

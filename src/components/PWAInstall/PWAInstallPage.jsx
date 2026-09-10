@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './PWAInstallPage.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 export default function PWAInstallPage({ onBack }) {
   const { profile } = useAuth()
@@ -69,7 +70,7 @@ export default function PWAInstallPage({ onBack }) {
           <div className={styles.doneCard}>
             {notice ? (
               <>
-                <div className={styles.doneIcon}>🔄</div>
+                <div className={styles.doneIcon}><Pictogram name="refresh" size={24} /></div>
                 <div className={styles.doneTitle}>{t('pwa.update.available')}</div>
                 <p className={styles.doneDesc}>{t('pwa.update.desc')}</p>
                 <button

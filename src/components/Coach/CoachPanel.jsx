@@ -331,7 +331,7 @@ export default function CoachPanel() {
                             <div className={styles.intakeMeta}>
                               {client.phone && (
                                 <a href={`tel:${client.phone}`} className={styles.intakePhone}>
-                                  📞 {client.phone}
+                                  <Pictogram name="phone" size={13} /> {client.phone}
                                 </a>
                               )}
                               {client.intake_call_time && (

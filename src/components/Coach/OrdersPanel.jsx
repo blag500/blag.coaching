@@ -114,7 +114,7 @@ function OrderCard({ order, onAdvance }) {
       )}
 
       {order.delivery_address && (
-        <div className={styles.address}>📍 {order.delivery_address}</div>
+        <div className={styles.address}><Pictogram name="pin" size={13} /> {order.delivery_address}</div>
       )}
       {order.delivery_notes && (
         <div className={styles.notes}><Pictogram name="chat" size={13} /> {order.delivery_notes}</div>
