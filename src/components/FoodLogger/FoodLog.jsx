@@ -575,8 +575,19 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
             )}
           </span>
           <span className={styles.entryMacros}>
-            {entry.grams > 0 && <><span className={styles.entryGrams}>{entry.grams}g</span> · </>}
-            {t('foodlog.rowMacros', { kcal: entry.kcal, p: entry.protein, c: entry.carbs, f: entry.fat })}
+            {entry.grams > 0 && (
+              <><span className={styles.entryGrams}>{entry.grams}g</span><span className={styles.rowSep}> · </span></>
+            )}
+            <span className={styles.rowKcal}>{entry.kcal} {t('unit.kcal')}</span>
+            {/* Трите носят цвета си поотделно, значи не могат да са един
+                готов низ. Съкращенията остават от преводите — „П" не е буква,
+                а дума на български. */}
+            <span className={styles.rowSep}> · </span>
+            <span className={`${styles.rowMacro} ${styles.macroP}`}>{t('nutr.card.pShort')}{entry.protein}</span>
+            <span className={styles.rowSep}> · </span>
+            <span className={`${styles.rowMacro} ${styles.macroC}`}>{t('nutr.card.cShort')}{entry.carbs}</span>
+            <span className={styles.rowSep}> · </span>
+            <span className={`${styles.rowMacro} ${styles.macroF}`}>{t('nutr.card.fShort')}{entry.fat}</span>
           </span>
         </div>
 
