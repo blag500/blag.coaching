@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import { FINE_MUSCLES, GROUP_LABEL_KEYS } from '../../utils/recovery'
+import Pictogram from '../Pictogram/Pictogram'
+import { BLOCK_ICONS } from '../Pictogram/blockIcons'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './TrainingEditor.module.css'
 
@@ -38,6 +40,8 @@ function freshBlock(pos) {
   return {
     id: String(Date.now() + pos),
     label: '',
+    // Празно значи „по групата" — виж blockIcons.
+    icon: '',
     isRest: false,
     groups: [],
     muscles: [],
@@ -136,6 +140,9 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                 type="button"
               >
                 <span className={styles.blockIdx}>{idx + 1}</span>
+                {block.icon && (
+                  <span className={styles.blockLabelIcon}><Pictogram name={block.icon} size={15} /></span>
+                )}
                 <span className={styles.blockLabel}>{block.label || t('te.unnamedBlock')}</span>
                 <span className={styles.chevron}>{isOpen ? '▲' : '▼'}</span>
               </button>
@@ -169,6 +176,40 @@ export default function TrainingEditor({ initialPlan, onSave, saving }) {
                     value={block.label}
                     onChange={e => updateBlock(block.id, 'label', e.target.value)}
                   />
+                </div>
+
+                {/* Знакът на блока.
+                    Четирите групи покриват повечето блокове и им дават лице
+                    сами. Но „Кардио", „Мобилност" и „Кора" не са нито една от
+                    тях — а точно те оставаха без знак и списъкът се разпадаше
+                    на еднакви сиви редове. Затова изборът е тук, до името:
+                    името и знакът са едно решение. */}
+                <div className={styles.fieldRow}>
+                  <label className={styles.fieldLabel}>{t('te.blockIcon')}</label>
+                  <div className={styles.iconGallery}>
+                    <button
+                      type="button"
+                      className={`${styles.iconPick} ${!block.icon ? styles.iconPickOn : ''}`}
+                      onClick={() => updateBlock(block.id, 'icon', '')}
+                      title={t('te.iconAuto')}
+                      aria-label={t('te.iconAuto')}
+                      aria-pressed={!block.icon}
+                    >
+                      <span className={styles.iconAuto}>{t('te.iconAutoShort')}</span>
+                    </button>
+                    {BLOCK_ICONS.map(name => (
+                      <button
+                        key={name}
+                        type="button"
+                        className={`${styles.iconPick} ${block.icon === name ? styles.iconPickOn : ''}`}
+                        onClick={() => updateBlock(block.id, 'icon', name)}
+                        aria-label={name}
+                        aria-pressed={block.icon === name}
+                      >
+                        <Pictogram name={name} size={19} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {!block.isRest && (() => {

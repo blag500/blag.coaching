@@ -880,9 +880,15 @@ export default function Training({ onMenuOpen, onNavigate }) {
                  групата има един часовник. Тук пише кога групата е пипана и
                  от кого; кой блок кога е ред остава работа на ротацията. */
               const touch = isRest ? null : groupLastTouch(block, enrichedCompletions, groupsByLabel, exerciseMap)
-              const face = isRest
+              /* Избраното от човека бие изведеното от нас. Групата е добро
+                 предположение, но „Кардио" не е нито една от четирите — и
+                 само авторът на плана знае какво е. */
+              const auto = isRest
                 ? REST_FACE
                 : GROUP_FACE[[...(groupsByLabel[block.label] ?? [])][0]]
+              const face = block.icon
+                ? { icon: block.icon, color: auto?.color ?? 'var(--accent)' }
+                : auto
               /* Планът го нарича „Почивка / Кардио", защото носи и двете. На
                  реда обаче стои само каквото решава деня: почивка. Кардиото и
                  подвижността ги казва редът отдолу, където им е мястото. */

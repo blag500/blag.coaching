@@ -628,3 +628,50 @@
   font-size: 11px;
   color: var(--accent);
 }
+
+/* Галерията със знаци. Реди се на решетка, а не на лента за плъзгане:
+   дванайсет неща се обхождат с очи наведнъж, а скрит избор зад плъзгане е
+   избор, който половината хора няма да намерят. */
+.iconGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 6px;
+}
+
+.iconPick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 150ms var(--ease-out), border-color 150ms var(--ease-out),
+              background 150ms var(--ease-out), transform 120ms var(--ease-out);
+}
+
+.iconPick:active { transform: scale(0.94) }
+
+.iconPickOn {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.55);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+/* „Авто" е дума, не рисунка: то е липсата на избор, а рисунка на липса е
+   гатанка. */
+.iconAuto {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.blockLabelIcon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  margin-right: 6px;
+}
