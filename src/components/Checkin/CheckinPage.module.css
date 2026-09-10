@@ -77,6 +77,13 @@
 }
 
 .card {
+  /* Пристигат едно след друго, по седемдесет милисекунди. Картите тук са
+     четири, не четирийсет — стълбата се вижда цялата и не кара никого да
+     чака. Жестът е споделеният; трети собствен кадър в това приложение вече
+     веднъж ни струваше липсващ отблясък. */
+  composes: arrive glint from '../../styles/arrive.module.css';
+  animation-delay: calc(var(--i, 0) * 70ms);
+
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
@@ -367,3 +374,19 @@
   -webkit-tap-highlight-color: transparent;
 }
 .dayOn { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.5); background: var(--accent-dim); }
+
+/* Знакът пред заглавието на групата. Цветът идва от групата и се смесва за
+   фона — една променлива, както навсякъде другаде. */
+.cardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  vertical-align: -6px;
+  border-radius: 50%;
+  color: var(--face, var(--accent));
+  background: color-mix(in srgb, var(--face, var(--accent)) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--face, var(--accent)) 28%, transparent);
+}

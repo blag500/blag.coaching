@@ -76,10 +76,15 @@ export const CHECKIN_FIELDS = [
   { key: 'notes',          group: 'words', type: 'text', labelKey: 'ck.f.other' },
 ]
 
+/* Знакът на всяка група.
+ *
+ * Рисуваният набор има mood, weight и note — тоест е бил правен и за този
+ * екран, но никога не е стигнал до него. Три еднакви заглавия едно под друго
+ * са три еднакви заглавия; с знак пред тях окото знае къде е, без да чете. */
 export const CHECKIN_GROUPS = [
-  { id: 'feel',  labelKey: 'ck.g.feel'  },
-  { id: 'body',  labelKey: 'ck.g.body'  },
-  { id: 'words', labelKey: 'ck.g.words' },
+  { id: 'feel',  labelKey: 'ck.g.feel',  icon: 'mood',   color: '#AB47BC' },
+  { id: 'body',  labelKey: 'ck.g.body',  icon: 'weight', color: '#42A5F5' },
+  { id: 'words', labelKey: 'ck.g.words', icon: 'note',   color: '#66BB6A' },
 ]
 
 /**

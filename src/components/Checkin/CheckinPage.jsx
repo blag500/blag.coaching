@@ -7,6 +7,7 @@ import { useCheckin } from '../../hooks/useCheckin'
 import { CHECKIN_FIELDS, CHECKIN_GROUPS, AUTO_FIELDS, POSES } from './checkinFields'
 import CheckinCompare from './CheckinCompare'
 import styles from './CheckinPage.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 /**
  * Седмичният чекин, от страната на клиента.
@@ -132,8 +133,13 @@ export default function CheckinPage({ onBack }) {
         <>
           {/* ── Каквото вече знаем ── */}
           {autoRows.length > 0 && (
-            <section className={`${styles.card} ${styles.autoCard}`}>
-              <h2 className={styles.cardTitle}>{t('ck.g.auto')}</h2>
+            <section className={`${styles.card} ${styles.autoCard}`} style={{ '--i': 0 }}>
+              <h2 className={styles.cardTitle}>
+                <span className={styles.cardIcon} style={{ '--face': 'var(--accent)' }}>
+                  <Pictogram name="trend" size={14} />
+                </span>
+                {t('ck.g.auto')}
+              </h2>
               <p className={styles.autoNote}>{t('ck.autoNote')}</p>
               <div className={styles.autoGrid}>
                 {autoRows.map(({ f, v }) => (
@@ -152,12 +158,17 @@ export default function CheckinPage({ onBack }) {
           )}
 
           {/* ── Въпросите ── */}
-          {CHECKIN_GROUPS.map(g => {
+          {CHECKIN_GROUPS.map((g, gi) => {
             const fields = CHECKIN_FIELDS.filter(f => f.group === g.id && (!f.femaleOnly || female))
             if (!fields.length) return null
             return (
-              <section key={g.id} className={styles.card}>
-                <h2 className={styles.cardTitle}>{t(g.labelKey)}</h2>
+              <section key={g.id} className={styles.card} style={{ '--i': gi + 1 }}>
+                <h2 className={styles.cardTitle}>
+                  <span className={styles.cardIcon} style={{ '--face': g.color }}>
+                    <Pictogram name={g.icon} size={14} />
+                  </span>
+                  {t(g.labelKey)}
+                </h2>
                 {fields.map(f => (
                   <div key={f.key} className={styles.field}>
                     <label className={styles.fieldLabel}>
