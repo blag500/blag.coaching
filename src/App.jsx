@@ -332,7 +332,7 @@ function AppShell() {
     today:      <TodayDashboard onNavigate={navigate} onMenuOpen={openMenu} />,
     nutrition:  <NutritionCards onNavigate={navigate} onMenuOpen={openMenu} />,
     compliance: <Compliance />,
-    training:   <Training onMenuOpen={openMenu} />,
+    training:   <Training onMenuOpen={openMenu} onNavigate={navigate} />,
     recovery:   <Recovery />,
     profile:    <Profile onMenuOpen={openMenu} onNavigate={navigate} />,
     clients:    <CoachPanel />,

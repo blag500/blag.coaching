@@ -617,3 +617,33 @@ test.describe('Без мрежа', () => {
     await expect(banner).toHaveCount(0, { timeout: 10000 })
   })
 })
+
+
+test.describe('Тренировка', () => {
+  /* Огънчето трябва да е на всеки екран — то е състояние, не функция на една
+     страница. ПРОГРАМА се натиска веднъж на няколко седмици и слезе при
+     прогресията, където така или иначе се мисли за плана. */
+  test('лентата носи снимката с низа, а ПРОГРАМА е при прогресията', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page, { profile: { role: 'coach' } })
+    await goTab(page, 'ТРЕНИРОВКА')
+
+    await expect(page.locator('header button', { hasText: 'ПРОГРАМА' })).toHaveCount(0)
+    await expect(page.locator('header [class*="avatarBtn"]')).toBeVisible()
+
+    await page.locator('[role="tab"]').nth(1).click()
+    await expect(page.locator('button', { hasText: 'ПРОГРАМА' })).toHaveCount(1)
+  })
+
+  /* Планът го нарича „Почивка / Кардио"; редът казва само каквото решава
+     деня, а подробността стои отдолу. */
+  test('почивката е само почивка и носи свой знак', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await goTab(page, 'ТРЕНИРОВКА')
+    const rest = page.locator('li', { hasText: 'Почивка' }).first()
+    await expect(rest).toBeVisible({ timeout: 15000 })
+    await expect(rest.locator('[class*="chapterName"]')).toHaveText('Почивка')
+    await expect(rest.locator('[class*="chapterIcon"] svg')).toBeVisible()
+  })
+})

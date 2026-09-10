@@ -196,7 +196,7 @@ function MarkGlyph({ done }) {
   )
 }
 
-export default function Training({ onMenuOpen }) {
+export default function Training({ onMenuOpen, onNavigate }) {
   const { t, lang } = useSettings()
   const MS = monthsShort(t)
   // Дата в кратък вид за бутоните „маркирай ..." — езикът следва избора.
@@ -329,6 +329,10 @@ export default function Training({ onMenuOpen }) {
     lower: { icon: 'lower', color: '#66BB6A' },
     extra: { icon: 'extra', color: '#AB47BC' },
   }
+  /* Почивката също е ред в плана, значи също има лице. Луната, защото това е
+     денят, в който работата я върши сънят; спокоен цвят, различен от четирите
+     групи, защото не е една от тях. */
+  const REST_FACE = { icon: 'sleep', color: '#4DB6AC' }
 
   const groupsByLabel = useMemo(() => {
     const out = {}
@@ -778,11 +782,14 @@ export default function Training({ onMenuOpen }) {
           undefined
         }
         title={t('tr.header')}
-        action={canEdit ? (
-          <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
-            {t('tr.plan')}
-          </button>
-        ) : null}
+        /* Снимката с низа вместо ПРОГРАМА.
+           Огънчето трябва да е на всеки екран — то е състояние, не функция на
+           една страница — а ПРОГРАМА се натиска веднъж на няколко седмици.
+           Постоянното изместваше рядкото; сега е обратното, а ПРОГРАМА слезе
+           при прогресията, където така или иначе се мисли за плана. */
+        avatarUrl={profile?.avatar_url}
+        avatarInitial={(profile?.name || '?')[0].toUpperCase()}
+        onAvatarClick={() => onNavigate?.('profile')}
       />
 
       {/* Sub-tabs — pictogram-only segmented control. The three views are what
@@ -873,7 +880,13 @@ export default function Training({ onMenuOpen }) {
                  групата има един часовник. Тук пише кога групата е пипана и
                  от кого; кой блок кога е ред остава работа на ротацията. */
               const touch = isRest ? null : groupLastTouch(block, enrichedCompletions, groupsByLabel, exerciseMap)
-              const face = isRest ? null : GROUP_FACE[[...(groupsByLabel[block.label] ?? [])][0]]
+              const face = isRest
+                ? REST_FACE
+                : GROUP_FACE[[...(groupsByLabel[block.label] ?? [])][0]]
+              /* Планът го нарича „Почивка / Кардио", защото носи и двете. На
+                 реда обаче стои само каквото решава деня: почивка. Кардиото и
+                 подвижността ги казва редът отдолу, където им е мястото. */
+              const shownName = isRest ? t('training.sessionRest') : block.label
               const meta = isRest
                 ? t('tr.metaRest')
                 : last
@@ -918,7 +931,7 @@ export default function Training({ onMenuOpen }) {
                             <Pictogram name={face.icon} size={15} />
                           </span>
                         )}
-                        <span className={styles.chapterName}>{block.label}</span>
+                        <span className={styles.chapterName}>{shownName}</span>
                       </span>
                       <span className={styles.chapterMeta}>
                         {/* Започнатото се казва вместо готовността: щом днес вече
@@ -1075,7 +1088,16 @@ export default function Training({ onMenuOpen }) {
 
       {homeTab === 'progression' && (
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>{t('tr.sectionProgression')}</h2>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>{t('tr.sectionProgression')}</h2>
+            {/* Планът се пипа, когато се гледа как върви — двете мисли са
+                една и съща мисъл, само разделена на два екрана дотук. */}
+            {canEdit && (
+              <button className={styles.editBtn} onClick={() => setEditing(true)} type="button">
+                {t('tr.plan')}
+              </button>
+            )}
+          </div>
           <ProgressionView
             blocks={blocks}
             completions={enrichedCompletions}
