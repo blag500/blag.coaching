@@ -32,12 +32,30 @@ function CameraIcon({ size = 16 }) {
  * връща с едно натискане. */
 const DRAFT_KEY = 'blag_recipe_form_draft'
 
-function readDraft() {
-  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null') }
+/**
+ * Две мишени, един екран.
+ *
+ * Рецепта и „моя храна" бяха два редактора: този и листът в БИБЛИОТЕКА. Днес
+ * ги поправяхме два пъти един след друг — веднъж черновата, веднъж сметката
+ * на сто грама — и втория път се сетихме за втория едва след като първият
+ * беше пуснат. Това е цената на два екрана за едно решение.
+ *
+ * Богатият модел изразява бедния: съставка с макроси на сто грама и грамаж
+ * дава и рецепта, и продукт — продуктът е рецепта от една съставка. Обратното
+ * не важи, затова оцелява този.
+ *
+ * Таблиците остават две. Едната пази съставките и снимката, другата — готови
+ * макроси за порция; преобразуването е долу, в saveAsFood, и е точно:
+ * порцията е сборът, делен на броя порции.
+ */
+const TARGET_DRAFT = { recipes: DRAFT_KEY, foods: 'blag_custom_food_draft' }
+
+function readDraft(key = DRAFT_KEY) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null') }
   catch { return null }
 }
-function clearDraft() {
-  try { localStorage.removeItem(DRAFT_KEY) } catch { /* частен режим */ }
+function clearDraft(key = DRAFT_KEY) {
+  try { localStorage.removeItem(key) } catch { /* частен режим */ }
 }
 function draftHasContent(d) {
   return !!d && (d.name?.trim() || (d.ingredients || []).length > 0)
@@ -55,7 +73,7 @@ function calcTotals(ingredients) {
   }, { kcal: 0, protein: 0, carbs: 0, fat: 0 })
 }
 
-export default function RecipeForm({ recipe, onSave, onCancel }) {
+export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes', saveFood = null }) {
   const { user, profile } = useAuth()
   const { t } = useSettings()
   const isCoach = profile?.role === 'coach'
@@ -63,7 +81,8 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   /* Черновата важи само за нова рецепта. Отваряш ли съществуваща, тя носи
      своите стойности — чужда чернова върху нея би била тихо разваляне на
      чуждо ястие. */
-  const draft0 = useRef(recipe ? null : (draftHasContent(readDraft()) ? readDraft() : null)).current
+  const draftKey = TARGET_DRAFT[target] ?? DRAFT_KEY
+  const draft0 = useRef(recipe ? null : (draftHasContent(readDraft(draftKey)) ? readDraft(draftKey) : null)).current
 
   const [name, setName]             = useState(recipe?.name || draft0?.name || '')
   const [photoFile, setPhotoFile]   = useState(null)
@@ -103,13 +122,13 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
   useEffect(() => {
     if (recipe) return
     const d = { name, ingredients, servings, isShared }
-    if (!draftHasContent(d)) { clearDraft(); return }
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) } catch { /* частен режим */ }
-  }, [recipe, name, ingredients, servings, isShared])
+    if (!draftHasContent(d)) { clearDraft(draftKey); return }
+    try { localStorage.setItem(draftKey, JSON.stringify(d)) } catch { /* частен режим */ }
+  }, [recipe, draftKey, name, ingredients, servings, isShared])
 
   /** Начисто — единственият начин недовършеното да бъде наистина изхвърлено. */
   function startOver() {
-    clearDraft()
+    clearDraft(draftKey)
     setName(''); setIngredients([]); setServings('1'); setIsShared(false)
     setPhotoFile(null); setPhotoPreview('')
     setDraftBack(false)
@@ -221,6 +240,29 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
     setSaving(true)
     setSaveError(null)
 
+    /* Моята храна няма нито снимка, нито споделяне — тя е ред с числа, който
+       се вписва в дневника. Затова тръгва по свой път и не пипа хранилището. */
+    if (target === 'foods') {
+      const n = numServings || 1
+      const row = await saveFood?.({
+        name:          name.trim(),
+        // Рецепта е това, което има повече от една съставка. Един продукт е
+        // една съставка — не е нужно да питаме човека какво прави.
+        is_recipe:     ingredients.length > 1,
+        serving_grams: Math.round((totalGrams / n) * 10) / 10 || 100,
+        kcal:          totals.kcal    / n,
+        protein:       totals.protein / n,
+        carbs:         totals.carbs   / n,
+        fat:           totals.fat     / n,
+        ingredients,
+      })
+      setSaving(false)
+      if (!row) { setSaveError(t('rf.saveErr')); return }
+      clearDraft(draftKey)
+      onSave(row)
+      return
+    }
+
     let photoUrl = recipe?.photo_url || ''
     if (photoFile) {
       const ext = photoFile.name.split('.').pop()
@@ -254,7 +296,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
     }
 
     if (err) { console.error('Recipe save error:', err); setSaveError(err.message || t('rf.saveErr')); setSaving(false); return }
-    clearDraft()
+    clearDraft(draftKey)
     onSave(data)
   }
 
@@ -266,7 +308,14 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
 
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onCancel} type="button">←</button>
-        <span className={styles.title}>{recipe ? t('rf.editTitle') : t('rf.newTitle')}</span>
+        {/* Едно и също поле, различно име: в библиотеката това не е рецепта, а
+            „моя храна" — а екран, който те лъже как се казва направеното,
+            после те кара да го търсиш другаде. */}
+        <span className={styles.title}>
+          {target === 'foods'
+            ? t('rf.newFoodTitle')
+            : (recipe ? t('rf.editTitle') : t('rf.newTitle'))}
+        </span>
       </div>
 
       {/* Казва се, защото иначе човек, който е излязъл по невнимание веднъж,
@@ -280,7 +329,9 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         </div>
       )}
 
-      {/* Photo */}
+      {/* Снимката е за рецептата, не за продукта: custom_foods няма къде да я
+          сложи, а поле, което нищо не пази, е обещание, което не се спазва. */}
+      {target === 'recipes' && (
       <div className={styles.photoBox} onClick={() => photoInputRef.current?.click()}>
         {photoPreview
           ? <img src={photoPreview} className={styles.photoImg} alt="" />
@@ -294,6 +345,8 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
           onChange={handlePhotoChange}
         />
       </div>
+
+      )}
 
       {/* Name */}
       <input
@@ -515,8 +568,9 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         )}
       </div>
 
-      {/* Coach: share toggle */}
-      {isCoach && (
+      {/* Споделянето също е на рецептата: моята храна е моя, тя няма кому да
+          се дава. */}
+      {isCoach && target === 'recipes' && (
         <div className={styles.section}>
           <div className={styles.shareRow}>
             <span className={styles.shareLabel}>{t('rf.share')}</span>
@@ -540,7 +594,7 @@ export default function RecipeForm({ recipe, onSave, onCancel }) {
         disabled={!name.trim() || ingredients.length === 0 || saving}
         type="button"
       >
-        {saving ? t('rf.saving') : recipe ? t('rf.saveChanges') : t('rf.saveRecipe')}
+        {saving ? t('rf.saving') : recipe ? t('rf.saveChanges') : t(target === 'foods' ? 'rf.saveFood' : 'rf.saveRecipe')}
       </button>
     </div>
   )

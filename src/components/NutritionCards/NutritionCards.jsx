@@ -16,7 +16,7 @@ import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
 import { defaultMeal } from '../FoodLogger/meals'
 import MealCards from '../MealCards/MealCards'
-import RecipeBuilder from '../FoodLogger/RecipeBuilder'
+import RecipeForm from '../Recipes/RecipeForm'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './NutritionCards.module.css'
 import Pictogram from '../Pictogram/Pictogram'
@@ -68,10 +68,6 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
 
   const calKnown = !logLoading && isToday && targets.kcal > 0
   useEffect(() => { report('calories', calDone, calKnown) }, [calDone, calKnown, report])
-
-  async function handleSaveCustomFood(data) {
-    await saveFood(data)
-  }
 
   function handleLogCustomFood(food) {
     const servings = parseFloat(logServings[food.id]) || 1
@@ -196,6 +192,17 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : view === 'meals' ? (
+        /* Редакторът е подстраница, не лист върху списъка: той е цял екран със
+           своя стрелка назад, а два слоя един върху друг тук значат две
+           стрелки, които правят различно нещо. */
+        showBuilder ? (
+          <RecipeForm
+            target="foods"
+            saveFood={saveFood}
+            onSave={() => setShowBuilder(false)}
+            onCancel={() => setShowBuilder(false)}
+          />
+        ) : (
         <>
           <LibraryTab
             t={t}
@@ -221,15 +228,9 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             paneChrome ?? document.body,
           )}
         </>
+        )
       ) : (
         <CalorieBalancer />
-      )}
-
-      {showBuilder && (
-        <RecipeBuilder
-          onSave={handleSaveCustomFood}
-          onClose={() => setShowBuilder(false)}
-        />
       )}
     </div>
   )

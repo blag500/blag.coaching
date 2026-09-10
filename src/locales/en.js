@@ -940,6 +940,8 @@ export default {
   'rf.saving':          'Saving...',
   'rf.saveChanges':     'Save changes',
   'rf.saveRecipe':      'Save recipe',
+  'rf.newFoodTitle':    'NEW FOOD',
+  'rf.saveFood':        'Save to library',
   'rf.draftBack':       'Picked up where you left off',
   'rf.startOver':       'Start over',
 

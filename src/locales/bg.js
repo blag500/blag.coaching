@@ -941,6 +941,8 @@ export default {
   'rf.saving':          'Запазва...',
   'rf.saveChanges':     'Запази промените',
   'rf.saveRecipe':      'Запази рецептата',
+  'rf.newFoodTitle':    'НОВА ХРАНА',
+  'rf.saveFood':        'Запази в библиотеката',
   'rf.draftBack':       'Върнах недовършеното',
   'rf.startOver':       'Начисто',
 

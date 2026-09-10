@@ -557,37 +557,28 @@ test.describe('Рецепти', () => {
      БИБЛИОТЕКА се затваря при допир по фона, без да пита. Числата там са на
      100 грама, както пише на кутията, и редът казва колко дава след
      умножението. */
-  test('листът в библиотеката смята на 100 г и пази недовършеното', async ({ page }) => {
+  test('библиотеката отваря същия редактор и пази недовършеното', async ({ page }) => {
     test.setTimeout(90000)
     await enterApp(page)
     await goTab(page, 'ХРАНЕНЕ')
     await page.locator('[aria-label="Библиотека"]').first().click()
     await page.waitForTimeout(700)
-    await page.locator('button', { hasText: 'НОВО' }).first().click()
-    await page.waitForTimeout(600)
+    await page.locator('[class*="newBtn"]').first().click()
+    await page.waitForTimeout(700)
 
+    /* Същият редактор като при рецептите — значи същото поле за име. Ако
+       някога пак се разделят на два, този тест ще е първият, който го каже. */
     const nameInput = page.locator('input[placeholder*="рецептата"]')
     await expect(nameInput).toBeVisible({ timeout: 10000 })
-    await nameInput.fill('Овесена каша')
-    await page.locator('input[placeholder="Съставка"]').first().fill('Овесени ядки')
-
-    const nums = page.locator('input[type="number"]')
-    await nums.nth(0).fill('60')     // грамаж
-    await nums.nth(1).fill('380')    // ккал на 100 г, както пише на кутията
+    await nameInput.fill('Моя закуска')
     await page.waitForTimeout(400)
-    // 380 * 0.6 = 228 — сметката се вижда, преди да се запази.
-    await expect(page.locator('text=дава 228 ккал')).toBeVisible()
 
-    // Излизане по невнимание: допир по фона затваря листа веднага.
-    await page.mouse.click(20, 40)
+    await page.locator('[class*="backBtn"]').first().click()
     await page.waitForTimeout(500)
-    await expect(nameInput).toHaveCount(0)
-
-    await page.locator('button', { hasText: 'НОВО' }).first().click()
-    await page.waitForTimeout(600)
+    await page.locator('[class*="newBtn"]').first().click()
+    await page.waitForTimeout(700)
     await expect(page.locator('text=Върнах недовършеното')).toBeVisible()
-    await expect(nameInput).toHaveValue('Овесена каша')
-    await expect(page.locator('input[placeholder="Съставка"]').first()).toHaveValue('Овесени ядки')
+    await expect(nameInput).toHaveValue('Моя закуска')
   })
 })
 
