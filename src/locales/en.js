@@ -223,6 +223,8 @@ export default {
   "badge.newday.label": "NEW DAY",
   "badge.newday.sub": "Day {n} in a row. Keep going.",
   "badge.newday.subFirst": "The count starts today.",
+  "badge.newday.days": "DAYS IN A ROW",
+  "badge.newday.keep": "Don't drop it today.",
   'streak.title':       '{n} days in a row',
 
   // ReadinessWidget

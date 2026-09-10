@@ -405,8 +405,10 @@ test.describe('Награди', () => {
       await enterApp(page, { keepGreeting: true })
       const popup = page.locator('[role="dialog"]')
       await expect(popup).toBeVisible({ timeout: 15000 })
-      await expect(popup).toContainText('НОВ ДЕН')
-      await expect(popup).toContainText('Ден 4 подред')
+      // Числото е заглавието, не част от изречение — и се брои нагоре, затова
+      // се чака да стигне.
+      await expect(popup).toContainText('ДНИ ПОДРЕД')
+      await expect(popup.locator('[class*="bigNum"]')).toHaveText('4', { timeout: 5000 })
       await popup.click({ position: { x: 10, y: 10 } })
       await expect(popup).toHaveCount(0)
     } finally {

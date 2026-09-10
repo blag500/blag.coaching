@@ -224,6 +224,8 @@ export default {
   "badge.newday.label": "НОВ ДЕН",
   "badge.newday.sub": "Ден {n} подред. Продължавай.",
   "badge.newday.subFirst": "Днес започва броенето.",
+  "badge.newday.days": "ДНИ ПОДРЕД",
+  "badge.newday.keep": "Не го изпускай днес.",
   'streak.title':       '{n} дни подред',
 
   // ReadinessWidget

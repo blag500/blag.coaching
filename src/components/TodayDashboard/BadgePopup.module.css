@@ -96,3 +96,95 @@
 @media (prefers-reduced-motion: reduce) {
   .scrim, .popup { animation: none }
 }
+
+/* ── Горящото огънче ─────────────────────────────────────────────────
+   Пламък не пулсира в такт. Затова тук има три движения с несъвпадащи
+   продължителности — 1900, 2300 и 3100 милисекунди: те се разминават и никога
+   не се връщат в едно и също положение, значи окото не хваща цикъл. Едно
+   движение с една дължина щеше да е мигаща лампа, не огън.
+
+   Всичко е на transform и opacity. Гори, докато прозорчето стои отворено — а
+   то стои по едно натискане на ден, не по двайсет пъти. */
+
+.iconFlame {
+  position: relative;
+  overflow: visible;
+}
+
+/* Топлината. Диша по-бавно от самия пламък, защото светлината от огън се мени
+   по-лениво от езиците му. */
+.iconFlame::before {
+  content: '';
+  position: absolute;
+  inset: -26px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 170, 60, 0.34) 0%,
+    rgba(255, 120, 30, 0.14) 42%,
+    transparent 70%);
+  animation: heat 3100ms ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes heat {
+  0%, 100% { transform: scale(0.94); opacity: 0.55 }
+  50%      { transform: scale(1.08); opacity: 1 }
+}
+
+/* Езикът. Извива се и се източва — по-висок, когато е по-тесен, както прави
+   истинският, а не просто уголемен и умален. */
+.iconFlame svg {
+  transform-origin: 50% 88%;
+  animation: lick 1900ms ease-in-out infinite;
+}
+
+@keyframes lick {
+  0%   { transform: scale(1,    1)    rotate(0deg) }
+  22%  { transform: scale(0.94, 1.07) rotate(-2.2deg) }
+  46%  { transform: scale(1.05, 0.96) rotate(1.6deg) }
+  68%  { transform: scale(0.97, 1.04) rotate(-1deg) }
+  100% { transform: scale(1,    1)    rotate(0deg) }
+}
+
+/* Сърцевината — плътната част на рисунката. Тя е най-горещото място и затова
+   свети отделно от контура. Първата група в SVG-то е тъкмо тя; виж Pictogram,
+   където плътното се рисува под контура. */
+.iconFlame svg > g:first-child {
+  animation: core 2300ms ease-in-out infinite;
+  transform-origin: 50% 80%;
+}
+
+@keyframes core {
+  0%, 100% { opacity: 0.32; transform: scaleY(1) }
+  40%      { opacity: 0.85; transform: scaleY(1.12) }
+  70%      { opacity: 0.5;  transform: scaleY(0.95) }
+}
+
+/* Числото на низа. Голямо, защото то е новината; моноширочно, за да не
+   подскача, докато се брои — цифрите с различна ширина местят центъра при
+   всяка стъпка и броенето изглежда като треперене. */
+.bigNum {
+  font-family: var(--font-heading);
+  font-size: 54px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 28px rgba(var(--accent-rgb), 0.45);
+}
+
+/* Под голямото число надписът е подпис, не заглавие. */
+.bigNum + .label {
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconFlame::before,
+  .iconFlame svg,
+  .iconFlame svg > g:first-child {
+    animation: none;
+  }
+}
