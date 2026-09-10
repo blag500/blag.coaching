@@ -4,14 +4,11 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './PaymentWall.module.css'
 
+/* PRO е спрян и не се продава повече. Стената показва само треньорството;
+   стар ред с plan='pro' пада на него, защото това е единственото платено,
+   което съществува — и защото сметка за спрян план е по-лоша от сметка за
+   грешния. */
 const PLAN_INFO = {
-  pro: {
-    id: 'pro',
-    name: 'PRO',
-    price: '4.99 €',
-    accent: '#7E57C2',
-    featureKeys: ['pay.pro.f1', 'pay.pro.f2', 'pay.pro.f3', 'pay.pro.f4', 'pay.pro.f5'],
-  },
   coaching: {
     id: 'coaching',
     nameKey: 'pay.coach.name',
@@ -24,8 +21,8 @@ const PLAN_INFO = {
 export default function PaymentWall({ onDowngrade }) {
   const { profile, selectPlan } = useAuth()
   const { t } = useSettings()
-  const plan = profile?.plan ?? 'pro'
-  const info = PLAN_INFO[plan] ?? PLAN_INFO.pro
+  const plan = profile?.plan ?? 'coaching'
+  const info = PLAN_INFO[plan] ?? PLAN_INFO.coaching
   const planName = info.nameKey ? t(info.nameKey) : info.name
 
   const [loading,        setLoading]        = useState(false)

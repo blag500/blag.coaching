@@ -154,16 +154,16 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
 
     /* Arm the success screen before the save, so the app cuts straight from the
        poster to the seal — no flash of the tabs, and no flash of the coaching
-       intake when selectPlan('pro') briefly flips the tier below. App holds the
+       intake when selectPlan briefly flips the tier below. App holds the
        success screen in front until the client taps in; if the save fails,
        onError pulls it back down to this flow to retry. */
     onComplete?.(stepForm.name.trim())
 
-    /* Everyone finishes registration as a self-serve client. Writing to the
-       coach is an intent, signalled by the push below — it must NOT set the
-       tier to 'pro' here: 'pro' is the coach's to grant when he accepts, and
-       flipping it now reclassifies the client mid-flow, so App swaps this setup
-       for the coaching intake and the registration can never complete. */
+    /* Всички завършват регистрацията като самостоятелни. Писането до треньора
+       е намерение, не план: то се сигнализира с push-а по-долу и НЕ пипа
+       тарифата тук. Треньорството се дава от треньора, когато приеме; смяна
+       на тарифата по средата прекласифицира клиента и App подменя този
+       екран с приемния, тоест регистрацията не може да завърши. */
     await selectPlan('free')
     const { error } = await completeOnboarding({
       name:           stepForm.name.trim(),
@@ -191,7 +191,7 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
        the message never gets written — and plan_pending files them under the
        coach's "ЧАКАЩИ ОДОБРЕНИЕ" list, separated from the self-serve clients,
        so a coaching request is visible even if the message never arrives. */
-    if (plan === 'pro') {
+    if (plan === 'coaching') {
       await updateProfile({ plan_pending: true })
       const coachId = profile?.coach_id
       if (coachId) {
@@ -298,7 +298,7 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
       <CoachOffer
         saving={stepSaving}
         error={stepError}
-        onWrite={() => handleStepFinish('pro')}
+        onWrite={() => handleStepFinish('coaching')}
         onSkip={() => handleStepFinish('free')}
       />
     )

@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 're
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { RewardsProvider } from './contexts/RewardsContext'
+import { isCoached } from './utils/plans'
 import OutboxBanner from './components/OutboxBanner/OutboxBanner'
 import { startOutbox } from './lib/outbox'
 import ResetPasswordPage from './pages/ResetPasswordPage'
@@ -294,9 +295,9 @@ function AppShell() {
   }
 
   if (!isCoach && !profile.onboarding_done) {
-    // PRO is the coached tier — set by the coach directly in the DB.
-    // Everyone else goes through the self-serve flow which ends with the coach upsell.
-    const coached = profile.plan === 'pro' || profile.plan === 'coaching'
+    /* Кой е с треньор се решава на едно място — виж utils/plans. Останалите
+       минават през самостоятелния поток, който свършва с офертата. */
+    const coached = isCoached(profile)
     return (
       <PageLoader>
         <Onboarding

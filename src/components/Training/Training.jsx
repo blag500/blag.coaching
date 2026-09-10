@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRewards } from '../../contexts/RewardsContext'
 import { useDayMarks } from '../../hooks/useDayMarks'
+import { isCoached } from '../../utils/plans'
 import { defaultTrainingBlocks } from '../../data/appData'
 import DayLog from './DayLog'
 import ProgressionView from './ProgressionView'
@@ -206,7 +207,7 @@ export default function Training({ onMenuOpen, onNavigate }) {
   const isCoach = profile?.role === 'coach'
   // A coached client's plan is written by the coach and waited on; a self-serve
   // client has no one preparing anything, so they set and edit their own.
-  const coached = profile?.plan === 'pro' || profile?.plan === 'coaching'
+  const coached = isCoached(profile)
   const selfManaged = !isCoach && !coached
   const canEdit = isCoach || selfManaged
   const blocks  = getBlocks(profile?.training_plan)

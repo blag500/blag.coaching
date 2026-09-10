@@ -18,20 +18,6 @@ const PLANS = {
       { icon: '♾', titleKey: 'plan.free.f5.title', subKey: 'plan.free.f5.sub' },
     ],
   },
-  pro: {
-    id: 'pro',
-    label: 'BLAG PRO',
-    badgeKey: 'plan.pro.badge',
-    ctaKey: 'plan.pro.cta',
-    ctaStyle: 'pro',
-    features: [
-      { icon: '✓', titleKey: 'plan.pro.f1.title', subKey: 'plan.pro.f1.sub' },
-      { icon: '🎯', titleKey: 'plan.pro.f2.title', subKey: 'plan.pro.f2.sub' },
-      { icon: '💪', titleKey: 'plan.pro.f3.title', subKey: 'plan.pro.f3.sub' },
-      { icon: '💬', titleKey: 'plan.pro.f4.title', subKey: 'plan.pro.f4.sub' },
-      { icon: '💊', titleKey: 'plan.pro.f5.title', subKey: 'plan.pro.f5.sub' },
-    ],
-  },
 }
 
 export default function PlanSelector({ onSelect, onSaved }) {
@@ -51,19 +37,6 @@ export default function PlanSelector({ onSelect, onSaved }) {
     const { error } = await supabase.rpc('select_plan', { plan_choice: plan.id })
     if (error) { setLoading(false); setSaveError(t('plan.saveErr')); return }
 
-    if (plan.id === 'pro') {
-      const coachId = auth.profile?.coach_id
-      if (coachId) {
-        supabase.functions.invoke('send-push', {
-          body: {
-            toUserId: coachId,
-            title: t('plan.pushProTitle'),
-            body: t('plan.pushProBody', { name: auth.profile?.name || auth.profile?.email || t('ob.push.newClient') }),
-          },
-        }).catch(() => {})
-      }
-    }
-
     await auth.refreshProfile()
     onSaved?.()
     setLoading(false)
@@ -77,12 +50,16 @@ export default function PlanSelector({ onSelect, onSaved }) {
         <h1 className={styles.heading}>{t('plan.headingReady')}</h1>
       </div>
 
-      {/* Plan bubbles */}
+      {/* Балончетата се показват само ако има между какво да се избира.
+          С един план редът е бутон, който не води наникъде — а PRO е спрян и
+          остана само безплатният. Треньорството се дава от треньора, не се
+          избира тук. */}
+      {Object.keys(PLANS).length > 1 && (
       <div className={styles.bubblesRow}>
         {Object.values(PLANS).map(p => (
           <button
             key={p.id}
-            className={`${styles.bubble} ${selected === p.id ? styles.bubbleActive : ''} ${p.id === 'pro' && selected === p.id ? styles.bubbleActivePro : ''}`}
+            className={`${styles.bubble} ${selected === p.id ? styles.bubbleActive : ''}`}
             onClick={() => setSelected(p.id)}
             type="button"
           >
@@ -93,6 +70,7 @@ export default function PlanSelector({ onSelect, onSaved }) {
           </button>
         ))}
       </div>
+      )}
 
       {/* Features list */}
       <div className={styles.list}>
@@ -112,7 +90,7 @@ export default function PlanSelector({ onSelect, onSaved }) {
       </div>
 
       {/* CTA card */}
-      <div className={`${styles.ctaCard} ${selected === 'pro' ? styles.ctaCardPro : ''}`}>
+      <div className={styles.ctaCard}>
         <div className={styles.ctaCardTop}>
           <span className={styles.ctaPlanName}>{plan.label}</span>
           {plan.id === 'free'
@@ -122,7 +100,7 @@ export default function PlanSelector({ onSelect, onSaved }) {
         </div>
         {saveError && <p className={styles.saveError}>{saveError}</p>}
         <button
-          className={`${styles.cta} ${selected === 'pro' ? styles.ctaPro : styles.ctaFree}`}
+          className={`${styles.cta} ${styles.ctaFree}`}
           onClick={handleCta}
           disabled={loading}
           type="button"

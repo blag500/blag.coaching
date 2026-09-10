@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { isCoached } from '../../utils/plans'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useUnread } from '../../hooks/useUnread'
 import ClientDetail from './ClientDetail'
@@ -319,7 +320,7 @@ export default function CoachPanel() {
                           <div className={styles.clientNameRow}>
                             <span className={styles.clientName}>{client.name || '—'}</span>
                             {client.plan && (
-                              <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
+                              <span className={`${styles.planBadge} ${isCoached(client) ? styles.planBadgePro : ''}`}>
                                 {client.plan.toUpperCase()}
                               </span>
                             )}
@@ -397,7 +398,7 @@ export default function CoachPanel() {
                             <div className={styles.clientNameRow}>
                               <span className={styles.clientName}>{client.name || '—'}</span>
                               {client.plan && (
-                                <span className={`${styles.planBadge} ${client.plan === 'pro' ? styles.planBadgePro : ''}`}>
+                                <span className={`${styles.planBadge} ${isCoached(client) ? styles.planBadgePro : ''}`}>
                                   {client.plan.toUpperCase()}
                                 </span>
                               )}
