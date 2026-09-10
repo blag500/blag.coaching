@@ -120,14 +120,20 @@
 .composerSubmit:disabled { opacity: 0.4; cursor: default; }
 
 /* ── Пост ─────────────────────────────────────────────────────── */
+/* Пристигането е споделеният жест, не собствено копие.
+   Дотук тук стоеше postIn — същият ход, написан втори път, точно каквото
+   arrive.module.css предупреждава да не се прави: две копия на един жест се
+   разминават още при първата поправка. Оттам идва и отблясъкът, който картите
+   в ДНЕС имат, а тези нямаха. */
 .post {
+  composes: arrive glint from '../../styles/arrive.module.css';
+  animation-delay: calc(var(--i, 0) * 55ms);
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
   border-radius: var(--r-lg);
   padding: 14px;
   margin-bottom: 12px;
-  animation: postIn 300ms var(--ease-out) both;
 }
 @keyframes postIn {
   from { opacity: 0; transform: translateY(12px); }
@@ -830,3 +836,19 @@
   font-size: 11px;
   color: var(--muted);
 }
+
+/* Постижението носи цвета на вида си. Знакът и надписът различават; цветът
+   само дава тежест — иначе фийдът е двайсет еднакви сиви правоъгълника. */
+.postAchievement .achievementIcon {
+  color: var(--face, var(--accent));
+  background: color-mix(in srgb, var(--face, var(--accent)) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--face, var(--accent)) 30%, transparent);
+}
+
+.postAchievement .achievementTitle {
+  color: var(--face, var(--accent));
+}
+
+/* Харесаното е топло, не златно. Златото значи всичко в това приложение —
+   акценти, цели, награди — и когато значи всичко, не значи нищо. */
+.postActionOn { color: #EF5350 }

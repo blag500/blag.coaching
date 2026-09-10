@@ -144,7 +144,20 @@ const ACHIEVEMENTS = {
   },
 }
 
-export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange, onOpenAuthor, readOnly = false }) {
+/* Цвят по вид постижение.
+ *
+ * Същият похват като чиповете в ДНЕС и блоковете в ТРЕНИРОВКА: цветът не е
+ * това, което ги различава — знакът и надписът вършат тази работа — той само
+ * дава на реда собствена тежест. Тренировката носи цвета на тренировъчния
+ * блок за бутане, за да е един и същ навсякъде. */
+const ACH_COLOR = {
+  training: '#FF8A65',
+  perfect:  'var(--accent)',
+  streak:   '#4DB6AC',
+  plan:     '#42A5F5',
+}
+
+export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange, onOpenAuthor, readOnly = false, index = null }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
   const [openComments, setOpenComments] = useState(false)
@@ -158,7 +171,13 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
   const detail = achievement ? achievement.detail(post.meta, t) : ''
 
   return (
-    <article className={`${styles.post} ${achievement ? styles.postAchievement : ''}`}>
+    <article
+      className={`${styles.post} ${achievement ? styles.postAchievement : ''}`}
+      style={{
+        ...(index != null ? { '--i': index } : null),
+        ...(achievement ? { '--face': ACH_COLOR[post.kind] ?? 'var(--accent)' } : null),
+      }}
+    >
       <header className={styles.postHead}>
         {/* Кръгчето и името водят към човека. Заключени са само когато няма
             къде да водят: в профила картите вървят без onOpenAuthor, а в

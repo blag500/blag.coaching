@@ -71,10 +71,13 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
         </div>
       ) : (
         <>
-          {posts.map(p => (
+          {posts.map((p, i) => (
             <PostCard
               key={p.id}
               post={p}
+              /* Само за първите — стълбата има смисъл при отваряне на
+                 страницата, а не когато осемдесетият пост дочака своя ред. */
+              index={i < 6 ? i : null}
               onToggleLike={toggleLike}
               onDelete={removePost}
               onCommentCountChange={bumpCommentCount}
