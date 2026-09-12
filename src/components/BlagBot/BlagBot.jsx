@@ -8,6 +8,7 @@ import Pictogram from '../Pictogram/Pictogram'
 import { isHidden, setHidden } from './botBubbleStore'
 import { logFoodRows } from '../../hooks/useFoodLog'
 import { enqueueQuestion, dropQuestion, queued } from './botQueue'
+import { useDictation, dictationSupported } from './useDictation'
 import styles from './BlagBot.module.css'
 
 /**
@@ -227,7 +228,7 @@ function when(iso, t) {
 
 export default function BlagBot({ open, from = null, onClose }) {
   const { user, profile } = useAuth()
-  const { t } = useSettings()
+  const { t, lang } = useSettings()
 
   const [messages, setMessages] = useState(() => loadSession(user?.id) ?? [])
   const [draft, setDraft]       = useState('')
@@ -314,6 +315,14 @@ export default function BlagBot({ open, from = null, onClose }) {
 
   const feedRef  = useRef(null)
   const inputRef = useRef(null)
+
+  /* Диктуване. Чутото се долепя към написаното, а не го замества: човек, който
+     е почнал да пише и е решил да продължи с говорене, не иска да си изтрие
+     началото. */
+  const { listening, toggle: dictate } = useDictation(said => {
+    setDraft(prev => (prev ? `${prev} ${said}` : said))
+    inputRef.current?.focus()
+  }, lang)
 
   const add = (from, text, extra = null) => {
     const id = Date.now() + Math.random()
@@ -713,6 +722,21 @@ export default function BlagBot({ open, from = null, onClose }) {
           maxLength={MAX_Q}
           disabled={asking}
         />
+        {/* Микрофонът го има само там, където браузърът може да слуша: Chrome и
+            Samsung Internet на Android. Бутон, който не прави нищо, е по-лош от
+            липсващ. */}
+        {dictationSupported() && (
+          <button
+            className={`${styles.askMic} ${listening ? styles.askMicOn : ''}`}
+            onClick={dictate}
+            disabled={asking}
+            type="button"
+            aria-label={t(listening ? 'bot.mic.stop' : 'bot.mic.start')}
+            aria-pressed={listening}
+          >
+            <Pictogram name="mic" size={16} />
+          </button>
+        )}
         <button
           className={styles.askSend}
           onClick={ask}

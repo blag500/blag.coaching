@@ -30,6 +30,8 @@ export default {
   "bot.noticed": "noticed",
   "bot.unread": "unread",
   "bot.waiting": "waiting for network",
+  "bot.mic.start": "Dictate",
+  "bot.mic.stop": "Stop dictation",
   "bot.newChat": "New chat",
   "bot.earlier": "EARLIER",
   "bot.noChats": "No chats yet.",

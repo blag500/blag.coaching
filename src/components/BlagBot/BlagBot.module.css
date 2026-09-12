@@ -673,3 +673,35 @@
   color: var(--text-dim);
   padding-right: 4px;
 }
+
+/* Микрофонът. Същият размер като бутона за пращане, но празен отвътре: той не
+   е действието, а начин да се стигне до него. */
+.askMic {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+/* Слуша. Пулсът е единственото, което казва, че микрофонът е отворен — иначе
+   човек говори на бутон, който може и да е угаснал от тишина. */
+.askMicOn {
+  border-color: rgba(var(--accent-rgb), 0.85);
+  color: var(--accent);
+  animation: micPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45) }
+  50%      { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0) }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .askMicOn { animation: none }
+}

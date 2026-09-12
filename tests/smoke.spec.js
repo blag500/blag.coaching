@@ -1062,3 +1062,45 @@ test.describe('Ботът без мрежа', () => {
     await expect(page.getByText('чака мрежа')).toHaveCount(0)
   })
 })
+
+test.describe('Диктуване', () => {
+  test('чутото се долепя към написаното', async ({ page }) => {
+    test.setTimeout(60000)
+
+    /* Разпознавателят е на браузъра, а безглавият Chromium го няма. Слага се
+       двойник с истинския интерфейс: проверява се какво прави приложението с
+       чутото, а не дали Google разпознава български. */
+    await page.addInitScript(() => {
+      class FakeRec {
+        constructor() { this.lang = ''; this.onresult = null; this.onend = null; this.onerror = null }
+        start() {
+          window.__recLang = this.lang
+          setTimeout(() => {
+            this.onresult?.({ results: [[{ transcript: 'изядох двеста грама извара' }]] })
+            this.onend?.()
+          }, 120)
+        }
+        stop() { this.onend?.() }
+      }
+      window.SpeechRecognition = FakeRec
+    })
+
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+
+    const input = page.locator('input[placeholder="Питай ме нещо"]')
+    await input.fill('днес')
+
+    await page.locator('button[aria-label="Диктувай"]').click()
+    await page.waitForTimeout(700)
+
+    // Долепено, не заместено: започнатото писане не се изтрива.
+    await expect(input).toHaveValue('днес изядох двеста грама извара')
+    // И слуша на български, а не на езика на телефона.
+    expect(await page.evaluate(() => window.__recLang)).toBe('bg-BG')
+  })
+})
