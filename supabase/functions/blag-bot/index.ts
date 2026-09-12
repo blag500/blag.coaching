@@ -53,12 +53,20 @@ const SYSTEM = `Ти си Благ Бот — помощникът в прило
 - Не обещаваш резултат за срок.
 - Не коментираш тегло с оценка — само с числа и посока.
 
+ЗНАНИЕТО
+- В раздела ЗНАНИЕ стоят бележки на Николай: неговият метод, неговите протоколи, неговите обяснения. Те казват КАК се прави нещо.
+- Когато въпросът е „как", „защо", „кога се сменя", „по колко" — отговаряш по ЗНАНИЕ, не по общи приказки.
+- Числата за конкретния човек идват от ДАННИ. Разминат ли се ДАННИ и ЗНАНИЕ за този човек, вярно е ДАННИ: знанието казва как, дневникът казва колко.
+- Преразказваш със свои думи, кратко. Не преписваш бележката и не цитираш повече от едно изречение — човекът иска отговор, не извадка.
+- Ако в ЗНАНИЕ няма нищо по въпроса, не си измисляш метод. Казваш какво знаеш и че за останалото да пише на Николай.
+
 НАУЧЕНОТО
 - В раздела НАУЧЕНО стоят неща, забелязани от предишни разговори. Съобразяваш се с тях, но ако човекът каже нещо друго сега, сега е по-вярно.
 
 ОТКЪДЕ ЗНАЕШ
 - Ако в отговора има число, взето от ДАННИ, завършваш с нов ред: ИЗТОЧНИК: и имената на разделите от ДАННИ, които наистина си ползвал, разделени със запетая.
 - Имената са точно както са в ДАННИ — например: днес, седмица_ккал, вода, сън, тегло, упражнения, чекини.
+- Ако си ползвал раздела ЗНАНИЕ, в същия ред слагаш и думата: знание.
 - Ако отговорът не съдържа число от ДАННИ, не пишеш този ред.
 - След този ред не пишеш нищо.
 
@@ -329,7 +337,7 @@ Deno.serve(async (req) => {
     meals, mine, recent, learned,
   ] = await Promise.all([
       admin.from('profiles')
-        .select('name, calories, protein, carbs, fat, goal, age, gender, height_cm, activity_level, target_weight, habits, checkin_day, coach_notes')
+        .select('name, calories, protein, carbs, fat, goal, age, gender, height_cm, activity_level, target_weight, habits, checkin_day, coach_notes, coach_id')
         .eq('id', uid).maybeSingle(),
       admin.from('food_logs').select('name, grams, kcal, protein, carbs, fat, meal_type').eq('user_id', uid).eq('date', today),
       admin.from('food_logs').select('date, kcal, protein, carbs, fat').eq('user_id', uid).gte('date', weekAgo),
@@ -438,6 +446,43 @@ Deno.serve(async (req) => {
     `${m.name} — ${m.kcal ?? '?'} ккал, П${m.protein ?? '?'} В${m.carbs ?? '?'} М${m.fat ?? '?'}${m.prep_min ? `, ${m.prep_min} мин` : ''}`
   )
 
+  /* Знанието.
+   *
+   * Дотук ботът знаеше само числата на човека. Това стига за „колко ми
+   * остава", но не и за „защо" — а точно по вторите въпроси се плаща на
+   * треньор, не на приложение. Тук се търси в бележките на Николай по СМИСЪЛ:
+   * въпросът се превръща в същите триста осемдесет и четири числа и се пита
+   * кое парче стои най-близо. Проверено — „как да изглеждам най-сух за
+   * снимките в събота" намира бележката за пиковата седмица, без в нея да пише
+   * „снимки".
+   *
+   * Чие знание: на треньора на този човек. Самият Николай пита своето.
+   * Правилата за обхват решават кое парче стига до клиент и кое не — тук се
+   * подава кой пита, а таблицата отсява.
+   *
+   * Пада ли търсенето, отговорът продължава без него: знанието прави отговора
+   * по-добър, а не възможен.
+   */
+  const knowledgeOwner = (p.coach_id as string | null) ?? uid
+  let knowledge: { source: string; title: string | null; body: string }[] = []
+  try {
+    // deno-lint-ignore no-explicit-any
+    const ai = (globalThis as any).Supabase?.ai
+    if (ai) {
+      const session = new ai.Session('gte-small')
+      const qe = await session.run(question, { mean_pool: true, normalize: true })
+      const { data: hits } = await admin.rpc('match_knowledge', {
+        query_embedding: qe,
+        owner: knowledgeOwner,
+        asker: uid,
+        match_count: 4,
+      })
+      knowledge = hits ?? []
+    }
+  } catch {
+    /* без знание, но с отговор */
+  }
+
   // ── Подканата ─────────────────────────────────────────────────────────────
   const messages: unknown[] = [
     { role: 'system', content: SYSTEM + LANG_LINE[lang] },
@@ -446,6 +491,9 @@ Deno.serve(async (req) => {
       content:
         `ДАННИ\n${JSON.stringify(context, null, 1)}\n\n` +
         (mealList.length ? `ЯСТИЯ\n${mealList.join('\n')}\n\n` : '') +
+        (knowledge.length
+          ? `ЗНАНИЕ\n${knowledge.map(k => `[${k.source}${k.title ? ' · ' + k.title : ''}]\n${k.body}`).join('\n\n')}\n\n`
+          : '') +
         (learned.data?.learned ? `НАУЧЕНО\n${learned.data.learned}\n` : ''),
     },
     /* Нишката, най-старото първо. Осем реда стигат за „а защо", без да
@@ -529,7 +577,12 @@ Deno.serve(async (req) => {
     console.error(`без отговор за ${uid}, въпрос ${question.length} знака, нишка ${chatId ?? '—'}`)
     return json({ error: 'no answer' }, 502)
   }
-  const { reply, sources } = splitSources(raw, context)
+  /* „знание" е позволено име за източник само когато наистина е подадено
+     знание — иначе моделът може да се позове на бележка, която не е виждал. */
+  const { reply, sources } = splitSources(
+    raw,
+    knowledge.length ? { ...context, знание: knowledge.map(k => k.source) } : context,
+  )
 
   /* Записва се и въпросът, и отговорът — заедно с това, което ботът е виждал.
      Не се чака: човекът вече има отговора си. */

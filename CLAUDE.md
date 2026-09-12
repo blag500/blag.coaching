@@ -48,6 +48,18 @@ rules are computed in TypeScript — the model only puts a sentence around a
 number it is given. `?dry=1` reports which rule would fire without calling the
 model; `?dry=2` also returns the wording without writing anything.
 
+**Bot knowledge** (`supabase/functions/knowledge` + `bot_knowledge`): the coach's
+own notes, chunked by heading and embedded with Supabase's built-in `gte-small`
+model — no external API, no per-token cost, and the text never leaves the
+project. `blag-bot` embeds each question and pulls the four nearest chunks into
+a ЗНАНИЕ section of the prompt. Scope decides reach: `private` (answers to the
+coach only), `shared` (answers to his clients too), `client` (one person).
+The bot retells in its own words rather than quoting — that rule is in the
+system prompt, and numbers from the person's own log always beat the notes.
+Fill it from an Obsidian vault with `node scripts/sync-knowledge.mjs <folder>
+--scope private` (needs SUPABASE_URL, BOT_SECRET, OWNER_EMAIL); unchanged files
+are skipped by content digest.
+
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
 ## Testing

@@ -23,3 +23,8 @@ verify_jwt = false
 # нощната обиколка спира тихо.
 [functions.bot-watch]
 verify_jwt = false
+
+# knowledge се вика и от скрипт за синхронизация без вход в приложението: там
+# няма Authorization заглавка, а x-bot-secret. Пази се сам.
+[functions.knowledge]
+verify_jwt = false
