@@ -60,17 +60,20 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
+  gap: 4px;
 }
 
 .empty {
   aspect-ratio: 1;
 }
 
+/* Закръглението е var(--r-md) — същото, което носят и другите календари в
+   приложението. Четири пиксела правеха от месеца таблица; дванайсет правят
+   от всеки ден отделно нещо. */
 .cell {
   position: relative;
   aspect-ratio: 1;
-  border-radius: var(--r-xs);
+  border-radius: var(--r-md);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,9 +81,16 @@
   transition: background 0.2s;
 }
 
+/* Днес е плътно, не очертано. Контурът се губи върху запълнена клетка —
+   обърнатият блок се вижда отвсякъде. */
 .cell.today {
-  outline: 1.5px solid var(--text);
-  outline-offset: -1px;
+  background: var(--text);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
+}
+.cell.today .dayNum {
+  color: var(--bg);
+  opacity: 1;
+  font-family: var(--font-heading);
 }
 
 .dayNum {
@@ -90,12 +100,18 @@
   line-height: 1;
 }
 
-.todayDot {
-  width: 4px;
-  height: 4px;
+.cellCheck {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
+  display: grid;
+  place-items: center;
   background: var(--text);
-  margin-top: 2px;
+  color: var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .summary {

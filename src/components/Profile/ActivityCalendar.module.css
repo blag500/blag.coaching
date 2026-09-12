@@ -94,13 +94,13 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
+  gap: 4px;
 }
 
 .cell {
   background: none;
   border: none;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   padding: 4px 2px;
   cursor: pointer;
   display: flex;

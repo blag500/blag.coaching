@@ -151,10 +151,15 @@
   text-transform: capitalize;
 }
 
+/* Един ъгъл за всички календари.
+   Петте календара в приложението носеха пет различни клетки — 4, 4, 8, 8 и
+   без закръгление, с разстояние 2, 3, 4, 3 и 2. Нито една от тези разлики не
+   се вижда сама; заедно значат, че един и същ месец изглежда различно според
+   това откъде си влязъл. */
 .calGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 4px;
 }
 
 .calWeekDay {
@@ -171,7 +176,7 @@
   aspect-ratio: 1;
   background: none;
   border: 1px solid transparent;
-  border-radius: var(--r-xs);
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 12px;

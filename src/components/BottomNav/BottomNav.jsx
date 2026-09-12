@@ -239,7 +239,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
             type="button"
           >
             <span className={styles.iconWrap}><tab.Icon /></span>
-            <span className={styles.label}>{t(tab.key)}</span>
+            <span className={styles.label}><span>{t(tab.key)}</span></span>
           </button>
         ))}
 
@@ -287,7 +287,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
             type="button"
           >
             <span className={styles.iconWrap}><tab.Icon /></span>
-            <span className={styles.label}>{t(tab.key)}</span>
+            <span className={styles.label}><span>{t(tab.key)}</span></span>
           </button>
         ))}
 

@@ -75,7 +75,7 @@
 .calGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 4px;
 }
 
 .dayHeader {
@@ -94,7 +94,7 @@
   justify-content: flex-start;
   min-height: 42px;
   padding: 4px 2px 3px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   cursor: default;
 }
 

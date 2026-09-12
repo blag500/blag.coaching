@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useHabitHistory } from '../../hooks/useHabitHistory'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './HabitCalendar.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 
@@ -8,12 +9,14 @@ import { useSettings } from '../../contexts/SettingsContext'
 function pad(n) { return String(n).padStart(2, '0') }
 function dateStr(year, month, day) { return `${year}-${pad(month + 1)}-${pad(day)}` }
 
+/* Преливка, не плосък цвят.
+   Плоското квадратче казва само „толкова"; същият тон, който се спуска надолу,
+   дава на клетката дебелина и месецът престава да е таблица с оцветени полета. */
 function cellColor(ratio) {
-  if (ratio === null) return 'var(--surface-2)'
-  if (ratio === 0)    return 'var(--surface-2)'
-  if (ratio < 0.5)   return 'rgba(var(--accent-rgb),0.2)'
-  if (ratio < 1)     return 'rgba(var(--accent-rgb),0.55)'
-  return 'var(--accent)'
+  if (ratio === null || ratio === 0) return 'var(--surface-2)'
+  if (ratio < 0.5) return 'linear-gradient(160deg, rgba(var(--accent-rgb),0.30), rgba(var(--accent-rgb),0.12))'
+  if (ratio < 1)   return 'linear-gradient(160deg, rgba(var(--accent-rgb),0.68), rgba(var(--accent-rgb),0.38))'
+  return 'linear-gradient(160deg, var(--accent), rgba(var(--accent-rgb),0.72))'
 }
 
 export default function HabitCalendar() {
@@ -79,12 +82,19 @@ export default function HabitCalendar() {
             <div
               key={ds}
               className={`${styles.cell} ${isToday ? styles.today : ''}`}
-              style={{ background: cellColor(ratio) }}
+              /* Днешният ден си носи фона от стила; тук не се пише, за да
+                 няма нужда после да се надвиква с !important. */
+              style={isToday ? undefined : { background: cellColor(ratio) }}
               title={entry ? `${entry.completed}/${entry.total}` : ''}
               aria-label={t('hc.dayAria', { day, detail: entry ? t('hc.dayDone', { done: entry.completed, total: entry.total }) : t('hc.dayNone') })}
             >
               <span className={styles.dayNum}>{day}</span>
-              {isToday && <span className={styles.todayDot} />}
+              {/* Отметка на изкарания докрай ден. Цветът сам казва „почти" и
+                  „докрай" с два тона, които се различават само един до друг;
+                  знакът го казва и на ден, който стои сам. */}
+              {ratio === 1 && (
+                <span className={styles.cellCheck}><Pictogram name="check" size={9} /></span>
+              )}
             </div>
           )
         })}
