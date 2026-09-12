@@ -164,7 +164,9 @@ Deno.serve(async (req) => {
       admin.from('bot_profile').select('learned, events_seen').eq('user_id', uid).maybeSingle(),
     ])
 
-  const p = profile.data ?? {}
+  // deno-lint-ignore no-explicit-any
+  const p: any = profile.data ?? {}
+  // deno-lint-ignore no-explicit-any
   const sum = (rows: any[], f: string) =>
     Math.round((rows || []).reduce((a, r) => a + (Number(r[f]) || 0), 0) * 10) / 10
 
