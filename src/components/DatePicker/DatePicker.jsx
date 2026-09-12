@@ -108,17 +108,21 @@ function MiniCal({ selectedDate, onSelect, marks = {} }) {
           return (
             <button
               key={dateStr}
-              className={`${styles.calDay} ${isSelected ? styles.calDaySelected : ''} ${isToday && !isSelected ? styles.calDayToday : ''} ${isFuture && !isSelected ? styles.calDayFuture : ''}`}
+              className={[
+                styles.calDay,
+                !isSelected && marks[dateStr] === 1 ? styles.calDaySome : '',
+                !isSelected && marks[dateStr] === 2 ? styles.calDayFull : '',
+                isSelected ? styles.calDaySelected : '',
+                isToday && !isSelected ? styles.calDayToday : '',
+                isFuture && !isSelected ? styles.calDayFuture : '',
+              ].join(' ')}
               onClick={() => onSelect(dateStr)}
               type="button"
             >
+              {/* Дотук под числото стоеше точка. Сега самата клетка носи
+                  колко има в този ден — редицата се чете отдалеч, а не се
+                  чака окото да намери четири пиксела под всяко число. */}
               {day}
-              {/* Точката е под числото, не върху него: месецът се чете по
-                  числата, а точките се четат като шарка — къде има редица и
-                  къде има дупка. */}
-              {marks[dateStr] && !isSelected && (
-                <span className={`${styles.calDot} ${marks[dateStr] === 2 ? styles.calDotFull : ''}`} />
-              )}
             </button>
           )
         })}

@@ -15,13 +15,21 @@ const CATEGORIES = [
 ]
 
 
+/* Преливка, не плосък цвят — както в календара на навиците.
+   Тук мярката е друга: от петте неща, които денят може да носи (тренировка,
+   хранене, навици, тегло, сън), колко наистина ги има. */
 function heatColor(count) {
-  if (count === 0) return 'transparent'
-  if (count === 1) return 'rgba(var(--accent-rgb),0.22)'
-  if (count === 2) return 'rgba(var(--accent-rgb),0.42)'
-  if (count === 3) return 'rgba(var(--accent-rgb),0.62)'
-  if (count === 4) return 'rgba(var(--accent-rgb),0.82)'
-  return 'var(--accent)'
+  if (count === 0) return 'var(--surface-2)'
+  const top = [0, 0.26, 0.44, 0.62, 0.80, 1][count] ?? 1
+  const bot = Math.max(top - 0.26, 0.08)
+  return `linear-gradient(160deg, rgba(var(--accent-rgb),${top}), rgba(var(--accent-rgb),${bot}))`
+}
+
+/* Плоският вариант — за квадратчетата в легендата, където преливка върху
+   петнайсет пиксела не се чете. */
+function heatFlat(count) {
+  if (count === 0) return 'var(--surface-2)'
+  return `rgba(var(--accent-rgb),${[0, 0.26, 0.44, 0.62, 0.80, 1][count] ?? 1})`
 }
 
 export default function ActivityCalendar() {
@@ -162,15 +170,23 @@ export default function ActivityCalendar() {
                 styles.cell,
                 isToday  ? styles.todayCell    : '',
                 isFuture ? styles.futureCell   : '',
+                loading && !isFuture ? styles.waiting : '',
                 selectedDay === dateStr ? styles.selectedCell : '',
               ].join(' ')}
               onClick={() => setSelectedDay(selectedDay === dateStr ? null : dateStr)}
+              /* Днешният ден си носи фона от стила, за да няма нужда после да
+                 се надвиква с !important. */
+              style={isToday ? undefined : {
+                background: isFuture || loading ? 'var(--surface-2)' : heatColor(count),
+              }}
             >
-              <span
-                className={`${styles.heatDot} ${loading && !isFuture ? styles.heatDotWaiting : ''}`}
-                style={{ background: isFuture || loading ? 'transparent' : heatColor(count) }}
-              />
               <span className={styles.dayNum}>{day}</span>
+              {/* Денят, в който всичките пет са налице, носи отметка. Цветът
+                  различава четири от пет само когато двата дни стоят един до
+                  друг; знакът го казва и на ден, който стои сам. */}
+              {!isFuture && !loading && count === 5 && (
+                <span className={styles.cellCheck}><Pictogram name="check" size={9} /></span>
+              )}
             </button>
           )
         })}
@@ -180,7 +196,7 @@ export default function ActivityCalendar() {
       <div className={styles.heatLegend}>
         <span className={styles.heatLegendLabel}>{t('ac.legendLow')}</span>
         {[1, 2, 3, 4, 5].map(n => (
-          <span key={n} className={styles.heatSwatch} style={{ background: heatColor(n) }} />
+          <span key={n} className={styles.heatSwatch} style={{ background: heatFlat(n) }} />
         ))}
         <span className={styles.heatLegendLabel}>{t('ac.legendHigh')}</span>
       </div>

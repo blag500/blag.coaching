@@ -199,8 +199,26 @@
   background: var(--accent-dim);
 }
 
+/* Колко има в този ден. Същите две стъпки като точката дотук — „има нещо" и
+   „стигната цел" — само че наляти в клетката. */
+.calDaySome {
+  background: linear-gradient(160deg,
+    rgba(var(--accent-rgb), 0.26),
+    rgba(var(--accent-rgb), 0.10));
+}
+
+.calDayFull {
+  background: linear-gradient(160deg,
+    rgba(var(--accent-rgb), 0.70),
+    rgba(var(--accent-rgb), 0.40));
+  color: var(--text);
+}
+
+/* Днес е пръстен, не рамка. Тук плътното е запазено за избрания ден: той е
+   този, който човек е дошъл да смени. */
 .calDayToday {
-  border-color: rgba(var(--accent-rgb), 0.45);
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.55);
   color: var(--accent);
 }
 
@@ -208,30 +226,13 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--bg);
-  font-weight: 600;
+  font-family: var(--font-heading);
 }
 
 .calDayFuture {
   opacity: 0.5;
 }
 
-/* Същият знак като на дъгата, същият смисъл. Тук са трийсет наведнъж и се
-   четат като шарка — редицата се вижда, преди да си прочел числата. */
-.calDot {
-  position: absolute;
-  left: 50%;
-  bottom: 3px;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 50%;
-  border: 1px solid rgba(var(--accent-rgb), 0.5);
-}
-
-.calDotFull {
-  background: var(--accent);
-  border-color: var(--accent);
-}
 
 
 /* ── Дъгата с дните ───────────────────────────────────────────────

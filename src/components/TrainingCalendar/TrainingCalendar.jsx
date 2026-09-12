@@ -429,6 +429,7 @@ export default function TrainingCalendar() {
                 key={i}
                 className={`${styles.dayCell}
                   ${day ? styles.dayCellActive : ''}
+                  ${dots.length ? styles.hasWork : ''}
                   ${isToday(day) ? styles.todayCell : ''}
                   ${isSel(day)   ? styles.selCell   : ''}`}
                 onClick={() => day && setSelDay(day)}

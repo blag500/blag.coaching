@@ -91,11 +91,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   min-height: 42px;
   padding: 4px 2px 3px;
   border-radius: var(--r-md);
   cursor: default;
+  position: relative;
 }
 
 .dayCellActive {
@@ -111,34 +112,39 @@
   background: rgba(var(--accent-rgb), 0.12);
 }
 
+/* Денят със заложени тренировки е налят.
+   Точките отдолу си остават — те казват какво е станало с всяка от тях, а
+   това е спецификацията на този календар. Фонът казва само „тук има нещо". */
+.hasWork {
+  background: linear-gradient(160deg,
+    rgba(var(--accent-rgb), 0.30),
+    rgba(var(--accent-rgb), 0.12));
+}
+
+/* Днес е плътно, не кръгче около числото.
+   Дотук този календар обграждаше самото число, а останалите пълнят клетката —
+   един и същи месец изглеждаше различно според това откъде си влязъл. */
+.todayCell {
+  background: var(--text);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
+}
 .todayCell .dayNum {
-  background: rgba(var(--accent-rgb), 0.15);
-  border: 1px solid rgba(var(--accent-rgb), 0.4);
-  color: var(--accent);
+  color: var(--bg);
+  font-family: var(--font-heading);
 }
 
 .selCell {
-  background: rgba(var(--accent-rgb), 0.1);
-}
-
-.selCell .dayNum {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .dayNum {
-  width: 26px;
-  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   font-family: var(--font-body);
   font-size: 12px;
   color: var(--text);
-  border: 1px solid transparent;
-  transition: background 0.12s, color 0.12s;
+  transition: color 0.12s;
   flex-shrink: 0;
 }
 

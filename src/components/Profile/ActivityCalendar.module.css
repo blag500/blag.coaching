@@ -97,37 +97,37 @@
   gap: 4px;
 }
 
+/* Клетката е самият ден, не квадратче над номер.
+   Дотук цветът стоеше в двайсет и два пиксела над числото и месецът се четеше
+   като таблица с точки. Същият ъгъл и същото разстояние, каквито носят и
+   останалите календари. */
 .cell {
-  background: none;
   border: none;
   border-radius: var(--r-md);
-  padding: 4px 2px;
+  padding: 0;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-height: 44px;
-  transition: background 0.12s;
+  justify-content: center;
+  aspect-ratio: 1;
+  transition: background 0.2s;
   -webkit-tap-highlight-color: transparent;
   position: relative;
 }
 
-.cell:active {
-  background: var(--surface-2);
-}
-
+/* Днес е плътно, не очертано: контурът се губи върху запълнена клетка. */
 .todayCell {
-  outline: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: var(--text);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
 }
 
 .todayCell .dayNum {
-  color: var(--accent);
+  color: var(--bg);
+  opacity: 1;
 }
 
 .selectedCell {
-  background: rgba(var(--accent-rgb), 0.1);
-  outline: 1px solid rgba(var(--accent-rgb), 0.4);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .futureCell {
@@ -135,13 +135,18 @@
   cursor: default;
 }
 
-.heatDot {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-xs);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  flex-shrink: 0;
-  transition: background 0.2s;
+.cellCheck {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 .dayNum {
@@ -227,9 +232,10 @@
 
 /* Изчакването. Не празно и не пълно — тих пулс, който казва „още броя".
    Дотук месецът се рисуваше студен, докато седемте заявки се върнат, и всяко
-   отваряне на профила започваше с един кадър, в който нищо не си правил. */
-.heatDotWaiting {
-  background: var(--surface-2) !important;
+   отваряне на профила започваше с един кадър, в който нищо не си правил.
+   Пулсът мина от квадратчето върху самата клетка, защото квадратчето го няма
+   вече — денят е клетката. */
+.waiting {
   animation: waiting 1.4s ease-in-out infinite;
 }
 
@@ -239,5 +245,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .heatDotWaiting { animation: none; opacity: 0.35 }
+  .waiting { animation: none; opacity: 0.35 }
 }

@@ -85,16 +85,31 @@
   -webkit-tap-highlight-color: transparent;
 }
 .cell:active { background: rgba(255, 255, 255, 0.08); }
-.picked { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.06); }
+
+/* Избраният ден е пръстен, не рамка: рамка от един пиксел върху запълнена
+   клетка се губи в самото ѝ очертание. */
+.picked { box-shadow: 0 0 0 2px var(--accent); }
 
 .empty { visibility: hidden; }
 
+/* Тренираният ден е налят, не леко оцветен.
+   Шест на сто акцент върху почти черно е разлика, която се вижда само ако
+   двата дни стоят един до друг. Точките отдолу казват кои блокове са били —
+   това е спецификацията на този календар и тя остава. */
 .hasWork {
-  background: rgba(var(--accent-rgb), 0.06);
+  background: linear-gradient(160deg,
+    rgba(var(--accent-rgb), 0.34),
+    rgba(var(--accent-rgb), 0.14));
 }
 
+/* Днес е плътно, не очертано: контурът се губи върху запълнена клетка. */
 .today {
-  border: 1px solid var(--accent);
+  background: var(--text);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
+}
+.today .dayNum {
+  color: var(--bg);
+  font-family: var(--font-heading);
 }
 
 .dayNum {
