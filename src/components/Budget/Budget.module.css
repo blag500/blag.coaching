@@ -689,6 +689,10 @@
   padding: 4px 10px;
   cursor: pointer;
   transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 .ghostBtn:hover { background: rgba(var(--accent-rgb), 0.08); }
 

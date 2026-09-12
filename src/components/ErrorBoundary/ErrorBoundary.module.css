@@ -59,5 +59,9 @@
   padding: 12px;
   cursor: pointer;
   transition: transform 140ms var(--ease-out);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .btn:active { transform: scale(0.97); }

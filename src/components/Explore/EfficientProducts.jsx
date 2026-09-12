@@ -88,7 +88,7 @@ function ProductCard({ product, currentUserId, liked, likeCount, onLike, onDelet
               </div>
             ))}
             <div className={styles.formActions}>
-              <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button">{t('ep.cancel')}</button>
+              <button className={styles.cancelBtn} onClick={() => setEditing(false)} type="button"><Pictogram name="close" size={13} />{t('ep.cancel')}</button>
               <button
                 className={styles.submitBtn}
                 onClick={handleSave}
@@ -349,7 +349,7 @@ export default function EfficientProducts({ onBack }) {
 
           {error && <p className={styles.formError}>{error}</p>}
           <div className={styles.formActions}>
-            <button className={styles.cancelBtn} onClick={cancelForm} type="button">{t('ep.cancel')}</button>
+            <button className={styles.cancelBtn} onClick={cancelForm} type="button"><Pictogram name="close" size={13} />{t('ep.cancel')}</button>
             <button className={styles.submitBtn} onClick={handleSubmit} disabled={!canSubmit} type="button">
               {submitting ? t('ep.submitting') : t('ep.addNew')}
             </button>

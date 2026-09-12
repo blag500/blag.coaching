@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { tr } from '../../utils/locale'
 import { reportError } from '../../lib/reportError'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './ErrorBoundary.module.css'
 
 /**
@@ -47,6 +48,7 @@ export default class ErrorBoundary extends Component {
             className={styles.btn}
             onClick={() => window.location.reload()}
           >
+            <Pictogram name="refresh" size={15} />
             {tr('eb.reload')}
           </button>
         </div>

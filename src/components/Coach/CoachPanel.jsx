@@ -745,7 +745,7 @@ function ShowcaseManager() {
                 </button>
               </div>
               <div className={styles.formActions}>
-                <button type="button" className={styles.formCancelBtn} onClick={() => setShowForm(false)}>{t('cp.cancel')}</button>
+                <button type="button" className={styles.formCancelBtn} onClick={() => setShowForm(false)}><Pictogram name="close" size={13} />{t('cp.cancel')}</button>
                 <button type="submit" className={styles.formSaveBtn} disabled={saving || !form.title.trim()}>
                   {saving ? '...' : t('cp.publish')}
                 </button>

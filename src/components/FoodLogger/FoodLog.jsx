@@ -525,8 +525,8 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
         )}
 
         <div className={styles.editActions}>
-          <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button">{t('foodlog.editCancel')}</button>
-          <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button">{t('foodlog.editSave')}</button>
+          <button className={styles.cancelEditBtn} onClick={() => setEditingId(null)} type="button"><Pictogram name="close" size={13} />{t('foodlog.editCancel')}</button>
+          <button className={styles.saveEditBtn} onClick={() => handleSave(entry)} type="button"><Pictogram name="check" size={13} />{t('foodlog.editSave')}</button>
         </div>
       </li>
     ) : (

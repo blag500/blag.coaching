@@ -580,6 +580,10 @@
   background: transparent;
   border: 1px solid var(--panel-border);
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 .modalSave {
   background: var(--accent);

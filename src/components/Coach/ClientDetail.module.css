@@ -1086,6 +1086,10 @@
   font-size: 13px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
 .addFoodSubmit {
@@ -1317,6 +1321,10 @@
   font-size: 12px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
 .logEditSave {
@@ -1331,6 +1339,10 @@
   letter-spacing: 0.06em;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
 .dayTotal {

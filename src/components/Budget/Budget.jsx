@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import Pictogram from '../Pictogram/Pictogram'
 import { useBudget, monthStart, nextMonthStart, prevMonthStart } from '../../hooks/useBudget'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Budget.module.css'
@@ -128,7 +129,7 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <span className={styles.label}>{t('bg.plannedExpenses')}</span>
-          <button className={styles.ghostBtn} onClick={addExpense} type="button">{t('bg.add')}</button>
+          <button className={styles.ghostBtn} onClick={addExpense} type="button"><Pictogram name="plus" size={14} />{t('bg.add')}</button>
         </div>
         {expenses.map((exp, i) => (
           <div key={i} className={styles.expenseItem}>

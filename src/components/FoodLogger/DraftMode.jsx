@@ -233,7 +233,7 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           ))}
         </div>
 
-        <button className={styles.addBtn} type="submit">{t('draft.add')}</button>
+        <button className={styles.addBtn} type="submit"><Pictogram name="plus" size={14} />{t('draft.add')}</button>
       </form>
 
       <div className={styles.summary}>

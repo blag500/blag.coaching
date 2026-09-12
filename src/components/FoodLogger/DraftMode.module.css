@@ -96,6 +96,10 @@
   letter-spacing: 0.08em;
   padding: 11px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
 .addBtn:active { background: rgba(var(--accent-rgb), 0.2); }

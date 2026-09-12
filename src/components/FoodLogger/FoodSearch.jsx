@@ -543,7 +543,7 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded, onScanBarcode })
           )}
           {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
           <div className={styles.panelActions}>
-            <button className={styles.cancelBtn} onClick={() => setResult(null)} type="button">{t('fs.back')}</button>
+            <button className={styles.cancelBtn} onClick={() => setResult(null)} type="button"><Pictogram name="back" size={13} />{t('fs.back')}</button>
             <button className={styles.addBtn} onClick={handleAdd} type="button">{t('fs.add')}</button>
           </div>
         </div>
@@ -615,7 +615,7 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
     return (
       <div className={styles.multiPanel}>
         <p className={styles.multiEmpty}>{t('fs.multiEmpty')}</p>
-        <button className={styles.cancelBtn} onClick={onCancel} type="button">{t('fs.back')}</button>
+        <button className={styles.cancelBtn} onClick={onCancel} type="button"><Pictogram name="back" size={13} />{t('fs.back')}</button>
       </div>
     )
   }
@@ -671,7 +671,7 @@ function MultiAddPanel({ initialItems, meal, onMealChange, onAdd, onCancel }) {
       {onMealChange && <MealPicker value={meal} onChange={onMealChange} />}
 
       <div className={styles.panelActions}>
-        <button className={styles.cancelBtn} onClick={onCancel} type="button">{t('fs.back')}</button>
+        <button className={styles.cancelBtn} onClick={onCancel} type="button"><Pictogram name="back" size={13} />{t('fs.back')}</button>
         <button className={styles.addBtn} onClick={() => onAdd(items)} type="button">
           {items.length === 1 ? t('fs.addN.one') : t('fs.addN.other', { n: items.length })}
         </button>
@@ -989,7 +989,7 @@ function RecentMode({ onAddRaw }) {
                   </div>
                 )}
                 <div className={styles.panelActions}>
-                  <button className={styles.cancelBtn} onClick={() => { setSelectedName(null); setEditedName('') }} type="button">{t('fs.back')}</button>
+                  <button className={styles.cancelBtn} onClick={() => { setSelectedName(null); setEditedName('') }} type="button"><Pictogram name="back" size={13} />{t('fs.back')}</button>
                   <button className={styles.addBtn} onClick={() => handleConfirm(item)} type="button">{t('fs.add')}</button>
                 </div>
               </>
@@ -1101,7 +1101,7 @@ function SuggestCard({ item, onAdd, hint }) {
             </div>
           )}
           <div className={styles.panelActions}>
-            <button className={styles.cancelBtn} onClick={() => setExpanded(false)} type="button">{t('fs.back')}</button>
+            <button className={styles.cancelBtn} onClick={() => setExpanded(false)} type="button"><Pictogram name="back" size={13} />{t('fs.back')}</button>
             <button className={styles.addBtn} onClick={handleAdd} type="button">{t('fs.add')}</button>
           </div>
         </>

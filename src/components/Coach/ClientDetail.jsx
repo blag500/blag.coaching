@@ -723,8 +723,8 @@ function NutritionTab({ client }) {
           label={t('foodlog.editMeal')}
         />
         <div className={styles.logEditActions}>
-          <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">{t('cd.cancel')}</button>
-          <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button">{t('cd.save')}</button>
+          <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button"><Pictogram name="close" size={13} />{t('cd.cancel')}</button>
+          <button className={styles.logEditSave} onClick={() => saveEdit(entry.id)} type="button"><Pictogram name="check" size={13} />{t('cd.save')}</button>
         </div>
       </div>
     ) : (
@@ -835,7 +835,7 @@ function NutritionTab({ client }) {
             ))}
           </div>
           <div className={styles.addFoodActions}>
-            <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">{t('cd.cancel')}</button>
+            <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button"><Pictogram name="close" size={13} />{t('cd.cancel')}</button>
             <button
               className={styles.addFoodSubmit}
               onClick={handleAdd}
@@ -1098,7 +1098,7 @@ function LiftsTab({ clientId }) {
                 onChange={e => setNewEntry(p => ({ ...p, notes: e.target.value }))}
               />
               <div className={styles.addFoodActions}>
-                <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button">{t('cd.cancel')}</button>
+                <button className={styles.addFoodCancel} onClick={() => setShowAdd(false)} type="button"><Pictogram name="close" size={13} />{t('cd.cancel')}</button>
                 <button
                   className={styles.addFoodSubmit}
                   onClick={handleAdd}
@@ -1160,8 +1160,8 @@ function LiftsTab({ clientId }) {
                       onChange={e => setDraft(p => ({ ...p, notes: e.target.value }))}
                     />
                     <div className={styles.logEditActions}>
-                      <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button">{t('cd.cancel')}</button>
-                      <button className={styles.logEditSave} onClick={() => saveEdit(log.id)} type="button">{t('cd.save')}</button>
+                      <button className={styles.logEditCancel} onClick={() => setEditingId(null)} type="button"><Pictogram name="close" size={13} />{t('cd.cancel')}</button>
+                      <button className={styles.logEditSave} onClick={() => saveEdit(log.id)} type="button"><Pictogram name="check" size={13} />{t('cd.save')}</button>
                     </div>
                   </div>
                 ) : (

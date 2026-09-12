@@ -721,6 +721,10 @@
   border-radius: var(--r-sm);
   color: var(--muted);
   font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
 .addBtn {

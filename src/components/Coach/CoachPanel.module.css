@@ -623,6 +623,10 @@
   font-size: 13px;
   letter-spacing: 0.08em;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
 }
 
 .formSaveBtn {
