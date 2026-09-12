@@ -108,7 +108,12 @@
   border: none;
   color: rgba(var(--text-rgb), 0.45);
   transition: color 200ms var(--ease-out);
-  padding: 6px 2px;
+  /* Отстъпът е за овала, не за знака.
+     Дотук беше два пиксела и докато разделите държаха по една пета от
+     лентата, това не личеше — имаше луфт наоколо. Откакто са широки колкото
+     съдържанието си, овалът застава на два пиксела от буквата и се чете като
+     срязан, сякаш мястото не достига. */
+  padding: 6px 4px;
   position: relative;
   border-radius: var(--r-xl);
   cursor: pointer;
@@ -130,11 +135,19 @@
   min-width: 0;
 }
 
+/* Отвореният раздел си взима въздух за овала. Четиринайсет пиксела от всяка
+   страна: толкова, че закръглените краища да свършват в празно, а не върху
+   първата и последната буква. */
+.tab.active {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
 /* Large dark oval for active tab — Apple Fitness style */
 .tab::before {
   content: '';
   position: absolute;
-  inset: 4px 2px;
+  inset: 4px 0;
   background: var(--chrome-active);
   border-radius: var(--r-xl);
   opacity: 0;
