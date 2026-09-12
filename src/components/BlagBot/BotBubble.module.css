@@ -1,0 +1,42 @@
+/* Балончето на бота.
+   Долу вдясно, над лентата — същият ъгъл, на който стоеше бутонът за писане
+   в потока. Той се вдига с една височина нагоре, когато двете са на един
+   екран; вж. openBtn в PostSheet.module.css. */
+.bubble {
+  position: fixed;
+  right: 18px;
+  bottom: calc(env(safe-area-inset-bottom) + 84px);
+  z-index: 90;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  /* Пръстенът е в цвета на темата, а не в едно злато за трите: в стъклената
+     тема топлото злато изглежда като взето назаем от друго приложение. */
+  box-shadow:
+    0 0 0 2px rgba(var(--accent-rgb), 0.85),
+    0 4px 18px rgba(var(--accent-rgb), 0.40),
+    0 0 0 5px rgba(var(--bg-rgb), 0.80);
+  animation: bubbleIn 320ms var(--ease-spring-soft) both;
+}
+
+.bubble img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bubble:active { transform: scale(0.9); }
+
+@keyframes bubbleIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble { animation: none; }
+}

@@ -12,6 +12,7 @@ import NavDrawer from './components/NavDrawer/NavDrawer'
 import NutritionCards from './components/NutritionCards/NutritionCards'
 import Compliance from './components/Compliance/Compliance'
 import BlagBot from './components/BlagBot/BlagBot'
+import BotBubble from './components/BlagBot/BotBubble'
 import Training from './components/Training/Training'
 import Profile from './components/Profile/Profile'
 import AuthScreen from './components/Auth/AuthScreen'
@@ -427,6 +428,11 @@ function AppShell() {
           )}
         />
       </main>
+      {/* Балончето на бота стои тук, а не вътре в страница: разделите се
+          движат с трансформация при плъзгане и fixed вътре в тях се закача за
+          тях, не за прозореца. Оттук е на един и същи ъгъл на всеки екран. */}
+      <BotBubble activeTab={activeTab} onOpen={navigate} />
+
       <BottomNav
         activeTab={activeTab}
         onTabChange={navigate}
