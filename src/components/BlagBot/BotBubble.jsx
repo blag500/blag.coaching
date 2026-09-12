@@ -53,6 +53,12 @@ export default function BotBubble({ activeTab, onOpen }) {
   const [overDrop, setOver] = useState(false)
   const [docking, setDocking] = useState(false)  // близо до обичайното си място
 
+  /* Преглъща следващото натискане, ако балончето току-що е било местено.
+     Браузърът праща click след pointerup върху това, което е под пръста — а
+     под пръста е страницата, не балончето, защото то е на друго място. Оставиш
+     ли го върху „РЕЦЕПТИ", рецептите се отварят. */
+  const swallowRef = useRef(false)
+
   const holdRef  = useRef(null)   // таймерът за задържане
   const startRef = useRef(null)   // откъде тръгна пръстът
   const movedRef = useRef(false)  // мръднал ли е достатъчно, за да не е тап
@@ -74,6 +80,19 @@ export default function BotBubble({ activeTab, onOpen }) {
   }, [])
 
   useEffect(() => () => clearTimeout(holdRef.current), [])
+
+  /* Прихваща се в улавящата фаза на документа, преди събитието да стигне до
+     който и да е бутон. Само едно натискане и само след местене. */
+  useEffect(() => {
+    const eat = e => {
+      if (!swallowRef.current) return
+      swallowRef.current = false
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    document.addEventListener('click', eat, true)
+    return () => document.removeEventListener('click', eat, true)
+  }, [])
 
   if (hidden || activeTab === 'bot') return null
 
@@ -157,6 +176,7 @@ export default function BotBubble({ activeTab, onOpen }) {
         setHidden(true)
         setHiddenState(true)
         haptic('success')
+        swallowRef.current = true
         return
       }
       setOver(false)
@@ -170,7 +190,7 @@ export default function BotBubble({ activeTab, onOpen }) {
       setDocking(false)
       setPos(landed)
       savePos(landed)
-      if (moved) return          // това беше местене, не отваряне
+      if (moved) { swallowRef.current = true; return }   // местене, не отваряне
     }
 
     onOpen('bot')

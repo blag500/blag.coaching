@@ -803,3 +803,30 @@ test.describe('Слоят на бота', () => {
     await expect(page.locator('button[aria-label="БЛАГ БОТ"]')).toBeVisible()
   })
 })
+
+test.describe('Балончето и бутоните под него', () => {
+  test('пускането на балончето не натиска бутона отдолу', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1500)
+    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
+    await page.waitForTimeout(1400)
+  
+    const recipes = page.getByText('РЕЦЕПТИ', { exact: true }).first()
+    const target = await recipes.boundingBox()
+    const bubble = page.locator('button[aria-label="БЛАГ БОТ"]')
+    const box = await bubble.boundingBox()
+  
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(900)
+    await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 14 })
+    await page.waitForTimeout(200)
+    await page.mouse.up()
+    await page.waitForTimeout(900)
+  
+    // Рецептите НЕ трябва да са се отворили: решетката още показва избора.
+    await expect(page.getByText('ЧЕРНОВА', { exact: true })).toBeVisible()
+    await page.screenshot({ path: 'shots/tmp-ghost.png' })
+  })
+})
