@@ -15,7 +15,7 @@
               color        220ms var(--ease-out),
               transform    120ms var(--ease-out);
   animation: itemIn 300ms var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 50ms);
+  animation-delay: calc(min(var(--i, 0), 6) * 40ms);
 }
 
 .item:active {

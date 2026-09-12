@@ -474,7 +474,7 @@
   composes: arrive from '../../styles/arrive.module.css';
   /* Едно след друго. Шейсет милисекунди е достатъчно, за да се усети
      последователност, и малко, за да не забави отварянето. */
-  animation-delay: calc(var(--i, 0) * 60ms);
+  animation-delay: calc(min(var(--i, 0), 6) * 40ms);
   position: relative;
   padding: 0;
 }

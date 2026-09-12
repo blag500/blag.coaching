@@ -127,7 +127,7 @@
    в ДНЕС имат, а тези нямаха. */
 .post {
   composes: arrive glint from '../../styles/arrive.module.css';
-  animation-delay: calc(var(--i, 0) * 55ms);
+  animation-delay: calc(min(var(--i, 0), 6) * 40ms);
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);

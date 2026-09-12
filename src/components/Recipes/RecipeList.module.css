@@ -87,7 +87,7 @@
      composes стои при първата дефиниция на класа: втора дефиниция със същото
      име не го наследява и жестът тихо не се прилага. */
   composes: arrive from '../../styles/arrive.module.css';
-  animation-delay: calc(var(--i, 0) * 45ms);
+  animation-delay: calc(min(var(--i, 0), 6) * 40ms);
 
   border-bottom: 1px solid var(--border);
 }

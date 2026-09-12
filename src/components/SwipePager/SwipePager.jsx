@@ -18,7 +18,13 @@ const COMMIT_PART = 0.28
 // the finger has crossed a quarter of the screen.
 const FLICK_SPEED = 0.45   // px per ms
 const FLICK_MIN   = 40     // but never on a twitch
-const GLIDE       = 420    // ms to finish or undo the journey
+/* Колко трае пътуването.
+   Беше 420ms с кривата на чекмеджето — а тя е направена за лист, който излиза
+   отдолу: половината път минава в първите 20% от времето, после дълга опашка,
+   в която почти нищо не се движи. На смяна на раздел това се усеща като
+   изчакване, не като ход. По-кратко и с кривата за плъзгане: същото ускорение
+   в началото, но без опашката. */
+const GLIDE       = 260    // ms to finish or undo the journey
 
 // Below the pane that is arriving (95) for the page being left, above it for
 // the page arriving, and both under the tab bar (100), which never moves.
@@ -86,7 +92,7 @@ function SwipePager({
   function place(dx, dir, animate) {
     offset.current = dx
     const w = window.innerWidth
-    const ease = animate ? `transform ${GLIDE}ms var(--ease-drawer)` : 'none'
+    const ease = animate ? `transform ${GLIDE}ms var(--ease-glide)` : 'none'
     const { front: f, back: b } = live.current
 
     const resting = dx === 0 && !animate
