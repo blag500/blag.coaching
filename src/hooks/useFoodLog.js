@@ -36,6 +36,38 @@ function writeCache(uid, date, log) {
   } catch { /* quota / private mode — silent, cache is a nice-to-have */ }
 }
 
+/** Вписване на готови редове отвън — оттам, където няма достъп до дневника.
+ *
+ *  Ботът разчита изречение в редове и човекът ги потвърждава, а дневникът е
+ *  друга страница с друг екземпляр на този похват. Затова: един запис в базата
+ *  и едно известие, което казва на всички отворени дневници, че денят е стар.
+ *  Иначе вписаното с думи се вижда чак при следващото отваряне на ХРАНЕНЕ —
+ *  и човекът го вписва втори път.
+ */
+export async function logFoodRows(userId, items, date = todayStr()) {
+  if (!userId || !items?.length) return { error: 'nothing' }
+  const rows = items.map(i => ({
+    user_id: userId,
+    date,
+    name:    String(i.name).slice(0, 120),
+    grams:   Math.max(0, Math.round(Number(i.grams) || 0)),
+    kcal:    Math.round(Number(i.kcal) || 0),
+    protein: Math.round((Number(i.protein) || 0) * 10) / 10,
+    carbs:   Math.round((Number(i.carbs)   || 0) * 10) / 10,
+    fat:     Math.round((Number(i.fat)     || 0) * 10) / 10,
+    /* Разчетеното от изречение е догадка, докато не съвпадне с неговa храна.
+       Стои в реда, за да може денят да се чете честно после. */
+    estimated: i.approx ? 'bot' : null,
+    meal_type: i.meal ?? null,
+  }))
+  const { error } = await supabase.from('food_logs').insert(rows)
+  if (error) {
+    for (const row of rows) enqueue({ table: 'food_logs', op: 'insert', row })
+  }
+  window.dispatchEvent(new CustomEvent('blag:food-log'))
+  return { error: null }
+}
+
 export function useFoodLog() {
   const { user } = useAuth()
   const [selectedDate, setSelectedDate] = useState(todayStr())
@@ -77,7 +109,12 @@ export function useFoodLog() {
   useEffect(() => {
     const again = () => fetchLog()
     window.addEventListener('blag:outbox-sent', again)
-    return () => window.removeEventListener('blag:outbox-sent', again)
+    /* И щом нещо е вписано отвън — ботът разчита изречение на своя страница. */
+    window.addEventListener('blag:food-log', again)
+    return () => {
+      window.removeEventListener('blag:outbox-sent', again)
+      window.removeEventListener('blag:food-log', again)
+    }
   }, [fetchLog])
 
   /** `food.estimated` is set by whichever route produced it — a model's reading

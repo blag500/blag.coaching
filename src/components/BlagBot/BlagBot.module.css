@@ -447,3 +447,123 @@
   color: var(--accent);
   opacity: 0.85;
 }
+
+/* ── Разчетеното от изречение ───────────────────────────────────────────────
+   Стои под отговора, в неговата колона, и е карта, а не мехурче: това не е
+   казано от бота, а предложено — и се чете като ред от дневника, защото след
+   едно натискане точно това става. */
+.withDraft {
+  align-items: flex-start;
+}
+
+.botSide {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  max-width: 86%;
+}
+
+.botSide .bubble {
+  max-width: 100%;
+}
+
+.draft {
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: 14px;
+  background: var(--surface-1);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: draftIn 260ms var(--ease-spring-soft) both;
+}
+
+@keyframes draftIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97) }
+  to   { opacity: 1; transform: translateY(0)    scale(1)    }
+}
+
+.draftRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+
+.draftName {
+  min-width: 0;
+  color: var(--text);
+}
+
+.draftGrams {
+  color: var(--text-dim);
+}
+
+/* Догадката се казва, а не се крие: ред с приблизителни числа трябва да се
+   разпознава в дневника после, когато сборът не излиза. */
+.draftApprox {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+/* Числата са в един ред и в един ритъм: калории, после белтък/въглехидрати/
+   мазнини — същата подредба като навсякъде другаде в приложението. */
+.draftMacros {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.draftTotal {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  font-weight: 600;
+}
+
+.draftBtns {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.draftYes,
+.draftNo {
+  flex: 1;
+  min-height: 38px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.draftYes {
+  border: 1px solid rgba(var(--accent-rgb), 0.7);
+  background: rgba(var(--accent-rgb), 0.14);
+  color: var(--accent);
+}
+
+.draftNo {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+/* Свършено: бутоните си отиват, а на мястото им остава какво е станало.
+   Карта без следа от решението кара човека да натисне втори път. */
+.draftDone {
+  border-color: var(--border);
+  opacity: 0.75;
+}
+
+.draftState {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}

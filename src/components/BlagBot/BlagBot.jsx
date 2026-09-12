@@ -6,6 +6,7 @@ import { haptic } from '../../lib/haptics'
 import { createPortal } from 'react-dom'
 import Pictogram from '../Pictogram/Pictogram'
 import { isHidden, setHidden } from './botBubbleStore'
+import { logFoodRows } from '../../hooks/useFoodLog'
 import styles from './BlagBot.module.css'
 
 /**
@@ -79,14 +80,71 @@ function Face({ onClose, label }) {
   )
 }
 
-function BotBubble({ text, onClose, closeLabel }) {
+/* Разчетеното от изречение, преди да влезе в дневника.
+   Показва се цялото: име, количество и четирите числа. Човекът натиска един
+   бутон — но преди това вижда какво точно ще се впише, защото сгрешен ред в
+   дневника се намира чак вечерта, когато сборът не излиза. */
+function DraftCard({ plan, state, onLog, onSkip, t }) {
+  const tot = plan.totals
   return (
-    <div className={styles.bubbleRow}>
+    <div className={`${styles.draft} ${state ? styles.draftDone : ''}`}>
+      {plan.items.map((i, n) => (
+        <div key={n} className={styles.draftRow}>
+          <span className={styles.draftName}>
+            {i.name}
+            {i.grams > 0 && <span className={styles.draftGrams}> {i.grams} г</span>}
+            {i.approx && <span className={styles.draftApprox}> {t('bot.log.approx')}</span>}
+          </span>
+          <span className={styles.draftMacros}>
+            {Math.round(i.kcal)} · {Math.round(i.protein)}/{Math.round(i.carbs)}/{Math.round(i.fat)}
+          </span>
+        </div>
+      ))}
+
+      {plan.items.length > 1 && (
+        <div className={`${styles.draftRow} ${styles.draftTotal}`}>
+          <span className={styles.draftName}>{t('bot.log.total')}</span>
+          <span className={styles.draftMacros}>
+            {Math.round(tot.kcal)} · {Math.round(tot.protein)}/{Math.round(tot.carbs)}/{Math.round(tot.fat)}
+          </span>
+        </div>
+      )}
+
+      {state
+        ? <span className={styles.draftState}>
+            {t(state === 'in' ? 'bot.log.done' : 'bot.log.left')}
+          </span>
+        : (
+          <div className={styles.draftBtns}>
+            <button type="button" className={styles.draftNo} onClick={onSkip}>
+              {t('bot.log.no')}
+            </button>
+            <button type="button" className={styles.draftYes} onClick={onLog}>
+              <Pictogram name="plus" size={15} />
+              {t('bot.log.yes')}
+            </button>
+          </div>
+        )}
+    </div>
+  )
+}
+
+function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, t }) {
+  return (
+    /* С карта редът става висок и лицето, центрирано по средата, отива до
+       картата вместо до думите. А то е бутонът за свиване — мястото му е при
+       текста, който човекът чете. */
+    <div className={`${styles.bubbleRow} ${plan ? styles.withDraft : ''}`}>
       <Face onClose={onClose} label={closeLabel} />
-      <div className={`${styles.bubble} ${styles.botBubble}`}>
-        {text.split('\n').map((line, i, arr) => (
-          <span key={i}>{parseBold(line)}{i < arr.length - 1 && <br />}</span>
-        ))}
+      <div className={styles.botSide}>
+        <div className={`${styles.bubble} ${styles.botBubble}`}>
+          {text.split('\n').map((line, i, arr) => (
+            <span key={i}>{parseBold(line)}{i < arr.length - 1 && <br />}</span>
+          ))}
+        </div>
+        {plan && (
+          <DraftCard plan={plan} state={planState} onLog={onLog} onSkip={onSkip} t={t} />
+        )}
       </div>
     </div>
   )
@@ -209,8 +267,30 @@ export default function BlagBot({ open, from = null, onClose }) {
   const feedRef  = useRef(null)
   const inputRef = useRef(null)
 
-  const add = (from, text) =>
-    setMessages(p => [...p, { from, text, id: Date.now() + Math.random() }])
+  const add = (from, text, extra = null) =>
+    setMessages(p => [...p, { from, text, id: Date.now() + Math.random(), ...extra }])
+
+  /* Вписването на разчетеното.
+     Редовете отиват в дневника, а приетото и отказаното се помнят като
+     събития: от тях се учи какво човекът яде наистина, а не какво му е било
+     предложено. */
+  async function logPlan(msgId, plan) {
+    const { error } = await logFoodRows(user.id, plan.items)
+    setMessages(p => p.map(m => m.id === msgId ? { ...m, planState: error ? null : 'in' } : m))
+    if (error) { haptic('reject'); return }
+    haptic('success')
+    supabase.from('bot_events')
+      .insert({ user_id: user.id, kind: 'accepted', payload: { items: plan.items } })
+      .then(() => {}, () => {})
+  }
+
+  function skipPlan(msgId, plan) {
+    setMessages(p => p.map(m => m.id === msgId ? { ...m, planState: 'out' } : m))
+    haptic('tap')
+    supabase.from('bot_events')
+      .insert({ user_id: user.id, kind: 'rejected', payload: { items: plan.items } })
+      .then(() => {}, () => {})
+  }
 
 
   /* Списъкът се чете при всяко отваряне: разговор, започнат на друг телефон
@@ -306,7 +386,11 @@ export default function BlagBot({ open, from = null, onClose }) {
         body: { question: q, chatId: id },
       })
       setTyping(false)
-      add('bot', (!error && data?.reply) ? data.reply : t('bot.err'))
+      /* Разчетеното живее само в този разговор на този телефон: отваряш ли
+         нишката пак, картата я няма — тя е предложение за сега, а не ред,
+         който чака вечно. */
+      add('bot', (!error && data?.reply) ? data.reply : t('bot.err'),
+          (!error && data?.draft?.items?.length) ? { plan: data.draft } : null)
 
       /* Подредбата в списъка е по последно казано, значи нишката се вдига
          отгоре при всяка реплика. */
@@ -411,7 +495,17 @@ export default function BlagBot({ open, from = null, onClose }) {
           {loadingChat && <p className={styles.chatsEmpty}>…</p>}
           {messages.map(m =>
             m.from === 'bot'
-              ? <BotBubble key={m.id} text={m.text} onClose={collapse} closeLabel={t('bot.minimise')} />
+              ? <BotBubble
+                  key={m.id}
+                  text={m.text}
+                  onClose={collapse}
+                  closeLabel={t('bot.minimise')}
+                  plan={m.plan}
+                  planState={m.planState}
+                  onLog={() => logPlan(m.id, m.plan)}
+                  onSkip={() => skipPlan(m.id, m.plan)}
+                  t={t}
+                />
               : <UserBubble key={m.id} text={m.text} />
           )}
           {typing && <TypingIndicator />}

@@ -915,3 +915,55 @@ test.describe('Полетът на лицето', () => {
     await expect(bubble).toBeVisible()
   })
 })
+
+test.describe('Вписване с думи', () => {
+  test('разчетеното влиза в дневника след потвърждение', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+
+    await page.locator('input[placeholder="Питай ме нещо"]').fill('изядох 200 г извара')
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(1200)
+
+    /* Картата показва какво точно ще влезе — име, количество и числата. */
+    await expect(page.getByText('извара 2%').last()).toBeVisible()
+    await expect(page.getByText('180 · 28/8/4')).toBeVisible()
+    await expect(page.getByText('Впиши', { exact: true })).toBeVisible()
+
+    await page.getByText('Впиши', { exact: true }).click()
+    await page.waitForTimeout(800)
+    // Решението остава на екрана: карта без следа кара човека да натисне пак.
+    await expect(page.getByText('Вписано в дневника.')).toBeVisible()
+    await expect(page.getByText('Впиши', { exact: true })).toHaveCount(0)
+
+    /* И дневникът го знае, без да е презареждан: ХРАНЕНЕ е друга страница с
+       друг екземпляр на похвата и се обажда по известието. */
+    await page.locator('button[aria-label="Свий разговора"]').first().click()
+    await page.waitForTimeout(700)
+    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
+    await page.waitForTimeout(1600)
+    await expect(page.getByText('извара 2%').first()).toBeVisible()
+  })
+
+  test('въпрос си остава въпрос', async ({ page }) => {
+    test.setTimeout(60000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+
+    await page.locator('input[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(1200)
+    // Без карта и без бутон за вписване: това е отговор, не предложение.
+    await expect(page.getByText('Днес си на 1 200 ккал от 2 400.')).toBeVisible()
+    await expect(page.getByText('Впиши', { exact: true })).toHaveCount(0)
+  })
+})

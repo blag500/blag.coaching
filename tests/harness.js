@@ -271,6 +271,28 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg' }
     const rpc = path.match(/\/rest\/v1\/rpc\/([a-z_]+)$/)
     if (rpc) return json(route, RPC[rpc[1]] ?? null)
 
+    /* Крайните функции. Ботът минава през Groq, който тук го няма — затова
+       отговорът е измислен, но по формата на истинския: изречение, което казва
+       какво е изядено, се връща с разчетени редове, а всичко останало — само с
+       текст. Така се проверява какво прави приложението с двата случая. */
+    const fn = path.match(/\/functions\/v1\/([a-z-]+)$/)?.[1]
+    if (fn) {
+      if (fn !== 'blag-bot') return json(route, {})
+      let asked = ''
+      try { asked = String(JSON.parse(req.postData() || '{}').question || '') } catch { /* празно */ }
+      if (/изядох|хапнах|изпих|впиши/.test(asked)) {
+        const items = [{
+          name: 'извара 2%', grams: 200, kcal: 180,
+          protein: 28, carbs: 8, fat: 4, meal: 'breakfast', approx: false,
+        }]
+        return json(route, {
+          reply: 'Разчетох извара 2% — 180 ккал, П28 В8 М4. Да го впиша ли?',
+          draft: { items, totals: { kcal: 180, protein: 28, carbs: 8, fat: 4 } },
+        })
+      }
+      return json(route, { reply: 'Днес си на 1 200 ккал от 2 400.' })
+    }
+
     // ── таблици ──
     const table = path.match(/\/rest\/v1\/([a-z_]+)$/)?.[1]
     if (!table) return json(route, [])

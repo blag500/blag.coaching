@@ -68,6 +68,28 @@ const DISTILL = `Ти четеш какво е предлагал един по�
 Пиши само наблюдения, които се виждат от данните. Ако нещо се е случило веднъж, не е правило.
 Без увод, без заключение, без номерация. Само редовете.`
 
+/* Разчитането на изречение в редове за дневника.
+   Отделна подкана и температура нула: тук не се иска мнение, а числа. И
+   отделен изход — JSON, не текст — защото след него човекът натиска един бутон
+   и редът влиза в дневника му. Затова и нищо не се вписва само: ботът предлага,
+   човекът потвърждава. Асистент, който вписва сам, се проверява всеки ден; а
+   асистент, който се проверява всеки ден, не върши работа. */
+const EXTRACT = `Ти разчиташ изречение, с което човек казва какво е ял или пил, в редове за дневник на храната.
+
+Отговаряш само с JSON и нищо друго:
+{"items":[{"name":"извара 2%","grams":200,"kcal":180,"protein":28,"carbs":8,"fat":4,"meal":"breakfast","approx":false}]}
+
+Правила:
+- Ако изречението не казва какво е изядено или изпито, връщаш {"items":[]}.
+- Ако е въпрос — „колко", „да ям ли", „какво да", „защо" — връщаш {"items":[]}.
+- Ако името съвпада с нещо от МОИ ХРАНИ, вземаш неговите числа и ги преизчисляваш за количеството. Тогава approx е false.
+- Ако не съвпада, слагаш най-близките числа, които знаеш, и approx е true.
+- grams е количеството в грамове или милилитри. „Едно яйце", „филия", „лъжица" се превръщат в грамове.
+- kcal, protein, carbs, fat са за цялото количество, не за 100 грама. Числа, не текст.
+- meal е едно от: breakfast, lunch, dinner, snack — ако е казано или се подразбира. Иначе null.
+- Няколко храни в едно изречение са няколко реда.
+- Най-много шест реда.`
+
 const MAX_Q = 500
 
 function json(body: unknown, status = 200) {
@@ -81,6 +103,51 @@ function iso(daysBack = 0) {
   const d = new Date()
   d.setDate(d.getDate() - daysBack)
   return d.toISOString().slice(0, 10)
+}
+
+/** Прилича ли изречението на вписване.
+ *
+ *  Сито преди модела, не вместо него: разчитането е втори разговор с Groq и
+ *  не бива да се случва на всеки въпрос „колко ми остава". Ситото е широко —
+ *  пропусне ли нещо, човекът си го вписва с ръка, както досега; хване ли
+ *  нещо излишно, разчитането връща нула реда и отговорът тръгва по стария път.
+ */
+function looksLikeLog(q: string) {
+  const t = q.toLowerCase()
+  /* Без граница на дума: в JavaScript тя се мери с \w, а \w е само латиница —
+     пред „и" от „изядох" граница няма и изразът не хваща нищо. Съвпадението е
+     по част от дума нарочно: „изядох" и „изядохме" са едно и също тук. */
+  /* Въпрос е въпрос, дори да има храна в него. */
+  if (/[?]/.test(t)) return false
+  if (/(колко|какво|защо|кога|дали|да ям|да хапна|мога ли|трябва ли|препоръч)/.test(t)) return false
+  return (
+    /(изядох|ядох|хапнах|похапнах|изпих|пих|закусих|обядвах|вечерях|взех|сложи|впиши|запиши|запази|добави|отбележи|вписвай)/.test(t) ||
+    /\d+\s*(г|гр|грам|грама|мл|ml|g)/.test(t) ||
+    /(яйц|филия|филии|лъжиц|порция|шейк|кафе|банан)/.test(t)
+  )
+}
+
+/** Изкопава JSON от отговор, който може да е с ограда от код. */
+function parseItems(raw: string | null) {
+  if (!raw) return []
+  const m = raw.match(/\{[\s\S]*\}/)
+  if (!m) return []
+  try {
+    const o = JSON.parse(m[0])
+    const list = Array.isArray(o?.items) ? o.items : []
+    return list.slice(0, 6).map((i: Record<string, unknown>) => ({
+      name:    String(i.name ?? '').slice(0, 80),
+      grams:   Math.max(0, Math.round(Number(i.grams) || 0)),
+      kcal:    Math.max(0, Math.round(Number(i.kcal) || 0)),
+      protein: Math.max(0, Math.round((Number(i.protein) || 0) * 10) / 10),
+      carbs:   Math.max(0, Math.round((Number(i.carbs)   || 0) * 10) / 10),
+      fat:     Math.max(0, Math.round((Number(i.fat)     || 0) * 10) / 10),
+      meal:    ['breakfast', 'lunch', 'dinner', 'snack'].includes(String(i.meal)) ? String(i.meal) : null,
+      approx:  i.approx !== false,
+    })).filter((i: { name: string; kcal: number }) => i.name && i.kcal > 0)
+  } catch {
+    return []
+  }
 }
 
 /** Вика Groq, минавайки през списъка, докато един отговори. */
@@ -151,7 +218,7 @@ Deno.serve(async (req) => {
   const [
     profile, todayFood, weekFood, habits, workouts, weights,
     water, sleep, supps, suppLogs, checkin, exercises, sessions, prep,
-    meals, recent, learned,
+    meals, mine, recent, learned,
   ] = await Promise.all([
       admin.from('profiles')
         .select('name, calories, protein, carbs, fat, goal, age, gender, height_cm, activity_level, target_weight, habits, checkin_day, coach_notes')
@@ -171,6 +238,10 @@ Deno.serve(async (req) => {
       admin.from('training_sessions').select('scheduled_at, title, status').eq('client_id', uid).order('scheduled_at', { ascending: false }).limit(4),
       admin.from('prep_protocols').select('competition_name, competition_date, target_weight, ready_weeks').eq('user_id', uid).eq('active', true).maybeSingle(),
       admin.from('meal_library').select('name, kcal, protein, carbs, fat, prep_min, category').eq('user_id', uid).limit(40),
+      /* Неговите си храни, с числа за сто грама. Разчитането на изречение взема
+         числата оттук, когато името съвпада: „изядох извара" за човек, който си
+         е вписал изварата, не бива да става догадка на модел. */
+      admin.from('custom_foods').select('name, serving_grams, kcal, protein, carbs, fat').eq('user_id', uid).limit(60),
       /* Нишката, не купчината. Осем реплики от този разговор — иначе
          днешният въпрос за водата получава отговор, забъркан с миналоседмичния
          спор за въглехидратите. */
@@ -277,6 +348,66 @@ Deno.serve(async (req) => {
     })),
     { role: 'user', content: question },
   ]
+
+  /* Вписване с думи.
+   *
+   * „Изядох 200 г извара" не е въпрос и не иска отговор — иска ред в дневника.
+   * Дотук единственият път до дневника беше търсачката: отвори, намери, избери
+   * количество, впиши. Това е четири стъпки за нещо, което човекът вече е
+   * казал с едно изречение, и точно затова дневникът се води по памет вечерта,
+   * а не в момента.
+   *
+   * Тук изречението се разчита в редове и се връща като предложение. Нищо не
+   * се вписва само: човекът го вижда и натиска. Асистент, който вписва сам,
+   * трябва да се проверява всеки ден — а проверката отнема повече от самото
+   * вписване.
+   *
+   * Числата идват от неговите храни, когато името съвпада; иначе са догадка и
+   * редът е отбелязан като приблизителен, за да може денят да се чете честно
+   * после.
+   */
+  let draft: unknown = null
+  if (looksLikeLog(question)) {
+    const mineList = (mine.data ?? []).map(f =>
+      `${f.name} (за ${f.serving_grams ?? 100} г): ${f.kcal ?? '?'} ккал, П${f.protein ?? 0} В${f.carbs ?? 0} М${f.fat ?? 0}`
+    )
+    const read = await ask(apiKey, [
+      { role: 'system', content: EXTRACT },
+      ...(mineList.length ? [{ role: 'system', content: `МОИ ХРАНИ\n${mineList.join('\n')}` }] : []),
+      { role: 'user', content: question },
+    ], 400)
+    const items = parseItems(read)
+    if (items.length) {
+      /* Отговорът се сглобява тук, а не от модел: това е сбор на числа, които
+         вече са известни, и точно за такива неща моделът няма работа. */
+      const tot = items.reduce((a: Record<string, number>, i: Record<string, number>) => ({
+        kcal: a.kcal + i.kcal, protein: a.protein + i.protein,
+        carbs: a.carbs + i.carbs, fat: a.fat + i.fat,
+      }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
+      const one = items.length === 1
+      const approx = items.some((i: { approx: boolean }) => i.approx)
+      const text =
+        (one ? `Разчетох ${items[0].name}` : `Разчетох ${items.length} реда`) +
+        ` — ${Math.round(tot.kcal)} ккал, П${Math.round(tot.protein)} В${Math.round(tot.carbs)} М${Math.round(tot.fat)}.` +
+        (approx ? ' Числата са приблизителни.' : '') +
+        ' Да го впиша ли?'
+
+      draft = { items, totals: tot }
+      const rememberDraft = admin.from('bot_messages').insert([
+        { user_id: uid, chat_id: chatId, role: 'user', content: question },
+        { user_id: uid, chat_id: chatId, role: 'bot',  content: text, context: { draft } },
+      ])
+      /* Предложеното се помни: приемането и отказът след него са материалът,
+         от който се учи какво човекът яде наистина. */
+      const seen = admin.from('bot_events').insert({ user_id: uid, kind: 'suggested', payload: { items } })
+      // deno-lint-ignore no-explicit-any
+      const rt0 = (globalThis as any).EdgeRuntime
+      if (rt0?.waitUntil) rt0.waitUntil(Promise.all([rememberDraft, seen]))
+      else await Promise.all([rememberDraft, seen])
+
+      return json({ reply: text, draft })
+    }
+  }
 
   const reply = await ask(apiKey, messages)
   if (!reply) return json({ error: 'no answer' }, 502)
