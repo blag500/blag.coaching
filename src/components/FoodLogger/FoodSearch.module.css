@@ -4,11 +4,22 @@
 }
 
 /* Mode grid */
+/* Шест колони, всеки бутон през две — на пръв поглед същите три в ред.
+   Смисълът е в петия случай: откакто ботът излезе оттук, редовете са три и
+   два, а два бутона от по една трета оставят дупка вдясно. Така последните
+   два си поделят реда наравно и решетката пак затваря правоъгълник. */
 .modeBar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 6px;
   margin-bottom: 14px;
+}
+
+.modeBtn { grid-column: span 2; }
+
+.modeBtn:nth-child(4):nth-last-child(2),
+.modeBtn:nth-child(4):nth-last-child(2) ~ .modeBtn {
+  grid-column: span 3;
 }
 
 .modeBtn {

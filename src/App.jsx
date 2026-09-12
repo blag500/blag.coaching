@@ -11,6 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 import NavDrawer from './components/NavDrawer/NavDrawer'
 import NutritionCards from './components/NutritionCards/NutritionCards'
 import Compliance from './components/Compliance/Compliance'
+import BlagBot from './components/BlagBot/BlagBot'
 import Training from './components/Training/Training'
 import Profile from './components/Profile/Profile'
 import AuthScreen from './components/Auth/AuthScreen'
@@ -364,6 +365,7 @@ function AppShell() {
     library:    <ExerciseLibrary onMenuOpen={openMenu} />,
     learn:      <LearnPage />,
     chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} />,
+    bot:        <BlagBot onMenuOpen={openMenu} />,
     rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
     budget:     <Budget />,
     tasks:      <Tasks />,

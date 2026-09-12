@@ -76,6 +76,17 @@ const ChatIcon = () => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 )
+/* Същото мехурче като на чата, с три точки вътре: отговорът тук се смята, не
+   се пише от човек. Едно семейство, различен вид. */
+const BotIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    <circle cx="8.5"  cy="10" r="0.6" fill="currentColor" stroke="none" />
+    <circle cx="12"   cy="10" r="0.6" fill="currentColor" stroke="none" />
+    <circle cx="15.5" cy="10" r="0.6" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 const BudgetIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -174,6 +185,10 @@ const CLIENT_SECTIONS = [
     tabs: [
       { id: 'feed',    key: 'nav.feed',    Icon: FeedIcon    },
       { id: 'chat',    key: 'nav.chat',    Icon: ChatIcon    },
+      /* Ботът стои до чата, защото е същото действие — пишеш и ти отговарят.
+         Че единият е човек, а другият смята от вписаното, е разлика в това
+         кого питаш, не в това какво правиш. */
+      { id: 'bot',     key: 'nav.bot',     Icon: BotIcon     },
       { id: 'explore', key: 'nav.explore', Icon: ExploreIcon },
       { id: 'learn',   key: 'nav.learn',   Icon: LearnIcon   },
     ],
@@ -203,6 +218,7 @@ const COACH_SECTIONS = [
       { id: 'orders',   key: 'nav.orders',  Icon: OrdersIcon  },
       { id: 'coachday', key: 'nav.myDay',   Icon: MyDayIcon   },
       { id: 'chat',     key: 'nav.chat',    Icon: ChatIcon    },
+      { id: 'bot',      key: 'nav.bot',     Icon: BotIcon     },
     ],
   },
   {

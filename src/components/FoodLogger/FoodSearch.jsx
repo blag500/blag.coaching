@@ -6,7 +6,6 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { searchFoods } from '../../utils/openFoodFacts'
 import { arrivedFromShare, takeSharedPhoto, clearShareParam } from '../../lib/sharedPhoto'
 import RecipeList from '../Recipes/RecipeList'
-import MealBot from '../MealBot/MealBot'
 import BarcodeScanner from './BarcodeScanner'
 import DraftMode from './DraftMode'
 import HistoryMode from './HistoryMode'
@@ -156,7 +155,10 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
           { id: 'manual',  label: t('fs.mode.manual'),  icon: <Pictogram name="hand" size={15} /> },
           { id: 'history', label: t('fs.mode.history'), icon: '↺' },
           { id: 'draft',   label: t('fs.mode.draft'),   icon: '✎' },
-          { id: 'bot',     label: t('fs.mode.bot'),     icon: '◉' },
+          /* Ботът излезе оттук и си има свой екран в чекмеджето. Той служи за
+             много повече от храна, а тази решетка е за начините да впишеш
+             ядене — раздел, който отговаря на „защо теглото стои", няма място
+             между ръчното въвеждане и рецептите. */
           { id: 'recipes', label: t('fs.mode.recipes'), icon: '≡' },
         ].map(m => (
           <button
@@ -176,7 +178,6 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
       {mode === 'manual'  && <ManualMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} />}
       {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} onCancel={() => setMode('ai')} />}
       {mode === 'draft'   && <DraftMode onAddRaw={onAddRaw} totals={totals} targets={targets} />}
-      {mode === 'bot'     && <MealBot onAddRaw={onAddRaw} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
     </div>
   )
