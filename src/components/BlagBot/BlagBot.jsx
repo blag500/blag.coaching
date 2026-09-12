@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
 import { haptic } from '../../lib/haptics'
-import AppHeader from '../AppHeader/AppHeader'
+import { createPortal } from 'react-dom'
 import Pictogram from '../Pictogram/Pictogram'
 import { isHidden, setHidden } from './botBubbleStore'
 import styles from './BlagBot.module.css'
@@ -65,16 +65,24 @@ function parseBold(text) {
   )
 }
 
-function Face() {
-  /* Лицето е плакатът от landing страницата. Асистентът, който говори с твоя
-     глас, трябва да изглежда като теб — а не като иконка за чат. */
-  return <img className={styles.avatar} src="/bot.webp" alt="" width="28" height="28" />
+/* Лицето е плакатът от landing страницата — асистентът, който говори с твоя
+   глас, трябва да изглежда като теб, а не като иконка за чат.
+   И е бутон: натискането му свива разговора обратно в балончето. Мястото е
+   най-близкото до пръста, докато четеш отговор, и е същият знак, с който си
+   го отворил. */
+function Face({ onClose, label }) {
+  if (!onClose) return <img className={styles.avatar} src="/bot.webp" alt="" width="28" height="28" />
+  return (
+    <button type="button" className={styles.avatarBtn} onClick={onClose} aria-label={label}>
+      <img className={styles.avatar} src="/bot.webp" alt="" width="28" height="28" />
+    </button>
+  )
 }
 
-function BotBubble({ text }) {
+function BotBubble({ text, onClose, closeLabel }) {
   return (
     <div className={styles.bubbleRow}>
-      <Face />
+      <Face onClose={onClose} label={closeLabel} />
       <div className={`${styles.bubble} ${styles.botBubble}`}>
         {text.split('\n').map((line, i, arr) => (
           <span key={i}>{parseBold(line)}{i < arr.length - 1 && <br />}</span>
@@ -105,7 +113,7 @@ function TypingIndicator() {
 
 // ─── Екранът ─────────────────────────────────────────────────────────────────
 
-export default function BlagBot({ onMenuOpen, onMinimise }) {
+export default function BlagBot({ open, onClose }) {
   const { user, profile } = useAuth()
   const { t } = useSettings()
 
@@ -140,6 +148,15 @@ export default function BlagBot({ onMenuOpen, onMinimise }) {
   }, [])
 
   useEffect(() => { saveSession(user?.id, messages) }, [messages, user?.id])
+
+  /* Състоянието на балончето се чете при монтиране, а този компонент е
+     монтиран от началото на приложението и само се показва и скрива. Без това
+     „махнах балончето" не стигаше дотук и бутонът за връщане не се появяваше. */
+  useEffect(() => {
+    const on = e => setBubbleGone(!!e.detail?.hidden)
+    window.addEventListener('blag:bot-bubble', on)
+    return () => window.removeEventListener('blag:bot-bubble', on)
+  }, [])
 
   /* Надолу при всяка нова реплика — разговорът се чете отдолу нагоре. */
   useEffect(() => {
@@ -183,18 +200,25 @@ export default function BlagBot({ onMenuOpen, onMinimise }) {
     }
   }
 
-  return (
-    <div className={styles.page}>
-      {/* Стрелката свива разговора и връща човека там, откъдето го е отворил.
-          Лентата е прибрана на този екран, значи без нея изход има само през
-          чекмеджето — а то отваря друга страница, вместо да върне предишната. */}
-      <AppHeader
-        onMenuOpen={onMenuOpen}
-        onBack={onMinimise}
-        title={t('nav.bot')}
-        avatarUrl={profile?.avatar_url}
-        avatarInitial={(profile?.name || '?')[0].toUpperCase()}
-      />
+  if (!open) return null
+
+  return createPortal(
+    <div className={styles.layer} role="dialog" aria-modal="true" aria-label={t('nav.bot')}>
+      {/* Прозрачно, не плътно: страницата отдолу не си е отишла никъде и това
+          трябва да се вижда. Разговорът е отгоре, а не вместо. */}
+      <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+
+      <div className={styles.sheet}>
+        <header className={styles.head}>
+          <button type="button" className={styles.collapse} onClick={onClose} aria-label={t('bot.minimise')}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <span className={styles.title}>{t('nav.bot')}</span>
+          <img className={styles.headFace} src="/bot.webp" alt="" width="30" height="30" />
+        </header>
 
       {bubbleGone && (
         <button
@@ -210,7 +234,7 @@ export default function BlagBot({ onMenuOpen, onMinimise }) {
       <div className={styles.feed} ref={feedRef}>
         {messages.map(m =>
           m.from === 'bot'
-            ? <BotBubble key={m.id} text={m.text} />
+            ? <BotBubble key={m.id} text={m.text} onClose={onClose} closeLabel={t('bot.minimise')} />
             : <UserBubble key={m.id} text={m.text} />
         )}
         {typing && <TypingIndicator />}
@@ -239,6 +263,8 @@ export default function BlagBot({ onMenuOpen, onMinimise }) {
           <Pictogram name="chat" size={16} />
         </button>
       </div>
-    </div>
+      </div>
+    </div>,
+    document.body
   )
 }

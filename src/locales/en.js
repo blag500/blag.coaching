@@ -16,6 +16,7 @@ export default {
   "bot.ask": "Ask",
   "bot.err": "Something went wrong. Try again in a moment.",
   "bot.restore": "Bring the bubble back",
+  "bot.minimise": "Collapse the chat",
   'nav.recovery':     'RECOVERY',
   'nav.schedule':     'SCHEDULE',
   'nav.explore':      'EXPLORE',

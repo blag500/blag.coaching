@@ -34,6 +34,11 @@ const MOVE_SLOP = 10     // px, след които задържането се 
 const SIZE      = 52
 const EDGE      = 10     // най-близо до ръба, до което се допуска
 
+/* Станцията: обичайното място, долу вдясно. Влачене наблизо го притегля —
+   предложение, не заповед, затова прагът е широк, а самото притегляне става
+   чак при пускане. */
+const DOCK_REACH = 90
+
 /* Мишената за махане: горе в средата, появява се чак когато нещо се носи. */
 const DROP_TOP    = 84
 const DROP_SIZE   = 78
@@ -46,6 +51,7 @@ export default function BotBubble({ activeTab, onOpen }) {
   const [pos, setPos]      = useState(loadPos)
   const [armed, setArmed]  = useState(false)   // откачено, движи се с пръста
   const [overDrop, setOver] = useState(false)
+  const [docking, setDocking] = useState(false)  // близо до обичайното си място
 
   const holdRef  = useRef(null)   // таймерът за задържане
   const startRef = useRef(null)   // откъде тръгна пръстът
@@ -78,6 +84,11 @@ export default function BotBubble({ activeTab, onOpen }) {
       right:  Math.min(Math.max(right,  EDGE), maxRight),
       bottom: Math.min(Math.max(bottom, EDGE), maxBottom),
     }
+  }
+
+  /** Близо ли е до станцията си. */
+  function nearDock({ right, bottom }) {
+    return Math.hypot(right - DEFAULT_POS.right, bottom - DEFAULT_POS.bottom) < DOCK_REACH
   }
 
   /** Уцелена ли е мишената за махане — мери се от центъра ѝ. */
@@ -123,7 +134,9 @@ export default function BotBubble({ activeTab, onOpen }) {
     movedRef.current = true
     const next = clamp({ right: s.pos.right - dx, bottom: s.pos.bottom - dy }, s.safe)
     setPos(next)
-    setOver(onTarget(next, s.safe))
+    const onX = onTarget(next, s.safe)
+    setOver(onX)
+    setDocking(!onX && nearDock(next))
   }
 
   function onPointerUp(e) {
@@ -147,7 +160,16 @@ export default function BotBubble({ activeTab, onOpen }) {
         return
       }
       setOver(false)
-      savePos(pos)
+      /* Близо до станцията значи „връщам го" — пуска се точно на нея, а не на
+         десет пиксела встрани. Притеглянето е при пускане, не докато влачиш:
+         балонче, което бяга към ъгъла под пръста, се бори с човека. */
+      const landed = nearDock(pos) ? DEFAULT_POS : pos
+      if (nearDock(pos) && (pos.right !== DEFAULT_POS.right || pos.bottom !== DEFAULT_POS.bottom)) {
+        haptic('toggle')
+      }
+      setDocking(false)
+      setPos(landed)
+      savePos(landed)
       if (moved) return          // това беше местене, не отваряне
     }
 
@@ -158,11 +180,21 @@ export default function BotBubble({ activeTab, onOpen }) {
   function onPointerCancel() {
     clearTimeout(holdRef.current)
     startRef.current = null
-    if (armed) { setArmed(false); setOver(false); savePos(pos) }
+    if (armed) { setArmed(false); setOver(false); setDocking(false); savePos(pos) }
   }
 
   return (
     <>
+      {/* Станцията свети, докато балончето е наблизо: кръгче на празното
+          място, откъдето е тръгнало. */}
+      {armed && (
+        <div
+          className={`${styles.dock} ${docking ? styles.dockNear : ''}`}
+          style={{ right: DEFAULT_POS.right, bottom: `calc(env(safe-area-inset-bottom) + ${DEFAULT_POS.bottom}px)` }}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Мишената се появява само докато нещо се носи: кошче, което виси
           постоянно, е покана да се махне нещо, което не пречи. */}
       {armed && (

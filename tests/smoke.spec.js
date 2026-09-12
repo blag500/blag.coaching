@@ -774,10 +774,32 @@ test.describe('Балончето на бота', () => {
     await expect(restore).toBeVisible()
     await restore.click()
     await page.waitForTimeout(500)
-    /* Стрелката свива разговора и връща предишния раздел — на този екран
-       хамбургер няма. */
-    await page.locator('button[aria-label="Назад"]').first().click()
+    /* Разговорът е слой над страницата — свива се, не се напуска. */
+    await page.locator('button[aria-label="Свий разговора"]').first().click()
+    await page.waitForTimeout(900)
+    await expect(page.locator('button[aria-label="БЛАГ БОТ"]')).toBeVisible()
+  })
+})
+
+test.describe('Слоят на бота', () => {
+  test('ботът е прозрачен слой и се свива от лицето', async ({ page }) => {
+    test.setTimeout(60000)
+    await enterApp(page)
+    await page.waitForTimeout(1500)
+    await page.locator('nav button', { hasText: 'ТРЕНИРОВКА' }).first().click()
     await page.waitForTimeout(1200)
+  
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await expect(page.getByText('Аз съм Благ Бот.')).toBeVisible()
+    // Страницата отдолу още я има.
+    await expect(page.locator('nav')).toHaveCount(1)
+    await page.screenshot({ path: 'shots/tmp-layer.png' })
+  
+    // Свиване от лицето до отговора.
+    await page.locator('button[aria-label="Свий разговора"]').last().click()
+    await page.waitForTimeout(700)
+    await expect(page.getByText('Аз съм Благ Бот.')).toHaveCount(0)
     await expect(page.locator('button[aria-label="БЛАГ БОТ"]')).toBeVisible()
   })
 })

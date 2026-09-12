@@ -1,46 +1,110 @@
 /* Благ Бот — цял екран, не раздел в чужда страница.
    Колоната се закрепя за прозореца: разговорът пълни средата, полето стои
    долу и се вдига с клавиатурата. */
-.page {
+/* Слоят, а не страница.
+   Ботът се разгъва върху това, което гледаш, и се свива обратно — страницата
+   отдолу не си е отивала никъде. Оттам и прозрачността: фонът се вижда, за да
+   е ясно, че разговорът е отгоре, а не вместо. */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
   display: flex;
   flex-direction: column;
-  /* dvh, не vh: на телефон адресната лента и клавиатурата менят видимата
-     височина, а 100vh остава голямата — колоната става по-висока от екрана и
-     заглавието излиза отгоре. Старите браузъри падат обратно на vh. */
-  height: 100vh;
-  height: 100dvh;
-  max-width: 480px;
-  margin: 0 auto;
-  /* Без запас за лентата: на този екран тя се прибира. Остава само
-     безопасната зона и височината на клавиатурата, когато я има. */
-  padding: 0 16px calc(12px + env(safe-area-inset-bottom) + var(--kb-inset, 0px));
-  transition: padding-bottom 180ms var(--ease-out);
+  justify-content: flex-end;
 }
 
-/* Връщането на махнатото балонче. Стои над разговора, защото е нещо, което
-   се прави веднъж и после изчезва — не част от писането. */
-.restore {
+.scrim {
+  position: absolute;
+  inset: 0;
+  /* Колкото да се отдръпне, не колкото да изчезне. При 55% и четиринайсет
+     пиксела размазване отдолу не се виждаше нищо и слоят престана да е слой —
+     стана страница с намек за фон. */
+  background: rgba(var(--bg-rgb), 0.32);
+  backdrop-filter: blur(7px) saturate(115%);
+  -webkit-backdrop-filter: blur(7px) saturate(115%);
+  animation: scrimIn 220ms var(--ease-out) both;
+}
+
+@keyframes scrimIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
+/* Расте от ъгъла, където стои балончето, а не пада отгоре: човек го е
+   отворил оттам и окото го проследява дотук. */
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 16px calc(12px + env(safe-area-inset-bottom) + var(--kb-inset, 0px));
+  transition: padding-bottom 180ms var(--ease-out);
+  transform-origin: bottom right;
+  animation: sheetIn 280ms var(--ease-spring-soft) both;
+}
+
+@keyframes sheetIn {
+  from { opacity: 0; transform: scale(0.82) translateY(28px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim, .sheet { animation: none }
+}
+
+.head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin: 10px 0 2px;
-  padding: 9px 14px;
-  border: 1px solid rgba(var(--accent-rgb), 0.35);
-  border-radius: var(--r-pill);
-  background: rgba(var(--accent-rgb), 0.08);
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 10px) 2px 10px;
+}
+
+.collapse {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
   color: var(--text);
-  font-family: var(--font-body);
-  font-size: 12px;
+  display: grid;
+  place-items: center;
   cursor: pointer;
 }
 
-.restore img {
-  width: 22px;
-  height: 22px;
+.title {
+  flex: 1;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  color: var(--text);
+  text-align: center;
+}
+
+.headFace {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid var(--border);
 }
+
+/* Лицето до всеки отговор е бутон: натискането му свива разговора обратно. */
+.avatarBtn {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.avatarBtn:active { transform: scale(0.9); }
 
 .feed {
   flex: 1;

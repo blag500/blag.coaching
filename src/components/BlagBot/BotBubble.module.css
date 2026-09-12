@@ -114,3 +114,31 @@
   .drop { animation: none; }
   .armed { transition: none; }
 }
+
+/* Станцията. Празният кръг на мястото, откъдето балончето е тръгнало —
+   вижда се само докато то се носи, защото иначе е украса на нищо. */
+.dock {
+  position: fixed;
+  z-index: 88;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px dashed rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.06);
+  pointer-events: none;
+  transition: transform 160ms var(--ease-out), background 160ms var(--ease-out),
+              border-color 160ms var(--ease-out);
+}
+
+/* Наблизо: пръстенът се затваря и мястото се уголемява — това е поканата,
+   а самото притегляне става чак при пускане. */
+.dockNear {
+  border-style: solid;
+  border-color: rgba(var(--accent-rgb), 0.9);
+  background: rgba(var(--accent-rgb), 0.16);
+  transform: scale(1.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock { transition: none }
+}

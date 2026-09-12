@@ -180,15 +180,18 @@ function AppShell() {
      „профил във фийда → ПИШИ → чат", а табът няма как да отгатне човека. */
   const [chatPeer, setChatPeer] = useState(null)
 
-  /* Откъде е отворен ботът.
-     Балончето е на всеки екран, значи ботът се отваря отвсякъде — и връщането
-     трябва да е там, откъдето е дошъл, а не на някоя начална страница. Като
-     балончетата в месинджър: разгъваш, свиваш, и си пак където си бил. */
-  const [botReturn, setBotReturn] = useState('feed')
+  /* Ботът е слой над страницата, не отделен раздел.
+     Като балончетата в месинджър: разгъваш го върху това, което гледаш, и го
+     свиваш обратно — страницата отдолу не си е отивала никъде и няма какво да
+     се „връща". Оттам и прозрачността: фонът се вижда, за да е ясно, че
+     разговорът е отгоре, а не вместо. */
+  const [botOpen, setBotOpen] = useState(false)
 
   function navigate(newTab, { instant = false, peer = null } = {}) {
     if (newTab === 'chat') setChatPeer(peer)
-    if (newTab === 'bot' && activeTab !== 'bot') setBotReturn(activeTab)
+    /* Чекмеджето и балончето искат едно и също нещо — само че ботът не е
+       адрес, а слой. Прихваща се тук, за да не знае никой друг разликата. */
+    if (newTab === 'bot') { setBotOpen(true); return }
     // A swipe has already carried the page across, so replaying the entrance
     // animation would show the same move twice.
     if (instant) { setSlideDir('none'); setActiveTab(newTab); return }
@@ -373,7 +376,6 @@ function AppShell() {
     library:    <ExerciseLibrary onMenuOpen={openMenu} />,
     learn:      <LearnPage />,
     chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} />,
-    bot:        <BlagBot onMenuOpen={openMenu} onMinimise={() => navigate(botReturn)} />,
     rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
     budget:     <Budget />,
     tasks:      <Tasks />,
@@ -438,7 +440,9 @@ function AppShell() {
       {/* Балончето на бота стои тук, а не вътре в страница: разделите се
           движат с трансформация при плъзгане и fixed вътре в тях се закача за
           тях, не за прозореца. Оттук е на един и същи ъгъл на всеки екран. */}
-      <BotBubble activeTab={activeTab} onOpen={navigate} />
+      <BotBubble activeTab={botOpen ? 'bot' : activeTab} onOpen={navigate} />
+
+      <BlagBot open={botOpen} onClose={() => setBotOpen(false)} />
 
       {/* На екрана на бота лентата се прибира.
           Разговорът иска цялата височина: с клавиатура отгоре и лента отдолу

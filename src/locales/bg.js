@@ -17,6 +17,7 @@ export default {
   "bot.ask": "Питай",
   "bot.err": "Нещо се обърка. Опитай пак след малко.",
   "bot.restore": "Върни балончето на екрана",
+  "bot.minimise": "Свий разговора",
   'nav.recovery':     'ВЪЗСТАНОВЯВАНЕ',
   'nav.schedule':     'ГРАФИК',
   'nav.explore':      'ОТКРИЙ',
