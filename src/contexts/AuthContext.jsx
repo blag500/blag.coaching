@@ -478,7 +478,12 @@ export function AuthProvider({ children }) {
     }
 
     const [sent, received] = await Promise.all([page('out'), page('in')])
-    const merged = [...(sent.data || []), ...(received.data || [])]
+    /* Двете посоки са различни редове по построение, но слепването минава през
+       ключ така или иначе: ред, пристигнал по два пътя, се рисува два пъти и
+       това се вижда, докато сметката за „кой го е пратил" — не. */
+    const byId = new Map()
+    for (const m of [...(sent.data || []), ...(received.data || [])]) byId.set(m.id, m)
+    const merged = [...byId.values()]
       .sort((a, b) => b.created_at.localeCompare(a.created_at))
       .slice(0, limit)
       .reverse()

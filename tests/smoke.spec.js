@@ -718,11 +718,20 @@ test.describe('Чат', () => {
     await page.locator('button[aria-label="Меню"]').first().click()
     await page.waitForTimeout(600)
     await page.getByText('ЧАТ', { exact: true }).first().click()
+    await page.waitForTimeout(1200)
+    // Списъкът с разговори; нишката е зад един ред от него.
+    await page.getByText('Николай Благьов').first().click()
     await page.waitForTimeout(1500)
 
     const first = asked.find(u => u.includes('from_user_id'))
     expect(first, 'нишката изобщо не пита за съобщения').toBeTruthy()
     expect(first).toContain('limit=50')
     expect(first).toContain('order=created_at.desc')
+
+    /* И самата нишка се рисува. Проверка само на заявката мина и над екран,
+       който гърми: един ефект беше попаднал вътре в друг и React вдигаше
+       „невалидно извикване на кука" — а за теста това беше все едно. */
+    await expect(page.locator('text=Всичко е вписано.').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Нещо се счупи')).toHaveCount(0)
   })
 })

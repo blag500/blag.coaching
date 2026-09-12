@@ -60,6 +60,10 @@ export default function Chat({ clientId, clientName, onClose }) {
       markRead(otherUserId)
     })
 
+  }, [user?.id, otherUserId])
+
+  /* Времето на последното съобщение стои в реф, не в състояние: чете се вътре
+     в интервал, вързан веднъж, и ново рисуване заради него няма смисъл. */
   useEffect(() => {
     const last = messages[messages.length - 1]
     if (last?.created_at) lastAtRef.current = last.created_at
@@ -76,7 +80,6 @@ export default function Chat({ clientId, clientName, onClose }) {
     if (data?.length) setMessages(prev => mergeMessages(data, prev))
   }
 
-  }, [user?.id, otherUserId])
 
   useEffect(() => {
     const id = setInterval(async () => {

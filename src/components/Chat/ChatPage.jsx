@@ -213,6 +213,10 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
       markRead(peerId)
     })
 
+  }, [user?.id, peerId])
+
+  /* Времето на последното съобщение стои в реф, не в състояние: чете се вътре
+     в интервал, вързан веднъж, и ново рисуване заради него няма смисъл. */
   useEffect(() => {
     const last = messages[messages.length - 1]
     if (last?.created_at) lastAtRef.current = last.created_at
@@ -229,7 +233,6 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
     if (data?.length) setMessages(prev => mergeMessages(data, prev))
   }
 
-  }, [user?.id, peerId])
 
   // Fetch the other person's profile (name + avatar) for the header
   /* През feed_authors, не през profiles: RLS на profiles пуска само своя ред

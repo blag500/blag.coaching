@@ -116,6 +116,15 @@ export const TABLES = {
   ],
   sleep_logs: [{ id: 'sl1', user_id: USER_ID, date: today(), hours: 7.5, quality: 4 }],
 
+  /* Два реда разговор с треньора: нишката трябва да има какво да нарисува,
+     иначе тестът ѝ минава и над счупен изглед. */
+  messages: [
+    { id: 'm1', from_user_id: COACH_ID, to_user_id: USER_ID, content: 'Как върви седмицата?',
+      photo_url: null, read_at: new Date().toISOString(), created_at: new Date(Date.now() - 7200e3).toISOString() },
+    { id: 'm2', from_user_id: USER_ID, to_user_id: COACH_ID, content: 'Всичко е вписано.',
+      photo_url: null, read_at: new Date().toISOString(), created_at: new Date(Date.now() - 3600e3).toISOString() },
+  ],
+
   /* Адресникът: един приет приятел, една покана към мен, една моя покана без
      отговор. Трите състояния наведнъж, защото празният списък не казва нищо
      за това как изглежда редът с двата бутона. */
