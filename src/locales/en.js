@@ -649,7 +649,8 @@ export default {
 
   // Wave 3 — misc small screens
   'ub.newVersion':          'A new version of the app is available',
-  'ub.refresh':             'REFRESH',
+  'ub.refresh':             "Refresh",
+  "ub.dismiss": "Dismiss",
   'np.title':               'Enable notifications',
   'np.body':                'Get supplement reminders and coach messages straight on your phone.',
   'np.allow':               'Enable notifications',
