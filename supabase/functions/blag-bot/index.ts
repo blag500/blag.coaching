@@ -64,22 +64,6 @@ const SYSTEM = `Ти си Благ Бот — помощникът в прило
 
 Отговаряш само с текста на отговора. Без markdown, без заглавия, без списъци с тирета, освен ако не изброяваш ястия.`
 
-/* Свиването на научено. Отделна подкана, защото задачата е друга: не разговор,
-   а няколко реда наблюдение, които ще влязат в следващата подкана. */
-const DISTILL = `Ти поддържаш кратък списък с това, което се знае за един човек.
-
-Получаваш какво се е помнело ДОСЕГА, какво е предлагал помощникът и какво е приел или отказал човекът, и последните им разговори.
-
-Напиши новия списък — до осем кратки реда на български.
-Всеки ред е наблюдение, не съвет. Например: "отказва риба", "приема яйца на закуска", "не иска готвене над 15 минути", "тренира сутрин".
-
-Правила:
-- Каквото е в ДОСЕГА и още е вярно, го запазваш дословно. Паметта не се пренаписва всеки път.
-- Каквото е в ДОСЕГА, но човекът е казал друго после, го махаш.
-- Добавяш новото, което се вижда от данните.
-- Нещо, което се е случило веднъж, не е правило — освен ако човекът не го е казал за себе си направо ("не ям риба", "тренирам в шест").
-- Без увод, без заключение, без номерация. Само редовете.`
-
 /* Разчитането на изречение в редове за дневника.
    Отделна подкана и температура нула: тук не се иска мнение, а числа. И
    отделен изход — JSON, не текст — защото след него човекът натиска един бутон
@@ -101,15 +85,6 @@ const EXTRACT = `Ти разчиташ изречение, с което чов�
 - meal е едно от: breakfast, lunch, dinner, snack — ако е казано или се подразбира. Иначе null.
 - Няколко храни в едно изречение са няколко реда.
 - Най-много шест реда.`
-
-/* Заглавието на пораснал разговор.
-   Кратко до немай-къде: списъкът е тесен и реже на един ред, значи всяка дума
-   над четвъртата и без това не се вижда. */
-const TITLE = `Дай заглавие на този разговор.
-
-До четири думи на български. Без кавички, без точка, без думата „разговор".
-Заглавието казва за какво се е говорило, не кой е питал.
-Отговаряш само със заглавието.`
 
 const MAX_Q = 500
 
@@ -205,7 +180,20 @@ function parseItems(raw: string | null) {
    срязваше по средата на думата — „намали въглехидратите и добави малко
    мазнини, за да се доб". Отрязан съвет е по-лош от никакъв, защото човекът
    довършва изречението сам и обикновено не както е било започнато. */
-async function ask(apiKey: string, messages: unknown[], maxTokens = 700) {
+/* Разсъждаващи модели: таванът трябва да ги побере.
+ *
+ * gpt-oss мисли, преди да пише, и мисленето се брои в същия таван. При нисък
+ * таван цялото отива в разсъждение и `content` се връща празен — с код 200,
+ * тоест като успех. Оттам идваха три тихи провала наведнъж: паметта никога не
+ * се свиваше, заглавията не се прекрояваха, а дълъг разговор понякога
+ * получаваше „нещо се обърка".
+ *
+ * Лечението е двойно: `reasoning_effort: 'low'` свива мисленето, а таваните са
+ * вдигнати, за да има място и за двете. Открито по дневника, след като
+ * записването на грешките стана истинско — дотук „!res.ok → continue" гълташе
+ * точно това.
+ */
+async function ask(apiKey: string, messages: unknown[], maxTokens = 1400) {
   for (const model of MODELS) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -214,14 +202,26 @@ async function ask(apiKey: string, messages: unknown[], maxTokens = 700) {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: maxTokens }),
+        body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: maxTokens, reasoning_effort: 'low' }),
       })
-      if (!res.ok) continue
+      if (!res.ok) {
+        /* Дотук провалът беше тих: и двата модела отказваха, функцията връщаше
+           „няма отговор", а на екрана пишеше „нещо се обърка" — без нито един
+           ред, по който да се разбере кое се е объркало. Търсенето после опира
+           до гадаене между изчерпана квота, пенсиониран модел и твърде дълга
+           подкана, а трите се лекуват различно.
+           Тялото се реже: съобщенията за грешка от Groq са къси, а дълъг запис
+           в дневника е дълъг запис, който никой не чете. */
+        const why = await res.text().catch(() => '')
+        console.error(`groq ${model} → ${res.status}: ${why.slice(0, 300)}`)
+        continue
+      }
       const data = await res.json()
       const text = data?.choices?.[0]?.message?.content?.trim()
       if (text) return text
-    } catch {
-      /* следващият модел */
+      console.error(`groq ${model} → празен отговор`)
+    } catch (e) {
+      console.error(`groq ${model} → ${String(e).slice(0, 200)}`)
     }
   }
   return null
@@ -425,7 +425,7 @@ Deno.serve(async (req) => {
       { role: 'system', content: EXTRACT },
       ...(mineList.length ? [{ role: 'system', content: `МОИ ХРАНИ\n${mineList.join('\n')}` }] : []),
       { role: 'user', content: question },
-    ], 400)
+    ], 900)
     const items = parseItems(read)
     if (items.length) {
       /* Отговорът се сглобява тук, а не от модел: това е сбор на числа, които
@@ -460,7 +460,10 @@ Deno.serve(async (req) => {
   }
 
   const raw = await ask(apiKey, messages)
-  if (!raw) return json({ error: 'no answer' }, 502)
+  if (!raw) {
+    console.error(`без отговор за ${uid}, въпрос ${question.length} знака, нишка ${chatId ?? '—'}`)
+    return json({ error: 'no answer' }, 502)
+  }
   const { reply, sources } = splitSources(raw, context)
 
   /* Записва се и въпросът, и отговорът — заедно с това, което ботът е виждал.
@@ -470,104 +473,24 @@ Deno.serve(async (req) => {
     { user_id: uid, chat_id: chatId, role: 'bot',  content: reply, context },
   ])
 
-  /* Прекрояването на заглавието.
-     Заглавието е първият въпрос, отрязан — добро за нов разговор, но след
-     третата реплика често вече не описва за какво е станало дума: питал е
-     „колко ми остава до целта", а разговорът е свършил с подреждане на
-     закуската. Затова веднъж, когато нишката порасне, заглавието се прекроява
-     от самия разговор. Веднъж, не при всяка реплика — заглавие, което се мени
-     всеки път, е заглавие, по което не може да се търси с памет.
-     Става на заден план: човекът вече има отговора си. */
-  const retitle = async () => {
-    if (!chatId) return
-    try {
-      const { data: chat } = await admin.from('bot_chats')
-        .select('title_auto').eq('id', chatId).maybeSingle()
-      if (!chat || chat.title_auto) return
-
-      const { data: all } = await admin.from('bot_messages')
-        .select('role, content').eq('chat_id', chatId)
-        .order('created_at', { ascending: true }).limit(12)
-      /* Шест реплики: под това разговорът още е един въпрос с отговор и
-         първият въпрос си е точното заглавие. */
-      if (!all || all.length < 6) return
-
-      const made = await ask(apiKey, [
-        { role: 'system', content: TITLE },
-        { role: 'user', content: all.map(m => `${m.role}: ${m.content}`).join('\n') },
-      ], 60)
-      if (!made) return
-
-      const clean = made.replace(/["„""'.]/g, '').trim().slice(0, 60)
-      if (!clean) return
-      await admin.from('bot_chats').update({ title: clean, title_auto: true }).eq('id', chatId)
-    } catch {
-      /* Заглавието е удобство: стар вид заглавие е по-добре от паднал отговор. */
-    }
-  }
-
   /* Ученето. Става рядко и наведнъж, не при всеки въпрос: свиването е втори
      разговор с модела и би удвоило чакането за нещо, което се променя веднъж
      на десет реплики. */
+  /* Каквото остава за след отговора, е само записването.
+   *
+   * Дотук тук стояха и ученето, и прекрояването на заглавието — и двете
+   * пуснати през `waitUntil`. Само че изолатът, който обслужва заявката, се
+   * пуска веднага щом отговорът замине: в дневниците стои „Shutdown:
+   * EarlyDrop" и работата след това просто не се случва. Проверено по
+   * резултата — двайсет и пет реплики разговор и нито един ред в bot_profile.
+   * Тоест паметта беше написана, пусната и мъртва.
+   *
+   * Сега и двете живеят в нощната обиколка (`bot-watch`), където никой не чака
+   * отговор и времето е колкото трябва. Нито ученето, нито заглавието са
+   * спешни — важното е да се случват изобщо.
+   */
   const after = async () => {
-    try {
-      await remember
-      await retitle
-      const [{ count: evCount }, { count: msgCount }] = await Promise.all([
-        admin.from('bot_events').select('id', { count: 'exact', head: true }).eq('user_id', uid),
-        admin.from('bot_messages').select('id', { count: 'exact', head: true }).eq('user_id', uid),
-      ])
-
-      const seen    = learned.data?.events_seen ?? 0
-      const total   = evCount ?? 0
-      const seenMsg = learned.data?.messages_seen ?? 0
-      const totMsg  = msgCount ?? 0
-
-      /* Два брояча, защото има два вида учене.
-         Събитие се пише, когато ботът предложи нещо и човекът го приеме или
-         откаже — това учи какво яде. Но най-важното се казва с думи и веднъж:
-         „не ям риба", „тренирам в шест". Такова изречение не вдига нито едно
-         събитие и дотук не влизаше в паметта никога.
-         Десет събития или дванайсет реплики; а първият път — при три събития
-         или шест реплики, колкото да има от какво да се съди. */
-      const newEvents = total - seen
-      const newWords  = totMsg - seenMsg
-      const first     = seen === 0 && seenMsg === 0 && (total >= 3 || totMsg >= 6)
-      if (newEvents < 10 && newWords < 12 && !first) return
-
-      const [evs, msgs] = await Promise.all([
-        admin.from('bot_events').select('kind, payload, created_at')
-          .eq('user_id', uid).order('created_at', { ascending: false }).limit(80),
-        /* Шейсет реплики, не четирийсет: откакто и думите вдигат прага,
-           свиването трябва да види разговора, в който е било казано нещо за
-           себе си, а не само последните няколко въпроса за калориите. */
-        admin.from('bot_messages').select('role, content')
-          .eq('user_id', uid).order('created_at', { ascending: false }).limit(60),
-      ])
-
-      const distilled = await ask(apiKey, [
-        { role: 'system', content: DISTILL },
-        {
-          role: 'user',
-          content:
-            (learned.data?.learned ? `ДОСЕГА\n${learned.data.learned}\n\n` : '') +
-            `СЪБИТИЯ\n${(evs.data ?? []).map(e => `${e.kind}: ${JSON.stringify(e.payload)}`).join('\n')}\n\n` +
-            `РАЗГОВОР\n${[...(msgs.data ?? [])].reverse().map(m => `${m.role}: ${m.content}`).join('\n')}`,
-        },
-      ], 300)
-
-      if (!distilled) return
-      await admin.from('bot_profile').upsert({
-        user_id: uid,
-        learned: distilled.slice(0, 1200),
-        events_seen: total,
-        messages_seen: totMsg,
-        updated_at: new Date().toISOString(),
-      })
-    } catch {
-      /* Ученето е подобрение, не условие: ако падне, ботът отговаря както
-         досега, само че помни малко по-малко. */
-    }
+    try { await remember } catch { /* записът е важен, но не и условие */ }
   }
 
   // deno-lint-ignore no-explicit-any

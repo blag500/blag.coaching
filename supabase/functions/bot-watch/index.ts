@@ -50,9 +50,39 @@ const VOICE = `Ти си Благ Бот — помощникът в прило�
 - Без укор и без оценка. „Белтъкът е под целта три дни" е факт; „не се справяш" е присъда.
 - Без лозунги, без емоджита, без възклицателни.
 - Без обещания за резултат и без медицински съвети.
+- Числото значи точно това, което пише в наблюдението. Разлика, наречена „липса на посока", не се превръща в покачване или сваляне.
+- Съветът е за онова, което е измерено. Човек, който тренира редовно, няма нужда да чуе „добави движение" — за него остава храната.
 - Не изброяваш дати. Казваш колко пъти и в кой ден от седмицата — редицата дати не значи нищо за четящия, а изяжда цялото изречение.
 
 Отговаряш само с двете изречения.`
+
+/* Свиването на научено.
+   Живее тук, а не в разговора: работата след отговора се пуска заедно с
+   изолата, който го е изпратил („Shutdown: EarlyDrop" в дневниците), и просто
+   не се случва. Тук никой не чака. */
+const DISTILL = `Ти поддържаш кратък списък с това, което се знае за един човек.
+
+Получаваш какво се е помнело ДОСЕГА, какво е предлагал помощникът и какво е приел или отказал човекът, и последните им разговори.
+
+Напиши новия списък — до осем кратки реда на български.
+Всеки ред е наблюдение, не съвет. Например: "отказва риба", "приема яйца на закуска", "не иска готвене над 15 минути", "тренира сутрин".
+
+Правила:
+- Помниш само трайното: вкусове, отказани храни, навици, часове, ограничения, начин на готвене, повтарящи се оплаквания.
+- НЕ помниш днешни числа — калории, макроси, тегло, вода, коя е последната тренировка. Те стоят в данните и утре са други. Ред като "консумира 2043 ккал" утре е лъжа.
+- Каквото е в ДОСЕГА и още е вярно, го запазваш дословно. Паметта не се пренаписва всеки път.
+- Каквото е в ДОСЕГА, но човекът е казал друго после, го махаш.
+- Добавяш новото, което се вижда от данните.
+- Нещо, което се е случило веднъж, не е правило — освен ако човекът не го е казал за себе си направо ("не ям риба", "тренирам в шест").
+- Без увод, без заключение, без номерация. Само редовете.`
+
+/* Заглавието на пораснал разговор. Кратко до немай-къде: списъкът е тесен и
+   реже на един ред. */
+const TITLE = `Дай заглавие на този разговор.
+
+До четири думи на български. Без кавички, без точка, без думата „разговор".
+Заглавието казва за какво се е говорило, не кой е питал.
+Отговаряш само със заглавието.`
 
 /* Тишината след всяко правило.
    Не е едно число за всички: теглото, което стои, е бавно нещо и има смисъл да
@@ -89,19 +119,40 @@ function iso(daysBack = 0) {
    наблюдение е по-лошо от никакво, защото човекът довършва изречението сам и
    обикновено не както е било започнато. Същата грешка вече беше правена в
    blag-bot; тук се повтори с по-нисък таван. */
-async function ask(apiKey: string, messages: unknown[], maxTokens = 500) {
+/* Разсъждаващи модели: таванът трябва да ги побере.
+ *
+ * gpt-oss мисли, преди да пише, и мисленето се брои в същия таван. При нисък
+ * таван цялото отива в разсъждение и `content` се връща празен — с код 200,
+ * тоест като успех. Оттам идваха три тихи провала наведнъж: паметта никога не
+ * се свиваше, заглавията не се прекрояваха, а дълъг разговор понякога
+ * получаваше „нещо се обърка".
+ *
+ * Лечението е двойно: `reasoning_effort: 'low'` свива мисленето, а таваните са
+ * вдигнати, за да има място и за двете. Открито по дневника, след като
+ * записването на грешките стана истинско — дотук „!res.ok → continue" гълташе
+ * точно това.
+ */
+async function ask(apiKey: string, messages: unknown[], maxTokens = 900) {
   for (const model of MODELS) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: maxTokens }),
+        body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: maxTokens, reasoning_effort: 'low' }),
       })
-      if (!res.ok) continue
+      if (!res.ok) {
+        /* Тихият провал е най-скъпият: и двата модела отказват, функцията
+           връща „няма", а после се гадае между изчерпана квота, пенсиониран
+           модел и твърде дълга подкана — три неща с три различни лечения. */
+        const why = await res.text().catch(() => '')
+        console.error(`groq ${model} → ${res.status}: ${why.slice(0, 300)}`)
+        continue
+      }
       const data = await res.json()
       const text = data?.choices?.[0]?.message?.content?.trim()
       if (text) return text
-    } catch { /* следващият модел */ }
+      console.error(`groq ${model} → празен отговор`)
+    } catch (e) { console.error(`groq ${model} → ${String(e).slice(0, 200)}`) }
   }
   return null
 }
@@ -132,7 +183,7 @@ function ruleProtein(p: any, byDay: Record<string, { protein: number }>): Findin
 }
 
 // deno-lint-ignore no-explicit-any
-function ruleWeightFlat(p: any, weights: any[]): Finding | null {
+function ruleWeightFlat(p: any, weights: any[], trained: number): Finding | null {
   const goal = String(p.goal ?? '')
   if (goal !== 'cut' && goal !== 'bulk') return null
   if (weights.length < 4) return null
@@ -146,7 +197,20 @@ function ruleWeightFlat(p: any, weights: any[]): Finding | null {
     rule: 'weight_flat',
     payload: { first, last, days: 14, goal },
     title: 'Теглото стои',
-    fact: `Теглото му стои от две седмици: ${first} кг преди две седмици, ${last} кг сега, при цел „${goal === 'cut' ? 'сваляне' : 'качване'}".`,
+    /* Двете числа се дават заедно с това какво значат.
+       Първият опит подаваше само „74 кг преди, 74.2 кг сега" и моделът написа
+       „теглото ти се е увеличило с 0.2 кг" — тоест превърна шума в посока.
+       Точно обратното на смисъла: правилото се задейства, защото разликата е
+       под прага, а не защото има движение. Числото без своето значение се
+       тълкува от модела, а моделът тълкува към нещо, което звучи като новина. */
+    fact: `Теглото му не се е помръднало за две седмици: ${first} кг тогава, ${last} кг сега. `
+        + `Разликата е в рамките на дневните колебания — това НЕ е покачване и НЕ е сваляне, а липса на посока. `
+        + `Целта му е „${goal === 'cut' ? 'сваляне' : 'качване'}". `
+        /* Колко тренира. Без това моделът съветваше „добави кардио" на човек с
+           двайсет и четири тренировки за двайсет и четири дни — съвет, който
+           казва „не съм те погледнал". Когато движението го има, остава
+           храната. */
+        + `За последните две седмици е тренирал ${trained} пъти.`,
   }
 }
 
@@ -199,6 +263,9 @@ function ruleMissedWorkout(workouts: any[]): Finding | null {
 
 // deno-lint-ignore no-explicit-any
 function ruleCheckin(p: any, checkins: any[]): Finding | null {
+  /* Чекинът е доклад до треньора. Самият треньор няма на кого да го праща —
+     за него това правило не значи нищо. */
+  if (p.role === 'coach') return null
   const day = p.checkin_day
   if (day == null) return null
   const last = checkins?.[0]?.date ?? null
@@ -216,6 +283,98 @@ function ruleCheckin(p: any, checkins: any[]): Finding | null {
   }
 }
 
+/** Ученето и заглавията — нощната поддръжка на паметта.
+ *
+ *  Две неща, които не са спешни и точно затова не бива да висят на отговора:
+ *  свиването на научено е втори разговор с модела, а прекрояването на заглавие
+ *  е трети. Закачени за заявката, те или удвояваха чакането, или (както се
+ *  оказа) не се случваха изобщо.
+ */
+// deno-lint-ignore no-explicit-any
+async function maintain(admin: any, apiKey: string, uid: string) {
+  /* ── Научено ── */
+  try {
+    const [prof, { count: evCount }, { count: msgCount }] = await Promise.all([
+      admin.from('bot_profile').select('learned, events_seen, messages_seen')
+        .eq('user_id', uid).maybeSingle(),
+      admin.from('bot_events').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+      admin.from('bot_messages').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+    ])
+
+    const seen    = prof.data?.events_seen ?? 0
+    const seenMsg = prof.data?.messages_seen ?? 0
+    const total   = evCount ?? 0
+    const totMsg  = msgCount ?? 0
+
+    /* Два брояча, защото има два вида учене. Събитие се пише, когато ботът
+       предложи храна и човекът я приеме или откаже — това учи какво яде. Но
+       най-важното се казва с думи и веднъж: „не ям риба", „тренирам в шест".
+       Десет събития или дванайсет реплики; първият път — при три събития или
+       шест реплики, колкото да има от какво да се съди. */
+    const first = seen === 0 && seenMsg === 0 && (total >= 3 || totMsg >= 6)
+    if (total - seen >= 10 || totMsg - seenMsg >= 12 || first) {
+      const [evs, msgs] = await Promise.all([
+        admin.from('bot_events').select('kind, payload')
+          .eq('user_id', uid).order('created_at', { ascending: false }).limit(80),
+        admin.from('bot_messages').select('role, content')
+          .eq('user_id', uid).order('created_at', { ascending: false }).limit(60),
+      ])
+
+      const distilled = await ask(apiKey, [
+        { role: 'system', content: DISTILL },
+        {
+          role: 'user',
+          content:
+            (prof.data?.learned ? `ДОСЕГА\n${prof.data.learned}\n\n` : '') +
+            `СЪБИТИЯ\n${(evs.data ?? []).map((e: { kind: string; payload: unknown }) => `${e.kind}: ${JSON.stringify(e.payload)}`).join('\n')}\n\n` +
+            `РАЗГОВОР\n${[...(msgs.data ?? [])].reverse().map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join('\n')}`,
+        },
+      ], 1200)
+
+      if (distilled) {
+        await admin.from('bot_profile').upsert({
+          user_id: uid,
+          learned: distilled.slice(0, 1200),
+          events_seen: total,
+          messages_seen: totMsg,
+          updated_at: new Date().toISOString(),
+        })
+      }
+    }
+  } catch (e) { console.error(`памет ${uid} → ${String(e).slice(0, 300)}`) }
+
+  /* ── Заглавия ──
+     Заглавието е първият въпрос, отрязан — добро за нов разговор, но след
+     третата реплика често вече не описва за какво е станало дума. Прекроява се
+     веднъж, когато нишката порасне, и това се отбелязва: заглавие, което се
+     мени всеки път, е заглавие, по което не може да се търси с памет. */
+  try {
+    const { data: grown } = await admin.from('bot_chats')
+      .select('id').eq('user_id', uid).eq('title_auto', false)
+      .order('updated_at', { ascending: false }).limit(3)
+
+    for (const chat of grown ?? []) {
+      const { data: all } = await admin.from('bot_messages')
+        .select('role, content').eq('chat_id', chat.id)
+        .order('created_at', { ascending: true }).limit(12)
+      /* Под шест реплики разговорът още е един въпрос с отговор и първият
+         въпрос си е точното заглавие. */
+      if (!all || all.length < 6) continue
+
+      const made = await ask(apiKey, [
+        { role: 'system', content: TITLE },
+        { role: 'user', content: all.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join('\n') },
+      ], 400)
+      if (!made) continue
+
+      const clean = made.replace(/["„""'.]/g, '').trim().slice(0, 60)
+      if (clean) {
+        await admin.from('bot_chats').update({ title: clean, title_auto: true }).eq('id', chat.id)
+      }
+    }
+  } catch (e) { console.error(`заглавие ${uid} → ${String(e).slice(0, 300)}`) }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
@@ -225,9 +384,13 @@ Deno.serve(async (req) => {
   const secret = Deno.env.get('REMINDER_SECRET')
   if (!apiKey || !url || !key) return json({ error: 'not configured' }, 500)
 
-  /* Същата ключалка като на напомнянията: функцията се вика от разписанието в
-     базата, не от телефон. */
-  const given = new URL(req.url).searchParams.get('secret')
+  /* Ключалката е в заглавка, не в адреса.
+     Адресът на всяко викане влиза в дневниците на проекта както си е — тайна,
+     сложена в него, се чете после от всеки, който има достъп до дневниците.
+     Старият начин остава приет, докато разписанието се смени, но новият е
+     по-добрият. */
+  const given = req.headers.get('x-bot-secret')
+    ?? new URL(req.url).searchParams.get('secret')
   if (secret && given !== secret) return json({ error: 'unauthorized' }, 401)
 
   const admin = createClient(url, key)
@@ -240,9 +403,15 @@ Deno.serve(async (req) => {
   const dry  = dryParam === '1'
   const peek = dryParam === '2'
 
+  /* И треньорът, не само клиентите.
+     Правилата гледат вписаното от самия човек — храна, тегло, тренировки — а
+     Николай води своите наравно с всички. Ролята му го изключваше от обиколката
+     и той не получаваше нищо, докато клиентите получаваха. Правило без данни
+     просто не се задейства, така че разширяването не струва нищо на онзи, който
+     не си води. */
   const { data: people } = await admin.from('profiles')
-    .select('id, name, protein, goal, checkin_day')
-    .eq('role', 'client')
+    .select('id, name, protein, goal, checkin_day, role')
+    .in('role', ['client', 'coach'])
 
   const out: Record<string, unknown>[] = []
 
@@ -270,7 +439,8 @@ Deno.serve(async (req) => {
 
       const found: Record<string, Finding | null> = {
         protein:        ruleProtein(p, byDay),
-        weight_flat:    ruleWeightFlat(p, weights.data ?? []),
+        weight_flat:    ruleWeightFlat(p, weights.data ?? [],
+          (workouts.data ?? []).filter(w => String(w.completed_date) >= iso(14)).length),
         water:          ruleWater(water.data ?? []),
         missed_workout: ruleMissedWorkout(workouts.data ?? []),
         checkin:        ruleCheckin(p, checkins.data ?? []),
@@ -285,6 +455,11 @@ Deno.serve(async (req) => {
         const newest = rows.map(r => new Date(r.created_at).getTime()).sort((a, b) => b - a)[0]
         return (Date.now() - newest) / 86400000 < (QUIET_DAYS[rule] ?? 7)
       }
+
+      /* Поддръжката върви за всеки, независимо дали има какво да се каже: човек,
+         който само пита и никога не получава наблюдение, също трябва да бъде
+         запомнен. */
+      if (!dry) await maintain(admin, apiKey, uid)
 
       const pick = ORDER.map(r => found[r]).find(f => f && !said(f.rule)) ?? null
       if (!pick) { out.push({ uid, picked: null }); continue }

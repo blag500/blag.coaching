@@ -719,3 +719,25 @@
 @media (prefers-reduced-motion: reduce) {
   .askMicOn { animation: none }
 }
+
+/* Пращане пак. Дребен, до самия въпрос: това не е действие на страницата, а
+   поправка на един ред от нея. */
+.retry {
+  border: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: transparent;
+  color: var(--accent);
+  border-radius: 9px;
+  padding: 4px 10px;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+/* Бележка за микрофона. Над реда за писане, приглушена: това е обяснение защо
+   нещо не е станало, не част от разговора. */
+.micNote {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  padding: 0 4px 6px;
+  text-align: right;
+}

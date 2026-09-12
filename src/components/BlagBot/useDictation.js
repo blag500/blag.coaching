@@ -10,10 +10,15 @@ import { haptic } from '../../lib/haptics'
  * двайсет.
  *
  * Разпознаването е на браузъра, не наше: SpeechRecognition работи в Chrome и
- * Samsung Internet на Android — там, където работят и вибрациите, тоест при
- * половината клиенти. Safari на iOS го няма (има го само зад флаг в новите
- * версии), затова бутонът не се показва, ако го няма. Бутон, който не прави
- * нищо, е по-лош от липсващ.
+ * Samsung Internet на Android — там, където работят и вибрациите.
+ *
+ * На iPhone го има, но не работи на български: Apple прави разпознаването на
+ * устройството и български език в него няма изобщо. Микрофонът се отваря,
+ * показва, че слуша, и завършва без нито един резултат. Затова тук се следи
+ * дали е чуло нещо и защо не е — и се казва на човека, вместо бутонът да
+ * мълчи. Мълчащ бутон се натиска още три пъти, преди да бъде разбран като
+ * счупен. (Английски и немски Apple разпознава — тоест на iPhone диктуването е
+ * въпрос на език, не на браузър.)
  *
  * Пуска се без сървър и без качване на звук: браузърът прави разпознаването и
  * връща текст. Записът никъде не се пази.
@@ -40,6 +45,9 @@ export function dictationSupported() {
  */
 export function useDictation(onText, lang = 'bg') {
   const [listening, setListening] = useState(false)
+  /* Защо не се получи. Показва се на човека, вместо бутонът да мълчи: мълчащ
+     бутон се натиска още три пъти, преди да бъде разбран като счупен. */
+  const [problem, setProblem] = useState(null)
   const recRef = useRef(null)
   const textRef = useRef(onText)
   textRef.current = onText
@@ -69,7 +77,14 @@ export function useDictation(onText, lang = 'bg') {
     rec.continuous = false
     rec.maxAlternatives = 1
 
+    /* Чуло ли е нещо изобщо. iPhone отваря микрофона, показва, че слуша, и
+       завършва без нито един резултат, когато езикът не се поддържа — а
+       български в разпознавателя на Apple го няма. Без този белег това
+       изглежда като „не те чух", вместо като „не мога на този език". */
+    let heard = false
+
     rec.onresult = e => {
+      heard = true
       const said = Array.from(e.results)
         .map(r => r[0]?.transcript ?? '')
         .join(' ')
@@ -80,10 +95,25 @@ export function useDictation(onText, lang = 'bg') {
       }
     }
     /* Свършва и от само себе си — тишина, изтекло време, отказан микрофон. */
-    rec.onend   = () => setListening(false)
-    rec.onerror = () => { setListening(false); haptic('reject') }
+    rec.onend = () => {
+      setListening(false)
+      if (!heard) setProblem('silent')
+    }
+    rec.onerror = e => {
+      setListening(false)
+      haptic('reject')
+      /* Кодовете, които значат „този браузър не може това": липсващ език и
+         отказана услуга. Останалите са временни — тишина, прекъсната мрежа. */
+      const code = String(e?.error ?? '')
+      setProblem(
+        code === 'language-not-supported' || code === 'service-not-allowed' ? 'lang'
+        : code === 'not-allowed' ? 'denied'
+        : 'silent'
+      )
+    }
 
     try {
+      setProblem(null)
       rec.start()
       recRef.current = rec
       setListening(true)
@@ -95,5 +125,5 @@ export function useDictation(onText, lang = 'bg') {
     }
   }
 
-  return { listening, toggle: start, stop }
+  return { listening, problem, toggle: start, stop }
 }

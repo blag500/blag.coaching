@@ -187,16 +187,23 @@ function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, 
   )
 }
 
-function UserBubble({ text, waiting, t }) {
+function UserBubble({ text, waiting, failed, onRetry, t }) {
   return (
     <div className={`${styles.bubbleRow} ${styles.userRow}`}>
       <div className={styles.userSide}>
-        <div className={`${styles.bubble} ${styles.userBubble} ${waiting ? styles.userWaiting : ''}`}>
+        <div className={`${styles.bubble} ${styles.userBubble} ${(waiting || failed) ? styles.userWaiting : ''}`}>
           {text}
         </div>
         {/* Чака мрежа. Казва се, защото иначе питането изглежда пренебрегнато
             и човекът го пише втори път. */}
         {waiting && <span className={styles.waitNote}>{t('bot.waiting')}</span>}
+        {/* Паднало. Въпросът си стои — праща се пак с едно натискане, вместо да
+            се пише наново. */}
+        {failed && (
+          <button type="button" className={styles.retry} onClick={onRetry}>
+            {t('bot.retry')}
+          </button>
+        )}
       </div>
     </div>
   )
@@ -370,7 +377,7 @@ export default function BlagBot({ open, from = null, onClose }) {
   /* Диктуване. Чутото се долепя към написаното, а не го замества: човек, който
      е почнал да пише и е решил да продължи с говорене, не иска да си изтрие
      началото. */
-  const { listening, toggle: dictate } = useDictation(said => {
+  const { listening, problem: micProblem, toggle: dictate } = useDictation(said => {
     setDraft(prev => (prev ? `${prev} ${said}` : said))
     inputRef.current?.focus()
   }, lang)
@@ -467,6 +474,29 @@ export default function BlagBot({ open, from = null, onClose }) {
 
   /* Отваряне на съществуваща нишка. Репликите идват от базата, не от паметта
      на телефона — тя пази само последния разговор, а тук се избира кой да е. */
+  /* Пращане пак на паднал въпрос. Без ново мехурче: това е същият въпрос,
+     не втори. */
+  async function retry(msgId, question) {
+    if (asking) return
+    setMessages(p => p.map(m => m.id === msgId ? { ...m, failed: false } : m))
+    setAsking(true)
+    setTyping(true)
+    haptic('tap')
+    try {
+      await send(question, chatId === 'new' ? null : chatId, msgId)
+    } catch (e) {
+      if (!navigator.onLine || /fetch|network|failed/i.test(String(e?.message ?? ''))) {
+        setMessages(p => p.map(m => m.id === msgId ? { ...m, waiting: true } : m))
+        enqueueQuestion({ chatId: chatId === 'new' ? null : chatId, question, msgId })
+      } else {
+        setMessages(p => p.map(m => m.id === msgId ? { ...m, failed: true } : m))
+      }
+    } finally {
+      setTyping(false)
+      setAsking(false)
+    }
+  }
+
   /* Чакащите въпроси. Опитват се при връщане на мрежата, при отваряне на
      приложението и при отваряне на разговора — трите поводa, на които и общата
      опашка стъпва. Спира при първия отказ: редът на въпросите е част от
@@ -616,7 +646,11 @@ export default function BlagBot({ open, from = null, onClose }) {
            по-добър от изгубен въпрос. */
         enqueueQuestion({ chatId: id, question: q, msgId })
       } else {
-        add('bot', t('bot.err'))
+        /* Мрежата я има, но отговорът не дойде — изчерпана квота, отказал модел,
+           твърде дълга подкана. Дотук въпросът просто се губеше и оставаше
+           „нещо се обърка": човекът го пише втори път или спира да пита.
+           Сега стои и има един бутон. */
+        setMessages(p => p.map(m => m.id === msgId ? { ...m, failed: true } : m))
       }
     } finally {
       setAsking(false)
@@ -764,7 +798,14 @@ export default function BlagBot({ open, from = null, onClose }) {
                   sources={m.sources}
                   t={t}
                 />
-              : <UserBubble key={m.id} text={m.text} waiting={m.waiting} t={t} />
+              : <UserBubble
+                  key={m.id}
+                  text={m.text}
+                  waiting={m.waiting}
+                  failed={m.failed}
+                  onRetry={() => retry(m.id, m.text)}
+                  t={t}
+                />
           )}
           {typing && <TypingIndicator />}
         </div>
@@ -772,6 +813,13 @@ export default function BlagBot({ open, from = null, onClose }) {
 
       {/* Полето се лепи за дъното и се вдига с клавиатурата. В списъка го няма:
           написаното там няма къде да отиде. */}
+      {/* Защо микрофонът не даде нищо. Български език в разпознавателя на Apple
+          няма — на iPhone диктуването мълчи и това трябва да се каже, вместо
+          бутонът да изглежда счупен. */}
+      {micProblem && chatId && (
+        <span className={styles.micNote}>{t(`bot.mic.${micProblem}`)}</span>
+      )}
+
       <div className={styles.askRow} hidden={!chatId}>
         <input
           ref={inputRef}

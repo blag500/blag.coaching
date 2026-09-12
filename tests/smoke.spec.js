@@ -1143,3 +1143,40 @@ test.describe('Затваряне на бота', () => {
     expect(await page.evaluate(() => document.body.style.position)).toBe('fixed')
   })
 })
+
+test.describe('Паднал отговор', () => {
+  test('въпросът остава и се праща пак', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+
+    /* Мрежата я има, но отговорът не идва — изчерпана квота, отказал модел.
+       Дотук въпросът се губеше и оставаше „нещо се обърка". */
+    await page.route('**/functions/v1/blag-bot**', r =>
+      r.fulfill({ status: 500, body: '{"error":"no answer"}' }))
+
+    await page.locator('input[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(1500)
+
+    /* Въпросът си стои, а до него има един бутон. Търси се мехурчето, не
+       заглавието на нишката — то носи същите думи, защото е първият въпрос. */
+    /* Две, не едно: заглавието на нишката носи същите думи, защото е първият
+       въпрос. Важното е, че мехурчето е едно — питането не се удвоява. */
+    const asked = page.getByText('колко ми остават калории', { exact: true })
+    await expect(asked).toHaveCount(2)
+    await expect(page.getByText('Опитай пак')).toBeVisible()
+
+    await page.unroute('**/functions/v1/blag-bot**')
+    await page.getByText('Опитай пак').click()
+    await page.waitForTimeout(1500)
+    await expect(page.getByText('Днес си на 1 200 ккал от 2 400.')).toBeVisible()
+    await expect(page.getByText('Опитай пак')).toHaveCount(0)
+    // И без второ мехурче: това е същият въпрос, не втори.
+    await expect(asked).toHaveCount(2)
+  })
+})
