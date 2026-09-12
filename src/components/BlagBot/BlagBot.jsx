@@ -58,6 +58,34 @@ function saveSession(userId, messages) {
   } catch { /* частен режим, пълна памет — разговорът пак работи */ }
 }
 
+/* Разделите от данните, както се казват на човек.
+   Ключовете идват от сървъра и са кратки за модела; тук се превеждат на нещо,
+   което значи нещо и за четящия. Непознат ключ минава както си е, само без
+   подчертавките — по-добре „седмица ккал", отколкото нищо. */
+const SOURCE_NAMES = {
+  'днес':            'дневникът днес',
+  'седмица_ккал':    'седмицата',
+  'вода':            'водата',
+  'сън':             'сънят',
+  'тегло':           'теглото',
+  'упражнения':      'упражненията',
+  'тренировки':      'тренировките',
+  'навици_по_дни':   'навиците',
+  'навиците_му':     'навиците',
+  'чекини':          'чекините',
+  'добавки':         'добавките',
+  'добавки_взети':   'добавките',
+  'цели':            'целите',
+  'човекът':         'профилът',
+  'насрочени':       'графикът',
+  'подготовка':      'подготовката',
+  'бележки_на_треньора': 'бележките на Николай',
+}
+
+function sourceName(key) {
+  return SOURCE_NAMES[key] ?? String(key).replace(/_/g, ' ')
+}
+
 // ─── Мехурчета ───────────────────────────────────────────────────────────────
 
 function parseBold(text) {
@@ -129,7 +157,7 @@ function DraftCard({ plan, state, onLog, onSkip, t }) {
   )
 }
 
-function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, t }) {
+function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, sources, t }) {
   return (
     /* С карта редът става висок и лицето, центрирано по средата, отива до
        картата вместо до думите. А то е бутонът за свиване — мястото му е при
@@ -144,6 +172,13 @@ function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, 
         </div>
         {plan && (
           <DraftCard plan={plan} state={planState} onLog={onLog} onSkip={onSkip} t={t} />
+        )}
+        {/* Откъде е числото. Ботът ще греши и точно тогава човекът трябва да
+            може да провери него, а не да избира между вяра и отказ. */}
+        {sources?.length > 0 && (
+          <span className={styles.sources}>
+            {t('bot.from')} {sources.map(sourceName).join(' · ')}
+          </span>
         )}
       </div>
     </div>
@@ -419,7 +454,12 @@ export default function BlagBot({ open, from = null, onClose }) {
          нишката пак, картата я няма — тя е предложение за сега, а не ред,
          който чака вечно. */
       add('bot', (!error && data?.reply) ? data.reply : t('bot.err'),
-          (!error && data?.draft?.items?.length) ? { plan: data.draft } : null)
+          !error
+            ? {
+                ...(data?.draft?.items?.length ? { plan: data.draft } : null),
+                ...(data?.sources?.length ? { sources: data.sources } : null),
+              }
+            : null)
 
       /* Подредбата в списъка е по последно казано, значи нишката се вдига
          отгоре при всяка реплика. */
@@ -555,6 +595,7 @@ export default function BlagBot({ open, from = null, onClose }) {
                   planState={m.planState}
                   onLog={() => logPlan(m.id, m.plan)}
                   onSkip={() => skipPlan(m.id, m.plan)}
+                  sources={m.sources}
                   t={t}
                 />
               : <UserBubble key={m.id} text={m.text} />

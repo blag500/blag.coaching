@@ -298,7 +298,13 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg' }
           draft: { items, totals: { kcal: 180, protein: 28, carbs: 8, fat: 4 } },
         })
       }
-      return json(route, { reply: 'Днес си на 1 200 ккал от 2 400.' })
+      /* Източниците идват отделно от текста: сървърът отрязва реда „ИЗТОЧНИК"
+         от отговора и проверява всяко име срещу данните, които наистина е
+         виждал. */
+      return json(route, {
+        reply: 'Днес си на 1 200 ккал от 2 400.',
+        sources: ['днес', 'цели'],
+      })
     }
 
     // ── таблици ──

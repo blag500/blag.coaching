@@ -965,6 +965,10 @@ test.describe('Вписване с думи', () => {
     // Без карта и без бутон за вписване: това е отговор, не предложение.
     await expect(page.getByText('Днес си на 1 200 ккал от 2 400.')).toBeVisible()
     await expect(page.getByText('Впиши', { exact: true })).toHaveCount(0)
+
+    /* Но с източник: числото има откъде да е дошло и човекът може да го
+       провери, вместо да избира между вяра и отказ. */
+    await expect(page.getByText('от: дневникът днес · целите')).toBeVisible()
   })
 })
 

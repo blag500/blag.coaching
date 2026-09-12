@@ -26,6 +26,7 @@ export default {
   "bot.mem.title": "What I have learned",
   "bot.mem.forget": "Forget this",
   "bot.mem.hint": "Remove a line that is not true.",
+  "bot.from": "from:",
   "bot.newChat": "New chat",
   "bot.earlier": "EARLIER",
   "bot.noChats": "No chats yet.",

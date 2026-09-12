@@ -58,6 +58,18 @@ after any change to colour, motion, or glass and read the PNGs in `shots/`.
 
 The `ios` project needs a one-time `npx playwright install webkit`.
 
+The bot's pure functions have their own checks, run separately from Playwright:
+
+```bash
+npx deno run --allow-read supabase/functions/blag-bot/checks.ts
+```
+
+They cover the three things that can break silently — the sieve that decides
+whether a sentence is a food entry, the JSON reader for the extracted rows, and
+the source filter that drops sections the bot did not actually see. The
+functions are cut out of `index.ts` at run time, so the checks always test what
+is deployed.
+
 ## Database
 
 Migrations live in `supabase/migrations/` — run them in order in the Supabase SQL Editor. All tables use Row-Level Security. The `get_my_role()` and `get_coach_id()` functions are `security definer` to avoid RLS recursion.

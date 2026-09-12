@@ -27,6 +27,7 @@ export default {
   "bot.mem.title": "Какво съм научил",
   "bot.mem.forget": "Забрави това",
   "bot.mem.hint": "Махни ред, който не е вярно.",
+  "bot.from": "от:",
   "bot.newChat": "Нов разговор",
   "bot.earlier": "ПО-РАНО",
   "bot.noChats": "Още няма разговори.",
