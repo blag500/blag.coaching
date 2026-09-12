@@ -111,6 +111,17 @@ function TypingIndicator() {
   )
 }
 
+/* Кога е било. Часовете и дните стигат: разговор отпреди месец се разпознава
+   по заглавието си, не по датата. */
+function when(iso, t) {
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
+  if (mins < 1)    return t('feed.ago.now')
+  if (mins < 60)   return t('feed.ago.min',  { n: mins })
+  const h = Math.round(mins / 60)
+  if (h < 24)      return t('feed.ago.hour', { n: h })
+  return t('feed.ago.day', { n: Math.round(h / 24) })
+}
+
 // ─── Екранът ─────────────────────────────────────────────────────────────────
 
 export default function BlagBot({ open, onClose }) {
@@ -122,9 +133,32 @@ export default function BlagBot({ open, onClose }) {
   const [asking, setAsking]     = useState(false)
   const [typing, setTyping]     = useState(false)
 
+  /* Кой разговор е отворен и какви има.
+     null значи „никой" — тогава се рисува списъкът, не нишката. Така
+     натискането на балончето пита кое, вместо да реши вместо човека. */
+  const [chatId, setChatId]   = useState(null)
+  const [chats, setChats]     = useState([])
+  const [loadingChat, setLoadingChat] = useState(false)
+
   /* Махнато ли е балончето. Показва се само тогава: бутон „върни го", докато
      то си стои на екрана, е въпрос без повод. */
   const [bubbleGone, setBubbleGone] = useState(isHidden)
+
+  /* Затварянето иска време, колкото и отварянето.
+     Дотук слоят просто спираше да се рисува — разгъваше се плавно и изчезваше
+     на кадър, което се чете като прекъсване, а не като свиване. Тук остава
+     монтиран, докато обратният жест изтече, и чак тогава си отива. */
+  const [closing, setClosing] = useState(false)
+  const closeTimer = useRef(null)
+
+  function collapse() {
+    if (closing) return
+    setClosing(true)
+    clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => { setClosing(false); onClose() }, 240)
+  }
+
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
 
   const feedRef  = useRef(null)
   const inputRef = useRef(null)
@@ -132,20 +166,39 @@ export default function BlagBot({ open, onClose }) {
   const add = (from, text) =>
     setMessages(p => [...p, { from, text, id: Date.now() + Math.random() }])
 
-  /* Поздравът е част от разговора, не отделно състояние: иначе при връщане
-     той идва втори път над вчерашните реплики.
 
-     Решението се взима вътре в setMessages, а не преди него. React вика
-     ефектите при монтиране два пъти в режим на разработка, а проверка отвън
-     чете празния списък и в двата случая — оттам идваше поздрав, написан два
-     пъти един под друг. Така редът или го има, или се добавя, независимо
-     колко пъти минава оттук. */
+  /* Списъкът се чете при всяко отваряне: разговор, започнат на друг телефон
+     или вчера, трябва да е тук. */
   useEffect(() => {
-    setMessages(prev => prev.length
-      ? prev
-      : [{ from: 'bot', text: t('bot.intro'), id: Date.now() }])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (!open || !user?.id) return
+    supabase.from('bot_chats')
+      .select('id, title, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(30)
+      .then(({ data }) => setChats(data ?? []))
+  }, [open, user?.id])
+
+  /* Отваряне на съществуваща нишка. Репликите идват от базата, не от паметта
+     на телефона — тя пази само последния разговор, а тук се избира кой да е. */
+  async function openChat(id) {
+    setChatId(id)
+    setLoadingChat(true)
+    const { data } = await supabase.from('bot_messages')
+      .select('id, role, content')
+      .eq('chat_id', id)
+      .order('created_at', { ascending: true })
+      .limit(200)
+    setLoadingChat(false)
+    setMessages((data ?? []).map(m => ({
+      id: m.id, from: m.role === 'bot' ? 'bot' : 'user', text: m.content,
+    })))
+  }
+
+  function newChat() {
+    setChatId('new')
+    setMessages([{ from: 'bot', text: t('bot.intro'), id: Date.now() }])
+  }
 
   useEffect(() => { saveSession(user?.id, messages) }, [messages, user?.id])
 
@@ -186,11 +239,38 @@ export default function BlagBot({ open, onClose }) {
     setAsking(true)
     setTyping(true)
     try {
+      /* Нишката се създава при първия въпрос, не при натискането на „нов":
+         разговор без нито една реплика е ред в списъка, който не значи нищо.
+         Заглавието е самият въпрос, отрязан — разговорът се разпознава по
+         това, с което е започнал. */
+      let id = chatId
+      if (id === 'new' || !id) {
+        const { data: made } = await supabase.from('bot_chats')
+          .insert({ user_id: user.id, title: q.slice(0, 60) })
+          .select('id, title, updated_at')
+          .single()
+        if (made) {
+          id = made.id
+          setChatId(id)
+          setChats(prev => [made, ...prev])
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('blag-bot', {
-        body: { question: q },
+        body: { question: q, chatId: id },
       })
       setTyping(false)
       add('bot', (!error && data?.reply) ? data.reply : t('bot.err'))
+
+      /* Подредбата в списъка е по последно казано, значи нишката се вдига
+         отгоре при всяка реплика. */
+      if (id) {
+        supabase.from('bot_chats').update({ updated_at: new Date().toISOString() })
+          .eq('id', id).then(() => {}, () => {})
+        setChats(prev => prev.map(c => c.id === id
+          ? { ...c, updated_at: new Date().toISOString() }
+          : c))
+      }
     } catch {
       setTyping(false)
       add('bot', t('bot.err'))
@@ -203,20 +283,31 @@ export default function BlagBot({ open, onClose }) {
   if (!open) return null
 
   return createPortal(
-    <div className={styles.layer} role="dialog" aria-modal="true" aria-label={t('nav.bot')}>
+    <div className={`${styles.layer} ${closing ? styles.closing : ''}`} role="dialog" aria-modal="true" aria-label={t('nav.bot')}>
       {/* Прозрачно, не плътно: страницата отдолу не си е отишла никъде и това
           трябва да се вижда. Разговорът е отгоре, а не вместо. */}
-      <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+      <div className={styles.scrim} onClick={collapse} aria-hidden="true" />
 
       <div className={styles.sheet}>
         <header className={styles.head}>
-          <button type="button" className={styles.collapse} onClick={onClose} aria-label={t('bot.minimise')}>
+          <button type="button" className={styles.collapse} onClick={collapse} aria-label={t('bot.minimise')}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
-          <span className={styles.title}>{t('nav.bot')}</span>
+          {chatId ? (
+            /* Назад към списъка. Заглавието е самата нишка — оттам се вижда
+               кой разговор четеш, без да се брои назад по репликите. */
+            <button type="button" className={styles.titleBtn} onClick={() => { setChatId(null); setMessages([]) }}>
+              <span className={styles.titleText}>
+                {chats.find(c => c.id === chatId)?.title ?? t('bot.newChat')}
+              </span>
+              <span className={styles.titleHint}>{t('bot.allChats')}</span>
+            </button>
+          ) : (
+            <span className={styles.title}>{t('nav.bot')}</span>
+          )}
           <img className={styles.headFace} src="/bot.webp" alt="" width="30" height="30" />
         </header>
 
@@ -231,18 +322,45 @@ export default function BlagBot({ open, onClose }) {
         </button>
       )}
 
-      <div className={styles.feed} ref={feedRef}>
-        {messages.map(m =>
-          m.from === 'bot'
-            ? <BotBubble key={m.id} text={m.text} onClose={onClose} closeLabel={t('bot.minimise')} />
-            : <UserBubble key={m.id} text={m.text} />
-        )}
-        {typing && <TypingIndicator />}
-      </div>
+      {/* Без избрана нишка се рисува списъкът, не празен разговор.
+          Натискането на балончето пита кое — вместо да реши вместо човека и
+          после да се окаже, че е продължило вчерашен спор с днешен въпрос. */}
+      {!chatId ? (
+        <div className={styles.chats}>
+          <button type="button" className={styles.newChat} onClick={newChat}>
+            <Pictogram name="plus" size={17} />
+            {t('bot.newChat')}
+          </button>
 
-      {/* Полето се лепи за дъното над лентата и се вдига с клавиатурата.
-          Разговор, чието поле бяга нагоре при писане, се пише наслуки. */}
-      <div className={styles.askRow}>
+          {chats.length > 0 && <span className={styles.chatsHead}>{t('bot.earlier')}</span>}
+
+          {chats.map(c => (
+            <button key={c.id} type="button" className={styles.chatRow} onClick={() => openChat(c.id)}>
+              <img src="/bot.webp" alt="" width="26" height="26" />
+              <span className={styles.chatText}>
+                <span className={styles.chatTitle}>{c.title || t('bot.newChat')}</span>
+                <span className={styles.chatWhen}>{when(c.updated_at, t)}</span>
+              </span>
+            </button>
+          ))}
+
+          {chats.length === 0 && <p className={styles.chatsEmpty}>{t('bot.noChats')}</p>}
+        </div>
+      ) : (
+        <div className={styles.feed} ref={feedRef}>
+          {loadingChat && <p className={styles.chatsEmpty}>…</p>}
+          {messages.map(m =>
+            m.from === 'bot'
+              ? <BotBubble key={m.id} text={m.text} onClose={collapse} closeLabel={t('bot.minimise')} />
+              : <UserBubble key={m.id} text={m.text} />
+          )}
+          {typing && <TypingIndicator />}
+        </div>
+      )}
+
+      {/* Полето се лепи за дъното и се вдига с клавиатурата. В списъка го няма:
+          написаното там няма къде да отиде. */}
+      <div className={styles.askRow} hidden={!chatId}>
         <input
           ref={inputRef}
           className={styles.askInput}

@@ -52,8 +52,28 @@
   to   { opacity: 1; transform: scale(1)    translateY(0);    }
 }
 
+/* Обратният жест: същият път, изминат назад, малко по-бързо — свиването не
+   иска толкова обявяване, колкото отварянето. */
+.closing .scrim {
+  animation: scrimOut 220ms var(--ease-out) both;
+}
+
+.closing .sheet {
+  animation: sheetOut 220ms var(--ease-glide) both;
+}
+
+@keyframes scrimOut {
+  from { opacity: 1 }
+  to   { opacity: 0 }
+}
+
+@keyframes sheetOut {
+  from { opacity: 1; transform: scale(1)    translateY(0);    }
+  to   { opacity: 0; transform: scale(0.82) translateY(28px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .scrim, .sheet { animation: none }
+  .scrim, .sheet, .closing .scrim, .closing .sheet { animation: none }
 }
 
 .head {
@@ -203,6 +223,12 @@
   border-top: 1px solid var(--border);
 }
 
+/* display:flex бие браузърското [hidden]{display:none}, затова скриването се
+   изписва. Без този ред полето стоеше и над списъка с разговорите. */
+.askRow[hidden] {
+  display: none;
+}
+
 .askInput {
   flex: 1;
   min-width: 0;
@@ -229,3 +255,125 @@
   cursor: pointer;
 }
 .askSend:disabled { opacity: 0.35; cursor: default; }
+
+/* ── Списъкът с разговори ─────────────────────────────────────────────── */
+
+.chats {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 2px 12px;
+}
+
+.newChat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: var(--r-md);
+  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.chatsHead {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin: 8px 2px 2px;
+}
+
+.chatRow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-md);
+  background: var(--panel-bg);
+  cursor: pointer;
+  text-align: left;
+}
+
+.chatRow img {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chatText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* Заглавието е първият въпрос — дълъг е и трябва да се реже на един ред,
+   иначе списъкът става стена от текст. */
+.chatTitle {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatWhen {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.chatsEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  padding: 14px 2px;
+  text-align: center;
+}
+
+/* Заглавието в лентата отгоре е бутон назад към списъка. */
+.titleBtn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.titleText {
+  max-width: 100%;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titleHint {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  opacity: 0.85;
+}

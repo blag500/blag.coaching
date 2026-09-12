@@ -791,6 +791,9 @@ test.describe('Слоят на бота', () => {
   
     await page.locator('button[aria-label="БЛАГ БОТ"]').click()
     await page.waitForTimeout(900)
+    /* Балончето пита кой разговор — нов или някой отпреди. */
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
     await expect(page.getByText('Аз съм Благ Бот.')).toBeVisible()
     // Страницата отдолу още я има.
     await expect(page.locator('nav')).toHaveCount(1)
@@ -828,5 +831,26 @@ test.describe('Балончето и бутоните под него', () => {
     // Рецептите НЕ трябва да са се отворили: решетката още показва избора.
     await expect(page.getByText('ЧЕРНОВА', { exact: true })).toBeVisible()
     await page.screenshot({ path: 'shots/tmp-ghost.png' })
+  })
+})
+
+test.describe('Историята на разговорите', () => {
+  test('балончето пита нов или отпреди', async ({ page }) => {
+    test.setTimeout(60000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+
+    // Натискането на балончето не отваря празен разговор, а избор.
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await expect(page.getByText('Нов разговор').first()).toBeVisible()
+    // В списъка полето е скрито: написаното там няма къде да отиде.
+    await expect(page.locator('input[placeholder="Питай ме нещо"]')).toBeHidden()
+    await page.screenshot({ path: 'shots/tmp-chatlist.png' })
+
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+    await expect(page.getByText('Аз съм Благ Бот.')).toBeVisible()
+    await expect(page.locator('input[placeholder="Питай ме нещо"]')).toBeVisible()
   })
 })

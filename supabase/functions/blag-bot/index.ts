@@ -130,6 +130,15 @@ Deno.serve(async (req) => {
   const question = String(body?.question ?? '').trim().slice(0, MAX_Q)
   if (!question) return json({ error: 'missing question' }, 400)
 
+  /* Коя нишка. Проверява се, че е негова — идва от телефона, значи може да е
+     каквото и да е, а нишките на другите не са му работа. */
+  let chatId: string | null = typeof body?.chatId === 'string' ? body.chatId : null
+  if (chatId) {
+    const { data: own } = await admin.from('bot_chats')
+      .select('id').eq('id', chatId).eq('user_id', uid).maybeSingle()
+    if (!own) chatId = null
+  }
+
   // ── Данните, наготово ─────────────────────────────────────────────────────
   const today = iso()
   const weekAgo = iso(7)
@@ -162,7 +171,14 @@ Deno.serve(async (req) => {
       admin.from('training_sessions').select('scheduled_at, title, status').eq('client_id', uid).order('scheduled_at', { ascending: false }).limit(4),
       admin.from('prep_protocols').select('competition_name, competition_date, target_weight, ready_weeks').eq('user_id', uid).eq('active', true).maybeSingle(),
       admin.from('meal_library').select('name, kcal, protein, carbs, fat, prep_min, category').eq('user_id', uid).limit(40),
-      admin.from('bot_messages').select('role, content').eq('user_id', uid).order('created_at', { ascending: false }).limit(8),
+      /* Нишката, не купчината. Осем реплики от този разговор — иначе
+         днешният въпрос за водата получава отговор, забъркан с миналоседмичния
+         спор за въглехидратите. */
+      (chatId
+        ? admin.from('bot_messages').select('role, content').eq('chat_id', chatId)
+            .order('created_at', { ascending: false }).limit(8)
+        : admin.from('bot_messages').select('role, content').eq('user_id', uid).is('chat_id', null)
+            .order('created_at', { ascending: false }).limit(8)),
       admin.from('bot_profile').select('learned, events_seen').eq('user_id', uid).maybeSingle(),
     ])
 
@@ -268,8 +284,8 @@ Deno.serve(async (req) => {
   /* Записва се и въпросът, и отговорът — заедно с това, което ботът е виждал.
      Не се чака: човекът вече има отговора си. */
   const remember = admin.from('bot_messages').insert([
-    { user_id: uid, role: 'user', content: question },
-    { user_id: uid, role: 'bot',  content: reply, context },
+    { user_id: uid, chat_id: chatId, role: 'user', content: question },
+    { user_id: uid, chat_id: chatId, role: 'bot',  content: reply, context },
   ])
 
   /* Ученето. Става рядко и наведнъж, не при всеки въпрос: свиването е втори
