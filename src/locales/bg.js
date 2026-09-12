@@ -16,6 +16,7 @@ export default {
   "bot.placeholder": "Питай ме нещо",
   "bot.ask": "Питай",
   "bot.err": "Нещо се обърка. Опитай пак след малко.",
+  "bot.restore": "Върни балончето на екрана",
   'nav.recovery':     'ВЪЗСТАНОВЯВАНЕ',
   'nav.schedule':     'ГРАФИК',
   'nav.explore':      'ОТКРИЙ',

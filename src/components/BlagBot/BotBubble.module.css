@@ -4,9 +4,12 @@
    екран; вж. openBtn в PostSheet.module.css. */
 .bubble {
   position: fixed;
-  right: 18px;
-  bottom: calc(env(safe-area-inset-bottom) + 84px);
+  /* Отместването идва от стила на елемента — балончето се мести с пръст и
+     мястото му се помни. Тук стоят само нещата, които не се менят. */
   z-index: 90;
+  /* Пръстът мести балончето, а не страницата под него. */
+  touch-action: none;
+  -webkit-user-drag: none;
   width: 52px;
   height: 52px;
   padding: 0;
@@ -20,7 +23,13 @@
     0 0 0 2px rgba(var(--accent-rgb), 0.85),
     0 4px 18px rgba(var(--accent-rgb), 0.40),
     0 0 0 5px rgba(var(--bg-rgb), 0.80);
-  animation: bubbleIn 320ms var(--ease-spring-soft) both;
+  /* backwards, не both.
+     С `both` последният кадър на анимацията остава залепен завинаги, а
+     анимациите бият обикновените правила в каскадата — значи scale(1) от
+     появяването надвиваше и уголемяването при откачане, и свиването над
+     мишената. Класовете се сменяха, а нищо не помръдваше.
+     `backwards` държи само първия кадър, преди анимацията да тръгне. */
+  animation: bubbleIn 320ms var(--ease-spring-soft) backwards;
 }
 
 .bubble img {
@@ -39,4 +48,61 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bubble { animation: none; }
+}
+
+/* Откачено: носи се с пръста. Малко по-голямо и с по-силна сянка — вдигнато
+   е над екрана, не лежи върху него. */
+.armed {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 2px rgba(var(--accent-rgb), 1),
+    0 10px 26px rgba(0, 0, 0, 0.5),
+    0 0 0 5px rgba(var(--bg-rgb), 0.8);
+  transition: transform 140ms var(--ease-spring-soft);
+}
+.armed:active { transform: scale(1.12); }
+
+/* Над мишената: дръпва се назад и пуска знака отдолу да се види. */
+.armed.overDrop,
+.armed.overDrop:active {
+  transform: scale(0.72);
+  opacity: 0.45;
+}
+
+/* Мишената за махане. Горе в средата, където пръстът стига, без да мине през
+   половината интерфейс. */
+.drop {
+  position: fixed;
+  left: 50%;
+  z-index: 89;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: rgba(var(--bg-rgb), 0.9);
+  border: 1px dashed rgba(var(--text-rgb), 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: dropIn 200ms var(--ease-out) both;
+  pointer-events: none;
+}
+
+/* Уцелена: пръстенът се затваря и цветът казва какво ще стане, преди да е
+   станало. */
+.dropOver {
+  color: #fff;
+  background: var(--red);
+  border-style: solid;
+  border-color: var(--red);
+  transform: scale(1.12);
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop { animation: none; }
+  .armed { transition: none; }
 }

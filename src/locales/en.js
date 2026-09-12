@@ -15,6 +15,7 @@ export default {
   "bot.placeholder": "Ask me something",
   "bot.ask": "Ask",
   "bot.err": "Something went wrong. Try again in a moment.",
+  "bot.restore": "Bring the bubble back",
   'nav.recovery':     'RECOVERY',
   'nav.schedule':     'SCHEDULE',
   'nav.explore':      'EXPLORE',

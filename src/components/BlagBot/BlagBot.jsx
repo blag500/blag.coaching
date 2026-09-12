@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
+import { haptic } from '../../lib/haptics'
 import AppHeader from '../AppHeader/AppHeader'
 import Pictogram from '../Pictogram/Pictogram'
+import { isHidden, setHidden } from './botBubbleStore'
 import styles from './BlagBot.module.css'
 
 /**
@@ -112,6 +114,10 @@ export default function BlagBot({ onMenuOpen }) {
   const [asking, setAsking]     = useState(false)
   const [typing, setTyping]     = useState(false)
 
+  /* Махнато ли е балончето. Показва се само тогава: бутон „върни го", докато
+     то си стои на екрана, е въпрос без повод. */
+  const [bubbleGone, setBubbleGone] = useState(isHidden)
+
   const feedRef  = useRef(null)
   const inputRef = useRef(null)
 
@@ -185,6 +191,17 @@ export default function BlagBot({ onMenuOpen }) {
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}
       />
+
+      {bubbleGone && (
+        <button
+          type="button"
+          className={styles.restore}
+          onClick={() => { setHidden(false); setBubbleGone(false); haptic('toggle') }}
+        >
+          <img src="/bot.webp" alt="" width="22" height="22" />
+          {t('bot.restore')}
+        </button>
+      )}
 
       <div className={styles.feed} ref={feedRef}>
         {messages.map(m =>

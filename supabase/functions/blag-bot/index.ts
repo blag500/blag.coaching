@@ -41,7 +41,9 @@ const SYSTEM = `Ти си Благ Бот — помощникът в прило
 
 КАКВО ЗНАЕШ
 - Получаваш числата на човека наготово в раздела ДАННИ. Те са истината.
+- В ДАННИ има: кой е той, целите му, днешният прием по хранения, седмицата назад, водата, сънят с качество и енергия, навиците, тренировките и упражненията с килограми, теглото, добавките и кога са взети, чекините и бележките на треньора.
 - НИКОГА не измисляш и не преизчисляваш число, което не е в ДАННИ. Ако нещо липсва, казваш, че не го знаеш.
+- Преди да кажеш „нямам данни", погледни пак: питат те за неща, които почти винаги ги има.
 - Ако предлагаш храна, тя идва от списъка ЯСТИЯ. Може да предложиш и нещо извън него, но тогава казваш, че макросите са приблизителни.
 
 КАКВО НЕ ПРАВИШ
@@ -130,14 +132,33 @@ Deno.serve(async (req) => {
   const today = iso()
   const weekAgo = iso(7)
 
-  const [profile, todayFood, weekFood, habits, workouts, weights, meals, recent, learned] =
-    await Promise.all([
-      admin.from('profiles').select('name, calories, protein, carbs, fat, goal').eq('id', uid).maybeSingle(),
-      admin.from('food_logs').select('name, kcal, protein, carbs, fat, meal_type').eq('user_id', uid).eq('date', today),
-      admin.from('food_logs').select('date, kcal, protein').eq('user_id', uid).gte('date', weekAgo),
+  /* Всичко, което човекът е вписал за себе си.
+     Дотук тук стояха шест заявки и ботът отговаряше „за вода нямам данни" на
+     човек, който си пише водата всеки ден. Помощник, който казва „не знам" за
+     нещо, което приложението знае, е по-лош от липсващ: следващия път не го
+     питат изобщо. */
+  const [
+    profile, todayFood, weekFood, habits, workouts, weights,
+    water, sleep, supps, suppLogs, checkin, exercises, sessions, prep,
+    meals, recent, learned,
+  ] = await Promise.all([
+      admin.from('profiles')
+        .select('name, calories, protein, carbs, fat, goal, age, gender, height_cm, activity_level, target_weight, habits, checkin_day, coach_notes')
+        .eq('id', uid).maybeSingle(),
+      admin.from('food_logs').select('name, grams, kcal, protein, carbs, fat, meal_type').eq('user_id', uid).eq('date', today),
+      admin.from('food_logs').select('date, kcal, protein, carbs, fat').eq('user_id', uid).gte('date', weekAgo),
       admin.from('habit_completions').select('date, habit_id, completed').eq('user_id', uid).gte('date', weekAgo),
       admin.from('workout_completions').select('completed_date, block_label').eq('user_id', uid).gte('completed_date', weekAgo),
-      admin.from('weight_logs').select('date, kg').eq('user_id', uid).order('date', { ascending: false }).limit(8),
+      admin.from('weight_logs').select('date, kg').eq('user_id', uid).order('date', { ascending: false }).limit(14),
+      admin.from('water_logs').select('log_date, glasses').eq('user_id', uid).gte('log_date', weekAgo),
+      admin.from('sleep_logs').select('date, duration_hours, quality, stress, energy, soreness, mood').eq('user_id', uid).gte('date', weekAgo),
+      admin.from('supplements').select('id, name, dose, timing, active').eq('user_id', uid),
+      admin.from('supplement_logs').select('supplement_id, date').eq('user_id', uid).gte('date', weekAgo),
+      admin.from('form_checkins').select('date, weight_kg, sleep_hours, hunger, stress, energy, digestion, steps_avg, weekly_win, weekly_improve, notes')
+        .eq('user_id', uid).order('date', { ascending: false }).limit(2),
+      admin.from('exercise_logs').select('date, exercise_name, weight, reps').eq('user_id', uid).gte('date', weekAgo),
+      admin.from('training_sessions').select('scheduled_at, title, status').eq('client_id', uid).order('scheduled_at', { ascending: false }).limit(4),
+      admin.from('prep_protocols').select('competition_name, competition_date, target_weight, ready_weeks').eq('user_id', uid).eq('active', true).maybeSingle(),
       admin.from('meal_library').select('name, kcal, protein, carbs, fat, prep_min, category').eq('user_id', uid).limit(40),
       admin.from('bot_messages').select('role, content').eq('user_id', uid).order('created_at', { ascending: false }).limit(8),
       admin.from('bot_profile').select('learned, events_seen').eq('user_id', uid).maybeSingle(),
@@ -162,13 +183,56 @@ Deno.serve(async (req) => {
   const habitDays: Record<string, number> = {}
   for (const r of habits.data ?? []) if (r.completed) habitDays[r.date] = (habitDays[r.date] || 0) + 1
 
+  /* Кои добавки са взети кой ден — по име, не по id: моделът чете имена. */
+  const suppName = new Map((supps.data ?? []).map(r => [r.id, r.name]))
+  const suppByDay: Record<string, string[]> = {}
+  for (const r of suppLogs.data ?? []) {
+    const n = suppName.get(r.supplement_id)
+    if (!n) continue
+    if (!suppByDay[r.date]) suppByDay[r.date] = []
+    suppByDay[r.date].push(n)
+  }
+
   const context = {
-    цели:       { ккал: p.calories ?? null, протеин: p.protein ?? null, въглехидрати: p.carbs ?? null, мазнини: p.fat ?? null, цел: p.goal ?? null },
-    днес:       { ...totals, хранения: (todayFood.data ?? []).map(r => `${r.name} (${r.meal_type ?? '—'})`) },
-    седмица:    Object.entries(byDay).sort().map(([d, k]) => `${d}: ${Math.round(k)} ккал`),
-    навици:     Object.entries(habitDays).sort().map(([d, n]) => `${d}: ${n}`),
+    човекът: {
+      име: p.name ?? null, възраст: p.age ?? null, пол: p.gender ?? null,
+      височина_см: p.height_cm ?? null, активност: p.activity_level ?? null,
+      цел: p.goal ?? null, целево_тегло: p.target_weight ?? null,
+      ден_за_чекин: p.checkin_day ?? null,
+    },
+    цели: { ккал: p.calories ?? null, протеин: p.protein ?? null, въглехидрати: p.carbs ?? null, мазнини: p.fat ?? null },
+    днес: {
+      ...totals,
+      хранения: (todayFood.data ?? []).map(r => `${r.name} ${r.grams ?? '?'}г (${r.meal_type ?? '—'}) — ${Math.round(r.kcal ?? 0)} ккал`),
+      вода_чаши: (water.data ?? []).find(r => r.log_date === today)?.glasses ?? 0,
+    },
+    седмица_ккал: Object.entries(byDay).sort().map(([d, k]) => `${d}: ${Math.round(k)} ккал`),
+    вода: (water.data ?? []).sort((a, b) => a.log_date.localeCompare(b.log_date))
+            .map(r => `${r.log_date}: ${r.glasses} чаши`),
+    сън: (sleep.data ?? []).sort((a, b) => a.date.localeCompare(b.date))
+           .map(r => `${r.date}: ${r.duration_hours ?? '?'}ч, качество ${r.quality ?? '?'}/5`
+             + (r.energy ? `, енергия ${r.energy}` : '')
+             + (r.stress ? `, стрес ${r.stress}` : '')
+             + (r.soreness ? `, треска ${r.soreness}` : '')),
+    навици_по_дни: Object.entries(habitDays).sort().map(([d, n]) => `${d}: ${n} отметнати`),
+    навиците_му: Array.isArray(p.habits)
+      ? p.habits.map((h: { label?: string; id?: string }) => h?.label ?? h?.id).filter(Boolean)
+      : [],
     тренировки: (workouts.data ?? []).map(r => `${r.completed_date}: ${r.block_label ?? 'тренировка'}`),
-    тегло:      (weights.data ?? []).map(r => `${r.date}: ${r.kg} кг`),
+    упражнения: (exercises.data ?? []).map(r => `${r.date}: ${r.exercise_name} ${r.weight ?? '?'}кг × ${r.reps ?? '?'}`),
+    тегло: (weights.data ?? []).map(r => `${r.date}: ${r.kg} кг`),
+    добавки: (supps.data ?? []).filter(r => r.active !== false)
+      .map(r => `${r.name}${r.dose ? ` (${r.dose})` : ''}${r.timing ? ` — ${r.timing}` : ''}`),
+    добавки_взети: Object.entries(suppByDay).sort().map(([d, list]) => `${d}: ${list.join(', ')}`),
+    чекини: (checkin.data ?? []).map(r =>
+      `${r.date}: тегло ${r.weight_kg ?? '?'}кг, сън ${r.sleep_hours ?? '?'}ч, глад ${r.hunger ?? '?'}, стрес ${r.stress ?? '?'}, енергия ${r.energy ?? '?'}, храносмилане ${r.digestion ?? '?'}, стъпки ${r.steps_avg ?? '?'}`
+      + (r.weekly_win ? `; победа: ${r.weekly_win}` : '')
+      + (r.weekly_improve ? `; за подобряване: ${r.weekly_improve}` : '')),
+    насрочени: (sessions.data ?? []).map(r => `${r.scheduled_at}: ${r.title ?? 'тренировка'} (${r.status ?? '?'})`),
+    подготовка: prep.data
+      ? `${prep.data.competition_name ?? 'състезание'} на ${prep.data.competition_date ?? '?'}, цел ${prep.data.target_weight ?? '?'}кг`
+      : null,
+    бележки_на_треньора: p.coach_notes ?? null,
   }
 
   const mealList = (meals.data ?? []).map(m =>

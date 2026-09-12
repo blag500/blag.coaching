@@ -4,13 +4,42 @@
 .page {
   display: flex;
   flex-direction: column;
+  /* dvh, не vh: на телефон адресната лента и клавиатурата менят видимата
+     височина, а 100vh остава голямата — колоната става по-висока от екрана и
+     заглавието излиза отгоре. Старите браузъри падат обратно на vh. */
   height: 100vh;
+  height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
   /* Без запас за лентата: на този екран тя се прибира. Остава само
      безопасната зона и височината на клавиатурата, когато я има. */
   padding: 0 16px calc(12px + env(safe-area-inset-bottom) + var(--kb-inset, 0px));
   transition: padding-bottom 180ms var(--ease-out);
+}
+
+/* Връщането на махнатото балонче. Стои над разговора, защото е нещо, което
+   се прави веднъж и после изчезва — не част от писането. */
+.restore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 10px 0 2px;
+  padding: 9px 14px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: var(--r-pill);
+  background: rgba(var(--accent-rgb), 0.08);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.restore img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .feed {
