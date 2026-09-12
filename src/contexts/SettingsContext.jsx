@@ -26,9 +26,19 @@ export function SettingsProvider({ children }) {
      тук стои само отражението ѝ, за да може превключвателят да се пренарисува. */
   const [haptics, setHapticsState] = useState(hapticsEnabled)
 
+  /* Цветът на системната лента следва темата.
+     Беше закован на #0A0A0F в index.html — тоест в светлата тема телефонът
+     държеше почти черна ивица над едно светло приложение. Стойността се чете
+     от --bg на живо, за да има един източник: смени се темата в index.css и
+     лентата тръгва след нея, без да се пипа тук. */
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('blag_theme', theme)
+
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) return
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+    if (bg) meta.setAttribute('content', bg)
   }, [theme])
 
   /* При рендер, не в useEffect: Intl локалът трябва да е верен още докато

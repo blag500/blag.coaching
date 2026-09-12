@@ -71,6 +71,11 @@ const Tasks = lazy(() => import('./components/Tasks/Tasks'))
    Редът е същият, само първият адрес е друг. */
 const NAV_ORDER = ['feed', 'nutrition', 'training', 'profile']
 
+/* Кои раздели може да отвори кратък път от иконата. Отделен списък, а не
+   ключовете на `pages`: там стоят и страници, които нямат смисъл като вход —
+   чат без събеседник, награди, панелът на треньора. */
+const SHORTCUT_TABS = ['nutrition', 'training', 'compliance', 'feed', 'profile']
+
 
 /* Чакането, докато една отложена страница пристига. Същата точка, която стои
    и докато сесията се чете — за човека това е едно и също събитие. */
@@ -88,7 +93,17 @@ const GOAL_KEY = { cut: 'goal.cut', maintain: 'goal.maintain', bulk: 'goal.bulk'
 function AppShell() {
   const { session, profile, loading, selectPlan, refreshProfile } = useAuth()
   const [splash, setSplash] = useState(true)
-  const [activeTab, setActiveTab] = useState('feed')
+  /* Откъде тръгва приложението.
+     Обикновено от фийда — но иконата на телефона вече има кратки пътища
+     („Впиши храна", „Тренировка", „Навици") и те стигат дотук като ?tab=.
+     Чете се веднъж, при тръгване: оттам нататък разделите са състояние, не
+     адрес, и параметър, който виси в лентата, би връщал човека обратно при
+     всяко презареждане. Проверката срещу списъка е задължителна — това е
+     стойност от адреса, тоест може да е каквото и да е. */
+  const [activeTab, setActiveTab] = useState(() => {
+    const want = new URLSearchParams(window.location.search).get('tab')
+    return SHORTCUT_TABS.includes(want) ? want : 'feed'
+  })
   const [slideDir, setSlideDir] = useState('up')
   const pagerRef = useRef(null)
   const [drawerOpen, setDrawerOpen] = useState(false)

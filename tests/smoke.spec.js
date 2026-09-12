@@ -31,7 +31,7 @@ test.describe('Влизане и навигация', () => {
     const nav = page.locator('nav').first()
     await expect(nav).toBeVisible()
     // Четири раздела и бутонът за действие между тях.
-    for (const label of ['ФИЙД', 'ХРАНЕНЕ', 'ТРЕНИРОВКА', 'ПРОФИЛ']) {
+    for (const label of ['ПОТОК', 'ХРАНЕНЕ', 'ТРЕНИРОВКА', 'ПРОФИЛ']) {
       await expect(nav.locator('button', { hasText: label }).first()).toBeVisible()
     }
   })
@@ -44,7 +44,7 @@ test.describe('Влизане и навигация', () => {
     await expect(page.getByText('НАВИЦИ ДНЕС')).toBeVisible()
 
     await goTab(page, 'ТРЕНИРОВКА')
-    await goTab(page, 'ФИЙД')
+    await goTab(page, 'ПОТОК')
   })
 })
 
@@ -95,7 +95,7 @@ test.describe('Теми', () => {
       test.setTimeout(60000)
       await enterApp(page, { theme })
 
-      const tab = page.locator('nav').first().locator('button', { hasText: 'ФИЙД' }).first()
+      const tab = page.locator('nav').first().locator('button', { hasText: 'ПОТОК' }).first()
       const rgb = await tab.evaluate(el => getComputedStyle(el).color)
       const [r, g, b] = rgb.match(/[\d.]+/g).map(Number)
       const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255

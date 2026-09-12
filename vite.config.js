@@ -42,6 +42,32 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
+        /* Задържане на иконата отваря трите неща, заради които приложението
+           се отваря изобщо. Дотук всеки път беше „влез, изчакай сплаша,
+           намери таба" — три докосвания за нещо, което е едно.
+
+           Адресите носят ?tab=, защото навигацията тук е състояние, не
+           маршрути; App.jsx чете параметъра веднъж при тръгване. */
+        shortcuts: [
+          {
+            name: 'Впиши храна',
+            short_name: 'Храна',
+            url: '/?tab=nutrition',
+            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+          {
+            name: 'Тренировка',
+            short_name: 'Тренировка',
+            url: '/?tab=training',
+            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+          {
+            name: 'Навици',
+            short_name: 'Навици',
+            url: '/?tab=compliance',
+            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+        ],
       },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,jpeg,jpg,webp}'],

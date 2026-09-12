@@ -23,7 +23,7 @@ export default {
   'nav.supplements':  'СУПЛЕМЕНТИ',
   'nav.rewards':      'НАГРАДИ',
   'nav.shop':         'МАГАЗИН',
-  'nav.feed':         'ФИЙД',
+  'nav.feed':         'ПОТОК',
 
   // ── Фийд ──────────────────────────────────────────────────────────
   'feed.composer.placeholder': 'Как мина денят?',
