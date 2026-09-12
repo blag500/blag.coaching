@@ -39,6 +39,15 @@ Deploy by pushing to the main branch (Netlify / static host watching the repo). 
 
 **Push notifications:** `usePushNotifications` hook registers the browser for Web Push and stores the subscription in Supabase (`push_subscriptions` table). The `send-push` Deno Edge Function (VAPID via `web-push`) sends notifications when messages are sent.
 
+**Blag Bot** (`supabase/functions/blag-bot`): answers questions over the person's
+own logged data, and reads a sentence like "изядох 200 г извара" into draft food
+rows the person confirms with one tap. `supabase/functions/bot-watch` is the
+nightly pass (21:00 Sofia, pg_cron → `fire_bot_watch()`): it computes a handful
+of rules and, when one fires, opens an unread chat with one observation. The
+rules are computed in TypeScript — the model only puts a sentence around a
+number it is given. `?dry=1` reports which rule would fire without calling the
+model; `?dry=2` also returns the wording without writing anything.
+
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
 ## Testing

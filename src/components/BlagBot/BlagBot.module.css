@@ -388,6 +388,9 @@
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  /* Заема остатъка, за да може точката за непрочетено да отиде в другия край
+     на реда: залепена за заглавието, тя изглежда като част от него. */
+  flex: 1;
 }
 
 /* Заглавието е първият въпрос — дълъг е и трябва да се реже на един ред,
@@ -625,4 +628,23 @@
   color: var(--text-dim);
   opacity: 0.72;
   padding-left: 4px;
+}
+
+/* Непрочетен разговор. Точката е в края на реда, където окото свършва
+   заглавието — не в началото, където би избутала лицето. */
+.chatUnread {
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+.chatUnread .chatTitle {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.chatDot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
 }

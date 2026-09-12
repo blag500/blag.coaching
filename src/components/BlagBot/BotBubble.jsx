@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './BotBubble.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
 import { haptic } from '../../lib/haptics'
+import { useBotUnread } from '../../hooks/useBotUnread'
 import Pictogram from '../Pictogram/Pictogram'
 import { loadPos, savePos, isHidden, setHidden, DEFAULT_POS } from './botBubbleStore'
 
@@ -46,6 +47,10 @@ const DROP_REACH  = 62   // от колко близо се смята за уц
 
 export default function BotBubble({ activeTab, onOpen }) {
   const { t } = useSettings()
+  /* Колко непрочетени наблюдения чакат. Ботът отваря разговори сам веднъж
+     вечерта и това е единственият знак за тях — нищо не се изпраща като
+     известие. */
+  const unread = useBotUnread()
 
   const [hidden, setHiddenState] = useState(isHidden)
   const [pos, setPos]      = useState(loadPos)
@@ -267,6 +272,9 @@ export default function BotBubble({ activeTab, onOpen }) {
         aria-label={t('nav.bot')}
       >
         <img src="/bot.webp" alt="" width="34" height="34" draggable="false" />
+        {/* Точката, а не число: „три непрочетени" кара човека да ги брои,
+            вместо да ги отвори. А наблюдението е едно на вечер. */}
+        {unread > 0 && !armed && <span className={styles.dot} aria-hidden="true" />}
       </button>
     </>
   )

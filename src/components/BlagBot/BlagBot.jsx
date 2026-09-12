@@ -362,7 +362,7 @@ export default function BlagBot({ open, from = null, onClose }) {
   useEffect(() => {
     if (!open || !user?.id) return
     supabase.from('bot_chats')
-      .select('id, title, updated_at')
+      .select('id, title, updated_at, unread, kind')
       .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
       .limit(30)
@@ -374,6 +374,17 @@ export default function BlagBot({ open, from = null, onClose }) {
   async function openChat(id) {
     setChatId(id)
     setLoadingChat(true)
+
+    /* Прочетено значи прочетено: точката на балончето пада още преди редовете
+       да са дошли. Човекът е отворил разговора — оттук нататък точката е лъжа,
+       а точка, която не си отива, спира да значи нещо. */
+    const row = chats.find(c => c.id === id)
+    if (row?.unread) {
+      setChats(prev => prev.map(c => c.id === id ? { ...c, unread: false } : c))
+      supabase.from('bot_chats').update({ unread: false }).eq('id', id)
+        .then(() => window.dispatchEvent(new CustomEvent('blag:bot-read')), () => {})
+    }
+
     const { data } = await supabase.from('bot_messages')
       .select('id, role, content')
       .eq('chat_id', id)
@@ -548,12 +559,23 @@ export default function BlagBot({ open, from = null, onClose }) {
           {chats.length > 0 && <span className={styles.chatsHead}>{t('bot.earlier')}</span>}
 
           {chats.map(c => (
-            <button key={c.id} type="button" className={styles.chatRow} onClick={() => openChat(c.id)}>
+            <button
+              key={c.id}
+              type="button"
+              className={`${styles.chatRow} ${c.unread ? styles.chatUnread : ''}`}
+              onClick={() => openChat(c.id)}
+            >
               <img src="/bot.webp" alt="" width="26" height="26" />
               <span className={styles.chatText}>
                 <span className={styles.chatTitle}>{c.title || t('bot.newChat')}</span>
-                <span className={styles.chatWhen}>{when(c.updated_at, t)}</span>
+                <span className={styles.chatWhen}>
+                  {/* Разговор, който ботът е започнал сам, си го казва: човек,
+                      който вижда непознато заглавие, иска да знае кой го е
+                      отворил, преди да го прочете. */}
+                  {c.kind === 'watch' ? `${t('bot.noticed')} · ` : ''}{when(c.updated_at, t)}
+                </span>
               </span>
+              {c.unread && <span className={styles.chatDot} aria-label={t('bot.unread')} />}
             </button>
           ))}
 

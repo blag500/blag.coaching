@@ -16,3 +16,10 @@ verify_jwt = false
 # сам със STREAK_SECRET в адреса.
 [functions.streak-guard]
 verify_jwt = false
+
+# bot-watch се вика от разписанието в базата, точно като горните две: без
+# Authorization header, значи без JWT проверка. Пази се сам с REMINDER_SECRET
+# в адреса. Без този ред всяко пускане на функцията връща подразбирането и
+# нощната обиколка спира тихо.
+[functions.bot-watch]
+verify_jwt = false

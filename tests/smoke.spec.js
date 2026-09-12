@@ -996,3 +996,40 @@ test.describe('Паметта на бота', () => {
     await expect(page.getByText('тренира сутрин')).toBeVisible()
   })
 })
+
+test.describe('Ботът се обажда сам', () => {
+  test('точка на балончето, знак в списъка, и отбелязване при отваряне', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(2000)
+
+    /* Наблюдението чака като точка на балончето, не като известие: известие с
+       такова съдържание се изключва заедно с всички останали. */
+    const bubble = page.locator('button[aria-label="БЛАГ БОТ"]')
+    await expect(bubble.locator('span')).toBeVisible()
+
+    /* Отбелязването минава през мрежата — хваща се оттам. */
+    let marked = false
+    page.on('request', r => {
+      if (r.method() === 'PATCH' && r.url().includes('bot_chats')
+          && (r.postData() || '').includes('"unread":false')) marked = true
+    })
+
+    await bubble.click()
+    await page.waitForTimeout(1000)
+
+    // Разговорът си казва, че ботът го е започнал.
+    await expect(page.getByText('Три пъти в четвъртък')).toBeVisible()
+    await expect(page.getByText('забелязах', { exact: false }).first()).toBeVisible()
+
+    await page.getByText('Три пъти в четвъртък').click()
+    await page.waitForTimeout(900)
+    await expect(page.getByText('Пропуснал си тренировката')).toBeVisible()
+
+    /* Прочетено значи прочетено. Проверява се по заявката, а не по точката:
+       макетът не прилага филтри при четене, значи `unread = true` продължава
+       да връща реда и точката не може да си отиде тук. Затова се гледа това,
+       което приложението наистина прави — отбелязва разговора. */
+    expect(marked).toBe(true)
+  })
+})

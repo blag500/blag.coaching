@@ -22,7 +22,9 @@
      Рамка влиза в същите 52 (box-sizing е border-box за всичко). */
   border: 2px solid rgba(var(--accent-rgb), 0.85);
   border-radius: 50%;
-  overflow: hidden;
+  /* Кръгът се прави от снимката, не от отрязване на балончето: с
+     `overflow: hidden` точката за непрочетено, която стърчи в горния ъгъл,
+     се отрязваше наполовина и изглеждаше като драскотина по канта. */
   cursor: pointer;
   /* Пръстенът е в цвета на темата, а не в едно злато за трите: в стъклената
      тема топлото злато изглежда като взето назаем от друго приложение. */
@@ -45,6 +47,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .bubble:active { transform: scale(0.9); }
@@ -141,4 +144,25 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dock { transition: none }
+}
+
+/* Точката: чака нещо непрочетено.
+   Горе вдясно на балончето, извън снимката — върху лицето би изглеждала като
+   част от него. Цветът е акцентът на темата, а не червено: това не е грешка и
+   не е спешно, а забелязано нещо. */
+.dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  animation: dotIn 320ms var(--ease-spring-soft) backwards;
+}
+
+@keyframes dotIn {
+  from { opacity: 0; transform: scale(0.2) }
+  to   { opacity: 1; transform: scale(1)   }
 }

@@ -27,6 +27,8 @@ export default {
   "bot.mem.forget": "Forget this",
   "bot.mem.hint": "Remove a line that is not true.",
   "bot.from": "from:",
+  "bot.noticed": "noticed",
+  "bot.unread": "unread",
   "bot.newChat": "New chat",
   "bot.earlier": "EARLIER",
   "bot.noChats": "No chats yet.",

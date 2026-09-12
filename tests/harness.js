@@ -168,6 +168,22 @@ export const TABLES = {
     events_seen: 4,
     messages_seen: 8,
   }],
+  /* Разговор, който ботът е отворил сам през нощта, и чака непрочетен. */
+  bot_chats: [{
+    id: 'w1',
+    user_id: USER_ID,
+    title: 'Три пъти в четвъртък',
+    kind: 'watch',
+    unread: true,
+    updated_at: new Date(Date.now() - 3 * 3600e3).toISOString(),
+  }],
+  bot_messages: [{
+    id: 'wm1',
+    user_id: USER_ID,
+    chat_id: 'w1',
+    role: 'bot',
+    content: 'Пропуснал си тренировката в четвъртък три пъти подред, а в другите дни тренираш. Пробвай да я преместиш в сряда вечер.',
+  }],
   exercise_aliases: [],
   exercise_library: [
     { id: 'el1', user_id: USER_ID, name: 'Дъмбели на наклон', folder: 'Заместители за гърди', scheme: '3 × 8–10', muscle: 'chest', created_at: new Date().toISOString() },
