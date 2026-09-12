@@ -14,6 +14,47 @@ self.addEventListener('message', event => {
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
 
+/* Снимка, споделена отвън.
+ *
+ * Телефонът праща multipart POST на /share — адрес, който не съществува като
+ * страница и не бива да стига до мрежата. Тук се разглобява, снимката се
+ * оставя в собствен cache и браузърът се праща на /?share=1.
+ *
+ * Защо през cache, а не през postMessage: в мига на този POST приложението
+ * най-често още не е отворено — няма на кого да се прати съобщение. Cache-ът
+ * е единственото място, което преживява стартирането.
+ *
+ * 303, а не 302: така презареждането на страницата след това е GET, иначе
+ * телефонът би повторил POST-а и снимката щеше да се впише два пъти.
+ */
+const SHARE_CACHE = 'blag-shared'
+const SHARE_KEY   = '/__shared-photo'
+
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url)
+  if (event.request.method !== 'POST' || url.pathname !== '/share') return
+
+  event.respondWith((async () => {
+    try {
+      const form  = await event.request.formData()
+      const photo = form.get('photo')
+      if (photo && photo.size > 0) {
+        const cache = await caches.open(SHARE_CACHE)
+        await cache.put(SHARE_KEY, new Response(photo, {
+          headers: {
+            'content-type': photo.type || 'image/jpeg',
+            'x-blag-name':  encodeURIComponent(photo.name || 'shared.jpg'),
+          },
+        }))
+      }
+    } catch {
+      /* Счупен POST не бива да оставя човека на бял екран — пращаме го в
+         приложението без снимка, а не в грешка. */
+    }
+    return Response.redirect('/?share=1', 303)
+  })())
+})
+
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com',
   new CacheFirst({ cacheName: 'google-fonts-cache' })

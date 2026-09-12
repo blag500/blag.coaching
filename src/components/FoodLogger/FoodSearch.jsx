@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { searchFoods } from '../../utils/openFoodFacts'
+import { arrivedFromShare, takeSharedPhoto, clearShareParam } from '../../lib/sharedPhoto'
 import RecipeList from '../Recipes/RecipeList'
 import MealBot from '../MealBot/MealBot'
 import BarcodeScanner from './BarcodeScanner'
@@ -309,10 +310,32 @@ function AiMode({ onAdd, onAddRaw, meal, onMealChange, onAdded, onScanBarcode })
     onAdded?.()
   }
 
+  /* Снимка, дошла през листа за споделяне на телефона.
+     Веднъж, при първото рисуване на този екран: приложението току-що е
+     тръгнало заради самото споделяне, значи разпознаването започва само —
+     човекът вече е казал какво иска, когато е избрал Blag в листа. */
+  useEffect(() => {
+    if (!arrivedFromShare()) return
+    let alive = true
+    takeSharedPhoto().then(file => {
+      clearShareParam()
+      if (alive && file) analyseFoodPhoto(file)
+    })
+    return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   async function handleFoodPhoto(e) {
     const file = e.target.files?.[0]
     if (!file) return
     e.target.value = ''
+    return analyseFoodPhoto(file)
+  }
+
+  /* Разпознаването, отделено от полето.
+     Снимката идва по два пътя — от бутона тук и от листа за споделяне на
+     телефона — а оттам нататък е едно и също. */
+  async function analyseFoodPhoto(file) {
     setFoodPhotoLoading(true)
     setError(null)
     setResult(null)

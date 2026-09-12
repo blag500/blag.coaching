@@ -101,7 +101,11 @@ function AppShell() {
      всяко презареждане. Проверката срещу списъка е задължителна — това е
      стойност от адреса, тоест може да е каквото и да е. */
   const [activeTab, setActiveTab] = useState(() => {
-    const want = new URLSearchParams(window.location.search).get('tab')
+    const q = new URLSearchParams(window.location.search)
+    /* Споделена отвън снимка е храна: разпознаването живее на ХРАНЕНЕ и
+       самият екран я поема, щом се нарисува. */
+    if (q.get('share') === '1') return 'nutrition'
+    const want = q.get('tab')
     return SHORTCUT_TABS.includes(want) ? want : 'feed'
   })
   const [slideDir, setSlideDir] = useState('up')
