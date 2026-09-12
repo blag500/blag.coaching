@@ -845,13 +845,13 @@ test.describe('Историята на разговорите', () => {
     await page.waitForTimeout(900)
     await expect(page.getByText('Нов разговор').first()).toBeVisible()
     // В списъка полето е скрито: написаното там няма къде да отиде.
-    await expect(page.locator('input[placeholder="Питай ме нещо"]')).toBeHidden()
+    await expect(page.locator('textarea[placeholder="Питай ме нещо"]')).toBeHidden()
     await page.screenshot({ path: 'shots/tmp-chatlist.png' })
 
     await page.getByText('Нов разговор').first().click()
     await page.waitForTimeout(500)
     await expect(page.getByText('Аз съм Благ Бот.')).toBeVisible()
-    await expect(page.locator('input[placeholder="Питай ме нещо"]')).toBeVisible()
+    await expect(page.locator('textarea[placeholder="Питай ме нещо"]')).toBeVisible()
   })
 })
 
@@ -926,7 +926,7 @@ test.describe('Вписване с думи', () => {
     await page.getByText('Нов разговор').first().click()
     await page.waitForTimeout(500)
 
-    await page.locator('input[placeholder="Питай ме нещо"]').fill('изядох 200 г извара')
+    await page.locator('textarea[placeholder="Питай ме нещо"]').fill('изядох 200 г извара')
     await page.keyboard.press('Enter')
     await page.waitForTimeout(1200)
 
@@ -959,7 +959,7 @@ test.describe('Вписване с думи', () => {
     await page.getByText('Нов разговор').first().click()
     await page.waitForTimeout(500)
 
-    await page.locator('input[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
+    await page.locator('textarea[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
     await page.keyboard.press('Enter')
     await page.waitForTimeout(1200)
     // Без карта и без бутон за вписване: това е отговор, не предложение.
@@ -1048,7 +1048,7 @@ test.describe('Ботът без мрежа', () => {
     await page.route('**/functions/v1/blag-bot**', r => r.abort())
     await context.setOffline(true)
   
-    await page.locator('input[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
+    await page.locator('textarea[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
     await page.keyboard.press('Enter')
     await page.waitForTimeout(1500)
     await expect(page.getByText('чака мрежа')).toBeVisible()
@@ -1092,7 +1092,7 @@ test.describe('Диктуване', () => {
     await page.getByText('Нов разговор').first().click()
     await page.waitForTimeout(500)
 
-    const input = page.locator('input[placeholder="Питай ме нещо"]')
+    const input = page.locator('textarea[placeholder="Питай ме нещо"]')
     await input.fill('днес')
 
     await page.locator('button[aria-label="Диктувай"]').click()
@@ -1159,7 +1159,7 @@ test.describe('Паднал отговор', () => {
     await page.route('**/functions/v1/blag-bot**', r =>
       r.fulfill({ status: 500, body: '{"error":"no answer"}' }))
 
-    await page.locator('input[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
+    await page.locator('textarea[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
     await page.keyboard.press('Enter')
     await page.waitForTimeout(1500)
 
@@ -1178,5 +1178,55 @@ test.describe('Паднал отговор', () => {
     await expect(page.getByText('Опитай пак')).toHaveCount(0)
     // И без второ мехурче: това е същият въпрос, не втори.
     await expect(asked).toHaveCount(2)
+  })
+})
+
+test.describe('Полето за питане', () => {
+  test('полето расте и се спира', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+  
+    const box = page.locator('textarea[placeholder="Питай ме нещо"]')
+    const h = async () => (await box.boundingBox()).height
+  
+    const one = await h()
+    await box.fill('Дали разликата в теглото се дължи на това, че съм вдигнал въглехидратите, или просто на водата')
+    await page.waitForTimeout(300)
+    const many = await h()
+  
+    await box.fill('А'.repeat(400))
+    await page.waitForTimeout(300)
+    const capped = await h()
+  
+    expect(many).toBeGreaterThan(one + 10)
+    expect(capped).toBeLessThanOrEqual(132)
+    expect(capped).toBeGreaterThan(many - 1)
+  
+    // Празното поле се свива обратно.
+    await box.fill('')
+    await page.waitForTimeout(300)
+    expect(Math.abs(await h() - one)).toBeLessThan(3)
+  })
+})
+
+test.describe('Изход от нишката', () => {
+  test('изход от нишката', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(1000)
+    await page.getByText('Три пъти в четвъртък').click()
+    await page.waitForTimeout(900)
+  
+    // Лист и молив — обратно към списъка, откъдето започва и новото, и старото.
+    await page.locator('button[aria-label="всички разговори"]').click()
+    await page.waitForTimeout(600)
+    await expect(page.getByText('Нов разговор')).toBeVisible()
   })
 })

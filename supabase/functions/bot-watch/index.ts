@@ -56,6 +56,24 @@ const VOICE = `Ти си Благ Бот — помощникът в прило�
 
 Отговаряш само с двете изречения.`
 
+/* Езикът на наблюдението. Същият похват като в разговора: подканата остава на
+   български, а езикът на изхода се казва накрая. Наблюдението е две изречения —
+   превод на цяла подкана заради тях би бил втора подкана, която се разминава с
+   първата при всяка поправка. */
+const LANG_LINE: Record<string, string> = {
+  bg: '',
+  en: `\n\nВАЖНО: Пиши двете изречения на АНГЛИЙСКИ език.`,
+}
+
+/* Заглавията на правилата, на двата езика. Заглавието стои в списъка с
+   разговорите и се чете от човека — то не е вътрешно име. */
+const TITLES: Record<string, { bg: string; en: string }> = {
+  protein:        { bg: 'Белтъкът три дни',   en: 'Protein, three days' },
+  weight_flat:    { bg: 'Теглото стои',       en: 'Weight is flat' },
+  water:          { bg: 'Водата четири дни',  en: 'Water, four days' },
+  checkin:        { bg: 'Чекинът е закъснял', en: 'Check-in is overdue' },
+}
+
 /* Свиването на научено.
    Живее тук, а не в разговора: работата след отговора се пуска заедно с
    изолата, който го е изпратил („Shutdown: EarlyDrop" в дневниците), и просто
@@ -177,7 +195,7 @@ function ruleProtein(p: any, byDay: Record<string, { protein: number }>): Findin
   return {
     rule: 'protein',
     payload: { target, days, vals },
-    title: 'Белтъкът три дни',
+    title: 'Белтъкът три дни',   // преведено при писането през TITLES
     fact: `Белтъкът му е под 70% от целта три дни подред: ${vals.map(v => Math.round(v as number)).join(', ')} г при цел ${target} г. Средно ${avg} г.`,
   }
 }
@@ -196,7 +214,7 @@ function ruleWeightFlat(p: any, weights: any[], trained: number): Finding | null
   return {
     rule: 'weight_flat',
     payload: { first, last, days: 14, goal },
-    title: 'Теглото стои',
+    title: 'Теглото стои',   // преведено при писането през TITLES
     /* Двете числа се дават заедно с това какво значат.
        Първият опит подаваше само „74 кг преди, 74.2 кг сега" и моделът написа
        „теглото ти се е увеличило с 0.2 кг" — тоест превърна шума в посока.
@@ -226,7 +244,7 @@ function ruleWater(water: any[]): Finding | null {
   return {
     rule: 'water',
     payload: { target, days, vals },
-    title: 'Водата четири дни',
+    title: 'Водата четири дни',   // преведено при писането през TITLES
     fact: `Водата му е под половината от целта четири дни подред: ${vals.join(', ')} чаши при цел ${target}.`,
   }
 }
@@ -252,7 +270,7 @@ function ruleMissedWorkout(workouts: any[]): Finding | null {
       const names = ['неделя', 'понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота']
       return {
         rule: 'missed_workout',
-        payload: { dow, dates },
+        payload: { dow, dates, day: names[dow] },
         title: `Три пъти в ${names[dow]}`,
         fact: `Пропуснал е тренировката в ${names[dow]} три пъти подред (${dates.reverse().join(', ')}), а в другите дни тренира.`,
       }
@@ -278,7 +296,7 @@ function ruleCheckin(p: any, checkins: any[]): Finding | null {
   return {
     rule: 'checkin',
     payload: { last, passed },
-    title: 'Чекинът е закъснял',
+    title: 'Чекинът е закъснял',   // преведено при писането през TITLES
     fact: `Последният му чекин е преди ${passed} дни, а е седмичен.`,
   }
 }
@@ -291,7 +309,7 @@ function ruleCheckin(p: any, checkins: any[]): Finding | null {
  *  оказа) не се случваха изобщо.
  */
 // deno-lint-ignore no-explicit-any
-async function maintain(admin: any, apiKey: string, uid: string) {
+async function maintain(admin: any, apiKey: string, uid: string, lang = 'bg') {
   /* ── Научено ── */
   try {
     const [prof, { count: evCount }, { count: msgCount }] = await Promise.all([
@@ -321,7 +339,15 @@ async function maintain(admin: any, apiKey: string, uid: string) {
       ])
 
       const distilled = await ask(apiKey, [
-        { role: 'system', content: DISTILL },
+        { role: 'system', content: DISTILL + (lang === 'en'
+          /* Паметта се води на езика, на който човекът говори сега — заедно с
+             пренесените стари редове. Иначе, който смени езика, получава памет
+             наполовина на единия и наполовина на другия и не може да я
+             прочете, за да я поправи. Цената е, че пренесен ред минава през
+             превод — но редовете са къси, а изборът е между леко изменен ред и
+             ред, който собственикът му не разбира. */
+          ? '\n\nВАЖНО: Пиши всички редове на АНГЛИЙСКИ. Ако ДОСЕГА е на български, преведи редовете, които запазваш.'
+          : '\n\nВАЖНО: Пиши всички редове на БЪЛГАРСКИ. Ако ДОСЕГА е на английски, преведи редовете, които запазваш.') },
         {
           role: 'user',
           content:
@@ -362,7 +388,7 @@ async function maintain(admin: any, apiKey: string, uid: string) {
       if (!all || all.length < 6) continue
 
       const made = await ask(apiKey, [
-        { role: 'system', content: TITLE },
+        { role: 'system', content: TITLE + (lang === 'en' ? '\n\nВАЖНО: Заглавието е на АНГЛИЙСКИ.' : '') },
         { role: 'user', content: all.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join('\n') },
       ], 400)
       if (!made) continue
@@ -410,7 +436,7 @@ Deno.serve(async (req) => {
      просто не се задейства, така че разширяването не струва нищо на онзи, който
      не си води. */
   const { data: people } = await admin.from('profiles')
-    .select('id, name, protein, goal, checkin_day, role')
+    .select('id, name, protein, goal, checkin_day, role, lang')
     .in('role', ['client', 'coach'])
 
   const out: Record<string, unknown>[] = []
@@ -459,15 +485,19 @@ Deno.serve(async (req) => {
       /* Поддръжката върви за всеки, независимо дали има какво да се каже: човек,
          който само пита и никога не получава наблюдение, също трябва да бъде
          запомнен. */
-      if (!dry) await maintain(admin, apiKey, uid)
+      if (!dry) await maintain(admin, apiKey, uid, p.lang === 'en' ? 'en' : 'bg')
 
       const pick = ORDER.map(r => found[r]).find(f => f && !said(f.rule)) ?? null
       if (!pick) { out.push({ uid, picked: null }); continue }
 
       if (dry) { out.push({ uid, picked: pick.rule, fact: pick.fact }); continue }
 
+      /* Езикът на човека. Празно значи български: приложението го записва при
+         всяка смяна, а който не го е пипал, е на български. */
+      const lang = p.lang === 'en' ? 'en' : 'bg'
+
       const text = await ask(apiKey, [
-        { role: 'system', content: VOICE },
+        { role: 'system', content: VOICE + LANG_LINE[lang] },
         { role: 'user', content: `НАБЛЮДЕНИЕ\n${pick.fact}` },
       ])
       if (!text) { out.push({ uid, picked: pick.rule, error: 'no answer' }); continue }
@@ -482,7 +512,11 @@ Deno.serve(async (req) => {
            Прекрояването в blag-bot гледа този флаг — иначе, отговори ли човекът
            пет-шест реплики, „Три пъти в четвъртък" щеше да бъде заменено с
            преразказ на разговора. */
-        .insert({ user_id: uid, title: pick.title, kind: 'watch', unread: true, title_auto: true })
+        .insert({
+          user_id: uid,
+          title: TITLES[pick.rule]?.[lang] ?? pick.title,
+          kind: 'watch', unread: true, title_auto: true,
+        })
         .select('id').single()
 
       if (chat) {

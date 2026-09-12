@@ -33,6 +33,10 @@ import styles from './BlagBot.module.css'
 
 const MAX_Q = 500
 
+/* Пет реда. Над това полето започва да изяжда разговора — а въпросът се пише
+   спрямо това, което ботът току-що е казал. Оттам нататък се скролва вътре. */
+const MAX_ROWS_PX = 128
+
 // ─── Паметта на разговора, за да не започва от нула при всяко влизане ────────
 
 function todayStr() {
@@ -84,8 +88,31 @@ const SOURCE_NAMES = {
   'бележки_на_треньора': 'бележките на Николай',
 }
 
-function sourceName(key) {
-  return SOURCE_NAMES[key] ?? String(key).replace(/_/g, ' ')
+/* Същите раздели, както се казват на английски. Ключовете остават български —
+   те идват от сървъра и са вътрешни имена, а не текст за четене. */
+const SOURCE_NAMES_EN = {
+  'днес':            'today’s log',
+  'седмица_ккал':    'the week',
+  'вода':            'water',
+  'сън':             'sleep',
+  'тегло':           'weight',
+  'упражнения':      'your lifts',
+  'тренировки':      'training',
+  'навици_по_дни':   'habits',
+  'навиците_му':     'habits',
+  'чекини':          'check-ins',
+  'добавки':         'supplements',
+  'добавки_взети':   'supplements',
+  'цели':            'your targets',
+  'човекът':         'your profile',
+  'насрочени':       'the schedule',
+  'подготовка':      'prep',
+  'бележки_на_треньора': 'notes from Nikolay',
+}
+
+function sourceName(key, lang) {
+  const map = lang === 'en' ? SOURCE_NAMES_EN : SOURCE_NAMES
+  return map[key] ?? String(key).replace(/_/g, ' ')
 }
 
 // ─── Мехурчета ───────────────────────────────────────────────────────────────
@@ -159,7 +186,7 @@ function DraftCard({ plan, state, onLog, onSkip, t }) {
   )
 }
 
-function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, sources, t }) {
+function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, sources, lang, t }) {
   return (
     /* С карта редът става висок и лицето, центрирано по средата, отива до
        картата вместо до думите. А то е бутонът за свиване — мястото му е при
@@ -179,7 +206,7 @@ function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, 
             може да провери него, а не да избира между вяра и отказ. */}
         {sources?.length > 0 && (
           <span className={styles.sources}>
-            {t('bot.from')} {sources.map(sourceName).join(' · ')}
+            {t('bot.from')} {sources.map(k => sourceName(k, lang)).join(' · ')}
           </span>
         )}
       </div>
@@ -374,6 +401,18 @@ export default function BlagBot({ open, from = null, onClose }) {
   const feedRef  = useRef(null)
   const inputRef = useRef(null)
 
+  /* Височината на полето следва текста.
+     Мери се от самото съдържание (`scrollHeight`), защото броят редове зависи
+     от ширината на екрана и от това къде се пречупват думите — пресмятане по
+     брой знаци греши на всяка втора дума. Нулирането преди мерене е нужно:
+     иначе полето помни старата си височина и никога не се свива обратно. */
+  useLayoutEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, MAX_ROWS_PX)}px`
+  }, [draft, open, chatId])
+
   /* Диктуване. Чутото се долепя към написаното, а не го замества: човек, който
      е почнал да пише и е решил да продължи с говорене, не иска да си изтрие
      началото. */
@@ -392,7 +431,10 @@ export default function BlagBot({ open, from = null, onClose }) {
      човекът натисне, и когато мрежата се върне и опашката тръгне. */
   async function send(question, id, msgId) {
     const { data, error } = await supabase.functions.invoke('blag-bot', {
-      body: { question, chatId: id },
+      /* Езикът пътува с въпроса, а не се чете от профила: настройката се сменя
+         на телефона и трябва да важи от следващата реплика, не от следващото
+         влизане. */
+      body: { question, chatId: id, lang },
     })
     if (error) throw error
 
@@ -684,6 +726,23 @@ export default function BlagBot({ open, from = null, onClose }) {
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
+          {/* Изход от нишката.
+              Заглавието горе е бутон към списъка, но заглавие, което е и бутон,
+              не изглежда като бутон — човек, влязъл в разговор, отворен от
+              бота, се оказва в задънена улица: нито нов разговор, нито старите.
+              Затова изрично: лист и молив до стрелката. Води на едно място —
+              списъка, откъдето започва и новото, и старото. */}
+          {chatId && (
+            <button
+              type="button"
+              className={styles.toList}
+              onClick={() => { haptic('tap'); setChatId(null); setMessages([]) }}
+              aria-label={t('bot.allChats')}
+            >
+              <Pictogram name="compose" size={18} />
+            </button>
+          )}
+
           {chatId ? (
             /* Назад към списъка. Заглавието е самата нишка — оттам се вижда
                кой разговор четеш, без да се брои назад по репликите. */
@@ -796,6 +855,7 @@ export default function BlagBot({ open, from = null, onClose }) {
                   onLog={() => logPlan(m.id, m.plan)}
                   onSkip={() => skipPlan(m.id, m.plan)}
                   sources={m.sources}
+                  lang={lang}
                   t={t}
                 />
               : <UserBubble
@@ -821,12 +881,20 @@ export default function BlagBot({ open, from = null, onClose }) {
       )}
 
       <div className={styles.askRow} hidden={!chatId}>
-        <input
+        {/* Поле, което расте с текста.
+            На един ред дълъг въпрос се вижда с последните си шест думи, а
+            началото му го няма — човекът пише наслуки и не може да се поправи.
+            Расте до пет реда и оттам нататък се скролва: поле, което расте без
+            край, изяжда разговора и накрая екранът е само празно поле. */}
+        <textarea
           ref={inputRef}
+          rows={1}
           className={styles.askInput}
           value={draft}
           onChange={e => setDraft(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); ask() } }}
+          /* Enter праща, Shift+Enter слага нов ред — както е в чата с
+             Николай. */
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() } }}
           placeholder={t('bot.placeholder')}
           maxLength={MAX_Q}
           disabled={asking}

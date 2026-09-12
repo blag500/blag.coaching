@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { syncLocale, tr } from '../utils/locale'
 import { hapticsEnabled, setHapticsEnabled } from '../lib/haptics'
+import { supabase } from '../lib/supabase'
 
 const SettingsContext = createContext(null)
 
@@ -49,6 +50,18 @@ export function SettingsProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('blag_lang', lang)
     document.documentElement.setAttribute('lang', lang)
+
+    /* Езикът се оставя и на сървъра.
+       Ботът вече говори и сам: нощната обиколка отваря разговор, без някой да
+       я е питал, и няма кого да пита на какъв език да го напише. Пише се тихо
+       и без чакане — това е отражение на вече направен избор, не действие.
+       Без сесия няма къде да се пише; следващият път, когато езикът се смени
+       или приложението се отвори, ще се запише. */
+    supabase.auth.getUser().then(({ data }) => {
+      const id = data?.user?.id
+      if (!id) return
+      supabase.from('profiles').update({ lang }).eq('id', id).then(() => {}, () => {})
+    }, () => {})
   }, [lang])
 
   useEffect(() => {

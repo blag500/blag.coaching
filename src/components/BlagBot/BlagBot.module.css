@@ -321,7 +321,22 @@
   border-radius: var(--r-pill);
   color: var(--text);
   font-family: var(--font-body);
+  font-size: 1rem;          /* под 16px iOS увеличава екрана при фокус */
+  line-height: 1.35;
   padding: 10px 14px;
+  /* Расте с текста и се спира на пет реда — височината идва от компонента.
+     Без `resize: none` Safari слага дръжка в ъгъла на текстово поле. */
+  resize: none;
+  overflow-y: auto;
+  max-height: 128px;
+  /* Едноредово поле стои по средата на кръглите бутони до него; порасналото
+     трябва да се подравни по дъното, за да не ги влачи нагоре. */
+  align-self: flex-end;
+}
+
+/* Лентата се подравнява по дъното, откакто полето може да е високо. */
+.askRow {
+  align-items: flex-end;
 }
 .askInput::placeholder { color: var(--muted); opacity: 0.7; }
 .askInput:disabled { opacity: 0.6; }
@@ -740,4 +755,19 @@
   color: var(--text-dim);
   padding: 0 4px 6px;
   text-align: right;
+}
+
+/* Лист и молив: към списъка с разговорите. До стрелката, защото двете са едно
+   и също по род — излизане оттук, — а не при лицето, което затваря всичко. */
+.toList {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }

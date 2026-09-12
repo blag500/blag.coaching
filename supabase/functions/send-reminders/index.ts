@@ -79,9 +79,14 @@ async function sendPush(userId: string, title: string, body: string, tag: string
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
-  // Simple token check so cron URL isn't completely public
+  /* Ключалката е в заглавка, не в адреса.
+     Адресът на всяко викане влиза в дневниците на проекта както си е — а тази
+     функция се вика шест пъти на ден, тоест тайната се записваше шест пъти на
+     ден. Старият начин остава приет, защото между смяната на разписанието и
+     пускането на функцията минава време и нищо не бива да падне в тази
+     пролука. */
   const url = new URL(req.url)
-  const secret = url.searchParams.get('secret')
+  const secret = req.headers.get('x-bot-secret') ?? url.searchParams.get('secret')
   const expectedSecret = Deno.env.get('REMINDER_SECRET')
   if (expectedSecret && secret !== expectedSecret) {
     return new Response('Unauthorized', { status: 401 })

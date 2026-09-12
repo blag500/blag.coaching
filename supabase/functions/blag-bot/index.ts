@@ -64,6 +64,24 @@ const SYSTEM = `Ти си Благ Бот — помощникът в прило
 
 Отговаряш само с текста на отговора. Без markdown, без заглавия, без списъци с тирета, освен ако не изброяваш ястия.`
 
+/* Езикът на отговора.
+ *
+ * Подканата остава на български — тя е дълга, точна и всяко нейно правило е
+ * мерено. Преведена наполовина щеше да стане две подкани, които се разминават
+ * тихо. Вместо това езикът на отговора се казва с едно изречение накрая, а
+ * данните вътре остават с българските си имена: те са вътрешни ключове, не
+ * текст за четене.
+ *
+ * Английският не е украса. Разпознаването на глас на iPhone няма български —
+ * Apple просто не го поддържа — но има английски. Тоест за човек с iPhone
+ * „англификация" значи „проработило диктуване", а диктуването е това, което
+ * прави вписването с думи да си струва.
+ */
+const LANG_LINE: Record<string, string> = {
+  bg: '',
+  en: `\n\nВАЖНО: Отговаряй на АНГЛИЙСКИ език, независимо на какъв език са данните и предишните реплики. Имената на разделите в ДАННИ са на български, но това са вътрешни имена — не ги превеждай в отговора, просто говори за тях с обикновени английски думи.`,
+}
+
 /* Разчитането на изречение в редове за дневника.
    Отделна подкана и температура нула: тук не се иска мнение, а числа. И
    отделен изход — JSON, не текст — защото след него човекът натиска един бутон
@@ -84,7 +102,8 @@ const EXTRACT = `Ти разчиташ изречение, с което чов�
 - kcal, protein, carbs, fat са за цялото количество, не за 100 грама. Числа, не текст.
 - meal е едно от: breakfast, lunch, dinner, snack — ако е казано или се подразбира. Иначе null.
 - Няколко храни в едно изречение са няколко реда.
-- Най-много шест реда.`
+- Най-много шест реда.
+- Изречението може да е на английски. Тогава името на храната се пише на английски, а числата са същите.`
 
 const MAX_Q = 500
 
@@ -110,6 +129,10 @@ function iso(daysBack = 0) {
  */
 function looksLikeLog(q: string) {
   const t = q.toLowerCase()
+  /* Английският минава по същия път: същите два списъка, само с други думи.
+     Отделен ред, а не добавени думи в българския израз — двата езика се четат
+     и се поправят поотделно, а смесеният израз не се чете от никого. */
+  if (/^[\x00-\x7f\s.,!?'"-]+$/.test(t)) return looksLikeLogEn(t)
   /* Без граница на дума: в JavaScript тя се мери с \w, а \w е само латиница —
      пред „и" от „изядох" граница няма и изразът не хваща нищо. Съвпадението е
      по част от дума нарочно: „изядох" и „изядохме" са едно и също тук. */
@@ -135,7 +158,16 @@ function looksLikeLog(q: string) {
  *  Иначе „откъде знам" става още едно нещо, което моделът може да измисли.
  */
 function splitSources(text: string, context: Record<string, unknown>) {
-  const m = text.match(/\n\s*ИЗТОЧНИК\s*:\s*(.+)\s*$/i)
+  /* Търси се самата дума, а не „нов ред и после думата".
+     Първият вариант искаше редът да започва на чист ред — а моделът го лепна
+     след точката на последното изречение: „...по-точно тегло. ИЗТОЧНИК: тегло,
+     вода". Изразът не хвана нищо, отрязването не стана и белегът излезе на
+     екрана като част от отговора. Подканата казва „на нов ред", но подканата е
+     молба, не гаранция — четенето трябва да издържа и на неспазена молба.
+     Взема се ПОСЛЕДНОТО срещане: дума, спомената по средата на разговор, не
+     бива да реже отговора наполовина. */
+  const at = text.toUpperCase().lastIndexOf('ИЗТОЧНИК')
+  const m = at < 0 ? null : /^\s*:?\s*(.*)$/s.exec(text.slice(at + 'ИЗТОЧНИК'.length))
   if (!m) return { reply: text.trim(), sources: [] as string[] }
 
   const has = (k: string) => {
@@ -145,11 +177,33 @@ function splitSources(text: string, context: Record<string, unknown>) {
     if (typeof v === 'object') return Object.values(v as Record<string, unknown>).some(x => x != null)
     return true
   }
-  const sources = m[1].split(/[,;]/).map(x => x.trim().replace(/[.\s]+$/, ''))
+  const sources = m[1].split(/\n/)[0].split(/[,;]/).map(x => x.trim().replace(/[.\s]+$/, ''))
     .filter(k => k && has(k))
     .slice(0, 4)
 
-  return { reply: text.slice(0, m.index).trim(), sources: [...new Set(sources)] }
+  /* Отрязва се до самата дума, заедно с празното и висящия разделител преди
+     нея. Точката НЕ се пипа: тя завършва изречението, а не белега — първият
+     вариант я махаше и отговорите оставаха без препинание. */
+  return {
+    reply: text.slice(0, at).replace(/\s*[—–,;:-]?\s*$/, '').trim(),
+    sources: [...new Set(sources)],
+  }
+}
+
+/** Същото сито, но за английско изречение.
+ *
+ *  Разделено от българското нарочно: думите нямат нищо общо, а един израз с
+ *  четирийсет думи на два езика не се чете и не се поправя. Тук важи същото
+ *  правило — въпрос е въпрос, дори да има храна в него.
+ */
+function looksLikeLogEn(t: string) {
+  if (/[?]/.test(t)) return false
+  if (/\b(how much|how many|what|why|when|should i|can i|could i|do i|recommend|suggest)\b/.test(t)) return false
+  return (
+    /\b(ate|eaten|had|having|drank|drunk|ate|log|logged|add|note|record|track)\b/.test(t) ||
+    /\d+\s*(g|gr|gram|grams|ml|oz|kcal|cal)\b/.test(t) ||
+    /\b(egg|eggs|slice|slices|spoon|scoop|shake|coffee|banana|serving)\b/.test(t)
+  )
 }
 
 /** Изкопава JSON от отговор, който може да е с ограда от код. */
@@ -246,6 +300,10 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}))
   const question = String(body?.question ?? '').trim().slice(0, MAX_Q)
   if (!question) return json({ error: 'missing question' }, 400)
+
+  /* На какъв език да отговори. Идва от приложението, защото там е изборът;
+     проверява се, защото идва от телефон. */
+  const lang = body?.lang === 'en' ? 'en' : 'bg'
 
   /* Коя нишка. Проверява се, че е негова — идва от телефона, значи може да е
      каквото и да е, а нишките на другите не са му работа. */
@@ -382,7 +440,7 @@ Deno.serve(async (req) => {
 
   // ── Подканата ─────────────────────────────────────────────────────────────
   const messages: unknown[] = [
-    { role: 'system', content: SYSTEM },
+    { role: 'system', content: SYSTEM + LANG_LINE[lang] },
     {
       role: 'system',
       content:
@@ -422,7 +480,7 @@ Deno.serve(async (req) => {
       `${f.name} (за ${f.serving_grams ?? 100} г): ${f.kcal ?? '?'} ккал, П${f.protein ?? 0} В${f.carbs ?? 0} М${f.fat ?? 0}`
     )
     const read = await ask(apiKey, [
-      { role: 'system', content: EXTRACT },
+      { role: 'system', content: EXTRACT + (lang === 'en' ? '\n- Изречението е на английски.' : '') },
       ...(mineList.length ? [{ role: 'system', content: `МОИ ХРАНИ\n${mineList.join('\n')}` }] : []),
       { role: 'user', content: question },
     ], 900)
@@ -436,11 +494,18 @@ Deno.serve(async (req) => {
       }), { kcal: 0, protein: 0, carbs: 0, fat: 0 })
       const one = items.length === 1
       const approx = items.some((i: { approx: boolean }) => i.approx)
-      const text =
-        (one ? `Разчетох ${items[0].name}` : `Разчетох ${items.length} реда`) +
-        ` — ${Math.round(tot.kcal)} ккал, П${Math.round(tot.protein)} В${Math.round(tot.carbs)} М${Math.round(tot.fat)}.` +
-        (approx ? ' Числата са приблизителни.' : '') +
-        ' Да го впиша ли?'
+      /* Сглобява се тук, а не от модел: това е сбор на известни числа. Затова и
+         двата езика са изписани — превод на две изречения е по-евтин от още
+         едно обръщане към модела, а и по-сигурен. */
+      const text = lang === 'en'
+        ? (one ? `Read: ${items[0].name}` : `Read ${items.length} rows`) +
+          ` — ${Math.round(tot.kcal)} kcal, P${Math.round(tot.protein)} C${Math.round(tot.carbs)} F${Math.round(tot.fat)}.` +
+          (approx ? ' The numbers are approximate.' : '') +
+          ' Log it?'
+        : (one ? `Разчетох ${items[0].name}` : `Разчетох ${items.length} реда`) +
+          ` — ${Math.round(tot.kcal)} ккал, П${Math.round(tot.protein)} В${Math.round(tot.carbs)} М${Math.round(tot.fat)}.` +
+          (approx ? ' Числата са приблизителни.' : '') +
+          ' Да го впиша ли?'
 
       draft = { items, totals: tot }
       const rememberDraft = admin.from('bot_messages').insert([
