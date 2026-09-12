@@ -1,0 +1,310 @@
+/* Листът за писане.
+   Цял екран, закрепен към прозореца — не към страницата под него, която може
+   да е превъртяна далеч надолу. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: scrimIn 160ms var(--ease-out) both;
+}
+
+@keyframes scrimIn { from { opacity: 0 } to { opacity: 1 } }
+
+.sheet {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  padding: calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 10px);
+  animation: sheetIn 240ms var(--ease-glide) both;
+}
+
+@keyframes sheetIn {
+  from { transform: translateY(18px); opacity: 0 }
+  to   { transform: translateY(0);    opacity: 1 }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 26px;
+  line-height: 1;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.post {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r-pill);
+  color: #241B0C;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  padding: 9px 20px;
+  cursor: pointer;
+}
+.post:disabled { opacity: 0.35; cursor: default; }
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 6px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  color: var(--accent);
+}
+.avatarImg { width: 100%; height: 100%; object-fit: cover; }
+
+.name {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+/* Полето расте, докъдето стигне екранът. Това е разликата спрямо старото
+   прозорче от три реда: човек вижда какво е написал, докато го пише. */
+.input {
+  flex: 1;
+  min-height: 140px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 6px 0;
+}
+.input::placeholder { color: var(--muted); opacity: 0.7; }
+/* Без пръстена при фокус: той е за поле в списък с полета, а тук полето е
+   целият екран и очертанието му рисува златна рамка около нищото. */
+.input:focus { box-shadow: none; }
+
+/* Закаченото от приложението. Ред, не карта: тук той е още обещание за карта,
+   а истинската се рисува чак в потока. */
+.attached {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: var(--r-md);
+  background: rgba(var(--accent-rgb), 0.07);
+}
+.attachedIcon { display: flex; color: var(--accent); }
+.attachedText {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text);
+}
+.attachedDrop {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.photo {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.photo img { display: block; width: 100%; max-height: 260px; object-fit: cover; }
+.photoDrop {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.error {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--red);
+  margin: 4px 2px 8px;
+}
+
+.spacer { flex: 0 0 0; }
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.tool {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 8px 13px;
+  cursor: pointer;
+}
+.tool:disabled { opacity: 0.5; cursor: default; }
+
+.count {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* ── Изборът какво да се закачи ──────────────────────────────────────── */
+.pickScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  animation: scrimIn 140ms var(--ease-out) both;
+}
+
+.pick {
+  width: 100%;
+  background: var(--surface-1);
+  border-top-left-radius: var(--r-xl);
+  border-top-right-radius: var(--r-xl);
+  border-top: 1px solid var(--border);
+  padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: pickIn 260ms var(--ease-glide) both;
+}
+
+@keyframes pickIn {
+  from { transform: translateY(100%) }
+  to   { transform: translateY(0) }
+}
+
+.pickHead {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.pickEmpty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 2px 14px;
+}
+
+.pickRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-align: left;
+}
+
+.pickIcon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.pickText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pickTitle {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.pickDetail {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Бутонът, който отваря листа ─────────────────────────────────────── */
+/* Долу вдясно, над лентата. Плюсът в средата на лентата вече значи „впиши
+   нещо в деня си" — втори плюс на същия екран би бил два различни отговора на
+   един и същ въпрос. Този носи лист и молив. */
+.openBtn {
+  position: fixed;
+  right: 18px;
+  bottom: calc(env(safe-area-inset-bottom) + 84px);
+  z-index: 90;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-metal-coin, var(--accent));
+  color: #241B0C;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow:
+    0 4px 18px rgba(var(--accent-rgb), 0.45),
+    0 0 0 3px rgba(var(--bg-rgb), 0.80);
+}
+
+.openBtn:active { transform: scale(0.9); }

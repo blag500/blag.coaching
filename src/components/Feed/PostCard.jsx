@@ -142,6 +142,22 @@ const ACHIEVEMENTS = {
     titleKey: 'feed.ach.plan',
     detail: () => '',
   },
+  /* Двата вида, които човек слага сам. Стоят в същата таблица като
+     автоматичните, защото отсреща са едно и също нещо — карта с число,
+     която приложението гарантира. Разликата е само кой е натиснал. */
+  habits: {
+    icon: 'check',
+    titleKey: 'feed.ach.habitsDone',
+    detail: (m, t) => (m?.done != null ? t('feed.ach.habitsOf', { n: m.done, m: m.total }) : ''),
+  },
+  weight: {
+    icon: 'weight',
+    titleKey: 'feed.ach.weight',
+    detail: (m, t) => [
+      m?.kg != null ? `${m.kg} ${t('unit.kg')}` : null,
+      m?.trend ? t('feed.ach.trend', { n: m.trend > 0 ? `+${m.trend}` : m.trend }) : null,
+    ].filter(Boolean).join(' · '),
+  },
 }
 
 /* Цвят по вид постижение.
@@ -155,6 +171,8 @@ const ACH_COLOR = {
   perfect:  'var(--accent)',
   streak:   '#4DB6AC',
   plan:     '#42A5F5',
+  habits:   '#66BB6A',
+  weight:   '#CE93D8',
 }
 
 /* Дългият пост се свива.
@@ -252,9 +270,12 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
       </header>
 
       {achievement ? (
-        /* Постижението няма текст — то е значка. Рисунката носи вида, редът
-           отдолу носи числата, а рамката в акцента отделя „приложението каза"
-           от „човекът написа", без да добавя надпис, който да го обяснява. */
+        /* Рисунката носи вида, редът отдолу носи числата, а рамката в акцента
+           отделя „приложението каза" от „човекът написа", без надпис, който да
+           го обяснява.
+           Текстът отдолу е на човека: когато той сам е закачил числото, почти
+           винаги има и какво да каже по него. Автоматичните постижения нямат
+           body и редът просто не се рисува. */
         <div className={styles.achievement}>
           <span className={styles.achievementIcon}>
             <Pictogram name={achievement.icon} size={22} />
@@ -264,7 +285,11 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
             {detail && <span className={styles.achievementDetail}>{detail}</span>}
           </span>
         </div>
-      ) : (
+      ) : null}
+
+      {achievement && post.body && <PostBody text={post.body} />}
+
+      {!achievement && (
         <>
           {post.body && <PostBody text={post.body} />}
           {post.photoUrl && (

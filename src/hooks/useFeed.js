@@ -142,11 +142,21 @@ export function useFeed() {
      Постът се дописва в списъка от отговора на сървъра, не от това, което е
      било в полето — така времето на екрана е времето в базата, а не времето
      на телефона, който може да е с половин час напред. */
-  const addPost = useCallback(async ({ body, photoUrl }) => {
+  const addPost = useCallback(async ({ body, photoUrl, kind = null, meta = null }) => {
     if (!user?.id) return { error: 'no user' }
     const { data, error: err } = await supabase
       .from('posts')
-      .insert({ user_id: user.id, kind: 'post', body: body?.trim() || null, photo_url: photoUrl ?? null })
+      /* `kind` идва отвън само когато човек е закачил нещо от приложението;
+         иначе постът е обикновен. Едно и също поле за двата пътя, защото
+         отсреща картата се рисува от него, без да я интересува кой го е
+         сложил. */
+      .insert({
+        user_id: user.id,
+        kind: kind || 'post',
+        meta,
+        body: body?.trim() || null,
+        photo_url: photoUrl ?? null,
+      })
       .select(POST_SELECT)
       .single()
     if (err) return { error: err.message }

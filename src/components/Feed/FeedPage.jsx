@@ -3,12 +3,13 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useFeed } from '../../hooks/useFeed'
 import AppHeader from '../AppHeader/AppHeader'
-import PostComposer from './PostComposer'
+import PostSheet from './PostSheet'
 import PostCard from './PostCard'
 import Pictogram from '../Pictogram/Pictogram'
 import AuthorPage from './AuthorPage'
 import SearchResults, { SearchField } from './FeedSearch'
 import styles from './Feed.module.css'
+import sheetStyles from './PostSheet.module.css'
 
 /**
  * Общата зала.
@@ -23,6 +24,7 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
   const { t } = useSettings()
   const [author, setAuthor] = useState(null)
   const [term, setTerm] = useState('')
+  const [writing, setWriting] = useState(false)
   /* Две букви, преди да се пита нещо: една буква намира половината хора и
      всеки трети пост, тоест не намира нищо. */
   const searching = term.trim().length >= 2
@@ -43,7 +45,21 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
 
       <SearchField term={term} onTerm={setTerm} />
 
-      {!searching && <PostComposer onPost={addPost} />}
+      {/* Писането е екран, не поле най-отгоре: най-честото действие тук е
+          четенето, а разгънат формуляр иска нещо от теб, преди страницата да
+          ти е дала нещо. */}
+      {!searching && !author && (
+        <button
+          type="button"
+          className={sheetStyles.openBtn}
+          onClick={() => setWriting(true)}
+          aria-label={t('feed.compose')}
+        >
+          <Pictogram name="note" size={22} />
+        </button>
+      )}
+
+      <PostSheet open={writing} onClose={() => setWriting(false)} onPost={addPost} />
 
       {author && (
         <AuthorPage
