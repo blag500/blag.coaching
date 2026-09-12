@@ -735,3 +735,49 @@ test.describe('Чат', () => {
     await expect(page.getByText('Нещо се счупи')).toHaveCount(0)
   })
 })
+
+test.describe('Балончето на бота', () => {
+  /* Балонче, което стои върху всичко, рано или късно застава точно върху
+     онова, което трябва да се натисне. Затова се мести — и си отива, ако
+     съвсем пречи. Тестът минава целия кръг, защото трите парчета живеят на
+     различни места: жестът е в балончето, скриването е в localStorage, а
+     връщането е бутон на друга страница. */
+  test('откача се след задържане, маха се и се връща', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+
+    const bubble = page.locator('button[aria-label="БЛАГ БОТ"]')
+    await expect(bubble).toBeVisible()
+    const box = await bubble.boundingBox()
+
+    // Задържане над прага — мишената се появява.
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.waitForTimeout(900)
+    await expect(page.locator('[class*="drop"]').first()).toBeVisible()
+
+    // Влачене до мишената и пускане.
+    const vw = await page.evaluate(() => window.innerWidth)
+    await page.mouse.move(vw / 2, 115, { steps: 12 })
+    await page.waitForTimeout(300)
+    await page.mouse.up()
+    await page.waitForTimeout(500)
+    await expect(bubble).toHaveCount(0)
+
+    // Връща се от своята страница.
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(600)
+    await page.getByText('БЛАГ БОТ', { exact: true }).first().click()
+    await page.waitForTimeout(1000)
+    const restore = page.getByText('Върни балончето на екрана')
+    await expect(restore).toBeVisible()
+    await restore.click()
+    await page.waitForTimeout(500)
+    /* Стрелката свива разговора и връща предишния раздел — на този екран
+       хамбургер няма. */
+    await page.locator('button[aria-label="Назад"]').first().click()
+    await page.waitForTimeout(1200)
+    await expect(page.locator('button[aria-label="БЛАГ БОТ"]')).toBeVisible()
+  })
+})

@@ -4,8 +4,11 @@
    екран; вж. openBtn в PostSheet.module.css. */
 .bubble {
   position: fixed;
-  /* Отместването идва от стила на елемента — балончето се мести с пръст и
-     мястото му се помни. Тук стоят само нещата, които не се менят. */
+  /* Мястото идва от променливите, които компонентът пише — балончето се
+     мести с пръст и мястото му се помни. Безопасната зона се добавя тук,
+     защото тя е на телефона, а не на балончето. */
+  right: var(--bot-right, 18px);
+  bottom: calc(env(safe-area-inset-bottom) + var(--bot-bottom, 84px));
   z-index: 90;
   /* Пръстът мести балончето, а не страницата под него. */
   touch-action: none;
@@ -13,16 +16,21 @@
   width: 52px;
   height: 52px;
   padding: 0;
-  border: none;
+  /* Пръстенът е рамка отвътре, не сянка отвън.
+     Като сянка той добавяше седем пиксела от всяка страна и балончето
+     изглеждаше видимо по-едро от бутона за писане, макар двете да са 52.
+     Рамка влиза в същите 52 (box-sizing е border-box за всичко). */
+  border: 2px solid rgba(var(--accent-rgb), 0.85);
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
   /* Пръстенът е в цвета на темата, а не в едно злато за трите: в стъклената
      тема топлото злато изглежда като взето назаем от друго приложение. */
+  /* Същата сянка и същият външен пръстен като на бутона за писане: двете
+     стоят едно под друго и всяка разлика между тях се чете като грешка. */
   box-shadow:
-    0 0 0 2px rgba(var(--accent-rgb), 0.85),
-    0 4px 18px rgba(var(--accent-rgb), 0.40),
-    0 0 0 5px rgba(var(--bg-rgb), 0.80);
+    0 4px 18px rgba(var(--accent-rgb), 0.45),
+    0 0 0 3px rgba(var(--bg-rgb), 0.80);
   /* backwards, не both.
      С `both` последният кадър на анимацията остава залепен завинаги, а
      анимациите бият обикновените правила в каскадата — значи scale(1) от
@@ -54,10 +62,10 @@
    е над екрана, не лежи върху него. */
 .armed {
   transform: scale(1.12);
+  border-color: rgba(var(--accent-rgb), 1);
   box-shadow:
-    0 0 0 2px rgba(var(--accent-rgb), 1),
     0 10px 26px rgba(0, 0, 0, 0.5),
-    0 0 0 5px rgba(var(--bg-rgb), 0.8);
+    0 0 0 3px rgba(var(--bg-rgb), 0.8);
   transition: transform 140ms var(--ease-spring-soft);
 }
 .armed:active { transform: scale(1.12); }

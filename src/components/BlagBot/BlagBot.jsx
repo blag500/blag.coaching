@@ -105,7 +105,7 @@ function TypingIndicator() {
 
 // ─── Екранът ─────────────────────────────────────────────────────────────────
 
-export default function BlagBot({ onMenuOpen }) {
+export default function BlagBot({ onMenuOpen, onMinimise }) {
   const { user, profile } = useAuth()
   const { t } = useSettings()
 
@@ -185,8 +185,12 @@ export default function BlagBot({ onMenuOpen }) {
 
   return (
     <div className={styles.page}>
+      {/* Стрелката свива разговора и връща човека там, откъдето го е отворил.
+          Лентата е прибрана на този екран, значи без нея изход има само през
+          чекмеджето — а то отваря друга страница, вместо да върне предишната. */}
       <AppHeader
         onMenuOpen={onMenuOpen}
+        onBack={onMinimise}
         title={t('nav.bot')}
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}

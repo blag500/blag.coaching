@@ -22,7 +22,7 @@ import sheetStyles from './PostSheet.module.css'
  * виждат един друг.
  */
 export default function FeedPage({ onNavigate, onMenuOpen }) {
-  const { chrome: paneChrome } = usePane()
+  const { chrome: paneChrome, live: paneLive } = usePane()
   const { profile } = useAuth()
   const { t } = useSettings()
   const [author, setAuthor] = useState(null)
@@ -51,7 +51,11 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
       {/* Писането е екран, не поле най-отгоре: най-честото действие тук е
           четенето, а разгънат формуляр иска нещо от теб, преди страницата да
           ти е дала нещо. */}
-      {!searching && !author && createPortal(
+      {/* `live` е разликата между „тази страница е монтирана" и „човекът е
+          на нея". При преход и двете са монтирани за момент, а слоят на
+          заминаващата още не е отместен — оттам идваше кадърът, в който
+          бутонът за писане светва върху съседния раздел. */}
+      {!searching && !author && paneLive && createPortal(
         <button
           type="button"
           className={sheetStyles.openBtn}

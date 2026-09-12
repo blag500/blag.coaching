@@ -180,8 +180,15 @@ function AppShell() {
      „профил във фийда → ПИШИ → чат", а табът няма как да отгатне човека. */
   const [chatPeer, setChatPeer] = useState(null)
 
+  /* Откъде е отворен ботът.
+     Балончето е на всеки екран, значи ботът се отваря отвсякъде — и връщането
+     трябва да е там, откъдето е дошъл, а не на някоя начална страница. Като
+     балончетата в месинджър: разгъваш, свиваш, и си пак където си бил. */
+  const [botReturn, setBotReturn] = useState('feed')
+
   function navigate(newTab, { instant = false, peer = null } = {}) {
     if (newTab === 'chat') setChatPeer(peer)
+    if (newTab === 'bot' && activeTab !== 'bot') setBotReturn(activeTab)
     // A swipe has already carried the page across, so replaying the entrance
     // animation would show the same move twice.
     if (instant) { setSlideDir('none'); setActiveTab(newTab); return }
@@ -366,7 +373,7 @@ function AppShell() {
     library:    <ExerciseLibrary onMenuOpen={openMenu} />,
     learn:      <LearnPage />,
     chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} />,
-    bot:        <BlagBot onMenuOpen={openMenu} />,
+    bot:        <BlagBot onMenuOpen={openMenu} onMinimise={() => navigate(botReturn)} />,
     rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
     budget:     <Budget />,
     tasks:      <Tasks />,

@@ -24,7 +24,12 @@ import { loadPos, savePos, isHidden, setHidden, DEFAULT_POS } from './botBubbleS
  * тях, не за прозореца.
  */
 
-const HOLD_MS   = 2000   // колко се държи, преди да се откачи
+/* Половин секунда и малко: толкова държи пръстът, когато иска нещо от
+   задържане, и толкова е прагът навсякъде другаде в телефона. Две секунди
+   бяха мярка, взета за да не се откача случайно — но случайното откачане и
+   без това се пази от прага за движение, а две секунди чакане пред неподвижен
+   екран се усещат като счупено. */
+const HOLD_MS   = 550    // колко се държи, преди да се откачи
 const MOVE_SLOP = 10     // px, след които задържането се смята за плъзгане
 const SIZE      = 52
 const EDGE      = 10     // най-близо до ръба, до което се допуска
@@ -66,9 +71,9 @@ export default function BotBubble({ activeTab, onOpen }) {
 
   if (hidden || activeTab === 'bot') return null
 
-  function clamp({ right, bottom }) {
+  function clamp({ right, bottom }, safe = 0) {
     const maxRight  = Math.max(EDGE, window.innerWidth  - SIZE - EDGE)
-    const maxBottom = Math.max(EDGE, window.innerHeight - SIZE - EDGE)
+    const maxBottom = Math.max(EDGE, window.innerHeight - SIZE - EDGE - safe)
     return {
       right:  Math.min(Math.max(right,  EDGE), maxRight),
       bottom: Math.min(Math.max(bottom, EDGE), maxBottom),
@@ -76,9 +81,9 @@ export default function BotBubble({ activeTab, onOpen }) {
   }
 
   /** Уцелена ли е мишената за махане — мери се от центъра ѝ. */
-  function onTarget({ right, bottom }) {
+  function onTarget({ right, bottom }, safe = 0) {
     const cx = window.innerWidth - right - SIZE / 2
-    const cy = window.innerHeight - bottom - SIZE / 2
+    const cy = window.innerHeight - bottom - safe - SIZE / 2
     const tx = window.innerWidth / 2
     const ty = DROP_TOP + DROP_SIZE / 2
     return Math.hypot(cx - tx, cy - ty) < DROP_REACH
@@ -86,7 +91,12 @@ export default function BotBubble({ activeTab, onOpen }) {
 
   function onPointerDown(e) {
     e.currentTarget.setPointerCapture?.(e.pointerId)
-    startRef.current = { x: e.clientX, y: e.clientY, pos }
+    /* Колко добавя безопасната зона към отместването. Мери се от самия
+       елемент, защото env() не се чете от JavaScript, а без него горният таван
+       щеше да пуска балончето да излиза над ръба на екрана. */
+    const rect = e.currentTarget.getBoundingClientRect()
+    const safe = Math.max(0, Math.round(window.innerHeight - rect.bottom - pos.bottom))
+    startRef.current = { x: e.clientX, y: e.clientY, pos, safe }
     movedRef.current = false
     clearTimeout(holdRef.current)
     holdRef.current = setTimeout(() => {
@@ -111,9 +121,9 @@ export default function BotBubble({ activeTab, onOpen }) {
     }
 
     movedRef.current = true
-    const next = clamp({ right: s.pos.right - dx, bottom: s.pos.bottom - dy })
+    const next = clamp({ right: s.pos.right - dx, bottom: s.pos.bottom - dy }, s.safe)
     setPos(next)
-    setOver(onTarget(next))
+    setOver(onTarget(next, s.safe))
   }
 
   function onPointerUp(e) {
@@ -171,7 +181,12 @@ export default function BotBubble({ activeTab, onOpen }) {
            върху хикса и човекът не вижда какво ще стане, а точно това е мигът,
            в който трябва да го види. */
         className={`${styles.bubble} ${armed ? styles.armed : ''} ${overDrop ? styles.overDrop : ''}`}
-        style={{ right: pos.right, bottom: pos.bottom }}
+        /* Отместването минава през променливи, а не право в `bottom`:
+           стилът добавя към него безопасната зона на телефона. Дотук
+           балончето сядаше на голи 84 пиксела от долния ръб, докато бутонът
+           за писане над него броеше и индикатора за начало — оттам двете се
+           разделиха с трийсетина пиксела повече, отколкото трябва. */
+        style={{ '--bot-right': `${pos.right}px`, '--bot-bottom': `${pos.bottom}px` }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
