@@ -188,7 +188,14 @@
   font-size: 8px;
   letter-spacing: 0.1em;
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+
+/* Цветът е на знака, не на надписа: четирите надписа остават една сива
+   стълба и това ги държи подредени. */
+.macroIcon { display: flex; flex-shrink: 0; }
 
 .macroInput {
   width: 100%;
@@ -1033,6 +1040,9 @@
   font-size: 9px;
   letter-spacing: 0.1em;
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .addFoodInput {
@@ -1262,6 +1272,9 @@
   font-size: 9px;
   letter-spacing: 0.1em;
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .logEditInput {

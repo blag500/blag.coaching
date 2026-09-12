@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import CartDrawer from './CartDrawer'
 import CatalogManager from './CatalogManager'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './ShopPage.module.css'
 
 const CATEGORIES = [
@@ -106,9 +107,19 @@ export default function ShopPage({ initialOrderSuccess }) {
                   <span className={styles.cardName}>{p.name}</span>
                   {p.description && <span className={styles.cardDesc}>{p.description}</span>}
                   <div className={styles.cardMacros}>
-                    <span className={styles.macroChip} style={{ color: '#42A5F5' }}>{p.protein_per_serving}g {t('nutr.card.pShort')}</span>
-                    <span className={styles.macroChip} style={{ color: '#66BB6A' }}>{p.carbs_per_serving}g {t('nutr.card.cShort')}</span>
-                    <span className={styles.macroChip} style={{ color: 'var(--accent)' }}>{p.fat_per_serving}g {t('nutr.card.fShort')}</span>
+                    {/* Каноничните цветове, не преписани на ръка: тук стояха
+                        сини и зелени числа, набрани като шестнайсетични, и
+                        мазнините в акцента — тоест същият макрос с различен
+                        цвят според екрана. */}
+                    <span className={styles.macroChip} style={{ color: 'var(--macro-protein)' }}>
+                      <Pictogram name="protein" size={11} />{p.protein_per_serving}g
+                    </span>
+                    <span className={styles.macroChip} style={{ color: 'var(--macro-carbs)' }}>
+                      <Pictogram name="carbs" size={11} />{p.carbs_per_serving}g
+                    </span>
+                    <span className={styles.macroChip} style={{ color: 'var(--macro-fat)' }}>
+                      <Pictogram name="fat" size={11} />{p.fat_per_serving}g
+                    </span>
                     <span className={styles.macroChip} style={{ color: 'var(--muted)' }}>{p.kcal_per_serving} {t('unit.kcal')}</span>
                   </div>
                   <div className={styles.cardServing}>

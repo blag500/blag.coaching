@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useShop } from '../../hooks/useShop'
 import { useSettings } from '../../contexts/SettingsContext'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './CartDrawer.module.css'
 
 export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
@@ -52,7 +53,12 @@ export default function CartDrawer({ cart, onClose, onOrderSuccess }) {
                 <div key={item.product_id} className={styles.item}>
                   <div className={styles.itemInfo}>
                     <span className={styles.itemName}>{item.name}</span>
-                    <span className={styles.itemMacros}>{item.protein}g {t('nutr.card.pShort')} · {item.kcal} {t('unit.kcal')}</span>
+                    <span className={styles.itemMacros}>
+                      <span className={styles.itemProtein}>
+                        <Pictogram name="protein" size={11} />{item.protein}g
+                      </span>
+                      · {item.kcal} {t('unit.kcal')}
+                    </span>
                   </div>
                   <div className={styles.itemRight}>
                     <div className={styles.qtyRow}>

@@ -168,11 +168,15 @@ export default function RecipeList({ onAddRaw }) {
                           {Math.round(totals.kcal)} {t('unit.kcal')}
                         </span>
                         <span className={styles.metaSep}> · </span>
-                        <span className={styles.macroP}>{t('nutr.card.pShort')}{Math.round(totals.protein)}</span>
-                        <span className={styles.metaSep}> · </span>
-                        <span className={styles.macroC}>{t('nutr.card.cShort')}{Math.round(totals.carbs)}</span>
-                        <span className={styles.metaSep}> · </span>
-                        <span className={styles.macroF}>{t('nutr.card.fShort')}{Math.round(totals.fat)}</span>
+                        <span className={styles.macroP}>
+                          <Pictogram name="protein" size={11} />{Math.round(totals.protein)}
+                        </span>
+                        <span className={styles.macroC}>
+                          <Pictogram name="carbs" size={11} />{Math.round(totals.carbs)}
+                        </span>
+                        <span className={styles.macroF}>
+                          <Pictogram name="fat" size={11} />{Math.round(totals.fat)}
+                        </span>
                         <span className={styles.metaSep}> · </span>
                         <span>{t('rl.servingsShort', { n: recipe.servings })}</span>
                       </span>

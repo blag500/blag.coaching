@@ -216,10 +216,15 @@
   min-width: 0;
 }
 
+/* Рисунката до буквата. „П" в синьо значи нещо само за човек, който вече е
+   научил кое е П — знакът е същият, който стои на ДНЕС и на ПРИЕМ ДНЕС. */
 .unknownTag {
   font-family: var(--font-heading);
   font-size: 9px;
   letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .unknownCell input {

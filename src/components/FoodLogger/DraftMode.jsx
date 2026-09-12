@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { useSettings } from '../../contexts/SettingsContext'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './DraftMode.module.css'
 
 const MACROS = [
@@ -222,7 +223,10 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
           </label>
           {MACROS.map(m => (
             <label className={styles.macroField} key={m.key}>
-              <span className={styles.macroTag} style={{ color: m.color }}>{t(m.shortKey)}</span>
+              <span className={styles.macroTag} style={{ color: m.color }}>
+                <Pictogram name={m.key} size={12} />
+                {t(m.shortKey)}
+              </span>
               <input type="number" min="0" step="0.1" inputMode="decimal" value={form[m.key]}
                      onChange={e => setMacro(m.key, e.target.value)} placeholder="0" />
             </label>
@@ -237,7 +241,9 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
         <div className={styles.legend}>
           {MACROS.map(m => (
             <div className={styles.legendRow} key={m.key}>
-              <span className={styles.legendDot} style={{ background: m.color }} />
+              <span className={styles.legendIcon} style={{ color: m.color }}>
+                <Pictogram name={m.key} size={14} />
+              </span>
               <span className={styles.legendLabel}>{t(m.labelKey)}</span>
               <span className={styles.legendVal}>{Math.round(draft[m.key] * 10) / 10}g</span>
             </div>
@@ -262,7 +268,12 @@ export default function DraftMode({ onAddRaw, totals = {}, targets = {} }) {
               const over = t && projected[k] > t
               return (
                 <div className={styles.projRow} key={k}>
-                  <span className={styles.projName}>{label}</span>
+                  <span className={styles.projName}>
+                    <span className={styles.projIcon} style={{ color }}>
+                      <Pictogram name={k} size={12} />
+                    </span>
+                    {label}
+                  </span>
                   <div className={styles.projTrack}>
                     <div className={styles.projNow} style={{ width: `${pctNow}%`, background: color }} />
                     <div className={styles.projAdd} style={{ width: `${pctAdd}%`, background: color }} />

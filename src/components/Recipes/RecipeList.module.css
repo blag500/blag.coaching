@@ -357,6 +357,15 @@
 
 /* Каноничните цветове на трите макроса. Същите, с които са нарисувани
    лентите в ДНЕС и числата в дневника: един макрос, един цвят, навсякъде. */
+.macroP,
+.macroC,
+.macroF {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 7px;
+}
+
 .macroP { color: var(--macro-protein); opacity: 0.85 }
 .macroC { color: var(--macro-carbs);   opacity: 0.85 }
 .macroF { color: var(--macro-fat);     opacity: 0.85 }

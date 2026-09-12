@@ -97,6 +97,15 @@
   color: var(--muted);
 }
 
+.itemProtein {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 4px;
+  color: var(--macro-protein);
+  opacity: 0.85;
+}
+
 .itemRight {
   display: flex;
   flex-direction: column;

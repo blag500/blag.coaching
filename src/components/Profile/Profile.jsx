@@ -41,12 +41,19 @@ import { loc } from '../../utils/locale'
   return streak
 }
 
+/* Същите три (четири) цвята, каквито са навсякъде другаде. Дотук мазнините
+   тук бяха в акцента, а калориите — в розово, което значеше, че един и същ
+   макрос сменя цвета си според това на кой раздел стоиш. Цветът е половината
+   от значението на тези редове; ако се мести, не значи нищо. */
 const MACRO_COLORS = {
-  calories: '#F06292',
+  calories: 'var(--accent)',
   protein:  'var(--macro-protein)',
   carbs:    'var(--macro-carbs)',
-  fat:      'var(--accent)',
+  fat:      'var(--macro-fat)',
 }
+
+/* Ключът в базата е `calories`, а рисунката се казва `kcal`. */
+const MACRO_ICON = { calories: 'kcal', protein: 'protein', carbs: 'carbs', fat: 'fat' }
 
 /* Трите раздела на страницата.
    Профилът пое и таблото за деня, а сборът е твърде дълъг за един скрол:
@@ -388,7 +395,10 @@ export default function Profile({ onMenuOpen, onNavigate }) {
             { key: 'fat',      label: t('profile.macros.fat'),      unit: 'g',           color: MACRO_COLORS.fat      },
           ].map(({ key, label, unit, color }) => (
             <div key={key} className={styles.macroEditField}>
-              <span className={styles.macroEditLabel} style={{ color }}>{label}</span>
+              <span className={styles.macroEditLabel} style={{ color }}>
+                <Pictogram name={MACRO_ICON[key]} size={13} />
+                {label}
+              </span>
               {isCoach ? (
                 <input
                   className={styles.macroEditInput}

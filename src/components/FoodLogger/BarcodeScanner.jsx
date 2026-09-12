@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { lookupBarcode, looksInconsistent, correctBarcode } from '../../utils/openFoodFacts'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './BarcodeScanner.module.css'
 
 // Chrome and Android ship a native decoder; Safari does not. Camera access
@@ -304,7 +305,10 @@ export default function BarcodeScanner({ onFound, onClose }) {
                   { k: 'fat',     label: t('macro.f'),        color: 'var(--macro-fat)' },
                 ].map(({ k, label, color }) => (
                   <label className={styles.unknownCell} key={k}>
-                    <span className={styles.unknownTag} style={{ color }}>{label}</span>
+                    <span className={styles.unknownTag} style={{ color }}>
+                      <Pictogram name={k} size={12} />
+                      {label}
+                    </span>
                     <input
                       type="number" min="0" step="0.1" inputMode="decimal"
                       value={review.per100g[k] ?? ''}
@@ -354,7 +358,10 @@ export default function BarcodeScanner({ onFound, onClose }) {
                   { k: 'fat',     label: t('macro.f'),        color: 'var(--macro-fat)' },
                 ].map(({ k, label, color }) => (
                   <label className={styles.unknownCell} key={k}>
-                    <span className={styles.unknownTag} style={{ color }}>{label}</span>
+                    <span className={styles.unknownTag} style={{ color }}>
+                      <Pictogram name={k} size={12} />
+                      {label}
+                    </span>
                     <input
                       type="number" min="0" step="0.1" inputMode="decimal"
                       value={newProduct[k]}

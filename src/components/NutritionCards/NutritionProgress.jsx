@@ -252,16 +252,9 @@ export default function NutritionProgress({
             </div>
           )}
 
-          {/* The same drawings as everywhere else, in the colour of their own
-              arc — a legend that says what the segment is rather than which
-              letter it was assigned. */}
-          <div className={styles.legend}>
-            {MACROS.map(m => (
-              <span key={m.key} className={styles.legendItem} style={{ color: m.color }}>
-                <Pictogram name={m.key} size={16} />
-              </span>
-            ))}
-          </div>
+          {/* Легендата падна оттук. Трите рисунки вече стоят на своите редове,
+              до числата, които обясняват — а един и същ знак два пъти в една
+              карта не пояснява втори път, само се повтаря. */}
         </div>
 
         {/* ── Macro bars ────────────────────────────── */}
@@ -274,7 +267,15 @@ export default function NutritionProgress({
             return (
               <div key={m.key} className={styles.row}>
                 <div className={styles.meta}>
-                  <span className={styles.label}>{t(m.labelKey)}</span>
+                  {/* Знакът стои на реда, който брои този макрос — не под
+                      пръстена, откъдето окото трябва да се върне, за да свърже
+                      цвят с дума. */}
+                  <span className={styles.label}>
+                    <span className={styles.labelIcon} style={{ color: m.color }}>
+                      <Pictogram name={m.key} size={13} />
+                    </span>
+                    {t(m.labelKey)}
+                  </span>
                   <span
                     className={styles.values}
                     style={{ color: over ? '#ef4444' : m.color }}

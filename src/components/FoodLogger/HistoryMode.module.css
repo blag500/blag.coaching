@@ -205,6 +205,9 @@
   font-family: var(--font-heading);
   font-size: 9px;
   letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .macroInput {

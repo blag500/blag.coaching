@@ -318,6 +318,14 @@
   color: var(--muted);
 }
 
+.foodCardMacro {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 7px;
+  opacity: 0.85;
+}
+
 .foodCardChevron {
   font-size: 10px;
   color: var(--muted);

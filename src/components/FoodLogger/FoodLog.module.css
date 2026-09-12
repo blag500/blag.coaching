@@ -727,6 +727,10 @@
 }
 
 .rowMacro {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 7px;
   font-variant-numeric: tabular-nums;
 }
 

@@ -322,7 +322,16 @@ function CustomFoodCard({ t, food, servings, onServingsChange, onLog, onDelete }
         <div className={styles.foodCardInfo}>
           <span className={styles.foodCardName}>{food.name}</span>
           <span className={styles.foodCardMacros}>
-            {food.kcal} {t('nutr.card.kcal')} · {t('nutr.card.pShort')}{food.protein}g · {t('nutr.card.cShort')}{food.carbs}g · {t('nutr.card.fShort')}{food.fat}g
+            {food.kcal} {t('nutr.card.kcal')} ·{' '}
+            <span className={styles.foodCardMacro} style={{ color: 'var(--macro-protein)' }}>
+              <Pictogram name="protein" size={11} />{food.protein}g
+            </span>
+            <span className={styles.foodCardMacro} style={{ color: 'var(--macro-carbs)' }}>
+              <Pictogram name="carbs" size={11} />{food.carbs}g
+            </span>
+            <span className={styles.foodCardMacro} style={{ color: 'var(--macro-fat)' }}>
+              <Pictogram name="fat" size={11} />{food.fat}g
+            </span>
             {food.serving_grams > 0 && <> · {food.serving_grams}{t('nutr.card.perServingUnit')}</>}
           </span>
         </div>

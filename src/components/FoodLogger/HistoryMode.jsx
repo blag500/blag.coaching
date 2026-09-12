@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
 import MealPicker from './MealPicker'
+import Pictogram from '../Pictogram/Pictogram'
 import styles from './HistoryMode.module.css'
 
 /**
@@ -172,7 +173,10 @@ export default function HistoryMode({ onAddRaw, meal, onMealChange }) {
                         { k: 'fat',     label: t('macro.f'),        color: 'var(--macro-fat)' },
                       ].map(({ k, label, color }) => (
                         <label className={styles.macroCell} key={k}>
-                          <span className={styles.macroTag} style={{ color }}>{label}</span>
+                          <span className={styles.macroTag} style={{ color }}>
+                            <Pictogram name={k} size={12} />
+                            {label}
+                          </span>
                           <input
                             className={styles.macroInput}
                             type="number" min="0" step="0.1" inputMode="decimal"

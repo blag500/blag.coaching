@@ -580,14 +580,19 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
             )}
             <span className={styles.rowKcal}>{entry.kcal} {t('unit.kcal')}</span>
             {/* Трите носят цвета си поотделно, значи не могат да са един
-                готов низ. Съкращенията остават от преводите — „П" не е буква,
-                а дума на български. */}
+                готов низ. Знакът застъпва съкращението — същият, който стои и
+                на заглавния ред на храненето един ред по-горе; „П" в синьо
+                значи нещо само за човек, който вече е научил кое е П. */}
             <span className={styles.rowSep}> · </span>
-            <span className={`${styles.rowMacro} ${styles.macroP}`}>{t('nutr.card.pShort')}{entry.protein}</span>
-            <span className={styles.rowSep}> · </span>
-            <span className={`${styles.rowMacro} ${styles.macroC}`}>{t('nutr.card.cShort')}{entry.carbs}</span>
-            <span className={styles.rowSep}> · </span>
-            <span className={`${styles.rowMacro} ${styles.macroF}`}>{t('nutr.card.fShort')}{entry.fat}</span>
+            <span className={`${styles.rowMacro} ${styles.macroP}`}>
+              <Pictogram name="protein" size={11} />{entry.protein}
+            </span>
+            <span className={`${styles.rowMacro} ${styles.macroC}`}>
+              <Pictogram name="carbs" size={11} />{entry.carbs}
+            </span>
+            <span className={`${styles.rowMacro} ${styles.macroF}`}>
+              <Pictogram name="fat" size={11} />{entry.fat}
+            </span>
           </span>
         </div>
 

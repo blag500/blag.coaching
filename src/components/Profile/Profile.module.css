@@ -218,6 +218,9 @@
   font-family: var(--font-heading);
   font-size: 9px;
   letter-spacing: 0.12em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .macroEditInput {

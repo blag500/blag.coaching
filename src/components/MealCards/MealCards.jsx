@@ -49,11 +49,13 @@ const CATEGORY_META = {
   any:       { label: 'ВСЯКО ХРАНЕНЕ',    color: '#78909C' },
 }
 
+/* Каноничните цветове. Мазнините тук бяха в акцента, а калориите в розово —
+   същият макрос с различен цвят според екрана. */
 const MACRO_META = [
-  { key: 'kcal',    label: 'ККАЛ',         unit: '',  color: '#F06292', max: 550 },
-  { key: 'protein', label: 'ПРОТЕИН',       unit: 'g', color: 'var(--macro-protein)', max: 50  },
-  { key: 'carbs',   label: 'ВЪГЛЕХИДРАТИ', unit: 'g', color: 'var(--macro-carbs)', max: 100 },
-  { key: 'fat',     label: 'МАЗНИНИ',      unit: 'g', color: 'var(--accent)', max: 20  },
+  { key: 'kcal',    label: 'ККАЛ',         unit: '',  color: 'var(--accent)',        max: 550 },
+  { key: 'protein', label: 'ПРОТЕИН',      unit: 'g', color: 'var(--macro-protein)', max: 50  },
+  { key: 'carbs',   label: 'ВЪГЛЕХИДРАТИ', unit: 'g', color: 'var(--macro-carbs)',   max: 100 },
+  { key: 'fat',     label: 'МАЗНИНИ',      unit: 'g', color: 'var(--macro-fat)',     max: 20  },
 ]
 
 const CHIPS = [
@@ -103,7 +105,7 @@ function getFiltered(meals, query, activeChips) {
 
 // ── MacroRing ─────────────────────────────────────────────────────────────────
 
-function MacroRing({ value, unit, label, color, max }) {
+function MacroRing({ icon, value, unit, label, color, max }) {
   const r     = 20
   const circ  = 2 * Math.PI * r
   const ratio = Math.min(value / max, 1)
@@ -126,7 +128,10 @@ function MacroRing({ value, unit, label, color, max }) {
           {unit && <span className={styles.ringUnit}>{unit}</span>}
         </div>
       </div>
-      <span className={styles.ringLabel}>{label}</span>
+      <span className={styles.ringLabel}>
+        <span style={{ color }}><Pictogram name={icon} size={11} /></span>
+        {label}
+      </span>
     </div>
   )
 }
@@ -183,6 +188,7 @@ function MealCard({ meal, onDelete, canDelete }) {
             {MACRO_META.map(m => (
               <MacroRing
                 key={m.key}
+                icon={m.key}
                 value={meal[m.key] ?? meal.macros?.[m.key] ?? 0}
                 unit={m.unit}
                 label={m.label}
@@ -370,10 +376,10 @@ function AddMealModal({ onSave, onClose, onUploadPhoto }) {
         <label className={styles.fieldLabel}>Макроси (на порция)</label>
         <div className={styles.macroRow}>
           {[
-            { key: 'kcal',    ph: 'Ккал',       color: '#F06292' },
-            { key: 'protein', ph: 'Протеин g',   color: 'var(--macro-protein)' },
-            { key: 'carbs',   ph: 'Въгл. g',     color: 'var(--macro-carbs)' },
-            { key: 'fat',     ph: 'Мазн. g',     color: 'var(--accent)' },
+            { key: 'kcal',    ph: 'Ккал',      color: 'var(--accent)' },
+            { key: 'protein', ph: 'Протеин g',  color: 'var(--macro-protein)' },
+            { key: 'carbs',   ph: 'Въгл. g',    color: 'var(--macro-carbs)' },
+            { key: 'fat',     ph: 'Мазн. g',    color: 'var(--macro-fat)' },
           ].map(f => (
             <input
               key={f.key}

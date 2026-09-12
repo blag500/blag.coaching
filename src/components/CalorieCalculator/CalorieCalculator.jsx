@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import CoachOffer from '../CoachOffer/CoachOffer'
 import AvatarPicker from '../Onboarding/AvatarPicker'
 import { GOAL_ICON, TargetIcon } from '../Onboarding/StepIcons'
+import Pictogram from '../Pictogram/Pictogram'
 import calcStyles from './CalorieCalculator.module.css'
 import stepStyles from '../Onboarding/Onboarding.module.css'
 
@@ -450,13 +451,16 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
 
               <div className={s.macroGrid}>
                 {[
-                  { key: 'calories', label: t('cc.kcal'),    color: '#F06292' },
-                  { key: 'protein',  label: t('cc.protein'), color: 'var(--macro-protein)' },
-                  { key: 'carbs',    label: t('cc.carbs'),    color: 'var(--macro-carbs)' },
-                  { key: 'fat',      label: t('cc.fat'),    color: 'var(--accent)' },
+                  { key: 'calories', icon: 'kcal',    label: t('cc.kcal'),    color: 'var(--accent)' },
+                  { key: 'protein',  icon: 'protein', label: t('cc.protein'), color: 'var(--macro-protein)' },
+                  { key: 'carbs',    icon: 'carbs',   label: t('cc.carbs'),   color: 'var(--macro-carbs)' },
+                  { key: 'fat',      icon: 'fat',     label: t('cc.fat'),     color: 'var(--macro-fat)' },
                 ].map(m => (
                   <div key={m.key} className={s.macroCard} style={{ borderColor: `${m.color}40` }}>
-                    <label className={s.macroLabel} style={{ color: m.color }}>{m.label}</label>
+                    <label className={s.macroLabel} style={{ color: m.color }}>
+                      <Pictogram name={m.icon} size={13} />
+                      {m.label}
+                    </label>
                     <input
                       className={s.macroInput}
                       type="number" min="0"
@@ -649,13 +653,16 @@ export default function CalorieCalculator({ onBack, isOnboarding = false, onComp
                 <label className={calcStyles.label}>{t('cc.macrosFor', { name: t(selectedPreset.labelKey).toUpperCase() })}</label>
                 <div className={calcStyles.macroGrid}>
                   {[
-                    { key: 'kcal',    label: t('cc.kcal'),    val: selectedPreset.kcal,           color: '#F06292', unit: ''  },
+                    { key: 'kcal',    label: t('cc.kcal'),    val: selectedPreset.kcal,           color: 'var(--accent)',        unit: ''  },
                     { key: 'protein', label: t('cc.protein'), val: selectedPreset.macros.protein, color: 'var(--macro-protein)', unit: 'g' },
-                    { key: 'carbs',   label: t('cc.carbs'),    val: selectedPreset.macros.carbs,   color: 'var(--macro-carbs)', unit: 'g' },
-                    { key: 'fat',     label: t('cc.fat'),    val: selectedPreset.macros.fat,     color: 'var(--accent)', unit: 'g' },
+                    { key: 'carbs',   label: t('cc.carbs'),   val: selectedPreset.macros.carbs,   color: 'var(--macro-carbs)',   unit: 'g' },
+                    { key: 'fat',     label: t('cc.fat'),     val: selectedPreset.macros.fat,     color: 'var(--macro-fat)',     unit: 'g' },
                   ].map(m => (
                     <div key={m.key} className={calcStyles.macroCard} style={{ borderColor: m.color + '40' }}>
-                      <span className={calcStyles.macroLabel} style={{ color: m.color }}>{m.label}</span>
+                      <span className={calcStyles.macroLabel} style={{ color: m.color }}>
+                        <Pictogram name={m.key} size={13} />
+                        {m.label}
+                      </span>
                       <span className={calcStyles.macroVal} style={{ color: m.color }}>
                         {m.val}<span className={calcStyles.macroUnit}>{m.unit}</span>
                       </span>

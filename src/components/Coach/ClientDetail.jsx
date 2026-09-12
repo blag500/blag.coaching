@@ -22,6 +22,18 @@ import styles from './ClientDetail.module.css'
 import { loc } from '../../utils/locale'
 import Pictogram from '../Pictogram/Pictogram'
 
+/* Рисунката и цветът на всеки макрос — същите, които клиентът вижда на своя
+   екран. Треньорът гледа същите числа; ако при него те са сиви редове, а при
+   клиента — цветни знаци, двамата говорят за едно и също с различни думи. */
+const MACRO_ICON  = { calories: 'kcal', kcal: 'kcal', protein: 'protein', carbs: 'carbs', fat: 'fat' }
+const MACRO_COLOR = {
+  calories: 'var(--accent)',
+  kcal:     'var(--accent)',
+  protein:  'var(--macro-protein)',
+  carbs:    'var(--macro-carbs)',
+  fat:      'var(--macro-fat)',
+}
+
 const TABS = [
   { id: 'progress',   labelKey: 'cd.tab.progress' },
   { id: 'chat',       labelKey: 'cd.tab.chat' },
@@ -184,7 +196,14 @@ export default function ClientDetail({ client: initialClient, onBack, onDelete }
             { key: 'fat',      label: t('cd.fatG') },
           ].map(({ key, label }) => (
             <div key={key} className={styles.macroField}>
-              <label className={styles.macroLabel}>{label}</label>
+              <label className={styles.macroLabel}>
+                {MACRO_ICON[key] && (
+                  <span className={styles.macroIcon} style={{ color: MACRO_COLOR[key] }}>
+                    <Pictogram name={MACRO_ICON[key]} size={12} />
+                  </span>
+                )}
+                {label}
+              </label>
               <input
                 className={styles.macroInput}
                 type="number"
@@ -682,7 +701,14 @@ function NutritionTab({ client }) {
             { key: 'fat',     label: t('cd.fatLower') },
           ].map(({ key, label }) => (
             <div key={key} className={styles.logEditField}>
-              <label className={styles.logEditLabel}>{label}</label>
+              <label className={styles.logEditLabel}>
+                {MACRO_ICON[key] && (
+                  <span className={styles.macroIcon} style={{ color: MACRO_COLOR[key] }}>
+                    <Pictogram name={MACRO_ICON[key]} size={12} />
+                  </span>
+                )}
+                {label}
+              </label>
               <input className={styles.logEditInput} type="number" min="0"
                 value={draft[key]}
                 onChange={e => setDraft(prev => ({ ...prev, [key]: e.target.value }))}
@@ -791,7 +817,14 @@ function NutritionTab({ client }) {
               { key: 'grams',   label: t('cd.gramsG') },
             ].map(({ key, label }) => (
               <div key={key} className={styles.addFoodField}>
-                <label className={styles.addFoodLabel}>{label}</label>
+                <label className={styles.addFoodLabel}>
+                  {MACRO_ICON[key] && (
+                    <span className={styles.macroIcon} style={{ color: MACRO_COLOR[key] }}>
+                      <Pictogram name={MACRO_ICON[key]} size={12} />
+                    </span>
+                  )}
+                  {label}
+                </label>
                 <input
                   className={styles.addFoodInput}
                   type="number" min="0" step="0.1" placeholder="0"
@@ -1040,7 +1073,14 @@ function LiftsTab({ clientId }) {
                   { key: 'sets',   label: t('cd.sets'), step: '1'   },
                 ].map(({ key, label, step }) => (
                   <div key={key} className={styles.addFoodField}>
-                    <label className={styles.addFoodLabel}>{label}</label>
+                    <label className={styles.addFoodLabel}>
+                  {MACRO_ICON[key] && (
+                    <span className={styles.macroIcon} style={{ color: MACRO_COLOR[key] }}>
+                      <Pictogram name={MACRO_ICON[key]} size={12} />
+                    </span>
+                  )}
+                  {label}
+                </label>
                     <input
                       className={styles.addFoodInput}
                       type="number" min="0" step={step} placeholder="—"
@@ -1097,7 +1137,14 @@ function LiftsTab({ clientId }) {
                         { key: 'sets',   label: t('cd.sets'), step: '1'   },
                       ].map(({ key, label, step }) => (
                         <div key={key} className={styles.logEditField}>
-                          <label className={styles.logEditLabel}>{label}</label>
+                          <label className={styles.logEditLabel}>
+                {MACRO_ICON[key] && (
+                  <span className={styles.macroIcon} style={{ color: MACRO_COLOR[key] }}>
+                    <Pictogram name={MACRO_ICON[key]} size={12} />
+                  </span>
+                )}
+                {label}
+              </label>
                           <input className={styles.logEditInput}
                             type="number" min="0" step={step}
                             value={draft[key]}

@@ -75,6 +75,9 @@
   font-family: var(--font-heading);
   font-size: 9px;
   letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .macroField input {
@@ -189,10 +192,11 @@
   gap: 8px;
 }
 
-.legendDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+/* Точката стана рисунка. Цветно кръгче казва „този цвят е този ред" и нищо
+   повече; знакът казва кой макрос е — същият знак, който стои на всеки друг
+   екран с макроси. */
+.legendIcon {
+  display: flex;
   flex-shrink: 0;
 }
 
@@ -244,9 +248,14 @@
   font-family: var(--font-body);
   font-size: 10px;
   color: var(--muted);
-  width: 26px;
+  width: 46px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+
+.projIcon { display: flex; }
 
 .projTrack {
   flex: 1;
