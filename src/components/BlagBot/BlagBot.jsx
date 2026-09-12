@@ -141,6 +141,20 @@ export default function BlagBot({ onMenuOpen }) {
     if (el) el.scrollTop = el.scrollHeight
   }, [messages, typing])
 
+  /* И при клавиатурата. Тя изяжда половината екран, разговорът се свива до
+     една лента и последната реплика излиза извън нея — човекът отваря полето,
+     за да отговори, и губи от поглед това, на което отговаря. */
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const toBottom = () => {
+      const el = feedRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    }
+    vv.addEventListener('resize', toBottom)
+    return () => vv.removeEventListener('resize', toBottom)
+  }, [])
+
   async function ask() {
     const q = draft.trim()
     if (!q || asking) return

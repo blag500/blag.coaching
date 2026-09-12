@@ -7,7 +7,9 @@
   height: 100vh;
   max-width: 480px;
   margin: 0 auto;
-  padding: 0 16px calc(92px + env(safe-area-inset-bottom) + var(--kb-inset, 0px));
+  /* Без запас за лентата: на този екран тя се прибира. Остава само
+     безопасната зона и височината на клавиатурата, когато я има. */
+  padding: 0 16px calc(12px + env(safe-area-inset-bottom) + var(--kb-inset, 0px));
   transition: padding-bottom 180ms var(--ease-out);
 }
 
