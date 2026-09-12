@@ -33,6 +33,7 @@ export default {
   "bot.waiting": "чака мрежа",
   "bot.mic.start": "Диктувай",
   "bot.mic.stop": "Спри диктуването",
+  "bot.close": "Затвори бота",
   "bot.newChat": "Нов разговор",
   "bot.earlier": "ПО-РАНО",
   "bot.noChats": "Още няма разговори.",

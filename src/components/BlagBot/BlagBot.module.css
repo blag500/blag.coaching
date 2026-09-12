@@ -175,13 +175,27 @@
   text-align: center;
 }
 
+/* Лицето горе. Бутон, но изглежда точно като снимката, която беше: полетът на
+   балончето каца на неговото място и всяка разлика в размера би се видяла като
+   подскок в последния кадър. */
 .headFace {
   width: 30px;
   height: 30px;
   flex-shrink: 0;
+  padding: 0;
   border-radius: 50%;
-  object-fit: cover;
   border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  display: block;
+}
+
+.headFace img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Лицето до всеки отговор е бутон: натискането му свива разговора обратно. */

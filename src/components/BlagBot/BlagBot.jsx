@@ -258,6 +258,15 @@ export default function BlagBot({ open, from = null, onClose }) {
   const [closing, setClosing] = useState(false)
   const closeTimer = useRef(null)
 
+  /* Натиснато празно място затваря.
+     Проверява се, че натиснатото е самият съд, а не нещо в него: иначе всеки
+     разговор в списъка щеше и да се отваря, и да затваря слоя. Отдолу се вижда
+     страницата, на която човекът е бил — натискането „встрани" значи „връщам
+     се там", както при всяко чекмедже. */
+  function closeOnEmpty(e) {
+    if (e.target === e.currentTarget) collapse()
+  }
+
   function collapse() {
     if (closing) return
     setClosing(true)
@@ -267,6 +276,48 @@ export default function BlagBot({ open, from = null, onClose }) {
        двете са свършили — измерено, полетът каца на 320-ия милисекунд. */
     closeTimer.current = setTimeout(() => { setClosing(false); onClose() }, 340)
   }
+
+  /* Страницата отдолу се заключва, докато слоят е отворен.
+   *
+   * Иначе, щом се натисне полето за писане, iOS вдига клавиатурата и сам
+   * скролва страницата, за да „покаже" полето. Само че полето вече е видимо:
+   * слоят е `position: fixed` и си стои над всичко. Резултатът беше, че целият
+   * слой се изтегля нагоре — заглавието излиза от екрана, а разговорът се
+   * изрязва отгоре.
+   *
+   * Заключването е познатото: тялото става неподвижно, а мястото, докъдето е
+   * било скролнато, се пази в отрицателен `top`, за да не подскочи страницата
+   * при отваряне и при затваряне. Няма ли какво да се скролва, няма и какво да
+   * се измести.
+   */
+  useEffect(() => {
+    if (!open) return
+    const body = document.body
+    const y = window.scrollY
+    const was = {
+      position: body.style.position,
+      top:      body.style.top,
+      left:     body.style.left,
+      right:    body.style.right,
+      overflow: body.style.overflow,
+    }
+    body.style.position = 'fixed'
+    body.style.top      = `-${y}px`
+    body.style.left     = '0'
+    body.style.right    = '0'
+    body.style.overflow = 'hidden'
+
+    return () => {
+      body.style.position = was.position
+      body.style.top      = was.top
+      body.style.left     = was.left
+      body.style.right    = was.right
+      body.style.overflow = was.overflow
+      /* Обратно там, където човекът е бил: без това всяко затваряне на бота
+         връща страницата в началото ѝ. */
+      window.scrollTo(0, y)
+    }
+  }, [open])
 
   /* Полетът на лицето.
    *
@@ -611,11 +662,21 @@ export default function BlagBot({ open, from = null, onClose }) {
           ) : (
             <span className={styles.title}>{t('nav.bot')}</span>
           )}
-          <img
+          {/* Лицето горе затваря, както го прави и лицето до всеки отговор.
+              То е мястото, на което току-що е кацнало балончето — окото го е
+              проследило дотам и ръката го търси първо. */}
+          <button
+            type="button"
             ref={faceRef}
             className={`${styles.headFace} ${(flying || (closing && from)) ? styles.faceWaiting : ''}`}
-            src="/bot.webp" alt="" width="30" height="30"
-          />
+            onClick={collapse}
+            /* Свой надпис, не същият като на стрелката: два бутона с едно и
+               също име в една лента са два пъти един и същ бутон за човек,
+               който слуша екрана. */
+            aria-label={t('bot.close')}
+          >
+            <img src="/bot.webp" alt="" width="30" height="30" />
+          </button>
         </header>
 
       {bubbleGone && (
@@ -633,7 +694,7 @@ export default function BlagBot({ open, from = null, onClose }) {
           Натискането на балончето пита кое — вместо да реши вместо човека и
           после да се окаже, че е продължило вчерашен спор с днешен въпрос. */}
       {!chatId ? (
-        <div className={styles.chats}>
+        <div className={styles.chats} onClick={closeOnEmpty}>
           <button type="button" className={styles.newChat} onClick={newChat}>
             <Pictogram name="plus" size={17} />
             {t('bot.newChat')}
@@ -687,7 +748,7 @@ export default function BlagBot({ open, from = null, onClose }) {
           )}
         </div>
       ) : (
-        <div className={styles.feed} ref={feedRef}>
+        <div className={styles.feed} ref={feedRef} onClick={closeOnEmpty}>
           {loadingChat && <p className={styles.chatsEmpty}>…</p>}
           {messages.map(m =>
             m.from === 'bot'
@@ -721,6 +782,13 @@ export default function BlagBot({ open, from = null, onClose }) {
           placeholder={t('bot.placeholder')}
           maxLength={MAX_Q}
           disabled={asking}
+          /* Клавиатурата изяжда долната половина на разговора. Последната
+             реплика е тази, заради която се пише — тя трябва да остане на
+             екрана. Четвърт секунда, колкото да е свършило вдигането. */
+          onFocus={() => setTimeout(() => {
+            const el = feedRef.current
+            if (el) el.scrollTop = el.scrollHeight
+          }, 260)}
         />
         {/* Микрофонът го има само там, където браузърът може да слуша: Chrome и
             Samsung Internet на Android. Бутон, който не прави нищо, е по-лош от

@@ -32,6 +32,7 @@ export default {
   "bot.waiting": "waiting for network",
   "bot.mic.start": "Dictate",
   "bot.mic.stop": "Stop dictation",
+  "bot.close": "Close the bot",
   "bot.newChat": "New chat",
   "bot.earlier": "EARLIER",
   "bot.noChats": "No chats yet.",

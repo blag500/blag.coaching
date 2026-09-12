@@ -1104,3 +1104,42 @@ test.describe('Диктуване', () => {
     expect(await page.evaluate(() => window.__recLang)).toBe('bg-BG')
   })
 })
+
+test.describe('Затваряне на бота', () => {
+  test('затваряне от празното и от лицето', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    const bubble = page.locator('button[aria-label="БЛАГ БОТ"]')
+  
+    // 1. Празното място под списъка.
+    await bubble.click()
+    await page.waitForTimeout(1000)
+    await expect(page.getByText('Нов разговор')).toBeVisible()
+    const vp = page.viewportSize()
+    await page.mouse.click(vp.width / 2, vp.height - 160)   // празното под списъка
+    await page.waitForTimeout(900)
+    await expect(page.getByText('Нов разговор')).toHaveCount(0)
+    await expect(bubble).toBeVisible()
+  
+    // 2. Лицето горе вдясно.
+    await bubble.click()
+    await page.waitForTimeout(1000)
+    await page.locator('header button[aria-label="Затвори бота"]').click()
+    await page.waitForTimeout(900)
+    await expect(page.getByText('Нов разговор')).toHaveCount(0)
+  
+    // 3. Заключването пуска страницата, щом слоят си отиде.
+    expect(await page.evaluate(() => document.body.style.position)).not.toBe('fixed')
+  
+    // 4. А натискане върху разговор го отваря, вместо да затваря слоя.
+    await bubble.click()
+    await page.waitForTimeout(1000)
+    await page.getByText('Три пъти в четвъртък').click()
+    await page.waitForTimeout(900)
+    await expect(page.getByText('Пропуснал си тренировката')).toBeVisible()
+    // И докато е отворен, страницата отдолу е заключена: иначе клавиатурата
+    // издърпва целия слой нагоре.
+    expect(await page.evaluate(() => document.body.style.position)).toBe('fixed')
+  })
+})
