@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { usePostComments } from '../../hooks/useFeed'
@@ -157,6 +157,38 @@ const ACH_COLOR = {
   plan:     '#42A5F5',
 }
 
+/* Дългият пост се свива.
+ *
+ * Фийдът е за прелистване, а един човек, който е написал двайсет реда, не бива
+ * да изяде екрана на следващите трима. Пет реда, после „още" — мярката не е
+ * брой знаци, защото един и същ брой знаци заема различно място на различен
+ * телефон; мери се самият блок, след като браузърът го е пренесъл. */
+function PostBody({ text }) {
+  const { t } = useSettings()
+  const ref = useRef(null)
+  const [over, setOver]         = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    setOver(el.scrollHeight > el.clientHeight + 1)
+  }, [text])
+
+  return (
+    <div className={styles.postBodyWrap}>
+      <p ref={ref} className={`${styles.postBody} ${expanded ? '' : styles.postBodyClamp}`}>
+        {text}
+      </p>
+      {over && !expanded && (
+        <button type="button" className={styles.postMore} onClick={() => setExpanded(true)}>
+          {t('feed.readMore')}
+        </button>
+      )}
+    </div>
+  )
+}
+
 export default function PostCard({ post, onToggleLike, onDelete, onCommentCountChange, onOpenAuthor, readOnly = false, index = null }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
@@ -234,7 +266,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
         </div>
       ) : (
         <>
-          {post.body && <p className={styles.postBody}>{post.body}</p>}
+          {post.body && <PostBody text={post.body} />}
           {post.photoUrl && (
             <div className={styles.postPhoto}>
               <img src={post.photoUrl} alt="" loading="lazy" />

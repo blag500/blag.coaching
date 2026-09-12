@@ -39,6 +39,7 @@ export default {
   'feed.comment.placeholder':  'Напиши коментар',
   'feed.comment.send':         'ПРАТИ',
   'feed.more':                 'ОЩЕ',
+  'feed.readMore':             'още',
   'feed.empty':                'ТУК ОЩЕ Е ТИХО',
   'feed.emptySub':             'Първият пост е твой.',
   'feed.err.upload':           'Снимката не се качи.',

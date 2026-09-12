@@ -38,6 +38,7 @@ export default {
   'feed.comment.placeholder':  'Write a comment',
   'feed.comment.send':         'SEND',
   'feed.more':                 'MORE',
+  'feed.readMore':             'more',
   'feed.empty':                'QUIET IN HERE',
   'feed.emptySub':             'The first post is yours.',
   'feed.err.upload':           'The photo did not upload.',

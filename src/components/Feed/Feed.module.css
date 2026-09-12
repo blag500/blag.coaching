@@ -188,6 +188,8 @@
 }
 .postDropYes { border-color: var(--red); color: var(--red); }
 
+.postBodyWrap { position: relative; }
+
 .postBody {
   font-family: var(--font-body);
   font-size: 13px;
@@ -196,6 +198,30 @@
   margin: 12px 0 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.postBodyClamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* „още" стои на свой ред, а не залепено в края на отрязания.
+   Вторият вариант изглежда по-добре само там, където зад думата може да се
+   сложи плътен цвят — а панелът тук е полупрозрачен и в трите теми, така че
+   прикриващата преливка би оставила предишната дума да прозира изпод изхода
+   от нея. */
+.postMore {
+  display: block;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--accent);
 }
 
 .postPhoto {
@@ -206,29 +232,36 @@
 }
 .postPhoto img { display: block; width: 100%; object-fit: cover; }
 
+/* Действията са хапчета, не голи иконки.
+   Иконка без очертание върху карта е мишена, която се познава само след като
+   я уцелиш веднъж; хапчето казва къде свършва. Затова и чертата отгоре падна —
+   собственият им контур вече дели реда от текста. */
 .postFoot {
   display: flex;
-  gap: 6px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
+  gap: 8px;
+  margin-top: 14px;
 }
 .postAction {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: none;
+  gap: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   color: var(--muted);
   font-family: var(--font-body);
   font-size: 11px;
-  padding: 5px 8px;
-  border-radius: var(--r-sm);
+  padding: 7px 13px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: color 160ms var(--ease-out), transform 160ms var(--ease-out);
+  transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out),
+              background 160ms var(--ease-out), transform 160ms var(--ease-out);
 }
 .postAction:active { transform: scale(0.92); }
-.postActionOn { color: var(--accent); }
+.postActionOn {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: rgba(var(--accent-rgb), 0.1);
+}
 
 /* ── Постижение ───────────────────────────────────────────────── */
 /* Рамка в акцента и топъл фон: това е редът, който приложението е написало

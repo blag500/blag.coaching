@@ -123,6 +123,13 @@ export const TABLES = {
   posts: [
     { id: 'p1', user_id: 'u-ivan', body: 'Първа тренировка от седмицата.', photo_url: null,
       created_at: new Date().toISOString(), kind: 'post', meta: null, post_likes: [], post_comments: [] },
+    /* Дълъг пост — иначе свиването до пет реда и „още" не се виждат на нито
+       една снимка и всяка промяна по тях минава невидяна. */
+    { id: 'p2', user_id: 'u-coach',
+      body: 'Няколко думи за седмицата, защото ме питат едно и също.' + String.fromCharCode(10, 10) +
+            'Обемът се вдига само когато възстановяването го носи — ако спиш по пет часа и се влачиш, добавен сет няма да те направи по-силен, а само по-уморен. Гледайте съня и стъпките преди да гледате килограмите на лоста. Храненето го оставяме както е, без промени до неделя; който има въпрос по макросите, да пише лично, а не тук.',
+      photo_url: null, created_at: new Date(Date.now() - 3600e3).toISOString(),
+      kind: 'post', meta: null, post_likes: [], post_comments: [] },
   ],
   friendships: [
     { id: 'fr1', requester_id: USER_ID, addressee_id: 'u-ivan',  status: 'accepted', created_at: new Date().toISOString() },
