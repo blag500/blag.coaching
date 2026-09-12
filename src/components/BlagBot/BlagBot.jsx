@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import Pictogram from '../Pictogram/Pictogram'
 import { isHidden, setHidden } from './botBubbleStore'
 import { logFoodRows } from '../../hooks/useFoodLog'
+import { enqueueQuestion, dropQuestion, queued } from './botQueue'
 import styles from './BlagBot.module.css'
 
 /**
@@ -185,10 +186,17 @@ function BotBubble({ text, onClose, closeLabel, plan, planState, onLog, onSkip, 
   )
 }
 
-function UserBubble({ text }) {
+function UserBubble({ text, waiting, t }) {
   return (
     <div className={`${styles.bubbleRow} ${styles.userRow}`}>
-      <div className={`${styles.bubble} ${styles.userBubble}`}>{text}</div>
+      <div className={styles.userSide}>
+        <div className={`${styles.bubble} ${styles.userBubble} ${waiting ? styles.userWaiting : ''}`}>
+          {text}
+        </div>
+        {/* Чака мрежа. Казва се, защото иначе питането изглежда пренебрегнато
+            и човекът го пише втори път. */}
+        {waiting && <span className={styles.waitNote}>{t('bot.waiting')}</span>}
+      </div>
     </div>
   )
 }
@@ -307,8 +315,36 @@ export default function BlagBot({ open, from = null, onClose }) {
   const feedRef  = useRef(null)
   const inputRef = useRef(null)
 
-  const add = (from, text, extra = null) =>
-    setMessages(p => [...p, { from, text, id: Date.now() + Math.random(), ...extra }])
+  const add = (from, text, extra = null) => {
+    const id = Date.now() + Math.random()
+    setMessages(p => [...p, { from, text, id, ...extra }])
+    return id
+  }
+
+  /* Изпращането на един въпрос. Изнесено, защото се вика от две места: когато
+     човекът натисне, и когато мрежата се върне и опашката тръгне. */
+  async function send(question, id, msgId) {
+    const { data, error } = await supabase.functions.invoke('blag-bot', {
+      body: { question, chatId: id },
+    })
+    if (error) throw error
+
+    setMessages(p => p.map(m => m.id === msgId ? { ...m, waiting: false } : m))
+    add('bot', data?.reply ?? t('bot.err'), {
+      ...(data?.draft?.items?.length ? { plan: data.draft } : null),
+      ...(data?.sources?.length ? { sources: data.sources } : null),
+    })
+
+    /* Подредбата в списъка е по последно казано, значи нишката се вдига отгоре
+       при всяка реплика. */
+    if (id) {
+      supabase.from('bot_chats').update({ updated_at: new Date().toISOString() })
+        .eq('id', id).then(() => {}, () => {})
+      setChats(prev => prev.map(c => c.id === id
+        ? { ...c, updated_at: new Date().toISOString() }
+        : c))
+    }
+  }
 
   /* Вписването на разчетеното.
      Редовете отиват в дневника, а приетото и отказаното се помнят като
@@ -371,6 +407,44 @@ export default function BlagBot({ open, from = null, onClose }) {
 
   /* Отваряне на съществуваща нишка. Репликите идват от базата, не от паметта
      на телефона — тя пази само последния разговор, а тук се избира кой да е. */
+  /* Чакащите въпроси. Опитват се при връщане на мрежата, при отваряне на
+     приложението и при отваряне на разговора — трите поводa, на които и общата
+     опашка стъпва. Спира при първия отказ: редът на въпросите е част от
+     разговора. */
+  const flushQuestions = useRef(false)
+  useEffect(() => {
+    if (!user?.id) return
+
+    const go = async () => {
+      if (flushQuestions.current || !navigator.onLine) return
+      const list = queued()
+      if (!list.length) return
+      flushQuestions.current = true
+      try {
+        for (const item of list) {
+          try {
+            await send(item.question, item.chatId, item.msgId)
+            dropQuestion(item.msgId)
+          } catch {
+            break
+          }
+        }
+      } finally {
+        flushQuestions.current = false
+      }
+    }
+
+    go()
+    window.addEventListener('online', go)
+    const onShow = () => { if (document.visibilityState === 'visible') go() }
+    document.addEventListener('visibilitychange', onShow)
+    return () => {
+      window.removeEventListener('online', go)
+      document.removeEventListener('visibilitychange', onShow)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, open])
+
   async function openChat(id) {
     setChatId(id)
     setLoadingChat(true)
@@ -436,16 +510,21 @@ export default function BlagBot({ open, from = null, onClose }) {
     const q = draft.trim()
     if (!q || asking) return
     setDraft('')
-    add('user', q)
+    const msgId = add('user', q)
     setAsking(true)
     setTyping(true)
+
+    /* Нишката се държи извън `try`, за да я има и в `catch`: `setChatId` не е
+       свършил дотогава, а без мрежа въпросът трябва да отиде на опашката с
+       вярната нишка. Иначе отговорът му пристига в купчината без нишка и
+       разговорът се къса на две. */
+    let id = chatId === 'new' ? null : chatId
     try {
       /* Нишката се създава при първия въпрос, не при натискането на „нов":
          разговор без нито една реплика е ред в списъка, който не значи нищо.
          Заглавието е самият въпрос, отрязан — разговорът се разпознава по
          това, с което е започнал. */
-      let id = chatId
-      if (id === 'new' || !id) {
+      if (!id) {
         const { data: made } = await supabase.from('bot_chats')
           .insert({ user_id: user.id, title: q.slice(0, 60) })
           .select('id, title, updated_at')
@@ -457,33 +536,28 @@ export default function BlagBot({ open, from = null, onClose }) {
         }
       }
 
-      const { data, error } = await supabase.functions.invoke('blag-bot', {
-        body: { question: q, chatId: id },
-      })
-      setTyping(false)
       /* Разчетеното живее само в този разговор на този телефон: отваряш ли
          нишката пак, картата я няма — тя е предложение за сега, а не ред,
          който чака вечно. */
-      add('bot', (!error && data?.reply) ? data.reply : t('bot.err'),
-          !error
-            ? {
-                ...(data?.draft?.items?.length ? { plan: data.draft } : null),
-                ...(data?.sources?.length ? { sources: data.sources } : null),
-              }
-            : null)
-
-      /* Подредбата в списъка е по последно казано, значи нишката се вдига
-         отгоре при всяка реплика. */
-      if (id) {
-        supabase.from('bot_chats').update({ updated_at: new Date().toISOString() })
-          .eq('id', id).then(() => {}, () => {})
-        setChats(prev => prev.map(c => c.id === id
-          ? { ...c, updated_at: new Date().toISOString() }
-          : c))
-      }
-    } catch {
+      await send(q, id, msgId)
       setTyping(false)
-      add('bot', t('bot.err'))
+    } catch (e) {
+      setTyping(false)
+      /* Без мрежа въпросът не се губи и не става „нещо се обърка": остава в
+         разговора със знак, че чака, и заминава, щом сигналът се върне. Точно
+         там, където се пита, сигнал често няма — сутеренът на залата, магазинът.
+         Отговорът влиза в базата от самата функция, значи ще е в нишката дори
+         питането да е заминало при затворен разговор. */
+      if (!navigator.onLine || /fetch|network|failed/i.test(String(e?.message ?? ''))) {
+        setMessages(p => p.map(m => m.id === msgId ? { ...m, waiting: true } : m))
+        /* Ако и създаването на нишката не е минало, `id` е null: въпросът пак
+           заминава, но отговорът влиза без нишка. Рядък случай — за него трябва
+           първият въпрос в нов разговор да падне точно между двете заявки — и
+           по-добър от изгубен въпрос. */
+        enqueueQuestion({ chatId: id, question: q, msgId })
+      } else {
+        add('bot', t('bot.err'))
+      }
     } finally {
       setAsking(false)
       inputRef.current?.focus()
@@ -620,7 +694,7 @@ export default function BlagBot({ open, from = null, onClose }) {
                   sources={m.sources}
                   t={t}
                 />
-              : <UserBubble key={m.id} text={m.text} />
+              : <UserBubble key={m.id} text={m.text} waiting={m.waiting} t={t} />
           )}
           {typing && <TypingIndicator />}
         </div>

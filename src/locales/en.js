@@ -29,6 +29,7 @@ export default {
   "bot.from": "from:",
   "bot.noticed": "noticed",
   "bot.unread": "unread",
+  "bot.waiting": "waiting for network",
   "bot.newChat": "New chat",
   "bot.earlier": "EARLIER",
   "bot.noChats": "No chats yet.",

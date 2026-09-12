@@ -102,6 +102,15 @@ const EXTRACT = `Ти разчиташ изречение, с което чов�
 - Няколко храни в едно изречение са няколко реда.
 - Най-много шест реда.`
 
+/* Заглавието на пораснал разговор.
+   Кратко до немай-къде: списъкът е тесен и реже на един ред, значи всяка дума
+   над четвъртата и без това не се вижда. */
+const TITLE = `Дай заглавие на този разговор.
+
+До четири думи на български. Без кавички, без точка, без думата „разговор".
+Заглавието казва за какво се е говорило, не кой е питал.
+Отговаряш само със заглавието.`
+
 const MAX_Q = 500
 
 function json(body: unknown, status = 200) {
@@ -461,12 +470,49 @@ Deno.serve(async (req) => {
     { user_id: uid, chat_id: chatId, role: 'bot',  content: reply, context },
   ])
 
+  /* Прекрояването на заглавието.
+     Заглавието е първият въпрос, отрязан — добро за нов разговор, но след
+     третата реплика често вече не описва за какво е станало дума: питал е
+     „колко ми остава до целта", а разговорът е свършил с подреждане на
+     закуската. Затова веднъж, когато нишката порасне, заглавието се прекроява
+     от самия разговор. Веднъж, не при всяка реплика — заглавие, което се мени
+     всеки път, е заглавие, по което не може да се търси с памет.
+     Става на заден план: човекът вече има отговора си. */
+  const retitle = async () => {
+    if (!chatId) return
+    try {
+      const { data: chat } = await admin.from('bot_chats')
+        .select('title_auto').eq('id', chatId).maybeSingle()
+      if (!chat || chat.title_auto) return
+
+      const { data: all } = await admin.from('bot_messages')
+        .select('role, content').eq('chat_id', chatId)
+        .order('created_at', { ascending: true }).limit(12)
+      /* Шест реплики: под това разговорът още е един въпрос с отговор и
+         първият въпрос си е точното заглавие. */
+      if (!all || all.length < 6) return
+
+      const made = await ask(apiKey, [
+        { role: 'system', content: TITLE },
+        { role: 'user', content: all.map(m => `${m.role}: ${m.content}`).join('\n') },
+      ], 60)
+      if (!made) return
+
+      const clean = made.replace(/["„""'.]/g, '').trim().slice(0, 60)
+      if (!clean) return
+      await admin.from('bot_chats').update({ title: clean, title_auto: true }).eq('id', chatId)
+    } catch {
+      /* Заглавието е удобство: стар вид заглавие е по-добре от паднал отговор. */
+    }
+  }
+
   /* Ученето. Става рядко и наведнъж, не при всеки въпрос: свиването е втори
      разговор с модела и би удвоило чакането за нещо, което се променя веднъж
      на десет реплики. */
   const after = async () => {
     try {
       await remember
+      await retitle
       const [{ count: evCount }, { count: msgCount }] = await Promise.all([
         admin.from('bot_events').select('id', { count: 'exact', head: true }).eq('user_id', uid),
         admin.from('bot_messages').select('id', { count: 'exact', head: true }).eq('user_id', uid),

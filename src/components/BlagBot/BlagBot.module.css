@@ -648,3 +648,28 @@
   border-radius: 50%;
   background: var(--accent);
 }
+
+/* Въпрос, който чака мрежа. Приглушен, не зачертан: той не е отказан, а още
+   не е заминал. */
+.userSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+  max-width: 86%;
+}
+
+.userSide .bubble {
+  max-width: 100%;
+}
+
+.userWaiting {
+  opacity: 0.6;
+}
+
+.waitNote {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  padding-right: 4px;
+}

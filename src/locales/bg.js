@@ -30,6 +30,7 @@ export default {
   "bot.from": "от:",
   "bot.noticed": "забелязах",
   "bot.unread": "непрочетено",
+  "bot.waiting": "чака мрежа",
   "bot.newChat": "Нов разговор",
   "bot.earlier": "ПО-РАНО",
   "bot.noChats": "Още няма разговори.",

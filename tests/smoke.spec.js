@@ -1033,3 +1033,32 @@ test.describe('Ботът се обажда сам', () => {
     expect(marked).toBe(true)
   })
 })
+
+test.describe('Ботът без мрежа', () => {
+  test('въпрос без мрежа чака и заминава', async ({ page, context }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(900)
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(500)
+  
+    // Мрежата пада само за бота: макетът отговаря локално, затова се къса пътят.
+    await page.route('**/functions/v1/blag-bot**', r => r.abort())
+    await context.setOffline(true)
+  
+    await page.locator('input[placeholder="Питай ме нещо"]').fill('колко ми остават калории')
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(1500)
+    await expect(page.getByText('чака мрежа')).toBeVisible()
+    await expect(page.getByText('Днес си на 1 200 ккал от 2 400.')).toHaveCount(0)
+  
+    // Мрежата се връща.
+    await page.unroute('**/functions/v1/blag-bot**')
+    await context.setOffline(false)
+    await page.waitForTimeout(3000)
+    await expect(page.getByText('Днес си на 1 200 ккал от 2 400.')).toBeVisible()
+    await expect(page.getByText('чака мрежа')).toHaveCount(0)
+  })
+})

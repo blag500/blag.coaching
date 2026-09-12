@@ -303,7 +303,11 @@ Deno.serve(async (req) => {
          Влиза в същия списък като останалите: наблюдение, което живее в
          отделно място „известия", се чете веднъж и после никога. */
       const { data: chat } = await admin.from('bot_chats')
-        .insert({ user_id: uid, title: pick.title, kind: 'watch', unread: true })
+        /* title_auto вече е вярно: заглавието е дадено от правилото и е точно.
+           Прекрояването в blag-bot гледа този флаг — иначе, отговори ли човекът
+           пет-шест реплики, „Три пъти в четвъртък" щеше да бъде заменено с
+           преразказ на разговора. */
+        .insert({ user_id: uid, title: pick.title, kind: 'watch', unread: true, title_auto: true })
         .select('id').single()
 
       if (chat) {
