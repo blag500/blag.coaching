@@ -567,3 +567,53 @@
   font-size: 0.74rem;
   color: var(--text-dim);
 }
+
+/* ── Научено ────────────────────────────────────────────────────────────────
+   Под разговорите, не над тях: това е нещо, което се проверява от време на
+   време, а не всеки път. Всеки ред е махаем — това е единственият начин
+   човекът да поправи помощник, който е разбрал нещо наопаки. */
+.memory {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.memRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-1);
+}
+
+.memText {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.memForget {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.memHint {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  opacity: 0.75;
+  margin-top: 2px;
+}

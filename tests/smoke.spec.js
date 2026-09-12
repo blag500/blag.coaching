@@ -967,3 +967,28 @@ test.describe('Вписване с думи', () => {
     await expect(page.getByText('Впиши', { exact: true })).toHaveCount(0)
   })
 })
+
+test.describe('Паметта на бота', () => {
+  test('научените редове се четат и се махат поединично', async ({ page }) => {
+    test.setTimeout(60000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(1000)
+
+    /* Паметта стои на списъка с разговорите: това е мястото, където се влиза
+       без повод, а памет, която не може да се прочете, е памет, на която не
+       може да се вярва. */
+    await expect(page.getByText('Какво съм научил')).toBeVisible()
+    await expect(page.getByText('не яде риба')).toBeVisible()
+    await expect(page.getByText('тренира сутрин')).toBeVisible()
+    await page.screenshot({ path: 'shots/tmp-memory.png' })
+
+    // Махането е поединично: сгрешен ред не бива да изтрива верните.
+    const row = page.locator('div').filter({ hasText: /^не яде риба$/ }).first()
+    await row.locator('button[aria-label="Забрави това"]').click()
+    await page.waitForTimeout(600)
+    await expect(page.getByText('не яде риба')).toHaveCount(0)
+    await expect(page.getByText('тренира сутрин')).toBeVisible()
+  })
+})

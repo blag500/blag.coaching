@@ -198,6 +198,11 @@ export default function BlagBot({ open, from = null, onClose }) {
   const [chats, setChats]     = useState([])
   const [loadingChat, setLoadingChat] = useState(false)
 
+  /* Какво е научил за човека. Стои на списъка с разговорите, защото това е
+     единственото място, където се влиза без повод — а памет, която не може да
+     се прочете, е памет, на която не може да се вярва. */
+  const [learned, setLearned] = useState([])
+
   /* Махнато ли е балончето. Показва се само тогава: бутон „върни го", докато
      то си стои на екрана, е въпрос без повод. */
   const [bubbleGone, setBubbleGone] = useState(isHidden)
@@ -292,6 +297,30 @@ export default function BlagBot({ open, from = null, onClose }) {
       .then(() => {}, () => {})
   }
 
+
+  /* Научено. Редовете са свободен текст, свит от разговорите — тук се разбиват
+     на редове, за да може всеки да се маха поединично. Свитото наново ще ги
+     напише пак, ако продължава да е вярно; махнатото значи „това е сгрешено",
+     а не „забрави го за днес". */
+  useEffect(() => {
+    if (!open || !user?.id) return
+    supabase.from('bot_profile').select('learned').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        const lines = String(data?.learned ?? '')
+          .split('\n')
+          .map(l => l.replace(/^[-–—•\s]+/, '').trim())
+          .filter(Boolean)
+        setLearned(lines)
+      }, () => {})
+  }, [open, user?.id])
+
+  async function forget(line) {
+    const left = learned.filter(l => l !== line)
+    setLearned(left)
+    haptic('tap')
+    await supabase.from('bot_profile')
+      .upsert({ user_id: user.id, learned: left.join('\n'), updated_at: new Date().toISOString() })
+  }
 
   /* Списъкът се чете при всяко отваряне: разговор, започнат на друг телефон
      или вчера, трябва да е тук. */
@@ -489,6 +518,28 @@ export default function BlagBot({ open, from = null, onClose }) {
           ))}
 
           {chats.length === 0 && <p className={styles.chatsEmpty}>{t('bot.noChats')}</p>}
+
+          {/* Научено. Показва се само когато има нещо: заглавие над празно
+              място обещава памет, която още я няма. */}
+          {learned.length > 0 && (
+            <div className={styles.memory}>
+              <span className={styles.chatsHead}>{t('bot.mem.title')}</span>
+              {learned.map(line => (
+                <div key={line} className={styles.memRow}>
+                  <span className={styles.memText}>{line}</span>
+                  <button
+                    type="button"
+                    className={styles.memForget}
+                    onClick={() => forget(line)}
+                    aria-label={t('bot.mem.forget')}
+                  >
+                    <Pictogram name="close" size={15} />
+                  </button>
+                </div>
+              ))}
+              <span className={styles.memHint}>{t('bot.mem.hint')}</span>
+            </div>
+          )}
         </div>
       ) : (
         <div className={styles.feed} ref={feedRef}>

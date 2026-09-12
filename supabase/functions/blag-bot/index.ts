@@ -60,13 +60,19 @@ const SYSTEM = `Ти си Благ Бот — помощникът в прило
 
 /* Свиването на научено. Отделна подкана, защото задачата е друга: не разговор,
    а няколко реда наблюдение, които ще влязат в следващата подкана. */
-const DISTILL = `Ти четеш какво е предлагал един помощник за хранене и какво е приел или отказал човекът.
+const DISTILL = `Ти поддържаш кратък списък с това, което се знае за един човек.
 
-Напиши до шест кратки реда на български — какво си струва да се помни за този човек.
-Всеки ред е наблюдение, не съвет. Например: "отказва риба", "приема яйца на закуска", "не иска готвене над 15 минути".
+Получаваш какво се е помнело ДОСЕГА, какво е предлагал помощникът и какво е приел или отказал човекът, и последните им разговори.
 
-Пиши само наблюдения, които се виждат от данните. Ако нещо се е случило веднъж, не е правило.
-Без увод, без заключение, без номерация. Само редовете.`
+Напиши новия списък — до осем кратки реда на български.
+Всеки ред е наблюдение, не съвет. Например: "отказва риба", "приема яйца на закуска", "не иска готвене над 15 минути", "тренира сутрин".
+
+Правила:
+- Каквото е в ДОСЕГА и още е вярно, го запазваш дословно. Паметта не се пренаписва всеки път.
+- Каквото е в ДОСЕГА, но човекът е казал друго после, го махаш.
+- Добавяш новото, което се вижда от данните.
+- Нещо, което се е случило веднъж, не е правило — освен ако човекът не го е казал за себе си направо ("не ям риба", "тренирам в шест").
+- Без увод, без заключение, без номерация. Само редовете.`
 
 /* Разчитането на изречение в редове за дневника.
    Отделна подкана и температура нула: тук не се иска мнение, а числа. И
@@ -250,7 +256,7 @@ Deno.serve(async (req) => {
             .order('created_at', { ascending: false }).limit(8)
         : admin.from('bot_messages').select('role, content').eq('user_id', uid).is('chat_id', null)
             .order('created_at', { ascending: false }).limit(8)),
-      admin.from('bot_profile').select('learned, events_seen').eq('user_id', uid).maybeSingle(),
+      admin.from('bot_profile').select('learned, events_seen, messages_seen').eq('user_id', uid).maybeSingle(),
     ])
 
   // deno-lint-ignore no-explicit-any
@@ -425,22 +431,36 @@ Deno.serve(async (req) => {
   const after = async () => {
     try {
       await remember
-      const { count } = await admin
-        .from('bot_events')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', uid)
+      const [{ count: evCount }, { count: msgCount }] = await Promise.all([
+        admin.from('bot_events').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+        admin.from('bot_messages').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+      ])
 
-      const seen  = learned.data?.events_seen ?? 0
-      const total = count ?? 0
-      /* Десет нови събития или първите три: под този праг „научено" щеше да е
-         догадка от един случай, а точно това подканата забранява. */
-      if (total - seen < 10 && !(seen === 0 && total >= 3)) return
+      const seen    = learned.data?.events_seen ?? 0
+      const total   = evCount ?? 0
+      const seenMsg = learned.data?.messages_seen ?? 0
+      const totMsg  = msgCount ?? 0
+
+      /* Два брояча, защото има два вида учене.
+         Събитие се пише, когато ботът предложи нещо и човекът го приеме или
+         откаже — това учи какво яде. Но най-важното се казва с думи и веднъж:
+         „не ям риба", „тренирам в шест". Такова изречение не вдига нито едно
+         събитие и дотук не влизаше в паметта никога.
+         Десет събития или дванайсет реплики; а първият път — при три събития
+         или шест реплики, колкото да има от какво да се съди. */
+      const newEvents = total - seen
+      const newWords  = totMsg - seenMsg
+      const first     = seen === 0 && seenMsg === 0 && (total >= 3 || totMsg >= 6)
+      if (newEvents < 10 && newWords < 12 && !first) return
 
       const [evs, msgs] = await Promise.all([
         admin.from('bot_events').select('kind, payload, created_at')
           .eq('user_id', uid).order('created_at', { ascending: false }).limit(80),
+        /* Шейсет реплики, не четирийсет: откакто и думите вдигат прага,
+           свиването трябва да види разговора, в който е било казано нещо за
+           себе си, а не само последните няколко въпроса за калориите. */
         admin.from('bot_messages').select('role, content')
-          .eq('user_id', uid).order('created_at', { ascending: false }).limit(40),
+          .eq('user_id', uid).order('created_at', { ascending: false }).limit(60),
       ])
 
       const distilled = await ask(apiKey, [
@@ -448,6 +468,7 @@ Deno.serve(async (req) => {
         {
           role: 'user',
           content:
+            (learned.data?.learned ? `ДОСЕГА\n${learned.data.learned}\n\n` : '') +
             `СЪБИТИЯ\n${(evs.data ?? []).map(e => `${e.kind}: ${JSON.stringify(e.payload)}`).join('\n')}\n\n` +
             `РАЗГОВОР\n${[...(msgs.data ?? [])].reverse().map(m => `${m.role}: ${m.content}`).join('\n')}`,
         },
@@ -458,6 +479,7 @@ Deno.serve(async (req) => {
         user_id: uid,
         learned: distilled.slice(0, 1200),
         events_seen: total,
+        messages_seen: totMsg,
         updated_at: new Date().toISOString(),
       })
     } catch {

@@ -160,6 +160,14 @@ export const TABLES = {
   ],
   /* Същото движение, писано по два начина — точно случаят, заради който
      съществува обединяването. */
+  /* Научено за човека. Свободен текст, разделен на редове — приложението го
+     показва на страницата на бота и всеки ред може да се махне. */
+  bot_profile: [{
+    user_id: USER_ID,
+    learned: 'не яде риба\nтренира сутрин\nне иска готвене над 15 минути',
+    events_seen: 4,
+    messages_seen: 8,
+  }],
   exercise_aliases: [],
   exercise_library: [
     { id: 'el1', user_id: USER_ID, name: 'Дъмбели на наклон', folder: 'Заместители за гърди', scheme: '3 × 8–10', muscle: 'chest', created_at: new Date().toISOString() },
