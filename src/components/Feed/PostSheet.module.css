@@ -19,7 +19,14 @@
   display: flex;
   flex-direction: column;
   background: var(--bg);
-  padding: calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 10px);
+  /* Клавиатурата свива екрана, вместо да го покрие.
+     --kb-inset идва от useKeyboardInset и е височината на клавиатурата в
+     момента. Без него лентата с инструменти и броячът остават под нея —
+     видими на снимката, недостъпни с пръст. Полето е flex:1, значи то е
+     това, което отстъпва мястото. */
+  padding: calc(env(safe-area-inset-top) + 10px) 16px
+           calc(env(safe-area-inset-bottom) + 10px + var(--kb-inset, 0px));
+  transition: padding-bottom 180ms var(--ease-out);
   animation: sheetIn 240ms var(--ease-glide) both;
 }
 
@@ -88,6 +95,29 @@
   color: var(--text);
 }
 
+/* Заглавието е по желание и затова изглежда като по желание: без рамка, без
+   поле — само по-едър ред над текста, който се появява, когато в него има
+   нещо. Поле с етикет „Заглавие (по избор)" пита на всеки пост нещо, на което
+   отговорът обикновено е „не". */
+.title {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  padding: 8px 0 4px;
+}
+.title::placeholder { color: var(--muted); opacity: 0.55; }
+
+.titleRule {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 4px;
+}
+
 /* Полето расте, докъдето стигне екранът. Това е разликата спрямо старото
    прозорче от три реда: човек вижда какво е написал, докато го пише. */
 .input {
@@ -105,9 +135,20 @@
   padding: 6px 0;
 }
 .input::placeholder { color: var(--muted); opacity: 0.7; }
-/* Без пръстена при фокус: той е за поле в списък с полета, а тук полето е
-   целият екран и очертанието му рисува златна рамка около нищото. */
-.input:focus { box-shadow: none; }
+
+/* Без пръстена при фокус.
+   Глобалното правило дава на всяко поле очертание при фокус — вярно за поле в
+   списък с полета, защото казва кое от тях е активно. Тук полето е целият
+   екран и няма второ: очертанието рисува златна рамка около нищо. Показалецът
+   казва същото, без да чертае кутия.
+   Важи и за заглавието по-горе. */
+.input:focus,
+.input:focus-visible,
+.title:focus,
+.title:focus-visible {
+  box-shadow: none;
+  outline: none;
+}
 
 /* Закаченото от приложението. Ред, не карта: тук той е още обещание за карта,
    а истинската се рисува чак в потока. */
@@ -290,6 +331,9 @@
    един и същ въпрос. Този носи лист и молив. */
 .openBtn {
   position: fixed;
+  /* Слоят на страницата не лови докосвания — така плъзгането минава през
+     него. Бутонът в него трябва да си ги върне сам. */
+  pointer-events: auto;
   right: 18px;
   bottom: calc(env(safe-area-inset-bottom) + 84px);
   z-index: 90;

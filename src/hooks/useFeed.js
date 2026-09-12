@@ -142,7 +142,7 @@ export function useFeed() {
      Постът се дописва в списъка от отговора на сървъра, не от това, което е
      било в полето — така времето на екрана е времето в базата, а не времето
      на телефона, който може да е с половин час напред. */
-  const addPost = useCallback(async ({ body, photoUrl, kind = null, meta = null }) => {
+  const addPost = useCallback(async ({ body, title = null, photoUrl, kind = null, meta = null }) => {
     if (!user?.id) return { error: 'no user' }
     const { data, error: err } = await supabase
       .from('posts')
@@ -153,7 +153,12 @@ export function useFeed() {
       .insert({
         user_id: user.id,
         kind: kind || 'post',
-        meta,
+        /* Заглавието влиза в meta, а не в своя колона.
+           `meta` е jsonb и вече носи каквото постът носи освен текста си;
+           нова колона иска миграция, а миграциите тук се пускат на ръка. Ако
+           заглавията станат нещо, което се търси, мястото им е колона с
+           индекс — засега търсачката гледа body. */
+        meta: title?.trim() ? { ...(meta || {}), title: title.trim() } : meta,
         body: body?.trim() || null,
         photo_url: photoUrl ?? null,
       })

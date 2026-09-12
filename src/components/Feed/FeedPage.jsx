@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useFeed } from '../../hooks/useFeed'
+import { usePane } from '../SwipePager/PaneContext'
 import AppHeader from '../AppHeader/AppHeader'
 import PostSheet from './PostSheet'
 import PostCard from './PostCard'
@@ -20,6 +22,7 @@ import sheetStyles from './PostSheet.module.css'
  * виждат един друг.
  */
 export default function FeedPage({ onNavigate, onMenuOpen }) {
+  const { chrome: paneChrome } = usePane()
   const { profile } = useAuth()
   const { t } = useSettings()
   const [author, setAuthor] = useState(null)
@@ -48,7 +51,7 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
       {/* Писането е екран, не поле най-отгоре: най-честото действие тук е
           четенето, а разгънат формуляр иска нещо от теб, преди страницата да
           ти е дала нещо. */}
-      {!searching && !author && (
+      {!searching && !author && createPortal(
         <button
           type="button"
           className={sheetStyles.openBtn}
@@ -56,7 +59,14 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
           aria-label={t('feed.compose')}
         >
           <Pictogram name="note" size={22} />
-        </button>
+        </button>,
+        /* В слоя на своята страница, не в самата страница: `position: fixed`
+           вътре в раздел, който се плъзга, се закача за плъзгащия се родител
+           и бутонът тръгва нагоре заедно със скрола. Слоят е закован за
+           прозореца, но пътува с нейната трансформация — значи бутонът стои
+           долу вдясно, докато четеш, и си отива заедно с потока, когато
+           минеш на друг раздел. */
+        paneChrome ?? document.body,
       )}
 
       <PostSheet open={writing} onClose={() => setWriting(false)} onPost={addPost} />

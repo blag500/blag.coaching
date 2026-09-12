@@ -86,6 +86,7 @@ export default {
   'supp.calendar':        'WHAT WAS TAKEN, WHEN',
   'feed.posted':          'Posted.',
   "feed.composer.title": "New post",
+  "feed.composer.titlePh": "Title (optional)",
   "feed.composer.fromApp": "FROM THE APP",
   "feed.compose": "Write",
   "feed.detach": "Remove",

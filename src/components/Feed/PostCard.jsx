@@ -287,6 +287,8 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
         </div>
       ) : null}
 
+      {post.meta?.title && <h3 className={styles.postTitle}>{post.meta.title}</h3>}
+
       {achievement && post.body && <PostBody text={post.body} />}
 
       {!achievement && (

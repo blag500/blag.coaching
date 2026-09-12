@@ -87,6 +87,7 @@ export default {
   'supp.calendar':        'КОГА КАКВО Е ВЗЕТО',
   'feed.posted':          'Публикувано.',
   "feed.composer.title": "Нов пост",
+  "feed.composer.titlePh": "Заглавие (по избор)",
   "feed.composer.fromApp": "ОТ ПРИЛОЖЕНИЕТО",
   "feed.compose": "Напиши",
   "feed.detach": "Махни",

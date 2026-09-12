@@ -98,6 +98,17 @@
 }
 .postDropYes { border-color: var(--red); color: var(--red); }
 
+/* Заглавието на пост. По желание е, значи повечето постове го нямат — и
+   точно затова, когато го има, трябва да личи от един поглед. */
+.postTitle {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  color: var(--text);
+  margin: 12px 0 0;
+}
+
 .postBodyWrap { position: relative; }
 
 .postBody {

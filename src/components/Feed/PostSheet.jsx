@@ -9,6 +9,7 @@ import InsightPicker from './InsightPicker'
 import styles from './PostSheet.module.css'
 
 const MAX_CHARS = 600
+const MAX_TITLE = 80
 
 /**
  * Писането е екран, не поле.
@@ -26,6 +27,7 @@ export default function PostSheet({ open, onClose, onPost }) {
   const { profile, user } = useAuth()
   const { t } = useSettings()
 
+  const [title, setTitle]   = useState('')
   const [body, setBody]     = useState('')
   const [photo, setPhoto]   = useState(null)    // { url, path }
   const [insight, setInsight] = useState(null)  // { kind, meta, labelKey }
@@ -53,7 +55,7 @@ export default function PostSheet({ open, onClose, onPost }) {
 
   if (!open) return null
 
-  const canPost = !busy && (body.trim().length > 0 || photo || insight)
+  const canPost = !busy && (body.trim().length > 0 || title.trim().length > 0 || photo || insight)
 
   async function handlePhoto(e) {
     const file = e.target.files?.[0]
@@ -80,6 +82,7 @@ export default function PostSheet({ open, onClose, onPost }) {
 
   async function close(discard = true) {
     if (discard && photo) await dropPhoto()
+    setTitle('')
     setBody('')
     setInsight(null)
     setError(null)
@@ -92,6 +95,7 @@ export default function PostSheet({ open, onClose, onPost }) {
     setError(null)
     const { error: err } = await onPost({
       body,
+      title,
       photoUrl: photo?.url ?? null,
       kind: insight?.kind ?? null,
       meta: insight?.meta ?? null,
@@ -131,6 +135,17 @@ export default function PostSheet({ open, onClose, onPost }) {
           </div>
           <span className={styles.name}>{profile?.name}</span>
         </div>
+
+        {/* Заглавието стои над текста и е по желание: празно поле не се
+            записва и не се рисува. */}
+        <input
+          className={styles.title}
+          value={title}
+          maxLength={MAX_TITLE}
+          placeholder={t('feed.composer.titlePh')}
+          onChange={e => setTitle(e.target.value)}
+        />
+        <div className={styles.titleRule} />
 
         <textarea
           ref={inputRef}
