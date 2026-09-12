@@ -31,8 +31,12 @@
   to   { opacity: 1 }
 }
 
-/* Расте от ъгъла, където стои балончето, а не пада отгоре: човек го е
-   отворил оттам и окото го проследява дотук. */
+/* Разгъва се от горния край, откъдето е кацнало балончето.
+   Дотук растеше от долния десен ъгъл — оттам, където балончето стои. Но
+   балончето вече не остава там: то пропътува пътя догоре и става лицето в
+   заглавието, значи разговорът трябва да излиза от новото му място, не от
+   старото. Закъснението е колкото полетът да се види: разговор, който се
+   разгъва в същия миг, изяжда пътуването. */
 .sheet {
   position: relative;
   display: flex;
@@ -43,13 +47,13 @@
   margin: 0 auto;
   padding: 0 16px calc(12px + env(safe-area-inset-bottom) + var(--kb-inset, 0px));
   transition: padding-bottom 180ms var(--ease-out);
-  transform-origin: bottom right;
-  animation: sheetIn 280ms var(--ease-spring-soft) both;
+  transform-origin: top right;
+  animation: sheetIn 300ms var(--ease-spring-soft) 110ms both;
 }
 
 @keyframes sheetIn {
-  from { opacity: 0; transform: scale(0.82) translateY(28px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+  from { opacity: 0; transform: scale(0.58) translateY(-14px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);     }
 }
 
 /* Обратният жест: същият път, изминат назад, малко по-бързо — свиването не
@@ -59,7 +63,7 @@
 }
 
 .closing .sheet {
-  animation: sheetOut 220ms var(--ease-glide) both;
+  animation: sheetOut 200ms var(--ease-glide) both;
 }
 
 @keyframes scrimOut {
@@ -68,12 +72,78 @@
 }
 
 @keyframes sheetOut {
-  from { opacity: 1; transform: scale(1)    translateY(0);    }
-  to   { opacity: 0; transform: scale(0.82) translateY(28px); }
+  from { opacity: 1; transform: scale(1)    translateY(0);     }
+  to   { opacity: 0; transform: scale(0.58) translateY(-14px); }
+}
+
+/* Пътуващата снимка.
+   Седи на мястото си в заглавието и се мести оттам назад до балончето с
+   променливите, които компонентът пресмята. Едно и също изображение —
+   /bot.webp — така че по пътя няма нито втора заявка, нито друг кант. */
+.fly {
+  display: none;
+  position: fixed;
+  left: var(--fly-left, 0px);
+  top:  var(--fly-top,  0px);
+  width:  var(--fly-size, 30px);
+  height: var(--fly-size, 30px);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.flyGo {
+  display: block;
+  animation: flyUp 340ms var(--ease-spring-soft) both;
+}
+
+@keyframes flyUp {
+  /* Кантът тръгва като на балончето — златен пръстен — и се прибира до тънката
+     рамка на заглавието. Иначе снимката сменя обкова си на кацане. */
+  from {
+    transform: translate(var(--fly-dx), var(--fly-dy)) scale(var(--fly-s, 1.73));
+    border-color: rgba(var(--accent-rgb), 0.85);
+    box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.45);
+  }
+  to {
+    transform: translate(0, 0) scale(1);
+    border-color: var(--border);
+    box-shadow: none;
+  }
+}
+
+/* Назад: същият път, изминат обратно, и с малко закъснение — първо разговорът
+   се сгъва, после лицето пада на мястото си. */
+.closing .fly {
+  display: block;
+  animation: flyBack 280ms var(--ease-glide) 40ms both;
+}
+
+@keyframes flyBack {
+  from {
+    transform: translate(0, 0) scale(1);
+    border-color: var(--border);
+  }
+  to {
+    transform: translate(var(--fly-dx), var(--fly-dy)) scale(var(--fly-s, 1.73));
+    border-color: rgba(var(--accent-rgb), 0.85);
+  }
+}
+
+/* Лицето в заглавието чака полета си. Не `visibility: hidden`: мястото му
+   трябва да се мери, а скритото по този начин пак се мери — но прозрачното е
+   по-кратко и върши същото. */
+.faceWaiting {
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scrim, .sheet, .closing .scrim, .closing .sheet { animation: none }
+  /* Без движение няма и полет: лицето си стои в заглавието. */
+  .fly, .flyGo, .closing .fly { display: none; animation: none }
+  .faceWaiting { opacity: 1 }
 }
 
 .head {

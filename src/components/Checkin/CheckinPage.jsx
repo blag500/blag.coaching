@@ -8,6 +8,7 @@ import { CHECKIN_FIELDS, CHECKIN_GROUPS, AUTO_FIELDS, POSES } from './checkinFie
 import CheckinCompare from './CheckinCompare'
 import styles from './CheckinPage.module.css'
 import Pictogram from '../Pictogram/Pictogram'
+import { haptic } from '../../lib/haptics'
 
 /**
  * Седмичният чекин, от страната на клиента.
@@ -90,6 +91,10 @@ export default function CheckinPage({ onBack }) {
     if (!error) {
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
+      /* Седмицата е затворена. Това се случва веднъж на седем дни. */
+      haptic('celebrate')
+    } else {
+      haptic('reject')
     }
   }
 

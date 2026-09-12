@@ -208,7 +208,12 @@ export default function BotBubble({ activeTab, onOpen }) {
       if (moved) { swallowNextClick(); return }   // местене, не отваряне
     }
 
-    onOpen('bot')
+    /* Откъде тръгва. Слоят разгъва разговора точно от тази точка — балончето
+       пропътува пътя до горния край и става лицето в заглавието, вместо да
+       изчезне тук и да се появи там. Мери се от самия елемент: мястото му се
+       помни в проценти от ръба, а не в екранни координати. */
+    const r = e.currentTarget?.getBoundingClientRect?.()
+    onOpen('bot', r ? { from: { x: r.left + r.width / 2, y: r.top + r.height / 2, size: r.width } } : undefined)
     haptic('tap')
   }
 

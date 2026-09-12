@@ -4,6 +4,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import MonthCalendar from '../Training/MonthCalendar'
 import styles from './SupplementsPage.module.css'
 import Pictogram from '../Pictogram/Pictogram'
+import { haptic } from '../../lib/haptics'
 
 const TIMING_KEYS = [
   'supp.time.morning', 'supp.time.fasted', 'supp.time.preTrain',
@@ -100,7 +101,7 @@ export default function SupplementsPage() {
               <div key={s.id} className={`${styles.row} ${taken[s.id] ? styles.rowDone : ''}`}>
                 <button
                   className={`${styles.check} ${taken[s.id] ? styles.checkDone : ''}`}
-                  onClick={() => toggle(s.id)}
+                  onClick={() => { haptic('toggle'); toggle(s.id) }}
                   type="button"
                   aria-label={taken[s.id] ? t('supp.takenUndo') : t('supp.takenMark')}
                 >

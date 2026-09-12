@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSupplementsToday } from '../../hooks/useSupplementsToday'
 import styles from './SupplementSection.module.css'
 import { useSettings } from '../../contexts/SettingsContext'
+import { haptic } from '../../lib/haptics'
 
 const REMINDER_OPTIONS = [
   { id: 'morning',   labelKey: 'ss.morning'   },
@@ -106,7 +107,7 @@ export default function SupplementSection() {
             >
               <button
                 className={styles.checkbox}
-                onClick={() => toggle(sup.id)}
+                onClick={() => { haptic('toggle'); toggle(sup.id) }}
                 type="button"
                 aria-pressed={taken}
               >

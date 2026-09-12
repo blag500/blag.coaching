@@ -8,6 +8,7 @@ import WeightScroller from './WeightScroller'
 import CoachOffer from '../CoachOffer/CoachOffer'
 import { GOAL_ICON, CheckIcon } from './StepIcons'
 import styles from './Onboarding.module.css'
+import { haptic } from '../../lib/haptics'
 
 const GOAL_OPTIONS = [
   { id: 'cut',      labelKey: 'ob.goal.cut',      descKey: 'ob.goal.cut.desc',      kcalDelta: -400 },
@@ -158,11 +159,14 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
 
   function next() {
     setError('')
-    if (step === 1 && !form.name.trim()) { setError(t('ob.err.name')); return }
+    /* Празното име спира тук. Двойното почукване стига — надписът отдолу
+       казва какво липсва, вибрацията казва само „не мина". */
+    if (step === 1 && !form.name.trim()) { setError(t('ob.err.name')); haptic('reject'); return }
     if (step === totalSteps) {
       finish()
       return
     }
+    haptic('nav')
     setStep(s => s + 1)
   }
 

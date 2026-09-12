@@ -854,3 +854,64 @@ test.describe('Историята на разговорите', () => {
     await expect(page.locator('input[placeholder="Питай ме нещо"]')).toBeVisible()
   })
 })
+
+test.describe('Полетът на лицето', () => {
+  test('лицето пътува до заглавието и се връща', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+
+    const bubble = page.locator('button[aria-label="БЛАГ БОТ"]')
+    const box = await bubble.boundingBox()
+    const fly  = page.locator('img[aria-hidden="true"][src="/bot.webp"]')
+
+    await bubble.click()
+    await page.waitForTimeout(120)
+
+    /* Пътят се чете от стиловете, не от кадрите: кадърът в тази среда се хваща
+       наслуки, а WebKit без компоузитор не брои rAF. Тук се проверява самата
+       уговорка — откъде тръгва, колко е голямо и по кой път. */
+    const fl = await fly.evaluate(el => ({
+      anim: getComputedStyle(el).animationName,
+      disp: getComputedStyle(el).display,
+      dx:   parseFloat(el.style.getPropertyValue('--fly-dx')),
+      dy:   parseFloat(el.style.getPropertyValue('--fly-dy')),
+      s:    parseFloat(el.style.getPropertyValue('--fly-s')),
+      /* Мястото на кацане, а не къде е точно сега: рамката се мести всеки
+           кадър и стойността ѝ зависи от това кога е четена. */
+      top:  parseFloat(el.style.getPropertyValue('--fly-top')),
+    }))
+    expect(fl.disp).toBe('block')
+    expect(fl.anim).toContain('flyUp')
+    // Тръгва долу при балончето и в неговия размер.
+    expect(fl.dy).toBeGreaterThan(300)
+    /* Настрани се мери само посоката: на телефон балончето и заглавието са на
+       един и същи десен ръб, на широк екран разговорът е колона в средата и
+       пътят става наклонен. */
+    expect(Math.sign(fl.dx) >= 0 || Math.abs(fl.dx) < 40).toBeTruthy()
+    expect(fl.s).toBeGreaterThan(1.4)
+    // Каца горе, в заглавието.
+    expect(fl.top).toBeLessThan(80)
+    // А тръгването е при балончето: мястото на кацане плюс пътя дава началото.
+    expect(Math.abs(fl.top + fl.dy - (box.y + box.height / 2))).toBeLessThan(40)
+
+    // Полетът свършва и лицето в заглавието поема.
+    await page.waitForTimeout(700)
+    expect(await fly.evaluate(el => getComputedStyle(el).display)).toBe('none')
+
+    // Обратно: същият път, изминат назад.
+    await page.getByText('Нов разговор').first().click()
+    await page.waitForTimeout(600)
+    await page.locator('button[aria-label="Свий разговора"]').last().click()
+    await page.waitForTimeout(120)
+    const back = await fly.evaluate(el => ({
+      anim: getComputedStyle(el).animationName,
+      disp: getComputedStyle(el).display,
+    }))
+    expect(back.disp).toBe('block')
+    expect(back.anim).toContain('flyBack')
+
+    await page.waitForTimeout(700)
+    await expect(bubble).toBeVisible()
+  })
+})

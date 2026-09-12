@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import BarcodeScanner from '../FoodLogger/BarcodeScanner'
 import styles from './RecipeForm.module.css'
 import Pictogram from '../Pictogram/Pictogram'
+import { haptic } from '../../lib/haptics'
 
 function CameraIcon({ size = 16 }) {
   return (
@@ -257,8 +258,9 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
         ingredients,
       })
       setSaving(false)
-      if (!row) { setSaveError(t('rf.saveErr')); return }
+      if (!row) { setSaveError(t('rf.saveErr')); haptic('reject'); return }
       clearDraft(draftKey)
+      haptic('success')
       onSave(row)
       return
     }
@@ -295,8 +297,9 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
         .from('recipes').insert(payload).select().single())
     }
 
-    if (err) { console.error('Recipe save error:', err); setSaveError(err.message || t('rf.saveErr')); setSaving(false); return }
+    if (err) { console.error('Recipe save error:', err); setSaveError(err.message || t('rf.saveErr')); setSaving(false); haptic('reject'); return }
     clearDraft(draftKey)
+    haptic('success')
     onSave(data)
   }
 

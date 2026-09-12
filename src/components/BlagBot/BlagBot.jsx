@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
@@ -124,7 +124,7 @@ function when(iso, t) {
 
 // ─── Екранът ─────────────────────────────────────────────────────────────────
 
-export default function BlagBot({ open, onClose }) {
+export default function BlagBot({ open, from = null, onClose }) {
   const { user, profile } = useAuth()
   const { t } = useSettings()
 
@@ -155,8 +155,54 @@ export default function BlagBot({ open, onClose }) {
     if (closing) return
     setClosing(true)
     clearTimeout(closeTimer.current)
-    closeTimer.current = setTimeout(() => { setClosing(false); onClose() }, 240)
+    /* 340: разговорът се сгъва към горния ъгъл за 200, а лицето пада обратно
+       до балончето си за 280 след 40 закъснение. Слоят си отива, когато и
+       двете са свършили — измерено, полетът каца на 320-ия милисекунд. */
+    closeTimer.current = setTimeout(() => { setClosing(false); onClose() }, 340)
   }
+
+  /* Полетът на лицето.
+   *
+   * Дотук натискането на балончето го изтриваше долу вдясно и след кадър
+   * заглавието горе вече имаше лице. Двете са една и същата снимка, а окото
+   * я губеше по пътя: отваряше се нещо ново вместо да се разгъне това, което
+   * стои под пръста.
+   *
+   * Затова: снимката пропътува разстоянието от балончето до мястото си в
+   * заглавието, а разговорът се разгъва от там — с малко закъснение, колкото
+   * пътят да се види.
+   *
+   * Мястото на кацане се мери с offsetLeft/offsetTop, а не с
+   * getBoundingClientRect: в този миг разговорът е в първия кадър на своята
+   * анимация, свит до половина, и рамката му лъже. Отместванията са
+   * подредбени числа — трансформациите не ги пипат. */
+  const sheetRef = useRef(null)
+  const faceRef  = useRef(null)
+  const flyRef   = useRef(null)
+  const [flying, setFlying] = useState(false)
+  const flyTimer = useRef(null)
+
+  useLayoutEffect(() => {
+    if (!open || !from) { setFlying(false); return }
+    const sheet = sheetRef.current, face = faceRef.current, el = flyRef.current
+    if (!sheet || !face || !el) return
+
+    const left = sheet.offsetLeft + face.offsetLeft
+    const top  = sheet.offsetTop  + face.offsetTop
+    const size = face.offsetWidth || 30
+
+    el.style.setProperty('--fly-left', left + 'px')
+    el.style.setProperty('--fly-top',  top  + 'px')
+    el.style.setProperty('--fly-size', size + 'px')
+    el.style.setProperty('--fly-dx', (from.x - (left + size / 2)) + 'px')
+    el.style.setProperty('--fly-dy', (from.y - (top  + size / 2)) + 'px')
+    el.style.setProperty('--fly-s',  ((from.size || size) / size).toFixed(3))
+
+    setFlying(true)
+    clearTimeout(flyTimer.current)
+    flyTimer.current = setTimeout(() => setFlying(false), 360)
+    return () => clearTimeout(flyTimer.current)
+  }, [open, from])
 
   useEffect(() => () => clearTimeout(closeTimer.current), [])
 
@@ -288,7 +334,17 @@ export default function BlagBot({ open, onClose }) {
           трябва да се вижда. Разговорът е отгоре, а не вместо. */}
       <div className={styles.scrim} onClick={collapse} aria-hidden="true" />
 
-      <div className={styles.sheet}>
+      {/* Пътуващата снимка. Държи се извън разговора, защото той се свива и
+          разгъва, а тя само пътува. */}
+      {from && (
+        <img
+          ref={flyRef}
+          className={`${styles.fly} ${flying ? styles.flyGo : ''}`}
+          src="/bot.webp" alt="" width="30" height="30" aria-hidden="true"
+        />
+      )}
+
+      <div className={styles.sheet} ref={sheetRef}>
         <header className={styles.head}>
           <button type="button" className={styles.collapse} onClick={collapse} aria-label={t('bot.minimise')}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
@@ -308,7 +364,11 @@ export default function BlagBot({ open, onClose }) {
           ) : (
             <span className={styles.title}>{t('nav.bot')}</span>
           )}
-          <img className={styles.headFace} src="/bot.webp" alt="" width="30" height="30" />
+          <img
+            ref={faceRef}
+            className={`${styles.headFace} ${(flying || (closing && from)) ? styles.faceWaiting : ''}`}
+            src="/bot.webp" alt="" width="30" height="30"
+          />
         </header>
 
       {bubbleGone && (

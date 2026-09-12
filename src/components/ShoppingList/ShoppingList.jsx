@@ -5,6 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import MonthCalendar from '../Training/MonthCalendar'
 import styles from './ShoppingList.module.css'
 import { loc } from '../../utils/locale'
+import { haptic } from '../../lib/haptics'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -294,7 +295,7 @@ export default function ShoppingList({ onBack }) {
                   >
                     <button
                       className={`${styles.checkbox} ${item.checked ? styles.checkboxDone : ''}`}
-                      onClick={() => toggleItem(item.id, item.checked)}
+                      onClick={() => { haptic('toggle'); toggleItem(item.id, item.checked) }}
                       type="button"
                       aria-label={item.checked ? t('sl.uncheck') : t('sl.check')}
                     >

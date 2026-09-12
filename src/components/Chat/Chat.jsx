@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import styles from './Chat.module.css'
 import { loc } from '../../utils/locale'
 import Pictogram from '../Pictogram/Pictogram'
+import { haptic } from '../../lib/haptics'
 
 /* Слепването на новото със старото.
    Podsещането и живият канал могат да донесат един и същ ред; ключът маха
@@ -140,8 +141,10 @@ export default function Chat({ clientId, clientName, onClose }) {
     if (error || !data) {
       setInput(text)
       setSendError(t('chat.err.send'))
+      haptic('reject')
     } else {
       setMessages(prev => [...prev, data])
+      haptic('success')
     }
   }
 
@@ -162,8 +165,10 @@ export default function Chat({ clientId, clientName, onClose }) {
     const { data, error } = await sendMessage(toId, null, publicUrl)
     if (error || !data) {
       setSendError(t('chat.err.sendShort'))
+      haptic('reject')
     } else {
       setMessages(prev => [...prev, data])
+      haptic('success')
     }
     setUploading(false)
     e.target.value = ''

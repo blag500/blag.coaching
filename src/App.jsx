@@ -186,12 +186,15 @@ function AppShell() {
      се „връща". Оттам и прозрачността: фонът се вижда, за да е ясно, че
      разговорът е отгоре, а не вместо. */
   const [botOpen, setBotOpen] = useState(false)
+  /* Откъде е тръгнало отварянето. Балончето се мести и слоят трябва да знае
+     къде е било в мига на натискането. */
+  const [botFrom, setBotFrom] = useState(null)
 
-  function navigate(newTab, { instant = false, peer = null } = {}) {
+  function navigate(newTab, { instant = false, peer = null, from = null } = {}) {
     if (newTab === 'chat') setChatPeer(peer)
     /* Чекмеджето и балончето искат едно и също нещо — само че ботът не е
        адрес, а слой. Прихваща се тук, за да не знае никой друг разликата. */
-    if (newTab === 'bot') { setBotOpen(true); return }
+    if (newTab === 'bot') { setBotFrom(from); setBotOpen(true); return }
     // A swipe has already carried the page across, so replaying the entrance
     // animation would show the same move twice.
     if (instant) { setSlideDir('none'); setActiveTab(newTab); return }
@@ -442,7 +445,7 @@ function AppShell() {
           тях, не за прозореца. Оттук е на един и същи ъгъл на всеки екран. */}
       <BotBubble activeTab={botOpen ? 'bot' : activeTab} onOpen={navigate} />
 
-      <BlagBot open={botOpen} onClose={() => setBotOpen(false)} />
+      <BlagBot open={botOpen} from={botFrom} onClose={() => setBotOpen(false)} />
 
       {/* На екрана на бота лентата се прибира.
           Разговорът иска цялата височина: с клавиатура отгоре и лента отдолу

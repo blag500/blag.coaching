@@ -5,6 +5,7 @@ import { usePostComments } from '../../hooks/useFeed'
 import { timeAgo } from './timeAgo'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './Feed.module.css'
+import { haptic } from '../../lib/haptics'
 
 const HeartIcon = ({ filled }) => (
   <svg viewBox="0 0 24 24" width="17" height="17" fill={filled ? 'currentColor' : 'none'}
@@ -306,7 +307,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
         <button
           type="button"
           className={`${styles.postAction} ${post.liked ? styles.postActionOn : ''}`}
-          onClick={() => onToggleLike(post.id)}
+          onClick={() => { haptic('toggle'); onToggleLike(post.id) }}
           aria-pressed={post.liked}
         >
           <HeartIcon filled={post.liked} />
