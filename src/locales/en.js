@@ -346,10 +346,6 @@ export default {
   'today.habitsEmptyCta':  'Set them up →',
 
   // Shared shell
-  'nav.action.food':      'Food',
-  'nav.action.water':     'Water +1',
-  'nav.action.training':  'Training',
-  'nav.action.quickAdd':  'Quick add',
   'nav.showNav':          'Show navigation',
   'nav.hideNav':          'Hide navigation',
   'nav.mainNav':          'Main navigation',

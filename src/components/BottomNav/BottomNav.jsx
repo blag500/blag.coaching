@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
-import { useWaterLog } from '../../hooks/useWaterLog'
 import { haptic } from '../../lib/haptics'
-import Pictogram from '../Pictogram/Pictogram'
 import styles from './BottomNav.module.css'
 
 const NutritionIcon = () => (
@@ -49,26 +47,12 @@ const RIGHT_TABS = [
   { id: 'profile',  key: 'nav.profile',  Icon: ProfileIcon  },
 ]
 
-/* Приложението има свой рисуван набор — виж Pictogram, който е правен точно
-   за да махне емоджитата от навиците: те носят собствена палитра и собствен
-   почерк, значи никога не седят вътре в дизайна, а върху него. Тук бяха
-   останали последните три. */
-const ACTIONS = [
-  { id: 'food',     icon: 'meal',     labelKey: 'nav.action.food',     tab: 'nutrition' },
-  { id: 'water',    icon: 'water',    labelKey: 'nav.action.water',    tab: null        },
-  { id: 'training', icon: 'training', labelKey: 'nav.action.training', tab: 'training'  },
-]
 
 const HIDDEN_KEY = 'blag_nav_hidden'
 
 export default function BottomNav({ activeTab, onTabChange }) {
   const { t } = useSettings()
-  const { add: addWater } = useWaterLog()
-  const [open, setOpen] = useState(false)
-  const [waterFlash, setWaterFlash] = useState(false)
   const [hidden, setHidden] = useState(() => localStorage.getItem(HIDDEN_KEY) === '1')
-
-  useEffect(() => { setOpen(false) }, [activeTab])
 
   useEffect(() => {
     localStorage.setItem(HIDDEN_KEY, hidden ? '1' : '0')
@@ -118,7 +102,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
     d.active = false
     clearNavInline()
     if (!d.cancelled && d.dx > 90) {
-      setOpen(false)
       setHidden(true)
     }
   }
@@ -183,22 +166,8 @@ export default function BottomNav({ activeTab, onTabChange }) {
     }
   }
 
-  function handleAction(action) {
-    setOpen(false)
-    if (action.id === 'water') {
-      addWater(1)
-      setWaterFlash(true)
-      haptic('toggle')
-      setTimeout(() => setWaterFlash(false), 600)
-    } else {
-      onTabChange(action.tab)
-    }
-  }
-
   return (
     <>
-      {open && <div className={styles.backdrop} onClick={() => setOpen(false)} aria-hidden="true" />}
-
       {/* Docked peek — the way back when the bar is hidden */}
       <button
         className={`${styles.peek} ${hidden ? styles.peekOn : ''}`}
@@ -242,38 +211,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
             <span className={styles.label}><span>{t(tab.key)}</span></span>
           </button>
         ))}
-
-        {/* Center FAB */}
-        <div className={styles.fabSlot}>
-          {open && (
-            <div className={styles.actionSheet}>
-              {ACTIONS.map((action, i) => (
-                <button
-                  key={action.id}
-                  className={`${styles.actionItem} ${action.id === 'water' && waterFlash ? styles.actionItemFlash : ''}`}
-                  onClick={() => { if (action.id !== 'water') haptic('tap'); handleAction(action) }}
-                  type="button"
-                  style={{ animationDelay: `${(ACTIONS.length - 1 - i) * 40}ms` }}
-                >
-                  <span className={styles.actionIcon}><Pictogram name={action.icon} size={17} /></span>
-                  <span className={styles.actionLabel}>{t(action.labelKey)}</span>
-                </button>
-              ))}
-            </div>
-          )}
-          <button
-            className={`${styles.fabCenter} ${open ? styles.fabOpen : ''}`}
-            onClick={() => { haptic('tap'); setOpen(o => !o) }}
-            type="button"
-            aria-label={t('nav.action.quickAdd')}
-            aria-expanded={open}
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5"  y1="12" x2="19" y2="12" />
-            </svg>
-          </button>
-        </div>
 
         {RIGHT_TABS.map(tab => (
           <button

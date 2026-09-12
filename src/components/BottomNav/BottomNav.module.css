@@ -120,9 +120,13 @@
   transition: transform 80ms var(--ease-out);
 }
 
+/* Отвореният раздел е широк колкото знака и думата си, не колкото остатъка.
+   Докато в средата стоеше плюсът, свободното място беше малко и разтягането
+   не личеше; без него четири раздела оставяха толкова луфт, че отвореният
+   заемаше половин лента. */
 .tab.active {
   color: var(--text);
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -207,150 +211,4 @@
 
 @media (prefers-reduced-motion: reduce) {
   .label { transition: none; }
-}
-
-/* ── Center FAB ── */
-.fabSlot {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  position: relative;
-}
-
-.fabCenter {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent-metal-coin);
-  color: #241B0C;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: -20px;
-  box-shadow:
-    0 4px 18px rgba(var(--accent-rgb), 0.50),
-    0 0 0 3px rgba(var(--bg-rgb), 0.80);
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 200ms var(--ease-out), box-shadow 150ms var(--ease-out);
-  flex-shrink: 0;
-  position: relative;
-  z-index: 2;
-}
-
-.fabCenter svg {
-  transition: transform 220ms var(--ease-spring);
-}
-
-.fabOpen svg {
-  transform: rotate(45deg);
-}
-
-.fabCenter:active {
-  transform: scale(0.88) translateY(2px);
-  box-shadow:
-    0 2px 8px rgba(var(--accent-rgb), 0.30),
-    0 0 0 3px rgba(var(--bg-rgb), 0.80);
-}
-
-/* ── Action sheet (pops above FAB) ── */
-/* Затъмнение, а не невидим капак. Дотук този слой само ловеше натискането:
-   трите действия висяха над нормален екран и не личеше, че е зададен въпрос.
-   Малко потъмняване казва „избери", без да прави от това събитие. */
-/* Размазване, не само потъмняване. Черно върху почти черен екран е невидимо:
-   42% чернило върху тази тема свали яркостта наполовина и въпреки това нищо
-   не личеше. Разфокусът е това, което казва „този слой е назад", независимо
-   колко тъмна е темата под него. */
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  animation: backdropIn 180ms var(--ease-out) both;
-}
-
-@keyframes backdropIn {
-  from { opacity: 0 }
-  to   { opacity: 1 }
-}
-
-.actionSheet {
-  position: absolute;
-  bottom: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  z-index: 101;
-  pointer-events: auto;
-}
-
-/* Трите стоят в колона с една ширина. Дотук всяко беше широко колкото
-   думата си и трите правеха стълба — а те са равностойни избори, не списък
-   с важност. */
-.actionItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 176px;
-  padding: 10px 16px;
-  /* Плътно, не стъклено. Трите избора стоят точно върху най-гъстата част на
-     ХРАНЕНЕ — решетката от карти и реда за писане — и при 94% прозрачност
-     надписите изпод тях се четяха през тях. Сянката ги вдига над екрана,
-     вместо да ги слепва с него. */
-  background: var(--chrome-sheet);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(var(--accent-rgb), 0.20);
-  border-radius: var(--r-xl);
-  cursor: pointer;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  animation: actionIn 200ms var(--ease-out) both;
-  transform-origin: bottom center;
-}
-
-.actionItem:active {
-  background: var(--chrome-sheet-active);
-}
-
-@keyframes actionIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.92); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
-}
-
-.actionItemFlash {
-  border-color: rgba(66, 165, 245, 0.6);
-  background: rgba(66, 165, 245, 0.12);
-}
-.actionItemFlash .actionIcon {
-  background: rgba(66, 165, 245, 0.22);
-  color: #90CAF9;
-}
-
-/* Знакът в кръгче: дава на реда лява котва и тежест, каквато самотен контур
-   няма. */
-.actionIcon {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(var(--accent-rgb), 0.12);
-  color: var(--accent);
-}
-
-.actionLabel {
-  font-family: var(--font-heading);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  color: var(--text);
 }

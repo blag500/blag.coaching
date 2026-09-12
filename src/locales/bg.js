@@ -347,10 +347,6 @@ export default {
   'today.habitsEmptyCta':  'Настрой ги →',
 
   // Shared shell — nav actions, header aria, drawer sections
-  'nav.action.food':      'Ядене',
-  'nav.action.water':     'Вода +1',
-  'nav.action.training':  'Тренировка',
-  'nav.action.quickAdd':  'Бързо добави',
   'nav.showNav':          'Покажи навигацията',
   'nav.hideNav':          'Скрий навигацията',
   'nav.mainNav':          'Основна навигация',
