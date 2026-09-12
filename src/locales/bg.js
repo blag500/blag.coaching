@@ -673,6 +673,7 @@ export default {
   'chat.err.sendShort':     'Грешка при изпращане',
   'chat.coachName':         'Треньор',
   'chat.loading':           'Зарежда...',
+  'chat.older':        'По-старите',
   'chat.empty':             'Няма съобщения',
   'chat.imgAlt':            'снимка',
   'chat.sendImg':           'Изпрати снимка',

@@ -446,12 +446,65 @@ export function AuthProvider({ children }) {
    *
    * Затова заявката е симетрична за двете роли — кой съм аз и с кого говоря.
    */
-  async function fetchMessages(peerId) {
-    if (!session?.user.id || !peerId) return { data: null, error: null }
+  /* Последните, не всичките.
+   *
+   * Дотук тази функция теглеше целия разговор — и то не веднъж при отваряне, а
+   * на всеки петнайсет секунди, докато екранът стои отворен. При двайсет
+   * съобщения е незабележимо; при година разговор с един клиент са хиляди реда
+   * по мрежата на всеки петнайсет секунди, само за да се види дали има един
+   * нов. Това е единственото място в приложението, което се влошава само от
+   * това, че работи.
+   *
+   * `before` вади по-старите, когато човек поиска да прелисти нагоре.
+   */
+  const MESSAGE_PAGE = 50
+
+  async function fetchMessages(peerId, { limit = MESSAGE_PAGE, before = null } = {}) {
+    if (!session?.user.id || !peerId) return { data: null, error: null, done: true }
+    const me = session.user.id
+
+    /* Двете посоки поотделно, защото RLS и индексите работят по равенство, а
+       не по „или". Всяка връща своите последни `limit`, после се слепват и се
+       реже пак — иначе страница от сто съобщения, в която деветдесет са от
+       единия, би пропуснала десетте от другия. */
+    const page = dir => {
+      let q = supabase.from('messages').select('*')
+        .eq('from_user_id', dir === 'out' ? me : peerId)
+        .eq('to_user_id',   dir === 'out' ? peerId : me)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+      if (before) q = q.lt('created_at', before)
+      return q
+    }
+
+    const [sent, received] = await Promise.all([page('out'), page('in')])
+    const merged = [...(sent.data || []), ...(received.data || [])]
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, limit)
+      .reverse()
+
+    return {
+      data: merged,
+      error: sent.error || received.error || null,
+      /* Върна ли по-малко от исканото — значи оттук нагоре няма нищо. */
+      done: merged.length < limit,
+    }
+  }
+
+  /**
+   * Само новото, за подсещането на всеки петнайсет секунди.
+   *
+   * Празен отговор е нормалният отговор — затова е една заявка по време, а не
+   * цял разговор, от който после да се вади разликата.
+   */
+  async function fetchNewMessages(peerId, since) {
+    if (!session?.user.id || !peerId || !since) return { data: [], error: null }
     const me = session.user.id
     const [sent, received] = await Promise.all([
-      supabase.from('messages').select('*').eq('from_user_id', me).eq('to_user_id', peerId),
-      supabase.from('messages').select('*').eq('from_user_id', peerId).eq('to_user_id', me),
+      supabase.from('messages').select('*')
+        .eq('from_user_id', me).eq('to_user_id', peerId).gt('created_at', since),
+      supabase.from('messages').select('*')
+        .eq('from_user_id', peerId).eq('to_user_id', me).gt('created_at', since),
     ])
     const data = [...(sent.data || []), ...(received.data || [])]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
@@ -641,6 +694,7 @@ export function AuthProvider({ children }) {
       updateSessionStatus,
       updateSession,
       fetchMessages,
+      fetchNewMessages,
     fetchConversations,
       sendMessage,
       markMessagesAsRead,

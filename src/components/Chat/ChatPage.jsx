@@ -105,10 +105,30 @@ function ConversationList({ embedded, conversations, extra, loading, onSelect })
   )
 }
 
+/* Слепването на новото със старото.
+   Podsещането и живият канал могат да донесат един и същ ред; ключът маха
+   повторенията, вместо да разчита, че двата пътя никога няма да се засекат. */
+function mergeMessages(old, fresh) {
+  if (!fresh?.length) return old
+  const seen = new Set(old.map(m => m.id))
+  const add  = fresh.filter(m => !seen.has(m.id))
+  if (!add.length) return old
+  return [...old, ...add].sort((a, b) => a.created_at.localeCompare(b.created_at))
+}
+
 export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId: initialPeerId, embedded = false }) {
-  const { user, profile, fetchMessages, fetchConversations, fetchClients, sendMessage, markMessagesAsRead } = useAuth()
+  const { user, profile, fetchMessages, fetchNewMessages, fetchConversations, fetchClients, sendMessage, markMessagesAsRead } = useAuth()
   const { t } = useSettings()
   const [messages, setMessages]       = useState([])
+  /* Времето на последното съобщение, за подсещането: то пита „има ли нещо
+     след това", а не „дай ми всичко". Реф, а не състояние — четe се вътре в
+     интервал, вързан веднъж, и ново рисуване заради него няма смисъл. */
+  const lastAtRef = useRef(null)
+  /* Има ли какво да се прелисти нагоре. Дойде ли по-малко от една страница,
+     значи сме на началото на разговора. */
+  const [hasOlder, setHasOlder]         = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+
   const [input, setInput]             = useState('')
   const [loading, setLoading]         = useState(true)
   const [sendError, setSendError]     = useState(null)
@@ -186,11 +206,29 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
   useEffect(() => {
     if (!peerId) { setLoading(false); return }
     setLoading(true)
-    fetchMessages(peerId).then(({ data }) => {
+    fetchMessages(peerId).then(({ data, done }) => {
       setMessages(data || [])
+      setHasOlder(!done)
       setLoading(false)
       markRead(peerId)
     })
+
+  useEffect(() => {
+    const last = messages[messages.length - 1]
+    if (last?.created_at) lastAtRef.current = last.created_at
+  }, [messages])
+
+  /* По-старите. Прелиства се нагоре по време, от най-горното заредено
+     съобщение назад. */
+  async function loadOlder() {
+    if (loadingOlder || !messages.length) return
+    setLoadingOlder(true)
+    const { data, done } = await fetchMessages(peerId, { before: messages[0].created_at })
+    setLoadingOlder(false)
+    if (done) setHasOlder(false)
+    if (data?.length) setMessages(prev => mergeMessages(data, prev))
+  }
+
   }, [user?.id, peerId])
 
   // Fetch the other person's profile (name + avatar) for the header
@@ -206,8 +244,13 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
   useEffect(() => {
     if (!otherUserId) return
     const id = setInterval(async () => {
-      const { data } = await fetchMessages(otherUserId)
-      if (data) setMessages(data)
+      /* Само каквото е дошло след последното: празен отговор е нормалният
+         отговор, а цял разговор на всеки петнайсет секунди е мрежа, харчена
+         за да се разбере, че нищо не се е случило. */
+      const since = lastAtRef.current
+      if (!since) return
+      const { data } = await fetchNewMessages(otherUserId, since)
+      if (data?.length) setMessages(prev => mergeMessages(prev, data))
     }, 15_000)
     return () => clearInterval(id)
   }, [otherUserId])
@@ -216,8 +259,11 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
     if (!otherUserId) return
     const onVisible = async () => {
       if (document.visibilityState !== 'visible') return
-      const { data } = await fetchMessages(otherUserId)
-      if (data) setMessages(data)
+      const since = lastAtRef.current
+      const { data } = since
+        ? await fetchNewMessages(otherUserId, since)
+        : await fetchMessages(otherUserId)
+      if (data?.length) setMessages(prev => since ? mergeMessages(prev, data) : data)
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
@@ -361,6 +407,14 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
       </div>
 
       <div className={styles.feed}>
+        {/* Разговорът започва от последните петдесет. Останалото се вика,
+            когато потрябва — никой не отваря чат, за да чете отпреди година,
+            но всеки иска да може. */}
+        {!loading && hasOlder && (
+          <button type="button" className={styles.older} onClick={loadOlder} disabled={loadingOlder}>
+            {loadingOlder ? t('chat.loading') : t('chat.older')}
+          </button>
+        )}
         {loading ? (
           <p className={styles.empty}>{t('chat.loading')}</p>
         ) : messages.length === 0 ? (

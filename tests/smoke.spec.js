@@ -699,3 +699,30 @@ test.describe('Счупено', () => {
     expect(sent.length).toBe(1)
   })
 })
+
+test.describe('Чат', () => {
+  /* Разговорът се теглеше цял — и не веднъж при отваряне, а на всеки
+     петнайсет секунди, докато екранът стои отворен. При двайсет съобщения е
+     незабележимо; при година разговор са хиляди реда по мрежата, само за да
+     се види дали има един нов. Тестът гледа формата на заявката, защото точно
+     тя е поправката: последните петдесет, подредени по време. */
+  test('нишката иска последните петдесет, не всичко', async ({ page }) => {
+    test.setTimeout(90000)
+    const asked = []
+    page.on('request', r => {
+      const u = r.url()
+      if (u.includes('/rest/v1/messages')) asked.push(decodeURIComponent(u))
+    })
+
+    await enterApp(page)
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(600)
+    await page.getByText('ЧАТ', { exact: true }).first().click()
+    await page.waitForTimeout(1500)
+
+    const first = asked.find(u => u.includes('from_user_id'))
+    expect(first, 'нишката изобщо не пита за съобщения').toBeTruthy()
+    expect(first).toContain('limit=50')
+    expect(first).toContain('order=created_at.desc')
+  })
+})

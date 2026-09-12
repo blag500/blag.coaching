@@ -672,6 +672,7 @@ export default {
   'chat.err.sendShort':     'Send failed',
   'chat.coachName':         'Coach',
   'chat.loading':           'Loading...',
+  'chat.older':        'Older',
   'chat.empty':             'No messages',
   'chat.imgAlt':            'photo',
   'chat.sendImg':           'Send a photo',

@@ -6,10 +6,30 @@ import styles from './Chat.module.css'
 import { loc } from '../../utils/locale'
 import Pictogram from '../Pictogram/Pictogram'
 
+/* Слепването на новото със старото.
+   Podsещането и живият канал могат да донесат един и същ ред; ключът маха
+   повторенията, вместо да разчита, че двата пътя никога няма да се засекат. */
+function mergeMessages(old, fresh) {
+  if (!fresh?.length) return old
+  const seen = new Set(old.map(m => m.id))
+  const add  = fresh.filter(m => !seen.has(m.id))
+  if (!add.length) return old
+  return [...old, ...add].sort((a, b) => a.created_at.localeCompare(b.created_at))
+}
+
 export default function Chat({ clientId, clientName, onClose }) {
-  const { user, profile, fetchMessages, sendMessage, markMessagesAsRead } = useAuth()
+  const { user, profile, fetchMessages, fetchNewMessages, sendMessage, markMessagesAsRead } = useAuth()
   const { t } = useSettings()
   const [messages, setMessages] = useState([])
+  /* Времето на последното съобщение, за подсещането: то пита „има ли нещо
+     след това", а не „дай ми всичко". Реф, а не състояние — четe се вътре в
+     интервал, вързан веднъж, и ново рисуване заради него няма смисъл. */
+  const lastAtRef = useRef(null)
+  /* Има ли какво да се прелисти нагоре. Дойде ли по-малко от една страница,
+     значи сме на началото на разговора. */
+  const [hasOlder, setHasOlder]         = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sendError, setSendError] = useState(null)
@@ -33,17 +53,37 @@ export default function Chat({ clientId, clientName, onClose }) {
   useEffect(() => {
     if (!otherUserId) { setLoading(false); return }
 
-    fetchMessages(otherUserId).then(({ data }) => {
+    fetchMessages(otherUserId).then(({ data, done }) => {
       setMessages(data || [])
+      setHasOlder(!done)
       setLoading(false)
       markRead(otherUserId)
     })
+
+  useEffect(() => {
+    const last = messages[messages.length - 1]
+    if (last?.created_at) lastAtRef.current = last.created_at
+  }, [messages])
+
+  /* По-старите. Прелиства се нагоре по време, от най-горното заредено
+     съобщение назад. */
+  async function loadOlder() {
+    if (loadingOlder || !messages.length) return
+    setLoadingOlder(true)
+    const { data, done } = await fetchMessages(otherUserId, { before: messages[0].created_at })
+    setLoadingOlder(false)
+    if (done) setHasOlder(false)
+    if (data?.length) setMessages(prev => mergeMessages(data, prev))
+  }
+
   }, [user?.id, otherUserId])
 
   useEffect(() => {
     const id = setInterval(async () => {
-      const { data } = await fetchMessages(otherUserId)
-      if (data) setMessages(data)
+      const since = lastAtRef.current
+      if (!since) return
+      const { data } = await fetchNewMessages(otherUserId, since)
+      if (data?.length) setMessages(prev => mergeMessages(prev, data))
     }, 15_000)
     return () => clearInterval(id)
   }, [otherUserId])
@@ -51,8 +91,11 @@ export default function Chat({ clientId, clientName, onClose }) {
   useEffect(() => {
     const onVisible = async () => {
       if (document.visibilityState !== 'visible') return
-      const { data } = await fetchMessages(otherUserId)
-      if (data) setMessages(data)
+      const since = lastAtRef.current
+      const { data } = since
+        ? await fetchNewMessages(otherUserId, since)
+        : await fetchMessages(otherUserId)
+      if (data?.length) setMessages(prev => since ? mergeMessages(prev, data) : data)
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
@@ -139,6 +182,11 @@ export default function Chat({ clientId, clientName, onClose }) {
       </div>
 
       <div className={styles.messages}>
+        {!loading && hasOlder && (
+          <button type="button" className={styles.older} onClick={loadOlder} disabled={loadingOlder}>
+            {loadingOlder ? t('chat.loading') : t('chat.older')}
+          </button>
+        )}
         {loading ? (
           <p className={styles.loading}>{t('chat.loading')}</p>
         ) : messages.length === 0 ? (
