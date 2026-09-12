@@ -24,7 +24,9 @@ const FLICK_MIN   = 40     // but never on a twitch
    в която почти нищо не се движи. На смяна на раздел това се усеща като
    изчакване, не като ход. По-кратко и с кривата за плъзгане: същото ускорение
    в началото, но без опашката. */
-const GLIDE       = 260    // ms to finish or undo the journey
+/* 340, не 260: откакто ходът тръгва след като страницата е построена, цялото
+   време се вижда — при 260 видяното беше три пети от него. */
+const GLIDE       = 340    // ms to finish or undo the journey
 
 // Below the pane that is arriving (95) for the page being left, above it for
 // the page arriving, and both under the tab bar (100), which never moves.
@@ -202,11 +204,22 @@ function SwipePager({
     /* Един кадър, за да успее React да монтира новата страница и слоят отдолу
        да я сложи извън екрана. Да я пуснем да пътува в същия кадър, в който
        се появява, значи да тръгне от където и да е. */
+    /* Два кадъра, не един.
+       Първият е за React: монтира новата страница и слоят я слага извън
+       екрана. Но точно този кадър е и най-скъпият — измерено, влизането в
+       ХРАНЕНЕ трае седемдесет и девет милисекунди срещу шестнайсет за всички
+       останали. Тръгне ли ходът вътре в него, първата му една трета изтича,
+       без да е помръднал пиксел: окото вижда замръзване, после рязко движение
+       от средата на кривата. Оттам идва усещането, че сече.
+       Вторият кадър изчаква скъпия да се нарисува и пуска пътуването на чисто,
+       с цялата му дължина пред себе си. */
     requestAnimationFrame(() => {
-      if (!slotRefs.current[live.current.back]) return
-      settling.current  = true
-      commitRef.current = tab
-      place(-dir * window.innerWidth, dir, true)
+      requestAnimationFrame(() => {
+        if (!slotRefs.current[live.current.back]) return
+        settling.current  = true
+        commitRef.current = tab
+        place(-dir * window.innerWidth, dir, true)
+      })
     })
     return true
   }
