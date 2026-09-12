@@ -58,6 +58,17 @@ export default function BotBubble({ activeTab, onOpen }) {
      под пръста е страницата, не балончето, защото то е на друго място. Оставиш
      ли го върху „РЕЦЕПТИ", рецептите се отварят. */
   const swallowRef = useRef(false)
+  const swallowTimer = useRef(null)
+
+  /* Вдига флага и го сваля сам след малко.
+     Придружаващото натискане идва до триста милисекунди след вдигането на
+     пръста; флаг, който чака вечно, изяжда съвсем друго натискане след минута
+     — и то изглежда като бутон, който не работи. */
+  function swallowNextClick() {
+    swallowRef.current = true
+    clearTimeout(swallowTimer.current)
+    swallowTimer.current = setTimeout(() => { swallowRef.current = false }, 400)
+  }
 
   const holdRef  = useRef(null)   // таймерът за задържане
   const startRef = useRef(null)   // откъде тръгна пръстът
@@ -79,7 +90,10 @@ export default function BotBubble({ activeTab, onOpen }) {
     return () => window.removeEventListener('resize', clampNow)
   }, [])
 
-  useEffect(() => () => clearTimeout(holdRef.current), [])
+  useEffect(() => () => {
+    clearTimeout(holdRef.current)
+    clearTimeout(swallowTimer.current)
+  }, [])
 
   /* Прихваща се в улавящата фаза на документа, преди събитието да стигне до
      който и да е бутон. Само едно натискане и само след местене. */
@@ -87,6 +101,7 @@ export default function BotBubble({ activeTab, onOpen }) {
     const eat = e => {
       if (!swallowRef.current) return
       swallowRef.current = false
+      clearTimeout(swallowTimer.current)
       e.stopPropagation()
       e.preventDefault()
     }
@@ -176,7 +191,7 @@ export default function BotBubble({ activeTab, onOpen }) {
         setHidden(true)
         setHiddenState(true)
         haptic('success')
-        swallowRef.current = true
+        swallowNextClick()
         return
       }
       setOver(false)
@@ -190,7 +205,7 @@ export default function BotBubble({ activeTab, onOpen }) {
       setDocking(false)
       setPos(landed)
       savePos(landed)
-      if (moved) { swallowRef.current = true; return }   // местене, не отваряне
+      if (moved) { swallowNextClick(); return }   // местене, не отваряне
     }
 
     onOpen('bot')
