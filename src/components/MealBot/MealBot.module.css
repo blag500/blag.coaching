@@ -305,3 +305,41 @@
   padding-top: 2px;
 }
 
+/* ── Свободният въпрос ────────────────────────────────────────────────────
+   Полето стои под копчетата, не вместо тях: четирите въпроса са бързият път
+   за „какво да ям сега", а това е за всичко останало. */
+.askRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.askInput {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  color: var(--text);
+  font-family: var(--font-body);
+  padding: 10px 14px;
+}
+.askInput::placeholder { color: var(--muted); opacity: 0.7; }
+.askInput:disabled { opacity: 0.6; }
+
+.askSend {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #241B0C;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.askSend:disabled { opacity: 0.35; cursor: default; }

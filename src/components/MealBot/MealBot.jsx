@@ -262,6 +262,11 @@ export default function MealBot({ onAddRaw }) {
   const [addedItems, setAddedItems]           = useState(saved?.addedItems         ?? {})
   const [historyCache, setHistoryCache]       = useState(null) // never persist cache
 
+  /* Свободният въпрос. Четирите копчета остават — те са бързият път за
+     „какво да ям сега" — но всичко извън тях дотук нямаше къде да се каже. */
+  const [draft, setDraft]   = useState('')
+  const [asking, setAsking] = useState(false)
+
   const sessionRef = useRef(0)
   const feedRef    = useRef(null)
 
@@ -274,6 +279,32 @@ export default function MealBot({ onAddRaw }) {
     if (sessionRef.current !== session) return
     setTyping(false)
     addBot(text)
+  }
+
+  /* Питането с думи.
+     Отговорът идва от blag-bot, а той сам чете числата на човека от базата —
+     тук се праща само въпросът. Контекст, събран на телефона и подаден
+     нататък, би значел, че всеки може да поиска чужд. */
+  async function handleAsk() {
+    const q = draft.trim()
+    if (!q || asking) return
+    setDraft('')
+    addUser(q)
+    setAsking(true)
+    setTyping(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('blag-bot', {
+        body: { question: q },
+      })
+      setTyping(false)
+      if (error || !data?.reply) { addBot(t('mb.askErr')); return }
+      addBot(data.reply)
+    } catch {
+      setTyping(false)
+      addBot(t('mb.askErr'))
+    } finally {
+      setAsking(false)
+    }
   }
 
   // Show welcome only on a fresh session (skip if restoring)
@@ -708,6 +739,29 @@ export default function MealBot({ onAddRaw }) {
             {t('mb.tryAgain')}
           </button>
         )}
+
+        {/* Полето стои винаги, под който и да е от разговорите с копчета:
+            въпрос идва наум по средата, не само в началото. */}
+        <div className={styles.askRow}>
+          <input
+            className={styles.askInput}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAsk() } }}
+            placeholder={t('mb.askPlaceholder')}
+            maxLength={500}
+            disabled={asking}
+          />
+          <button
+            className={styles.askSend}
+            onClick={handleAsk}
+            disabled={!draft.trim() || asking}
+            type="button"
+            aria-label={t('mb.ask')}
+          >
+            <Pictogram name="chat" size={16} />
+          </button>
+        </div>
 
       </div>
     </div>
