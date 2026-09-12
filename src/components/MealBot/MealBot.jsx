@@ -213,7 +213,10 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)) }
 function BotBubble({ text }) {
   return (
     <div className={styles.bubbleRow}>
-      <span className={styles.avatar}><Pictogram name="chat" size={15} /></span>
+      {/* Лицето на бота е плакатът от landing страницата, не знак за
+          разговор. Асистентът, който говори с твоя глас, трябва да изглежда
+          като теб — а не като иконка за чат, каквато има и в лентата. */}
+      <img className={styles.avatar} src="/bot.webp" alt="" width="28" height="28" />
       <div className={`${styles.bubble} ${styles.botBubble}`}>
         {text.split('\n').map((line, i, arr) => (
           <span key={i}>{parseBold(line)}{i < arr.length - 1 && <br />}</span>
@@ -651,17 +654,10 @@ export default function MealBot({ onAddRaw }) {
 
       <div className={styles.controls}>
 
-        {/* ── Welcome ── */}
-        {step === 'welcome' && (
-          <div className={styles.welcomeBtns}>
-            <button className={styles.startBtn} onClick={handleStart} type="button">
-              {t('mb.start')}
-            </button>
-            <button className={styles.analysisBtn} onClick={handleDailyAnalysis} type="button">
-              {t('mb.analyseDay')}
-            </button>
-          </div>
-        )}
+        {/* Двата бутона „Започни" и „Погледни деня" ги няма.
+            Полето отдолу прави и двете и още: „какво да ям" и „как е денят ми"
+            са въпроси, а не режими, и човек не бива да избира в кой режим е,
+            за да зададе въпрос. */}
 
         {/* ── 4-question flow options ── */}
         {FLOW.includes(step) && (

@@ -2335,7 +2335,7 @@ export default {
   "mb.macro.fat": "Fat",
   "mb.macro.kcal": "Calories",
   "mb.unit.kcal": "kcal",
-  "mb.intro": "I am Blag Bot.\n\nI can narrow it down with four quick questions, or look at your day and tell you what is left. If your question is something else, just ask below.",
+  "mb.intro": "I am Blag Bot.\n\nI know what you have logged today and before, your targets, your training and your weight. Ask me anything about them.",
   "mb.start": "Start",
   "mb.askPlaceholder": "Ask me something",
   "mb.ask": "Ask",
