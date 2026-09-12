@@ -33,25 +33,34 @@ export default function AwardsGrid({ stats }) {
           const have = a.of(stats)
           const done = have >= a.need
           return (
-            <div key={a.id} className={`${styles.item} ${done ? styles.itemOn : ''}`}>
-              <span className={styles.medal}>
-                <Pictogram name={a.icon} size={30} />
+            <div key={a.id} className={`${styles.card} ${done ? styles.cardOn : ''}`}>
+              {/* Рисунката излиза извън картата. Знакът не е илюстрация до
+                  числото, а фонът, върху който то стои — затова е голям,
+                  отрязан от ръба и блед; ако се четеше наравно с числото,
+                  двете щяха да се борят. */}
+              <span className={styles.mark} aria-hidden="true">
+                <Pictogram name={a.icon} size={96} />
               </span>
-              <span className={styles.name}>{t(`aw.${a.id}.title`)}</span>
-              <span className={styles.sub}>
-                {done ? t(`aw.${a.id}.need`) : t('aw.progress', { n: Math.min(have, a.need), m: a.need })}
+              <span className={styles.num}>{a.need}</span>
+              <span className={styles.unit}>{t(a.unit)}</span>
+              <span className={styles.foot}>
+                <span className={styles.name}>{t(`aw.${a.id}.title`)}</span>
+                {/* Лентата стои само на неспечелените: на спечелена тя би била
+                    пълна лента, която не казва нищо. */}
+                {!done && (
+                  <>
+                    <span className={styles.bar}>
+                      <span className={styles.barFill} style={{ width: `${Math.min(have / a.need, 1) * 100}%` }} />
+                    </span>
+                    <span className={styles.sub}>{t('aw.progress', { n: Math.min(have, a.need), m: a.need })}</span>
+                  </>
+                )}
               </span>
-              {/* Лентата стои само на неспечелените: на спечелена тя би била
-                  пълна лента, която не казва нищо. */}
-              {!done && (
-                <span className={styles.bar}>
-                  <span className={styles.barFill} style={{ width: `${Math.min(have / a.need, 1) * 100}%` }} />
-                </span>
-              )}
             </div>
           )
         })}
       </div>
+
     </section>
   )
 }

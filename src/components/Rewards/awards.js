@@ -13,32 +13,36 @@
 
 /* Всяка носи иконата си от рисувания набор, прага си и това, което се брои.
    `of` вади текущото число от статистиките, `need` е колко трябва — оттам
-   излиза и лентата, и надписът „още толкова". */
+   излиза и лентата, и надписът „още толкова".
+
+   `unit` е думата под голямото число на картата. Не се вади от надписа
+   „3 дни подред", защото това би значело да се реже низ по превода — а на
+   друг език числото не стои отпред. */
 export const AWARDS = [
-  { id: 'first',     icon: 'star',     of: s => s.activeDays,    need: 1   },
+  { id: 'first',     icon: 'star',     of: s => s.activeDays,    need: 1,   unit: 'aw.unit.first'   },
 
-  { id: 'streak3',   icon: 'flame',    of: s => s.longestStreak, need: 3   },
-  { id: 'streak7',   icon: 'flame',    of: s => s.longestStreak, need: 7   },
-  { id: 'streak30',  icon: 'flame',    of: s => s.longestStreak, need: 30  },
-  { id: 'streak100', icon: 'flame',    of: s => s.longestStreak, need: 100 },
+  { id: 'streak3',   icon: 'flame',    of: s => s.longestStreak, need: 3,   unit: 'aw.unit.streak'  },
+  { id: 'streak7',   icon: 'flame',    of: s => s.longestStreak, need: 7,   unit: 'aw.unit.streak'  },
+  { id: 'streak30',  icon: 'flame',    of: s => s.longestStreak, need: 30,  unit: 'aw.unit.streak'  },
+  { id: 'streak100', icon: 'flame',    of: s => s.longestStreak, need: 100, unit: 'aw.unit.streak'  },
 
-  { id: 'days30',    icon: 'calendar', of: s => s.activeDays,    need: 30  },
-  { id: 'days100',   icon: 'calendar', of: s => s.activeDays,    need: 100 },
-  { id: 'days365',   icon: 'calendar', of: s => s.activeDays,    need: 365 },
+  { id: 'days30',    icon: 'calendar', of: s => s.activeDays,    need: 30,  unit: 'aw.unit.days'    },
+  { id: 'days100',   icon: 'calendar', of: s => s.activeDays,    need: 100, unit: 'aw.unit.days'    },
+  { id: 'days365',   icon: 'calendar', of: s => s.activeDays,    need: 365, unit: 'aw.unit.days'    },
 
-  { id: 'train10',   icon: 'training', of: s => s.trainingDays,  need: 10  },
-  { id: 'train50',   icon: 'training', of: s => s.trainingDays,  need: 50  },
-  { id: 'train100',  icon: 'training', of: s => s.trainingDays,  need: 100 },
+  { id: 'train10',   icon: 'training', of: s => s.trainingDays,  need: 10,  unit: 'aw.unit.train'   },
+  { id: 'train50',   icon: 'training', of: s => s.trainingDays,  need: 50,  unit: 'aw.unit.train'   },
+  { id: 'train100',  icon: 'training', of: s => s.trainingDays,  need: 100, unit: 'aw.unit.train'   },
 
-  { id: 'cal7',      icon: 'kcal',     of: s => s.calorieDays,   need: 7   },
-  { id: 'cal30',     icon: 'kcal',     of: s => s.calorieDays,   need: 30  },
+  { id: 'cal7',      icon: 'kcal',     of: s => s.calorieDays,   need: 7,   unit: 'aw.unit.cal'     },
+  { id: 'cal30',     icon: 'kcal',     of: s => s.calorieDays,   need: 30,  unit: 'aw.unit.cal'     },
 
-  { id: 'habits7',   icon: 'check',    of: s => s.habitDays,     need: 7   },
-  { id: 'habits30',  icon: 'check',    of: s => s.habitDays,     need: 30  },
+  { id: 'habits7',   icon: 'check',    of: s => s.habitDays,     need: 7,   unit: 'aw.unit.habits'  },
+  { id: 'habits30',  icon: 'check',    of: s => s.habitDays,     need: 30,  unit: 'aw.unit.habits'  },
 
-  { id: 'perfect1',  icon: 'star',     of: s => s.perfectDays,   need: 1   },
-  { id: 'perfect10', icon: 'star',     of: s => s.perfectDays,   need: 10  },
-  { id: 'perfect50', icon: 'star',     of: s => s.perfectDays,   need: 50  },
+  { id: 'perfect1',  icon: 'star',     of: s => s.perfectDays,   need: 1,   unit: 'aw.unit.perfect' },
+  { id: 'perfect10', icon: 'star',     of: s => s.perfectDays,   need: 10,  unit: 'aw.unit.perfect' },
+  { id: 'perfect50', icon: 'star',     of: s => s.perfectDays,   need: 50,  unit: 'aw.unit.perfect' },
 ]
 
 /** Спечелените отпред, останалите отзад — страницата започва с направеното. */

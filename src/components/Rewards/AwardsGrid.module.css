@@ -24,87 +24,108 @@
   color: var(--muted);
 }
 
-/* Три в ред на телефон. Четири щяха да свият медала под размера, на който
-   рисунката още се чете. */
+/* Две в ред. Наградата е карта, не медальонче: числото е това, което човек
+   идва да види, и то иска място. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
-.item {
+.card {
+  position: relative;
+  overflow: hidden;
+  min-height: 104px;
+  padding: 13px 14px 12px;
+  border-radius: var(--r-lg);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  text-align: center;
-}
-
-/* Медалът. Шестоъгълник, а не кръг: кръговете вече значат други неща в това
-   приложение — избраният ден, снимката, пръстенът на готовността. */
-.medal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 62px;
-  height: 62px;
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
   /* Неспечеленият е угаснал, не скрит: човек трябва да види какво го чака. */
   background: var(--surface-2);
+  border: 1px solid var(--border);
   color: var(--muted);
-  opacity: 0.45;
-  transition: opacity 200ms var(--ease-out);
 }
 
-.itemOn .medal {
-  opacity: 1;
+/* Спечелената е от метал. Същата преливка, която носи сплашът и медалът
+   дотук — топло отгоре, тъмно към долния десен ъгъл, както е осветено всичко
+   останало в приложението. */
+.cardOn {
+  border-color: transparent;
   color: #241B0C;
   background:
-    linear-gradient(150deg,
-      rgba(255, 248, 226, 0.95) 0%,
-      var(--accent) 38%,
-      rgba(140, 96, 30, 0.95) 78%,
-      rgba(255, 236, 190, 0.9) 100%);
-  /* Металът е в градиента, не в картинка: една маска и един преход вместо
-     осемнайсет файла за поддържане. */
-  filter: drop-shadow(0 4px 14px rgba(var(--accent-rgb), 0.35));
+    linear-gradient(152deg,
+      rgba(255, 236, 190, 0.98) 0%,
+      var(--accent) 42%,
+      rgba(166, 116, 38, 0.98) 100%);
+  box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.28);
+}
+
+.mark {
+  position: absolute;
+  right: -22px;
+  bottom: -26px;
+  display: flex;
+  color: currentColor;
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.cardOn .mark { opacity: 0.22; }
+
+.num {
+  font-family: var(--font-heading);
+  font-size: 34px;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  color: inherit;
+  position: relative;
+}
+
+.unit {
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.25;
+  margin-top: 3px;
+  opacity: 0.72;
+  position: relative;
+}
+
+/* Лентата пада на дъното на картата, а не веднага под думата: така двете
+   карти една до друга показват докъде е стигнал всеки, на една височина. */
+.foot {
+  margin-top: auto;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
 }
 
 .name {
   font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.06em;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
   line-height: 1.2;
-  color: var(--muted);
-}
-
-.itemOn .name {
-  color: var(--text);
-}
-
-.sub {
-  font-family: var(--font-body);
-  font-size: 8.5px;
-  line-height: 1.3;
-  color: var(--muted);
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .bar {
-  width: 46px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--surface-2);
+  height: 3px;
+  border-radius: var(--r-xs);
+  background: rgba(var(--text-rgb), 0.10);
   overflow: hidden;
 }
 
 .barFill {
   display: block;
   height: 100%;
-  border-radius: 1px;
-  background: rgba(var(--accent-rgb), 0.6);
+  border-radius: var(--r-xs);
+  background: rgba(var(--accent-rgb), 0.75);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .medal { transition: none }
+.sub {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
 }
