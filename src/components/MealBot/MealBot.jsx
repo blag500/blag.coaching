@@ -281,6 +281,16 @@ export default function MealBot({ onAddRaw }) {
     addBot(text)
   }
 
+  /* Какво е станало след предложението.
+     Ботът се учи от това, не от думите: „предложих извара, той я взе" е
+     наблюдение, „питах какво да ям" не е. Тихо и без чакане — ако редът не
+     влезе, човекът не е загубил нищо. */
+  function note(kind, payload) {
+    if (!user?.id) return
+    supabase.from('bot_events').insert({ user_id: user.id, kind, payload })
+      .then(() => {}, () => {})
+  }
+
   /* Питането с думи.
      Отговорът идва от blag-bot, а той сам чете числата на човека от базата —
      тук се праща само въпросът. Контекст, събран на телефона и подаден
@@ -400,6 +410,10 @@ export default function MealBot({ onAddRaw }) {
 
   async function handleNextSuggestion() {
     const s = sessionRef.current
+    /* „Покажи друго" е отказ от показаното, а не любопитство: човекът е
+       видял точно това ястие и е поискал нещо различно. */
+    const shown = suggestions[suggIdx]
+    if (shown) note('rejected', { name: shown.name, kcal: Math.round(shown.kcal), prefs })
     const next = suggIdx + 1
     if (next >= suggestions.length) {
       addUser(t('mb.showOther'))
@@ -424,6 +438,7 @@ export default function MealBot({ onAddRaw }) {
   function handleAddSuggestion() {
     const item = suggestions[suggIdx]
     if (!item) return
+    note('accepted', { name: item.name, kcal: Math.round(item.kcal), from: 'history', prefs })
     onAddRaw({
       name:    item.name,
       grams:   Math.round(item.grams || 100),
@@ -565,6 +580,7 @@ export default function MealBot({ onAddRaw }) {
   }
 
   function handleAddMacroItem(item, idx) {
+    note('accepted', { name: item.name, kcal: Math.round(item.kcal || 0), from: 'macro' })
     onAddRaw(item)
     setAddedItems(prev => ({ ...prev, [idx]: true }))
   }

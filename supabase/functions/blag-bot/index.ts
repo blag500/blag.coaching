@@ -228,14 +228,8 @@ Deno.serve(async (req) => {
         {
           role: 'user',
           content:
-            `СЪБИТИЯ
-${(evs.data ?? []).map(e => `${e.kind}: ${JSON.stringify(e.payload)}`).join('
-')}
-
-` +
-            `РАЗГОВОР
-${[...(msgs.data ?? [])].reverse().map(m => `${m.role}: ${m.content}`).join('
-')}`,
+            `СЪБИТИЯ\n${(evs.data ?? []).map(e => `${e.kind}: ${JSON.stringify(e.payload)}`).join('\n')}\n\n` +
+            `РАЗГОВОР\n${[...(msgs.data ?? [])].reverse().map(m => `${m.role}: ${m.content}`).join('\n')}`,
         },
       ], 300)
 
