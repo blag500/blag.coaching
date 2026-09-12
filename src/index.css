@@ -483,6 +483,25 @@ html, body, #root {
 
 
 
+/* Контролите не се маркират.
+   Дълго натискане или две бързи тапвания върху бутон досега хващаше текста в
+   него: синьо поле върху надписа и на iOS — менюто „Copy / Look Up" върху
+   собствения ни интерфейс. Това е разликата между приложение и страница,
+   отворена в браузър, и се вижда точно в момента, в който човек натиска
+   по-дълго от обикновено.
+
+   Само контролите. Името на храна, съобщението в чата и текстът на пост
+   остават за маркиране — там копирането е работа, не грешка. */
+button,
+[role="button"],
+nav,
+label,
+summary {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 button {
   cursor: pointer;
   font-family: var(--font-body);
@@ -499,6 +518,10 @@ button {
 
 input, textarea, select {
   font-family: var(--font-body);
+  /* Полето вътре в <label> наследява забраната отгоре, а в поле за писане
+     маркирането е самото редактиране. */
+  -webkit-user-select: text;
+  user-select: text;
   /* Prevent iOS Safari from zooming on focus — zoom triggers below 16px */
   font-size: 16px !important;
   transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
