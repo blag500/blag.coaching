@@ -5,6 +5,10 @@ import App from './App.jsx'
 import { captureSource } from './utils/source'
 import { setupPwaAutoUpdate } from './lib/pwaUpdate'
 import { startOutbox } from './lib/outbox'
+import { installErrorReporting } from './lib/reportError'
+
+/* Преди всичко останало: кука, сложена след счупването, не лови счупването. */
+installErrorReporting()
 
 /* Каквото е чакало от миналото пускане, тръгва преди първото рисуване. */
 startOutbox()

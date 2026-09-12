@@ -2,7 +2,16 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+/* Коя сглобка е това.
+   Един и същ ред в client_errors от вчерашната и от днешната версия е един и
+   същ ред само на пръв поглед — без това не се вижда дали нещо е поправено
+   или още гърми. */
+const BUILD = new Date().toISOString().slice(0, 16).replace('T', ' ')
+
 export default defineConfig({
+  define: {
+    __APP_BUILD__: JSON.stringify(BUILD),
+  },
   server: {
     host: true,
   },

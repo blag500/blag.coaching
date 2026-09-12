@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { tr } from '../../utils/locale'
+import { reportError } from '../../lib/reportError'
 import styles from './ErrorBoundary.module.css'
 
 /**
@@ -23,6 +24,9 @@ export default class ErrorBoundary extends Component {
   componentDidCatch(error, info) {
     // Остава в конзолата с целия стек — това е, което се чете после.
     console.error('[blag] екранът гръмна:', error, info?.componentStack)
+    /* И заминава. Конзолата е за този, който е пред машината; треньорът е
+       другаде и научава само оттук. */
+    reportError(error, 'екран')
   }
 
   render() {

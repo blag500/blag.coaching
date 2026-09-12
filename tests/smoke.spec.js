@@ -640,3 +640,62 @@ test.describe('Тренировка', () => {
     await expect(rest.locator('[class*="chapterIcon"] svg')).toBeVisible()
   })
 })
+
+test.describe('Счупено', () => {
+  /* Конзолата на телефон никой не я отваря: клиент, на когото екранът е
+     гръмнал, или пише, или просто спира да влиза. Редът трябва да замине сам,
+     и то с достатъчно, за да се намери мястото — кой екран, коя сглобка, кой
+     телефон. */
+  test('грешката извън рисуването заминава към базата', async ({ page }) => {
+    test.setTimeout(90000)
+    const sent = []
+    page.on('request', r => {
+      if (r.url().includes('client_errors')) sent.push(r.postData() || '')
+    })
+
+    await enterApp(page)
+    await page.waitForTimeout(1200)
+
+    /* Отхвърлено обещание, не грешка при рисуване: точно това ErrorBoundary
+       не лови и точно то не оставяше следа никъде. */
+    await page.evaluate(() => {
+      window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', {
+        promise: Promise.resolve(),
+        reason: new Error('нарочно счупено за проба'),
+      }))
+    })
+    await page.waitForTimeout(1500)
+
+    expect(sent.length).toBe(1)
+    const row = JSON.parse(sent[0])
+    expect(row.message).toContain('нарочно счупено за проба')
+    expect(row.screen).toBeTruthy()
+    expect(row.app_version).toBeTruthy()
+    expect(row.user_id).toBeTruthy()
+  })
+
+  /* Един и същ ред, който гърми при всяко рисуване, би напълнил таблицата за
+     секунди — а от втория запис нататък не казва нищо ново. */
+  test('един и същи ред не се праща два пъти', async ({ page }) => {
+    test.setTimeout(90000)
+    const sent = []
+    page.on('request', r => {
+      if (r.url().includes('client_errors')) sent.push(r.postData() || '')
+    })
+
+    await enterApp(page)
+    await page.waitForTimeout(1200)
+
+    for (let i = 0; i < 3; i++) {
+      await page.evaluate(() => {
+        window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', {
+          promise: Promise.resolve(),
+          reason: new Error('същото счупено'),
+        }))
+      })
+      await page.waitForTimeout(500)
+    }
+
+    expect(sent.length).toBe(1)
+  })
+})

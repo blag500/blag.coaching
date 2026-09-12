@@ -30,6 +30,7 @@ import SwipePager from './components/SwipePager/SwipePager'
 import { useSupplementsToday } from './hooks/useSupplementsToday'
 import SupplementBanner from './components/Supplements/SupplementBanner'
 import { trackPage } from './lib/analytics'
+import { setErrorScreen } from './lib/reportError'
 import { tr } from './utils/locale'
 import styles from './App.module.css'
 
@@ -204,7 +205,7 @@ function AppShell() {
 
   const { pendingCount: supplementPending } = useSupplementsToday()
 
-  useEffect(() => { trackPage(activeTab) }, [activeTab])
+  useEffect(() => { trackPage(activeTab); setErrorScreen(activeTab) }, [activeTab])
 
   // A new tab starts at its top. During a swipe the incoming page is shown from
   // the top, so landing halfway down it after the finger lifts would contradict
