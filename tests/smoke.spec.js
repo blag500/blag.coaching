@@ -984,6 +984,11 @@ test.describe('Паметта на бота', () => {
        без повод, а памет, която не може да се прочете, е памет, на която не
        може да се вярва. */
     await expect(page.getByText('Какво съм научил')).toBeVisible()
+    /* Сгънато по подразбиране: осем реда под разговорите правят от екрана
+       стена. Паметта се проверява от време на време, разговорите — всеки път. */
+    await expect(page.getByText('не яде риба')).toBeHidden()
+    await page.getByText('Какво съм научил').click()
+    await page.waitForTimeout(700)
     await expect(page.getByText('не яде риба')).toBeVisible()
     await expect(page.getByText('тренира сутрин')).toBeVisible()
     await page.screenshot({ path: 'shots/tmp-memory.png' })
@@ -1265,5 +1270,22 @@ test.describe('Изтриване на разговор', () => {
     await del.click()
     await page.waitForTimeout(800)
     await expect(page.getByText('Три пъти в четвъртък')).toHaveCount(0)
+  })
+})
+
+test.describe('Списъкът на бота', () => {
+  test('разговорът не се смачква под дългата памет', async ({ page }) => {
+    test.setTimeout(60000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(1000)
+
+    /* Списъкът е колонен flex: прелее ли, децата с естествена височина се
+       свиват. С осем реда памет отдолу разговорите станаха ивици с червено
+       квадратче отстрани — затова се мери височината, а не видимостта. */
+    const h = await page.evaluate(() =>
+      Math.round(document.querySelector('[class*="rowWrap"]').getBoundingClientRect().height))
+    expect(h).toBeGreaterThan(40)
   })
 })

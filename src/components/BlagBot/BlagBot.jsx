@@ -392,6 +392,8 @@ export default function BlagBot({ open, from = null, onClose }) {
      единственото място, където се влиза без повод — а памет, която не може да
      се прочете, е памет, на която не може да се вярва. */
   const [learned, setLearned] = useState([])
+  /* Сгънато, докато не потрябва. */
+  const [memOpen, setMemOpen] = useState(false)
 
   /* Махнато ли е балончето. Показва се само тогава: бутон „върни го", докато
      то си стои на екрана, е въпрос без повод. */
@@ -943,22 +945,44 @@ export default function BlagBot({ open, from = null, onClose }) {
           {/* Научено. Показва се само когато има нещо: заглавие над празно
               място обещава памет, която още я няма. */}
           {learned.length > 0 && (
-            <div className={styles.memory}>
-              <span className={styles.chatsHead}>{t('bot.mem.title')}</span>
-              {learned.map(line => (
-                <div key={line} className={styles.memRow}>
-                  <span className={styles.memText}>{line}</span>
-                  <button
-                    type="button"
-                    className={styles.memForget}
-                    onClick={() => forget(line)}
-                    aria-label={t('bot.mem.forget')}
-                  >
-                    <Pictogram name="close" size={15} />
-                  </button>
+            /* Сгънато по подразбиране. Осем реда научено под списъка с
+               разговорите правят от екрана стена: паметта се проверява от
+               време на време, а разговорите се отварят всеки път. */
+            <div className={`${styles.memory} ${memOpen ? styles.memOpen : ''}`}>
+              <button
+                type="button"
+                className={styles.memHead}
+                onClick={() => { haptic('tap'); setMemOpen(v => !v) }}
+                aria-expanded={memOpen}
+              >
+                {t('bot.mem.title')}
+                <span className={styles.memCount}>{learned.length}</span>
+                <svg className={styles.memChevron} viewBox="0 0 24 24" width="16" height="16"
+                     fill="none" stroke="currentColor" strokeWidth="2"
+                     strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              <div className={styles.memBody}>
+                <div className={styles.memInner}>
+                  {learned.map(line => (
+                    <div key={line} className={styles.memRow}>
+                      <span className={styles.memText}>{line}</span>
+                      <button
+                        type="button"
+                        className={styles.memForget}
+                        onClick={() => forget(line)}
+                        aria-label={t('bot.mem.forget')}
+                        tabIndex={memOpen ? 0 : -1}
+                      >
+                        <Pictogram name="close" size={15} />
+                      </button>
+                    </div>
+                  ))}
+                  <span className={styles.memHint}>{t('bot.mem.hint')}</span>
                 </div>
-              ))}
-              <span className={styles.memHint}>{t('bot.mem.hint')}</span>
+              </div>
             </div>
           )}
         </div>

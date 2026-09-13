@@ -611,9 +611,82 @@
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Заглавието на сгънатото. Цял ред, за да е ясно, че се натиска — не само
+   стрелката, която е дребна мишена за палец. */
+.memHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.memCount {
+  margin-left: auto;
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.75;
+}
+
+/* Стрелката сочи надолу, когато е сгънато, и нагоре, когато е отворено. */
+.memChevron {
+  transition: transform 220ms var(--ease-out);
+}
+
+.memOpen .memChevron {
+  transform: rotate(180deg);
+}
+
+/* Сгъването е през grid-template-rows: 0fr → 1fr — единственият начин височина
+   „по съдържание" да се анимира, без да се мери с JavaScript. */
+.memBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms var(--ease-glide);
+}
+
+.memOpen .memBody {
+  grid-template-rows: 1fr;
+}
+
+.memInner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  /* Сгънатото е и скрито, не само отрязано.
+     Само `overflow: hidden` при нулева височина крие редовете от окото, но не
+     и от четеца на екрана, нито от табулатора — а скрит бутон, който се
+     фокусира, е капан. Скриването чака свиването да свърши, за да не изчезне
+     съдържанието в първия кадър на анимацията. */
+  visibility: hidden;
+  transition: visibility 0s linear 260ms;
+}
+
+.memOpen .memInner {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memBody, .memChevron { transition: none }
 }
 
 .memRow {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -779,6 +852,12 @@
   position: relative;
   border-radius: 12px;
   overflow: hidden;
+  /* Без това редовете се смачкват до чертички.
+     Списъкът е колонен flex и когато съдържанието му прелее, децата с
+     естествена височина се свиват — това е подразбирането на flex-shrink.
+     Дотук не преливаше и не си личеше; с добавената памет отдолу преля и
+     разговорите станаха ивици с червено квадратче отстрани. */
+  flex-shrink: 0;
   /* Пръстът мести реда, а не страницата под него — но само настрани.
      Отвесното остава на списъка, иначе скролът спира вътре в редовете. */
   touch-action: pan-y;
@@ -792,6 +871,10 @@
      навсякъде другаде — но с малко въздух отпред срязването изглежда като
      движение, а не като счупен ред. */
   padding-left: 12px;
+  /* Плътен под. Фонът на картите е многослоен и полупрозрачен — през него
+     червеното квадратче отдолу прозираше и редът изглеждаше зацапан отдясно,
+     без изобщо да е дърпан. */
+  background-color: var(--bg);
   /* Без преход, докато пръстът е долу: редът трябва да върви с него, а не след
      него. Класът се сваля при пускане и връщането е плавно. */
   transition: transform 240ms var(--ease-glide);
