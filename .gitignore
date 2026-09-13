@@ -11,3 +11,8 @@ test-results/
 # Снимките от tests/shots.spec.js — поглед, не запис
 shots/
 playwright-report/
+
+# deno.lock се появява при `deno check` на крайните функции — те се пускат в
+# средата на Supabase, не от това хранилище, и заключените версии тук не значат
+# нищо за тях.
+deno.lock
