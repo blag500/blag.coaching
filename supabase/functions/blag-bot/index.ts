@@ -104,8 +104,11 @@ const EXTRACT = `Ти разчиташ изречение, с което чов�
 Правила:
 - Ако изречението не казва какво е изядено или изпито, връщаш {"items":[]}.
 - Ако е въпрос — „колко", „да ям ли", „какво да", „защо" — връщаш {"items":[]}.
-- Ако името съвпада с нещо от МОИ ХРАНИ, вземаш неговите числа и ги преизчисляваш за количеството. Тогава approx е false.
-- Ако не съвпада, слагаш най-близките числа, които знаеш, и approx е true.
+- ПЪРВО гледаш ЯЛ Е ДОСЕГА, МОИ ХРАНИ и ЯСТИЯ. Там са храните, които този човек яде, с неговите числа — те са верни, а твоите са догадка.
+- Съвпадението не е буквално: „извара", „изварата", „200 извара" и „cottage cheese" сочат един и същ ред, ако той е в списъка. Вземаш числата оттам, преизчисляваш ги за количеството и пишеш името ТОЧНО както е в списъка. Тогава approx е false.
+- В ЯЛ Е ДОСЕГА числата са за посоченото количество, не за 100 грама. Преизчисляваш пропорционално.
+- Само ако наистина го няма в списъците, слагаш най-близките числа, които знаеш, и approx е true.
+- Името се пише на езика на изречението. Човек, който пише на български, не иска „strawberries" в дневника си.
 - grams е количеството в грамове или милилитри. „Едно яйце", „филия", „лъжица" се превръщат в грамове.
 - kcal, protein, carbs, fat са за цялото количество, не за 100 грама. Числа, не текст.
 - meal е едно от: breakfast, lunch, dinner, snack — ако е казано или се подразбира. Иначе null.
@@ -358,7 +361,7 @@ Deno.serve(async (req) => {
   const [
     profile, todayFood, weekFood, habits, workouts, weights,
     water, sleep, supps, suppLogs, checkin, exercises, sessions, prep,
-    meals, mine, recent, learned,
+    meals, mine, eaten, recent, learned,
   ] = await Promise.all([
       admin.from('profiles')
         .select('name, calories, protein, carbs, fat, goal, age, gender, height_cm, activity_level, target_weight, habits, checkin_day, coach_notes, coach_id')
@@ -381,7 +384,17 @@ Deno.serve(async (req) => {
       /* Неговите си храни, с числа за сто грама. Разчитането на изречение взема
          числата оттук, когато името съвпада: „изядох извара" за човек, който си
          е вписал изварата, не бива да става догадка на модел. */
-      admin.from('custom_foods').select('name, serving_grams, kcal, protein, carbs, fat').eq('user_id', uid).limit(60),
+      admin.from('custom_foods').select('name, serving_grams, kcal, protein, carbs, fat')
+        .eq('user_id', uid).order('created_at', { ascending: false }).limit(120),
+      /* Истинската хранителна база на човека.
+         `custom_foods` и `meal_library` стоят празни — никой не си пише храните
+         предварително. Но дневникът помни: при Николай това са двеста трийсет и
+         две различни храни, всяка с точните ѝ числа, вписани от самия него.
+         Това е списъкът, срещу който трябва да се разчита изречение: „изядох
+         извара" значи неговата извара, с неговите числа, а не догадка на модел
+         за средна извара. */
+      admin.from('food_logs').select('name, grams, kcal, protein, carbs, fat, added_at')
+        .eq('user_id', uid).order('added_at', { ascending: false }).limit(500),
       /* Нишката, не купчината. Осем реплики от този разговор — иначе
          днешният въпрос за водата получава отговор, забъркан с миналоседмичния
          спор за въглехидратите. */
@@ -465,6 +478,26 @@ Deno.serve(async (req) => {
       : null,
     бележки_на_треньора: p.coach_notes ?? null,
   }
+
+  /* Един ред на храна: най-скорошното вписване носи числата, а броят пъти
+     казва колко я яде. Подредени по честота — в подканата влизат първите
+     осемдесет, защото двеста трийсет реда изяждат мястото на всичко останало,
+     а опашката им са неща, ядени веднъж преди половин година. */
+  const seenFood = new Map<string, { name: string; grams: number; kcal: number; p: number; c: number; f: number; n: number }>()
+  for (const r of (eaten.data ?? [])) {
+    const key = String(r.name ?? '').trim().toLowerCase()
+    if (!key) continue
+    const had = seenFood.get(key)
+    if (had) { had.n++; continue }
+    seenFood.set(key, {
+      name: String(r.name), grams: Number(r.grams) || 0, kcal: Number(r.kcal) || 0,
+      p: Number(r.protein) || 0, c: Number(r.carbs) || 0, f: Number(r.fat) || 0, n: 1,
+    })
+  }
+  const eatenList = [...seenFood.values()]
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 80)
+    .map(x => `${x.name} — ${x.grams} г: ${Math.round(x.kcal)} ккал, П${Math.round(x.p)} В${Math.round(x.c)} М${Math.round(x.f)} (ядено ${x.n} пъти)`)
 
   const mealList = (meals.data ?? []).map(m =>
     `${m.name} — ${m.kcal ?? '?'} ккал, П${m.protein ?? '?'} В${m.carbs ?? '?'} М${m.fat ?? '?'}${m.prep_min ? `, ${m.prep_min} мин` : ''}`
@@ -557,6 +590,11 @@ Deno.serve(async (req) => {
     const read = await ask(apiKey, [
       { role: 'system', content: EXTRACT + (lang === 'en' ? '\n- Изречението е на английски.' : '') },
       ...(mineList.length ? [{ role: 'system', content: `МОИ ХРАНИ\n${mineList.join('\n')}` }] : []),
+      ...(eatenList.length ? [{ role: 'system', content: `ЯЛ Е ДОСЕГА\n${eatenList.join('\n')}` }] : []),
+      /* И готовите ястия: те са същото по род — храни с негови числа, само че
+         съставени. „Изядох овесенката" сочи ред от библиотеката му, не догадка
+         за овес. */
+      ...(mealList.length ? [{ role: 'system', content: `ЯСТИЯ\n${mealList.join('\n')}` }] : []),
       { role: 'user', content: question },
     ], 900)
     const items = parseItems(read)

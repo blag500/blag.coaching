@@ -1289,3 +1289,76 @@ test.describe('Списъкът на бота', () => {
     expect(h).toBeGreaterThan(40)
   })
 })
+
+test.describe('Пренасяне от предния ден', () => {
+  test('пренесеното сяда в своите хранения', async ({ page }) => {
+    test.setTimeout(90000)
+  
+    // Днес е празно, вчера има три реда в три различни хранения.
+    const today = new Date().toISOString().slice(0, 10)
+    const d = new Date(); d.setDate(d.getDate() - 1)
+    const y = d.toISOString().slice(0, 10)
+  
+    await enterApp(page, {
+      tables: {
+        food_logs: [
+          { id: 'y1', user_id: TABLES.profiles[0].id, date: y, name: 'Овесени ядки', grams: 80, kcal: 304, protein: 10.6, carbs: 52, fat: 5.4, meal_type: 'breakfast', estimated: null },
+          { id: 'y2', user_id: TABLES.profiles[0].id, date: y, name: 'Пилешко филе', grams: 250, kcal: 412, protein: 77.5, carbs: 0, fat: 9, meal_type: 'lunch', estimated: null },
+          { id: 'y3', user_id: TABLES.profiles[0].id, date: y, name: 'Извара', grams: 200, kcal: 196, protein: 24, carbs: 7.2, fat: 8, meal_type: 'dinner', estimated: null },
+        ],
+      },
+    })
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
+    await page.waitForTimeout(1500)
+  
+    // Какво заминава към базата при пренасянето.
+    const sent = []
+    page.on('request', r => {
+      if (r.method() === 'POST' && r.url().includes('food_logs')) {
+        try {
+          const body = JSON.parse(r.postData() || 'null')
+          for (const row of (Array.isArray(body) ? body : [body])) sent.push(row)
+        } catch { /* празно тяло */ }
+      }
+    })
+  
+    const copy = page.getByText('Пренеси', { exact: false }).first()
+    await copy.scrollIntoViewIfNeeded()
+    await copy.click()
+    await page.waitForTimeout(2500)
+  
+    expect(sent.length).toBe(3)
+    expect(sent.map(r => r.meal_type).sort()).toEqual(['breakfast', 'dinner', 'lunch'])
+    expect(sent.every(r => r.date === today)).toBe(true)
+  })
+})
+
+test.describe('Преименуване на разговор', () => {
+  test('моливчето преименува разговора', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(1000)
+  
+    let patched = null
+    page.on('request', r => {
+      if (r.method() === 'PATCH' && r.url().includes('bot_chats')) {
+        try { patched = JSON.parse(r.postData() || 'null') } catch { /* празно */ }
+      }
+    })
+  
+    await page.locator('[aria-label="Преименувай разговора"]').first().click()
+    await page.waitForTimeout(400)
+    const input = page.locator('input[aria-label="Преименувай разговора"]')
+    await expect(input).toBeVisible()
+    await input.fill('Четвъртъците')
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(700)
+  
+    await expect(page.getByText('Четвъртъците')).toBeVisible()
+    // Даденото от човека име спира нощното прекрояване.
+    expect(patched).toMatchObject({ title: 'Четвъртъците', title_auto: true })
+  })
+})

@@ -39,7 +39,11 @@ export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
       for (let i = 0; i < 7; i++) {
         const { data } = await supabase
           .from('food_logs')
-          .select('name, grams, kcal, protein, carbs, fat')
+          /* И кое хранене е било. Без него пренесеното влиза с празно хранене,
+             тоест всичко се събира под една група — а човек, който закусва
+             овесено и вечеря пилешко, получава сутринта и двете на една маса.
+             Полето съществува от 086 насам; тук просто не се четеше. */
+          .select('name, grams, kcal, protein, carbs, fat, meal_type')
           .eq('user_id', user.id)
           .eq('date', cursor)
         if (cancelled) return
@@ -75,7 +79,9 @@ export default function CopyPreviousDay({ date, onAddRaw, onDone }) {
         protein: r.protein,
         carbs: r.carbs,
         fat: r.fat,
-        mealType: r.meal_type ?? undefined,
+        /* null значи „вписано без хранене" и се пренася както си е: подразбиране
+           тук би сложило закуска на нещо, за което човекът не е казал нищо. */
+        mealType: r.meal_type ?? null,
       })
     }
     setBusy(false)

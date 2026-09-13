@@ -247,9 +247,11 @@ function wantsSingle(req) {
  *
  * Вика се ПРЕДИ page.goto — заявките тръгват от първия кадър.
  */
-export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg' } = {}) {
+export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg', tables: seed = {} } = {}) {
   const merged = { ...PROFILE, ...profile }
-  const tables = { ...TABLES, profiles: [merged] }
+  /* `seed` подменя цели таблици за един тест. Подменя, не добавя: тест, който
+     иска празен ден, не може да го получи, ако общите редове останат отдолу. */
+  const tables = { ...TABLES, ...seed, profiles: [merged] }
 
   await page.addInitScript(
     ({ ref, user, th, lg }) => {
@@ -378,7 +380,54 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg' }
       return json(route, wantsSingle(req) ? stored[0] : stored, 201)
     }
 
-    const rows = tables[table] ?? []
+    /* Четенето уважава филтъра по дата.
+     *
+     * Дотук GET връщаше цялата таблица, каквото и да е поискано — удобно,
+     * докато не потрябва празен ден. „Пренеси от вчера" се показва само когато
+     * днес няма нищо, а с непроменено четене вчерашните редове се връщаха и за
+     * днес: денят никога не беше празен и точно този бутон не можеше да се
+     * тества.
+     *
+     * Само датите, нарочно. Пълното филтриране би променило какво виждат
+     * трийсет теста наведнъж, а те са писани срещу днешното поведение — една
+     * колона е поправка, всички колони е друг макет.
+     */
+    const DATE_COLS = ['date', 'log_date', 'completed_date', 'scheduled_at']
+    const params = new URL(req.url()).searchParams
+    let rows = tables[table] ?? []
+    for (const col of DATE_COLS) {
+      const raw = params.get(col)
+      if (!raw) continue
+      if (raw.startsWith('eq.')) {
+        const want = raw.slice(3)
+        rows = rows.filter(r => r[col] == null || String(r[col]).slice(0, 10) === want)
+      } else if (raw.startsWith('gte.')) {
+        const from = raw.slice(4)
+        rows = rows.filter(r => r[col] == null || String(r[col]).slice(0, 10) >= from)
+      }
+    }
+    /* Връща се само поисканото.
+     *
+     * Дотук макетът връщаше целия ред, какъвто и `select` да е поискан — и
+     * това криеше цял клас грешки: приложение, което забрави да поиска колона,
+     * работеше в тестовете и се чупеше на живо. Точно така „Пренеси от вчера"
+     * слагаше всичко под едно хранене — четеше шест колони и meal_type не беше
+     * между тях, а тестът не можеше да го хване.
+     *
+     * Само прост списък от имена. Вложените заявки (`author:profiles(name)`) и
+     * `*` се пропускат — те се разчитат друго, а половинчато разчитане е
+     * по-лошо от никакво.
+     */
+    const sel = params.get('select')
+    if (sel && !sel.includes('(') && !sel.includes('*')) {
+      const cols = sel.split(',').map(c => c.trim().split(':').pop()).filter(Boolean)
+      rows = rows.map(r => {
+        const out = {}
+        for (const c of cols) if (c in r) out[c] = r[c]
+        return out
+      })
+    }
+
     return json(route, wantsSingle(req) ? (rows[0] ?? null) : rows)
   })
 }

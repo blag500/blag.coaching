@@ -903,3 +903,52 @@
 .del:active {
   background: rgba(190, 60, 60, 0.34);
 }
+
+/* Моливът накрая на реда. Приглушен, докато не потрябва: той е поправка на
+   заглавие, не действие на списъка. */
+.renameBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-dim);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.renameBtn:active {
+  opacity: 1;
+  background: var(--surface-2);
+}
+
+/* Докато се пише, редът е поле и потвърждение — не бутон, който отваря. */
+.chatEditing {
+  gap: 8px;
+}
+
+.renameInput {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  padding: 7px 10px;
+}
+
+.renameOk {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}

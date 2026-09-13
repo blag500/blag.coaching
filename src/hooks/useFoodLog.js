@@ -55,14 +55,25 @@ export async function logFoodRows(userId, items, date = todayStr()) {
     protein: Math.round((Number(i.protein) || 0) * 10) / 10,
     carbs:   Math.round((Number(i.carbs)   || 0) * 10) / 10,
     fat:     Math.round((Number(i.fat)     || 0) * 10) / 10,
-    /* Разчетеното от изречение е догадка, докато не съвпадне с неговa храна.
-       Стои в реда, за да може денят да се чете честно после. */
-    estimated: i.approx ? 'bot' : null,
+    /* Разчетеното от изречение е догадка, докато не съвпадне с негова храна.
+       Стои в реда, за да може денят да се чете честно после.
+       Булево, не низ: колоната е boolean и низът „bot" се отхвърляше от базата.
+       Записът падаше, отиваше в опашката и се губеше, а на екрана пишеше
+       „Вписано в дневника" — най-лошият вид грешка, защото човекът я научава
+       чак вечерта, когато сборът не излиза. */
+    estimated: i.approx ? true : null,
     meal_type: i.meal ?? null,
   }))
   const { error } = await supabase.from('food_logs').insert(rows)
   if (error) {
+    /* Мрежата я няма — редът чака в опашката и ще замине. Но базата, която
+       отказва реда, е друго: тя ще го отказва и на стотния опит. Затова
+       грешката се връща, вместо да се преглътне: екран, който казва „вписано"
+       за нещо, което никога няма да се впише, е по-лош от екран, който казва
+       „не стана". */
     for (const row of rows) enqueue({ table: 'food_logs', op: 'insert', row })
+    window.dispatchEvent(new CustomEvent('blag:food-log'))
+    return { error, queued: true }
   }
   window.dispatchEvent(new CustomEvent('blag:food-log'))
   return { error: null }

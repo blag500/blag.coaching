@@ -171,7 +171,7 @@ function DraftCard({ plan, state, onLog, onSkip, t }) {
 
       {state
         ? <span className={styles.draftState}>
-            {t(state === 'in' ? 'bot.log.done' : 'bot.log.left')}
+            {t(state === 'in' ? 'bot.log.done' : state === 'wait' ? 'bot.log.wait' : 'bot.log.left')}
           </span>
         : (
           <div className={styles.draftBtns}>
@@ -272,7 +272,29 @@ function when(iso, t) {
  * не трепва при първия пиксел — само се показва толкова, колкото пръстът е
  * дръпнал.
  */
-function ChatRow({ chat, open, onOpenRow, onCloseRow, onPick, onDelete, t }) {
+function ChatRow({ chat, open, onOpenRow, onCloseRow, onPick, onDelete, onRename, t }) {
+  /* Прекръстването е на място, в самия ред: заглавието се вижда тук и тук се
+     поправя. Отделен екран за едно поле е екран, който се отваря веднъж. */
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(chat.title ?? '')
+  const nameRef = useRef(null)
+
+  useEffect(() => {
+    if (!editing) return
+    setName(chat.title ?? '')
+    /* Фокус след рисуването, иначе полето го няма още. Избраният текст спестява
+       изтриването на старото заглавие — то и без това рядко се доизписва. */
+    const id = setTimeout(() => { nameRef.current?.focus(); nameRef.current?.select() }, 30)
+    return () => clearTimeout(id)
+  }, [editing, chat.title])
+
+  function commit() {
+    const next = name.trim().slice(0, 60)
+    setEditing(false)
+    if (!next || next === chat.title) return
+    onRename(next)
+  }
+
   const startRef = useRef(null)
   const movedRef = useRef(false)
   const [dx, setDx] = useState(0)
@@ -335,6 +357,27 @@ function ChatRow({ chat, open, onOpenRow, onCloseRow, onPick, onDelete, t }) {
         <Pictogram name="close" size={18} />
       </button>
 
+      {editing ? (
+        /* Докато се пише, редът не е бутон: поле и две мишени — готово и
+           отказ. Натиснатият Enter е същото като готово. */
+        <div className={`${styles.chatRow} ${styles.chatEditing}`}>
+          <input
+            ref={nameRef}
+            className={styles.renameInput}
+            value={name}
+            maxLength={60}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { e.preventDefault(); commit() }
+              if (e.key === 'Escape') { e.preventDefault(); setEditing(false) }
+            }}
+            aria-label={t('bot.rename')}
+          />
+          <button type="button" className={styles.renameOk} onClick={commit} aria-label={t('bot.renameOk')}>
+            <Pictogram name="check" size={17} />
+          </button>
+        </div>
+      ) : (
       <button
         type="button"
         className={`${styles.chatRow} ${chat.unread ? styles.chatUnread : ''} ${held ? styles.dragging : ''}`}
@@ -362,7 +405,22 @@ function ChatRow({ chat, open, onOpenRow, onCloseRow, onPick, onDelete, t }) {
           </span>
         </span>
         {chat.unread && <span className={styles.chatDot} aria-label={t('bot.unread')} />}
+
+        {/* Моливът е накрая на реда, където свършва заглавието. Натискането му
+            не отваря разговора — затова спира събитието още тук. */}
+        <span
+          role="button"
+          tabIndex={0}
+          className={styles.renameBtn}
+          aria-label={t('bot.rename')}
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); haptic('tap'); setEditing(true) }}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing(true) } }}
+        >
+          <Pictogram name="compose" size={15} />
+        </span>
       </button>
+      )}
     </div>
   )
 }
@@ -574,8 +632,12 @@ export default function BlagBot({ open, from = null, onClose }) {
      събития: от тях се учи какво човекът яде наистина, а не какво му е било
      предложено. */
   async function logPlan(msgId, plan) {
-    const { error } = await logFoodRows(user.id, plan.items)
-    setMessages(p => p.map(m => m.id === msgId ? { ...m, planState: error ? null : 'in' } : m))
+    const { error, queued } = await logFoodRows(user.id, plan.items)
+    /* Три различни изхода, не два: вписано, чака мрежа, отказано. Дотук вторите
+       два се четяха като първия. */
+    setMessages(p => p.map(m => m.id === msgId
+      ? { ...m, planState: error ? (queued ? 'wait' : null) : 'in' }
+      : m))
     if (error) { haptic('reject'); return }
     haptic('success')
     supabase.from('bot_events')
@@ -694,6 +756,14 @@ export default function BlagBot({ open, from = null, onClose }) {
   /* Кой ред е дръпнат. Затваря се и при връщане към списъка: отворено
      квадратче, заварено след разговор, изглежда като грешка на екрана. */
   const [openRow, setOpenRow] = useState(null)
+
+  /* Прекръстеното остава прекръстено: title_auto спира нощното прекрояване,
+     иначе даденото от човека име щеше да бъде заменено с преразказ. */
+  async function renameChat(id, title) {
+    haptic('success')
+    setChats(prev => prev.map(c => c.id === id ? { ...c, title } : c))
+    await supabase.from('bot_chats').update({ title, title_auto: true }).eq('id', id)
+  }
 
   async function removeChat(id) {
     haptic('success')
@@ -936,6 +1006,7 @@ export default function BlagBot({ open, from = null, onClose }) {
               onCloseRow={() => setOpenRow(null)}
               onPick={() => openChat(c.id)}
               onDelete={() => removeChat(c.id)}
+              onRename={title => renameChat(c.id, title)}
               t={t}
             />
           ))}
