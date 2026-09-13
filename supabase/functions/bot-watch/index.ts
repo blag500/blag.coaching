@@ -150,7 +150,10 @@ function iso(daysBack = 0) {
  * записването на грешките стана истинско — дотук „!res.ok → continue" гълташе
  * точно това.
  */
-async function ask(apiKey: string, messages: unknown[], maxTokens = 900) {
+// deno-lint-ignore no-explicit-any
+let meter: ((kind: string, model: string, u: any) => void) | null = null
+
+async function ask(apiKey: string, messages: unknown[], maxTokens = 900, kind = 'watch') {
   for (const model of MODELS) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -168,6 +171,7 @@ async function ask(apiKey: string, messages: unknown[], maxTokens = 900) {
       }
       const data = await res.json()
       const text = data?.choices?.[0]?.message?.content?.trim()
+      meter?.(kind, model, data?.usage)
       if (text) return text
       console.error(`groq ${model} → празен отговор`)
     } catch (e) { console.error(`groq ${model} → ${String(e).slice(0, 200)}`) }
@@ -355,7 +359,7 @@ async function maintain(admin: any, apiKey: string, uid: string, lang = 'bg') {
             `СЪБИТИЯ\n${(evs.data ?? []).map((e: { kind: string; payload: unknown }) => `${e.kind}: ${JSON.stringify(e.payload)}`).join('\n')}\n\n` +
             `РАЗГОВОР\n${[...(msgs.data ?? [])].reverse().map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join('\n')}`,
         },
-      ], 1200)
+      ], 1200, 'distill')
 
       if (distilled) {
         await admin.from('bot_profile').upsert({
@@ -390,7 +394,7 @@ async function maintain(admin: any, apiKey: string, uid: string, lang = 'bg') {
       const made = await ask(apiKey, [
         { role: 'system', content: TITLE + (lang === 'en' ? '\n\nВАЖНО: Заглавието е на АНГЛИЙСКИ.' : '') },
         { role: 'user', content: all.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join('\n') },
-      ], 400)
+      ], 400, 'title')
       if (!made) continue
 
       const clean = made.replace(/["„""'.]/g, '').trim().slice(0, 60)
@@ -438,6 +442,18 @@ Deno.serve(async (req) => {
      по-добрият. */
   const admin = createClient(url, key)
 
+  /* Нощната обиколка минава през четиринайсет души; броячът си сменя човека
+     във всеки кръг, за да се вижда чий разход е. */
+  let who: string | null = null
+  meter = (kind, model, u) => {
+    admin.from('bot_usage').insert({
+      user_id: who, kind, model,
+      prompt_tokens: u?.prompt_tokens ?? null,
+      completion_tokens: u?.completion_tokens ?? null,
+      total_tokens: u?.total_tokens ?? null,
+    }).then(() => {}, () => {})
+  }
+
   const given  = req.headers.get('x-bot-secret')
     ?? new URL(req.url).searchParams.get('secret')
   const secret = await expectedSecret(admin)
@@ -465,6 +481,7 @@ Deno.serve(async (req) => {
 
   for (const p of people ?? []) {
     const uid = p.id
+    who = uid
     try {
       const [food, weights, water, workouts, checkins, log] = await Promise.all([
         admin.from('food_logs').select('date, protein').eq('user_id', uid).gte('date', iso(4)),

@@ -63,6 +63,21 @@ update public.app_secrets
 
 The `REMINDER_SECRET` env var stays as a fallback for a failed table read only.
 
+**Bot spend**: every call to the model writes a row in `public.bot_usage`
+(`kind`, model, token counts) — 'answer', 'extract', 'translate', 'watch',
+'distill', 'title'. Nobody sees it but the service role; it prunes itself after
+60 days. To read it:
+
+```sql
+select kind, count(*), sum(prompt_tokens) as in_, sum(completion_tokens) as out_
+from public.bot_usage where created_at > now() - interval '7 days'
+group by kind order by sum(total_tokens) desc;
+```
+
+Measured, not guessed: one question is ~4 900 tokens, almost all of it prompt
+(the ДАННИ block, the knowledge chunks and the thread). The deliberate decision
+is no per-day cap — watch the spend and add one when it starts to show.
+
 **Bot knowledge** (`supabase/functions/knowledge` + `bot_knowledge`): the coach's
 own notes, chunked by heading and embedded with Supabase's built-in `gte-small`
 model — no external API, no per-token cost, and the text never leaves the

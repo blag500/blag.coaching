@@ -280,7 +280,13 @@ function parseItems(raw: string | null) {
  * записването на грешките стана истинско — дотук „!res.ok → continue" гълташе
  * точно това.
  */
-async function ask(apiKey: string, messages: unknown[], maxTokens = 1400) {
+/* Кой брои разхода. Слага се веднъж, преди първото обръщение, и оттам нататък
+   всяко влиза в таблицата. Извън `ask`, защото `ask` се вика от четири места и
+   не бива да знае за кого работи. */
+// deno-lint-ignore no-explicit-any
+let meter: ((kind: string, model: string, u: any) => void) | null = null
+
+async function ask(apiKey: string, messages: unknown[], maxTokens = 1400, kind = 'answer') {
   for (const model of MODELS) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -305,6 +311,9 @@ async function ask(apiKey: string, messages: unknown[], maxTokens = 1400) {
       }
       const data = await res.json()
       const text = data?.choices?.[0]?.message?.content?.trim()
+      /* Разходът се брои и когато отговорът е празен: изядените знаци са
+         изядени, а точно празните отговори бяха най-скъпата изненада. */
+      meter?.(kind, model, data?.usage)
       if (text) return text
       console.error(`groq ${model} → празен отговор`)
     } catch (e) {
@@ -334,6 +343,17 @@ Deno.serve(async (req) => {
   const question = String(body?.question ?? '').trim().slice(0, MAX_Q)
   if (!question) return json({ error: 'missing question' }, 400)
 
+  /* Броенето тръгва тук, когато вече се знае кой пита. Записва се, без да се
+     чака: човекът има отговора си, а редът за сметката може да изчака мрежата. */
+  meter = (kind, model, u) => {
+    admin.from('bot_usage').insert({
+      user_id: uid, kind, model,
+      prompt_tokens: u?.prompt_tokens ?? null,
+      completion_tokens: u?.completion_tokens ?? null,
+      total_tokens: u?.total_tokens ?? null,
+    }).then(() => {}, () => {})
+  }
+
   /* На какъв език да отговори. Идва от приложението, защото там е изборът;
      проверява се, защото идва от телефон. */
   const lang = body?.lang === 'en' ? 'en' : 'bg'
@@ -352,7 +372,7 @@ Deno.serve(async (req) => {
   const asked = lang === 'en' ? Promise.resolve(question) : ask(apiKey, [
     { role: 'system', content: TO_EN },
     { role: 'user', content: question },
-  ], 200).then(t => t || question).catch(() => question)
+  ], 200, 'translate').then(t => t || question).catch(() => question)
 
   // ── Данните, наготово ─────────────────────────────────────────────────────
   const today = iso()
@@ -442,6 +462,9 @@ Deno.serve(async (req) => {
     suppByDay[r.date].push(n)
   }
 
+  /* Без разкрасяване при пращането: отстъпите и новите редове са към една
+     десета от подканата, а моделът чете еднакво и от двете. При близо пет
+     хиляди знака на въпрос това е чиста загуба, платена всеки път. */
   const context = {
     човекът: {
       име: p.name ?? null, възраст: p.age ?? null, пол: p.gender ?? null,
@@ -554,7 +577,7 @@ Deno.serve(async (req) => {
     {
       role: 'system',
       content:
-        `ДАННИ\n${JSON.stringify(context, null, 1)}\n\n` +
+        `ДАННИ\n${JSON.stringify(context)}\n\n` +
         (mealList.length ? `ЯСТИЯ\n${mealList.join('\n')}\n\n` : '') +
         (knowledge.length
           ? `ЗНАНИЕ\n${knowledge.map(k => `[${k.source}${k.title ? ' · ' + k.title : ''}]\n${k.body}`).join('\n\n')}\n\n`
@@ -601,7 +624,7 @@ Deno.serve(async (req) => {
          за овес. */
       ...(mealList.length ? [{ role: 'system', content: `ЯСТИЯ\n${mealList.join('\n')}` }] : []),
       { role: 'user', content: question },
-    ], 900)
+    ], 900, 'extract')
     const items = parseItems(read)
     if (items.length) {
       /* Отговорът се сглобява тук, а не от модел: това е сбор на числа, които
