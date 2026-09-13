@@ -75,23 +75,37 @@ for (const file of files) {
   if (text.replace(/\s/g, '').length < 200) { skipped++; continue }
 
   const rel = relative(root, file).replace(/\\/g, '/')
-  const res = await fetch(`${URL_BASE}/functions/v1/knowledge`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-bot-secret': SECRET },
-    body: JSON.stringify({
-      ownerEmail: OWNER,
-      source: basename(file, '.md'),
-      origin: rel,
-      scope,
-      text,
-    }),
-  })
 
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) { failed++; console.error(`✗ ${rel}: ${data.error ?? res.status}`); continue }
-  if (data.skipped) { skipped++; continue }
+  /* На порции: крайната функция вгражда по шест парчета наведнъж и казва
+     докъде е стигнала. Цял файл в едно повикване опира тавана на паметта ѝ —
+     видя се при първото качване, когато всички бележки над осем килобайта
+     паднаха с 546, а малките минаха. */
+  let offset = 0, chunks = 0, fail = null, skip = false
+  for (;;) {
+    const res = await fetch(`${URL_BASE}/functions/v1/knowledge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-bot-secret': SECRET },
+      body: JSON.stringify({
+        ownerEmail: OWNER,
+        source: basename(file, '.md'),
+        origin: rel,
+        scope,
+        text,
+        offset,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) { fail = data.error ?? res.status; break }
+    if (data.skipped) { skip = true; break }
+    chunks += data.chunks ?? 0
+    if (data.done) break
+    offset = data.next
+  }
+
+  if (fail) { failed++; console.error(`✗ ${rel}: ${fail}`); continue }
+  if (skip) { skipped++; continue }
   added++
-  console.log(`✓ ${rel} — ${data.chunks} парчета`)
+  console.log(`✓ ${rel} — ${chunks} парчета`)
 }
 
 console.log(`\nготово: ${added} качени, ${skipped} прескочени, ${failed} паднали`)

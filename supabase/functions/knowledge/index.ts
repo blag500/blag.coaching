@@ -26,6 +26,14 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+/* Кой ред на рязане е ползван.
+   Влиза в отпечатъка, защото „непроменен файл" значи „нищо ново за правене" —
+   а смени ли се начинът на рязане, старите парчета стават стари, макар файлът
+   да е същият. Без това пресинхронизацията след поправка тихо не прави нищо:
+   точно така първият опит след махането на челния блок прескочи и деветте
+   бележки. */
+const CHUNKER = 'v2-без-челен-блок'
+
 const CHUNK = 800        // знака, към които се стреми едно парче
 const MIN_CHUNK = 120    // под това парчето се слепва със следващото
 
@@ -53,7 +61,14 @@ async function digest(text: string) {
  */
 function chunk(text: string) {
   const out: { title: string; body: string }[] = []
-  const lines = text.split(/\r?\n/)
+
+  /* Челният блок на Obsidian се маха.
+     Той е заглавие, етикети и дата — низ, гъст откъм теми и беден откъм
+     смисъл. Оставен вътре, той става парче, което печели търсенето пред
+     истинския текст: на въпрос за съня първо излизаше „tags: [j3u, recovery,
+     sleep...]" вместо самите препоръки за сън. */
+  const body0 = text.replace(/^\s*---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
+  const lines = body0.split(/\r?\n/)
 
   let title = ''
   let buf: string[] = []
@@ -171,8 +186,8 @@ Deno.serve(async (req) => {
 
   /* Непроменен файл не се пипа. Пресинхронизацията на цяло хранилище иначе е
      хиляда вграждания всеки път за нула нови знания. */
-  const sum = await digest(text)
-  if (origin) {
+  const sum = await digest(CHUNKER + text)
+  if (origin && !Number(body?.offset)) {
     const { data: seen } = await admin.from('bot_knowledge')
       .select('digest').eq('owner_id', uid).eq('origin', origin).limit(1).maybeSingle()
     if (seen?.digest === sum) return json({ ok: true, skipped: true, reason: 'непроменен' })
@@ -182,8 +197,24 @@ Deno.serve(async (req) => {
   const pieces = chunk(text)
   if (!pieces.length) return json({ error: 'nothing to store' }, 400)
 
+  /* На порции по шест.
+   *
+   * Цял файл наведнъж вдига грешка 546 — крайната функция е с таван на паметта
+   * и моделът за вграждане, пуснат трийсет пъти в едно повикване, го опира.
+   * Видя се на първото истинско качване: малките бележки минаха, а всички над
+   * осем килобайта паднаха.
+   *
+   * Затова: обажда се пак, с отместване, докато свърши. Триенето на старото
+   * става само на първото повикване — иначе всяка порция би трила писаното от
+   * предната. */
+  const from = Math.max(0, Number(body?.offset) || 0)
+  /* Три, не шест. При шест най-дългата бележка още опираше тавана (546, после
+     503) — а порция от три минава и при най-тежкия файл. Разликата в общото
+     време е няколко секунди на бележка и се плаща веднъж. */
+  const slice = pieces.slice(from, from + 3)
+
   const rows = []
-  for (const piece of pieces) {
+  for (const piece of slice) {
     /* Заглавието влиза във вградяването заедно с тялото: то е половината от
        това, за което говори парчето. */
     const embedding = await embed(`${piece.title}\n${piece.body}`.slice(0, 2000))
@@ -192,7 +223,13 @@ Deno.serve(async (req) => {
       title: piece.title || null,
       body: piece.body,
       scope, client_id: clientId,
-      origin, digest: sum,
+      origin,
+      /* Отпечатъкът се слага чак накрая, на последната порция.
+         Иначе паднало наполовина качване оставя редове с верен отпечатък и
+         следващото пускане го смята за готово — файлът остава наполовина в
+         базата завинаги, а скриптът докладва „прескочен". Точно това стана с
+         най-дългата бележка. */
+      digest: null,
       embedding,
     })
   }
@@ -200,5 +237,18 @@ Deno.serve(async (req) => {
   const { error } = await admin.from('bot_knowledge').insert(rows)
   if (error) return json({ error: error.message }, 500)
 
-  return json({ ok: true, chunks: rows.length })
+  const next = from + slice.length
+  const done = next >= pieces.length
+  if (done && origin) {
+    await admin.from('bot_knowledge')
+      .update({ digest: sum }).eq('owner_id', uid).eq('origin', origin)
+  }
+
+  return json({
+    ok: true,
+    chunks: rows.length,
+    total: pieces.length,
+    done,
+    next,
+  })
 })

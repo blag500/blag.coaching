@@ -113,6 +113,23 @@ const EXTRACT = `Ти разчиташ изречение, с което чов�
 - Най-много шест реда.
 - Изречението може да е на английски. Тогава името на храната се пише на английски, а числата са същите.`
 
+/* Мостът между езиците.
+ *
+ * Моделът за вграждане (gte-small) разбира английски. Бележките на Николай са
+ * на английски, а въпросите идват на български — и това личи: измерено, „кога
+ * умората значи делоуд" връщаше бележката за бранда и тази за стреса, а същият
+ * въпрос на английски връща точно модела фитнес-умора и таблицата за
+ * продължителност на възстановяването. Разликата не е малка — тя е между
+ * „намери го" и „не го намери".
+ *
+ * Затова въпросът се превежда, преди да се вгради. Превежда се САМО за
+ * търсенето: отговорът се пише на езика на човека, а преводът никъде не се
+ * показва. Пуска се успоредно с четенето на данните, така че не добавя чакане.
+ */
+const TO_EN = `Translate the user's message to English.
+
+Answer with the translation only — no explanation, no quotes. Keep it short and keep the domain words (training, nutrition, bodybuilding) accurate.`
+
 const MAX_Q = 500
 
 function json(body: unknown, status = 200) {
@@ -322,6 +339,13 @@ Deno.serve(async (req) => {
     if (!own) chatId = null
   }
 
+  /* Тръгва още сега и се чака чак при търсенето: дотогава и без това се четат
+     петнайсет таблици. */
+  const asked = lang === 'en' ? Promise.resolve(question) : ask(apiKey, [
+    { role: 'system', content: TO_EN },
+    { role: 'user', content: question },
+  ], 200).then(t => t || question).catch(() => question)
+
   // ── Данните, наготово ─────────────────────────────────────────────────────
   const today = iso()
   const weekAgo = iso(7)
@@ -470,12 +494,15 @@ Deno.serve(async (req) => {
     const ai = (globalThis as any).Supabase?.ai
     if (ai) {
       const session = new ai.Session('gte-small')
-      const qe = await session.run(question, { mean_pool: true, normalize: true })
+      const qe = await session.run(await asked, { mean_pool: true, normalize: true })
       const { data: hits } = await admin.rpc('match_knowledge', {
         query_embedding: qe,
         owner: knowledgeOwner,
         asker: uid,
-        match_count: 4,
+        /* Пет, не четири: точността не е идеална — веднъж на няколко въпроса
+           отгоре изскача съседна тема. Моделът вижда парчетата и сам подминава
+           неподходящото; по-скъпо е да не му стигне вярното. */
+        match_count: 5,
       })
       knowledge = hits ?? []
     }
