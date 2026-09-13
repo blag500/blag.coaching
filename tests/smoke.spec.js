@@ -1230,3 +1230,40 @@ test.describe('Изход от нишката', () => {
     await expect(page.getByText('Нов разговор')).toBeVisible()
   })
 })
+
+test.describe('Изтриване на разговор', () => {
+  test('дърпане наляво разкрива хикса, който трие', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('button[aria-label="БЛАГ БОТ"]').click()
+    await page.waitForTimeout(1000)
+
+    const row = page.getByText('Три пъти в четвъртък')
+    await expect(row).toBeVisible()
+    const box = await row.boundingBox()
+    const y = box.y + box.height / 2
+    const del = page.locator('button[aria-label="Изтрий разговора"]')
+
+    await page.mouse.move(box.x + box.width - 20, y)
+    await page.mouse.down()
+    /* На стъпки и с дъх между тях: при пълния набор машината е натоварена,
+       събитията се сливат, а прагът от осем пиксела се мери на първото
+       движение. Тест, който минава сам и пада в тълпата, мери бързината на
+       машината, не приложението. */
+    for (const step of [30, 50, 70, 80]) {
+      await page.mouse.move(box.x + box.width - 20 - step, y, { steps: 4 })
+      await page.waitForTimeout(30)
+    }
+    await page.mouse.up()
+
+    /* Чака се ходът да свърши, а не определен брой милисекунди. */
+    await expect.poll(async () => (await row.boundingBox()).x, { timeout: 6000 })
+      .toBeLessThan(box.x - 40)
+
+    // Хиксът трие, а редът си отива заедно с репликите си.
+    await del.click()
+    await page.waitForTimeout(800)
+    await expect(page.getByText('Три пъти в четвъртък')).toHaveCount(0)
+  })
+})

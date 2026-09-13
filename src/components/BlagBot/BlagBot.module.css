@@ -771,3 +771,52 @@
   place-items: center;
   cursor: pointer;
 }
+
+/* ── Дърпане наляво ─────────────────────────────────────────────────────────
+   Квадратчето стои отдолу, а редът се мести над него. Така движението е на
+   едно нещо, а не на две, и краят му е видим: отдолу няма повече. */
+.rowWrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Пръстът мести реда, а не страницата под него — но само настрани.
+     Отвесното остава на списъка, иначе скролът спира вътре в редовете. */
+  touch-action: pan-y;
+}
+
+.rowWrap .chatRow {
+  position: relative;
+  width: 100%;
+  /* Ляво поле, колкото да има какво да излезе под ръба, вместо заглавието да
+     се среже на първата буква. Дърпането мести целия ред — това е жестът
+     навсякъде другаде — но с малко въздух отпред срязването изглежда като
+     движение, а не като счупен ред. */
+  padding-left: 12px;
+  /* Без преход, докато пръстът е долу: редът трябва да върви с него, а не след
+     него. Класът се сваля при пускане и връщането е плавно. */
+  transition: transform 240ms var(--ease-glide);
+  will-change: transform;
+}
+
+.rowWrap .dragging {
+  transition: none;
+}
+
+.del {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 64px;
+  border: none;
+  border-radius: 0 12px 12px 0;
+  background: rgba(190, 60, 60, 0.22);
+  color: #e88;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.del:active {
+  background: rgba(190, 60, 60, 0.34);
+}

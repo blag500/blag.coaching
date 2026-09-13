@@ -260,6 +260,116 @@ function when(iso, t) {
   return t('feed.ago.day', { n: Math.round(h / 24) })
 }
 
+/* Ред в списъка, който се дърпа наляво.
+ *
+ * Изтриването няма къде другаде да отиде: разговорите нямат свой екран, а
+ * кошче до всяко заглавие е кошче, което стои пред очите през цялото време и
+ * се натиска по невнимание. Дърпането е жестът, с който това се прави
+ * навсякъде другаде в телефона — и иска две действия, за да се стигне до
+ * безвъзвратното.
+ *
+ * Квадратчето не се появява, а стои отдолу: редът се мести над него. Затова и
+ * не трепва при първия пиксел — само се показва толкова, колкото пръстът е
+ * дръпнал.
+ */
+function ChatRow({ chat, open, onOpenRow, onCloseRow, onPick, onDelete, t }) {
+  const startRef = useRef(null)
+  const movedRef = useRef(false)
+  const [dx, setDx] = useState(0)
+  /* Пръстът е долу. Отделно от изместването, защото в мига на натискането
+     изместването още е нула — а точно тогава преходът трябва да е махнат,
+     иначе първото движение тръгва със закъснение. */
+  const [held, setHeld] = useState(false)
+
+  const shown = open ? -REVEAL : 0
+
+  function down(e) {
+    /* Само с пръст и мишка, не с колелце; и без прихващане — иначе
+       вертикалният скрол на списъка спира да работи в реда. */
+    startRef.current = { x: e.clientX, y: e.clientY }
+    movedRef.current = false
+    setHeld(true)
+  }
+
+  function move(e) {
+    const st = startRef.current
+    if (!st) return
+    const mx = e.clientX - st.x
+    const my = e.clientY - st.y
+    /* Отвесното движение е скрол на списъка и не е наша работа. Решава се
+       веднъж, на първите десет пиксела, и повече не се пита. */
+    if (!movedRef.current) {
+      if (Math.abs(my) > Math.abs(mx)) { startRef.current = null; return }
+      if (Math.abs(mx) < 8) return
+      movedRef.current = true
+    }
+    /* Наляво се дърпа до квадратчето и малко отвъд — със съпротива, за да се
+       усети, че оттам нататък няма нищо. Надясно само се затваря. */
+    const raw = shown + mx
+    setDx(Math.max(-REVEAL - 12, Math.min(0, raw > 0 ? raw / 3 : raw)))
+  }
+
+  function up() {
+    const moved = movedRef.current
+    startRef.current = null
+    setHeld(false)
+    if (!moved) { setDx(0); return }
+    /* Половин квадратче решава накъде да отиде редът. */
+    const opened = dx < -REVEAL / 2
+    setDx(0)
+    if (opened) { haptic('toggle'); onOpenRow() } else onCloseRow()
+  }
+
+  const style = { transform: `translateX(${dx || shown}px)` }
+
+  return (
+    <div className={styles.rowWrap}>
+      {/* Квадратчето стои отдолу и чака реда да се отмести. */}
+      <button
+        type="button"
+        className={styles.del}
+        onClick={onDelete}
+        aria-label={t('bot.delete')}
+        tabIndex={open ? 0 : -1}
+      >
+        <Pictogram name="close" size={18} />
+      </button>
+
+      <button
+        type="button"
+        className={`${styles.chatRow} ${chat.unread ? styles.chatUnread : ''} ${held ? styles.dragging : ''}`}
+        style={style}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+        onClick={() => {
+          /* Дръпнат ред не се отваря при пускане на пръста, а отвореният се
+             затваря: първото натискане прибира квадратчето. */
+          if (movedRef.current) return
+          if (open) { onCloseRow(); return }
+          onPick()
+        }}
+      >
+        <img src="/bot.webp" alt="" width="26" height="26" />
+        <span className={styles.chatText}>
+          <span className={styles.chatTitle}>{chat.title || t('bot.newChat')}</span>
+          <span className={styles.chatWhen}>
+            {/* Разговор, който ботът е започнал сам, си го казва: човек, който
+                вижда непознато заглавие, иска да знае кой го е отворил, преди
+                да го прочете. */}
+            {chat.kind === 'watch' ? `${t('bot.noticed')} · ` : ''}{when(chat.updated_at, t)}
+          </span>
+        </span>
+        {chat.unread && <span className={styles.chatDot} aria-label={t('bot.unread')} />}
+      </button>
+    </div>
+  )
+}
+
+/* Колко се показва от квадратчето, когато редът е дръпнат докрай. */
+const REVEAL = 64
+
 // ─── Екранът ─────────────────────────────────────────────────────────────────
 
 export default function BlagBot({ open, from = null, onClose }) {
@@ -579,6 +689,22 @@ export default function BlagBot({ open, from = null, onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, open])
 
+  /* Кой ред е дръпнат. Затваря се и при връщане към списъка: отворено
+     квадратче, заварено след разговор, изглежда като грешка на екрана. */
+  const [openRow, setOpenRow] = useState(null)
+
+  async function removeChat(id) {
+    haptic('success')
+    setOpenRow(null)
+    setChats(prev => prev.filter(c => c.id !== id))
+    /* Ако точно този разговор е отворен, се излиза от него: нишка без ред в
+       базата е екран, който при следващото отваряне го няма. */
+    if (chatId === id) { setChatId(null); setMessages([]) }
+    /* Репликите си отиват с нишката — външният ключ е с on delete cascade. */
+    await supabase.from('bot_chats').delete().eq('id', id)
+    window.dispatchEvent(new CustomEvent('blag:bot-read'))
+  }
+
   async function openChat(id) {
     setChatId(id)
     setLoadingChat(true)
@@ -738,7 +864,7 @@ export default function BlagBot({ open, from = null, onClose }) {
             <button
               type="button"
               className={styles.toList}
-              onClick={() => { haptic('tap'); setChatId(null); setMessages([]) }}
+              onClick={() => { haptic('tap'); setChatId(null); setMessages([]); setOpenRow(null) }}
               aria-label={t('bot.allChats')}
             >
               <Pictogram name="compose" size={18} />
@@ -798,24 +924,18 @@ export default function BlagBot({ open, from = null, onClose }) {
           {chats.length > 0 && <span className={styles.chatsHead}>{t('bot.earlier')}</span>}
 
           {chats.map(c => (
-            <button
+            <ChatRow
               key={c.id}
-              type="button"
-              className={`${styles.chatRow} ${c.unread ? styles.chatUnread : ''}`}
-              onClick={() => openChat(c.id)}
-            >
-              <img src="/bot.webp" alt="" width="26" height="26" />
-              <span className={styles.chatText}>
-                <span className={styles.chatTitle}>{c.title || t('bot.newChat')}</span>
-                <span className={styles.chatWhen}>
-                  {/* Разговор, който ботът е започнал сам, си го казва: човек,
-                      който вижда непознато заглавие, иска да знае кой го е
-                      отворил, преди да го прочете. */}
-                  {c.kind === 'watch' ? `${t('bot.noticed')} · ` : ''}{when(c.updated_at, t)}
-                </span>
-              </span>
-              {c.unread && <span className={styles.chatDot} aria-label={t('bot.unread')} />}
-            </button>
+              chat={c}
+              /* Един отворен ред. Два реда с показани квадратчета са два
+                 недовършени въпроса на един екран. */
+              open={openRow === c.id}
+              onOpenRow={() => setOpenRow(c.id)}
+              onCloseRow={() => setOpenRow(null)}
+              onPick={() => openChat(c.id)}
+              onDelete={() => removeChat(c.id)}
+              t={t}
+            />
           ))}
 
           {chats.length === 0 && <p className={styles.chatsEmpty}>{t('bot.noChats')}</p>}

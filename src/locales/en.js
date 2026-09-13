@@ -37,6 +37,7 @@ export default {
   "bot.mic.lang": "This phone does not recognise this language by voice.",
   "bot.mic.denied": "The microphone was refused. Allow it in the browser settings.",
   "bot.mic.silent": "I heard nothing. Try again or type.",
+  "bot.delete": "Delete the chat",
   "bot.newChat": "New chat",
   "bot.earlier": "EARLIER",
   "bot.noChats": "No chats yet.",
