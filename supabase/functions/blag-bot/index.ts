@@ -287,7 +287,14 @@ function parseItems(raw: string | null) {
 let meter: ((kind: string, model: string, u: any) => void) | null = null
 
 async function ask(apiKey: string, messages: unknown[], maxTokens = 1400, kind = 'answer') {
-  for (const model of MODELS) {
+  /* Обхожда се с индекс, а не с for..of, за да може при чакане да се опита
+     СЪЩИЯТ модел. Той е този, който е казал кога да се върнем; следващият има
+     свой таван и своя опашка.
+     Едно чакане за цялото обръщение, не по едно на модел: два пъти по пет
+     секунди са десет секунди пред празен екран. */
+  let retried = false
+  for (let i = 0; i < MODELS.length; i++) {
+    const model = MODELS[i]
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -298,14 +305,32 @@ async function ask(apiKey: string, messages: unknown[], maxTokens = 1400, kind =
         body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: maxTokens, reasoning_effort: 'low' }),
       })
       if (!res.ok) {
-        /* Дотук провалът беше тих: и двата модела отказваха, функцията връщаше
-           „няма отговор", а на екрана пишеше „нещо се обърка" — без нито един
-           ред, по който да се разбере кое се е объркало. Търсенето после опира
-           до гадаене между изчерпана квота, пенсиониран модел и твърде дълга
-           подкана, а трите се лекуват различно.
-           Тялото се реже: съобщенията за грешка от Groq са къси, а дълъг запис
-           в дневника е дълъг запис, който никой не чете. */
         const why = await res.text().catch(() => '')
+
+        /* Таванът на минута не е отказ, а „изчакай".
+         *
+         * Безплатният план на Groq дава осем хиляди знака на минута, а един
+         * въпрос струва към пет хиляди — вторият въпрос в същата минута се
+         * връща с 429. Дотук това се четеше като „моделът отказа", минаваше се
+         * на по-малкия и ако и той е затворен, човекът получаваше „нещо се
+         * обърка" за въпрос, на който е можело да се отговори след четири
+         * секунди.
+         *
+         * Самият отказ казва колко да се чака („Please try again in 4.59s") —
+         * чака се точно толкова и се опитва пак, веднъж. Второ чакане би
+         * значело половин минута пред празен екран, а дотогава човекът вече е
+         * написал въпроса другаде.
+         */
+        if (res.status === 429 && !retried) {
+          const m = why.match(/try again in ([\d.]+)\s*s/i)
+          const wait = Math.min(8000, Math.round((parseFloat(m?.[1] ?? '2') + 0.4) * 1000))
+          console.error(`groq ${model} → 429, чакам ${wait} ms`)
+          await new Promise(r => setTimeout(r, wait))
+          retried = true
+          i--                       // същият модел, не следващият
+          continue
+        }
+
         console.error(`groq ${model} → ${res.status}: ${why.slice(0, 300)}`)
         continue
       }
