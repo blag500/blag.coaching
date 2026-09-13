@@ -1290,49 +1290,6 @@ test.describe('Списъкът на бота', () => {
   })
 })
 
-test.describe('Пренасяне от предния ден', () => {
-  test('пренесеното сяда в своите хранения', async ({ page }) => {
-    test.setTimeout(90000)
-  
-    // Днес е празно, вчера има три реда в три различни хранения.
-    const today = new Date().toISOString().slice(0, 10)
-    const d = new Date(); d.setDate(d.getDate() - 1)
-    const y = d.toISOString().slice(0, 10)
-  
-    await enterApp(page, {
-      tables: {
-        food_logs: [
-          { id: 'y1', user_id: TABLES.profiles[0].id, date: y, name: 'Овесени ядки', grams: 80, kcal: 304, protein: 10.6, carbs: 52, fat: 5.4, meal_type: 'breakfast', estimated: null },
-          { id: 'y2', user_id: TABLES.profiles[0].id, date: y, name: 'Пилешко филе', grams: 250, kcal: 412, protein: 77.5, carbs: 0, fat: 9, meal_type: 'lunch', estimated: null },
-          { id: 'y3', user_id: TABLES.profiles[0].id, date: y, name: 'Извара', grams: 200, kcal: 196, protein: 24, carbs: 7.2, fat: 8, meal_type: 'dinner', estimated: null },
-        ],
-      },
-    })
-    await page.waitForTimeout(1600)
-    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
-    await page.waitForTimeout(1500)
-  
-    // Какво заминава към базата при пренасянето.
-    const sent = []
-    page.on('request', r => {
-      if (r.method() === 'POST' && r.url().includes('food_logs')) {
-        try {
-          const body = JSON.parse(r.postData() || 'null')
-          for (const row of (Array.isArray(body) ? body : [body])) sent.push(row)
-        } catch { /* празно тяло */ }
-      }
-    })
-  
-    const copy = page.getByText('Пренеси', { exact: false }).first()
-    await copy.scrollIntoViewIfNeeded()
-    await copy.click()
-    await page.waitForTimeout(2500)
-  
-    expect(sent.length).toBe(3)
-    expect(sent.map(r => r.meal_type).sort()).toEqual(['breakfast', 'dinner', 'lunch'])
-    expect(sent.every(r => r.date === today)).toBe(true)
-  })
-})
 
 test.describe('Преименуване на разговор', () => {
   test('моливчето преименува разговора', async ({ page }) => {
@@ -1360,5 +1317,49 @@ test.describe('Преименуване на разговор', () => {
     await expect(page.getByText('Четвъртъците')).toBeVisible()
     // Даденото от човека име спира нощното прекрояване.
     expect(patched).toMatchObject({ title: 'Четвъртъците', title_auto: true })
+  })
+})
+
+test.describe('Пренасяне от минал ден', () => {
+  test('пренасяне от избран ден', async ({ page }) => {
+    test.setTimeout(90000)
+    const d = n => { const x = new Date(); x.setDate(x.getDate() - n); return x.toISOString().slice(0, 10) }
+  
+    await enterApp(page, {
+      tables: {
+        food_logs: [
+          { id: 'a1', user_id: USER_ID, date: d(1), name: 'Банан', grams: 120, kcal: 105, protein: 1, carbs: 27, fat: 0, meal_type: 'snack', estimated: null },
+          { id: 'b1', user_id: USER_ID, date: d(3), name: 'Овесени ядки', grams: 80, kcal: 304, protein: 10.6, carbs: 52, fat: 5.4, meal_type: 'breakfast', estimated: null },
+          { id: 'b2', user_id: USER_ID, date: d(3), name: 'Пилешко филе', grams: 250, kcal: 412, protein: 77.5, carbs: 0, fat: 9, meal_type: 'lunch', estimated: null },
+          { id: 'b3', user_id: USER_ID, date: d(3), name: 'Извара', grams: 200, kcal: 196, protein: 24, carbs: 7.2, fat: 8, meal_type: 'dinner', estimated: null },
+        ],
+      },
+    })
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
+    await page.waitForTimeout(1500)
+  
+    const sent = []
+    page.on('request', r => {
+      if (r.method() === 'POST' && r.url().includes('food_logs')) {
+        try {
+          const b = JSON.parse(r.postData() || 'null')
+          for (const row of (Array.isArray(b) ? b : [b])) sent.push(row)
+        } catch { /* празно */ }
+      }
+    })
+  
+    await page.getByText('ПРЕНЕСИ', { exact: true }).click()
+    await page.waitForTimeout(900)
+  
+    // Денят с три реда, не най-скорошният с един.
+    await page.getByText('3 реда · 912 ккал').click()
+    await page.waitForTimeout(500)
+    await page.getByText('Пренеси 3 реда').click()
+    await page.waitForTimeout(2500)
+  
+    expect(sent.length).toBe(3)
+    expect(sent.map(r => r.meal_type).sort()).toEqual(['breakfast', 'dinner', 'lunch'])
+    expect(sent.every(r => r.date === today())).toBe(true)
   })
 })

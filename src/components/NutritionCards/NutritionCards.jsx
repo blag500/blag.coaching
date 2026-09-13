@@ -178,6 +178,9 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             onMealChange={setMeal}
             totals={totals}
             targets={targets}
+            /* Кой ден се пълни: разделът за пренасяне трябва да знае в кой ден
+               слага и кой да не предлага на самия себе си. */
+            date={selectedDate}
           />
           <FoodLog
             log={log}

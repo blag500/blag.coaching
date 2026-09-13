@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import CopyPreviousDay from './CopyPreviousDay'
 import QuickAddSheet from './QuickAddSheet'
 import { MEALS, MEAL_LABEL_KEY } from './meals'
 import { useSettings } from '../../contexts/SettingsContext'
@@ -722,10 +721,6 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
           </section>
         )
       })}
-
-      {log.length === 0 && onAddRaw && date && (
-        <CopyPreviousDay date={date} onAddRaw={onAddRaw} />
-      )}
 
       {quickMeal && (
         <QuickAddSheet

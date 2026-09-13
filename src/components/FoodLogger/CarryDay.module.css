@@ -1,0 +1,117 @@
+/* Пренасяне на цял ден.
+   Списък от дни, всеки с броя си редове и калории — числата са това, по което
+   се разпознава денят, а не датата: „сряда" не значи нищо, „сряда, 11 реда,
+   2340 ккал" значи деня, в който си ял както трябва. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.hint {
+  margin: 0 0 2px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.empty {
+  padding: 18px 4px;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--text-dim);
+}
+
+.day {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-1);
+  overflow: hidden;
+}
+
+.dayHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 13px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.dayName {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dayMeta {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.detail {
+  padding: 0 13px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: openDay 200ms var(--ease-out);
+}
+
+@keyframes openDay {
+  from { opacity: 0; transform: translateY(-4px) }
+  to   { opacity: 1; transform: translateY(0)    }
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.rows li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.rowKcal {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.go {
+  min-height: 42px;
+  border: 1px solid rgba(var(--accent-rgb), 0.7);
+  border-radius: 11px;
+  background: rgba(var(--accent-rgb), 0.14);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.go:disabled {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail { animation: none }
+}

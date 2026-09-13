@@ -838,9 +838,43 @@ export default function BlagBot({ open, from = null, onClose }) {
     return () => vv.removeEventListener('resize', toBottom)
   }, [])
 
+  /* „Да" върши същото като натискането на бутона.
+   *
+   * Разчетеният ред идва с карта и два бутона, но човек, който говори с бот,
+   * отговаря с думи — написа „Да" и зачака. Дотук това отиваше при модела,
+   * който отвърна „Закуската е добавена", без нищо да е влязло в дневника.
+   * Най-лошата възможна грешка: приложението твърди, че е свършило работа,
+   * която не е свършена.
+   *
+   * Затова кратките „да" и „не" се хващат тук, докато на екрана чака
+   * неотговорено предложение, и правят точно каквото правят бутоните. */
+  const YES = /^(да|давай|ок|окей|окей|хайде|дай|yes|ok|okay|sure|go)[\s.!]*$/i
+  const NO  = /^(не|недей|остави|no|nope|skip)[\s.!]*$/i
+
+  function pendingPlan() {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i]
+      if (m.from === 'bot' && m.plan && !m.planState) return m
+      /* Само последното предложение: „да", казано пет реплики по-късно, не се
+         отнася за него. */
+      if (m.from === 'user') return null
+    }
+    return null
+  }
+
   async function ask() {
     const q = draft.trim()
     if (!q || asking) return
+
+    const waiting = pendingPlan()
+    if (waiting && (YES.test(q) || NO.test(q))) {
+      setDraft('')
+      add('user', q)
+      if (YES.test(q)) await logPlan(waiting.id, waiting.plan)
+      else skipPlan(waiting.id, waiting.plan)
+      return
+    }
+
     setDraft('')
     const msgId = add('user', q)
     setAsking(true)

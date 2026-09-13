@@ -6,6 +6,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { searchFoods } from '../../utils/openFoodFacts'
 import { arrivedFromShare, takeSharedPhoto, clearShareParam } from '../../lib/sharedPhoto'
 import RecipeList from '../Recipes/RecipeList'
+import CarryDay from './CarryDay'
 import BarcodeScanner from './BarcodeScanner'
 import DraftMode from './DraftMode'
 import HistoryMode from './HistoryMode'
@@ -139,7 +140,7 @@ function resizeImage(file, maxDim = 900, maxBytes = 700_000) {
   })
 }
 
-export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals = {}, targets = {} }) {
+export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals = {}, targets = {}, date }) {
   const { t } = useSettings()
   const [mode, setMode] = useState('ai')
 
@@ -160,6 +161,12 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
              ядене — раздел, който отговаря на „защо теглото стои", няма място
              между ръчното въвеждане и рецептите. */
           { id: 'recipes', label: t('fs.mode.recipes'), icon: '≡' },
+          /* Пренасянето беше картичка, която се показваше само при празен ден и
+             сама избираше кой ден да вземе — най-скорошния с храна. Значи
+             неделята, в която си ял както трябва, не можеше да се избере, ако
+             вчера си хапнал един банан. Тук е раздел като останалите и денят е
+             избор. */
+          { id: 'carry',   label: t('fs.mode.carry'),   icon: <Pictogram name="calendar" size={15} /> },
         ].map(m => (
           <button
             key={m.id}
@@ -179,6 +186,7 @@ export default function FoodSearch({ onAdd, onAddRaw, meal, onMealChange, totals
       {mode === 'barcode' && <BarcodeMode onAddRaw={onAddRaw} meal={meal} onMealChange={onMealChange} onAdded={() => setMode('history')} onCancel={() => setMode('ai')} />}
       {mode === 'draft'   && <DraftMode onAddRaw={onAddRaw} totals={totals} targets={targets} />}
       {mode === 'recipes' && <RecipeList onAddRaw={onAddRaw} />}
+      {mode === 'carry'   && <CarryDay onAddRaw={onAddRaw} date={date} />}
     </div>
   )
 }
