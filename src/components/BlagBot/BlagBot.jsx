@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import Pictogram from '../Pictogram/Pictogram'
 import { isHidden, setHidden } from './botBubbleStore'
 import { logFoodRows } from '../../hooks/useFoodLog'
+import KnowledgePanel from './KnowledgePanel'
 import { enqueueQuestion, dropQuestion, queued } from './botQueue'
 import { useDictation, dictationSupported } from './useDictation'
 import styles from './BlagBot.module.css'
@@ -1049,6 +1050,10 @@ export default function BlagBot({ open, from = null, onClose }) {
 
           {/* Научено. Показва се само когато има нещо: заглавие над празно
               място обещава памет, която още я няма. */}
+          {/* Знанието е на треньора: клиентът няма какво да качва тук, а панел
+              без съдържание е панел, който се отваря веднъж. */}
+          {profile?.role === 'coach' && <KnowledgePanel t={t} />}
+
           {learned.length > 0 && (
             /* Сгънато по подразбиране. Осем реда научено под списъка с
                разговорите правят от екрана стена: паметта се проверява от

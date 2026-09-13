@@ -1,0 +1,205 @@
+/* Какво знае ботът.
+   Същият вид като „Какво съм научил" отдолу — двете са роднини: едното е
+   научено от разговорите, другото е дадено от треньора. Различават се по това,
+   че знанието има обхват, а научено — не. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.count {
+  margin-left: auto;
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.75;
+}
+
+.chevron {
+  transition: transform 220ms var(--ease-out);
+}
+
+.open .chevron {
+  transform: rotate(180deg);
+}
+
+.body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms var(--ease-glide);
+}
+
+.open .body {
+  grid-template-rows: 1fr;
+}
+
+.inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  /* Скрито, докато е сгънато: иначе бутоните вътре се фокусират с табулатора,
+     без да се виждат. */
+  visibility: hidden;
+  transition: visibility 0s linear 260ms;
+}
+
+.open .inner {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.row {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-1);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.meta {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+/* Обхватът. „Само за мен" е приглушено, „за клиентите" свети — разликата
+   трябва да се вижда, без да се чете. */
+.scope {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+.shared {
+  border-color: rgba(var(--accent-rgb), 0.7);
+  background: rgba(var(--accent-rgb), 0.14);
+  color: var(--accent);
+}
+
+.del {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.addBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.form {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.input,
+.text {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 9px 11px;
+  resize: none;
+}
+
+.formBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.cancel,
+.save {
+  flex: 1;
+  min-height: 36px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.cancel {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.save {
+  border: 1px solid rgba(var(--accent-rgb), 0.7);
+  background: rgba(var(--accent-rgb), 0.14);
+  color: var(--accent);
+}
+
+.save:disabled {
+  opacity: 0.5;
+}
+
+.empty,
+.hint {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  opacity: 0.8;
+}
