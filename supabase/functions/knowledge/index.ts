@@ -104,6 +104,28 @@ function chunk(text: string) {
   return out.filter(c => c.body.replace(/\s/g, '').length >= 20)
 }
 
+/* Очакваната тайна се чете от базата, не от настройките.
+ *
+ * Дотук тя стоеше на две места — в `REMINDER_SECRET` и изписана вътре в
+ * `reminder_url()` — и смяната ѝ значеше две смени. Сменена наполовина, тя
+ * спира сутрешните напомняния тихо, до първата сутрин, в която някой забележи,
+ * че ги няма.
+ *
+ * Сега живее на едно място и се ражда там: `gen_random_uuid()` в базата. Никой
+ * не я въвежда и никой не я вижда — смяната е един ред SQL без стойност в него.
+ * Старият начин остава като запасен, за да не падне нищо, ако някой ден
+ * таблицата я няма.
+ */
+// deno-lint-ignore no-explicit-any
+async function expectedSecret(admin: any) {
+  try {
+    const { data } = await admin.from('app_secrets')
+      .select('value').eq('name', 'reminder').maybeSingle()
+    if (data?.value) return data.value as string
+  } catch { /* пада на запасния */ }
+  return Deno.env.get('REMINDER_SECRET') ?? null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
@@ -119,7 +141,7 @@ Deno.serve(async (req) => {
      тоест скрипт от неговия компютър. Затова и втори път: същата ключалка като
      на нощната обиколка плюс чие е знанието. Тайната стои на сървъра, значи
      знае я само този, който и без това има достъп до всичко. */
-  const secret = Deno.env.get('REMINDER_SECRET')
+  const secret = await expectedSecret(admin)
   const given  = req.headers.get('x-bot-secret')
 
   let uid: string | null = null

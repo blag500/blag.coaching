@@ -401,13 +401,34 @@ async function maintain(admin: any, apiKey: string, uid: string, lang = 'bg') {
   } catch (e) { console.error(`заглавие ${uid} → ${String(e).slice(0, 300)}`) }
 }
 
+/* Очакваната тайна се чете от базата, не от настройките.
+ *
+ * Дотук тя стоеше на две места — в `REMINDER_SECRET` и изписана вътре в
+ * `reminder_url()` — и смяната ѝ значеше две смени. Сменена наполовина, тя
+ * спира сутрешните напомняния тихо, до първата сутрин, в която някой забележи,
+ * че ги няма.
+ *
+ * Сега живее на едно място и се ражда там: `gen_random_uuid()` в базата. Никой
+ * не я въвежда и никой не я вижда — смяната е един ред SQL без стойност в него.
+ * Старият начин остава като запасен, за да не падне нищо, ако някой ден
+ * таблицата я няма.
+ */
+// deno-lint-ignore no-explicit-any
+async function expectedSecret(admin: any) {
+  try {
+    const { data } = await admin.from('app_secrets')
+      .select('value').eq('name', 'reminder').maybeSingle()
+    if (data?.value) return data.value as string
+  } catch { /* пада на запасния */ }
+  return Deno.env.get('REMINDER_SECRET') ?? null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
   const apiKey = Deno.env.get('GROQ_API_KEY')
   const url    = Deno.env.get('SUPABASE_URL')
   const key    = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const secret = Deno.env.get('REMINDER_SECRET')
   if (!apiKey || !url || !key) return json({ error: 'not configured' }, 500)
 
   /* Ключалката е в заглавка, не в адреса.
@@ -415,11 +436,12 @@ Deno.serve(async (req) => {
      сложена в него, се чете после от всеки, който има достъп до дневниците.
      Старият начин остава приет, докато разписанието се смени, но новият е
      по-добрият. */
-  const given = req.headers.get('x-bot-secret')
-    ?? new URL(req.url).searchParams.get('secret')
-  if (secret && given !== secret) return json({ error: 'unauthorized' }, 401)
-
   const admin = createClient(url, key)
+
+  const given  = req.headers.get('x-bot-secret')
+    ?? new URL(req.url).searchParams.get('secret')
+  const secret = await expectedSecret(admin)
+  if (secret && given !== secret) return json({ error: 'unauthorized' }, 401)
   /* Две степени на празен ход.
      `dry=1` само смята и казва кое правило е уцелило — с него се проверява
      дали праговете са разумни, без нито едно обръщение към модела.

@@ -48,6 +48,21 @@ rules are computed in TypeScript — the model only puts a sentence around a
 number it is given. `?dry=1` reports which rule would fire without calling the
 model; `?dry=2` also returns the wording without writing anything.
 
+**Scheduled-job secret**: `public.app_secrets` holds it, `reminder_url()` and
+`bot_watch_url()` read it, and the three functions it guards (`send-reminders`,
+`bot-watch`, `knowledge`) look it up in that table with their service-role
+client. Nobody types it and nobody sees it — rotating is one statement with no
+value in it:
+
+```sql
+update public.app_secrets
+   set value = replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
+       updated_at = now()
+ where name = 'reminder';
+```
+
+The `REMINDER_SECRET` env var stays as a fallback for a failed table read only.
+
 **Bot knowledge** (`supabase/functions/knowledge` + `bot_knowledge`): the coach's
 own notes, chunked by heading and embedded with Supabase's built-in `gte-small`
 model — no external API, no per-token cost, and the text never leaves the
