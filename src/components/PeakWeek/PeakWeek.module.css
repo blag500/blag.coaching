@@ -934,3 +934,36 @@
 .nextBtn:disabled { opacity: 0.35; }
 .nextBtn:active:not(:disabled) { transform: scale(0.985); }
 
+
+/* Трите изгледа.
+   Същата форма като превключвателя в ХРАНЕНЕ: една лента, три дяла, светещ
+   избран. Страницата беше девет секции една под друга — а девет секции на един
+   екран значат, че никоя не се вижда. */
+.viewBar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface-1);
+}
+
+.viewBtn {
+  min-height: 38px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.viewOn {
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--accent);
+}

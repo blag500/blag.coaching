@@ -1510,6 +1510,39 @@ test.describe('Пръстенът на приема', () => {
 })
 
 test.describe('Пиковата седмица', () => {
+  test('трите изгледа показват по едно нещо', async ({ page }) => {
+    test.setTimeout(120000)
+    const show = new Date(); show.setDate(show.getDate() + 2)
+    await enterApp(page, {
+      profile: { weight_kg: 84 },
+      tables: {
+        peak_weeks: [{
+          id: 'pw1', user_id: USER_ID, show_date: show.toISOString().slice(0, 10),
+          show_name: 'Тест шоу', load_days: 3, carb_per_kg: 5, cardio_min: 20,
+          tdee: 2600, adjust_choice: 'hold', day_state: {}, active: true,
+        }],
+        peak_week_logs: [], peak_week_days: [],
+      },
+    })
+    await page.waitForTimeout(1800)
+    await page.evaluate(() => {
+      ;[...document.querySelectorAll('button')]
+        .find(b => (b.getAttribute('aria-label') || '') === 'Меню')?.click()
+    })
+    await page.waitForTimeout(800)
+    await page.getByText('ПРОТОКОЛ', { exact: false }).first().click()
+    await page.waitForTimeout(2500)
+  
+    await page.getByText('ТАБЛИЦИ', { exact: true }).click()
+    await page.waitForTimeout(700)
+    await expect(page.getByText('ТАБЛИЦА НА СЕДМИЦАТА')).toBeVisible()
+  
+    await page.getByText('ПЛАН', { exact: true }).click()
+    await page.waitForTimeout(700)
+    await expect(page.getByText('КАКВО ДА НЕ ПРАВИШ')).toBeVisible()
+    await expect(page.getByText('ТАБЛИЦА НА СЕДМИЦАТА')).toHaveCount(0)
+  })
+
   test('двете таблици пишат това, което е въведено', async ({ page }) => {
     test.setTimeout(120000)
     const show = new Date(); show.setDate(show.getDate() + 2)
@@ -1553,6 +1586,11 @@ test.describe('Пиковата седмица', () => {
       }
     })
   
+    /* Таблиците са зад своя изглед: страницата беше девет секции една под
+       друга и се раздели на три. */
+    await page.getByText('ТАБЛИЦИ', { exact: true }).click()
+    await page.waitForTimeout(700)
+
     // Седмичната таблица: вода и режим на един ред.
     await page.getByText('ТАБЛИЦА НА СЕДМИЦАТА').scrollIntoViewIfNeeded()
     await page.locator('input[aria-label^="Вода мл — 3"]').fill('4500')

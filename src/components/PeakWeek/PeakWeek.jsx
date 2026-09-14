@@ -9,6 +9,7 @@ import { PHASE, ADJUST, CARB_MIN, CARB_MAX, VOLUME_CUT } from '../../utils/peakW
 import styles from './PeakWeek.module.css'
 import PeakTracker from './PeakTracker'
 import PeakDaily from './PeakDaily'
+import { haptic } from '../../lib/haptics'
 
 /**
  * Пиковата седмица.
@@ -747,6 +748,30 @@ export default function PeakWeek({ prep = null, runway = null }) {
   const [selected, setSelected] = useState(null)
   const [showEnd, setShowEnd]   = useState(false)
 
+  /* Три изгледа вместо една дълга страница.
+   *
+   * Дотук всичко стоеше едно под друго: лентата с дните, дивизията, днешният
+   * ден, мереното, двете таблици, зареждането, правилата и какво да не правиш.
+   * Девет секции на един екран значат, че никоя не се вижда — човек, който е
+   * влязъл да си впише сутрешното тегло, минава покрай теорията за диуретици.
+   *
+   * Разделянето е по това КОГА се ползва всяко нещо:
+   *   днес   — каквото се пипа сега: денят, мереното, зареждането;
+   *   таблици — вписването в края на деня и четенето назад;
+   *   план   — каквото се чете веднъж и се проверява рядко.
+   *
+   * Изборът се помни на този телефон: човекът в пикова седмица отваря един и
+   * същ изглед по десет пъти на ден. */
+  const VIEW_KEY = 'blag_peak_view'
+  const [view, setView] = useState(() => {
+    try { return localStorage.getItem(VIEW_KEY) || 'today' } catch { return 'today' }
+  })
+  function pickView(v) {
+    haptic('tap')
+    setView(v)
+    try { localStorage.setItem(VIEW_KEY, v) } catch { /* частен режим */ }
+  }
+
   const { week, plan, loading, today, state } = pw
 
   // Изборът следва днешния ден, докато човек не пипне лентата сам.
@@ -808,30 +833,56 @@ export default function PeakWeek({ prep = null, runway = null }) {
         )}
       </header>
 
+      {/* Лентата с дните стои над всички изгледи: тя е кой ден се гледа, а не
+          част от някой от тях. */}
       {plan && <DayStrip plan={plan} selected={selected} today={today} onSelect={setSelected} />}
 
-      <DivisionCard week={week} latestKg={pw.latestKg} lookWeight={pw.lookWeight} weighIn={plan?.weighIn} />
+      <div className={styles.viewBar}>
+        {[
+          { id: 'today',  label: t('pw.view.today') },
+          { id: 'tables', label: t('pw.view.tables') },
+          { id: 'plan',   label: t('pw.view.plan') },
+        ].map(v => (
+          <button
+            key={v.id}
+            type="button"
+            className={`${styles.viewBtn} ${view === v.id ? styles.viewOn : ''}`}
+            onClick={() => pickView(v.id)}
+            aria-pressed={view === v.id}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
 
-      {day && <DayCard day={day} pw={pw} onApplyMacros={updateProfile} />}
+      {view === 'today' && (
+        <>
+          {day && <DayCard day={day} pw={pw} onApplyMacros={updateProfile} />}
+          {state === 'during' && <LookCard pw={pw} />}
+          <LoadCard pw={pw} />
+        </>
+      )}
 
-      {state === 'during' && <LookCard pw={pw} />}
+      {view === 'tables' && (
+        <>
+          {/* Редът на деня — какво наистина е станало. */}
+          <PeakTracker week={week} plan={plan} logsByDate={pw.logsByDate} />
+          {/* И по-ситната: теглото хранене по хранене. Тя отговаря на друг
+              въпрос — не „какъв беше денят", а „в кой час изглеждам най-добре
+              и колко падам за нощта". */}
+          <PeakDaily week={week} plan={plan} />
+        </>
+      )}
 
-      {/* Редът на деня — какво наистина е станало.
-          Стои под мереното, защото се пълни в края на деня, а не в началото му:
-          сутрешната везна е първото нещо, бележката е последното. */}
-      <PeakTracker week={week} plan={plan} logsByDate={pw.logsByDate} />
+      {view === 'plan' && (
+        <>
+          <DivisionCard week={week} latestKg={pw.latestKg} lookWeight={pw.lookWeight} weighIn={plan?.weighIn} />
+          {day && <RulesCard day={day} />}
+          <NeverCard />
+        </>
+      )}
 
-      {/* И по-ситната таблица: теглото хранене по хранене през последните дни.
-          Тя отговаря на друг въпрос — не „какъв беше денят", а „в кой час от
-          деня изглеждам най-добре и колко падам за нощта". */}
-      <PeakDaily week={week} plan={plan} />
-
-      <LoadCard pw={pw} />
-
-      {day && <RulesCard day={day} />}
-
-      <NeverCard />
-
+      {view === 'plan' && (
       <section className={styles.card}>
         {!showEnd ? (
           <button className={styles.endBtn} type="button" onClick={() => setShowEnd(true)}>
@@ -847,6 +898,7 @@ export default function PeakWeek({ prep = null, runway = null }) {
           </div>
         )}
       </section>
+      )}
     </div>
   )
 }
