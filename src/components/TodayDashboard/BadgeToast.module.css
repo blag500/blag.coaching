@@ -1,0 +1,83 @@
+/* Наградата като лента.
+   Същата форма като лентата за добавките отгоре — едно и също място значи едно
+   и също нещо: „приложението ти казва нещо, което не иска нищо от теб". */
+
+.wrap {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 10px);
+  left: 50%;
+  z-index: 1200;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(92vw, 420px);
+  padding: 10px 16px 10px 12px;
+
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  border-radius: var(--r-pill);
+  background: var(--surface-1);
+  /* Плътен под: лентата стои върху съдържанието и полупрозрачният фон на
+     картите прави текста под нея четим през нея. */
+  background-color: var(--bg);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(var(--bg-rgb), 0.6);
+
+  cursor: pointer;
+  /* Появява се и си отива сама; натискането само ускорява излизането. */
+  animation: stripIn 280ms var(--ease-spring-soft) both;
+  transform: translateX(-50%);
+}
+
+@keyframes stripIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-14px) }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0)     }
+}
+
+.leaving {
+  animation: stripOut 260ms var(--ease-out) both;
+}
+
+@keyframes stripOut {
+  from { opacity: 1; transform: translateX(-50%) translateY(0)     }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-14px) }
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.14);
+}
+
+/* Огънчето гори; останалите знаци стоят. Горенето е за низа, защото той е
+   единственото, което продължава — другите награди свършват с деня. */
+.flame {
+  animation: flicker 2.4s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.35) }
+  50%      { box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0) }
+}
+
+.text {
+  min-width: 0;
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap, .leaving, .flame { animation: none }
+}

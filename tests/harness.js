@@ -442,11 +442,11 @@ export async function enterApp(page, opts = {}) {
      ще го чака и клиентът. Всеки тест, който не е за него, започва след
      него; който е за него, го иска с keepGreeting. */
   if (!opts.keepGreeting) {
-    const greeting = page.locator('[role="dialog"]')
-    await greeting.waitFor({ state: 'visible', timeout: 6000 }).catch(() => {})
-    if (await greeting.count()) {
-      await greeting.first().click({ position: { x: 10, y: 10 } }).catch(() => {})
-      await greeting.first().waitFor({ state: 'detached', timeout: 4000 }).catch(() => {})
-    }
+    /* Поздравът вече е лента, която сама си отива за три секунди — не карта,
+       която чака натискане. Чака се да излезе, а не се затваря: тя стои горе в
+       средата и дотогава поема натисканията, които минават през нея. */
+    const greeting = page.locator('[role="status"]')
+    await greeting.waitFor({ state: 'visible', timeout: 4000 }).catch(() => {})
+    await greeting.waitFor({ state: 'detached', timeout: 6000 }).catch(() => {})
   }
 }

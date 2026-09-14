@@ -270,6 +270,11 @@ function AppShell() {
   if (splash) return (
     <Splash coaching={!session} onDone={() => {
       setSplash(false)
+      /* Наградите чакат този миг.
+         Поздравът за деня се печели при зареждане, тоест докато сплашът още
+         покрива екрана — а лентата живее три секунди и изтичаше зад него.
+         Печелеше се, пишеше се в паметта като видяна и никой не я виждаше. */
+      window.dispatchEvent(new CustomEvent('blag:app-visible'))
       if (supplementPending > 0) {
         setTimeout(() => setShowSupplementBanner(true), 1500)
       }

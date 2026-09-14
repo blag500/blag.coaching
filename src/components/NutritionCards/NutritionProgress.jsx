@@ -48,7 +48,23 @@ export default function NutritionProgress({
   const kcalTarget = (eatBack && kcalBurned > 0)
     ? (targets.kcal || 0) + kcalBurned
     : targets.kcal || 1
-  const kcalOver   = kcalLogged > kcalTarget
+  /* Буфер от пет на сто, преди да почервенее.
+   *
+   * Една калория над целта пускаше целия пръстен в червено. Само че никой не
+   * улучва целта до калория: везната, етикетът и готвенето разминават всяко
+   * ядене с десетки. Червено при 2101 от 2100 не казва „преял си" — казва
+   * „сгрешил си", и то за нещо, което не е грешка.
+   *
+   * Затова три състояния: до целта — цветовете на макросите; в буфера —
+   * жълто, тоест „на ръба, но вътре"; над буфера — червено, което вече значи
+   * нещо.
+   */
+  const KCAL_BUFFER = 0.05
+  const kcalCeiling = kcalTarget * (1 + KCAL_BUFFER)
+  const kcalNear    = kcalLogged > kcalTarget && kcalLogged <= kcalCeiling
+  const kcalOver    = kcalLogged > kcalCeiling
+  /* Цветът на прекрачването: жълто в буфера, червено отвъд него. */
+  const overColor   = kcalNear ? '#f0b323' : '#ef4444'
   const kcalPct    = Math.min(kcalLogged / kcalTarget, 1)
 
   // Caloric contribution of each macro in what's been logged
@@ -130,7 +146,7 @@ export default function NutritionProgress({
                   отзад няма какво да огрее. Върху цвета, а не отгоре му —
                   бяло було би избелило макросите, а те носят значението. */}
               <g className={styles.lit} filter={`url(#${idBase}-bloom)`}>
-                {!kcalOver && segments.map(seg =>
+                {!kcalOver && !kcalNear && segments.map(seg =>
                   seg.arc > 0.3 && (
                     <circle
                       key={`glow-${seg.key}`}
@@ -162,18 +178,19 @@ export default function NutritionProgress({
                 strokeWidth={SW}
               />
 
-              {/* Over-target: solid red ring */}
-              {kcalOver && (
+              {/* Прекрачено: плътен пръстен в цвета на състоянието — жълт,
+                  докато си в буфера, червен над него. */}
+              {(kcalOver || kcalNear) && (
                 <circle
                   cx="60" cy="60" r={R}
                   fill="none"
-                  stroke="#ef4444"
+                  stroke={overColor}
                   strokeWidth={SW}
                 />
               )}
 
               {/* Segmented P / C / F arcs */}
-              {!kcalOver && segments.map(seg =>
+              {!kcalOver && !kcalNear && segments.map(seg =>
                 seg.arc > 0.3 && (
                   <circle
                     key={seg.key}
@@ -214,7 +231,7 @@ export default function NutritionProgress({
             {/* Center text */}
             <text x="60" y="50"
               textAnchor="middle"
-              fill={kcalOver ? '#ef4444' : 'var(--text)'}
+              fill={(kcalOver || kcalNear) ? overColor : 'var(--text)'}
               fontSize="22"
               fontFamily="var(--font-heading)"
               letterSpacing="1"
@@ -237,7 +254,7 @@ export default function NutritionProgress({
             </text>
             <text x="60" y="88"
               textAnchor="middle"
-              fill={kcalOver ? '#ef4444' : 'var(--muted)'}
+              fill={(kcalOver || kcalNear) ? overColor : 'var(--muted)'}
               fontSize="9"
               fontFamily="var(--font-body)"
               ref={pctRef}>
@@ -263,7 +280,11 @@ export default function NutritionProgress({
             const current = totals[m.key]  || 0
             const target  = targets[m.key] || 0
             const pct     = Math.min(current / (target || 1) * 100, 100)
-            const over    = current > target
+            /* Същият буфер и тук. Инак ден на 2105 от 2100 показва жълт
+               пръстен и червени въглехидрати — две различни оценки на едно и
+               също нещо, на един екран. */
+            const near    = current > target && current <= target * (1 + KCAL_BUFFER)
+            const over    = current > target * (1 + KCAL_BUFFER)
             return (
               <div key={m.key} className={styles.row}>
                 <div className={styles.meta}>
@@ -278,7 +299,7 @@ export default function NutritionProgress({
                   </span>
                   <span
                     className={styles.values}
-                    style={{ color: over ? '#ef4444' : m.color }}
+                    style={{ color: over ? '#ef4444' : near ? '#f0b323' : m.color }}
                   >
                     {current}<span className={styles.unit}>{m.unit}</span>
                     <span className={styles.sep}>/</span>
@@ -290,8 +311,8 @@ export default function NutritionProgress({
                     className={styles.fill}
                     style={{
                       width: `${drawn ? pct : 0}%`,
-                      background: over ? '#ef4444' : m.color,
-                      boxShadow: over ? 'none' : `0 0 6px ${m.color}55`,
+                      background: over ? '#ef4444' : near ? '#f0b323' : m.color,
+                      boxShadow: (over || near) ? 'none' : `0 0 6px ${m.color}55`,
                     }}
                   />
                 </div>

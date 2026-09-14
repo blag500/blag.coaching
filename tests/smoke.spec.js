@@ -363,10 +363,11 @@ test.describe('Дневникът с храната', () => {
 
 
 test.describe('Награди', () => {
-  /* Наградата се печели навсякъде, значи трябва да се вижда навсякъде и да
-     иска натискане, за да си отиде. Тестът отмята последните два навика и
-     чака прозорчето отпред. */
-  test('изпълнените навици вдигат прозорче, което чака натискане', async ({ page }) => {
+  /* Наградата се печели навсякъде, значи трябва да се вижда навсякъде — но не
+     бива да спира екрана. Беше карта пред всичко, която чакаше натискане; сега
+     е лента отгоре, която сама си отива. Тестът отмята последните два навика и
+     гледа и появата, и излизането. */
+  test('изпълнените навици вдигат лента, която сама си отива', async ({ page }) => {
     test.setTimeout(90000)
     await enterApp(page)
     await goTab(page, 'ПРОФИЛ')
@@ -377,16 +378,15 @@ test.describe('Награди', () => {
       await page.waitForTimeout(400)
     }
 
-    const popup = page.locator('[role="dialog"]')
-    await expect(popup).toBeVisible({ timeout: 10000 })
-    await expect(popup).toContainText('НАВИЦИ')
+    const strip = page.locator('[role="status"]')
+    await expect(strip).toBeVisible({ timeout: 10000 })
+    await expect(strip).toContainText('НАВИЦИ')
 
-    // Не си отива само. Изчакваме по-дълго от стария таймер от три секунди.
-    await page.waitForTimeout(3500)
-    await expect(popup).toBeVisible()
+    /* Нищо не е потъмняло: страницата отдолу си стои и се натиска. */
+    await expect(page.locator('[role="dialog"]')).toHaveCount(0)
 
-    await popup.click({ position: { x: 10, y: 10 } })
-    await expect(popup).toHaveCount(0)
+    // И си отива сама, без никой да я е пипал.
+    await expect(strip).toHaveCount(0, { timeout: 8000 })
   })
 
   /* Първото отваряне за деня. Другите награди чакат да свършиш нещо; тази
@@ -403,14 +403,12 @@ test.describe('Награди', () => {
     }
     try {
       await enterApp(page, { keepGreeting: true })
-      const popup = page.locator('[role="dialog"]')
-      await expect(popup).toBeVisible({ timeout: 15000 })
-      // Числото е заглавието, не част от изречение — и се брои нагоре, затова
-      // се чака да стигне.
-      await expect(popup).toContainText('ДНИ ПОДРЕД')
-      await expect(popup.locator('[class*="bigNum"]')).toHaveText('4', { timeout: 5000 })
-      await popup.click({ position: { x: 10, y: 10 } })
-      await expect(popup).toHaveCount(0)
+      const strip = page.locator('[role="status"]')
+      await expect(strip).toBeVisible({ timeout: 15000 })
+      /* Числото влиза в самото изречение: едър брояч искаше внимание, каквото
+         лентата нарочно не иска. */
+      await expect(strip).toContainText('Ден 4 подред')
+      await expect(strip).toHaveCount(0, { timeout: 8000 })
     } finally {
       TABLES.food_logs.length = 0
       TABLES.food_logs.push(...seeded)
@@ -1467,5 +1465,46 @@ test.describe('Дневникът на тренировката', () => {
       'Лежанка 60×8',
       'Лежанка 61×8',
     ])
+  })
+})
+
+test.describe('Пръстенът на приема', () => {
+  /* Една калория над целта пускаше целия пръстен в червено. Никой не улучва
+     целта до калория — везната и етикетът разминават всяко ядене с десетки, —
+     а червено при 2401 от 2400 казва „сгрешил си" за нещо, което не е грешка.
+     Затова три състояния, проверени по цвета на самото число. */
+  const ringColour = async (page, kcal) => {
+    await enterApp(page, {
+      tables: {
+        food_logs: [{
+          id: 'ring', user_id: USER_ID, date: today(), name: 'Ден', grams: 100,
+          kcal, protein: 10, carbs: 10, fat: 1, meal_type: 'lunch', estimated: null,
+        }],
+      },
+    })
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
+    await page.waitForTimeout(1800)
+    return await page.evaluate(() => {
+      const t = [...document.querySelectorAll('svg text')].find(x => /^\d/.test(x.textContent.trim()))
+      return t ? getComputedStyle(t).fill : null
+    })
+  }
+
+  test('под целта не е нито жълто, нито червено', async ({ page }) => {
+    test.setTimeout(90000)
+    const c = await ringColour(page, 2300)   // цел 2400
+    expect(c).not.toBe('rgb(240, 179, 35)')
+    expect(c).not.toBe('rgb(239, 68, 68)')
+  })
+
+  test('в буфера от пет на сто е жълто', async ({ page }) => {
+    test.setTimeout(90000)
+    expect(await ringColour(page, 2450)).toBe('rgb(240, 179, 35)')   // таван 2520
+  })
+
+  test('над буфера е червено', async ({ page }) => {
+    test.setTimeout(90000)
+    expect(await ringColour(page, 2700)).toBe('rgb(239, 68, 68)')
   })
 })

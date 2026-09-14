@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { supabase } from '../lib/supabase'
 import { haptic } from '../lib/haptics'
 import { useAuth } from './AuthContext'
-import BadgePopup from '../components/TodayDashboard/BadgePopup'
+import BadgeToast from '../components/TodayDashboard/BadgeToast'
 
 /**
  * Наградите на деня — на едно място.
@@ -105,6 +105,27 @@ function useStreak() {
 
 export function RewardsProvider({ children }) {
   const [queue, setQueue] = useState([])
+
+  /* Свободен ли е екранът.
+   *
+   * Наградите се печелят и докато сплашът е отгоре — поздравът за деня се
+   * дава веднага щом низът се върне. Лентата живее три секунди; зад сплаша
+   * те изтичат и човекът не вижда нищо, а наградата вече е отбелязана като
+   * дадена за този ден.
+   *
+   * Затова опашката се рисува чак когато приложението е на екрана. Резервният
+   * таймер е за всеки случай: пропуснато известие не бива да заглуши наградите
+   * до края на сесията. */
+  const [onScreen, setOnScreen] = useState(false)
+  useEffect(() => {
+    const go = () => setOnScreen(true)
+    window.addEventListener('blag:app-visible', go)
+    const fallback = setTimeout(go, 6000)
+    return () => {
+      window.removeEventListener('blag:app-visible', go)
+      clearTimeout(fallback)
+    }
+  }, [])
   // Последното, което всеки екран е казал. Оттук се вади и перфектният ден:
   // той не е отделно събитие, а трите заедно.
   const said = useRef({})
@@ -168,8 +189,11 @@ export function RewardsProvider({ children }) {
       {/* През портал към body: вътре в табовете има трансформация за суайпа,
           а position: fixed под трансформиран предшественик се закача за него
           вместо за екрана. */}
-      {queue[0] && createPortal(
-        <BadgePopup
+      {onScreen && queue[0] && createPortal(
+        <BadgeToast
+          /* Ключът е самата награда: две поред трябва да се сменят с нова
+             анимация, а не да продължат старата. */
+          key={queue[0]}
           badge={queue[0]}
           streak={streak}
           onDone={() => setQueue(q => {
