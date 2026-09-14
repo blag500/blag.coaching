@@ -1508,3 +1508,71 @@ test.describe('Пръстенът на приема', () => {
     expect(await ringColour(page, 2700)).toBe('rgb(239, 68, 68)')
   })
 })
+
+test.describe('Пиковата седмица', () => {
+  test('двете таблици пишат това, което е въведено', async ({ page }) => {
+    test.setTimeout(120000)
+    const show = new Date(); show.setDate(show.getDate() + 2)
+    const showIso = show.toISOString().slice(0, 10)
+  
+    await enterApp(page, {
+      profile: { weight_kg: 84 },
+      tables: {
+        peak_weeks: [{
+          id: 'pw1', user_id: USER_ID, show_date: showIso, show_name: 'Тест шоу',
+          load_days: 3, carb_per_kg: 5, cardio_min: 20, tdee: 2600,
+          adjust_choice: 'hold', day_state: {}, active: true,
+        }],
+        peak_week_logs: [],
+        peak_week_days: [],
+      },
+    })
+    await page.waitForTimeout(1800)
+    /* Протоколът е раздел без бутон в лентата — стига се през чекмеджето, а то
+       се отваря със същото събитие, което ползва и приложението. */
+    await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('button')]
+        .find(b => (b.getAttribute('aria-label') || '') === 'Меню')
+      btn?.click()
+    })
+    await page.waitForTimeout(800)
+    const link = page.getByText('ПРОТОКОЛ', { exact: false }).first()
+    if (await link.count()) { await link.click(); await page.waitForTimeout(2500) }
+    const sent = []
+    page.on('request', r => {
+      if (['POST', 'PATCH'].includes(r.method()) &&
+          /peak_week_(days|logs)/.test(r.url())) {
+        try {
+          const b = JSON.parse(r.postData() || 'null')
+          for (const row of (Array.isArray(b) ? b : [b])) {
+            sent.push(r.url().includes('days')
+              ? ['ден', row.date, row.water_ml, row.diet]
+              : ['хранене', row.slot, row.kg])
+          }
+        } catch { /* празно */ }
+      }
+    })
+  
+    // Седмичната таблица: вода и режим на един ред.
+    await page.getByText('ТАБЛИЦА НА СЕДМИЦАТА').scrollIntoViewIfNeeded()
+    await page.locator('input[aria-label^="Вода мл — 3"]').fill('4500')
+    await page.locator('select[aria-label^="Режим — 3"]').selectOption('load')
+    await page.waitForTimeout(2000)
+  
+    // Дневната: тегло на гладно и преди лягане.
+    await page.getByText('ПО ХРАНЕНИЯ').scrollIntoViewIfNeeded()
+    await page.locator('input[aria-label="На гладно — 2"]').fill('84.2')
+    await page.locator('input[aria-label="Преди лягане — 2"]').fill('85.6')
+    await page.waitForTimeout(2000)
+  
+  
+    /* И двете таблици записват всяка въведена клетка — втората също.
+       Забавеният запис държеше състоянието отпреди насрочването и клетката,
+       написана секунда по-късно, не заминаваше никъде. */
+    expect(sent.some(x => x[0] === 'ден' && x[2] === 4500 && x[3] === 'load')).toBe(true)
+    expect(sent.filter(x => x[0] === 'хранене').map(x => [x[1], x[2]])).toEqual([
+      ['fasted', 84.2],
+      ['bed', 85.6],
+    ])
+  })
+})

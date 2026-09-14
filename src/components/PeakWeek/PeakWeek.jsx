@@ -7,6 +7,8 @@ import { usePeakWeek } from '../../hooks/usePeakWeek'
 import { tdeeFor } from '../../hooks/usePrepProtocol'
 import { PHASE, ADJUST, CARB_MIN, CARB_MAX, VOLUME_CUT } from '../../utils/peakWeek'
 import styles from './PeakWeek.module.css'
+import PeakTracker from './PeakTracker'
+import PeakDaily from './PeakDaily'
 
 /**
  * Пиковата седмица.
@@ -813,6 +815,16 @@ export default function PeakWeek({ prep = null, runway = null }) {
       {day && <DayCard day={day} pw={pw} onApplyMacros={updateProfile} />}
 
       {state === 'during' && <LookCard pw={pw} />}
+
+      {/* Редът на деня — какво наистина е станало.
+          Стои под мереното, защото се пълни в края на деня, а не в началото му:
+          сутрешната везна е първото нещо, бележката е последното. */}
+      <PeakTracker week={week} plan={plan} logsByDate={pw.logsByDate} />
+
+      {/* И по-ситната таблица: теглото хранене по хранене през последните дни.
+          Тя отговаря на друг въпрос — не „какъв беше денят", а „в кой час от
+          деня изглеждам най-добре и колко падам за нощта". */}
+      <PeakDaily week={week} plan={plan} />
 
       <LoadCard pw={pw} />
 

@@ -1,0 +1,172 @@
+/* Таблицата на пиковата седмица.
+   Тясна, плъзгаща се настрани, с закована първа колона. Смисълът ѝ е
+   сравнението между съседни дни, а сравнение между редове, които не се виждат
+   едновременно, не е сравнение — затова таблица, а не карти. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.sub {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+/* Плъзгането е на самата таблица, не на страницата: иначе цялата страница
+   тръгва настрани и лентата долу се разминава с пръста. */
+.scroller {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-1);
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.table th,
+.table td {
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.table thead th {
+  padding: 8px 6px;
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* Коя е първата колона: денят. Стои на място, докато останалото се плъзга. */
+.sticky,
+.stickyHead {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 44px;
+  background: var(--surface-2);
+  /* Ръб, който показва, че отдясно има още — иначе закованата колона изглежда
+     като част от плъзгащото се. */
+  box-shadow: 6px 0 8px -6px rgba(0, 0, 0, 0.6);
+}
+
+.dayNum {
+  display: block;
+  padding: 8px 10px;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  color: var(--accent);
+  text-align: center;
+}
+
+.cell,
+.select {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 7px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  /* 16px при фокус би увеличило екрана на iOS; тук полетата са тесни и
+     увеличаването би изхвърлило таблицата настрани. Затова шрифтът е малък,
+     но полето е високо — пръстът има в какво да попадне. */
+  min-height: 38px;
+}
+
+.cell::placeholder {
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+.cell:focus,
+.select:focus {
+  outline: none;
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Записаният ред мига веднъж. Таблицата няма къде да сложи отметка за всяка
+   клетка, а редът е това, което заминава наведнъж. */
+.justSaved th,
+.justSaved td {
+  animation: rowSaved 1200ms var(--ease-out);
+}
+
+@keyframes rowSaved {
+  0%   { background-color: rgba(var(--accent-rgb), 0.16) }
+  100% { background-color: transparent }
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .justSaved th, .justSaved td { animation: none }
+}
+
+/* Името на храненето в дневната таблица. По-тясно от ден и с два реда място,
+   защото „преди лягане" не се събира на един. */
+.slotName {
+  display: block;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: var(--text-dim);
+  text-align: left;
+}
+
+/* Редът с падането за нощта: сметнат, не писан — затова не е поле. */
+.sumRow th,
+.sumRow td {
+  background: var(--surface-2);
+}
+
+.sumCell {
+  display: block;
+  padding: 9px 7px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-size: 0.8rem;
+}
