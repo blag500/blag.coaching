@@ -967,3 +967,11 @@
   background: rgba(var(--accent-rgb), 0.16);
   color: var(--accent);
 }
+
+/* Знакът на макроса, до надписа под числото. В цвета на самия макрос — същия
+   син, зелен и лилав като в пръстена на приема. */
+.macroIcon {
+  display: inline-flex;
+  vertical-align: -1px;
+  margin-right: 4px;
+}

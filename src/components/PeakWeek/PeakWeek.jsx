@@ -10,6 +10,7 @@ import styles from './PeakWeek.module.css'
 import PeakTracker from './PeakTracker'
 import PeakDaily from './PeakDaily'
 import { haptic } from '../../lib/haptics'
+import Pictogram from '../Pictogram/Pictogram'
 
 /**
  * Пиковата седмица.
@@ -566,15 +567,23 @@ function DayCard({ day, pw, onApplyMacros }) {
       {day.carbs != null ? (
         <>
           <div className={styles.macroRow}>
+            {/* Знакът и цветът на макроса вървят с числото навсякъде, където
+                числото се появява: иначе всеки екран учи окото на нова връзка
+                между цвят и дума. */}
             {[
-              { k: 'pp.macro.carbs',   v: `${day.carbs}g`,   accent: day.phase === PHASE.load },
-              { k: 'pp.macro.protein', v: `${day.protein}g` },
-              { k: 'pp.macro.fat',     v: `${day.fat}g` },
-              { k: 'pp.macro.kcal',    v: day.kcal },
-            ].map(({ k, v, accent }) => (
+              { k: 'pp.macro.carbs',   icon: 'carbs',   v: `${day.carbs}g`,   accent: day.phase === PHASE.load },
+              { k: 'pp.macro.protein', icon: 'protein', v: `${day.protein}g` },
+              { k: 'pp.macro.fat',     icon: 'fat',     v: `${day.fat}g` },
+              { k: 'pp.macro.kcal',    icon: 'kcal',    v: day.kcal },
+            ].map(({ k, icon, v, accent }) => (
               <div key={k} className={styles.macro}>
                 <span className={`${styles.macroVal} ${accent ? styles.macroAccent : ''}`}>{v}</span>
-                <span className={styles.macroLabel}>{t(k)}</span>
+                <span className={styles.macroLabel}>
+                  <span className={styles.macroIcon} style={{ color: `var(--macro-${icon})` }}>
+                    <Pictogram name={icon} size={12} />
+                  </span>
+                  {t(k)}
+                </span>
               </div>
             ))}
           </div>

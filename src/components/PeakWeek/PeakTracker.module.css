@@ -170,3 +170,10 @@
   color: var(--accent);
   font-size: 0.8rem;
 }
+
+/* Знакът в заглавието на колоната. */
+.colIcon {
+  display: inline-flex;
+  vertical-align: -1px;
+  margin-right: 3px;
+}

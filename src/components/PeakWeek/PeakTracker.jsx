@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { haptic } from '../../lib/haptics'
 import styles from './PeakTracker.module.css'
+import Pictogram from '../Pictogram/Pictogram'
 
 /**
  * Таблицата на пиковата седмица.
@@ -28,13 +29,15 @@ const COLS = [
   { key: 'bw_am',       kind: 'num',  w: 62 },
   { key: 'bw_post',     kind: 'num',  w: 62 },
   { key: 'bw_pm',       kind: 'num',  w: 62 },
-  { key: 'water_ml',    kind: 'int',  w: 66 },
+  { key: 'water_ml',    kind: 'int',  w: 72, icon: 'water' },
   { key: 'sodium_g',    kind: 'num',  w: 56 },
   { key: 'potassium_g', kind: 'num',  w: 56 },
   { key: 'diet',        kind: 'diet', w: 74 },
-  { key: 'cho',         kind: 'int',  w: 56 },
-  { key: 'pro',         kind: 'int',  w: 56 },
-  { key: 'fat',         kind: 'int',  w: 56 },
+  /* Трите макроса носят знака и цвета си и в заглавието на колоната: тясна
+     колона с три букви иначе се чете два пъти, преди да се разпознае. */
+  { key: 'cho',         kind: 'int',  w: 62, icon: 'carbs'   },
+  { key: 'pro',         kind: 'int',  w: 62, icon: 'protein' },
+  { key: 'fat',         kind: 'int',  w: 62, icon: 'fat'     },
   { key: 'steps',       kind: 'int',  w: 68 },
   { key: 'training',    kind: 'text', w: 96 },
   { key: 'note',        kind: 'text', w: 150 },
@@ -151,7 +154,14 @@ export default function PeakTracker({ week, plan, logsByDate }) {
             <tr>
               <th className={styles.stickyHead}>{t('pt.col.day')}</th>
               {COLS.map(c => (
-                <th key={c.key} style={{ minWidth: c.w }}>{t(`pt.col.${c.key}`)}</th>
+                <th key={c.key} style={{ minWidth: c.w }}>
+                  {c.icon && (
+                    <span className={styles.colIcon} style={{ color: `var(--macro-${c.icon})` }}>
+                      <Pictogram name={c.icon} size={11} />
+                    </span>
+                  )}
+                  {t(`pt.col.${c.key}`)}
+                </th>
               ))}
             </tr>
           </thead>
