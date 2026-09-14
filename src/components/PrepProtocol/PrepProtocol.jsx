@@ -281,10 +281,12 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
               <span className={styles.macroPillLabel}>{t('pp.paceLeft')}</span>
             </div>
             <div className={styles.macroPill}>
-              <span className={styles.macroPillVal}>{plan.pace.kgPerWeek}</span>
+              {/* Невъзможното темпо не се изписва: предупреждението отдолу го
+                  казва с думи, а числото само подкопава доверието в съседните. */}
+              <span className={styles.macroPillVal}>{plan.pace.unreal ? '—' : plan.pace.kgPerWeek}</span>
               <span className={styles.macroPillLabel}>{t('pp.pacePerWeek')}</span>
             </div>
-            {plan.pace.dailyKcal != null && (
+            {plan.pace.dailyKcal != null && !plan.pace.unreal && (
               <div className={styles.macroPill}>
                 <span className={`${styles.macroPillVal} ${styles.macroPillValAccent}`}>{plan.pace.dailyKcal}</span>
                 <span className={styles.macroPillLabel}>{t('pp.paceKcal')}</span>
@@ -424,8 +426,11 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
               </button>
             </form>
           </div>
-        ) : !profile?.weight_kg ? (
-          <p className={styles.tdeeSetupNote}>{t('pp.weightSetupNote')}</p>
+        ) : !(plan?.latestWeight ?? profile?.weight_kg) ? (
+          /* Мереното тази седмица бие полето в профила — то е попълнено веднъж
+             преди месеци. И упътването сочи към полето, което е на този екран,
+             а не към друга страница: то е четири реда по-нагоре. */
+          <p className={styles.tdeeSetupNote}>{t('pp.weightHere')}</p>
         ) : (
           (() => {
             /* Протеинът е 2.5 г на килограм — на кой килограм обаче. Полето в
@@ -466,8 +471,10 @@ function PrepDashboard({ prep, plan, weightLogs, weekStats, onUpdate, onEnd, pro
         )}
       </section>
 
-      {/* ── Weekly timeline ── */}
-      {plan?.weeks?.length > 0 && (
+      {/* ── Weekly timeline ──
+          С една седмица списъкът е точно картата отгоре, преписана по-дребно:
+          същият номер, същите дати, същата цел. Появява се от втората. */}
+      {plan?.weeks?.length > 1 && (
         <section className={styles.card}>
           <div className={styles.cardTitle}>{t('pp.weeklyProgress')}</div>
           <div className={styles.timeline}>
@@ -610,11 +617,19 @@ function PrepRunway({ prep, plan, children }) {
     <div className={styles.runway}>
       <button className={styles.runwayBar} type="button" onClick={() => setOpen(o => !o)}>
         <span className={styles.runwayLabel}>{prep.competition_name || t('pp.title')}</span>
-        <span className={styles.runwayVal}>
-          {plan?.weeksOut != null && <>{t('pw.runway.weeks', { n: plan.weeksOut })} · </>}
-          {plan?.pace?.kgLeft != null && <>{t('pw.runway.kg', { n: plan.pace.kgLeft })} · </>}
-          <span className={plan?.offBy > 0 ? styles.runwayBehind : styles.runwayOk}>{status}</span>
-        </span>
+        {/* Свитата лента е обобщение; отворената е заглавие.
+            Същите три неща — име, седмици, в графика ли си — стояха и в
+            лентата, и веднага под нея в самата страница. Прочитат се два пъти,
+            за да се разбере, че са едно и също. */}
+        {!open && (
+          <span className={styles.runwayVal}>
+            {plan?.weeksOut != null && (
+              <>{t(plan.weeksOut === 1 ? 'pw.runway.week.one' : 'pw.runway.weeks', { n: plan.weeksOut })} · </>
+            )}
+            {plan?.pace?.kgLeft != null && <>{t('pw.runway.kg', { n: plan.pace.kgLeft })} · </>}
+            <span className={plan?.offBy > 0 ? styles.runwayBehind : styles.runwayOk}>{status}</span>
+          </span>
+        )}
         <span className={styles.runwayChev}>{open ? '⌃' : '⌄'}</span>
       </button>
       {open && children}

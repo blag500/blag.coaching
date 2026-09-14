@@ -1131,6 +1131,8 @@ export default {
   'pp.err.network':      'Мрежова грешка — провери връзката и опитай пак',
   'pp.err.schemaCache':  'Таблицата не е готова — презареди schema кеша в Supabase Dashboard',
   'pp.err.save':         'Грешка при запис',
+  'pw.runway.week.one':  '1 седмица',
+  'pp.weightHere':       'Запиши сутрешното тегло по-горе, за да се изчислят макросите.',
   'pp.title':            'БОДИБИЛДИНГ ПРОТОКОЛ',
   'pp.subtitle':         'Задай целта. Следи прогреса.',
   'pp.stage':            'СЦЕНАТА',

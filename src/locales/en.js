@@ -1130,6 +1130,8 @@ export default {
   'pp.err.network':      'Network error — check your connection and try again',
   'pp.err.schemaCache':  'Table not ready — reload the schema cache in Supabase Dashboard',
   'pp.err.save':         'Save failed',
+  'pw.runway.week.one':  '1 week',
+  'pp.weightHere':       'Log your morning weight above and the macros will follow.',
   'pp.title':            'BODYBUILDING PROTOCOL',
   'pp.subtitle':         'Set the goal. Track the progress.',
   'pp.stage':            'THE STAGE',

@@ -295,13 +295,21 @@ export function usePrepProtocol() {
       const deadline = plan.readyDate ?? prep.competition_date
       const daysLeft = Math.max(1, Math.round((dayFromIso(deadline) - dayFromIso(today)) / 86400000))
       const kgLeft   = latest.kg - prep.target_weight
+      const perWeek = Math.round((kgLeft / (daysLeft / 7)) * 100) / 100
       plan.pace = {
         daysLeft,
         kgLeft:    Math.round(kgLeft * 10) / 10,
-        kgPerWeek: Math.round((kgLeft / (daysLeft / 7)) * 100) / 100,
+        kgPerWeek: perWeek,
         dailyKcal: prep.tdee
           ? Math.round(prep.tdee - (kgLeft * KCAL_PER_KG) / daysLeft)
           : null,
+        /* Сметка, която вече не е информация.
+           Три килограма на седмица е горницата на всичко разумно; над това
+           формулата продължава да смята и излиза с „56 кг/седмица" и „-56 800
+           ккал/ден". Такова число не казва нищо освен че срокът не излиза — а
+           точно това го казва предупреждението отдолу, с думи. Числото само
+           обърква и подкопава доверието в останалите числа на екрана. */
+        unreal: Math.abs(perWeek) > 3,
       }
 
       // Изоставане спрямо кривата: последната завършена седмица със записи.
