@@ -11,8 +11,11 @@
    just makes the glass dark. */
 /* Булото също слиза с една стъпка: през по-прозрачно стъкло се вижда точно
    толкова, колкото има зад него, а зад него дотук стоеше половин черно. */
+/* И булото слиза пак — 0.42 → 0.26. Панелът замъглява това, което е зад него,
+   булото включително: черно зад тънко стъкло не е воал, а сива боя, и изяжда
+   точно цвета, заради който стъклото е тънко. */
 .backdropVisible {
-  background: rgba(0, 0, 0, 0.42);
+  background: rgba(0, 0, 0, 0.26);
   pointer-events: all;
 }
 
@@ -22,30 +25,45 @@
   left: 0;
   bottom: 0;
   width: 72%;
-  max-width: 280px;
-  /* Smoked glass, the same material as the app header — the drawer slides over
-     the page rather than replacing it, so it should let the page show through.
-     A flat --bg panel read as a second screen that had covered the first.
-     The warm bloom at the top left is where the light would fall if the gold
-     edge were catching any: it is what separates glass from grey. */
+  max-width: 286px;
+  /* Стъкло, а не тонирана плоскост.
+   *
+   * Дотук панелът беше замъглен, но пълнежът му стоеше на 0.74 — през него се
+   * виждаше форма, не цвят, и окото го четеше като тъмен лист с размита
+   * снимка отзад. Стъклото на iOS 26 прави обратното: пропуска цвета на
+   * страницата почти изцяло, а четимостта идва от замъгляването и от
+   * пренасищането, не от боя отгоре.
+   *
+   * Затова тук: тънък пълнеж (0.34 → 0.22), силно замъгляване и saturate над
+   * 200%, което вади златото и зеленото изпод панела вместо да ги сивее.
+   * Светлината е двете неща, които правят стъклото стъкло — топлият отблясък
+   * горе вляво и бялата нишка по горния ръб. */
   background:
-    radial-gradient(120% 60% at 0% 0%,
-      rgba(var(--accent-rgb), 0.08) 0%,
-      rgba(var(--accent-rgb), 0.02) 42%,
-      transparent 70%),
-    /* Една идея по-прозрачна: 0.86/0.72 → 0.74/0.60. Замъгляването се вдига
-       заедно с това, защото през по-тънко стъкло страницата отзад тръгва да
-       се чете като текст, а стъклото трябва да пропуска светлина и цвят, не
-       думи. */
+    radial-gradient(130% 58% at 2% 0%,
+      rgba(var(--accent-rgb), 0.13) 0%,
+      rgba(var(--accent-rgb), 0.04) 44%,
+      transparent 72%),
     linear-gradient(to bottom,
-      rgba(var(--bg-rgb), 0.74) 0%,
-      rgba(var(--bg-rgb), 0.60) 100%);
-  backdrop-filter: blur(38px) saturate(170%);
-  -webkit-backdrop-filter: blur(38px) saturate(170%);
-  border-right: 1px solid rgba(var(--accent-rgb), 0.22);
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.02) 16%,
+      transparent 34%),
+    linear-gradient(to bottom,
+      rgba(var(--bg-rgb), 0.40) 0%,
+      rgba(var(--bg-rgb), 0.28) 100%);
+  /* 44px не стигаха: на светлата тема изреченията от страницата отзад още се
+     четяха през панела и се биеха с надписите отгоре. Замъгляването е това,
+     което превръща текста в цвят — вдигнато е, вместо да се долива боя. */
+  backdrop-filter: blur(64px) saturate(200%);
+  -webkit-backdrop-filter: blur(64px) saturate(200%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  /* Вътрешните нишки са ръбът на самото стъкло: светла горе и вляво, тъмна
+     долу. Без тях плочата няма дебелина. */
   box-shadow:
-    inset -1px 0 0 rgba(255, 255, 255, 0.05),
-    8px 0 48px rgba(0, 0, 0, 0.65);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset -1px 0 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+    10px 0 60px rgba(0, 0, 0, 0.55);
+  border-radius: 0 var(--r-lg) var(--r-lg) 0;
   z-index: 201;
   transform: translateX(-100%);
   transition: transform 420ms var(--ease-drawer);
@@ -54,21 +72,62 @@
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   will-change: transform;
+  overflow: hidden;
 }
 
 .drawerOpen {
   transform: translateX(0);
 }
 
-/* Without backdrop-filter the panel would be see-through onto unreadable text,
-   so fall back to the solid surface rather than to a guess. */
+/* Без backdrop-filter панелът би бил прозорец към нечетим текст, затова пада
+   на плътната повърхност, а не на догадка. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .drawer { background: var(--bg); }
+  .drawer {
+    background: var(--bg);
+    box-shadow: 10px 0 60px rgba(0, 0, 0, 0.55);
+  }
 }
 
-/* A gold hairline down the leading edge, brightest where the header sits and
-   dying out towards the floor — the same rule the app header draws along its
-   bottom, stood on end. */
+/* Светлата тема иска по-плътно стъкло.
+   Тъмният текст върху бяла карта минава през замъгляване, което черният фон
+   поглъща без остатък: същите 0.40 там оставят четими думи под надписите на
+   менюто. Стъклото остава стъкло — картите отзад се виждат като форми и цвят —
+   но буквите им вече ги няма. */
+:global(html[data-theme="light"]) .drawer {
+  background:
+    radial-gradient(130% 58% at 2% 0%,
+      rgba(var(--accent-rgb), 0.10) 0%,
+      rgba(var(--accent-rgb), 0.03) 44%,
+      transparent 72%),
+    linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.40) 0%,
+      rgba(255, 255, 255, 0.18) 22%,
+      transparent 46%),
+    linear-gradient(to bottom,
+      rgba(var(--bg-rgb), 0.74) 0%,
+      rgba(var(--bg-rgb), 0.64) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset -1px 0 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(26, 19, 0, 0.06),
+    10px 0 46px rgba(26, 19, 0, 0.18);
+  border-right: 1px solid rgba(26, 19, 0, 0.08);
+}
+
+/* И разделителите се обръщат: върху светло стъкло бялата нишка е невидима. */
+:global(html[data-theme="light"]) .header,
+:global(html[data-theme="light"]) .userSection {
+  border-bottom-color: rgba(26, 19, 0, 0.08);
+}
+
+:global(html[data-theme="light"]) .itemActive {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 1px 8px rgba(26, 19, 0, 0.10);
+}
+
+/* Златната нишка по водещия ръб — същото правило, което хедърът тегли по дъното
+   си, изправено. */
 .drawer::after {
   content: '';
   position: absolute;
@@ -77,8 +136,8 @@
   bottom: 0;
   width: 1px;
   background: linear-gradient(to bottom,
-    rgba(var(--accent-rgb), 0.45) 0%,
-    rgba(var(--accent-rgb), 0.16) 38%,
+    rgba(var(--accent-rgb), 0.5) 0%,
+    rgba(var(--accent-rgb), 0.18) 38%,
     transparent 88%);
   pointer-events: none;
 }
@@ -88,7 +147,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(var(--accent-rgb), 0.1);
+  /* Светла нишка вместо тъмна: през тънко стъкло тъмната линия просто изчезва
+     в това, което е отзад. */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 
@@ -102,9 +163,11 @@
 .closeBtn {
   width: 32px;
   height: 32px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--r-sm);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -126,7 +189,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 20px 16px;
-  border-bottom: 1px solid rgba(var(--accent-rgb), 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background: none;
   border-top: none;
   border-left: none;
@@ -252,12 +315,25 @@
 }
 
 .item:active {
-  background: rgba(var(--accent-rgb), 0.06);
+  background: rgba(255, 255, 255, 0.08);
 }
 
+/* Избраният ред е второ парче стъкло върху първото — по-светло, с горна нишка
+   и собствена сянка. Плоската цветна ивица отпреди беше боя върху стъкло: тя
+   спираше светлината точно там, където панелът трябва да я пропуска. */
 .itemActive {
   color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.08);
+  background:
+    linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.04) 100%),
+    linear-gradient(to bottom,
+      rgba(var(--accent-rgb), 0.14) 0%,
+      rgba(var(--accent-rgb), 0.07) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 1px 10px rgba(0, 0, 0, 0.22);
+  border-radius: var(--r-md);
 }
 
 .iconWrap {
