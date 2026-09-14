@@ -1415,3 +1415,57 @@ test.describe('Знанието на бота', () => {
     await expect(page.getByText('само за мен')).toHaveCount(0)
   })
 })
+
+test.describe('Дневникът на тренировката', () => {
+  test('бързо вписване при бавна мрежа', async ({ page }) => {
+    test.setTimeout(120000)
+    const sent = []
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+  
+    // Всяка заявка към сериите се бави като на 4G.
+    await page.route('**/rest/v1/exercise_logs**', async route => {
+      if (route.request().method() !== 'GET') await new Promise(r => setTimeout(r, 700))
+      await route.fallback()
+    })
+  
+    page.on('request', r => {
+      if (['POST', 'PATCH'].includes(r.method()) && r.url().includes('exercise_logs')) {
+        try {
+          const b = JSON.parse(r.postData() || 'null')
+          for (const row of (Array.isArray(b) ? b : [b])) sent.push([r.method(), row.exercise_name, row.weight, row.reps])
+        } catch { /* празно */ }
+      }
+    })
+  
+    await page.locator('nav button', { hasText: 'ТРЕНИРОВКА' }).first().click()
+    await page.waitForTimeout(2000)
+    await page.getByText('Upper A').first().click()
+    await page.waitForTimeout(1800)
+  
+    const kg = (name, n) => page.locator(`input[aria-label="${name}, серия ${n}, килограми"]`)
+    const reps = (name, n) => page.locator(`input[aria-label="${name}, серия ${n}, повторения"]`)
+  
+    /* Както се пише в залата: тежест, повторения, следващата серия — без да се
+       чака нищо между тях. */
+    for (const n of [1, 2, 3]) {
+      await kg('Лежанка', n).fill(String(58 + n))
+      await reps('Лежанка', n).fill('8')
+    }
+    await kg('Гребане', 1).fill('50')
+    await reps('Гребане', 1).fill('10')
+  
+    await page.waitForTimeout(6000)
+  
+    /* Всичко, което е на екрана, трябва да е и в базата — това е целият смисъл.
+       Проверява се по повторенията: тежестта заминава при напускане на полето и
+       тя минаваше и преди; повторенията бяха онова, което се губеше. */
+    const saved = sent.filter(([, , , r]) => r != null).map(([, name, w, r]) => `${name} ${w}×${r}`).sort()
+    expect(saved).toEqual([
+      'Гребане 50×10',
+      'Лежанка 59×8',
+      'Лежанка 60×8',
+      'Лежанка 61×8',
+    ])
+  })
+})

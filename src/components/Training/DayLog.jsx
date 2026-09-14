@@ -127,6 +127,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   const swapRef    = useRef(swap)
   const timers     = useRef({})
   const inflight   = useRef({})
+  /* Редове, чието записване е било пропуснато, защото предишното още е било в
+     полет. Без тази бележка пропуснатото не се връщаше никога. */
+  const pending    = useRef({})
   const lastSaved  = useRef({})
   useEffect(() => { rowsRef.current = rows }, [rows])
   useEffect(() => { swapRef.current = swap }, [swap])
@@ -257,6 +260,16 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     }
   }, [])
 
+  /** Праща наново реда, чието записване е било пропуснато, докато предишното е
+   *  било в полет. Не веднага, а след кадър: иначе двата записа се редят един
+   *  след друг толкова бързо, че сървърът вижда втория преди края на първия. */
+  function drain(name, i) {
+    const key = `${name}-${i}`
+    if (!pending.current[key]) return
+    pending.current[key] = false
+    setTimeout(() => commit(name, i), 60)
+  }
+
   /**
    * Write the row if it has changed. Emptied rows are deleted: a set with no
    * numbers in it is a set that did not happen, and that is what clearing it
@@ -266,7 +279,20 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     const r = rowsRef.current[name]?.[i]
     if (!user || !r) return
     const key = `${name}-${i}`
-    if (inflight.current[key]) return
+    /* Тук се губеха повторенията.
+     *
+     * Пишеш тежестта, минаваш на повторенията — напускането на полето записва
+     * реда още тогава, само с тежестта. На телефон в зала този запис пътува
+     * половин секунда. Междувременно повторенията са написани и техният запис
+     * пада точно в този прозорец: заварва предишния в полет и се отказва. И
+     * тъй като никой не го праща наново, повторенията остават само на екрана.
+     *
+     * Оттам идва и оплакването „всичко изглежда наред, но накрая не е
+     * записано" — и „трябва едно по едно упражнение", защото бавното писане
+     * разминава двата записа.
+     *
+     * Сега пропуснатото се отбелязва и тръгва, щом предишното се върне. */
+    if (inflight.current[key]) { pending.current[key] = true; return }
     if (lastSaved.current[key] === sig(r)) return
 
     const blank = String(r.weight).trim() === '' && String(r.reps).trim() === ''
@@ -276,6 +302,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       inflight.current[key] = true
       await supabase.from('exercise_logs').delete().eq('id', r.id)
       inflight.current[key] = false
+      drain(name, i)
       lastSaved.current[key] = sig(EMPTY)
       setRows(prev => ({
         ...prev,
@@ -315,6 +342,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       : await supabase.from('exercise_logs').insert(payload).select().single()
 
     inflight.current[key] = false
+    drain(name, i)
     if (error) return
 
     lastSaved.current[key] = sig(r)
