@@ -7,10 +7,9 @@ import styles from './AppHeader.module.css'
  * Sticky top bar shared by every tab page.
  *
  * Two glass pills over the page, the way Reddit does it: navigation and the
- * page name on the left, the page's actions and the avatar on the right. At
- * the top of the page the bar itself is transparent — the pills float over the
- * content; once anything scrolls under it the bar turns solid (the
- * `data-scrolled` attribute, set by useHideOnScroll).
+ * page name on the left, the page's actions and the avatar on the right.
+ * There is no bar behind them: the pills float over the content, at the top of
+ * the page and while scrolling alike.
  */
 export default function AppHeader({
   onMenuOpen,

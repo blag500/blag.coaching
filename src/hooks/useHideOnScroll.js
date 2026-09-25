@@ -7,22 +7,16 @@ const KEEP_UNTIL = 72
 // is what makes "I want the nav" feel instant.
 const DOWN_STEP = 12
 const UP_STEP   = 5
-// The header turns from transparent into a bar as soon as anything is under it.
-const SCROLLED_AT = 8
 
 /**
- * Scroll-driven chrome, the way Reddit does it.
+ * The bottom nav, the way Reddit does it: `data-nav="collapsed"` on <html>
+ * folds it into a small round button while reading down, and it opens again on
+ * the slightest scroll up or a tap on that button (see BottomNav). The header
+ * no longer moves at all — its pills float over the page.
  *
- * - `data-scrolled` on <html>: the header floats transparent over the top of
- *   the page and becomes a solid bar once content scrolls under it. It no
- *   longer hides — the menu and the avatar stay one tap away.
- * - `data-nav="collapsed"`: the bottom nav folds into a small round button
- *   while reading down, and opens again on the slightest scroll up or a tap on
- *   that button (see BottomNav).
- *
- * Writes data attributes instead of returning state: the header is rendered
- * inside every page, so React state here would re-render the whole tree on
- * every scroll frame to move two elements. The CSS reads the attributes.
+ * Writes a data attribute instead of returning state: React state here would
+ * re-render the whole tree on every scroll frame to move one element. The CSS
+ * reads the attribute.
  */
 export function useHideOnScroll(enabled = true) {
   useEffect(() => {
@@ -37,9 +31,6 @@ export function useHideOnScroll(enabled = true) {
     function read() {
       frame = null
       const y = Math.max(window.scrollY, 0)
-
-      if (y > SCROLLED_AT) root.dataset.scrolled = '1'
-      else delete root.dataset.scrolled
 
       if (y <= KEEP_UNTIL) {
         anchor = y
