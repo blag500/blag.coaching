@@ -785,3 +785,18 @@
   line-height: 1.5;
   color: var(--muted);
 }
+
+.swapLibSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.swapLibSection + .swapLibSection { margin-top: 6px; }
+
+.swapLibSectionTitle {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  opacity: 0.8;
+}

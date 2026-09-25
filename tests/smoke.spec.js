@@ -1668,6 +1668,13 @@ test.describe('Заготовки по мускул', () => {
     await page.getByPlaceholder('Име на упражнението').fill('Пек дек')
     await page.getByRole('button', { name: 'ЗАПАЗИ' }).click()
     await expect(page.getByText('Пек дек')).toBeVisible()
+
+    // Без избран филтър мускулът се досеща от името.
+    await page.getByRole('tab', { name: /Всички/ }).click()
+    await page.getByRole('button', { name: 'ГОТОВО' }).click()
+    await page.getByText('+ ДОБАВИ УПРАЖНЕНИЕ').click()
+    await page.getByPlaceholder('Име на упражнението').fill('Leg curl')
+    await expect(page.getByLabel('Мускул', { exact: true })).toHaveValue('hamstrings')
   })
 
   test('заместването показва упражненията за избрания мускул', async ({ page }) => {
@@ -1681,13 +1688,22 @@ test.describe('Заготовки по мускул', () => {
     await page.getByRole('button', { name: 'Смени Лежанка за този ден' }).click()
     const pick = page.getByLabel('Мускул, за който да се покажат заместители')
     const chips = page.locator('[class*="swapLibChips"]')
-    await pick.selectOption('chest')
+    // Лежанка няма мускул в плана — познава се по името.
+    await expect(pick).toHaveValue('chest')
     await expect(chips.getByRole('button', { name: 'Кросовер' })).toBeVisible()
     await expect(chips.getByRole('button', { name: /Гребане/ })).toHaveCount(0)
 
-    // „Всички" събира и заготовките, и упражненията от плана.
+    // „Всички" събира и заготовките, и упражненията от плана — на секции.
     await pick.selectOption('')
     await expect(chips.getByRole('button', { name: /Гребане/ })).toBeVisible()
+    await expect(page.locator('[class*="swapLibSectionTitle"]', { hasText: 'Гръб' })).toBeVisible()
+
+    // Написаното пресява, през всички мускули.
+    await pick.selectOption('chest')
+    await page.getByLabel('Какво направи вместо него').fill('греб')
+    await expect(chips.getByRole('button', { name: /Гребане/ })).toBeVisible()
+    await expect(chips.getByRole('button', { name: 'Кросовер' })).toHaveCount(0)
+    await page.getByLabel('Какво направи вместо него').fill('')
 
     await pick.selectOption('chest')
     await chips.getByRole('button', { name: 'Кросовер' }).click()

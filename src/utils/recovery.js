@@ -48,6 +48,44 @@ export const FINE_MUSCLES = [
 
 const FINE_TO_BROAD = Object.fromEntries(FINE_MUSCLES.map(m => [m.id, m.broad]))
 
+/* Мускулът по името на упражнението, когато никой не го е задал.
+   Планът е писан на ръка — „Lat pulldown upper lats panatta", „Кофички" — и
+   повечето упражнения в него нямат мускул, така че заместването ги трупаше
+   всичките под „Всички". Това е догадка, не истина: зададеното в редактора
+   или в дневника винаги бие.
+   Редът има значение. По-тесните шаблони са първи: „rear delt" преди „delt",
+   „leg curl" преди „curl", „calf raises on leg press" преди „leg press",
+   „back extension" преди „back", „сгъване за бедро" преди „сгъване",
+   „shrugs … calves" е трапец, „chest supported row" е гръб. */
+const NAME_PATTERNS = [
+  ['reardelts',  /rear ?delt|reverse fl(y|ie)|face ?pull|задно рамо|задна делт/],
+  ['traps',      /shrug|trap|трапец|шръг/],
+  ['back',       /chest ?supported|seal ?row/],
+  ['calves',     /calf|calves|прасец|прасци/],
+  ['adductors',  /adduct|привежд|аддукт/],
+  ['abductors',  /abduct|отвежд|абдукт/],
+  ['lowerback',  /back ?extension|hyperext|good ?morning|хиперекст|долен гръб|еректор/],
+  ['hamstrings', /leg ?curl|hamstring|romanian|rdl|stiff|nordic|задно бедро|румънск|сгъване за бедр|сгъване на крак/],
+  ['glutes',     /glute|hip ?thrust|kickback|седалищ|хип ?тръст|глутеус/],
+  ['quads',      /squat|leg ?press|leg ?ext|lunge|hack|split|step ?up|клек|преса за крака|лег ?преса|разгъване|напад|предно бедро/],
+  ['forearms',   /forearm|wrist|предмишн|китк/],
+  ['abs',        /crunch|\babs?\b|plank|leg raise|корем|планк|преса за корем/],
+  ['obliques',   /oblique|twist|woodchop|коси|усукв/],
+  ['neck',       /neck|врат/],
+  ['triceps',    /tricep|pushdown|push ?down|skull|dip|трицеп|кофичк|разгъване на ръц/],
+  ['biceps',     /bicep|curl|бицеп|сгъване/],
+  ['shoulders',  /shoulder|lateral|upright|delt|overhead|ohp|military|arnold|рамо|рамен|раменна|разтваряне|делт/],
+  ['chest',      /chest|bench|flat|incline|decline|fl(y|ie)|pec|crossover|cross ?over|push ?up|гърди|лежанка|флайс|кросов|пек ?дек|лицева опора/],
+  ['back',       /\blats?\b|row|pull ?up|chin|pulldown|pullover|back|гръб|гребане|набиран|скрипец|пуловър/],
+]
+
+/** Fine muscle id guessed from an exercise name, or null. */
+export function guessMuscle(name = '') {
+  const l = String(name).toLowerCase()
+  for (const [id, re] of NAME_PATTERNS) if (re.test(l)) return id
+  return null
+}
+
 /** Translate a stored tag (fine muscle id, or a legacy broad group id) into
  *  the broad-group axis the rest of the app runs on. */
 export function tagToBroad(tag) {

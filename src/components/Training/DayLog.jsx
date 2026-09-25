@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
 import { useExercisePhotos } from '../../hooks/useExercisePhotos'
 import { useExerciseMap } from '../../hooks/useExerciseMap'
-import { FINE_MUSCLES } from '../../utils/recovery'
+import { FINE_MUSCLES, guessMuscle } from '../../utils/recovery'
 import { setPace, formatPace } from '../../utils/setPace'
 import styles from './DayLog.module.css'
 
@@ -147,20 +147,23 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
     const out = new Map()
     for (const it of libItems) {
       const key = it.name.trim().toLowerCase()
-      if (!out.has(key)) out.set(key, { key, name: it.name, muscle: it.muscle || exerciseMap[it.name] || null, from: 'lib' })
+      if (!out.has(key)) out.set(key, { key, name: it.name, muscle: it.muscle || exerciseMap[it.name] || guessMuscle(it.name), set: !!(it.muscle || exerciseMap[it.name]), from: 'lib' })
     }
     for (const b of blocks ?? []) {
+      // Кардиото и подвижността от деня за почивка не са заместител на лежанка.
+      if (b.isRest || /ПОЧИВК|\bREST\b/.test((b.label || '').toUpperCase())) continue
       for (const e of b.exercises ?? []) {
         const key = String(e.name || '').trim().toLowerCase()
         if (!key || out.has(key)) continue
-        out.set(key, { key, name: e.name, muscle: e.muscle || exerciseMap[e.name] || null, from: 'plan', block: b.label })
+        out.set(key, { key, name: e.name, muscle: e.muscle || exerciseMap[e.name] || guessMuscle(e.name), set: !!(e.muscle || exerciseMap[e.name]), from: 'plan', block: b.label })
       }
     }
     return [...out.values()]
   }, [libItems, blocks, exerciseMap])
   const knownMuscle = name => {
     const key = name.trim().toLowerCase()
-    return !!(exerciseMap[name] || swapPool.find(c => c.key === key)?.muscle)
+    // Само изрично зададеното: догадката по име не бива да крие избора отдолу.
+    return !!(exerciseMap[name] || swapPool.find(c => c.key === key)?.set)
   }
 
   const load = useCallback(() => {
@@ -630,12 +633,24 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                       заготовките, и упражненията от целия план — „Гребане" от
                       Upper A е заместител на гръб, без да е писано втори път. */}
                   {(() => {
-                    const plannedMuscle = ex.muscle || exerciseMap[ex.name] || ''
+                    const plannedMuscle = ex.muscle || exerciseMap[ex.name] || guessMuscle(ex.name) || ''
                     const m = swapMuscle[ex.name] ?? plannedMuscle
                     const pool = swapPool.filter(c => c.key !== ex.name.trim().toLowerCase())
                     const counts = {}
                     for (const c of pool) if (c.muscle) counts[c.muscle] = (counts[c.muscle] ?? 0) + 1
-                    const list = m ? pool.filter(c => c.muscle === m) : pool
+                    /* Написаното в полето отгоре пресява списъка: „calf" оставя
+                       само прасците. Избран вече заместител не пресява — иначе
+                       след избора в списъка остава само той. */
+                    const typed = (swap[ex.name] ?? '').trim().toLowerCase()
+                    const q = pool.some(c => c.key === typed) ? '' : typed
+                    const list = pool.filter(c =>
+                      (!m || q || c.muscle === m) && (!q || c.key.includes(q)))
+                    /* „Всички" на секции по мускул — иначе е стена от бутони. */
+                    const sections = m && !q
+                      ? [{ id: m, list }]
+                      : [...FINE_MUSCLES.map(fm => fm.id), null]
+                          .map(id => ({ id, list: list.filter(c => (c.muscle ?? null) === id) }))
+                          .filter(sec => sec.list.length)
                     if (!pool.length) return null
                     return (
                       <div className={styles.swapLib}>
@@ -655,9 +670,15 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                             ))}
                           </select>
                         </div>
-                        {list.length ? (
+                        {list.length ? sections.map(sec => (
+                          <div key={sec.id ?? 'none'} className={styles.swapLibSection}>
+                          {sections.length > 1 && (
+                            <span className={styles.swapLibSectionTitle}>
+                              {sec.id ? t(FINE_MUSCLES.find(fm => fm.id === sec.id)?.labelKey ?? '') : t('dl.swapOther')}
+                            </span>
+                          )}
                           <div className={styles.swapLibChips}>
-                            {list.map(c => (
+                            {sec.list.map(c => (
                               <button
                                 key={c.key}
                                 type="button"
@@ -676,7 +697,8 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                               </button>
                             ))}
                           </div>
-                        ) : (
+                          </div>
+                        )) : (
                           <span className={styles.swapLibEmpty}>{t('dl.swapNone')}</span>
                         )}
                       </div>

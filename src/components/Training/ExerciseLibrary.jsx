@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useExerciseLibrary } from '../../hooks/useExerciseLibrary'
 import { useSettings } from '../../contexts/SettingsContext'
-import { FINE_MUSCLES } from '../../utils/recovery'
+import { FINE_MUSCLES, guessMuscle } from '../../utils/recovery'
 import { haptic } from '../../lib/haptics'
 import AppHeader from '../AppHeader/AppHeader'
 import Pictogram from '../Pictogram/Pictogram'
@@ -28,6 +28,8 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
   const [name, setName]       = useState('')
   const [scheme, setScheme]   = useState('')
   const [muscle, setMuscle]   = useState('')
+  // Избран ли е мускулът от човека — докато не е, се досеща от името.
+  const [muscleSet, setMuscleSet] = useState(false)
   const [busy, setBusy]       = useState(false)
   const [err, setErr]         = useState(null)
 
@@ -48,7 +50,9 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
 
   function openForm() {
     // Отворено от филтър за мускул — формата вече е на него.
-    setMuscle(filter !== 'all' && filter !== 'none' ? filter : '')
+    const fromFilter = filter !== 'all' && filter !== 'none'
+    setMuscle(fromFilter ? filter : '')
+    setMuscleSet(fromFilter)
     setOpen(true)
   }
 
@@ -143,10 +147,21 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
 
       {open ? (
         <div className={styles.form}>
+          <input
+            className={styles.input}
+            value={name}
+            onChange={e => {
+              setName(e.target.value)
+              if (!muscleSet) setMuscle(guessMuscle(e.target.value) ?? '')
+            }}
+            onKeyDown={e => { if (e.key === 'Enter') save() }}
+            placeholder={t('lib.namePh')}
+            autoFocus
+          />
           <select
             className={styles.input}
             value={muscle}
-            onChange={e => setMuscle(e.target.value)}
+            onChange={e => { setMuscle(e.target.value); setMuscleSet(true) }}
             aria-label={t('lib.musclePh')}
           >
             <option value="" disabled>{t('lib.musclePh')}</option>
@@ -154,14 +169,6 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
               <option key={m.id} value={m.id}>{t(m.labelKey)}</option>
             ))}
           </select>
-          <input
-            className={styles.input}
-            value={name}
-            onChange={e => setName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') save() }}
-            placeholder={t('lib.namePh')}
-            autoFocus
-          />
           <input
             className={styles.input}
             value={scheme}

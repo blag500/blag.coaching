@@ -185,6 +185,7 @@ export default {
   'dl.swapForAria':       'Muscle to show substitutes for',
   'dl.swapAll':           'All ({n})',
   'dl.swapNone':          'No substitutes for this muscle. Add some in Presets or type a name above.',
+  'dl.swapOther':         'Other',
 
   'today.shop':       'SHOP',
   'today.shopSub':    'Fast delivery · Macros included',
