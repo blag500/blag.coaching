@@ -1979,6 +1979,7 @@ export default {
   "te.namePh": "e.g. Barbell bench press",
   "te.sets": "Sets",
   "te.reps": "Reps",
+  "te.setsPh": "e.g. 3",
   "te.repsPh": "e.g. 8–10",
   "te.muscle": "Muscle",
   "te.muscleNone": "(not set)",

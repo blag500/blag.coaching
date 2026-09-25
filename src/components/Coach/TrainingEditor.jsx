@@ -353,8 +353,8 @@ function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) 
   const { t } = useSettings()
   const isEdit = !!exercise
   const [name, setName]     = useState(exercise?.name ?? '')
-  const [sets, setSets]     = useState(exercise?.sets ?? '3')
-  const [reps, setReps]     = useState(exercise?.reps ?? '10')
+  const [sets, setSets]     = useState(exercise?.sets ?? '')
+  const [reps, setReps]     = useState(exercise?.reps ?? '')
   const [note, setNote]     = useState(exercise?.note ?? '')
   const [muscle, setMuscle] = useState(exercise?.muscle ?? '')
   const [busy, setBusy]     = useState(false)
@@ -408,7 +408,8 @@ function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) 
         <div className={styles.modalRow}>
           <label className={styles.modalField}>
             <span>{t('te.sets')}</span>
-            <input type="text" inputMode="numeric" value={sets} onChange={e => setSets(e.target.value)} />
+            <input type="text" inputMode="numeric" value={sets} onChange={e => setSets(e.target.value)}
+                   placeholder={t('te.setsPh')} />
           </label>
           <label className={styles.modalField}>
             <span>{t('te.reps')}</span>

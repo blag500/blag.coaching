@@ -1986,6 +1986,7 @@ export default {
   "te.namePh": "напр. Лежанка с щанга",
   "te.sets": "Серии",
   "te.reps": "Повторения",
+  "te.setsPh": "напр. 3",
   "te.repsPh": "напр. 8–10",
   "te.muscle": "Мускул",
   "te.muscleNone": "(не е зададен)",
