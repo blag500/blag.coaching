@@ -105,6 +105,8 @@
   border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
 .input::placeholder { color: var(--muted); }
@@ -182,4 +184,59 @@
   line-height: 1.5;
   color: var(--muted);
   max-width: 36ch;
+}
+
+/* ── Филтър по мускул ──
+   Лента, която се плъзга настрани: осемнайсет мускула не се побират на един
+   ред, а на два ред започват да приличат на формуляр. */
+.filters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin: 0 -16px;
+  padding: 0 16px 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.filters::-webkit-scrollbar { display: none; }
+
+.filter {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+.filterOn {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+.filterCount {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Заготовка без мускул: избира се направо на реда, без отделен екран. */
+.rowMuscle {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border: 1px dashed rgba(var(--accent-rgb), 0.45);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 12px;
 }

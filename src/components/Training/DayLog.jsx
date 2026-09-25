@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '../../lib/supabase'
 import { haptic } from '../../lib/haptics'
@@ -118,6 +118,8 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
   /* Заготовките — четат се веднъж за целия дневник, а не при всяко
      отваряне на молива: списъкът е един и същият за всички редове. */
   const { items: libItems } = useExerciseLibrary()
+  // Кой мускул е избран в панела за заместване, по планирано упражнение.
+  const [swapMuscle, setSwapMuscle] = useState({})
   const [zoom, setZoom] = useState(null)
 
   // Autosave reads the newest values from a ref: a debounced call fired from a
@@ -137,6 +139,29 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
   const exercises = (blocks ?? [])
     .filter(b => blockLabels.includes(b.label))
     .flatMap(b => (b.exercises ?? []).map(e => ({ ...e, block: b.label })))
+
+  /* Всичко, с което може да се замести: заготовките и упражненията от целия
+     план, по едно на име. Заготовката печели при еднакво име — тя е изрично
+     записана като заместител, с мускул, който човекът е избрал сам. */
+  const swapPool = useMemo(() => {
+    const out = new Map()
+    for (const it of libItems) {
+      const key = it.name.trim().toLowerCase()
+      if (!out.has(key)) out.set(key, { key, name: it.name, muscle: it.muscle || exerciseMap[it.name] || null, from: 'lib' })
+    }
+    for (const b of blocks ?? []) {
+      for (const e of b.exercises ?? []) {
+        const key = String(e.name || '').trim().toLowerCase()
+        if (!key || out.has(key)) continue
+        out.set(key, { key, name: e.name, muscle: e.muscle || exerciseMap[e.name] || null, from: 'plan', block: b.label })
+      }
+    }
+    return [...out.values()]
+  }, [libItems, blocks, exerciseMap])
+  const knownMuscle = name => {
+    const key = name.trim().toLowerCase()
+    return !!(exerciseMap[name] || swapPool.find(c => c.key === key)?.muscle)
+  }
 
   const load = useCallback(() => {
     if (!user?.id) return
@@ -597,44 +622,69 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                     )}
                   </div>
 
-                  {/* Заготовките.
+                  {/* Заместители по мускул.
                       Полето отгоре остава — винаги има упражнение, което го няма
-                      в никакъв списък. Но честият случай е друг: същите три-четири
-                      заместителя, писани на ръка отново и отново, всеки път малко
-                      инак изписани — откъдето статистиката има три упражнения за едно.
-                      Първо се показват тези от същата мускулна група: когато заменяш
-                      лежанка, търсиш друго за гърди, а не клек. */}
-                  {libItems.length > 0 && (() => {
-                    const want = exerciseMap[ex.name] ?? null
-                    const sorted = want
-                      ? [...libItems].sort((a, b) =>
-                          (b.muscle === want) - (a.muscle === want))
-                      : libItems
+                      в никакъв списък. Но честият случай е друг: заменяш RDL и
+                      търсиш друго за задно бедро. Мускулът тръгва от планираното
+                      упражнение; сменяш го и списъкът става за другия. Влизат и
+                      заготовките, и упражненията от целия план — „Гребане" от
+                      Upper A е заместител на гръб, без да е писано втори път. */}
+                  {(() => {
+                    const plannedMuscle = ex.muscle || exerciseMap[ex.name] || ''
+                    const m = swapMuscle[ex.name] ?? plannedMuscle
+                    const pool = swapPool.filter(c => c.key !== ex.name.trim().toLowerCase())
+                    const counts = {}
+                    for (const c of pool) if (c.muscle) counts[c.muscle] = (counts[c.muscle] ?? 0) + 1
+                    const list = m ? pool.filter(c => c.muscle === m) : pool
+                    if (!pool.length) return null
                     return (
                       <div className={styles.swapLib}>
-                        <span className={styles.swapLibLabel}>{t('dl.fromLibrary')}</span>
-                        <div className={styles.swapLibChips}>
-                          {sorted.slice(0, 12).map(it => (
-                            <button
-                              key={it.id}
-                              type="button"
-                              className={`${styles.swapLibChip} ${want && it.muscle === want ? styles.swapLibChipHit : ''}`}
-                              onClick={() => {
-                                haptic('toggle')
-                                setSwap(p => ({ ...p, [ex.name]: it.name }))
-                                setEditing(null)
-                              }}
-                            >
-                              {it.name}
-                            </button>
-                          ))}
+                        <div className={styles.swapLibHead}>
+                          <span className={styles.swapLibLabel}>{t('dl.swapFor')}</span>
+                          <select
+                            className={styles.swapGroupSelect}
+                            value={m}
+                            onChange={e => setSwapMuscle(p => ({ ...p, [ex.name]: e.target.value }))}
+                            aria-label={t('dl.swapForAria')}
+                          >
+                            <option value="">{t('dl.swapAll', { n: pool.length })}</option>
+                            {FINE_MUSCLES.map(fm => (
+                              <option key={fm.id} value={fm.id}>
+                                {t(fm.labelKey)}{counts[fm.id] ? ` (${counts[fm.id]})` : ''}
+                              </option>
+                            ))}
+                          </select>
                         </div>
+                        {list.length ? (
+                          <div className={styles.swapLibChips}>
+                            {list.map(c => (
+                              <button
+                                key={c.key}
+                                type="button"
+                                className={`${styles.swapLibChip} ${swap[ex.name] === c.name ? styles.swapLibChipHit : ''}`}
+                                onClick={() => {
+                                  haptic('toggle')
+                                  setSwap(p => ({ ...p, [ex.name]: c.name }))
+                                  // Мускулът на заместителя е известен — статистиката
+                                  // не бива да чака той да се избере втори път отдолу.
+                                  if (c.muscle && !exerciseMap[c.name]) setExerciseGroup(c.name, c.muscle)
+                                  setEditing(null)
+                                }}
+                              >
+                                {c.name}
+                                {c.from === 'plan' && <span className={styles.swapLibFrom}>{c.block}</span>}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className={styles.swapLibEmpty}>{t('dl.swapNone')}</span>
+                        )}
                       </div>
                     )
                   })()}
 
-                  <div className={styles.swapGroups}>
-                    <span className={styles.swapGroupsLabel}>{t('dl.muscleGroup')}</span>
+                  {!knownMuscle(tagName) && <div className={styles.swapGroups}>
+                    <span className={styles.swapGroupsLabel}>{t('dl.muscleOf', { name: tagName })}</span>
                     <select
                       className={styles.swapGroupSelect}
                       value={currentGroup ?? ''}
@@ -650,7 +700,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                         <option key={m.id} value={m.id}>{t(m.labelKey)}</option>
                       ))}
                     </select>
-                  </div>
+                  </div>}
                 </div>
               )
             })()}

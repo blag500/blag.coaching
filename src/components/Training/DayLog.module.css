@@ -762,3 +762,26 @@
   border-color: rgba(var(--accent-rgb), 0.45);
   color: var(--accent);
 }
+
+/* Заглавието на заместителите носи и избора на мускул — изречение, което се
+   допълва: „Замести с упражнение за [Задно бедро]". */
+.swapLibHead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* От кой блок идва упражнение от плана — за да се различи от заготовка. */
+.swapLibFrom {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.swapLibEmpty {
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}

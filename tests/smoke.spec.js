@@ -1644,3 +1644,53 @@ test.describe('Пиковата седмица', () => {
     ])
   })
 })
+
+test.describe('Заготовки по мускул', () => {
+  test('страницата се подрежда и филтрира по мускул', async ({ page }) => {
+    await enterApp(page)
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(600)
+    await page.getByText('ЗАГОТОВКИ', { exact: true }).first().click()
+    await page.waitForTimeout(1200)
+
+    // Групите са мускулите, не папките; без мускул стоят отделно.
+    await expect(page.getByRole('heading', { name: /Гърди/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /БЕЗ МУСКУЛ/ })).toBeVisible()
+    await expect(page.getByText('Заместители за гърди')).toHaveCount(0)
+
+    await page.getByRole('tab', { name: /Гърди/ }).click()
+    await expect(page.getByText('Кросовер')).toBeVisible()
+    await expect(page.getByText('Лицева опора')).toHaveCount(0)
+
+    // Без мускул не се записва; формата тръгва от избрания филтър.
+    await page.getByText('+ ДОБАВИ УПРАЖНЕНИЕ').click()
+    await expect(page.getByLabel('Мускул', { exact: true })).toHaveValue('chest')
+    await page.getByPlaceholder('Име на упражнението').fill('Пек дек')
+    await page.getByRole('button', { name: 'ЗАПАЗИ' }).click()
+    await expect(page.getByText('Пек дек')).toBeVisible()
+  })
+
+  test('заместването показва упражненията за избрания мускул', async ({ page }) => {
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ТРЕНИРОВКА' }).first().click()
+    await page.waitForTimeout(2000)
+    await page.getByText('Upper A').first().click()
+    await page.waitForTimeout(1500)
+
+    await page.getByRole('button', { name: 'Смени Лежанка за този ден' }).click()
+    const pick = page.getByLabel('Мускул, за който да се покажат заместители')
+    const chips = page.locator('[class*="swapLibChips"]')
+    await pick.selectOption('chest')
+    await expect(chips.getByRole('button', { name: 'Кросовер' })).toBeVisible()
+    await expect(chips.getByRole('button', { name: /Гребане/ })).toHaveCount(0)
+
+    // „Всички" събира и заготовките, и упражненията от плана.
+    await pick.selectOption('')
+    await expect(chips.getByRole('button', { name: /Гребане/ })).toBeVisible()
+
+    await pick.selectOption('chest')
+    await chips.getByRole('button', { name: 'Кросовер' }).click()
+    await expect(page.getByText('вместо Лежанка · само за днес')).toBeVisible()
+  })
+})
