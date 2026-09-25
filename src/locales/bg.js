@@ -408,7 +408,6 @@ export default {
 
   // Shared shell — nav actions, header aria, drawer sections
   'nav.showNav':          'Покажи навигацията',
-  'nav.hideNav':          'Скрий навигацията',
   'nav.mainNav':          'Основна навигация',
   'header.back':          'Назад',
   'header.menu':          'Меню',

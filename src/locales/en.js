@@ -407,7 +407,6 @@ export default {
 
   // Shared shell
   'nav.showNav':          'Show navigation',
-  'nav.hideNav':          'Hide navigation',
   'nav.mainNav':          'Main navigation',
   'header.back':          'Back',
   'header.menu':          'Menu',

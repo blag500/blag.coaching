@@ -6,8 +6,11 @@ import styles from './AppHeader.module.css'
 /**
  * Sticky top bar shared by every tab page.
  *
- * Layout is a 1fr / auto / 1fr grid so the title stays optically centred
- * no matter how wide the action slot on the right grows.
+ * Two glass pills over the page, the way Reddit does it: navigation and the
+ * page name on the left, the page's actions and the avatar on the right. At
+ * the top of the page the bar itself is transparent — the pills float over the
+ * content; once anything scrolls under it the bar turns solid (the
+ * `data-scrolled` attribute, set by useHideOnScroll).
  */
 export default function AppHeader({
   onMenuOpen,
@@ -26,18 +29,22 @@ export default function AppHeader({
      всеки екран. Значка, която се вижда само на едно място, не отчита нищо —
      тя просто седи там. */
   const { streak } = useRewards()
+  const lead = onBack ?? onMenuOpen
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
-        <div className={styles.left}>
+        {/* Лявото хапче е навигацията и името на мястото, в едно — като
+            „u/Blagiya ⌄" в Reddit. Натискането където и да е по него прави
+            същото като иконката: меню или назад. */}
+        <div className={styles.pill} onClick={lead}>
           {onBack ? (
-            <button className={styles.menuBtn} onClick={onBack} type="button" aria-label={t('header.back')}>
+            <button className={styles.menuBtn} onClick={e => { e.stopPropagation(); onBack() }} type="button" aria-label={t('header.back')}>
               <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
                 <polyline points="15 6 9 12 15 18" />
               </svg>
             </button>
           ) : (
-            <button className={styles.menuBtn} onClick={onMenuOpen} type="button" aria-label={t('header.menu')}>
+            <button className={styles.menuBtn} onClick={e => { e.stopPropagation(); onMenuOpen?.() }} type="button" aria-label={t('header.menu')}>
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" aria-hidden="true">
                 <line x1="3" y1="6"  x2="21" y2="6"  />
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -45,14 +52,13 @@ export default function AppHeader({
               </svg>
             </button>
           )}
+          <div className={styles.center}>
+            {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
+            <h1 className={styles.title}>{title}</h1>
+          </div>
         </div>
 
-        <div className={`${styles.center} ${eyebrow ? '' : styles.centerSolo}`}>
-          {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
-          <h1 className={styles.title}>{title}</h1>
-        </div>
-
-        <div className={styles.right}>
+        {(action || onAvatarClick) && <div className={`${styles.pill} ${styles.right}`}>
           {action}
           {onAvatarClick && (
             /* Обвивка, защото самият бутон е с overflow: hidden — кръглата
@@ -95,7 +101,7 @@ export default function AppHeader({
               )}
             </span>
           )}
-        </div>
+        </div>}
       </div>
     </header>
   )

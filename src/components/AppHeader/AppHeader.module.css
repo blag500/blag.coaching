@@ -3,135 +3,107 @@
   top: 0;
   z-index: 50;
   /* Room below it. Pages put their first element straight after the header, and
-     with none of this the content sits on the bar's bottom edge — the gold
-     hairline that is meant to close the header runs into the first row of the
-     page instead, and the two read as one crowded block. */
+     with none of this the content sits on the bar's bottom edge. */
   margin: 0 -16px 14px;
-  padding: calc(env(safe-area-inset-top) + 8px) 16px 12px;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 10px;
 
-  /* A plate, not a strip. The rounded bottom gives the bar an edge the page
-     scrolls under, which is what separates a designed header from a rectangle
-     that happens to sit at the top. */
-  border-radius: 0 0 18px 18px;
-
-  /* Smoked glass: a heavy blur, a slight warm tint rather than a flat panel,
-     and a bloom of warm light behind the title — the name should look lit
-     rather than printed. */
-  background:
-    radial-gradient(120% 150% at 50% 0%,
-      rgba(var(--accent-rgb), 0.055) 0%,
-      rgba(var(--accent-rgb), 0.018) 38%,
-      transparent 68%),
-    linear-gradient(to bottom,
-      rgba(var(--bg-rgb), 0.78) 0%,
-      rgba(var(--bg-rgb), 0.58) 100%);
-  backdrop-filter: blur(30px) saturate(170%);
-  -webkit-backdrop-filter: blur(30px) saturate(170%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 14px 34px -20px rgba(0, 0, 0, 0.9);
-
-  /* Long and soft in both directions — the drawer curve, which decelerates for
-     almost its whole length, so the bar arrives rather than stops. Coming back
-     is still the shorter of the two: the return is a request, and a request
-     should feel answered. */
-  transition: transform 380ms var(--ease-drawer);
-  will-change: transform;
+  /* На върха на страницата лентата я няма: двете хапчета плуват над
+     съдържанието, както в Reddit. Фонът идва чак когато под нея мине нещо —
+     иначе празна плоскост стои над празно място и само отнема височина. */
+  background: transparent;
+  transition:
+    background 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    backdrop-filter 220ms var(--ease-out),
+    -webkit-backdrop-filter 220ms var(--ease-out);
 }
 
-:global(html[data-header="hidden"]) .header {
-  transform: translateY(-100%);
-  transition-duration: 520ms;
+/* Превъртяно: плътна лента, почти цветът на фона — прочита се като горен
+   ръб, а не като още една карта. */
+:global(html[data-scrolled]) .header {
+  background: rgba(var(--bg-rgb), 0.97);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 1px 0 rgba(var(--accent-rgb), 0.12), 0 10px 28px -18px rgba(0, 0, 0, 0.9);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :global(html[data-scrolled]) .header { background: var(--bg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .header { transition: none; }
 }
 
-/* The bottom edge, weighted to the centre. A uniform hairline draws the eye to
-   the corners, where there is nothing; a rule that peaks under the title and
-   dies at the edges points at the one thing on the bar that matters. */
-.header::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(to right,
-    transparent 0%,
-    rgba(var(--accent-rgb), 0.06) 18%,
-    rgba(var(--accent-rgb), 0.26) 50%,
-    rgba(var(--accent-rgb), 0.06) 82%,
-    transparent 100%);
-  pointer-events: none;
-}
-
-/* Without backdrop-filter the panel would be see-through, so fall back to a
-   solid surface rather than unreadable text. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .header { background: var(--surface-glass); }
-}
-
-/* 1fr / auto / 1fr keeps the title centred whatever sits on the right */
 .bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.left  { justify-self: start; }
-.right { justify-self: end; display: flex; align-items: center; gap: 8px; }
-
-.center {
+/* Хапчето — стъклото на картите, в овал. Лявото носи менюто и името,
+   дясното — действията и снимката. */
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   min-width: 0;
-  text-align: center;
-}
-
-/* Same construction as the cards, so the round controls read as small panes of
-   the same glass rather than as grey circles. */
-.menuBtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  height: 46px;
+  padding: 4px;
+  border-radius: var(--r-pill);
   background: var(--glass-bg);
   border: 1px solid rgba(var(--accent-rgb), 0.22);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 0 0 1px rgba(0, 0, 0, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 6px 18px -10px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pill:first-child { padding-right: 18px; }
+.right { flex-shrink: 0; gap: 6px; cursor: default; }
+
+.center {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.menuBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Gold, dimmed, rather than grey cream. Every rim and every number on the
-     page below is warm; a cold control at the top read as a leftover from
-     another design. */
-  color: rgba(var(--accent-rgb), 0.72);
+  color: rgba(var(--accent-rgb), 0.85);
   cursor: pointer;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s;
 }
 
-.menuBtn:active { background: rgba(255, 255, 255, 0.13); }
+.menuBtn:active { background: rgba(255, 255, 255, 0.10); }
 
-/* Wider tracking and a smaller size turn the greeting from a line of text into
-   a label — the same words, but they stop competing with the name below. */
 .eyebrow {
   font-family: var(--font-body);
-  font-size: 9px;
-  letter-spacing: 0.30em;
-  text-indent: 0.34em;      /* tracking pads the right side only; recentre it */
-  /* Warm rather than grey, and kept faint: it is a label above the name, and
-     the moment it competes with the name it stops being one. */
-  color: rgba(var(--accent-rgb), 0.55);
-  margin: 0 0 4px;
+  font-size: 8px;
+  letter-spacing: 0.24em;
+  color: rgba(var(--accent-rgb), 0.6);
+  margin: 0 0 2px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .title {
   font-family: var(--font-heading);
-  font-size: 23px;
+  font-size: 19px;
   letter-spacing: 0.06em;
   color: var(--text);
   margin: 0;
@@ -139,16 +111,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* Cut into the glass rather than laid on it: a dark edge under the letters
-     and a warm bloom around them. Not a metal fill — that belongs to the splash
-     lockup alone, and using it twice would spend it. */
-  text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.55),
-    0 0 26px rgba(var(--accent-rgb), 0.13);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
 }
-
-/* Pages with no eyebrow read better a touch smaller */
-.centerSolo .title { font-size: 20px; }
 
 /* The one photograph in the whole interface, so it gets a frame: a gold rim
    with a dark gap between it and the picture, which is how a portrait is
@@ -192,8 +156,8 @@
 
 .avatarBtn {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid rgba(var(--accent-rgb), 0.45);
   background: var(--glass-bg);
@@ -235,15 +199,12 @@
 }
 
 /* Light theme: same construction, inverted so the glass stays pale. */
-:global(html[data-theme="light"]) .header {
-  background:
-    radial-gradient(120% 150% at 50% 0%,
-      rgba(138, 106, 46, 0.07) 0%,
-      transparent 66%),
-    linear-gradient(to bottom,
-      rgba(255, 255, 255, 0.84) 0%,
-      rgba(245, 240, 232, 0.62) 100%);
+:global(html[data-theme="light"][data-scrolled]) .header {
+  background: rgba(250, 247, 241, 0.97);
+  box-shadow: 0 1px 0 rgba(138, 106, 46, 0.14), 0 10px 28px -20px rgba(26, 19, 0, 0.35);
+}
+:global(html[data-theme="light"]) .pill {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 14px 34px -22px rgba(26, 19, 0, 0.35);
+    0 6px 18px -12px rgba(26, 19, 0, 0.3);
 }

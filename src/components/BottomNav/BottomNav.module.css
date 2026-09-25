@@ -27,67 +27,68 @@
     opacity   360ms var(--ease-glide);
 }
 
-/* Docked away to the right. translateX is fine here — the bar is not on
-   screen while animating, so any compositor lag is invisible. */
-.navHidden {
-  transform: translateX(calc(100% + 24px));
+/* Сгъната: лентата се свива към долния ляв ъгъл, където остава кръгчето.
+   Свива се от лявата страна, за да изглежда, че влиза в него, а не че
+   изчезва някъде. */
+.nav { transform-origin: 28px 50%; }
+:global(html[data-nav="collapsed"]) .nav {
+  transform: scale(0.2);
   opacity: 0;
   pointer-events: none;
+  transition:
+    transform 320ms var(--ease-glide),
+    opacity   200ms var(--ease-out);
 }
 
-/* The peek — a small handle pinned to the right edge that brings the bar back
-   when the user is done with the extra screen space. */
-.peek {
+/* Кръгчето — сгънатата лента. Същото стъкло, на мястото на левия ѝ край. */
+.fold {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 28px);
-  right: 0;
-  width: 24px;
-  height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: none;
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-  background: rgba(var(--bg-rgb), 0.66);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  color: var(--accent);
+  left: 16px;
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateX(24px);
-  pointer-events: none;
-  transition: opacity 200ms var(--ease-out), transform 280ms var(--ease-out);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.peek.peekOn {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
-/* The dock button that lives at the right end of the nav — swipe hint made
-   tappable, in case anyone reaches for it before finding the gesture. */
-.dockHandle {
-  flex-shrink: 0;
-  width: 20px;
-  height: 44px;
-  background: none;
-  border: none;
-  color: rgba(var(--text-rgb), 0.28);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   padding: 0;
-  margin-left: 2px;
+  z-index: 100;
+  color: var(--accent);
+  background: rgba(var(--bg-rgb), 0.62);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color 150ms var(--ease-out);
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity   180ms var(--ease-out),
+    transform 260ms var(--ease-spring-soft),
+    visibility 0s linear 260ms;
 }
-.dockHandle:active { color: var(--accent); }
+.fold svg { width: 20px; height: 20px; }
+.fold:active { transform: scale(0.92); }
+
+:global(html[data-nav="collapsed"]) .fold {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity   200ms var(--ease-out) 80ms,
+    transform 320ms var(--ease-spring-soft) 60ms,
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav, .fold,
+  :global(html[data-nav="collapsed"]) .nav,
+  :global(html[data-nav="collapsed"]) .fold { transition: none; }
+}
 
 /* Надписът е само под отворения раздел.
    Пет надписа едновременно са пет твърдения с еднаква тежест, а само едно от

@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import { haptic } from '../../lib/haptics'
 import styles from './BottomNav.module.css'
@@ -48,153 +47,53 @@ const RIGHT_TABS = [
 ]
 
 
-const HIDDEN_KEY = 'blag_nav_hidden'
+/* Четири точки — за страница, която не е в лентата (чат, награди…): там
+   сгънатото кръгче няма чий знак да носи. */
+const MoreIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="8" cy="8" r="1.6" /><circle cx="16" cy="8" r="1.6" />
+    <circle cx="8" cy="16" r="1.6" /><circle cx="16" cy="16" r="1.6" />
+  </svg>
+)
 
+const ALL_TABS = [...LEFT_TABS, ...RIGHT_TABS]
+
+/**
+ * Долната лента.
+ *
+ * Докато се чете надолу, тя се сгъва в малко кръгче долу вляво — носи знака
+ * на отворения раздел, за да личи къде си. Разгъва се при най-малкото
+ * превъртане нагоре или при натискане на кръгчето. Кога е сгъната решава
+ * useHideOnScroll (атрибутът `data-nav` на <html>), не състояние тук: иначе
+ * всяко превъртане би рисувало лентата наново.
+ */
 export default function BottomNav({ activeTab, onTabChange }) {
   const { t } = useSettings()
-  const [hidden, setHidden] = useState(() => localStorage.getItem(HIDDEN_KEY) === '1')
+  const current = ALL_TABS.find(tab => tab.id === activeTab)
+  const FoldIcon = current?.Icon ?? MoreIcon
 
-  useEffect(() => {
-    localStorage.setItem(HIDDEN_KEY, hidden ? '1' : '0')
-  }, [hidden])
-
-  // Live swipe. The bar follows the finger to the right while the user drags
-  // and fades as it goes; released past the halfway mark it docks, otherwise
-  // it springs back. Vertical dominance cancels the gesture, so a scroll never
-  // steals the nav.
-  const navRef = useRef(null)
-  const dragRef = useRef({ x: 0, y: 0, dx: 0, active: false, cancelled: false })
-
-  function clearNavInline() {
-    if (!navRef.current) return
-    navRef.current.style.transition = ''
-    navRef.current.style.transform = ''
-    navRef.current.style.opacity = ''
-  }
-
-  function onTouchStart(e) {
-    const t = e.touches[0]
-    dragRef.current = { x: t.clientX, y: t.clientY, dx: 0, active: true, cancelled: false }
-    if (navRef.current) navRef.current.style.transition = 'none'
-  }
-
-  function onTouchMove(e) {
-    const d = dragRef.current
-    if (!d.active || d.cancelled) return
-    const t = e.touches[0]
-    const dx = t.clientX - d.x
-    const dy = t.clientY - d.y
-    if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) {
-      d.cancelled = true
-      clearNavInline()
-      return
-    }
-    if (dx > 0 && navRef.current) {
-      d.dx = dx
-      navRef.current.style.transform = `translateX(${dx}px)`
-      navRef.current.style.opacity = String(Math.max(0.35, 1 - dx / 260))
-    }
-  }
-
-  function onTouchEnd() {
-    const d = dragRef.current
-    if (!d.active) return
-    d.active = false
-    clearNavInline()
-    if (!d.cancelled && d.dx > 90) {
-      setHidden(true)
-    }
-  }
-
-  // Peek → drag left to pull the nav back with the finger. The nav is prepped
-  // at its docked position (translateX past the right edge) and the delta from
-  // the touch shifts it toward home. Release past a third of the pull commits
-  // the unhide, otherwise it springs back into the dock.
-  const peekDragRef = useRef({ x: 0, y: 0, dx: 0, active: false, cancelled: false, width: 0 })
-
-  function primeNavForPull() {
-    if (!navRef.current) return 0
-    const width = navRef.current.offsetWidth + 24
-    navRef.current.style.transition = 'none'
-    navRef.current.style.pointerEvents = 'none'
-    navRef.current.style.transform = `translateX(${width}px)`
-    navRef.current.style.opacity = '0'
-    // Force the browser to see the docked frame before we start pulling, or the
-    // first move would animate from wherever the class had it a tick ago.
-    void navRef.current.offsetWidth
-    return width
-  }
-
-  function onPeekTouchStart(e) {
-    const t = e.touches[0]
-    const width = primeNavForPull()
-    peekDragRef.current = { x: t.clientX, y: t.clientY, dx: 0, active: true, cancelled: false, width }
-  }
-
-  function onPeekTouchMove(e) {
-    const d = peekDragRef.current
-    if (!d.active || d.cancelled) return
-    const t = e.touches[0]
-    const dx = t.clientX - d.x
-    const dy = t.clientY - d.y
-    if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) {
-      d.cancelled = true
-      clearNavInline()
-      if (navRef.current) navRef.current.style.pointerEvents = ''
-      return
-    }
-    if (dx < 0 && navRef.current) {
-      d.dx = dx
-      const remaining = Math.max(0, d.width + dx)
-      navRef.current.style.transform = `translateX(${remaining}px)`
-      const progress = Math.min(1, -dx / d.width)
-      navRef.current.style.opacity = String(0.15 + progress * 0.85)
-    }
-  }
-
-  function onPeekTouchEnd(e) {
-    const d = peekDragRef.current
-    if (!d.active) return
-    d.active = false
-    const pulled = -d.dx
-    const commit = !d.cancelled && pulled > d.width / 3
-    clearNavInline()
-    if (navRef.current) navRef.current.style.pointerEvents = ''
-    if (commit) {
-      setHidden(false)
-      e.preventDefault?.()
-    }
+  function unfold() {
+    haptic('tap')
+    delete document.documentElement.dataset.nav
   }
 
   return (
     <>
-      {/* Docked peek — the way back when the bar is hidden */}
+      {/* Сгънатата лента */}
       <button
-        className={`${styles.peek} ${hidden ? styles.peekOn : ''}`}
-        onClick={() => setHidden(false)}
-        onTouchStart={onPeekTouchStart}
-        onTouchMove={onPeekTouchMove}
-        onTouchEnd={onPeekTouchEnd}
+        className={styles.fold}
+        onClick={unfold}
         aria-label={t('nav.showNav')}
         type="button"
-        tabIndex={hidden ? 0 : -1}
       >
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <polyline points="15 6 9 12 15 18" />
-        </svg>
+        <FoldIcon />
       </button>
 
       {/* ── Main nav pill ── */}
       <nav
-        ref={navRef}
-        className={`${styles.nav} ${hidden ? styles.navHidden : ''}`}
+        className={styles.nav}
         role="navigation"
         aria-label={t('nav.mainNav')}
-        aria-hidden={hidden}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
       >
         {LEFT_TABS.map(tab => (
           <button
@@ -228,18 +127,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
           </button>
         ))}
 
-        {/* Small dock handle — tap or swipe right to hide the bar */}
-        <button
-          className={styles.dockHandle}
-          onClick={() => { haptic('tap'); setHidden(true) }}
-          type="button"
-          aria-label={t('nav.hideNav')}
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-               strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="9 6 15 12 9 18" />
-          </svg>
-        </button>
       </nav>
     </>
   )
