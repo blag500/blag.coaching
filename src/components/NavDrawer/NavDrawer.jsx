@@ -24,6 +24,16 @@ const TrainingIcon = () => (
     <line x1="19" y1="12" x2="21" y2="12" />
   </svg>
 )
+/* Заготовките са за заместване — две стрелки в двете посоки, не втора щанга
+   до „Тренировка": два реда с една и съща иконка се четат като един. */
+const LibraryIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M8 3 4 7l4 4" />
+    <path d="M4 7h16" />
+    <path d="m16 21 4-4-4-4" />
+    <path d="M20 17H4" />
+  </svg>
+)
 const ProfileIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="8" r="4" />
@@ -166,7 +176,7 @@ const CLIENT_SECTIONS = [
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
       // Заготовките стоят до тренировката, защото се пълнят оттам и се
       // ползват там — не са ресурс, а част от вписването.
-      { id: 'library',    key: 'nav.library',      Icon: TrainingIcon  },
+      { id: 'library',    key: 'nav.library',      Icon: LibraryIcon   },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
       // { id: 'shop', ... } — магазинът е скрит за клиенти до пускането му (само треньор го вижда)
@@ -229,7 +239,7 @@ const COACH_SECTIONS = [
       { id: 'training',   key: 'nav.training_long', Icon: TrainingIcon  },
       // Треньорът също тренира — заготовките бяха само в клиентското
       // чекмедже, тоест единственият човек, който ги поиска, не ги виждаше.
-      { id: 'library',    key: 'nav.library',      Icon: TrainingIcon  },
+      { id: 'library',    key: 'nav.library',      Icon: LibraryIcon   },
       { id: 'recovery',    key: 'nav.recovery',    Icon: RecoveryIcon   },
       { id: 'supplements', key: 'nav.supplements', Icon: SupplementIcon },
       { id: 'shop',        key: 'nav.shop',        Icon: ShopIcon       },
