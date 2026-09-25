@@ -132,6 +132,16 @@ To promote a user to coach:
 update public.profiles set role = 'coach' where email = 'email@example.com';
 ```
 
+## Obsidian log
+
+Every finished task gets a note in the Obsidian vault — what was wrong, what
+changed, what was verified, and where it lives (branch, deployed or not). One
+note per session, named `YYYY-MM-DD <short title>.md`, in Bulgarian.
+
+- Local sessions: write it straight into the vault at `D:\obsidian\blag`.
+- Cloud sessions can't reach the vault: write it to `docs/obsidian/` in the
+  repo and commit it with the work; Nikolay copies it over.
+
 ## Component conventions
 
 - Each component lives in its own folder with a matching `.module.css` file
