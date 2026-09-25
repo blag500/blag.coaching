@@ -1466,6 +1466,36 @@ test.describe('Дневникът на тренировката', () => {
       'Лежанка 61×8',
     ])
   })
+
+  /* Последната серия затваря тренировката сама. Дотук редът в списъка стоеше
+     „В ход" и след като всичко е вписано, докато някой не натисне бутона. */
+  test('последната серия отмята тренировката', async ({ page }) => {
+    test.setTimeout(120000)
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ТРЕНИРОВКА' }).first().click()
+    await page.waitForTimeout(2000)
+    await page.getByText('Upper A').first().click()
+    await page.waitForTimeout(1800)
+
+    const kg = (name, n) => page.locator(`input[aria-label="${name}, серия ${n}, килограми"]`)
+    const reps = (name, n) => page.locator(`input[aria-label="${name}, серия ${n}, повторения"]`)
+    const all = [['Лежанка', 4], ['Гребане', 3]]
+    for (const [name, count] of all) {
+      for (let n = 1; n <= count; n++) {
+        if (!(await kg(name, n).isVisible())) await page.getByText(name).first().click()
+        await kg(name, n).fill('50')
+        await reps(name, n).fill('8')
+        await reps(name, n).blur()
+      }
+    }
+    await page.waitForTimeout(2500)
+
+    await expect(page.getByText('Логната тренировка!')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).first().click()
+    await expect(page.getByText('Завършена днес ✓')).toBeVisible()
+    await expect(page.getByText('В ход')).toHaveCount(0)
+  })
 })
 
 test.describe('Пръстенът на приема', () => {

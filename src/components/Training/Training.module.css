@@ -543,6 +543,16 @@
   animation: chapterPulse 2200ms ease-in-out infinite;
 }
 
+/* Завършената днес: същото зелено като „в ход", но спокойно — точката не
+   пулсира, защото вече нищо не чака. */
+.chapterDoneToday .chapterHit { opacity: 1; }
+.chapterDoneToday .chapterNo,
+.chapterDoneToday .chapterMeta { color: var(--ok); }
+.chapterDoneToday::before {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(var(--ok-rgb), 0.16);
+}
+
 @keyframes chapterPulse {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.45; }

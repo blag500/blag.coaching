@@ -729,6 +729,8 @@ export default function Training({ onMenuOpen, onNavigate }) {
               blockLabels={[selectedBlock.label]}
               blocks={blocks}
               onLogged={handleLogged}
+              onComplete={handleMarkDone}
+              completeOnLoad={logDate === todayStr && startedId === String(selectedBlock.id)}
             />
           )}
 
@@ -875,7 +877,12 @@ export default function Training({ onMenuOpen, onNavigate }) {
               const last = lastDone[block.label]
               const isDue = dueBlock?.id === block.id
               const isRest = isRestBlock(block)
-              const started = startedId != null && String(block.id) === startedId
+              /* Отметнатото днес е завършено, каквото и да помни „в ход" —
+                 последната серия го отмята сама, бутонът също. */
+              const doneToday = !isRestBlock(block) && completions.some(
+                c => c.completed_date === todayStr && c.block_label === block.label
+              )
+              const started = !doneToday && startedId != null && String(block.id) === startedId
               /* Факт вместо процент. „96% възстановена" даваше едно и също
                  число на Горна А и Горна Б — те делят една широка група, а
                  групата има един часовник. Тук пише кога групата е пипана и
@@ -914,6 +921,7 @@ export default function Training({ onMenuOpen, onNavigate }) {
                     isDue ? styles.chapterDue : '',
                     isRest ? styles.chapterRest : '',
                     started ? styles.chapterStarted : '',
+                    doneToday ? styles.chapterDoneToday : '',
                   ].join(' ')}
                   /* Пристигат едно след друго, по шейсет милисекунди. Списък,
                      който се появява наведнъж, изглежда нарисуван предварително. */
@@ -944,7 +952,7 @@ export default function Training({ onMenuOpen, onNavigate }) {
                         {/* Започнатото се казва вместо готовността: щом днес вече
                             е вдиган сет тук, въпросът „възстановен ли си" е
                             отговорен от самото правене. */}
-                        {started ? t('tr.inProgress') : meta}
+                        {doneToday ? t('tr.doneToday') : started ? t('tr.inProgress') : meta}
                       </span>
                     </span>
                   </button>
@@ -1003,6 +1011,8 @@ export default function Training({ onMenuOpen, onNavigate }) {
                 blockLabels={[selectedBlock.label]}
                 blocks={blocks}
                 onLogged={handleLogged}
+                onComplete={handleMarkDone}
+                completeOnLoad={logDate === todayStr && startedId === String(selectedBlock.id)}
               />
 
               {/* Explicit "I'm done" — greens up when every planned lift has a

@@ -1778,6 +1778,7 @@ export default {
   "tr.restSub": "Сън · Хидратация · Мобилити",
   "tr.restLogIt": "Отбележи деня",
   "tr.markedToday": "Отбелязано за днес!",
+  "tr.doneToday": "Завършена днес ✓",
   "tr.inProgress": "В ход",
   "tr.markedDate": "Отбелязано за {date}!",
   "tr.markRest": "Маркирай почивен ден",

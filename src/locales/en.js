@@ -1771,6 +1771,7 @@ export default {
   "tr.restSub": "Sleep · Hydration · Mobility",
   "tr.restLogIt": "Mark the day",
   "tr.markedToday": "Marked for today!",
+  "tr.doneToday": "Done today ✓",
   "tr.inProgress": "In progress",
   "tr.markedDate": "Marked for {date}!",
   "tr.markRest": "Mark a rest day",

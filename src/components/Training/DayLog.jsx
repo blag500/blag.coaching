@@ -67,7 +67,7 @@ function summarise(t, sets) {
  * actual gesture, so that is what saves. Emptying a row deletes it, which is
  * what empty already means.
  */
-export default function DayLog({ date, blockLabels, blocks, onLogged }) {
+export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete, completeOnLoad = false }) {
   const { t } = useSettings()
   const { user } = useAuth()
   const { restTimer } = useSettings()
@@ -180,6 +180,24 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
   }, [user?.id, date, JSON.stringify(exercises.map(e => e.name + e.sets))])
 
   useEffect(() => { load() }, [load])
+
+  /* Последната серия затваря тренировката. Дотук редът в списъка оставаше
+     „В ход" и след като всичко е вписано — чакаше натискане на бутон, за който
+     човек, приключил в залата, вече не мисли. Броят се записаните серии срещу
+     планираните; казва се веднъж, и пак само ако някоя серия бъде изтрита и
+     после допълнена. При отваряне (без записване) — само ако родителят каже,
+     иначе нарочно махнатата отметка би се връщала при всяко влизане. */
+  const touched  = useRef(false)
+  const reported = useRef(false)
+  useEffect(() => {
+    if (!exercises.length || !(touched.current || completeOnLoad)) return
+    const complete = exercises.every(ex => {
+      const planned = Math.max(1, parseInt(ex.sets) || 1)
+      return (rows[ex.name] ?? []).filter(r => r.id).length >= planned
+    })
+    if (complete && !reported.current) { reported.current = true; onComplete?.() }
+    if (!complete) reported.current = false
+  }, [rows])
 
   // The last time each of these lifts was trained, set for set. It seeds the
   // ghost on a fresh row: the first set of the day opens on last session's
@@ -304,6 +322,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
       inflight.current[key] = false
       drain(name, i)
       lastSaved.current[key] = sig(EMPTY)
+      touched.current = true
       setRows(prev => ({
         ...prev,
         [name]: prev[name].map((x, j) => (j === i ? { ...EMPTY } : x)),
@@ -346,6 +365,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged }) {
     if (error) return
 
     lastSaved.current[key] = sig(r)
+    touched.current = true
     setRows(prev => ({
       ...prev,
       [name]: prev[name].map((x, j) => (j === i ? { ...x, id: data.id, created_at: data.created_at } : x)),
