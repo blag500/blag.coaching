@@ -436,6 +436,7 @@ function ExerciseModal({ blockId, exercise, photos, upload, onCancel, onSave }) 
         <div className={styles.modalActions}>
           <button type="button" className={styles.modalCancel} onClick={onCancel}><Pictogram name="close" size={13} />{t('te.cancel')}</button>
           <button type="submit" className={styles.modalSave} disabled={!name.trim()}>
+            <Pictogram name={isEdit ? 'check' : 'plus'} size={13} />
             {isEdit ? t('te.save') : t('te.add')}
           </button>
         </div>

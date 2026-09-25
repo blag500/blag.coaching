@@ -539,13 +539,19 @@
 .modalField input,
 .modalField select,
 .modalField textarea {
+  /* width + min-width: 0 — иначе полето пази вградената си ширина от ~20 знака
+     и „Повторения“ излиза вдясно от sheet-а на тесен телефон. 16px, защото под
+     него iOS приближава страницата при фокус и изгледът остава разместен. */
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 10px 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.15s;
 }
@@ -556,7 +562,7 @@
 
 .modalRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -586,11 +592,26 @@
   gap: 7px;
 }
 .modalSave {
-  background: var(--accent);
-  border: 1px solid var(--accent);
-  color: var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--accent-metal);
+  border: 1px solid rgba(var(--accent-rgb), 0.9);
+  color: #0C0A06;
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 120ms var(--ease-out), box-shadow 180ms var(--ease-out);
 }
-.modalSave:disabled { opacity: 0.45; cursor: default; }
+.modalSave:active:not(:disabled) { transform: scale(0.97); }
+/* Без име няма какво да се добави — празен контур вместо избледняло злато,
+   което изглеждаше като кафяво петно, а не като бутон, който чака. */
+.modalSave:disabled {
+  background: transparent;
+  border: 1px dashed rgba(var(--accent-rgb), 0.35);
+  color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: none;
+  cursor: default;
+}
 
 /* ── Мускулните групи ──
    Два падащи списъка, разделени по кръста, плюс избраното над тях. Дотук
