@@ -23,12 +23,12 @@ Rules:
 - If unsure, give a reasonable estimate — never return 0 for a visible food`
 
 // Groq retires vision models without much notice — llama-4-scout vanished and
-// took label scanning and meal photos with it. Try each in turn so one
-// deprecation degrades instead of breaking the feature.
+// took label scanning and meal photos with it, then qwen3.6-27b was shut down on
+// 2026-09-14 in favour of qwen3.8-27b. Try each in turn so one deprecation
+// degrades instead of breaking the feature; retired ids are dropped rather than
+// kept, since each one only costs a failed round-trip.
 const VISION_MODELS = [
-  'qwen/qwen3.6-27b',
-  'meta-llama/llama-4-maverick-17b-128e-instruct',
-  'meta-llama/llama-4-scout-17b-16e-instruct',
+  'qwen/qwen3.8-27b',
 ]
 
 Deno.serve(async (req) => {
