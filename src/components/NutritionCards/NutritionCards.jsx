@@ -124,6 +124,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
             <path d="M3 11l19-9-9 19-2-8-8-2z" />
           </svg>
+          <span className={styles.toggleLabel}>{t('nutr.toggle.logShort')}</span>
         </button>
         <button
           className={`${styles.toggleBtn} ${view === 'meals' ? styles.toggleActive : ''}`}
@@ -135,6 +136,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
+          <span className={styles.toggleLabel}>{t('nutr.toggle.libraryShort')}</span>
         </button>
         <button
           className={`${styles.toggleBtn} ${view === 'balance' ? styles.toggleActive : ''}`}
@@ -148,6 +150,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
             <path d="M4 11l3-6 3 6a3 3 0 0 1-6 0z" />
             <path d="M14 11l3-6 3 6a3 3 0 0 1-6 0z" />
           </svg>
+          <span className={styles.toggleLabel}>{t('nutr.toggle.balanceShort')}</span>
         </button>
       </div>
 

@@ -147,8 +147,11 @@
 
 .segment {
   flex: 1;
-  padding: 10px;
+  min-width: 0;
+  padding: 8px 4px 7px;
   display: flex;
+  flex-direction: column;
+  gap: 4px;
   align-items: center;
   justify-content: center;
   background: none;
@@ -161,6 +164,18 @@
 }
 
 .segment svg { width: 18px; height: 18px; }
+
+.segmentLabel {
+  max-width: 100%;
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .segmentActive {
   background: var(--accent);

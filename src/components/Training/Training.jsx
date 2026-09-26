@@ -862,6 +862,9 @@ export default function Training({ onMenuOpen, onNavigate }) {
             type="button"
           >
             {tab.icon}
+            {/* Думата под знака. Само знаци — мишена, стълбчета, щит,
+                фигура — караха човек да ги натиска, за да разбере какво са. */}
+            <span className={styles.segmentLabel}>{t(`tr.tabShort.${tab.id}`)}</span>
           </button>
         ))}
       </div>
