@@ -62,7 +62,9 @@ export default function FeedPage({ onNavigate, onMenuOpen }) {
           onClick={() => setWriting(true)}
           aria-label={t('feed.compose')}
         >
-          <Pictogram name="note" size={22} />
+          {/* Молив, не лист: бутонът пише пост, а листът се четеше като
+              „документи" или „бележки". */}
+          <Pictogram name="compose" size={22} />
         </button>,
         /* В слоя на своята страница, не в самата страница: `position: fixed`
            вътре в раздел, който се плъзга, се закача за плъзгащия се родител
