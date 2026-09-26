@@ -138,9 +138,14 @@ Every finished task gets a note in the Obsidian vault — what was wrong, what
 changed, what was verified, and where it lives (branch, deployed or not). One
 note per session, named `YYYY-MM-DD <short title>.md`, in Bulgarian.
 
-- Local sessions: write it straight into the vault at `D:\obsidian\blag`.
-- Cloud sessions can't reach the vault: write it to `docs/obsidian/` in the
-  repo and commit it with the work; Nikolay copies it over.
+The vault is a git repo of its own — `blag500/blag-vault`, private, since
+2026-09-26. That is what carries the notes to the phone.
+
+- Local sessions: write it straight into the vault at `D:\obsidian\blag`, then
+  commit and push there. `git pull --rebase` first.
+- Cloud sessions can't reach the vault: write it to `docs/obsidian/` in this
+  repo and commit it with the work. The next local session copies it into the
+  vault and pushes — one `cp`, then a commit.
 
 ## Component conventions
 
