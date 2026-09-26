@@ -50,6 +50,13 @@
     --font-body: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
 
+    /* Стъклото: полупрозрачен фон, светъл ръб отгоре и размазване на това,
+       което минава отдолу. Земята е градиент, затова хапчетата имат какво да
+       пропуснат — върху равен цвят стъклото не е стъкло, а сив правоъгълник. */
+    --chip-bg:     rgba(255, 255, 255, 0.55);
+    --chip-border: rgba(20, 28, 23, 0.08);
+    --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.85);
+
     --r-sm: 8px;
     --r-md: 14px;
     --r-lg: 22px;
@@ -57,21 +64,24 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground-flat: #101613;
+      --ground-flat: #141C18;
       --ground:
-        radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.10)  0%, transparent 62%),
-        radial-gradient(ellipse 90%  55% at 12% 42%, rgba(79, 191, 142, 0.035) 0%, transparent 60%),
-        radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 120, 200, 0.05)  0%, transparent 62%),
-        #101613;
-      --surface:     #16201A;
-      --surface-2:   #1E2A23;
-      --line:        #2C3B32;
+        radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.15)  0%, transparent 62%),
+        radial-gradient(ellipse 90%  55% at 12% 42%, rgba(79, 191, 142, 0.055) 0%, transparent 60%),
+        radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 120, 200, 0.075) 0%, transparent 62%),
+        #141C18;
+      --surface:     #1B251F;
+      --surface-2:   #25322B;
+      --line:        #35473D;
       --ink:         #E9F0EA;
       --ink-soft:    #A3B3A7;
       --ink-faint:   #74857A;
       --accent:      #4FBF8E;
       --accent-soft: rgba(79, 191, 142, 0.14);
       --cocoa:       #6B4430;
+      --chip-bg:     rgba(255, 255, 255, 0.07);
+      --chip-border: rgba(255, 255, 255, 0.11);
+      --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.10);
       --kcal:    #D4AC66;
       --protein: #5FB2F0;
       --carbs:   #6FC475;
@@ -80,21 +90,24 @@
   }
 
   :root[data-theme="dark"] {
-    --ground-flat: #101613;
+    --ground-flat: #141C18;
     --ground:
-      radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.10)  0%, transparent 62%),
-      radial-gradient(ellipse 90%  55% at 12% 42%, rgba(79, 191, 142, 0.035) 0%, transparent 60%),
-      radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 120, 200, 0.05)  0%, transparent 62%),
-      #101613;
-    --surface:     #16201A;
-    --surface-2:   #1E2A23;
-    --line:        #2C3B32;
+      radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.15)  0%, transparent 62%),
+      radial-gradient(ellipse 90%  55% at 12% 42%, rgba(79, 191, 142, 0.055) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 120, 200, 0.075) 0%, transparent 62%),
+      #141C18;
+    --surface:     #1B251F;
+    --surface-2:   #25322B;
+    --line:        #35473D;
     --ink:         #E9F0EA;
     --ink-soft:    #A3B3A7;
     --ink-faint:   #74857A;
     --accent:      #4FBF8E;
     --accent-soft: rgba(79, 191, 142, 0.14);
     --cocoa:       #6B4430;
+    --chip-bg:     rgba(255, 255, 255, 0.07);
+    --chip-border: rgba(255, 255, 255, 0.11);
+    --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.10);
     --kcal:    #D4AC66;
     --protein: #5FB2F0;
     --carbs:   #6FC475;
@@ -189,7 +202,12 @@
   .search {
     flex: 1; min-width: 0;
     display: flex; align-items: center; gap: 9px;
-    background: var(--surface); border-radius: 999px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-radius: 999px;
     padding: 0 16px;
   }
   .search .pic { color: var(--ink-faint); }
@@ -204,7 +222,12 @@
   .filters {
     flex: none; width: 46px;
     display: grid; place-items: center;
-    background: var(--surface); border: none; border-radius: 999px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-radius: 999px;
     color: var(--ink-soft); cursor: pointer;
   }
   .filters[aria-expanded="true"] { background: var(--accent); color: var(--surface); }
@@ -219,12 +242,17 @@
   .frow > span { font-size: 12.5px; color: var(--ink-faint); }
   .chips { display: flex; flex-wrap: wrap; gap: 7px; }
   .chip {
-    background: var(--surface-2); border: none; border-radius: 999px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-radius: 999px;
     padding: 7px 13px; font: inherit; font-size: 13px; color: var(--ink-soft);
     cursor: pointer; transition: background 160ms, color 160ms;
   }
   .chip:hover { color: var(--ink); }
-  .chip[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); box-shadow: none; }
   .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   .empty { font-size: 14px; color: var(--ink-soft); text-align: center; padding: 26px 0; }
@@ -262,11 +290,13 @@
   }
   .dish .meta {
     display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    white-space: nowrap;
     margin-top: 5px;
     font-family: var(--font-mono); font-size: 11.5px;
     color: var(--ink-faint); font-variant-numeric: tabular-nums;
   }
-  .dish .meta b { color: var(--ink); font-size: 14.5px; }
+  .dish .meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .dish .meta b { color: var(--ink); font-size: 14.5px; flex: none; }
 
   .dish.soon { cursor: default; opacity: 0.55; }
   .dish.soon:hover { border-color: transparent; }
@@ -355,23 +385,21 @@
   .name p { margin: 7px 0 0; font-size: 14px; color: var(--ink-soft); }
 
   /* ── Таблото ───────────────────────────────────────────── */
-  /* Тоталът се обръща.
-     Отпред са числата, отзад — защо им се вярва. Твърдението стои от другата
-     страна на същата карта, а не под нея: който иска числата, не го чете;
-     който иска да знае какво яде, го намира на едно докосване. */
-  .flip { perspective: 1200px; }
-  .flip-inner {
-    display: grid;
-    transform-style: preserve-3d;
-    transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Тоталът има две страни, но не се върти.
+     Въртенето беше с preserve-3d и наслагване в решетка — в Safari на iOS
+     задната страна излизаше отстрани, вместо да се скрие, а предната оставаше
+     празна. 3D ефектът беше украса; смяната е това, което трябва да работи.
+     Освен това наслагването държеше височината на по-високата страна, тоест
+     под числата зееше празно място. Сега всяка страна заема своята. */
+  .flip { position: relative; }
+  .face { animation: faceIn 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  @keyframes faceIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
   }
-  .flip.turned .flip-inner { transform: rotateY(180deg); }
-  .face {
-    grid-area: 1 / 1;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+  @media (prefers-reduced-motion: reduce) {
+    .face { animation: none; }
   }
-  .face.back { transform: rotateY(180deg); }
 
   .readout {
     position: relative;
@@ -399,9 +427,6 @@
   .readout.back-side p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
   .readout.back-side p b { color: var(--ink); font-weight: 600; }
 
-  @media (prefers-reduced-motion: reduce) {
-    .flip-inner { transition: none; }
-  }
   /* Едната лента казва как се делят калориите между трите — сумата ѝ е
      цялото ястие, затова всяко парче значи нещо. Трите отделни ленти, които
      стояха тук, се пълнеха до максимум, който никъде не пишеше, защото
@@ -438,7 +463,12 @@
   .claims { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
   .claim {
     display: inline-flex; align-items: center; gap: 5px;
-    background: var(--surface-2); border-radius: var(--r-pill, 999px);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-radius: 999px;
     padding: 5px 11px 5px 8px;
     font-size: 12.5px; color: var(--ink-soft);
   }
@@ -527,8 +557,11 @@
   }
   .size {
     text-align: center;
-    background: var(--surface-2);
-    border: 1px solid transparent;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border-radius: 999px;
     padding: 10px 8px;
     font: inherit; font-size: 14.5px; font-weight: 500;
@@ -537,7 +570,7 @@
     transition: background 160ms, color 160ms;
   }
   .size:hover { color: var(--ink); }
-  .size[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+  .size[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); box-shadow: none; }
   .size:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .size small {
     display: block; font-size: 11.5px; font-weight: 400; opacity: 0.8;
@@ -566,7 +599,11 @@
   .exact {
     display: flex; align-items: center; gap: 9px; width: 100%;
     margin-top: 16px; padding: 12px 14px;
-    background: var(--surface-2); border: 1px solid transparent;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     border-radius: var(--r-md);
     font: inherit; font-size: 14px; color: var(--ink-soft);
     cursor: pointer;
@@ -826,7 +863,12 @@
      Цена до бутон са две неща; цена в бутона е едно решение. */
   .qty {
     display: flex; align-items: center; gap: 2px;
-    background: var(--surface-2); border-radius: 999px; padding: 4px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border-radius: 999px; padding: 4px;
     flex: none;
   }
   .qty button {
@@ -1023,8 +1065,7 @@
   <section class="sec">
     <h3>Тотал</h3>
     <div class="flip" id="flip">
-    <div class="flip-inner">
-    <div class="face">
+    <div class="face" id="faceFront">
     <div class="readout" aria-live="polite">
       <button type="button" class="turn" id="turnBack" aria-label="Какво е това">
         <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-turn"/></svg>
@@ -1055,7 +1096,7 @@
       </div>
     </div>
     </div>
-    <div class="face back">
+    <div class="face rear" id="faceBack" hidden>
     <div class="readout back-side">
       <button type="button" class="turn" id="turnFront" aria-label="Обратно към числата">
         <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-turn"/></svg>
@@ -1063,14 +1104,13 @@
       <h4>Защо числата отгоре са точни</h4>
       <p>
         Ти избра грамажа на всяка съставка, затова кутията носи същите числа,
-        които ще впишеш в дневника си. Не „около 400 ккал" — тези.
+        които ще впишеш в дневника си.
       </p>
       <p>
         <b>Без добавена захар.</b> Сладкото идва от подсладител, съвсем малко,
         и от плода в глазурата — той си носи своята захар и тя е в числата
         отсреща.
       </p>
-    </div>
     </div>
     </div>
     </div>
@@ -1088,7 +1128,6 @@
 
 
 
-  <p class="foot">Пробна страница. Още не приемаме поръчки — бутонът само показва какво би отишло в кутията.</p>
 </div>
 
 <div class="order">
@@ -1873,7 +1912,10 @@
   /* Обръщането е на бутон, не на цялата карта: плъзгачите отгоре се пипат с
      пръст, а случайно обръщане по средата на четене дразни повече, отколкото
      едно докосване затруднява. */
-  function turn(on) { $('flip').classList.toggle('turned', on); }
+  function turn(on) {
+    $('faceFront').hidden = on;
+    $('faceBack').hidden = !on;
+  }
   $('turnBack').addEventListener('click', function () { turn(true); });
   $('turnFront').addEventListener('click', function () { turn(false); });
 
