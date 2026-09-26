@@ -104,6 +104,7 @@ function useStreak() {
 }
 
 export function RewardsProvider({ children }) {
+  const { profile } = useAuth()
   const [queue, setQueue] = useState([])
 
   /* Свободен ли е екранът.
@@ -176,10 +177,17 @@ export function RewardsProvider({ children }) {
    * изчакване поздравът щеше да казва „ден 0 подред" на всеки, всеки път. */
   const greeted = useRef(false)
   useEffect(() => {
+    /* И докато регистрацията не е свършила.
+       Балончето излизаше върху първия екран на онбординга — човек, който
+       още си пише името, получаваше поздрав за серия, а на светла тема то
+       режеше заглавието отгоре. Изчакването е задължително да е ПРЕДИ
+       greeted.current, иначе поздравът се изразходва, докато никой не
+       го е видял, и истинският първи ден минава мълчаливо. */
     if (greeted.current || !streakReady) return
+    if (!profile || !profile.onboarding_done) return
     greeted.current = true
     award('newday')
-  }, [streakReady, award])
+  }, [streakReady, award, profile])
 
   const value = { report, award, streak }
 
