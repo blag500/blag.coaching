@@ -1368,6 +1368,7 @@ export default {
   'foodlog.editAria':      'Редактирай {name}',
   'foodlog.removeAria':    'Премахни {name}',
   'foodlog.addToMealAria': 'Добави в {meal}',
+  'foodlog.addToMeal':    '+ Добави към {meal}',
   'foodlog.dishAlt':       'Ястие',
   'foodlog.lightboxClose': 'Затвори',
   'foodlog.editName':      'Наименование',

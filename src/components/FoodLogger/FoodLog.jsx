@@ -715,6 +715,17 @@ export default function FoodLog({ log, onRemove, onClear, onEdit, onAddRaw, onPh
               <ul className={styles.list}>
                 {group.items.map((entry, i) => renderEntry(entry, i))}
               </ul>
+            ) : !group.legacy && onAddRaw ? (
+              /* Празното хранене кани, вместо да стои като тире: най-честото
+                 нещо, което се прави с празна „Вечеря", е да се впише вечеря,
+                 а плюсът горе вдясно е далеч от погледа, който е тук. */
+              <button
+                type="button"
+                className={styles.mealEmptyAdd}
+                onClick={() => setQuickMeal(group.id)}
+              >
+                {t('foodlog.addToMeal', { meal: group.label })}
+              </button>
             ) : (
               <p className={styles.mealEmpty}>–</p>
             )}

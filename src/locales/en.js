@@ -1364,6 +1364,7 @@ export default {
   'foodlog.editAria':      'Edit {name}',
   'foodlog.removeAria':    'Remove {name}',
   'foodlog.addToMealAria': 'Add to {meal}',
+  'foodlog.addToMeal':    '+ Add to {meal}',
   'foodlog.dishAlt':       'Dish',
   'foodlog.lightboxClose': 'Close',
   'foodlog.editName':      'Name',

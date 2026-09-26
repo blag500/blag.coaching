@@ -1254,7 +1254,10 @@ test.describe('Изтриване на разговор', () => {
     await expect(row).toBeVisible()
     const box = await row.boundingBox()
     const y = box.y + box.height / 2
-    const del = page.locator('button[aria-label="Изтрий разговора"]')
+    /* Хиксът на всеки ред стои в дървото, но само разкритият е достъпен
+       (tabindex 0) — без това уточнение локаторът хваща всичките и
+       тестът падаше по реда, в който пристигат разговорите. */
+    const del = page.locator('button[aria-label="Изтрий разговора"][tabindex="0"]')
 
     /* Дърпането се повтаря, докато редът се отмести.
        При пълния набор машината е натоварена, събитията се сливат и прагът от
