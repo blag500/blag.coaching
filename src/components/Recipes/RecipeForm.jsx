@@ -296,10 +296,17 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
       const { error: upErr } = await supabase.storage
         .from('recipe-photos')
         .upload(path, photoFile, { upsert: true })
-      if (!upErr) {
-        const { data: urlData } = supabase.storage.from('recipe-photos').getPublicUrl(path)
-        photoUrl = urlData.publicUrl
+      /* Дотук грешката се пропускаше и рецептата се записваше без снимка —
+         човек мислеше, че я е качил. Сега записът спира и казва защо. */
+      if (upErr) {
+        console.error('Recipe photo upload:', upErr)
+        setSaveError(t('rf.photoErr'))
+        setSaving(false)
+        haptic('reject')
+        return
       }
+      const { data: urlData } = supabase.storage.from('recipe-photos').getPublicUrl(path)
+      photoUrl = urlData.publicUrl
     }
 
     // Снимките на стъпките — всяка в хранилището, преди редът да се запише.
@@ -312,7 +319,14 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
         const ext = st.file.name.split('.').pop()
         const path = `${user.id}/steps/${Date.now()}-${i}.${ext}`
         const { error: upErr } = await supabase.storage.from('recipe-photos').upload(path, st.file, { upsert: true })
-        if (!upErr) url = supabase.storage.from('recipe-photos').getPublicUrl(path).data.publicUrl
+        if (upErr) {
+          console.error('Step photo upload:', upErr)
+          setSaveError(t('rf.stepPhotoErr', { n: i + 1 }))
+          setSaving(false)
+          haptic('reject')
+          return
+        }
+        url = supabase.storage.from('recipe-photos').getPublicUrl(path).data.publicUrl
       }
       stepRows.push({ text: st.text.trim(), photo_url: url || null, bonus: !!st.bonus })
     }

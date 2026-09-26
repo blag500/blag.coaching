@@ -994,6 +994,8 @@ export default {
   // Recipes — form
   'rf.notFound':        'Not found',
   'rf.saveErr':         'Save failed.',
+  'rf.photoErr':        'The photo did not upload — the recipe was not saved. Check the connection and try again.',
+  'rf.stepPhotoErr':    'The photo for step {n} did not upload — the recipe was not saved. Try again.',
   'rr.close':           'Close',
   'rr.edit':            'Edit',
   'rr.minutes':         '{n} min',
