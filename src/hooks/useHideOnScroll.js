@@ -32,7 +32,14 @@ export function useHideOnScroll(enabled = true) {
       frame = null
       const y = Math.max(window.scrollY, 0)
 
-      if (y <= KEEP_UNTIL) {
+      /* На къса страница (списъкът с блокове в Тренировка) превъртането
+         стига едва няколко десетки пиксела — под 72 и лентата не се сгъваше
+         никога. Прагът е най-много 72, но не повече от 40% от това, което
+         страницата изобщо може да превърти. */
+      const room = document.documentElement.scrollHeight - window.innerHeight
+      const keep = Math.min(KEEP_UNTIL, Math.max(4, room * 0.4))
+
+      if (y <= keep) {
         anchor = y
         last = y
         delete root.dataset.nav
@@ -46,7 +53,7 @@ export function useHideOnScroll(enabled = true) {
       last = y
 
       const travel = Math.abs(y - anchor)
-      if (down && travel > DOWN_STEP)       root.dataset.nav = 'collapsed'
+      if (down && travel > Math.min(DOWN_STEP, keep))  root.dataset.nav = 'collapsed'
       else if (!down && travel > UP_STEP)   delete root.dataset.nav
     }
 
