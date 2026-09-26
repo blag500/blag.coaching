@@ -187,6 +187,28 @@ export const TABLES = {
     content: 'Пропуснал си тренировката в четвъртък три пъти подред, а в другите дни тренираш. Пробвай да я преместиш в сряда вечер.',
   }],
   exercise_aliases: [],
+  /* Две рецепти: една моя със стъпки (четецът има какво да листва) и една
+     споделена от треньора, без стъпки — само макроси. */
+  recipes: [
+    { id: 'rc1', user_id: USER_ID, name: 'Благо кремче', photo_url: null, servings: 1, total_grams: 120, is_shared: false,
+      prep_min: 7, category: 'breakfast', created_at: new Date().toISOString(),
+      ingredients: [
+        { name: 'Овесени трици', grams: 100, per100g: { kcal: 246, protein: 17, carbs: 66, fat: 7 } },
+        { name: 'Какао', grams: 20, per100g: { kcal: 228, protein: 20, carbs: 58, fat: 14 } },
+      ],
+      steps: [
+        { text: 'Слагаш 500 мл вода да заври в тенджера.', photo_url: null, bonus: false },
+        { text: 'Смесваш сухите съставки.', photo_url: null, bonus: false },
+        { text: 'Смесваш протеин и вода 1:1 за глазурата.', photo_url: null, bonus: true },
+      ] },
+    { id: 'rc2', user_id: COACH_ID, name: 'Пилешко с ориз', photo_url: null, servings: 2, total_grams: 600, is_shared: true,
+      prep_min: 25, category: 'post', created_at: new Date(Date.now() - 86400e3).toISOString(),
+      ingredients: [
+        { name: 'Пилешко филе', grams: 300, per100g: { kcal: 165, protein: 31, carbs: 0, fat: 3.6 } },
+        { name: 'Ориз варен', grams: 300, per100g: { kcal: 130, protein: 2.7, carbs: 28, fat: 0.3 } },
+      ],
+      steps: [] },
+  ],
   exercise_library: [
     { id: 'el1', user_id: USER_ID, name: 'Дъмбели на наклон', folder: 'Заместители за гърди', scheme: '3 × 8–10', muscle: 'chest', created_at: new Date().toISOString() },
     { id: 'el2', user_id: USER_ID, name: 'Кросовер', folder: 'Заместители за гърди', scheme: '3 × 12', muscle: 'chest', created_at: new Date().toISOString() },

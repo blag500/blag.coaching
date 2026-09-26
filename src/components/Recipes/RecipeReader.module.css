@@ -1,0 +1,400 @@
+/* Четецът — цял екран над всичко, включително лентата и бота. */
+.shell {
+  position: fixed;
+  inset: 0;
+  z-index: 9700;
+  background: var(--bg);
+  color: var(--text);
+  animation: readerIn 260ms var(--ease-glide) both;
+}
+@keyframes readerIn {
+  from { opacity: 0; transform: scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.progress {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: rgba(var(--accent-rgb), 0.13);
+  z-index: 3;
+}
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 450ms var(--ease-glide);
+}
+
+.topBar {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 10px);
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 3;
+  pointer-events: none;
+}
+.iconBtn {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: rgba(var(--bg-rgb), 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Листане ── */
+.reader {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.reader::-webkit-scrollbar { display: none; }
+
+.page {
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* ── Корица ── */
+.cover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 18px;
+  padding: 80px 24px 140px;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150vw;
+  max-width: 1100px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -45%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.14) 0%, rgba(var(--accent-rgb), 0.04) 38%, transparent 68%);
+  pointer-events: none;
+}
+.coverTitle {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(48px, 15vw, 110px);
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  padding: 0.06em 0.04em 0.16em;
+  background-image: linear-gradient(100deg,
+    var(--text) 0%, var(--text) 36%,
+    #FFF6E2 46%, var(--accent) 52%, #FFF6E2 58%,
+    var(--text) 68%, var(--text) 100%);
+  background-size: 300% 100%;
+  background-position: 210% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.pageActive .coverTitle { animation: shimmer 2.4s var(--ease-glide) 0.3s both; }
+@keyframes shimmer { to { background-position: -110% 0; } }
+
+.coverRule {
+  width: 64px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+.coverMeta {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.coverMacros {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  font-family: var(--font-heading);
+  font-size: 26px;
+}
+.coverMacros small {
+  margin-left: 3px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  opacity: 0.7;
+}
+.kcal { color: var(--accent); }
+.mP { color: var(--macro-protein); }
+.mC { color: var(--macro-carbs); }
+.mF { color: var(--macro-fat); }
+.perServing {
+  position: relative;
+  margin: -8px 0 0;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Съставки ── */
+.textPage {
+  flex: 1;
+  padding: calc(env(safe-area-inset-top) + 76px) 24px 140px;
+}
+.kicker {
+  margin: 0 0 16px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ingList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ingList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--panel-border);
+  font-family: var(--font-body);
+  font-size: 17px;
+}
+.ingGrams { color: var(--accent); white-space: nowrap; }
+
+/* ── Стъпка ── */
+.stepPage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.stepPhoto {
+  flex: 0 0 auto;
+  height: 52vh;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+}
+.stepPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+  transition: transform 900ms var(--ease-glide);
+}
+.pageActive .stepPhoto img { transform: scale(1); }
+.stepBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 24px 140px;
+}
+.stepPage .stepPhoto + .stepBody { justify-content: flex-start; padding-top: 4px; }
+.stepNo {
+  font-family: var(--font-heading);
+  font-size: 64px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.9;
+}
+.stepNoBonus { color: var(--macro-fat); }
+.stepText {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.bonusTag {
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--macro-fat);
+}
+
+/* Стъпката влиза, когато страницата застане на екрана. */
+.stepBody, .ingList, .finalPage > * {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 420ms var(--ease-glide) 80ms, transform 420ms var(--ease-glide) 80ms;
+}
+.pageActive .stepBody, .pageActive .ingList, .pageActive.page .finalPage > * {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Финал ── */
+.finalPage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: calc(env(safe-area-inset-top) + 64px) 24px calc(env(safe-area-inset-bottom) + 32px);
+}
+.finalPage .kicker { font-size: 28px; margin: 0; }
+.reveal {
+  position: relative;
+  width: min(100%, 420px);
+  aspect-ratio: 4 / 5;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  padding: 0;
+  background: var(--surface-1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.reveal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(18px) brightness(0.6);
+  transform: scale(1.1);
+  transition: filter 700ms var(--ease-glide), transform 900ms var(--ease-glide);
+}
+.veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text);
+  transition: opacity 400ms var(--ease-out);
+}
+.veil span { animation: veilPulse 1.8s ease-in-out infinite; }
+@keyframes veilPulse { 50% { opacity: 0.45; } }
+.revealOpen img { filter: none; transform: scale(1); }
+.revealOpen .veil { opacity: 0; }
+.noPhoto { color: var(--accent); opacity: 0.6; padding: 30px; }
+
+.logBox {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--panel-border);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+.stepper button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  background: transparent;
+  color: var(--accent);
+  font-size: 20px;
+  cursor: pointer;
+}
+.logBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.9);
+  background: var(--accent-metal);
+  color: #0C0A06;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.28);
+}
+.logBtn:disabled {
+  background: transparent;
+  color: var(--ok);
+  border-color: rgba(var(--ok-rgb), 0.6);
+  box-shadow: none;
+  cursor: default;
+}
+
+/* ── Напред ── */
+.next {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--bg-rgb), 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.next:active { transform: translateX(-50%) scale(0.95); }
+.nextCount {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+.nextArrow { font-size: 18px; }
+.srOnly {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell, .coverTitle, .stepPhoto img, .stepBody, .ingList, .finalPage > *, .reveal img, .veil span {
+    animation: none !important;
+    transition: none !important;
+  }
+}

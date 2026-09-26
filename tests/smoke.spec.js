@@ -561,7 +561,9 @@ test.describe('Рецепти', () => {
     await goTab(page, 'ХРАНЕНЕ')
     await page.locator('[aria-label="Библиотека"]').first().click()
     await page.waitForTimeout(700)
-    await page.locator('[class*="newBtn"]').first().click()
+    // Библиотеката е рецептите; новата се отваря с кръглия плюс.
+    const add = page.locator('button[aria-label="Нова рецепта"]').first()
+    await add.click()
     await page.waitForTimeout(700)
 
     /* Същият редактор като при рецептите — значи същото поле за име. Ако
@@ -573,7 +575,7 @@ test.describe('Рецепти', () => {
 
     await page.locator('[class*="backBtn"]').first().click()
     await page.waitForTimeout(500)
-    await page.locator('[class*="newBtn"]').first().click()
+    await add.click()
     await page.waitForTimeout(700)
     await expect(page.locator('text=Върнах недовършеното')).toBeVisible()
     await expect(nameInput).toHaveValue('Моя закуска')
@@ -1732,5 +1734,49 @@ test.describe('Всяка страница от менюто', () => {
       await expect(page.getByText('Нещо се счупи'), name).toHaveCount(0)
       await expect(page.locator('main button[aria-label="Меню"], header button[aria-label="Меню"]').first(), name).toBeVisible()
     }
+  })
+})
+
+test.describe('Библиотеката с рецепти', () => {
+  test('картата отваря четеца, стъпките се листят, ястието се вписва', async ({ page }) => {
+    test.setTimeout(90000)
+    const logged = []
+    page.on('request', r => {
+      if (r.method() === 'POST' && r.url().includes('/rest/v1/food_logs')) {
+        try { logged.push(JSON.parse(r.postData() || 'null')) } catch { /* празно */ }
+      }
+    })
+    await enterApp(page)
+    await page.waitForTimeout(1200)
+    await page.locator('nav button', { hasText: 'ХРАНЕНЕ' }).first().click()
+    await page.waitForTimeout(1000)
+    await page.getByRole('button', { name: 'Библиотека' }).click()
+    await page.waitForTimeout(800)
+
+    // Моята и тази на треньора, с филтрите, за които има какво да се намери.
+    await expect(page.getByText('Благо кремче')).toBeVisible()
+    await expect(page.getByText('Пилешко с ориз')).toBeVisible()
+    await page.getByRole('tab', { name: 'До 10 мин' }).click()
+    await expect(page.getByText('Пилешко с ориз')).toHaveCount(0)
+    await page.getByRole('tab', { name: 'Всички' }).click()
+
+    await page.getByText('Благо кремче').click()
+    const reader = page.getByRole('dialog', { name: 'Благо кремче' })
+    await expect(reader).toBeVisible()
+    // Корица, съставки, 3 стъпки, финал.
+    await expect(reader.getByText('01 / 06')).toBeVisible()
+    for (let i = 0; i < 5; i++) {
+      await reader.getByRole('button', { name: /Напред/ }).click()
+      await page.waitForTimeout(700)
+    }
+    await expect(reader.getByText('Бонус').first()).toBeVisible()
+    await reader.getByRole('button', { name: /Впиши/ }).click()
+    await expect(reader.getByText('Вписано в дневника')).toBeVisible()
+    await page.waitForTimeout(600)
+    expect(logged.flat().some(r => r?.name === 'Благо кремче')).toBe(true)
+
+    // Затваря се и Хранене си е на мястото.
+    await reader.getByRole('button', { name: 'Затвори' }).click()
+    await expect(page.getByRole('dialog')).toHaveCount(0)
   })
 })

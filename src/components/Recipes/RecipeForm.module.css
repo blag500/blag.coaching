@@ -623,3 +623,116 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Четецът: време, хранене, стъпки ── */
+.metaRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 10px;
+}
+.metaField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.metaField .servingInput { width: 100%; box-sizing: border-box; }
+.metaSelect {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+}
+.stepsHint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.stepEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+.stepEditBonus { border-color: rgba(206, 147, 216, 0.35); }
+.stepEditHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.stepEditNo {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.stepEditTools { display: flex; gap: 4px; }
+.stepEditTools button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+}
+.stepEditTools button:disabled { opacity: 0.3; cursor: default; }
+.stepEditTools .toolOn { color: var(--macro-fat); border-color: rgba(206, 147, 216, 0.5); }
+.stepText {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  resize: vertical;
+  outline: none;
+}
+.stepText:focus { border-color: var(--accent); }
+.stepPhotoPick {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: var(--r-sm);
+  border: 1px dashed rgba(var(--accent-rgb), 0.35);
+  color: rgba(var(--accent-rgb), 0.8);
+  font-family: var(--font-body);
+  font-size: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.stepPhotoPick span { display: inline-flex; align-items: center; gap: 6px; }
+.stepPhotoPick img { width: 100%; max-height: 180px; object-fit: cover; }
+.stepPhotoPick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.stepPhotoDrop {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.stepAddRow { display: flex; gap: 8px; flex-wrap: wrap; }

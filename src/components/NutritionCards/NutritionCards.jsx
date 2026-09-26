@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import { usePane } from '../SwipePager/PaneContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSettings } from '../../contexts/SettingsContext'
@@ -8,15 +7,13 @@ import { useRewards } from '../../contexts/RewardsContext'
 import { useDayMarks } from '../../hooks/useDayMarks'
 import { useActivityLog } from '../../hooks/useActivityLog'
 import DatePicker from '../DatePicker/DatePicker'
-import { useCustomFoods } from '../../hooks/useCustomFoods'
 import { usePullToRefresh } from '../../hooks/usePullToRefresh'
 import NutritionProgress from './NutritionProgress'
 import CalorieBalancer from './CalorieBalancer'
 import FoodSearch from '../FoodLogger/FoodSearch'
 import FoodLog from '../FoodLogger/FoodLog'
 import { defaultMeal } from '../FoodLogger/meals'
-import MealCards from '../MealCards/MealCards'
-import RecipeForm from '../Recipes/RecipeForm'
+import RecipeLibrary from '../Recipes/RecipeLibrary'
 import AppHeader from '../AppHeader/AppHeader'
 import styles from './NutritionCards.module.css'
 import Pictogram from '../Pictogram/Pictogram'
@@ -28,10 +25,7 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { log, totals, loading: logLoading, addEntry, addRawEntry, updateEntry, removeEntry, clearLog, uploadMealPhoto, removeMealPhoto, refresh, selectedDate, setSelectedDate, isToday } = useFoodLog()
   const { activities, totalKcalBurned, addActivity, removeActivity } = useActivityLog(selectedDate)
   const { distance, refreshing } = usePullToRefresh(refresh)
-  const { foods: customFoods, loading: foodsLoading, saveFood, deleteFood } = useCustomFoods()
   const [view, setView] = useState('log')
-  const [showBuilder, setShowBuilder] = useState(false)
-  const [logServings, setLogServings] = useState({}) // id → servings input
   const [meal, setMeal] = useState(defaultMeal())     // which meal new food is filed under
 
   // Wrap the log-hook writers so every add path — search, barcode, bot, recipes,
@@ -61,21 +55,6 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const calKnown = !logLoading && isToday && targets.kcal > 0
   useEffect(() => { report('calories', calDone, calKnown) }, [calDone, calKnown, report])
 
-  function handleLogCustomFood(food) {
-    const servings = parseFloat(logServings[food.id]) || 1
-    addRawMeal({
-      name:    food.name,
-      grams:   Math.round(food.serving_grams * servings),
-      kcal:    Math.round(food.kcal    * servings),
-      protein: Math.round(food.protein * servings * 10) / 10,
-      carbs:   Math.round(food.carbs   * servings * 10) / 10,
-      fat:     Math.round(food.fat     * servings * 10) / 10,
-    })
-    setLogServings(prev => ({ ...prev, [food.id]: '' }))
-  }
-
-  const recipes  = customFoods.filter(f =>  f.is_recipe)
-  const products = customFoods.filter(f => !f.is_recipe)
 
   const pullPct   = Math.min(distance / 68, 1)
   const showPull  = distance > 4
@@ -189,182 +168,11 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
           <p className={styles.quote}>"{dailyQuote}"</p>
         </>
       ) : view === 'meals' ? (
-        /* Редакторът е подстраница, не лист върху списъка: той е цял екран със
-           своя стрелка назад, а два слоя един върху друг тук значат две
-           стрелки, които правят различно нещо. */
-        showBuilder ? (
-          <RecipeForm
-            target="foods"
-            saveFood={saveFood}
-            onSave={() => setShowBuilder(false)}
-            onCancel={() => setShowBuilder(false)}
-          />
-        ) : (
-        <>
-          <LibraryTab
-            t={t}
-            recipes={recipes}
-            products={products}
-            loading={foodsLoading}
-            logServings={logServings}
-            setLogServings={setLogServings}
-            onLog={handleLogCustomFood}
-            onDelete={deleteFood}
-            onNewItem={() => setShowBuilder(true)}
-          />
-          {/* Pinned to the screen, so it lives outside the sliding page too. */}
-          {createPortal(
-            <button
-              className={styles.fab}
-              onClick={() => setShowBuilder(true)}
-              type="button"
-              aria-label={t('nutr.fab.addRecipe')}
-            >
-              +
-            </button>,
-            paneChrome ?? document.body,
-          )}
-        </>
-        )
+        /* Една библиотека: рецептите — твоите и споделените от треньора —
+           отворени като четец стъпка по стъпка. */
+        <RecipeLibrary onAddRaw={addRawMeal} fabHost={paneChrome} />
       ) : (
         <CalorieBalancer />
-      )}
-    </div>
-  )
-}
-
-// ─── Library Tab ─────────────────────────────────────────────────────────────
-
-function LibraryTab({ t, recipes, products, loading, logServings, setLogServings, onLog, onDelete, onNewItem }) {
-  return (
-    <div className={styles.library}>
-      <div className={styles.libraryHeader}>
-        <span className={styles.libraryTitle}>{t('nutr.library.title')}</span>
-        <button className={styles.newBtn} onClick={onNewItem} type="button">
-          {t('nutr.library.new')}
-        </button>
-      </div>
-
-      {loading ? (
-        <p className={styles.libEmpty}>{t('nutr.library.loading')}</p>
-      ) : recipes.length === 0 && products.length === 0 ? (
-        <div className={styles.libEmpty}>
-          <p>{t('nutr.library.emptyMain')}</p>
-          <p className={styles.libHint}>{t('nutr.library.emptyHint')}</p>
-        </div>
-      ) : (
-        <>
-          {recipes.length > 0 && (
-            <section>
-              <h3 className={styles.groupLabel}>{t('nutr.library.recipes')}</h3>
-              <div className={styles.itemList}>
-                {recipes.map(food => (
-                  <CustomFoodCard
-                    key={food.id}
-                    t={t}
-                    food={food}
-                    servings={logServings[food.id] ?? ''}
-                    onServingsChange={v => setLogServings(prev => ({ ...prev, [food.id]: v }))}
-                    onLog={() => onLog(food)}
-                    onDelete={() => onDelete(food.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {products.length > 0 && (
-            <section>
-              <h3 className={styles.groupLabel}>{t('nutr.library.products')}</h3>
-              <div className={styles.itemList}>
-                {products.map(food => (
-                  <CustomFoodCard
-                    key={food.id}
-                    t={t}
-                    food={food}
-                    servings={logServings[food.id] ?? ''}
-                    onServingsChange={v => setLogServings(prev => ({ ...prev, [food.id]: v }))}
-                    onLog={() => onLog(food)}
-                    onDelete={() => onDelete(food.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-        </>
-      )}
-
-      {/* Pre-defined meal templates */}
-      <div className={styles.templatesSection}>
-        <h3 className={styles.groupLabel}>{t('nutr.library.templates')}</h3>
-        <MealCards />
-      </div>
-    </div>
-  )
-}
-
-// ─── Macro Remaining Bar ─────────────────────────────────────────────────────
-
-
-function CustomFoodCard({ t, food, servings, onServingsChange, onLog, onDelete }) {
-  const [expanded, setExpanded] = useState(false)
-
-  return (
-    <div className={styles.foodCard}>
-      <button
-        className={styles.foodCardHeader}
-        onClick={() => setExpanded(v => !v)}
-        type="button"
-      >
-        <div className={styles.foodCardInfo}>
-          <span className={styles.foodCardName}>{food.name}</span>
-          <span className={styles.foodCardMacros}>
-            {food.kcal} {t('nutr.card.kcal')} ·{' '}
-            <span className={styles.foodCardMacro} style={{ color: 'var(--macro-protein)' }}>
-              <Pictogram name="protein" size={11} />{food.protein}g
-            </span>
-            <span className={styles.foodCardMacro} style={{ color: 'var(--macro-carbs)' }}>
-              <Pictogram name="carbs" size={11} />{food.carbs}g
-            </span>
-            <span className={styles.foodCardMacro} style={{ color: 'var(--macro-fat)' }}>
-              <Pictogram name="fat" size={11} />{food.fat}g
-            </span>
-            {food.serving_grams > 0 && <> · {food.serving_grams}{t('nutr.card.perServingUnit')}</>}
-          </span>
-        </div>
-        <span className={styles.foodCardChevron}>{expanded ? '▲' : '▼'}</span>
-      </button>
-
-      {expanded && (
-        <div className={styles.foodCardBody}>
-          {food.is_recipe && food.ingredients?.length > 0 && (
-            <div className={styles.ingredientPreview}>
-              {food.ingredients.filter(i => i.name).map((ing, i) => (
-                <span key={i} className={styles.ingChip}>{ing.name}{ing.grams ? ` ${ing.grams}g` : ''}</span>
-              ))}
-            </div>
-          )}
-          <div className={styles.logRow}>
-            <div className={styles.servingsWrap}>
-              <label className={styles.servingsLabel}>{t('nutr.card.servings')}</label>
-              <input
-                className={styles.servingsInput}
-                type="number"
-                min="0.5"
-                step="0.5"
-                placeholder="1"
-                value={servings}
-                onChange={e => onServingsChange(e.target.value)}
-              />
-            </div>
-            <button className={styles.logBtn} onClick={onLog} type="button">
-              {t('nutr.card.log')}
-            </button>
-            <button className={styles.delBtn} onClick={onDelete} type="button" aria-label={t('foodlog.delete')}>
-              <Pictogram name="trash" size={15} />
-            </button>
-          </div>
-        </div>
       )}
     </div>
   )

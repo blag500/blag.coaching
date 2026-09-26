@@ -90,7 +90,15 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
   const [photoPreview, setPhotoPreview] = useState(recipe?.photo_url || '')
   const [ingredients, setIngredients] = useState(recipe?.ingredients || draft0?.ingredients || [])
   const [servings, setServings]     = useState(String(recipe?.servings ?? draft0?.servings ?? 1))
-  const [isShared, setIsShared]     = useState(recipe?.is_shared || draft0?.isShared || false)
+  /* Рецептата на треньора е за всички по подразбиране — затова я пише. */
+  const [isShared, setIsShared]     = useState(recipe ? !!recipe.is_shared : (draft0?.isShared ?? isCoach))
+  /* Четецът: колко време, за кое хранене, и стъпките една по една. */
+  const [prepMin, setPrepMin]       = useState(recipe?.prep_min ? String(recipe.prep_min) : '')
+  const [category, setCategory]     = useState(recipe?.category || '')
+  const [steps, setSteps]           = useState(() =>
+    (recipe?.steps || []).map(st => ({ text: st.text || '', photo_url: st.photo_url || null, bonus: !!st.bonus, file: null, preview: st.photo_url || null })))
+  // Ред, записан без стъпките (преди миграция 119) — следващото записване го обновява, не дублира.
+  const [savedId, setSavedId]       = useState(recipe?.id ?? null)
   const [draftBack, setDraftBack]   = useState(!!draft0)
   const [saving, setSaving]         = useState(false)
   const [saveError, setSaveError]   = useState(null)
@@ -235,6 +243,22 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
     setIngredients(prev => prev.filter((_, i) => i !== idx))
   }
 
+  // ── Стъпки ──
+  function setStep(i, patch) { setSteps(prev => prev.map((st, j) => (j === i ? { ...st, ...patch } : st))) }
+  function addStep(bonus = false) { setSteps(prev => [...prev, { text: '', photo_url: null, bonus, file: null, preview: null }]) }
+  function removeStep(i) { setSteps(prev => prev.filter((_, j) => j !== i)) }
+  function moveStep(i, d) {
+    setSteps(prev => {
+      const j = i + d
+      if (j < 0 || j >= prev.length) return prev
+      const next = [...prev]; [next[i], next[j]] = [next[j], next[i]]; return next
+    })
+  }
+  function pickStepPhoto(i, file) {
+    if (!file) return
+    setStep(i, { file, preview: URL.createObjectURL(file) })
+  }
+
   // ── Save ─────────────────────────────────────────────────────────────────────
   async function handleSave() {
     if (!name.trim() || ingredients.length === 0) return
@@ -278,7 +302,22 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
       }
     }
 
-    const payload = {
+    // Снимките на стъпките — всяка в хранилището, преди редът да се запише.
+    const stepRows = []
+    for (let i = 0; i < steps.length; i++) {
+      const st = steps[i]
+      if (!st.text.trim() && !st.file && !st.photo_url) continue
+      let url = st.photo_url
+      if (st.file) {
+        const ext = st.file.name.split('.').pop()
+        const path = `${user.id}/steps/${Date.now()}-${i}.${ext}`
+        const { error: upErr } = await supabase.storage.from('recipe-photos').upload(path, st.file, { upsert: true })
+        if (!upErr) url = supabase.storage.from('recipe-photos').getPublicUrl(path).data.publicUrl
+      }
+      stepRows.push({ text: st.text.trim(), photo_url: url || null, bonus: !!st.bonus })
+    }
+
+    const base = {
       user_id:     user.id,
       name:        name.trim(),
       photo_url:   photoUrl || null,
@@ -287,14 +326,29 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
       total_grams: totalGrams,
       is_shared:   isCoach ? isShared : false,
     }
+    const payload = {
+      ...base,
+      steps:    stepRows,
+      prep_min: parseInt(prepMin) || null,
+      category: category || null,
+    }
 
-    let data, err
-    if (recipe?.id) {
-      ;({ data, error: err } = await supabase
-        .from('recipes').update(payload).eq('id', recipe.id).select().single())
-    } else {
-      ;({ data, error: err } = await supabase
-        .from('recipes').insert(payload).select().single())
+    const write = body => savedId
+      ? supabase.from('recipes').update(body).eq('id', savedId).select().single()
+      : supabase.from('recipes').insert(body).select().single()
+
+    let { data, error: err } = await write(payload)
+    /* Преди миграция 119 колоните за стъпките ги няма и записът пада цял.
+       Тогава рецептата се пази без тях — съставките и макросите не бива да
+       се губят заради нещо, което базата още не знае — и се казва защо. */
+    if (err && /steps|prep_min|category|column/i.test(err.message || '')) {
+      ;({ data, error: err } = await write(base))
+      if (!err) {
+        setSavedId(data.id)
+        setSaveError(t('rf.needMigration'))
+        setSaving(false)
+        return
+      }
     }
 
     if (err) { console.error('Recipe save error:', err); setSaveError(err.message || t('rf.saveErr')); setSaving(false); haptic('reject'); return }
@@ -570,6 +624,80 @@ export default function RecipeForm({ recipe, onSave, onCancel, target = 'recipes
           </div>
         )}
       </div>
+
+      {/* Четецът: време, хранене и стъпките. Само за рецепта — моята храна е
+          ред с числа, тя няма какво да се чете. */}
+      {target === 'recipes' && (
+        <div className={styles.section}>
+          <div className={styles.metaRow}>
+            <label className={styles.metaField}>
+              <span className={styles.sectionTitle}>{t('rf.prepMin')}</span>
+              <input
+                className={styles.servingInput}
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={prepMin}
+                onChange={e => setPrepMin(e.target.value)}
+                placeholder="10"
+              />
+            </label>
+            <label className={styles.metaField}>
+              <span className={styles.sectionTitle}>{t('rf.category')}</span>
+              <select className={styles.metaSelect} value={category} onChange={e => setCategory(e.target.value)}>
+                <option value="">{t('rf.categoryAny')}</option>
+                {['pre', 'post', 'breakfast', 'lunch', 'dinner', 'snack'].map(c => (
+                  <option key={c} value={c}>{t(`rlib.cat.${c}`)}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {target === 'recipes' && (
+        <div className={styles.section}>
+          <div className={styles.sectionRow}>
+            <span className={styles.sectionTitle}>{t('rf.steps')}</span>
+          </div>
+          {steps.length === 0 && <p className={styles.stepsHint}>{t('rf.stepsHint')}</p>}
+          {steps.map((st, i) => (
+            <div key={i} className={`${styles.stepEdit} ${st.bonus ? styles.stepEditBonus : ''}`}>
+              <div className={styles.stepEditHead}>
+                <span className={styles.stepEditNo}>{String(i + 1).padStart(2, '0')}{st.bonus ? ` · ${t('rr.bonus')}` : ''}</span>
+                <span className={styles.stepEditTools}>
+                  <button type="button" onClick={() => moveStep(i, -1)} disabled={i === 0} aria-label={t('rf.stepUp')}>↑</button>
+                  <button type="button" onClick={() => moveStep(i, 1)} disabled={i === steps.length - 1} aria-label={t('rf.stepDown')}>↓</button>
+                  <button type="button" onClick={() => setStep(i, { bonus: !st.bonus })} aria-pressed={st.bonus} className={st.bonus ? styles.toolOn : ''}>{t('rr.bonus')}</button>
+                  <button type="button" onClick={() => removeStep(i)} aria-label={t('rf.stepRemove')}>×</button>
+                </span>
+              </div>
+              <textarea
+                className={styles.stepText}
+                rows={2}
+                value={st.text}
+                onChange={e => setStep(i, { text: e.target.value })}
+                placeholder={t('rf.stepPh')}
+              />
+              <label className={styles.stepPhotoPick}>
+                {st.preview
+                  ? <img src={st.preview} alt="" />
+                  : <span><CameraIcon size={16} /> {t('rf.stepPhoto')}</span>}
+                <input type="file" accept="image/*" onChange={e => pickStepPhoto(i, e.target.files?.[0])} />
+              </label>
+              {st.preview && (
+                <button type="button" className={styles.stepPhotoDrop} onClick={() => setStep(i, { file: null, photo_url: null, preview: null })}>
+                  {t('rf.stepPhotoRemove')}
+                </button>
+              )}
+            </div>
+          ))}
+          <div className={styles.stepAddRow}>
+            <button type="button" className={styles.addIngBtn} onClick={() => addStep(false)}>{t('rf.stepAdd')}</button>
+            <button type="button" className={styles.addIngBtn} onClick={() => addStep(true)}>{t('rf.stepAddBonus')}</button>
+          </div>
+        </div>
+      )}
 
       {/* Споделянето също е на рецептата: моята храна е моя, тя няма кому да
           се дава. */}
