@@ -99,7 +99,10 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,jpeg,jpg,webp}'],
-        globIgnores: ['**/arms.png', '**/arms.jpeg'],
+        /* Пробната страница на Чийт Код не е част от приложението: снимките ѝ
+           са мегабайти, а предварителният кеш ги дава на всеки клиент при
+           следващото обновяване. */
+        globIgnores: ['**/arms.png', '**/arms.jpeg', 'cheatcode/**'],
       },
     }),
   ],

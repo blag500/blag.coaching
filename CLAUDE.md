@@ -11,7 +11,9 @@ npm run preview    # Preview production build locally
 npm test           # Run Playwright e2e tests (chromium + mobile chromium + iOS webkit)
 ```
 
-Deploy by pushing to the main branch (Netlify / static host watching the repo). No manual deploy step needed. Supabase Edge Functions are deployed separately via `supabase functions deploy send-push`.
+Deploy by pushing to the main branch. The live host is **Vercel** — project `blag-coaching`,
+with `blag-coaching.com`, `www.` and `blag-coaching.vercel.app` verified on it; `vercel.json`
+holds the rewrites. A `netlify.toml` is still in the repo but the domain resolves to Vercel. Supabase Edge Functions are deployed separately via `supabase functions deploy send-push`.
 
 ## Architecture
 

@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Конфигурируемо ястие — избираш грамажа, макросите се смятат.">
+<style>*,*::before,*::after{box-sizing:border-box}img{max-width:100%}html{color-scheme:light dark}body{margin:0}</style>
+<title>Чийт Код</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+  :root {
+    /* Зелено, но не зеленото на въглехидратите.
+       Акцентът е смърчов — по-тъмен и по-студен от листното зелено на
+       лентата, за да не почне един и същ цвят да значи две неща.
+       Неутралните носят лек зелен уклон, за да са от същото семейство,
+       вместо да са взети наготово. */
+    --ground:      #F2F4EC;
+    --surface:     #FFFFFF;
+    --surface-2:   #E7EBE0;
+    --line:        #D2D9C8;
+    --ink:         #141C17;
+    --ink-soft:    #55645B;
+    --ink-faint:   #8A9789;
+    --accent:      #1F6B4E;
+    --accent-soft: rgba(31, 107, 78, 0.10);
+    --cocoa:       #4A2F21;
+
+    /* Макросите идват от приложението — един и същ тон значи едно и също нещо. */
+    --kcal:    #8A6A2E;
+    --protein: #2F7FC0;
+    --carbs:   #43904A;
+    --fat:     #9A63A6;
+
+    --font-display: 'Unbounded', 'Arial Black', sans-serif;
+    --font-body: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 22px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #101613;
+      --surface:     #16201A;
+      --surface-2:   #1E2A23;
+      --line:        #2C3B32;
+      --ink:         #E9F0EA;
+      --ink-soft:    #A3B3A7;
+      --ink-faint:   #74857A;
+      --accent:      #4FBF8E;
+      --accent-soft: rgba(79, 191, 142, 0.14);
+      --cocoa:       #6B4430;
+      --kcal:    #D4AC66;
+      --protein: #5FB2F0;
+      --carbs:   #6FC475;
+      --fat:     #C58FD0;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #101613;
+    --surface:     #16201A;
+    --surface-2:   #1E2A23;
+    --line:        #2C3B32;
+    --ink:         #E9F0EA;
+    --ink-soft:    #A3B3A7;
+    --ink-faint:   #74857A;
+    --accent:      #4FBF8E;
+    --accent-soft: rgba(79, 191, 142, 0.14);
+    --cocoa:       #6B4430;
+    --kcal:    #D4AC66;
+    --protein: #5FB2F0;
+    --carbs:   #6FC475;
+    --fat:     #C58FD0;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 520px;
+    margin: 0 auto;
+    padding-inline: 18px;
+    padding-block: 0 140px;
+  }
+
+  .pic { flex: none; display: block; }
+
+  /* ── Марката ───────────────────────────────────────────── */
+  .brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 20px 14px;
+  }
+  .brand h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .brand h1 span { color: var(--accent); }
+  .brand small {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Снимката и името ──────────────────────────────────── */
+  /* Снимката е продуктът, и тя е изборът.
+     Нищо не стои върху нея — нито градиент, нито надпис. Плъзгаш настрани
+     между глазурите и това, което спре пред теб, е това, което поръчваш;
+     конфигурацията отдолу го следва. */
+  .shot { margin: 0; }
+  .track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r-lg);
+    aspect-ratio: 5 / 4;
+    max-width: 100%;
+    background: var(--cocoa);
+  }
+  .track::-webkit-scrollbar { display: none; }
+  .track img {
+    flex: 0 0 100%;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    scroll-snap-align: center;
+  }
+
+  .dots {
+    display: flex; gap: 7px; justify-content: center;
+    margin-top: 11px;
+  }
+  .dots button {
+    width: 7px; height: 7px; padding: 0;
+    border: none; border-radius: 50%;
+    background: var(--line);
+    cursor: pointer;
+    transition: width 200ms cubic-bezier(0.2,0.8,0.2,1), background 200ms, border-radius 200ms;
+  }
+  .dots button.on { width: 22px; border-radius: 4px; background: var(--accent); }
+  .dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .name { margin-top: 13px; }
+  .name h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(27px, 8.5vw, 36px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .name p { margin: 7px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+  /* ── Таблото ───────────────────────────────────────────── */
+  /* Тоталът се обръща.
+     Отпред са числата, отзад — защо им се вярва. Твърдението стои от другата
+     страна на същата карта, а не под нея: който иска числата, не го чете;
+     който иска да знае какво яде, го намира на едно докосване. */
+  .flip { perspective: 1200px; }
+  .flip-inner {
+    display: grid;
+    transform-style: preserve-3d;
+    transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .flip.turned .flip-inner { transform: rotateY(180deg); }
+  .face {
+    grid-area: 1 / 1;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .face.back { transform: rotateY(180deg); }
+
+  .readout {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 16px 16px 14px;
+    height: 100%;
+  }
+  .turn {
+    position: absolute; top: 10px; right: 10px;
+    display: grid; place-items: center;
+    width: 32px; height: 32px;
+    background: none; border: none; border-radius: 50%;
+    color: var(--ink-faint); cursor: pointer;
+    transition: color 160ms, background 160ms;
+  }
+  .turn:hover { color: var(--accent); background: var(--accent-soft); }
+  .turn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .readout.back-side { display: grid; align-content: center; gap: 11px; padding: 20px 18px; }
+  .readout.back-side h4 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 14px; margin: 0; letter-spacing: -0.01em;
+  }
+  .readout.back-side p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+  .readout.back-side p b { color: var(--ink); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flip-inner { transition: none; }
+  }
+  /* Едната лента казва как се делят калориите между трите — сумата ѝ е
+     цялото ястие, затова всяко парче значи нещо. Трите отделни ленти, които
+     стояха тук, се пълнеха до максимум, който никъде не пишеше, защото
+     такъв нямаше. */
+  .split {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 18px;
+    background: var(--surface-2);
+  }
+  .split i {
+    display: block; height: 100%;
+    transition: width 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .legend {
+    display: grid; gap: 7px;
+    margin-top: 14px;
+  }
+  .leg { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .leg b {
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 15px; font-variant-numeric: tabular-nums;
+  }
+  .leg span { font-size: 13px; color: var(--ink-soft); }
+
+  .kcal-row { display: flex; align-items: center; gap: 10px; padding-right: 34px; }
+  .kcal-row .pic { color: var(--kcal); }
+  .kcal-row b {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .kcal-row span {
+    font-size: 14px;
+    color: var(--ink-soft);
+    align-self: flex-end;
+    padding-bottom: 5px;
+  }
+  .kcal-row em {
+    margin-left: auto;
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .macros { display: grid; gap: 11px; margin-top: 16px; }
+  .macro { display: grid; grid-template-columns: 20px 1fr; gap: 4px 10px; align-items: center; }
+  .macro .pic { grid-row: span 2; align-self: center; }
+  .macro .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+  }
+  .macro .top i {
+    font-style: normal;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .macro .top b {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+  .bar i {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    transition: width 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* ── Секции ────────────────────────────────────────────── */
+  .sec { margin-top: 26px; }
+  /* Заглавието е дума, не лента. Косъмчето, което вървеше след него,
+     е декор, който всяка втора генерирана страница носи. */
+  .sec > h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--ink-soft);
+    margin: 0 0 11px;
+  }
+
+  /* ── Плъзгачи, двата един до друг ──────────────────────── */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 11px 12px 8px;
+    min-width: 0;
+  }
+  .row .head { display: flex; align-items: flex-start; gap: 6px; }
+  .row .head > div { min-width: 0; flex: 1; }
+  .row label {
+    display: block;
+    font-weight: 500;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Отмерването е бутон, не страничен ефект от местенето.
+     Дозата по подразбиране също трябва да се потвърждава — иначе единственият
+     начин да я заключиш е първо да я развалиш. */
+  .lock {
+    flex: none;
+    display: grid; place-items: center;
+    width: 30px; height: 30px; margin: -2px -3px 0 0;
+    background: none; border: none; border-radius: 50%;
+    color: var(--ink-faint); cursor: pointer;
+    transition: color 160ms, background 160ms;
+  }
+  .lock:hover { color: var(--accent); background: var(--accent-soft); }
+  .lock:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row output {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    margin-top: 1px;
+  }
+  .row output small { font-weight: 400; font-size: 11px; color: var(--ink-faint); margin-left: 2px; }
+
+  /* Пистата е пълна отляво до палеца.
+     Стойността се вижда, преди да си прочел числото — и това е цялата
+     разлика между плъзгач и лента с топче върху нея.
+     Спирките лежат ВЪРХУ пистата, а не под нея: те са места, на които
+     палецът сяда, а не подпис под картинка.
+     Вмъкването с 11px е радиусът на палеца — без него запълването и
+     точките се разминават с палеца към двата края. */
+  .sliderwrap { position: relative; }
+  .sliderwrap .stops {
+    position: absolute;
+    left: 11px; right: 11px; top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: flex; justify-content: space-between;
+  }
+  .sliderwrap .stops span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--line);
+    box-shadow: 0 0 0 2px var(--surface);
+    transition: background 180ms;
+  }
+  .sliderwrap .stops span.on { background: rgba(255,255,255,0.55); box-shadow: none; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    margin: 0;
+    padding-block: 9px;
+    cursor: pointer;
+    --fill: 50%;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right,
+      var(--accent) 0 var(--fill), var(--surface-2) var(--fill) 100%);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right,
+      var(--accent) 0 var(--fill), var(--surface-2) var(--fill) 100%);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px; height: 22px; margin-top: -8px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 5px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 5px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+  }
+  input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+
+  /* Спирките се виждат — плъзгач с три положения трябва да ги показва. */
+  .stops { display: flex; justify-content: space-between; padding: 0 2px; margin-top: -3px; }
+  .stops span {
+    width: 2px; height: 5px; border-radius: 1px;
+    background: var(--line);
+  }
+  .stops span.on { background: var(--accent); }
+  .ends {
+    display: flex; justify-content: space-between;
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--ink-faint); margin-top: 3px;
+  }
+
+  /* Отмерена доза.
+     Щом пуснеш плъзгача, редът се затваря в един ред с отметка — екранът се
+     изчиства, а решението личи. Едно докосване го отваря пак: заключено значи
+     „готово", не „окончателно". */
+  .row.set {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px;
+    cursor: pointer;
+    border-color: rgba(var(--accent-rgb, 0,0,0), 0);
+    background: var(--surface-2);
+    text-align: left; font: inherit; color: inherit; width: 100%;
+  }
+  .row.set .chk { color: var(--accent); }
+  .row.set .lbl { min-width: 0; }
+  .row.set .lbl label { font-size: 11.5px; }
+  .row.set .lbl output { font-size: 16px; margin-top: -1px; }
+  .row.set:hover { border-color: var(--ink-faint); }
+  .row.set:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Заливката ─────────────────────────────────────────── */
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .opt {
+    position: relative;
+    display: grid; gap: 7px;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 11px 12px;
+    font: inherit; color: inherit;
+    cursor: pointer;
+    min-width: 0;
+    transition: border-color 160ms, background 160ms;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--ink-faint); }
+  .opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .opt:disabled { opacity: 0.45; cursor: not-allowed; }
+  .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt b {
+    font-weight: 600; font-size: 14px; line-height: 1.25;
+    display: block;
+  }
+  .adds { display: flex; flex-wrap: wrap; gap: 3px 9px; }
+  .row .adds { margin-top: 5px; }
+  .row.set .adds { margin-top: 2px; }
+  /* Цветът стои на рисунката, числото е приглушено.
+     Три ярко оцветени числа на всеки ред превръщат страницата в конфети;
+     знакът носи значението и това стига. */
+  .add {
+    display: flex; align-items: center; gap: 3px;
+    font-family: var(--font-mono); font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+  }
+  .add.protein .pic { color: var(--protein); }
+  .add.carbs   .pic { color: var(--carbs); }
+  .add.fat     .pic { color: var(--fat); }
+  .opt u { text-decoration: none; font-size: 10.5px; color: var(--ink-faint); }
+
+  /* Името на глазурата стои под снимката, защото снимката вече е изборът. */
+  .glaze-head {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 4px 12px;
+    margin-bottom: 10px;
+  }
+  .glaze-head b { font-weight: 600; font-size: 16px; }
+
+  /* Избраната заливка остава сама.
+     Четири карти са избор; след избора са шум. Останалите се махат, а „Смени"
+     ги връща. */
+  .opts.chosen { grid-template-columns: 1fr; }
+  .opt .head { display: flex; align-items: center; gap: 8px; }
+  .opt .head .chk { color: var(--accent); flex: none; }
+  .swap {
+    margin-left: auto; flex: none;
+    font: inherit; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft);
+    background: none; border: 1px solid var(--line);
+    border-radius: 999px; padding: 4px 11px;
+    cursor: pointer;
+  }
+  .swap:hover { border-color: var(--ink-faint); color: var(--ink); }
+  .swap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Кодът ─────────────────────────────────────────────── */
+  .code {
+    margin-top: 26px;
+    border: 1px dashed var(--line);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 11.5px; line-height: 1.7;
+    color: var(--ink-soft); word-break: break-word;
+  }
+  .code i {
+    font-style: normal; display: block;
+    font-size: 12px; color: var(--ink-faint); margin-bottom: 5px;
+  }
+  .code b { color: var(--accent); font-weight: 700; }
+
+  /* ── Поръчката ─────────────────────────────────────────── */
+  .order {
+    position: fixed; inset: auto 0 0 0;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .order .inner {
+    max-width: 520px; margin: 0 auto;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .order .price { display: grid; line-height: 1.15; }
+  .order .price b {
+    font-family: var(--font-mono); font-weight: 700;
+    font-size: 25px; letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .order .price span {
+    font-size: 12px; color: var(--ink-faint);
+  }
+  .order button {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 14px; letter-spacing: 0.01em;
+    color: #F2F8F4; background: var(--accent);
+    border: none; border-radius: var(--r-md);
+    padding: 15px 16px; cursor: pointer;
+    transition: transform 110ms cubic-bezier(0.2,0.8,0.2,1), filter 160ms;
+  }
+  .order button:hover { filter: brightness(1.08); }
+  .order button:active { transform: scale(0.98); }
+  .order button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 96px;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--ground);
+    font-size: 13px; padding: 10px 16px; border-radius: var(--r-sm);
+    opacity: 0; pointer-events: none;
+    transition: opacity 200ms, transform 200ms;
+    max-width: calc(100vw - 36px); text-align: center;
+  }
+  .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .foot { margin-top: 22px; font-size: 11.5px; line-height: 1.6; color: var(--ink-faint); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+
+<!-- Рисунките са същите като в приложението: контур плюс една запълнена част,
+     която дава на всяка форма тежест, вместо шест еднакви драскулки. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="s-kcal">
+      <g fill="currentColor" stroke="none" opacity="0.32"><path d="M12 12.4c1.2 1.1 1.9 2.1 1.9 3.3a1.9 1.9 0 0 1-3.8 0c0-1.2.7-2.2 1.9-3.3z"/></g>
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s4.6 3.9 4.6 8.3a4.6 4.6 0 0 1-9.2 0C7.4 8.7 9 6.7 12 3z"/></g>
+    </g>
+    <g id="s-protein">
+      <g fill="currentColor" stroke="none" opacity="0.32"><path d="M6.2 14.6c1.4 1.5 3.5 2.2 5.6 1.7.9-.2 1.6-.6 2.2-1.1-.5 1-1.2 1.8-2.5 2.1-2.4.5-4.7-.4-5.9-2.1a6 6 0 0 1-.4-.6z"/></g>
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 11.2c0-3.5 3.3-6.1 7.6-6.1 3.9 0 6.7 2.1 6.7 4.9 0 2-1.4 3.4-2.8 4.2-1.7 1-2.2 2.7-4.3 3.1-2.4.5-4.7-.4-5.9-2.1-1-1.4-1.3-2.6-1.3-4z"/>
+        <circle cx="9.1" cy="10.1" r="1.6"/>
+        <path d="M12.9 8.7c1.6.2 3 .7 4 1.4"/>
+      </g>
+    </g>
+    <g id="s-carbs">
+      <g fill="currentColor" stroke="none" opacity="0.32">
+        <path d="M12 12.8c-2.3-.2-3.7-1.7-3.8-4 2.3.2 3.7 1.7 3.8 4z"/>
+        <path d="M12 12.8c2.3-.2 3.7-1.7 3.8-4-2.3.2-3.7 1.7-3.8 4z"/>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21v-8.2"/>
+        <path d="M12 8.6c-2-.2-3.2-1.6-3.3-3.6 2 .2 3.2 1.6 3.3 3.6z"/>
+        <path d="M12 8.6c2-.2 3.2-1.6 3.3-3.6-2 .2-3.2 1.6-3.3 3.6z"/>
+      </g>
+    </g>
+    <g id="s-fat">
+      <g fill="currentColor" stroke="none" opacity="0.32"><path d="M12 10.2c1.9 2.4 2.9 3.8 2.9 5a2.9 2.9 0 0 1-5.8 0c0-1.2 1-2.6 2.9-5z"/></g>
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c3.5 4.2 5.3 6.7 5.3 9.1a5.3 5.3 0 0 1-10.6 0c0-2.4 1.8-4.9 5.3-9.1z"/></g>
+    </g>
+    <g id="s-turn">
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 12a8 8 0 0 1-13.7 5.6"/>
+        <path d="M4 12a8 8 0 0 1 13.7-5.6"/>
+        <path d="M17.6 3.2v3.4h-3.4"/>
+        <path d="M6.4 20.8v-3.4h3.4"/>
+      </g>
+    </g>
+    <g id="s-check">
+      <g fill="currentColor" stroke="none" opacity="0.32"><circle cx="12" cy="12" r="8.4"/></g>
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="8.4"/>
+        <path d="M8.2 12.3 10.9 15 15.9 9.3"/>
+      </g>
+    </g>
+    <g id="s-meal">
+      <g fill="currentColor" stroke="none" opacity="0.32"><circle cx="12" cy="12.5" r="3.6"/></g>
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12.5" r="6.4"/>
+        <path d="M4.2 12.5h15.6"/>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="brand">
+    <h1>ЧИЙТ<span>КОД</span></h1>
+    <small>Проба · 1 ястие</small>
+  </header>
+
+  <figure class="shot">
+    <div class="track" id="track"></div>
+    <div class="dots" id="dots" role="tablist" aria-label="Глазура"></div>
+  </figure>
+
+  <div class="name">
+    <h2>Благо кремче</h2>
+  </div>
+
+  <section class="sec">
+    <h3>Основата</h3>
+    <div class="pair" id="base"></div>
+  </section>
+
+  <section class="sec">
+    <h3 id="glazeHead">Глазурата</h3>
+    <div id="glaze"></div>
+  </section>
+
+  <section class="sec">
+    <h3>Тотал</h3>
+    <div class="flip" id="flip">
+    <div class="flip-inner">
+    <div class="face">
+    <div class="readout" aria-live="polite">
+      <button type="button" class="turn" id="turnBack" aria-label="Какво е това">
+        <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-turn"/></svg>
+      </button>
+      <div class="kcal-row">
+        <svg class="pic" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-kcal"/></svg>
+        <b id="kcal">0</b><span>ккал</span>
+        <em id="grams">0 г</em>
+      </div>
+      <div class="split" id="split" role="img" aria-label="Разпределение на калориите">
+        <i id="pBar" style="background: var(--protein)"></i>
+        <i id="cBar" style="background: var(--carbs)"></i>
+        <i id="fBar" style="background: var(--fat)"></i>
+      </div>
+      <div class="legend">
+        <span class="leg">
+          <svg class="pic" width="18" height="18" viewBox="0 0 24 24" style="color: var(--protein)" aria-hidden="true"><use href="#s-protein"/></svg>
+          <b id="pVal">0</b><span>протеин</span>
+        </span>
+        <span class="leg">
+          <svg class="pic" width="18" height="18" viewBox="0 0 24 24" style="color: var(--carbs)" aria-hidden="true"><use href="#s-carbs"/></svg>
+          <b id="cVal">0</b><span>въглехидрати</span>
+        </span>
+        <span class="leg">
+          <svg class="pic" width="18" height="18" viewBox="0 0 24 24" style="color: var(--fat)" aria-hidden="true"><use href="#s-fat"/></svg>
+          <b id="fVal">0</b><span>мазнини</span>
+        </span>
+      </div>
+    </div>
+    </div>
+    <div class="face back">
+    <div class="readout back-side">
+      <button type="button" class="turn" id="turnFront" aria-label="Обратно към числата">
+        <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-turn"/></svg>
+      </button>
+      <h4>Защо числата отгоре са точни</h4>
+      <p>
+        Ти избра грамажа на всяка съставка, затова кутията носи същите числа,
+        които ще впишеш в дневника си. Не „около 400 ккал" — тези.
+      </p>
+      <p>
+        <b>Без добавена захар.</b> Сладкото идва от подсладител, съвсем малко,
+        и от плода в глазурата — той си носи своята захар и тя е в числата
+        отсреща.
+      </p>
+    </div>
+    </div>
+    </div>
+    </div>
+  </section>
+
+  <div class="code">
+    <i>Твоят код</i>
+    <span id="codeLine"></span>
+  </div>
+
+  <p class="foot">
+    Пробна страница. Още не приемаме поръчки — бутонът само показва какво би отишло в кутията.
+  </p>
+
+</div>
+
+<div class="order">
+  <div class="inner">
+    <div class="price">
+      <b id="price">—</b>
+      <span>с ДДС</span>
+    </div>
+    <button type="button" id="orderBtn">
+      <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-meal"/></svg>
+      Поръчай
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* Данните са същите, които стоят в Supabase след миграция 121 —
+     grams отделно от per100, за да мести плъзгачът само грамовете.
+     Триците скачат през 50 г, какаото през 10. */
+  var BASE = [
+    { id: 'trici', name: 'Трици', grams: 100, min: 50, max: 150, step: 25,
+      per100: { kcal: 246, protein: 17.3, carbs: 66.2, fat: 7 }, price100: 148.8 },
+    { id: 'kakao', name: 'Какао', grams: 20, min: 0, max: 40, step: 10,
+      per100: { kcal: 228, protein: 19.6, carbs: 57.9, fat: 13.7 }, price100: 704 }
+  ];
+
+  /* Снимката следва заливката — човек вижда това, което е избрал, а не
+     общата снимка на ястието. Засега са мястодържачи от кухнята. */
+  var TOPPINGS = [
+    { id: 'yagodi', name: 'Замразени ягоди', grams: 100, min: 50, max: 150, step: 25,
+      per100: { kcal: 32, protein: 0.7, carbs: 7.7, fat: 0.3 }, price100: 179.2, pack: 0.0,
+      photo: '/cheatcode/yagodi.jpg', alt: 'Благо кремче, залято с ягоди' },
+    { id: 'banan', name: 'Банан', grams: 100, min: 50, max: 150, step: 25,
+      per100: { kcal: 89, protein: 1.1, carbs: 22.8, fat: 0.3 }, price100: 56.96, pack: 0.0,
+      photo: '/cheatcode/banan.jpg', alt: 'Благо кремче, залято с банан' },
+    { id: 'protein', name: 'Протеинова глазура', grams: 30, min: 15, max: 50, step: 5,
+      per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, price100: 720, pack: 6.4,
+      photo: '/cheatcode/protein.jpg', alt: 'Благо кремче с протеинова глазура' },
+    { id: 'tahan', name: 'Тахан', grams: 20, min: 10, max: 40, step: 5,
+      per100: { kcal: 595, protein: 17, carbs: 21, fat: 53.8 }, price100: null, pack: 6.4,
+      photo: null, alt: 'Благо кремче с тахан' },
+    { id: 'none', name: 'Без глазура', grams: 0, min: 0, max: 0, step: 1,
+      per100: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, price100: 0, pack: 0.0,
+      photo: '/cheatcode/kakao.jpg', alt: 'Благо кремче без глазура' }
+  ];
+
+  var PACKAGING = 48;          // опаковка, в евроцентове
+  var SCALE = { protein: 60, carbs: 120, fat: 40 };  // докъде стига лентата
+
+  /* locked: коя доза е отмерена. chosen: избрана ли е вече заливка — преди
+     първия избор се виждат всички, след него остава само тя. */
+  var state = { topping: 'yagodi', chosen: false, locked: {} };
+  BASE.forEach(function (i) { state[i.id] = i.grams; });
+  TOPPINGS.forEach(function (t) { state['t_' + t.id] = t.grams; });
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function icon(name, size) {
+    return '<svg class="pic" width="' + size + '" height="' + size +
+           '" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-' + name + '"/></svg>';
+  }
+
+  function topping() {
+    for (var i = 0; i < TOPPINGS.length; i++) {
+      if (TOPPINGS[i].id === state.topping) return TOPPINGS[i];
+    }
+    return TOPPINGS[TOPPINGS.length - 1];
+  }
+
+  function stopsFor(item) {
+    var out = [];
+    for (var g = item.min; g <= item.max; g += item.step) out.push(g);
+    return out;
+  }
+
+  function slider(item, isTopping) {
+    var key = (isTopping ? 't_' : '') + item.id;
+
+    /* Отмерена: един ред с отметка. Докосването я връща в плъзгач. */
+    if (state.locked[key]) {
+      var done = document.createElement('button');
+      done.type = 'button';
+      done.className = 'row set';
+      done.innerHTML =
+        icon('check', 20) +
+        '<span class="lbl"><label>' + item.name + '</label>' +
+        '<output id="o_' + key + '"></output>' +
+        '<span class="adds" id="a_' + key + '"></span></span>';
+      done.addEventListener('click', function () {
+        state.locked[key] = false;
+        rebuild();
+      });
+      return done;
+    }
+
+    var stops = stopsFor(item);
+    var row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML =
+      '<div class="head">' +
+        '<div>' +
+          '<label for="s_' + key + '">' + item.name + '</label>' +
+          '<output id="o_' + key + '"></output>' +
+        '</div>' +
+        '<button type="button" class="lock" aria-label="Отмери ' + item.name + '">' +
+          icon('check', 21) +
+        '</button>' +
+      '</div>' +
+      '<div class="sliderwrap">' +
+        '<input type="range" id="s_' + key + '" min="' + item.min + '" max="' + item.max +
+          '" step="' + item.step + '" value="' + state[key] + '">' +
+        '<div class="stops" id="k_' + key + '">' +
+          stops.map(function () { return '<span></span>'; }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="ends"><span>' + item.min + '</span><span>' + item.max + ' г</span></div>' +
+      '<div class="adds" id="a_' + key + '"></div>';
+
+    var input = row.querySelector('input');
+    input.addEventListener('input', function (e) {
+      state[key] = Number(e.target.value);
+      render();
+    });
+    /* change се обажда при пускане, не при всяко мърдане — затова заключването
+       става, когато човек е спрял да мести, а не докато мести. */
+    input.addEventListener('change', function () {
+      state.locked[key] = true;
+      rebuild();
+    });
+    row.querySelector('.lock').addEventListener('click', function () {
+      state.locked[key] = true;
+      rebuild();
+    });
+    return row;
+  }
+
+  function buildBase() {
+    var host = $('base');
+    host.textContent = '';
+    BASE.forEach(function (i) { host.appendChild(slider(i, false)); });
+  }
+
+  function rebuild() {
+    buildBase();
+    buildGlaze();
+    render();
+    markDots();
+  }
+
+  /* Какво добавя една съставка — с рисунките на макросите, не само с числа.
+     Излизат килокалориите и най-многото, което носи: всяка съставка тук е
+     или въглехидрат, или протеин, или мазнина, и точно това се избира.
+     Грамажът е текущият, не подразбиращият се — числата се движат с плъзгача. */
+  function addsHtml(item, grams, howMany) {
+    var g = grams == null ? item.grams : grams;
+    if (g <= 0) return '<span class="add">—</span>';
+    /* Калориите ги няма тук нарочно. Те стоят веднъж, голямо, в тотала —
+       повторени при всяка съставка се превръщат в шум и карат страницата да
+       изглежда като таблица, а не като избор. */
+    var out = [];
+    var macros = [
+      { k: 'protein', v: item.per100.protein * g / 100 },
+      { k: 'carbs',   v: item.per100.carbs   * g / 100 },
+      { k: 'fat',     v: item.per100.fat     * g / 100 }
+    ].filter(function (m) { return m.v >= 1; })
+     .sort(function (a, b) { return b.v - a.v; })
+     .slice(0, howMany || 3);
+    macros.forEach(function (m) {
+      out.push('<span class="add ' + m.k + '">' + icon(m.k, 15) +
+               m.v.toFixed(m.v < 10 ? 1 : 0).replace('.0', '') + ' г</span>');
+    });
+    return out.join('');
+  }
+
+  /* В плъзгането влиза всичко, което има цена и снимка — точките са точно
+     толкова. Таханът ще се появи сам, щом получи и двете. */
+  var GLAZES = TOPPINGS.filter(function (t) {
+    return t.price100 !== null && t.photo;
+  });
+
+  function glazeIndex() {
+    for (var i = 0; i < GLAZES.length; i++) {
+      if (GLAZES[i].id === state.topping) return i;
+    }
+    return 0;
+  }
+
+  function markDots() {
+    var dots = $('dots').children;
+    var at = glazeIndex();
+    for (var i = 0; i < dots.length; i++) {
+      dots[i].className = i === at ? 'on' : '';
+      dots[i].setAttribute('aria-selected', String(i === at));
+    }
+  }
+
+  function goTo(i) {
+    var track = $('track');
+    track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+    state.topping = GLAZES[i].id;
+    buildGlaze();
+    render();
+    markDots();
+  }
+
+  function buildTrack() {
+    var track = $('track');
+    var dots = $('dots');
+    track.textContent = '';
+    dots.textContent = '';
+
+    GLAZES.forEach(function (t, i) {
+      var img = document.createElement('img');
+      img.src = t.photo;
+      img.alt = t.alt;
+      img.draggable = false;
+      track.appendChild(img);
+
+      var d = document.createElement('button');
+      d.type = 'button';
+      d.setAttribute('role', 'tab');
+      d.setAttribute('aria-label', t.name);
+      d.addEventListener('click', function () { goTo(i); });
+      dots.appendChild(d);
+    });
+
+    /* Изчаква се спирането, не всяко мърдане: докато пръстът влачи, снимката
+       е между две и никой избор още не е направен. */
+    var settle = null;
+    track.addEventListener('scroll', function () {
+      clearTimeout(settle);
+      settle = setTimeout(function () {
+        var i = Math.round(track.scrollLeft / track.clientWidth);
+        i = Math.max(0, Math.min(GLAZES.length - 1, i));
+        if (GLAZES[i].id !== state.topping) {
+          state.topping = GLAZES[i].id;
+          buildGlaze();
+          render();
+        }
+        markDots();
+      }, 110);
+    });
+  }
+
+  function buildGlaze() {
+    var t = topping();
+    var host = $('glaze');
+    host.textContent = '';
+
+    var head = document.createElement('div');
+    head.className = 'glaze-head';
+    head.innerHTML = '<b>' + t.name + '</b><div class="adds">' +
+                     addsHtml(t, state['t_' + t.id], 3) + '</div>';
+    host.appendChild(head);
+
+    /* „Без глазура" няма какво да се мери. */
+    if (t.max === 0) return;
+
+    var pair = document.createElement('div');
+    pair.className = 'pair';
+    pair.style.gridTemplateColumns = '1fr';
+    pair.appendChild(slider(t, true));
+    host.appendChild(pair);
+  }
+
+  function totals() {
+    var sum = { kcal: 0, protein: 0, carbs: 0, fat: 0, grams: 0, cost: 0 };
+    var lines = [];
+
+    function add(item, g) {
+      sum.kcal    += item.per100.kcal    * g / 100;
+      sum.protein += item.per100.protein * g / 100;
+      sum.carbs   += item.per100.carbs   * g / 100;
+      sum.fat     += item.per100.fat     * g / 100;
+      sum.grams   += g;
+      var c = (item.price100 || 0) * g / 100;
+      sum.cost += c;
+      if (g > 0) lines.push({ name: item.name, grams: g, cost: c });
+    }
+
+    BASE.forEach(function (i) { add(i, state[i.id]); });
+    var t = topping();
+    if (t.id !== 'none') add(t, state['t_' + t.id]);
+
+    var pack = PACKAGING + (t.pack || 0);
+    sum.cost += pack;
+    lines.push({ name: 'Опаковка', grams: null, cost: pack });
+
+    return { sum: sum, lines: lines };
+  }
+
+  function money(cents) {
+    return (cents / 100).toFixed(2).replace('.', ',') + ' €';
+  }
+
+  function markStops(item, isTopping) {
+    var key = (isTopping ? 't_' : '') + item.id;
+    var host = $('k_' + key);
+    if (host) {
+      var stops = stopsFor(item);
+      var marks = host.children;
+      for (var i = 0; i < marks.length; i++) {
+        marks[i].className = stops[i] <= state[key] ? 'on' : '';
+      }
+    }
+    /* Запълването се смята тук, а не в CSS: диапазонът не тръгва от нула. */
+    var input = $('s_' + key);
+    if (input) {
+      var span = item.max - item.min || 1;
+      var pct = (state[key] - item.min) / span * 100;
+      input.style.setProperty('--fill', pct + '%');
+    }
+  }
+
+  function render() {
+    var r = totals();
+    var s = r.sum;
+
+    $('kcal').textContent = Math.round(s.kcal);
+    $('grams').textContent = Math.round(s.grams) + ' г';
+
+    /* Лентата е по калории, не по грамове: грам мазнина носи девет калории,
+       грам протеин четири, и лента по тегло би показала мазнините три пъти
+       по-дребни, отколкото тежат в ястието. */
+    var kc = { protein: s.protein * 4, carbs: s.carbs * 4, fat: s.fat * 9 };
+    var kcTotal = kc.protein + kc.carbs + kc.fat || 1;
+    [['p', 'protein'], ['c', 'carbs'], ['f', 'fat']].forEach(function (pair) {
+      var k = pair[1];
+      $(pair[0] + 'Val').textContent = s[k].toFixed(1).replace('.0', '') + ' г';
+      $(pair[0] + 'Bar').style.width = (kc[k] / kcTotal * 100) + '%';
+    });
+
+    BASE.forEach(function (i) {
+      var o = $('o_' + i.id);
+      if (o) o.innerHTML = state[i.id] + '<small> г</small>';
+      var a = $('a_' + i.id);
+      if (a) a.innerHTML = addsHtml(i, state[i.id], 3);
+      markStops(i, false);
+    });
+    var t = topping();
+    var to = $('o_t_' + t.id);
+    if (to) to.innerHTML = state['t_' + t.id] + '<small> г</small>';
+    var ta = $('a_t_' + t.id);
+    if (ta) ta.innerHTML = addsHtml(t, state['t_' + t.id], 3);
+    var gh = document.querySelector('.glaze-head .adds');
+    if (gh) gh.innerHTML = addsHtml(t, state['t_' + t.id], 3);
+    if (t.id !== 'none') markStops(t, true);
+
+    /* Закръгляне нагоре до десет цента. */
+    var price = Math.ceil(s.cost / 10) * 10;
+    $('price').textContent = money(price);
+
+    var parts = BASE.map(function (i) { return i.name.toUpperCase() + ' ' + state[i.id]; });
+    if (t.id !== 'none') parts.push(t.name.toUpperCase() + ' ' + state['t_' + t.id]);
+    $('codeLine').innerHTML = parts.join(' · ') + ' · <b>' + Math.round(s.kcal) + ' ККАЛ</b>';
+
+  }
+
+  /* Обръщането е на бутон, не на цялата карта: числата се пипат с пръст
+     (плъзгачите отгоре ги менят), а случайно обръщане по средата на четене
+     е по-дразнещо, отколкото едно докосване е трудно. */
+  function turn(on) {
+    $('flip').classList.toggle('turned', on);
+    setTimeout(function () {
+      ($(on ? 'turnFront' : 'turnBack') || {}).focus && $(on ? 'turnFront' : 'turnBack').focus();
+    }, 520);
+  }
+  $('turnBack').addEventListener('click', function () { turn(true); });
+  $('turnFront').addEventListener('click', function () { turn(false); });
+
+  var toastTimer = null;
+  $('orderBtn').addEventListener('click', function () {
+    var r = totals();
+    var t = topping();
+    var msg = 'В поръчката: ' + Math.round(r.sum.grams) + ' г · ' +
+              Math.round(r.sum.kcal) + ' ккал' +
+              (t.id === 'none' ? '' : ' · ' + t.name.toLowerCase());
+    var el = $('toast');
+    el.textContent = msg;
+    el.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('on'); }, 2600);
+  });
+
+  buildTrack();
+  rebuild();
+})();
+</script>
+
+</body>
+</html>

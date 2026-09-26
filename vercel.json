@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/cheatcode", "destination": "/cheatcode/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
