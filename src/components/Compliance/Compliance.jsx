@@ -10,6 +10,8 @@ import StreakCelebration from './StreakCelebration'
 import WaterTracker from './WaterTracker'
 import styles from './Compliance.module.css'
 import { loc } from '../../utils/locale'
+import { useSettings } from '../../contexts/SettingsContext'
+import AppHeader from '../AppHeader/AppHeader'
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -29,7 +31,8 @@ function calcCelebStreak(history) {
   return streak
 }
 
-export default function Compliance() {
+export default function Compliance({ onMenuOpen }) {
+  const { t } = useSettings()
   const { habits, checked, toggle, loading: habitsLoading } = useHabitsToday()
   const history = useHabitHistory()
   const [showCelebration, setShowCelebration] = useState(false)
@@ -64,10 +67,7 @@ export default function Compliance() {
         <StreakCelebration streak={celebStreak} onDone={() => setShowCelebration(false)} />
       )}
 
-      <header className={styles.header}>
-        <h1 className={styles.title}>HABITS</h1>
-        <p className={styles.date}>{today}</p>
-      </header>
+      <AppHeader onMenuOpen={onMenuOpen} eyebrow={today} title={t('nav.habits')} />
 
       <RingProgress completed={completedCount} total={habits.length} />
 

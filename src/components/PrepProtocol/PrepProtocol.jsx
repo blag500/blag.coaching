@@ -5,6 +5,7 @@ import { usePrepProtocol, todayStr, dayFromIso, addDays, bmrFor, tdeeFor, timeli
 import PeakWeek from '../PeakWeek/PeakWeek'
 import styles from './PrepProtocol.module.css'
 import { loc } from '../../utils/locale'
+import AppHeader from '../AppHeader/AppHeader'
 
 // ── helpers ──────────────────────────────────────────────────────────
 
@@ -641,7 +642,8 @@ function PrepRunway({ prep, plan, children }) {
 /**
  * Страницата „Протокол" е пиковата седмица; подготовката е пистата към нея.
  */
-export default function PrepProtocol() {
+export default function PrepProtocol({ onMenuOpen }) {
+  const { t } = useSettings()
   const { profile, updateProfile } = useAuth()
   const {
     prep, plan, weightLogs, weekStats, loading,
@@ -679,5 +681,11 @@ export default function PrepProtocol() {
     </PrepRunway>
   )
 
-  return <PeakWeek prep={prep} runway={runway} />
+  return (
+    <PeakWeek
+      prep={prep}
+      runway={runway}
+      header={<AppHeader onMenuOpen={onMenuOpen} title={t('nav.protocol')} />}
+    />
+  )
 }

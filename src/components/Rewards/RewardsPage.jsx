@@ -7,6 +7,7 @@ import { useAwardStats } from '../../hooks/useAwardStats'
 import AwardsGrid from './AwardsGrid'
 import Pictogram from '../Pictogram/Pictogram'
 import styles from './RewardsPage.module.css'
+import AppHeader from '../AppHeader/AppHeader'
 
 function pad(n) { return String(n).padStart(2, '0') }
 function ds(y, m, d) { return `${y}-${pad(m+1)}-${pad(d)}` }
@@ -99,13 +100,7 @@ export default function RewardsPage({ onBack }) {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} type="button">←</button>
-        <div>
-          <h1 className={styles.title}>{t('rew.title')}</h1>
-          <p className={styles.subtitle}>{t('rew.subtitle')}</p>
-        </div>
-      </header>
+      <AppHeader onBack={onBack} eyebrow={t('rew.subtitle')} title={t('rew.title')} />
 
       {/* Спечеленото. Стои първо, защото страницата се отваря заради него —
           календарът отдолу отговаря на „кога", а това на „какво". */}

@@ -6,6 +6,7 @@ import ReadinessWidget from '../components/ReadinessWidget/ReadinessWidget'
 import { useSettings } from '../contexts/SettingsContext'
 import styles from './Recovery.module.css'
 import { loc, monthNames, dayNames } from '../utils/locale'
+import AppHeader from '../components/AppHeader/AppHeader'
 
 /* Имената идват от Intl, не от закован масив: списък, който трябва да се
    допише при всеки нов език, е списък, който някой ще забрави. */
@@ -236,7 +237,7 @@ function HistoryRow({ log }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function Recovery() {
+export default function Recovery({ onMenuOpen }) {
   const { t } = useSettings()
   const { logs, todayLog, loading, logSleep } = useSleepLogs()
   const { glasses: waterGlasses, set: setWater } = useWaterLog()
@@ -295,10 +296,7 @@ export default function Recovery() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{t('nav.recovery')}</h1>
-        <p className={styles.date}>{today}</p>
-      </header>
+      <AppHeader onMenuOpen={onMenuOpen} eyebrow={today} title={t('nav.recovery')} />
 
       {/* Readiness ring — live, following the sliders as they move. */}
       <ReadinessRing score={liveScore} />

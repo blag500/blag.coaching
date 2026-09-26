@@ -8,6 +8,7 @@ import TaskSheet from './TaskSheet'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Tasks.module.css'
 import { loc } from '../../utils/locale'
+import AppHeader from '../AppHeader/AppHeader'
 
 const TODAY = () => new Date().toISOString().slice(0, 10)
 const IN7   = () => new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10)
@@ -21,7 +22,7 @@ function getTimeBucket(due_date) {
   return 'later'
 }
 
-export default function Tasks() {
+export default function Tasks({ onMenuOpen }) {
   const { tasks, loading, addTask, updateTask, toggleTask, deleteTask } = useTasks()
   const { user } = useAuth()
   const { t } = useSettings()
@@ -111,12 +112,11 @@ export default function Tasks() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t('tasks.title')}</h1>
-        {active.length > 0 && (
-          <span className={styles.badge}>{t('tasks.active', { n: active.length })}</span>
-        )}
-      </div>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        eyebrow={active.length > 0 ? t('tasks.active', { n: active.length }) : null}
+        title={t('tasks.title')}
+      />
 
       {/* Денът като линия.
           Списъкът отдолу казва какво има за вършене; тук се вижда кога.

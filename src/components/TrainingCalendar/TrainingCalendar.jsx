@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './TrainingCalendar.module.css'
 import { loc } from '../../utils/locale'
+import AppHeader from '../AppHeader/AppHeader'
 
 async function notifySession(sessionId, event) {
   try {
@@ -72,7 +73,7 @@ function getSofiaToday() {
 }
 
 // formMode: 'create' | 'coach-edit' | 'client-propose'
-export default function TrainingCalendar() {
+export default function TrainingCalendar({ onMenuOpen }) {
   const { t } = useSettings()
   const DAYS_SHORT = [0, 1, 2, 3, 4, 5, 6].map(i => t(`daysMon.${i}`))
   const { profile, fetchTrainingSessions, createTrainingSession, updateSessionStatus, updateSession, fetchClients } = useAuth()
@@ -384,10 +385,7 @@ export default function TrainingCalendar() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{t('tc.title')}</h1>
-        <p className={styles.subtitle}>{t('tc.subtitle')}</p>
-      </header>
+      <AppHeader onMenuOpen={onMenuOpen} eyebrow={t('tc.subtitle')} title={t('tc.title')} />
 
       <div className={styles.monthNav}>
         <button className={styles.navBtn} onClick={prevMonth} type="button" aria-label={t('tc.prevMonth')}>‹</button>

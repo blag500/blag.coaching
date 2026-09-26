@@ -750,7 +750,7 @@ function NeverCard() {
 
 // ── Главният компонент ───────────────────────────────────────────────
 
-export default function PeakWeek({ prep = null, runway = null }) {
+export default function PeakWeek({ prep = null, runway = null, header = null }) {
   const { t } = useSettings()
   const { profile, updateProfile } = useAuth()
   const pw = usePeakWeek()
@@ -796,6 +796,7 @@ export default function PeakWeek({ prep = null, runway = null }) {
   if (!week) {
     return (
       <div className={styles.page}>
+        {header}
         {runway}
         <header className={styles.head}>
           <h1 className={styles.title}>{t('pw.title')}</h1>
@@ -817,6 +818,7 @@ export default function PeakWeek({ prep = null, runway = null }) {
 
   return (
     <div className={styles.page}>
+      {header}
       {runway}
 
       <header className={styles.head}>

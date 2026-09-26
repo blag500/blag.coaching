@@ -1710,3 +1710,24 @@ test.describe('Заготовки по мускул', () => {
     await expect(page.getByText('вместо Лежанка · само за днес')).toBeVisible()
   })
 })
+
+test.describe('Всяка страница от менюто', () => {
+  /* Страниците от менюто се отварят рядко и затова счупване по тях се
+     вижда последно. Тук се минава през всяка: да не пада и да има изход
+     към менюто — дотук половината бяха без него и се излизаше само
+     през долната лента. */
+  const PAGES = ['НАВИЦИ', 'ЗАГОТОВКИ', 'ВЪЗСТАНОВЯВАНЕ', 'СУПЛЕМЕНТИ', 'ГРАФИК',
+    'ЗАДАЧИ', 'БЮДЖЕТ', 'ЧАТ', 'ОТКРИЙ', 'ЗНАНИЯ', 'ПРОТОКОЛ', 'ПОУЗИНГ']
+  test('се отваря и има меню', async ({ page }) => {
+    test.setTimeout(180000)
+    await enterApp(page)
+    for (const name of PAGES) {
+      await page.locator('button[aria-label="Меню"]').first().click()
+      await page.waitForTimeout(500)
+      await page.getByText(name, { exact: true }).first().click()
+      await page.waitForTimeout(1200)
+      await expect(page.getByText('Нещо се счупи'), name).toHaveCount(0)
+      await expect(page.locator('main button[aria-label="Меню"], header button[aria-label="Меню"]').first(), name).toBeVisible()
+    }
+  })
+})

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './PosingPage.module.css'
+import AppHeader from '../AppHeader/AppHeader'
 
 /* Позите носят само id + abbr — имена, описание и cue-та се държат в
    locales/{bg,en}.js под pose.{id}.* и се резолвват при render. Така всяка
@@ -21,7 +22,7 @@ const DURATIONS = [15, 30, 60]
 const R = 44
 const CIRC = 2 * Math.PI * R
 
-export default function PosingPage() {
+export default function PosingPage({ onMenuOpen }) {
   const { t } = useSettings()
   const [mode, setMode] = useState('list')
   const [poseIndex, setPoseIndex] = useState(0)
@@ -188,10 +189,7 @@ export default function PosingPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.listHeader}>
-        <h1 className={styles.title}>{t('pose.title')}</h1>
-        <p className={styles.subtitle}>{t('pose.subtitle')}</p>
-      </header>
+      <AppHeader onMenuOpen={onMenuOpen} eyebrow={t('pose.subtitle')} title={t('pose.title')} />
 
       <div className={styles.controls}>
         <span className={styles.controlLabel}>{t('pose.pauseOnPose')}</span>

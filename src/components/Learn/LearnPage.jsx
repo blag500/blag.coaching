@@ -5,6 +5,7 @@ import { LEARN_CARDS } from '../../data/learnCards'
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './LearnPage.module.css'
 import Pictogram from '../Pictogram/Pictogram'
+import AppHeader from '../AppHeader/AppHeader'
 
 // ── Helpers ───────────────────────────────────────────────────
 const QUIZ_SIZE = 10  // cards per session
@@ -53,7 +54,7 @@ const CATEGORY_COLORS = {
 }
 
 // ── Main page ─────────────────────────────────────────────────
-export default function LearnPage() {
+export default function LearnPage({ onMenuOpen }) {
   const { t } = useSettings()
   const { user } = useAuth()
   const [phase,       setPhase]       = useState('loading')  // 'loading' | 'quiz' | 'history'
@@ -117,20 +118,18 @@ export default function LearnPage() {
   if (phase === 'loading') {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>{t('learn.title')}</h1>
-        </header>
+        <AppHeader onMenuOpen={onMenuOpen} title={t('learn.title')} />
         <div className={styles.loadingSpinner} />
       </div>
     )
   }
 
   if (phase === 'history') {
-    return <HistoryView todayResult={todayResult} history={history} onReplay={handleReplay} />
+    return <HistoryView todayResult={todayResult} history={history} onReplay={handleReplay} onMenuOpen={onMenuOpen} />
   }
 
   return (
-    <LearnDeck
+    <LearnDeck onMenuOpen={onMenuOpen}
       key={quizKey}
       savedProgress={savedProg}
       onComplete={handleComplete}
@@ -139,7 +138,7 @@ export default function LearnPage() {
 }
 
 // ── LearnDeck ─────────────────────────────────────────────────
-function LearnDeck({ savedProgress, onComplete }) {
+function LearnDeck({ savedProgress, onComplete, onMenuOpen }) {
   const { t } = useSettings()
   const cardMap = Object.fromEntries(LEARN_CARDS.map(c => [c.id, c]))
 
@@ -234,14 +233,17 @@ function LearnDeck({ savedProgress, onComplete }) {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{t('nav.learn')}</h1>
-        <div className={styles.scoreRow}>
-          <span className={styles.scoreCorrect}>✓ {score.correct}</span>
-          <span className={styles.scoreSep}>·</span>
-          <span className={styles.scoreWrong}>✗ {score.total - score.correct}</span>
-        </div>
-      </header>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        title={t('nav.learn')}
+        action={
+          <div className={styles.scoreRow}>
+            <span className={styles.scoreCorrect}>✓ {score.correct}</span>
+            <span className={styles.scoreSep}>·</span>
+            <span className={styles.scoreWrong}>✗ {score.total - score.correct}</span>
+          </div>
+        }
+      />
 
       <div className={styles.progressWrap}>
         <div className={styles.progressBar}>
@@ -318,7 +320,7 @@ function LearnDeck({ savedProgress, onComplete }) {
 }
 
 // ── HistoryView ───────────────────────────────────────────────
-function HistoryView({ todayResult, history, onReplay }) {
+function HistoryView({ todayResult, history, onReplay, onMenuOpen }) {
   const { t } = useSettings()
   const today = todayStr()
 
@@ -358,14 +360,15 @@ function HistoryView({ todayResult, history, onReplay }) {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{t('nav.learn')}</h1>
-        {streak > 0 && (
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        title={t('nav.learn')}
+        action={streak > 0 ? (
           <div className={styles.streakBadge}>
             <Pictogram name="flame" size={13} /> {streak} {streak === 1 ? t('learn.day.one') : t('learn.day.many')}
           </div>
-        )}
-      </header>
+        ) : null}
+      />
 
       {/* ── Today's score card ── */}
       {todayResult ? (

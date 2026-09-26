@@ -4,6 +4,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { supabase } from '../../lib/supabase'
 import styles from './ChatPage.module.css'
 import { loc } from '../../utils/locale'
+import AppHeader from '../AppHeader/AppHeader'
 
 function dateSeparator(dateStr, t) {
   const d = new Date(dateStr)
@@ -38,7 +39,7 @@ function groupByDate(messages, t) {
  * своя треньор и всеки, с когото вече е говорил; нов разговор започва от
  * профила на човека във фийда, не от списък с всички непознати.
  */
-function ConversationList({ embedded, conversations, extra, loading, onSelect }) {
+function ConversationList({ embedded, conversations, extra, loading, onSelect, onMenuOpen }) {
   const { t } = useSettings()
 
   /* Разговорите водят реда, защото носят кога е било последното съобщение.
@@ -63,14 +64,20 @@ function ConversationList({ embedded, conversations, extra, loading, onSelect })
 
   return (
     <div className={embedded ? styles.pageEmbedded : styles.page}>
-      <div className={styles.header}>
-        <div className={styles.avatar}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+      {/* Вграден (при треньора в картата на клиента) — старото малко заглавие.
+          Като самостоятелна страница — общият хедър с менюто. */}
+      {embedded ? (
+        <div className={styles.header}>
+          <div className={styles.avatar}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+          <span className={styles.headerName}>{t('chatp.chats')}</span>
         </div>
-        <span className={styles.headerName}>{t('chatp.chats')}</span>
-      </div>
+      ) : (
+        <AppHeader onMenuOpen={onMenuOpen} title={t('chatp.chats')} />
+      )}
       <div className={styles.feed}>
         {loading ? (
           <p className={styles.empty}>{t('chat.loading')}</p>
@@ -116,7 +123,7 @@ function mergeMessages(old, fresh) {
   return [...old, ...add].sort((a, b) => a.created_at.localeCompare(b.created_at))
 }
 
-export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId: initialPeerId, embedded = false }) {
+export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId: initialPeerId, embedded = false, onMenuOpen }) {
   const { user, profile, fetchMessages, fetchNewMessages, fetchConversations, fetchClients, sendMessage, markMessagesAsRead } = useAuth()
   const { t } = useSettings()
   const [messages, setMessages]       = useState([])
@@ -367,6 +374,7 @@ export default function ChatPage({ clientId, clientName, clientAvatarUrl, peerId
         extra={extraPeople}
         loading={listLoading}
         onSelect={openPeer}
+        onMenuOpen={onMenuOpen}
       />
     )
   }

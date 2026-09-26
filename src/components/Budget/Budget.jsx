@@ -4,6 +4,7 @@ import { useBudget, monthStart, nextMonthStart, prevMonthStart } from '../../hoo
 import { useSettings } from '../../contexts/SettingsContext'
 import styles from './Budget.module.css'
 import { loc } from '../../utils/locale'
+import AppHeader from '../AppHeader/AppHeader'
 
 const RATE = 1.95583  // official fixed rate: 1 EUR = 1.95583 BGN
 
@@ -28,7 +29,7 @@ function monthLabel(m) {
 
 // ── Setup view ────────────────────────────────────────────────────
 
-function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selectedMonth }) {
+function SetupView({ existing, onSave, onBack, onMenuOpen, currency, sym, disp, toBGN, selectedMonth }) {
   const { t } = useSettings()
   const [budgetAmt, setBudgetAmt] = useState(
     existing?.budget_amount ? String(Math.round(disp(existing.budget_amount) * 100) / 100) : ''
@@ -77,17 +78,12 @@ function SetupView({ existing, onSave, onBack, currency, sym, disp, toBGN, selec
 
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
-        {onBack && (
-          <button className={styles.backBtn} onClick={onBack} type="button" aria-label={t('bg.back')}>
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" aria-hidden="true">
-              <polyline points="15 6 9 12 15 18" />
-            </svg>
-          </button>
-        )}
-        <h1 className={styles.title}>{t('bg.settings')}</h1>
-        <span className={styles.currencyBadge}>{sym}</span>
-      </div>
+      <AppHeader
+        onBack={onBack || undefined}
+        onMenuOpen={onMenuOpen}
+        title={t('bg.settings')}
+        action={<span className={styles.currencyBadge}>{sym}</span>}
+      />
 
       <div className={styles.setupMonthLabel}>{monthLabel(selectedMonth)}</div>
 
@@ -469,7 +465,7 @@ function SpendingChart({ transactions, dailyQuota, disp, sym, selectedMonth }) {
 
 // ── Main Budget page ──────────────────────────────────────────────
 
-export default function Budget() {
+export default function Budget({ onMenuOpen }) {
   const { t } = useSettings()
   const currentMonthStr = monthStart()
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr)
@@ -504,6 +500,7 @@ export default function Budget() {
         existing={config}
         onSave={async data => { await upsertConfig(data); setView('dashboard') }}
         onBack={config ? () => setView('dashboard') : null}
+        onMenuOpen={onMenuOpen}
         currency={currency} sym={sym} disp={disp} toBGN={toBGN}
         selectedMonth={selectedMonth}
       />
@@ -551,9 +548,10 @@ export default function Budget() {
   return (
     <div className={styles.page}>
 
-      {/* Header */}
-      <div className={styles.header}>
-        <h1 className={styles.title}>{t('bg.title')}</h1>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        title={t('bg.title')}
+        action={
         <div className={styles.headerActions}>
           <button className={styles.currencyToggle} onClick={toggleCurrency} type="button" aria-label={t('bg.currencyToggle')}>
             <span className={currency === 'BGN' ? styles.currActive : styles.currInactive}>{t('bg.currencyBgn')}</span>
@@ -567,7 +565,8 @@ export default function Budget() {
             </svg>
           </button>
         </div>
-      </div>
+        }
+      />
 
       {/* Month navigation */}
       <div className={styles.monthNav}>

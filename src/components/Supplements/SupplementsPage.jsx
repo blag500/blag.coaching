@@ -5,13 +5,14 @@ import MonthCalendar from '../Training/MonthCalendar'
 import styles from './SupplementsPage.module.css'
 import Pictogram from '../Pictogram/Pictogram'
 import { haptic } from '../../lib/haptics'
+import AppHeader from '../AppHeader/AppHeader'
 
 const TIMING_KEYS = [
   'supp.time.morning', 'supp.time.fasted', 'supp.time.preTrain',
   'supp.time.postTrain', 'supp.time.evening', 'supp.time.sleep',
 ]
 
-export default function SupplementsPage() {
+export default function SupplementsPage({ onMenuOpen }) {
   /* Година назад, не два месеца: календарът се прелиства и празна клетка,
      която просто не е прочетена, изглежда точно като ден, в който нищо не е
      взето. */
@@ -67,11 +68,11 @@ export default function SupplementsPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>{t('supp.title')}</h1>
-          <p className={styles.subtitle}>{t('supp.subtitle')}</p>
-        </div>
+      <AppHeader
+        onMenuOpen={onMenuOpen}
+        eyebrow={t('supp.subtitle')}
+        title={t('supp.title')}
+        action={(streak > 1 || totalCount > 0) ? (
         <div className={styles.headerRight}>
           {streak > 1 && (
             <div className={styles.streakBadge}>
@@ -86,7 +87,8 @@ export default function SupplementsPage() {
             </div>
           )}
         </div>
-      </header>
+        ) : null}
+      />
 
       <div className={styles.list}>
         {supplements.length === 0 ? (
