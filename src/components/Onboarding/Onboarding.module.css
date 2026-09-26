@@ -137,8 +137,8 @@
   color: var(--accent);
   border: 1px solid rgba(var(--accent-rgb), 0.5);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.16) 0%,
-    rgba(200, 160, 90, 0.05) 100%);
+    rgba(var(--accent-rgb), 0.16) 0%,
+    rgba(var(--accent-rgb), 0.05) 100%);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow:
@@ -162,8 +162,8 @@
   color: var(--accent);
   border: 1px solid rgba(var(--accent-rgb), 0.5);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.14) 0%,
-    rgba(200, 160, 90, 0.04) 100%);
+    rgba(var(--accent-rgb), 0.14) 0%,
+    rgba(var(--accent-rgb), 0.04) 100%);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow:
@@ -287,8 +287,8 @@
 .goalCardActive {
   border-color: rgba(var(--accent-rgb), 0.6);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.12) 0%,
-    rgba(200, 160, 90, 0.04) 100%);
+    rgba(var(--accent-rgb), 0.12) 0%,
+    rgba(var(--accent-rgb), 0.04) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 236, 200, 0.22),
     0 0 30px -12px rgba(var(--accent-rgb), 0.5);
@@ -303,6 +303,11 @@
 
 /* The pictogram in a coin of glass. Muted until the card is chosen; the active
    card lifts it to full gold below. */
+/* Всяка цел носи тона на макроса, който я описва: изгарянето — мазнините,
+   поддържането — въглехидратите, покачването — протеина. Смисълът е човек да
+   отгатне избора по цвета, преди да прочете етикета, затова тонът стои и на
+   неизбраните карти, а не пали чак при избор. Тонът идва от --goal-tone-rgb,
+   който картата си поставя сама. */
 .goalIcon {
   flex-shrink: 0;
   width: 44px;
@@ -310,21 +315,24 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  color: var(--muted);
-  border: 1px solid var(--border);
+  color: rgba(var(--goal-tone-rgb), 0.55);
+  border: 1px solid rgba(var(--goal-tone-rgb), 0.22);
   background: var(--surface-2);
-  transition: color 150ms, border-color 150ms, background 150ms;
+  transition: color var(--dur-state) var(--ease-glide),
+              border-color var(--dur-state) var(--ease-glide),
+              background var(--dur-state) var(--ease-glide);
 }
 
 .goalIcon svg { width: 24px; height: 24px; }
 
+/* Избраното е същият тон, изкаран докрай — не друг цвят. */
 .goalCardActive .goalIcon {
-  color: var(--accent);
-  border-color: rgba(var(--accent-rgb), 0.5);
+  color: rgb(var(--goal-tone-rgb));
+  border-color: rgba(var(--goal-tone-rgb), 0.55);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.18) 0%,
-    rgba(200, 160, 90, 0.05) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 236, 200, 0.25);
+    rgba(var(--goal-tone-rgb), 0.20) 0%,
+    rgba(var(--goal-tone-rgb), 0.06) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .goalLabel {
@@ -365,8 +373,8 @@
 .activityCardActive {
   border-color: rgba(var(--accent-rgb), 0.6);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.12) 0%,
-    rgba(200, 160, 90, 0.04) 100%);
+    rgba(var(--accent-rgb), 0.12) 0%,
+    rgba(var(--accent-rgb), 0.04) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 236, 200, 0.22),
     0 0 24px -12px rgba(var(--accent-rgb), 0.45);
@@ -390,8 +398,8 @@
   color: var(--accent);
   border-color: rgba(var(--accent-rgb), 0.5);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.18) 0%,
-    rgba(200, 160, 90, 0.05) 100%);
+    rgba(var(--accent-rgb), 0.18) 0%,
+    rgba(var(--accent-rgb), 0.05) 100%);
 }
 
 .activityBody {
@@ -433,8 +441,8 @@
   color: var(--accent);
   border-radius: 50%;
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.14) 0%,
-    rgba(200, 160, 90, 0.04) 100%);
+    rgba(var(--accent-rgb), 0.14) 0%,
+    rgba(var(--accent-rgb), 0.04) 100%);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
   box-shadow:
     inset 0 1px 0 rgba(255, 236, 200, 0.22),
@@ -522,8 +530,8 @@
   border-color: rgba(var(--accent-rgb), 0.6);
   color: var(--accent);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.12) 0%,
-    rgba(200, 160, 90, 0.04) 100%);
+    rgba(var(--accent-rgb), 0.12) 0%,
+    rgba(var(--accent-rgb), 0.04) 100%);
   box-shadow:
     inset 0 1px 0 rgba(255, 236, 200, 0.22),
     0 0 30px -12px rgba(var(--accent-rgb), 0.5);
@@ -699,8 +707,8 @@
   border-radius: var(--r-md);
   border: 1px solid rgba(var(--accent-rgb), 0.4);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.12) 0%,
-    rgba(200, 160, 90, 0.04) 100%);
+    rgba(var(--accent-rgb), 0.12) 0%,
+    rgba(var(--accent-rgb), 0.04) 100%);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow:
@@ -770,8 +778,8 @@
   border-radius: 999px;
   border: 1px solid rgba(var(--accent-rgb), 0.55);
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.16) 0%,
-    rgba(200, 160, 90, 0.06) 100%);
+    rgba(var(--accent-rgb), 0.16) 0%,
+    rgba(var(--accent-rgb), 0.06) 100%);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow:
@@ -800,8 +808,8 @@
 
 .nextBtn:active:not(:disabled) {
   background: linear-gradient(to bottom,
-    rgba(200, 160, 90, 0.26) 0%,
-    rgba(200, 160, 90, 0.12) 100%);
+    rgba(var(--accent-rgb), 0.26) 0%,
+    rgba(var(--accent-rgb), 0.12) 100%);
   border-color: rgba(var(--accent-rgb), 0.8);
 }
 

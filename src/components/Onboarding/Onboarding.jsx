@@ -10,10 +10,13 @@ import { GOAL_ICON, CheckIcon } from './StepIcons'
 import styles from './Onboarding.module.css'
 import { haptic } from '../../lib/haptics'
 
+/* Всяка цел носи тона на макроса, който я описва — изгарянето мазнините,
+   поддържането въглехидратите, покачването протеина. Целта е човек да отгатне
+   реда по цвета, преди да е прочел етикета. */
 const GOAL_OPTIONS = [
-  { id: 'cut',      labelKey: 'ob.goal.cut',      descKey: 'ob.goal.cut.desc',      kcalDelta: -400 },
-  { id: 'maintain', labelKey: 'ob.goal.maintain', descKey: 'ob.goal.maintain.desc', kcalDelta: 0    },
-  { id: 'bulk',     labelKey: 'ob.goal.bulk',     descKey: 'ob.goal.bulk.desc',     kcalDelta: 300  },
+  { id: 'cut',      labelKey: 'ob.goal.cut',      descKey: 'ob.goal.cut.desc',      kcalDelta: -400, tone: 'var(--macro-fat-rgb)'     },
+  { id: 'maintain', labelKey: 'ob.goal.maintain', descKey: 'ob.goal.maintain.desc', kcalDelta: 0,    tone: 'var(--macro-carbs-rgb)'   },
+  { id: 'bulk',     labelKey: 'ob.goal.bulk',     descKey: 'ob.goal.bulk.desc',     kcalDelta: 300,  tone: 'var(--macro-protein-rgb)' },
 ]
 
 /* Activity levels stay a real 5-way question — the multipliers used to size the
@@ -345,6 +348,7 @@ export default function Onboarding({ isCoachingIntake = false, onChangePlan, onC
                   <button
                     key={g.id}
                     className={`${styles.goalCard} ${form.goal === g.id ? styles.goalCardActive : ''}`}
+                    style={{ '--goal-tone-rgb': g.tone }}
                     onClick={() => set('goal', g.id)}
                     type="button"
                   >
