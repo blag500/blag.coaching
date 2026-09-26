@@ -21,14 +21,6 @@ import AppHeader from '../AppHeader/AppHeader'
 import styles from './NutritionCards.module.css'
 import Pictogram from '../Pictogram/Pictogram'
 
-function greetingKey() {
-  const h = new Date().getHours()
-  if (h >= 5  && h < 12) return 'nutr.greeting.morning'
-  if (h >= 12 && h < 17) return 'nutr.greeting.afternoon'
-  return 'nutr.greeting.evening'
-}
-
-
 export default function NutritionCards({ onNavigate, onMenuOpen }) {
   const { chrome: paneChrome } = usePane()
   const { profile } = useAuth()
@@ -107,7 +99,6 @@ export default function NutritionCards({ onNavigate, onMenuOpen }) {
       )}
       <AppHeader
         onMenuOpen={onMenuOpen}
-        eyebrow={t(greetingKey())}
         title={firstName || 'BLAG'}
         avatarUrl={profile?.avatar_url}
         avatarInitial={(profile?.name || '?')[0].toUpperCase()}
