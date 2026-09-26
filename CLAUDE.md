@@ -27,11 +27,19 @@ Deploy by pushing to the main branch (Netlify / static host watching the repo). 
 - `role === 'coach'` → `CoachPanel` + `ClientDetail` (manage all clients, edit macros/targets, view charts)
 - `role === 'client'` → `NutritionCards`, `Compliance`, `Training`, `Profile`, `Explore`
 
-**CSS design system** (defined in `src/index.css`):
-- Dark gold luxury theme: `--bg: #0C0A06`, `--accent: #ffb74d` (amber gold), `--text: #F2E8CF`
-- `--font-heading: 'Bebas Neue'` (uppercase display), `--font-body: 'JetBrains Mono'` (monospace)
-- Surface layers: `--surface-1` (card bg), `--surface-2` (input bg)
-- All new UI should use these CSS variables — never hardcode colors except SVG-specific ones
+**CSS design system** — `src/index.css` holds the tokens (132 of them);
+`docs/DESIGN.md` explains what they mean and why. **Read `docs/DESIGN.md` before
+touching anything visible.** The short version:
+
+- Three themes on `<html data-theme>`: dark (default), `light`, `glass`. Every colour
+  token is redefined in all three — never give a colour its only definition inside one.
+- `--bg: #0C0A06`, `--accent: #C8A05A` (antique gold), `--text: #F2E8CF` in the dark theme.
+- `--font-heading: 'Oswald'` (Bebas Neue ships no Cyrillic); `--font-body` is the system
+  face, not a webfont.
+- Surfaces: `--panel-bg` for cards (no blur), `--glass-bg` + `--glass-blur` for chrome
+  that genuinely overlaps content, `--panel-solid` for things floating over content.
+- Colour, radius, easing and duration are never hardcoded. Five radii, four curves,
+  four durations — the set is deliberate and closed.
 
 **Data hooks** (`src/hooks/`): each wraps a Supabase query with local state. Hooks: `useFoodLog`, `useCustomFoods`, `useHabitsToday`, `useHabitHistory`, `useWeightLog`, `usePushNotifications`, `useUnread`, `usePullToRefresh`.
 
