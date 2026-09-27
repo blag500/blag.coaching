@@ -494,13 +494,25 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .dish .meta {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    display: grid; gap: 4px; justify-items: start;
     white-space: nowrap;
-    margin-top: 5px;
+    margin-top: 7px;
     font-family: var(--font-mono); font-size: 11.5px;
     color: var(--ink-faint); font-variant-numeric: tabular-nums;
   }
-  .dish .meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .dish .meta > span { min-width: 0; max-width: 100%; }
+  /* Изводът носи знак до себе си; цветът идва от макроса, за който говори,
+     и е същият, който приложението ползва за същото нещо. Отрязва се `i`,
+     не обвивката — текст във флекс контейнер не хваща многоточие. */
+  .dish .meta .ins {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-body); font-size: 12.5px; font-weight: 500;
+  }
+  .dish .meta .ins .pic { flex: none; }
+  .dish .meta .ins i {
+    font-style: normal; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis;
+  }
   .dish .meta b { color: var(--ink); font-size: 14.5px; flex: none; }
 
   .dish.soon { cursor: default; opacity: 0.55; }
@@ -1320,7 +1332,7 @@
 
   <div class="topbar" id="topbar">
     <header class="brand">
-      <span class="lockup"><h1>ЧИЙТ<span>КОД</span></h1><em>Храната, която си знае числата ;)</em></span>
+      <span class="lockup"><h1>CHEAT<span>CODE</span></h1><em>Храната, която си знае числата ;)</em></span>
     </header>
     <div class="find" id="find">
       <div class="search">
@@ -1885,6 +1897,35 @@
   /* Границите на едно ястие: най-малкото и най-голямото, което може да стане,
      плюс най-ниската цена. Смятат се от същите данни като конфигуратора —
      няма как да се разминат с него. */
+  /* Числото на плочката. Редът е по сила, не по удобство:
+       1. протеинът, ако е висок — това е числото, което клиентите следят;
+       2. собственото твърдение на ястието, ако има такова;
+       3. иначе водещият макрос по калориен дял.
+     Стойностите са за средния размер — това, което получаваш, ако не
+     пипнеш нищо. Обхват „от–до" обещава и двата края, а кутията е една. */
+  function insight(d) {
+    var mid = d.sizes[Math.min(1, d.sizes.length - 1)];
+    var grams = {};
+    d.base.forEach(function (i) { grams[i.id] = mid.g[i.id] != null ? mid.g[i.id] : i.grams; });
+    var gz = glazesOf(d);
+    var gl = gz.length ? gz[0] : null;
+    if (gl) grams['glaze'] = gl.grams;
+    var sum = sumFor(d, grams, gl, {}).sum;
+
+    /* Двайсет, колкото е и прагът за същото твърдение в ястието. Един
+       праг, едно значение — инак плочката и страницата спорят. */
+    if (sum.protein >= 20) {
+      return { icon: 'protein', text: Math.round(sum.protein) + ' г протеин', color: 'var(--protein)' };
+    }
+    if (d.claims && d.claims.length) {
+      return { icon: 'check', text: d.claims[0], color: 'var(--accent)' };
+    }
+    var kc = { protein: sum.protein * 4, carbs: sum.carbs * 4, fat: sum.fat * 9 };
+    var lead = Object.keys(kc).reduce(function (a, b) { return kc[a] >= kc[b] ? a : b; });
+    var word = { protein: 'протеин', carbs: 'въглехидрати', fat: 'мазнини' }[lead];
+    return { icon: lead, text: Math.round(sum[lead]) + ' г ' + word, color: 'var(--' + lead + ')' };
+  }
+
   function bounds(d) {
     var lo = Infinity, hi = 0, cheap = Infinity, maxProt = 0;
     var gz = glazesOf(d);
@@ -1955,6 +1996,7 @@
       /* Плочката в менюто е редакторски избор, не първата разновидност:
          „чист грис" не продава нищо, а менюто е витрина. */
       var photo = d.menuPhoto || (gz.length ? gz[0].photo : d.photo);
+      var ins = insight(d);
 
       var card = document.createElement('button');
       card.type = 'button';
@@ -1964,8 +2006,8 @@
         '<span class="txt">' +
           '<b>' + d.name + '</b>' +
           '<p>' + d.short + '</p>' +
-          '<span class="meta"><span>' + Math.round(b.lo) + '–' + Math.round(b.hi) +
-            ' ккал</span><b>' + money(b.cheap) + '</b></span>' +
+          '<span class="meta"><span class="ins" style="color:' + ins.color + '">' +
+            icon(ins.icon, 14) + '<i>' + ins.text + '</i></span><b>' + money(b.cheap) + '</b></span>' +
         '</span>';
       card.addEventListener('click', function () { openDish(d); show('item'); });
       host.appendChild(card);
