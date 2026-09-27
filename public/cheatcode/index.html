@@ -55,6 +55,9 @@
        пропуснат — върху равен цвят стъклото не е стъкло, а сив правоъгълник. */
     --chip-bg:     rgba(255, 255, 255, 0.55);
     --chip-border: rgba(20, 28, 23, 0.08);
+    /* Воалът е по-плътен от хапчето: хапчето стои върху панел, а хедърът и
+       навигацията стоят върху каквото мине отдолу — снимка, число, нищо. */
+    --veil:        rgba(242, 244, 236, 0.74);
     --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 
     --r-sm: 8px;
@@ -81,6 +84,7 @@
       --cocoa:       #6B4430;
       --chip-bg:     rgba(255, 255, 255, 0.07);
       --chip-border: rgba(255, 255, 255, 0.11);
+      --veil:        rgba(20, 28, 24, 0.72);
       --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.10);
       --kcal:    #D4AC66;
       --protein: #5FB2F0;
@@ -108,6 +112,7 @@
     --chip-bg:     rgba(255, 255, 255, 0.07);
     --chip-border: rgba(255, 255, 255, 0.11);
     --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    --veil:        rgba(20, 28, 24, 0.72);
     --kcal:    #D4AC66;
     --protein: #5FB2F0;
     --carbs:   #6FC475;
@@ -168,13 +173,23 @@
   .lockup em {
     font-style: normal; font-size: 13px; color: var(--ink-soft);
   }
+  /* Хедърът стои залепен горе и се прибира надолу-нагоре заедно с долната
+     лента. Отрицателният хоризонтален отстъп е, за да мине стъклото през
+     цялата ширина, въпреки че `.wrap` го е отместил навътре. */
   .brand {
+    position: sticky; top: 0; z-index: 4;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    padding-block: 20px 14px;
+    margin-inline: -18px;
+    padding: 20px 18px 14px;
+    background: var(--veil);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    transition: transform 280ms cubic-bezier(0.2,0.8,0.2,1);
   }
+  body.tuck .brand { transform: translateY(-104%); }
   .brand h1 {
     font-family: var(--font-display);
     font-weight: 800;
@@ -383,7 +398,13 @@
     border-radius: var(--r-md);
     background: var(--cocoa);
   }
-  .dish .txt { min-width: 0; display: grid; gap: 2px; padding: 10px 2px 2px; }
+  /* `minmax(0, 1fr)`, не `auto`: колона с автоматична ширина се мери по
+     най-дългия си ред и изнася текста извън картата, а `min-width: 0`
+     върху контейнера не стига до самата колона. Вижда се под 330 px. */
+  .dish .txt {
+    min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr);
+    gap: 2px; padding: 10px 2px 2px;
+  }
   .dish b {
     font-weight: 600; font-size: 15px; letter-spacing: -0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -968,38 +989,57 @@
      да се видят — а точно тогава и двете са нужни. */
   .dock {
     position: fixed; inset: auto 0 0 0; z-index: 3;
-    background: var(--surface);
-    border-top: 1px solid var(--line);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .order {
-    padding: 12px 18px;
+  /* Плътна лента отрязва страницата на две. Вместо това земята се изкачва
+     и заглъхва — съдържанието минава под бутоните, без да ги мъти.
+     Заглъхването е с маска, не с преход към `transparent`: преходът минава
+     през прозрачно черно и оставя сив ръб върху светла тема. */
+  .dock::before {
+    content: ''; position: absolute; inset: -28px 0 0;
+    background: var(--ground-flat);
+    -webkit-mask-image: linear-gradient(to top, #000 58%, transparent);
+    mask-image: linear-gradient(to top, #000 58%, transparent);
+    pointer-events: none;
   }
-  .order + .nav .nav-inner { border-top: 1px solid var(--line); }
+  .order, .nav { position: relative; }
+  .order {
+    padding: 10px 18px 6px;
+  }
 
   /* Прибирането е като в приложението: надолу пречи, нагоре трябва.
      Височината се свива, а не само се плъзга — иначе долният ръб остава
      празен и лентата изглежда счупена. */
   .nav {
     overflow: hidden;
-    max-height: 62px;
+    max-height: 70px;
     transition: max-height 260ms cubic-bezier(0.2,0.8,0.2,1),
                 opacity 200ms;
   }
   .dock.tuck .nav { max-height: 0; opacity: 0; }
+  /* Хапче, не лента: навигацията плува над страницата и заема толкова,
+     колкото са думите в нея. */
   .nav-inner {
-    max-width: 520px; margin: 0 auto;
-    display: flex; padding: 6px 18px 8px;
+    width: fit-content; margin: 0 auto 10px;
+    display: flex; gap: 4px; padding: 5px;
+    border-radius: 999px;
+    background: var(--veil);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi), 0 6px 22px rgba(0,0,0,0.16);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
   }
   .nav-inner button {
-    flex: 1;
-    display: grid; justify-items: center; gap: 3px;
-    background: none; border: none; padding: 6px 0;
-    font: inherit; font-size: 11px; color: var(--ink-faint);
+    display: flex; align-items: center; gap: 8px;
+    background: none; border: none; padding: 9px 16px;
+    border-radius: 999px;
+    font: inherit; font-size: 13px; color: var(--ink-faint);
     cursor: pointer;
-    transition: color 160ms;
+    transition: color 160ms, background 160ms;
   }
-  .nav-inner button[aria-current="page"] { color: var(--accent); }
+  .nav-inner button[aria-current="page"] {
+    color: var(--accent); background: var(--accent-soft);
+  }
   .nav-inner button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
   .badge-wrap { position: relative; display: block; }
   .badge-wrap i {
@@ -1502,7 +1542,9 @@
       id: 'gris',
       name: 'Грис на стероиди',
       short: 'Оризов грис, банан, бисквити',
-      desc: 'Оризов грис с банан и натрошени бисквити без захар. Закуска, която се води хранене.',
+      desc: 'Оризов грис с банан и натрошени бисквити. Закуска, която се води хранене.',
+      descLead: 'Оризов грис',
+      descTail: 'Закуска, която се води хранене.',
       prep: 15,
       packaging: 15,
       photo: '/cheatcode/gris.jpg', menuPhoto: '/cheatcode/gris-oba.jpg',
@@ -1513,12 +1555,12 @@
            порции според размера. */
         { id: 'gris', name: 'Оризов грис', unit: 'сух', grams: 80, min: 50, max: 120, step: 10,
           per100: { kcal: 348, protein: 6.6, carbs: 79, fat: 0.6 }, cost100: 24.2 },
-        { id: 'banan', name: 'Банан', grams: 100, min: 0, max: 150, step: 25,
+        { id: 'banan', name: 'Банан', grams: 100, min: 0, max: 150, step: 25, say: 'банан',
           per100: { kcal: 89, protein: 1.1, carbs: 22.8, fat: 0.3 }, cost100: 17.8 },
         /* ВНИМАНИЕ: макросите на бисквитите са типични за petit-beurre без
            добавена захар, НЕ са от пакета. Сменят се от етикета, преди нещо
            от това да излезе пред хора. Цената е вярна: €1.94 за 225 г. */
-        { id: 'biskviti', name: 'Бисквити', grams: 30, min: 0, max: 60, step: 10,
+        { id: 'biskviti', name: 'Бисквити', grams: 30, min: 0, max: 60, step: 10, say: 'натрошени бисквити',
           per100: { kcal: 425, protein: 8, carbs: 67, fat: 15 }, cost100: 86.2 }
       ],
       sizes: [
@@ -1532,9 +1574,9 @@
       tweaks: [
         { id: 'extra', label: 'Отгоре', kind: 'extra',
           options: [
-            { id: 'protein', name: 'Протеинова глазура', grams: 30,
+            { id: 'protein', name: 'Протеинова глазура', grams: 30, say: 'протеинова глазура',
               per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2 },
-            { id: 'gorski', name: 'Замразени горски плодове', grams: 100,
+            { id: 'gorski', name: 'Замразени горски плодове', grams: 100, say: 'замразени горски плодове',
               per100: { kcal: 44, protein: 0.9, carbs: 8.5, fat: 0.4 }, cost100: 50.7, pack: 0 }
           ] }
       ],
@@ -1630,6 +1672,29 @@
     });
     d.base.forEach(function (i) { state.g[key(d, i)] = state.g[key(d, i)] || i.grams; });
     d.glazes.forEach(function (t) { state.g[key(d, t, true)] = state.g[key(d, t, true)] || t.grams; });
+  }
+
+  /* Описанието не може да обещава банан на кутия без банан. Затова
+     съставките, които се пускат и спират, сами си казват думата, а изречението
+     се сглобява от това, което наистина е вътре. */
+  function descFor(d) {
+    if (!d.descLead) return d.desc;
+    var parts = [];
+    d.base.forEach(function (i) {
+      if (i.say && state.g[key(d, i)] > 0) parts.push(i.say);
+    });
+    (d.tweaks || []).forEach(function (t) {
+      if (t.kind !== 'extra') return;
+      t.options.forEach(function (o) {
+        if (o.say && state.tw[t.id + ':' + o.id]) parts.push(o.say);
+      });
+    });
+    var lead = d.descLead;
+    if (parts.length === 1) lead += ' с ' + parts[0];
+    else if (parts.length > 1) {
+      lead += ' с ' + parts.slice(0, -1).join(', ') + ' и ' + parts[parts.length - 1];
+    }
+    return lead + '. ' + d.descTail;
   }
 
   function icon(name, size) {
@@ -2166,7 +2231,7 @@
     var s = r.sum;
 
     $('dishName').textContent = d.name;
-    $('dishDesc').textContent = d.desc;
+    $('dishDesc').textContent = descFor(d);
     buildClaims(s);
 
     $('kcal').textContent = Math.round(s.kcal);
@@ -2429,6 +2494,7 @@
     /* Нов изглед, ново начало: лентата излиза, дори да е била прибрана от
        разлистването на предишния. */
     $('dock').classList.remove('tuck');
+    document.body.classList.remove('tuck');
   }
 
   /* ── Темата ───────────────────────────────────────────────── */
@@ -2522,12 +2588,17 @@
 
   /* Надолу лентата пречи на четенето, нагоре — трябва. Прагът е, за да не
      трепти при дребните мръдвания на пръста. */
+  function tuck(on) {
+    dockEl.classList.toggle('tuck', on);
+    document.body.classList.toggle('tuck', on);
+  }
+
   var lastY = 0;
   window.addEventListener('scroll', function () {
     var y = window.scrollY;
-    if (y < 80) dockEl.classList.remove('tuck');
-    else if (y > lastY + 8) dockEl.classList.add('tuck');
-    else if (y < lastY - 8) dockEl.classList.remove('tuck');
+    if (y < 80) tuck(false);
+    else if (y > lastY + 8) tuck(true);
+    else if (y < lastY - 8) tuck(false);
     if (!dockEl.classList.contains('tuck')) measureDock();
     lastY = y;
   }, { passive: true });
