@@ -197,8 +197,8 @@
      Без посока смяната е мигване и човек не знае къде е отишъл.
      Анимация, не преход — преходът не тръгва от `display: none`. */
   #menuView, #itemView, #cartView, #doneView { animation: viewFwd var(--in) var(--ease) both; }
-  body.back #menuView, body.back #itemView,
-  body.back #cartView, body.back #doneView { animation-name: viewBack; }
+  body.rewind #menuView, body.rewind #itemView,
+  body.rewind #cartView, body.rewind #doneView { animation-name: viewBack; }
   @keyframes viewFwd  { from { opacity: 0; transform: translateX(16px); } }
   @keyframes viewBack { from { opacity: 0; transform: translateX(-16px); } }
 
@@ -211,7 +211,7 @@
     pointer-events: none;
     animation: leaveFwd var(--out) var(--ease) both !important;
   }
-  body.back .leaving { animation-name: leaveBack !important; }
+  body.rewind .leaving { animation-name: leaveBack !important; }
   @keyframes leaveFwd  { to { opacity: 0; transform: translateX(-14px); } }
   @keyframes leaveBack { to { opacity: 0; transform: translateX(14px); } }
 
@@ -520,7 +520,7 @@
      си отиде с фотографията, единственият изход от страницата изчезва.
      Центрирана спрямо същата максимална ширина, която държи и съдържанието —
      на широк екран иначе увисва в левия ъгъл на прозореца. */
-  .back {
+  button.back {
     position: fixed; z-index: 5;
     top: calc(14px + env(safe-area-inset-top));
     left: max(18px, calc(50vw - 260px + 18px));
@@ -538,8 +538,8 @@
     animation: backIn var(--in) var(--ease) both;
   }
   @keyframes backIn { from { opacity: 0; transform: scale(0.8); } }
-  .back:hover { border-color: var(--accent); }
-  .back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  button.back:hover { border-color: var(--accent); }
+  button.back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
   /* ── Снимката и името ──────────────────────────────────── */
   /* Снимката е продуктът, и тя е изборът.
@@ -2571,7 +2571,11 @@
   var leaveTimer = null;
 
   function show(which) {
-    document.body.classList.toggle('back', ORDER.indexOf(which) < ORDER.indexOf(view));
+    /* Флагът за посока НЕ може да се казва `back` — така се казва и кръглият
+       бутон за назад, а `.back` хваща `<body>` и тялото на страницата става
+       кръгче 38×38, закачено за екрана. Второ такова сблъскване в тази
+       страница: първото беше задната страна на таблото срещу същия бутон. */
+    document.body.classList.toggle('rewind', ORDER.indexOf(which) < ORDER.indexOf(view));
 
     /* Старият изглед остава още един дъх, колкото да си излезе. Ако междувременно
        дойде трета смяна, предишният се прибира веднага — два излизащи наведнъж
