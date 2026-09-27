@@ -1,52 +1,38 @@
 /**
- * Прави публичната страница на Чийт Код от артефакта.
+ * Прави публичната страница на Чийт Код от източника ѝ.
  *
- * Артефактът е източникът: той се пише и гледа, а `/cheatcode` е това, което
- * излиза навън. Дотук двете се разминаваха, защото всяка промяна се пренасяше
- * на ръка — тринайсет версии разлика в един ден. Оттук нататък:
+ *   node scripts/build-cheatcode.mjs            # cheatcode/page.html → public/cheatcode/
+ *   node scripts/build-cheatcode.mjs <друг.html>
  *
- *   node scripts/build-cheatcode.mjs <път-до-артефакта.html>
+ * Източникът е `cheatcode/page.html` — тялото на страницата без обвивка.
+ * Дълго време той живееше като артефакт в Claude и се пренасяше на ръка;
+ * оттогава остана разделението, но вече и двете са в repo-то.
  *
- * Разликите между двете са три и всичките са тук, а не в нечия памет:
- *   1. Артефактът няма <!doctype>, <head> и charset — обвивката му ги слага.
+ * Разликите между източника и изхода са три и всичките са тук, а не в
+ * нечия памет:
+ *   1. Източникът няма <!doctype>, <head> и charset — тук се слагат.
  *   2. Снимките се сервират от /cheatcode/, не от съседния файл.
  *   3. Страницата е проба: noindex плюс ред, който го казва на човек.
+ *
+ * Снимките живеят направо в `public/cheatcode/` и не се копират — само се
+ * проверява, че всяка, която страницата иска, наистина е там.
  */
-import { readFileSync, writeFileSync, copyFileSync, mkdirSync, existsSync } from 'node:fs';
-import { dirname, join, basename } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
-const src = process.argv[2];
-if (!src) {
-  console.error('Употреба: node scripts/build-cheatcode.mjs <артефакт.html>');
-  process.exit(1);
-}
-
+const SRC = process.argv[2] || 'cheatcode/page.html';
 const OUT_DIR = 'public/cheatcode';
-const PHOTOS = [
-  'yagodi.jpg', 'banan.jpg', 'protein.jpg', 'kakao.jpg', 'kayma.jpg',
-  'gris.jpg', 'gris-banan.jpg', 'gris-biskviti.jpg', 'gris-oba.jpg',
-];
 
-/* Разновидностите на гриса са четири снимки, а заснети са две. Липсващата се
-   замества с най-близката, вместо да остави счупено квадратче: страницата
-   работи, а денят, в който истинската влезе в папката, я изважда от тук сама.
-   Заместникът е близък, но не е верен — затова се изписва при всяко пускане. */
-const STAND_IN = {
-  'gris-biskviti.jpg': 'gris-oba.jpg',   // само с бисквити, без банан, още не е сниман
-};
-
-let s = readFileSync(src, 'utf8');
+let s = readFileSync(SRC, 'utf8');
 
 /* Снимките идват от папката, в която живее страницата. Без наклонената черта
    отпред относителният път се мери спрямо /cheatcode без наклонена и снимките
    се търсят в корена. */
-for (const f of PHOTOS) {
-  s = s.replaceAll(`'${f}'`, `'/cheatcode/${f}'`);
-  s = s.replaceAll(`src="${f}"`, `src="/cheatcode/${f}"`);
-}
+const wanted = new Set();
+s = s.replace(/'([\w-]+\.jpe?g)'/g, (_, f) => { wanted.add(f); return `'/cheatcode/${f}'`; });
+s = s.replace(/src="([\w-]+\.jpe?g)"/g, (_, f) => { wanted.add(f); return `src="/cheatcode/${f}"`; });
 
-/* Ред, който казва на човека какво гледа. Артефактът е за преглед вътре;
-   това е адрес, на който може да попадне някой отвън. */
+/* Ред, който казва на човека какво гледа. */
 const notice =
   '  <p class="foot">Пробна страница. Още не приемаме поръчки — бутонът само ' +
   'показва какво би отишло в кутията.</p>\n';
@@ -60,9 +46,9 @@ const head =
   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
   '<meta name="robots" content="noindex, nofollow">\n' +
   '<meta name="description" content="Конфигурируемо ястие — избираш грамажа, макросите се смятат.">\n' +
-  '<meta name="theme-color" content="#101613">\n' +
-  /* Обвивката на артефакта носи свой нулиращ стил; самостоятелната страница
-     няма такава. [hidden] е задължителното: display:grid го бие иначе. */
+  '<meta name="theme-color" content="#141C18">\n' +
+  /* Самостоятелната страница няма нулиращ стил отникъде. [hidden] е
+     задължителното: display:grid го бие иначе. */
   '<style>*,*::before,*::after{box-sizing:border-box}img{max-width:100%}' +
   '[hidden]{display:none!important}html{color-scheme:dark light}body{margin:0}</style>\n';
 
@@ -72,19 +58,10 @@ const out = head + s.slice(0, bodyAt) + '</head>\n<body>\n' + s.slice(bodyAt) + 
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(join(OUT_DIR, 'index.html'), out);
 
-const srcDir = dirname(src);
-let copied = 0;
-const borrowed = [];
-for (const f of PHOTOS) {
-  let from = join(srcDir, f);
-  let own = existsSync(from);
-  if (!own && STAND_IN[f]) {
-    from = join(srcDir, STAND_IN[f]);
-    if (existsSync(from)) { borrowed.push(`${f} ← ${STAND_IN[f]}`); own = true; }
-  }
-  if (own) { copyFileSync(from, join(OUT_DIR, f)); copied++; }
-  else console.warn(`липсва снимка: ${basename(join(srcDir, f))}`);
-}
+console.log(`${OUT_DIR}/index.html — ${(out.length / 1024).toFixed(1)} KB, заглавие „${title}", ${wanted.size} снимки`);
 
-console.log(`${OUT_DIR}/index.html — ${(out.length / 1024).toFixed(1)} KB, заглавие „${title}", ${copied} снимки`);
-for (const b of borrowed) console.warn(`временна снимка: ${b}`);
+const missing = [...wanted].filter((f) => !existsSync(join(OUT_DIR, f)));
+if (missing.length) {
+  console.error(`ЛИПСВАТ в ${OUT_DIR}: ${missing.join(', ')}`);
+  process.exitCode = 1;
+}

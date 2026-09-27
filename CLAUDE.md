@@ -100,6 +100,14 @@ Fill it from an Obsidian vault with `node scripts/sync-knowledge.mjs <folder>
 --scope private` (needs SUPABASE_URL, BOT_SECRET, OWNER_EMAIL); unchanged files
 are skipped by content digest.
 
+**Чийт Код** (`cheatcode/page.html` → `public/cheatcode/index.html`): отделна
+страница, не част от приложението — конфигурируеми ястия за такеауей.
+Източникът е тялото без обвивка; `node scripts/build-cheatcode.mjs` слага
+doctype, head, `noindex` и пренаписва пътищата на снимките към `/cheatcode/`.
+Снимките живеят направо в `public/cheatcode/` и не се копират — строителят
+само проверява, че всяка поискана наистина е там, и пада с грешка, ако не е.
+Страницата се редактира и гледа директно; артефактът в Claude вече не се ползва.
+
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
 ## Testing
