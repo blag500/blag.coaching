@@ -22,7 +22,7 @@ if (!src) {
 }
 
 const OUT_DIR = 'public/cheatcode';
-const PHOTOS = ['yagodi.jpg', 'banan.jpg', 'protein.jpg', 'kakao.jpg', 'kayma.jpg'];
+const PHOTOS = ['yagodi.jpg', 'banan.jpg', 'protein.jpg', 'kakao.jpg', 'kayma.jpg', 'gris.jpg'];
 
 let s = readFileSync(src, 'utf8');
 

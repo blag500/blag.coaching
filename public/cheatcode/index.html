@@ -198,6 +198,94 @@
      Ястието се отваря след като си избрал него, не преди това. */
   /* Търсене и филтри. Филтрите се движат по числата, които и без това
      смятаме — калории и протеин — вместо по измислени категории. */
+  /* Количката в хедъра: брояч само когато има какво да брои. */
+  .cart-btn {
+    position: relative;
+    display: grid; place-items: center;
+    width: 34px; height: 34px; margin: -6px 0;
+    background: none; border: none; border-radius: 50%;
+    color: var(--ink-soft); cursor: pointer;
+  }
+  .cart-btn:hover { color: var(--ink); background: var(--surface-2); }
+  .cart-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .cart-btn i {
+    position: absolute; top: -2px; right: -4px;
+    min-width: 17px; height: 17px; padding: 0 4px;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--surface);
+    border-radius: 999px;
+    font-family: var(--font-mono); font-style: normal;
+    font-size: 10.5px; font-weight: 700; line-height: 1;
+  }
+
+  .back-plain {
+    background: none; border: none; padding: 6px 0;
+    font: inherit; font-size: 14px; color: var(--ink-soft); cursor: pointer;
+  }
+  .back-plain:hover { color: var(--ink); }
+  .back-plain:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+  /* Редът в количката носи цялата си конфигурация. Човек, който е настройвал
+     три неща преди пет минути, не помни кое какво е — а поръчка, за която
+     трябва да помниш, се сбърква. */
+  .line {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .line b { font-weight: 600; font-size: 15.5px; }
+  .line .cfg {
+    grid-column: 1 / -1;
+    font-family: var(--font-mono); font-size: 11.5px; line-height: 1.6;
+    color: var(--ink-faint); word-break: break-word;
+  }
+  .line .price {
+    font-family: var(--font-mono); font-weight: 700; font-size: 15px;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .line .ops { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .line .drop {
+    margin-left: auto; background: none; border: none; padding: 4px;
+    font: inherit; font-size: 13px; color: var(--ink-faint); cursor: pointer;
+  }
+  .line .drop:hover { color: #C0392B; }
+
+  .sum-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-top: 18px; font-size: 15px;
+  }
+  .sum-row b {
+    font-family: var(--font-mono); font-weight: 700; font-size: 21px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .form { display: grid; gap: 10px; }
+  .fld { display: grid; gap: 5px; }
+  .fld span { font-size: 12.5px; color: var(--ink-faint); }
+  .fld input {
+    background: var(--surface); border: 1px solid transparent; border-radius: var(--r-md);
+    padding: 13px 14px; font: inherit; font-size: 16px; color: var(--ink);
+    outline: none; width: 100%;
+  }
+  .fld input:focus { border-color: var(--accent); }
+  .pay { margin: 14px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+  .err { margin: 10px 0 0; font-size: 13.5px; color: #C0392B; }
+
+  .done { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 46px 0 10px; }
+  .done .pic { color: var(--accent); }
+  .done h2 {
+    font-family: var(--font-mono); font-weight: 700; font-size: 30px;
+    letter-spacing: 0.06em; margin: 0;
+  }
+  .done p { margin: 0; font-size: 14.5px; color: var(--ink-soft); max-width: 40ch; }
+  .done-note { font-size: 13px !important; color: var(--ink-faint) !important; }
+  .done-note b { color: var(--ink); font-weight: 600; }
+  .again {
+    margin-top: 12px; background: none; border: 1px solid var(--line);
+    border-radius: 999px; padding: 10px 20px;
+    font: inherit; font-size: 14px; color: var(--ink-soft); cursor: pointer;
+  }
+  .again:hover { border-color: var(--ink-faint); color: var(--ink); }
+
   .find { display: flex; gap: 9px; margin-bottom: 14px; }
   .search {
     flex: 1; min-width: 0;
@@ -1003,6 +1091,10 @@
 
   <header class="brand">
     <span class="lockup"><h1>ЧИЙТ<span>КОД</span></h1><em>Храната, която си знае числата ;)</em></span>
+    <button type="button" class="cart-btn" id="cartBtn" aria-label="Количката">
+      <svg class="pic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 4h2l2.2 10.4a1.6 1.6 0 0 0 1.6 1.3h7.8a1.6 1.6 0 0 0 1.6-1.3L20 7.5H6.2"/><circle cx="10" cy="19.4" r="1.3"/><circle cx="17" cy="19.4" r="1.3"/></svg>
+      <i id="cartCount" hidden>0</i>
+    </button>
     <button type="button" class="theme" id="theme" aria-label="Смени темата">
       <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-sun"/></svg>
     </button>
@@ -1041,7 +1133,7 @@
 
   <div class="sheet">
   <div class="name">
-    <h2 id="dishName">Благо кремче</h2>
+    <h2 id="dishName">Анаболно кремче</h2>
     <p id="dishDesc"></p>
     <div class="claims" id="claims"></div>
   </div>
@@ -1128,6 +1220,35 @@
 
 
 
+  <section id="cartView" hidden>
+    <button type="button" class="back-plain" id="backFromCart">← Менюто</button>
+    <h3 class="sec" style="margin-top:6px">Количката</h3>
+    <div id="cartLines"></div>
+    <p class="empty" id="cartEmpty" hidden>Още нищо не си сложил.</p>
+
+    <div id="checkout" hidden>
+      <h3 class="sec">За кого е</h3>
+      <div class="form">
+        <label class="fld"><span>Име</span><input id="fName" type="text" autocomplete="name" placeholder="Как да те потърсим"></label>
+        <label class="fld"><span>Телефон</span><input id="fPhone" type="tel" autocomplete="tel" placeholder="08…"></label>
+        <label class="fld"><span>Кога ще го вземеш</span><input id="fWhen" type="time" step="900"></label>
+        <label class="fld"><span>Бележка <small>по избор</small></span><input id="fNote" type="text" placeholder="Нещо, което да знаем"></label>
+      </div>
+      <p class="pay">Плащане на място, в брой.</p>
+      <p class="err" id="fErr" hidden></p>
+    </div>
+  </section>
+
+  <section id="doneView" hidden>
+    <div class="done">
+      <svg class="pic" width="46" height="46" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-check"/></svg>
+      <h2 id="doneCode">—</h2>
+      <p id="doneWhat"></p>
+      <p class="done-note">Това е проба. Поръчката <b>не е изпратена</b> никъде — няма кой да я приготви още.</p>
+      <button type="button" class="again" id="againBtn">Обратно към менюто</button>
+    </div>
+  </section>
+
 </div>
 
 <div class="order">
@@ -1141,7 +1262,7 @@
       <span id="price">—</span>
       <i></i>
       <svg class="pic" width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-meal"/></svg>
-      Поръчай
+      <span id="orderLabel">Добави</span>
     </button>
   </div>
 </div>
@@ -1167,7 +1288,7 @@
   var DISHES = [
     {
       id: 'kremche',
-      name: 'Благо кремче',
+      name: 'Анаболно кремче',
       short: 'Шоколадов крем, с глазура',
       desc: 'Шоколадов крем от овесени трици. Яде се като десерт, брои се като хранене.',
       prep: 7,
@@ -1195,30 +1316,30 @@
       glazes: [
         { id: 'yagodi', name: 'Замразени ягоди', grams: 100, min: 50, max: 150, step: 25,
           per100: { kcal: 32, protein: 0.7, carbs: 7.7, fat: 0.3 }, cost100: 56, pack: 0,
-          photo: '/cheatcode/yagodi.jpg', alt: 'Благо кремче, залято с ягоди' },
+          photo: '/cheatcode/yagodi.jpg', alt: 'Анаболно кремче, залято с ягоди' },
         { id: 'banan', name: 'Банан', grams: 100, min: 50, max: 150, step: 25,
           per100: { kcal: 89, protein: 1.1, carbs: 22.8, fat: 0.3 }, cost100: 17.8, pack: 0,
-          photo: '/cheatcode/banan.jpg', alt: 'Благо кремче, залято с банан' },
+          photo: '/cheatcode/banan.jpg', alt: 'Анаболно кремче, залято с банан' },
         { id: 'protein', name: 'Протеинова глазура', grams: 30, min: 15, max: 50, step: 5,
           per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2,
-          photo: '/cheatcode/protein.jpg', alt: 'Благо кремче с протеинова глазура' },
+          photo: '/cheatcode/protein.jpg', alt: 'Анаболно кремче с протеинова глазура' },
         { id: 'tahan', name: 'Тахан', grams: 20, min: 10, max: 40, step: 5,
           per100: { kcal: 595, protein: 17, carbs: 21, fat: 53.8 }, cost100: null, pack: 2,
-          photo: null, alt: 'Благо кремче с тахан' },
+          photo: null, alt: 'Анаболно кремче с тахан' },
         { id: 'none', name: 'Без глазура', grams: 0, min: 0, max: 0, step: 1,
           per100: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, cost100: 0, pack: 0,
-          photo: '/cheatcode/kakao.jpg', alt: 'Благо кремче без глазура' }
+          photo: '/cheatcode/kakao.jpg', alt: 'Анаболно кремче без глазура' }
       ]
     },
     {
       id: 'kayma',
-      name: 'Кайма с ориз',
+      name: 'Телешки боул',
       short: 'Телешка кайма, ориз, доматен сос',
       desc: 'Телешка кайма с ориз и доматен сос. Шейсет и шест грама протеин в една кутия.',
       prep: 25,
       packaging: 15,
       photo: '/cheatcode/kayma.jpg',
-      alt: 'Кайма с ориз в кутия',
+      alt: 'Телешки боул в кутия',
       base: [
         { id: 'kayma', name: 'Кайма', unit: 'сурова', grams: 250, min: 150, max: 350, step: 50,
           per100: { kcal: 156, protein: 22.51, carbs: 0.5, fat: 6.96 }, cost100: 92.2 },
@@ -1255,10 +1376,51 @@
       ],
       glazeLabel: null,
       glazes: []
+    },
+    {
+      id: 'gris',
+      name: 'Грис на стероиди',
+      short: 'Оризов грис, банан, бисквити',
+      desc: 'Оризов грис с банан и натрошени бисквити без захар. Закуска, която се води хранене.',
+      prep: 15,
+      packaging: 15,
+      photo: '/cheatcode/gris.jpg',
+      alt: 'Грис на стероиди с банан и бисквити',
+      base: [
+        /* 100 г сух грис става около 500 г сварен — затова грамажите тук са
+           на сухия, а кутията е следствие. Пакет от 505 г прави 5 до 8
+           порции според размера. */
+        { id: 'gris', name: 'Оризов грис', unit: 'сух', grams: 80, min: 50, max: 120, step: 10,
+          per100: { kcal: 348, protein: 6.6, carbs: 79, fat: 0.6 }, cost100: 24.2 },
+        { id: 'banan', name: 'Банан', grams: 100, min: 50, max: 150, step: 25,
+          per100: { kcal: 89, protein: 1.1, carbs: 22.8, fat: 0.3 }, cost100: 17.8 },
+        /* ВНИМАНИЕ: макросите на бисквитите са типични за petit-beurre без
+           добавена захар, НЕ са от пакета. Сменят се от етикета, преди нещо
+           от това да излезе пред хора. Цената е вярна: €1.94 за 225 г. */
+        { id: 'biskviti', name: 'Бисквити', grams: 30, min: 0, max: 60, step: 10,
+          per100: { kcal: 450, protein: 7, carbs: 72, fat: 14 }, cost100: 86.2 }
+      ],
+      sizes: [
+        { name: 'Малка',  g: { gris: 60,  banan: 60  } },
+        { name: 'Средна', g: { gris: 80,  banan: 100 } },
+        { name: 'Голяма', g: { gris: 100, banan: 140 } }
+      ],
+      claims: ['Без добавена захар'],
+      /* Добавките са предпочитание, което мени числата: заливаш или не.
+         Затова носят свои макроси и своя цена, за разлика от подправките. */
+      tweaks: [
+        { id: 'extra', label: 'Отгоре', kind: 'extra',
+          options: [
+            { id: 'protein', name: 'Протеинова глазура', grams: 30,
+              per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2 },
+            { id: 'gorski', name: 'Замразени горски плодове', grams: 100,
+              per100: { kcal: 44, protein: 0.9, carbs: 8.5, fat: 0.4 }, cost100: 50.7, pack: 0 }
+          ] }
+      ],
+      glazeLabel: null,
+      glazes: []
     }
   ];
-
-  var SOON = ['Палачинки с банан', 'Паста 4 сирена'];
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -1267,6 +1429,8 @@
      двойно по-скъпи съставки без двойно повече работа. Числото покрива труд,
      кухня, ток, фира и такса — не е печалба. */
   var state = { dish: null, glaze: null, qty: 1, addon: 335, locked: {}, g: {}, tw: {} };
+  var cart = [];
+  var view = 'menu';
 
   function dish() { return state.dish; }
 
@@ -1324,7 +1488,8 @@
 
   /* ── Сметката ─────────────────────────────────────────────── */
 
-  function sumFor(d, grams, gl) {
+  function sumFor(d, grams, gl, tw) {
+    tw = tw || {};
     var s = { kcal: 0, protein: 0, carbs: 0, fat: 0, grams: 0, cost: 0 };
     var lines = [];
 
@@ -1345,7 +1510,20 @@
     });
     if (gl && gl.id !== 'none') add(gl, grams['glaze']);
 
-    var pack = d.packaging + ((gl && gl.pack) || 0);
+    /* Добавките: включените влизат с целия си грамаж. Те не се мерят с
+       плъзгач — включено или не, защото „37 грама замразени плодове" е
+       въпрос, който никой купувач не си задава. */
+    var packExtra = 0;
+    (d.tweaks || []).forEach(function (t) {
+      if (t.kind !== 'extra') return;
+      t.options.forEach(function (o) {
+        if (!tw[t.id + ':' + o.id]) return;
+        add(o, o.grams);
+        packExtra += (o.pack || 0);
+      });
+    });
+
+    var pack = d.packaging + ((gl && gl.pack) || 0) + packExtra;
     s.cost += pack;
     lines.push({ name: 'Опаковка', grams: null, cost: pack });
 
@@ -1367,7 +1545,7 @@
     return out;
   }
 
-  function totals() { return sumFor(dish(), currentGrams(), glaze()); }
+  function totals() { return sumFor(dish(), currentGrams(), glaze(), state.tw); }
 
   /* ── Менюто ───────────────────────────────────────────────── */
 
@@ -1391,7 +1569,7 @@
         var grams = {};
         d.base.forEach(function (i) { grams[i.id] = z.g[i.id] != null ? z.g[i.id] : i.grams; });
         if (gl) grams['glaze'] = gl.grams;
-        var r = sumFor(d, grams, gl);
+        var r = sumFor(d, grams, gl, {});
         lo = Math.min(lo, r.sum.kcal);
         hi = Math.max(hi, r.sum.kcal);
         cheap = Math.min(cheap, finalPrice(r.sum.cost));
@@ -1465,17 +1643,6 @@
       host.appendChild(card);
       shown++;
     });
-
-    if (!filtering) {
-      SOON.forEach(function (n) {
-        var el = document.createElement('div');
-        el.className = 'dish soon';
-        el.innerHTML =
-          '<span class="ph">' + icon('meal', 30) + '</span>' +
-          '<span class="txt"><b>' + n + '</b><span class="meta"><span>скоро</span></span></span>';
-        host.appendChild(el);
-      });
-    }
 
     $('empty').hidden = shown > 0;
   }
@@ -1844,6 +2011,8 @@
       var on = t.options.filter(function (o) { return state.tw[t.id + ':' + o.id]; });
       if (t.kind === 'single') {
         if (on.length) parts.push(on[0].name.toUpperCase());
+      } else if (t.kind === 'extra') {
+        on.forEach(function (o) { parts.push(o.name.toUpperCase() + ' ' + o.grams); });
       } else if (on.length < t.options.length) {
         parts.push(t.label.toUpperCase() + ': ' +
                    (on.length ? on.map(function (o) { return o.name; }).join(', ') : 'без'));
@@ -1851,6 +2020,131 @@
     });
     $('codeLine').innerHTML = parts.join(' · ') + ' · <b>' + Math.round(s.kcal) + ' ККАЛ</b>';
 
+  }
+
+  /* ── Количката ────────────────────────────────────────────── */
+
+  /* Конфигурацията се описва веднъж и се носи с реда. Човек, който е
+     настройвал три неща преди пет минути, не помни кое какво е — а поръчка,
+     за която трябва да помниш, се сбърква. */
+  function describe(d, grams, gl, tw) {
+    var parts = d.base.filter(function (i) { return !i.locked; })
+      .map(function (i) { return i.name + ' ' + grams[i.id] + ' г'; });
+    if (gl && gl.id !== 'none') parts.push(gl.name + ' ' + grams['glaze'] + ' г');
+    (d.tweaks || []).forEach(function (t) {
+      var on = t.options.filter(function (o) { return tw[t.id + ':' + o.id]; });
+      if (t.kind === 'single') {
+        if (on.length) parts.push(on[0].name.toLowerCase());
+      } else if (t.kind === 'extra') {
+        on.forEach(function (o) { parts.push(o.name.toLowerCase() + ' ' + o.grams + ' г'); });
+      } else if (on.length < t.options.length) {
+        parts.push(t.label.toLowerCase() + ': ' +
+          (on.length ? on.map(function (o) { return o.name.toLowerCase(); }).join(', ') : 'без'));
+      }
+    });
+    return parts.join(' · ');
+  }
+
+  function addToCart() {
+    var d = dish(), gl = glaze(), grams = currentGrams();
+    /* С предпочитанията: без тях добавките не влизат в цената на реда. */
+    var r = sumFor(d, grams, gl, state.tw);
+    cart.push({
+      name: d.name,
+      cfg: describe(d, grams, gl, state.tw),
+      kcal: Math.round(r.sum.kcal),
+      grams: Math.round(r.sum.grams),
+      unit: finalPrice(r.sum.cost),
+      qty: state.qty
+    });
+    markCart();
+  }
+
+  function cartTotal() {
+    return cart.reduce(function (n, l) { return n + l.unit * l.qty; }, 0);
+  }
+
+  function markCart() {
+    var n = cart.reduce(function (a, l) { return a + l.qty; }, 0);
+    $('cartCount').textContent = n;
+    $('cartCount').hidden = n === 0;
+  }
+
+  function buildCart() {
+    var host = $('cartLines');
+    host.textContent = '';
+
+    cart.forEach(function (l, idx) {
+      var row = document.createElement('div');
+      row.className = 'line';
+      row.innerHTML =
+        '<b>' + l.name + '</b>' +
+        '<span class="price">' + money(l.unit * l.qty) + '</span>' +
+        '<span class="cfg">' + l.cfg + ' · ' + l.kcal + ' ккал · ' + l.grams + ' г</span>' +
+        '<span class="ops"><span class="qty">' +
+          '<button type="button" data-a="-" aria-label="По-малко">−</button>' +
+          '<b>' + l.qty + '</b>' +
+          '<button type="button" data-a="+" aria-label="Още едно">+</button>' +
+        '</span><button type="button" class="drop">Махни</button></span>';
+
+      row.querySelector('[data-a="-"]').addEventListener('click', function () {
+        if (l.qty > 1) { l.qty--; } else { cart.splice(idx, 1); }
+        buildCart(); markCart(); priceBar();
+      });
+      row.querySelector('[data-a="+"]').addEventListener('click', function () {
+        if (l.qty < 20) { l.qty++; buildCart(); markCart(); priceBar(); }
+      });
+      row.querySelector('.drop').addEventListener('click', function () {
+        cart.splice(idx, 1); buildCart(); markCart(); priceBar();
+      });
+      host.appendChild(row);
+    });
+
+    if (cart.length) {
+      var sum = document.createElement('div');
+      sum.className = 'sum-row';
+      sum.innerHTML = '<span>Общо</span><b>' + money(cartTotal()) + '</b>';
+      host.appendChild(sum);
+    }
+
+    $('cartEmpty').hidden = cart.length > 0;
+    $('checkout').hidden = cart.length === 0;
+    document.querySelector('.order').hidden = cart.length === 0;
+  }
+
+  /* В количката цената долу е сборът, не цената на едно ястие. */
+  function priceBar() {
+    if (view === 'cart') $('price').textContent = money(cartTotal());
+  }
+
+  /* Поръчката няма къде да отиде — това е проба. Затова последният екран го
+     казва с думи, вместо да остави човек да чака обаждане, което няма да
+     дойде. */
+  function placeOrder() {
+    var name = $('fName').value.trim();
+    var phone = $('fPhone').value.trim();
+    var err = $('fErr');
+
+    if (name.length < 2) {
+      err.textContent = 'Трябва ни име, за да те потърсим.';
+      err.hidden = false; $('fName').focus(); return;
+    }
+    if (phone.replace(/[^0-9]/g, '').length < 9) {
+      err.textContent = 'Телефонът изглежда непълен.';
+      err.hidden = false; $('fPhone').focus(); return;
+    }
+    err.hidden = true;
+
+    var n = cart.reduce(function (a, l) { return a + l.qty; }, 0);
+    var when = $('fWhen').value;
+    $('doneCode').textContent = 'ЧК-' + String(1000 + Math.floor(Math.random() * 8999));
+    $('doneWhat').textContent =
+      n + (n === 1 ? ' кутия' : ' кутии') + ' · ' + money(cartTotal()) +
+      (when ? ' · за ' + when : '') + ' · в брой на място';
+
+    cart = [];
+    markCart();
+    show('done');
   }
 
   function rebuild() {
@@ -1864,13 +2158,24 @@
   /* ── Изгледите ────────────────────────────────────────────── */
 
   function show(which) {
+    view = which;
     var item = which === 'item';
     document.querySelector('.brand').hidden = item;
     document.querySelector('.wrap').classList.toggle('bleed', item);
     $('itemView').hidden = !item;
-    $('menuView').hidden = item;
+    $('menuView').hidden = which !== 'menu';
+    $('cartView').hidden = which !== 'cart';
+    $('doneView').hidden = which !== 'done';
+
+    /* Долната лента се мени по изглед: в ястието добавя, в количката поръчва,
+       другаде я няма. Броячът е само на ястието — в количката всеки ред си
+       има свой. */
     document.querySelector('.order').hidden = !item;
+    document.querySelector('.order .qty').hidden = which === 'cart';
+    $('orderLabel').textContent = item ? 'Добави' : 'Поръчай';
+
     if (item) { buildTrack(); rebuild(); }
+    if (which === 'cart') { buildCart(); priceBar(); }
     window.scrollTo(0, 0);
   }
 
@@ -1925,18 +2230,27 @@
   });
 
   var toastTimer = null;
-  $('orderBtn').addEventListener('click', function () {
-    var r = totals();
-    var gl = glaze();
-    var msg = 'В поръчката: ' + state.qty + ' × ' + Math.round(r.sum.grams) + ' г · ' +
-              Math.round(r.sum.kcal) + ' ккал' +
-              (gl && gl.id !== 'none' ? ' · ' + gl.name.toLowerCase() : '');
+  function toast(msg) {
     var el = $('toast');
     el.textContent = msg;
     el.classList.add('on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { el.classList.remove('on'); }, 2600);
+    toastTimer = setTimeout(function () { el.classList.remove('on'); }, 2400);
+  }
+
+  $('orderBtn').addEventListener('click', function () {
+    if (view === 'item') {
+      addToCart();
+      toast(state.qty + ' × ' + dish().name + ' в количката');
+      show('menu');
+    } else if (view === 'cart') {
+      placeOrder();
+    }
   });
+
+  $('cartBtn').addEventListener('click', function () { show('cart'); });
+  $('backFromCart').addEventListener('click', function () { show('menu'); });
+  $('againBtn').addEventListener('click', function () { show('menu'); });
 
   /* ── Начало ───────────────────────────────────────────────── */
 
