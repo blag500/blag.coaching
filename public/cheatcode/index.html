@@ -202,6 +202,19 @@
   @keyframes viewFwd  { from { opacity: 0; transform: translateX(16px); } }
   @keyframes viewBack { from { opacity: 0; transform: translateX(-16px); } }
 
+  /* Излизащият изглед се вади от потока, за да се размине с влизащия;
+     иначе двата застават един под друг и страницата подскача. Отстъпът е
+     този на `.wrap`, защото абсолютното се мери от подложката ѝ, не от
+     съдържанието. */
+  .leaving {
+    position: absolute; top: 0; left: 18px; right: 18px; z-index: 0;
+    pointer-events: none;
+    animation: leaveFwd var(--out) var(--ease) both !important;
+  }
+  body.back .leaving { animation-name: leaveBack !important; }
+  @keyframes leaveFwd  { to { opacity: 0; transform: translateX(-14px); } }
+  @keyframes leaveBack { to { opacity: 0; transform: translateX(14px); } }
+
   /* Разгъване без познат размер. `grid-template-rows: 0fr → 1fr` е
      единственото, което анимира истинската височина; `max-height` иска
      число, което никой не знае, и се движи с грешна скорост. */
@@ -503,15 +516,29 @@
 
   /* Бутонът плува върху снимката — на страница без лента отгоре той е
      единственият изход и трябва да е там, където палецът го търси. */
+  /* Закована за екрана, не за снимката: в ястието няма хедър и ако стрелката
+     си отиде с фотографията, единственият изход от страницата изчезва.
+     Центрирана спрямо същата максимална ширина, която държи и съдържанието —
+     на широк екран иначе увисва в левия ъгъл на прозореца. */
   .back {
-    position: absolute; top: 14px; left: 18px; z-index: 3;
+    position: fixed; z-index: 5;
+    top: calc(14px + env(safe-area-inset-top));
+    left: max(18px, calc(50vw - 260px + 18px));
     display: grid; place-items: center;
     width: 38px; height: 38px;
-    background: rgba(255,255,255,0.92); border: none; border-radius: 50%;
-    color: #1B1410; cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.22);
+    /* Същото стъкло като хедъра и хапчето с навигацията. Бял кръг върху
+       снимка е стикер: щом тръгне със скрола, той минава и върху текст,
+       а там изобщо не е от същия свят. */
+    background: var(--veil);
+    border: 1px solid var(--chip-border); border-radius: 50%;
+    color: var(--ink); cursor: pointer;
+    box-shadow: var(--chip-hi), 0 4px 14px rgba(0,0,0,0.22);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    animation: backIn var(--in) var(--ease) both;
   }
-  .back:hover { background: #FFF; }
+  @keyframes backIn { from { opacity: 0; transform: scale(0.8); } }
+  .back:hover { border-color: var(--accent); }
   .back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
   /* ── Снимката и името ──────────────────────────────────── */
@@ -1179,6 +1206,11 @@
     .order .inner { gap: 10px; }
     .qty button { width: 30px; height: 30px; font-size: 17px; }
     .order button { padding-inline: 12px; }
+    /* Центрирано съдържание, по-широко от кутията си, се разлива и наляво,
+       и надясно — цената тръгва изпод брояча. Знакът и чертата падат първи:
+       цената и думата са решението, останалото е украса. */
+    .order button#orderBtn i,
+    .order button#orderBtn > .pic { display: none; }
   }
   .order button {
     /* min-width:0 е задължителното: елемент във flex не пада под широчината
@@ -1321,9 +1353,6 @@
   <figure class="shot">
     <div class="track" id="track"></div>
     <div class="dots" id="dots" role="tablist" aria-label="Глазура"></div>
-    <button type="button" class="back" id="back" aria-label="Обратно към менюто">
-      <svg class="pic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-    </button>
   </figure>
 
   <div class="sheet">
@@ -1460,6 +1489,10 @@
   </footer>
 
 </div>
+
+<button type="button" class="back" id="back" aria-label="Обратно към менюто" hidden>
+  <svg class="pic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+</button>
 
 <div class="dock" id="dock">
 <div class="order">
@@ -2534,9 +2567,22 @@
   /* Редът на изгледите казва коя посока е напред. Менюто е началото,
      готовото — краят; всичко между тях се мери спрямо тях. */
   var ORDER = ['menu', 'item', 'cart', 'done'];
+  var VIEWS = { menu: 'menuView', item: 'itemView', cart: 'cartView', done: 'doneView' };
+  var leaveTimer = null;
 
   function show(which) {
     document.body.classList.toggle('back', ORDER.indexOf(which) < ORDER.indexOf(view));
+
+    /* Старият изглед остава още един дъх, колкото да си излезе. Ако междувременно
+       дойде трета смяна, предишният се прибира веднага — два излизащи наведнъж
+       са две страници една върху друга. */
+    var out = view !== which ? $(VIEWS[view]) : null;
+    clearTimeout(leaveTimer);
+    Array.prototype.forEach.call(document.querySelectorAll('.leaving'), function (el) {
+      el.classList.remove('leaving');
+      el.hidden = true;
+    });
+
     view = which;
     var item = which === 'item';
     document.querySelector('.brand').hidden = item;
@@ -2559,8 +2605,18 @@
        има свой. */
     document.querySelector('.order').hidden = !item;
     $('nav').hidden = item;
+    $('back').hidden = !item;
     document.querySelector('.order .qty').hidden = which === 'cart';
     $('orderLabel').textContent = item ? 'Добави' : 'Поръчай';
+
+    if (out) {
+      out.hidden = false;
+      out.classList.add('leaving');
+      leaveTimer = setTimeout(function () {
+        out.classList.remove('leaving');
+        out.hidden = true;
+      }, 200);
+    }
 
     if (item) { buildTrack(); rebuild(); }
     if (which === 'cart') { buildCart(); priceBar(); }
