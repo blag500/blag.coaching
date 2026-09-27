@@ -1505,7 +1505,7 @@
       desc: 'Оризов грис с банан и натрошени бисквити без захар. Закуска, която се води хранене.',
       prep: 15,
       packaging: 15,
-      photo: '/cheatcode/gris.jpg',
+      photo: '/cheatcode/gris.jpg', menuPhoto: '/cheatcode/gris-oba.jpg',
       alt: 'Грис на стероиди с банан и бисквити',
       base: [
         /* 100 г сух грис става около 500 г сварен — затова грамажите тук са
@@ -1791,7 +1791,9 @@
       if (!pass) return;
 
       var gz = glazesOf(d);
-      var photo = gz.length ? gz[0].photo : d.photo;
+      /* Плочката в менюто е редакторски избор, не първата разновидност:
+         „чист грис" не продава нищо, а менюто е витрина. */
+      var photo = d.menuPhoto || (gz.length ? gz[0].photo : d.photo);
 
       var card = document.createElement('button');
       card.type = 'button';
