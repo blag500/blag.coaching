@@ -234,23 +234,26 @@
   .lockup em {
     font-style: normal; font-size: 13px; color: var(--ink-soft);
   }
-  /* Хедърът стои залепен горе и се прибира надолу-нагоре заедно с долната
-     лента. Отрицателният хоризонтален отстъп е, за да мине стъклото през
-     цялата ширина, въпреки че `.wrap` го е отместил навътре. */
-  .brand {
+  /* Името и търсачката са едно залепено тяло. Прибират се надолу-нагоре
+     заедно с долната лента. Отрицателният хоризонтален отстъп е, за да мине
+     стъклото през цялата ширина, въпреки че `.wrap` го е отместил навътре. */
+  .topbar {
     position: sticky; top: 0; z-index: 4;
+    margin-inline: -18px;
+    padding: 0 18px 12px;
+    background: var(--veil);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    transition: transform 280ms var(--ease);
+  }
+  body.tuck .topbar { transform: translateY(-102%); }
+  .brand {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    margin-inline: -18px;
-    padding: 20px 18px 14px;
-    background: var(--veil);
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    transition: transform 280ms cubic-bezier(0.2,0.8,0.2,1);
+    padding-block: 20px 14px;
   }
-  body.tuck .brand { transform: translateY(-104%); }
   .brand h1 {
     font-family: var(--font-display);
     font-weight: 800;
@@ -388,7 +391,10 @@
   }
   .again:hover { border-color: var(--ink-faint); color: var(--ink); }
 
-  .find { display: flex; gap: 9px; margin-bottom: 14px; }
+  .find { display: flex; gap: 9px; }
+  /* Долният отстъп стои под цялата лента, не под търсачката — иначе стъклото
+     свършва по средата между полето и решетката. */
+  .topbar + section { padding-top: 14px; }
   .search {
     transition: border-color var(--out), box-shadow var(--out);
     flex: 1; min-width: 0;
@@ -1323,12 +1329,11 @@
 <body>
 <div class="wrap">
 
-  <header class="brand">
-    <span class="lockup"><h1>ЧИЙТ<span>КОД</span></h1><em>Храната, която си знае числата ;)</em></span>
-  </header>
-
-  <section id="menuView">
-    <div class="find">
+  <div class="topbar" id="topbar">
+    <header class="brand">
+      <span class="lockup"><h1>ЧИЙТ<span>КОД</span></h1><em>Храната, която си знае числата ;)</em></span>
+    </header>
+    <div class="find" id="find">
       <div class="search">
         <svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.4"/><path d="M15.6 15.6 20 20"/></svg>
         <input type="search" id="q" placeholder="Търси ястие" aria-label="Търси ястие">
@@ -1337,7 +1342,9 @@
         <svg class="pic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg>
       </button>
     </div>
+  </div>
 
+  <section id="menuView">
     <div class="fold" id="filtersPanel"><div><div class="panel">
       <div class="frow"><span>Калории</span><div class="chips" id="fKcal"></div></div>
       <div class="frow"><span>Протеин</span><div class="chips" id="fProt"></div></div>
@@ -2589,7 +2596,9 @@
 
     view = which;
     var item = which === 'item';
-    document.querySelector('.brand').hidden = item;
+    $('topbar').hidden = item;
+    /* Търсачката е на менюто. В количката лентата носи само името. */
+    $('find').hidden = which !== 'menu';
     /* Футърът е краят на страница, която се разлиства. Ястието не е такава
        страница — то е една кутия и свършва с бутона за добавяне. */
     $('feet').hidden = item || which === 'done';
