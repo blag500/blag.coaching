@@ -22,7 +22,19 @@ if (!src) {
 }
 
 const OUT_DIR = 'public/cheatcode';
-const PHOTOS = ['yagodi.jpg', 'banan.jpg', 'protein.jpg', 'kakao.jpg', 'kayma.jpg', 'gris.jpg'];
+const PHOTOS = [
+  'yagodi.jpg', 'banan.jpg', 'protein.jpg', 'kakao.jpg', 'kayma.jpg',
+  'gris.jpg', 'gris-banan.jpg', 'gris-biskviti.jpg', 'gris-oba.jpg',
+];
+
+/* Разновидностите на гриса са четири снимки, а засега има само една. Липсващата
+   се замества с чистата, вместо да остави счупено квадратче: страницата работи,
+   а денят, в който истинската снимка влезе в папката, я изважда от тук сама. */
+const STAND_IN = {
+  'gris-banan.jpg': 'gris.jpg',
+  'gris-biskviti.jpg': 'gris.jpg',
+  'gris-oba.jpg': 'gris.jpg',
+};
 
 let s = readFileSync(src, 'utf8');
 
@@ -63,10 +75,17 @@ writeFileSync(join(OUT_DIR, 'index.html'), out);
 
 const srcDir = dirname(src);
 let copied = 0;
+let borrowed = 0;
 for (const f of PHOTOS) {
-  const from = join(srcDir, f);
-  if (existsSync(from)) { copyFileSync(from, join(OUT_DIR, f)); copied++; }
-  else console.warn(`липсва снимка: ${basename(from)}`);
+  let from = join(srcDir, f);
+  let own = existsSync(from);
+  if (!own && STAND_IN[f]) {
+    from = join(srcDir, STAND_IN[f]);
+    if (existsSync(from)) { borrowed++; own = true; }
+  }
+  if (own) { copyFileSync(from, join(OUT_DIR, f)); copied++; }
+  else console.warn(`липсва снимка: ${basename(join(srcDir, f))}`);
 }
 
 console.log(`${OUT_DIR}/index.html — ${(out.length / 1024).toFixed(1)} KB, заглавие „${title}", ${copied} снимки`);
+if (borrowed) console.warn(`${borrowed} от тях са заместени с чистата — още чакат истинските`);
