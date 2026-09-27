@@ -489,10 +489,6 @@
     font-weight: 600; font-size: 15px; letter-spacing: -0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .dish p {
-    margin: 0; font-size: 12.5px; color: var(--ink-soft);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
   .dish .meta {
     display: grid; gap: 4px; justify-items: start;
     white-space: nowrap;
@@ -1491,7 +1487,7 @@
       </button>
     </nav>
     <p class="rights">
-      ЧИЙТ КОД е линия на Благ Холдинг ЕООД, ЕИК 208845685.<br>
+      CHEAT CODE е линия на Благ Холдинг ЕООД, ЕИК 208845685.<br>
       © 2026. Всички права запазени.
     </p>
   </footer>
@@ -1903,7 +1899,11 @@
        3. иначе водещият макрос по калориен дял.
      Стойностите са за средния размер — това, което получаваш, ако не
      пипнеш нищо. Обхват „от–до" обещава и двата края, а кутията е една. */
-  function insight(d) {
+  /* Всички кандидати за извод на едно ястие, подредени по сила. Силата на
+     твърдение е трийсет: бие слаб протеин, губи от силен. Ключът е това,
+     по което се мери повтарянето — две ястия могат да носят протеин като
+     число, но не и едно и също изречение. */
+  function insightsFor(d) {
     var mid = d.sizes[Math.min(1, d.sizes.length - 1)];
     var grams = {};
     d.base.forEach(function (i) { grams[i.id] = mid.g[i.id] != null ? mid.g[i.id] : i.grams; });
@@ -1911,19 +1911,35 @@
     var gl = gz.length ? gz[0] : null;
     if (gl) grams['glaze'] = gl.grams;
     var sum = sumFor(d, grams, gl, {}).sum;
+    var out = [];
 
     /* Двайсет, колкото е и прагът за същото твърдение в ястието. Един
        праг, едно значение — инак плочката и страницата спорят. */
     if (sum.protein >= 20) {
-      return { icon: 'protein', text: Math.round(sum.protein) + ' г протеин', color: 'var(--protein)' };
+      out.push({ key: 'protein', force: sum.protein, icon: 'protein',
+                 text: Math.round(sum.protein) + ' г протеин', color: 'var(--protein)' });
     }
-    if (d.claims && d.claims.length) {
-      return { icon: 'check', text: d.claims[0], color: 'var(--accent)' };
-    }
+    (d.claims || []).forEach(function (c) {
+      out.push({ key: 'claim:' + c, force: 30, icon: 'check', text: c, color: 'var(--accent)' });
+    });
     var kc = { protein: sum.protein * 4, carbs: sum.carbs * 4, fat: sum.fat * 9 };
     var lead = Object.keys(kc).reduce(function (a, b) { return kc[a] >= kc[b] ? a : b; });
     var word = { protein: 'протеин', carbs: 'въглехидрати', fat: 'мазнини' }[lead];
-    return { icon: lead, text: Math.round(sum[lead]) + ' г ' + word, color: 'var(--' + lead + ')' };
+    out.push({ key: 'macro:' + lead, force: 1, icon: lead,
+               text: Math.round(sum[lead]) + ' г ' + word, color: 'var(--' + lead + ')' });
+
+    return out.sort(function (a, b) { return b.force - a.force; });
+  }
+
+  /* Раздаването е през цялото меню, не за едно ястие: всяко взима най-
+     силното, което още не е заето. Ако всичко му е заето, взима своето
+     най-силно — по-добре повторение, отколкото празна плочка. */
+  function insight(d, taken) {
+    var all = insightsFor(d);
+    for (var i = 0; i < all.length; i++) {
+      if (!taken[all[i].key]) { taken[all[i].key] = 1; return all[i]; }
+    }
+    return all[0];
   }
 
   function bounds(d) {
@@ -1981,6 +1997,7 @@
   function buildMenu() {
     var host = $('menu');
     host.textContent = '';
+    var taken = {};
     var ql = filt.q.trim().toLowerCase();
     var filtering = !!(ql || filt.kcal || filt.prot);
     var shown = 0;
@@ -1996,7 +2013,7 @@
       /* Плочката в менюто е редакторски избор, не първата разновидност:
          „чист грис" не продава нищо, а менюто е витрина. */
       var photo = d.menuPhoto || (gz.length ? gz[0].photo : d.photo);
-      var ins = insight(d);
+      var ins = insight(d, taken);
 
       var card = document.createElement('button');
       card.type = 'button';
@@ -2005,7 +2022,6 @@
         '<img src="' + photo + '" alt="' + d.name + '">' +
         '<span class="txt">' +
           '<b>' + d.name + '</b>' +
-          '<p>' + d.short + '</p>' +
           '<span class="meta"><span class="ins" style="color:' + ins.color + '">' +
             icon(ins.icon, 14) + '<i>' + ins.text + '</i></span><b>' + money(b.cheap) + '</b></span>' +
         '</span>';
