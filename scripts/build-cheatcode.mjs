@@ -47,6 +47,11 @@ const head =
   '<meta name="robots" content="noindex, nofollow">\n' +
   '<meta name="description" content="Конфигурируемо ястие — избираш грамажа, макросите се смятат.">\n' +
   '<meta name="theme-color" content="#141C18">\n' +
+  /* Знакът: две посоки, нагоре и надолу. SVG-то носи плътен фон нарочно —
+     на 16 пиксела прозрачен знак се губи в лентата с раздели, каквато и
+     да е темата ѝ. */
+  '<link rel="icon" href="/cheatcode/favicon.svg" type="image/svg+xml">\n' +
+  '<link rel="apple-touch-icon" href="/cheatcode/avatar.svg">\n' +
   /* Самостоятелната страница няма нулиращ стил отникъде. [hidden] е
      задължителното: display:grid го бие иначе. */
   '<style>*,*::before,*::after{box-sizing:border-box}img{max-width:100%}' +
