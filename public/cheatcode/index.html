@@ -991,17 +991,9 @@
     position: fixed; inset: auto 0 0 0; z-index: 3;
     padding-bottom: env(safe-area-inset-bottom);
   }
-  /* Плътна лента отрязва страницата на две. Вместо това земята се изкачва
-     и заглъхва — съдържанието минава под бутоните, без да ги мъти.
-     Заглъхването е с маска, не с преход към `transparent`: преходът минава
-     през прозрачно черно и оставя сив ръб върху светла тема. */
-  .dock::before {
-    content: ''; position: absolute; inset: -28px 0 0;
-    background: var(--ground-flat);
-    -webkit-mask-image: linear-gradient(to top, #000 58%, transparent);
-    mask-image: linear-gradient(to top, #000 58%, transparent);
-    pointer-events: none;
-  }
+  /* Долу няма лента — има само хапчета. Те си носят стъклото и размазват
+     това, което мине под тях; всякакъв фон зад тях е втори слой, който
+     отрязва страницата на две. */
   .order, .nav { position: relative; }
   .order {
     padding: 10px 18px 6px;
