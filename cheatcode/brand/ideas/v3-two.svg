@@ -1,0 +1,19 @@
+<!-- В3 · Две цели звена, заплетени
+     Без скъсване — само веригата. Проверка дали заплитането изобщо
+     се чете, преди да му добавяме счупване. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <mask id="m3">
+    <rect width="64" height="64" fill="#fff"/>
+    <g transform="rotate(45 32 32)">
+      <rect x="20" y="18" width="24" height="28" rx="12" fill="#000" stroke="#000" stroke-width="12"/>
+    </g>
+  </mask>
+  <g fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round">
+    <g mask="url(#m3)" transform="rotate(-45 32 32)">
+      <rect x="17" y="23" width="30" height="18" rx="9"/>
+    </g>
+    <g transform="rotate(45 32 32)">
+      <rect x="17" y="23" width="30" height="18" rx="9"/>
+    </g>
+  </g>
+</svg>

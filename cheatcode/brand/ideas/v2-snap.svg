@@ -1,0 +1,13 @@
+<!-- В2 · Едно звено, скъсано
+     По-малко детайл, повече шанс на 16 пиксела. Капсулата е отворена
+     отгоре и двата ѝ края са отскочили встрани — звеното току-що е
+     поддало. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="6.5"
+     stroke-linecap="round" stroke-linejoin="round">
+  <g transform="rotate(-30 32 32)">
+    <path d="M27 14 a10 10 0 0 0 -10 10 v16 a10 10 0 0 0 10 10 h10
+             a10 10 0 0 0 10 -10 v-6"/>
+    <path d="M47 18 a10 10 0 0 0 -9 -4"/>
+  </g>
+</svg>
