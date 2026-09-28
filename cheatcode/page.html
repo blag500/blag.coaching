@@ -166,6 +166,66 @@
     body::before { animation: none; }
   }
 
+  /* ── Сплашът ───────────────────────────────────────────────
+     Общо 1.9 секунди със слизането. Приложението си позволява 3.2, защото
+     се отваря всеки ден и ритуалът има смисъл; страница за поръчка няма
+     такова право — там всяка десета е между човека и обяда му. */
+  .splash {
+    position: fixed; inset: 0; z-index: 90;
+    display: grid; place-items: center;
+    background: var(--ground-flat);
+    transition: opacity 420ms var(--ease), visibility 420ms;
+  }
+  .splash.gone { opacity: 0; visibility: hidden; }
+  .splash-row { display: flex; align-items: center; gap: 18px; width: 100%; max-width: 520px; padding: 0 18px; }
+  /* Релсите са аналогът на ръцете: влизат отвън навътре. Тук са и смислени —
+     знакът е две звена от по-дълга верига, а тя продължава извън кадъра. */
+  .splash-rail {
+    flex: 1; height: 2px; border-radius: 1px;
+    background: linear-gradient(to right, transparent, var(--accent));
+    animation: railIn 620ms var(--ease) 40ms both;
+  }
+  .splash-rail.right { background: linear-gradient(to left, transparent, var(--accent)); }
+  @keyframes railIn {
+    from { opacity: 0; transform: scaleX(0.2); }
+    to   { opacity: 0.55; transform: scaleX(1); }
+  }
+  .splash-rail.left  { transform-origin: left; }
+  .splash-rail.right { transform-origin: right; }
+
+  .splash-mid { flex: none; display: grid; justify-items: center; text-align: center; }
+  .splash-mark {
+    display: grid; place-items: center;
+    width: 66px; height: 66px; border-radius: 50%;
+    background: var(--accent); color: var(--ground-flat);
+    animation: markIn 620ms var(--ease) 120ms both;
+  }
+  .splash-mark svg { width: 42px; height: 42px; display: block; }
+  @keyframes markIn {
+    from { opacity: 0; transform: scale(0.72); }
+  }
+  .splash-name {
+    font-family: var(--font-display); font-weight: 800; font-size: 32px;
+    letter-spacing: -0.01em; margin: 16px 0 0; color: var(--ink);
+    animation: splashUp 560ms var(--ease) 420ms both;
+  }
+  .splash-name span { color: var(--accent); }
+  .splash-line {
+    width: 54px; height: 1px; background: var(--accent); margin-top: 14px;
+    animation: lineOut 420ms var(--ease) 700ms both;
+  }
+  @keyframes lineOut { from { width: 0; opacity: 0; } }
+  .splash-tag {
+    margin: 14px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-soft);
+    animation: splashUp 500ms var(--ease) 860ms both;
+  }
+  @keyframes splashUp { from { opacity: 0; transform: translateY(9px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .splash-rail, .splash-mark, .splash-name, .splash-line, .splash-tag { animation: none; }
+    .splash-rail { opacity: 0.55; }
+  }
+
   /* ── Дишането ──────────────────────────────────────────────
      Три петна светлина, които се движат много бавно. Слоят е отделен и
      `fixed`, за да не се преизчислява при скрол, и се движи само с
@@ -275,7 +335,11 @@
   .topbar {
     position: sticky; top: 0; z-index: 4;
     margin-inline: -18px;
-    padding: 0 18px 12px;
+    padding: 0 18px 14px;
+    /* Долните ъгли се закръглят. Правоъгълна плоча с рязък ръб е единствената
+       права линия в страница, чийто речник е от пет радиуса и заоблени
+       хапчета — затова се набиваше на очи. */
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
     background: var(--veil);
     backdrop-filter: blur(16px) saturate(150%);
     -webkit-backdrop-filter: blur(16px) saturate(150%);
@@ -545,13 +609,31 @@
     border: 1px solid var(--pane-border);
     box-shadow: var(--chip-hi);
     border-radius: var(--r-lg);
-    padding: 16px 17px 14px;
+    padding: 0 0 14px;
     margin-bottom: 14px;
+    overflow: hidden;
   }
+  /* Снимката тръгва от ръба на картата, без поле — тя е продуктът, а полето
+     около храна я прави илюстрация. */
+  .demo-shot {
+    display: block; width: 100%; height: 132px;
+    /* Каймата е в горната трета на кадъра; центриран изрез показва само
+       ориза и боулът изглежда като чиния ориз. */
+    object-fit: cover; object-position: center 34%;
+  }
+  .demo-head, .demo-row, .demo-out, .demo-note { margin-inline: 17px; }
+  .demo-head { margin-top: 14px; }
   .demo-head {
     font-family: var(--font-display); font-weight: 600; font-size: 17px;
     letter-spacing: -0.01em; margin-bottom: 14px;
   }
+  /* Оризът стои неподвижен: два движещи се плъзгача карат окото да избира
+     кой да следи и в крайна сметка не следи нито един. Един се движи,
+     другият показва, че има и втори. */
+  .demo-row.still .demo-track i,
+  .demo-row.still .demo-track s { opacity: 0.55; }
+  .demo-row.still .demo-lab,
+  .demo-row.still .demo-top b { color: var(--ink-faint); }
   .demo-row + .demo-row { margin-top: 16px; }
   /* Надписът стои НАД пистата, не върху нея: без този въздух редът и
      плъзгачът се четат като един елемент и окото не знае кое към кое е. */
@@ -1479,6 +1561,36 @@
   </defs>
 </svg>
 
+<!-- Сплашът. Същата граматика като приложението — отвън навътре, после
+     центърът, после надписът, — но два пъти по-кратък, защото това е
+     страница за поръчка, не приложение, което се отваря всеки ден.
+     Показва се веднъж на сесия: втори път е само чакане. -->
+<div class="splash" id="splash" aria-hidden="true">
+  <div class="splash-row">
+    <i class="splash-rail left"></i>
+    <div class="splash-mid">
+      <span class="splash-mark">
+        <svg viewBox="0 0 64 64">
+          <mask id="spCut">
+            <rect width="64" height="64" fill="#fff"/>
+            <rect x="27" y="23" width="31" height="18" rx="9"
+                  fill="none" stroke="#000" stroke-width="12"/>
+          </mask>
+          <g transform="rotate(-35 32 32)" fill="none" stroke="currentColor"
+             stroke-width="5.5" stroke-linecap="round">
+            <rect x="6" y="23" width="31" height="18" rx="9" mask="url(#spCut)"/>
+            <rect x="27" y="23" width="31" height="18" rx="9"/>
+          </g>
+        </svg>
+      </span>
+      <h1 class="splash-name">CHEAT<span>CODE</span></h1>
+      <i class="splash-line"></i>
+      <p class="splash-tag">Храната, която<br>си знае числата</p>
+    </div>
+    <i class="splash-rail right"></i>
+  </div>
+</div>
+
 <div class="breathe" aria-hidden="true"><i></i><i></i><i></i></div>
 
 <div class="wrap">
@@ -1517,6 +1629,7 @@
          Числата не са декорация — смятат се от истинските данни на гриса
          със същата функция, която смята и в самото ястие. -->
     <div class="demo" id="demo" aria-hidden="true">
+      <img class="demo-shot" src="kayma.jpg" alt="">
       <div class="demo-head">Телешки боул</div>
 
       <div class="demo-row">
@@ -1527,7 +1640,7 @@
         <div class="demo-track"><i id="demoFill1"></i><s id="demoKnob1"></s></div>
       </div>
 
-      <div class="demo-row">
+      <div class="demo-row still">
         <div class="demo-top">
           <span class="demo-lab">ОРИЗ</span>
           <b id="demoG2">100 г</b>
@@ -3120,6 +3233,48 @@
   $('backFromCart').addEventListener('click', function () { show('menu'); });
   $('againBtn').addEventListener('click', function () { show('menu'); });
 
+  /* Сплашът слиза сам. Веднъж на сесия — втори път в същия раздел е само
+     чакане между човека и обяда му. */
+  (function () {
+    var el = $('splash');
+    if (!el) return;
+    var seen = false;
+    try { seen = sessionStorage.getItem('cc_splash') === '1'; } catch (e) { /* частен режим */ }
+    if (seen) { el.remove(); return; }
+    try { sessionStorage.setItem('cc_splash', '1'); } catch (e) { /* няма памет */ }
+
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var left = false;
+    function leave() {
+      if (left) return;
+      left = true;
+      el.classList.add('gone');
+      setTimeout(function () { el.remove(); }, 460);
+    }
+
+    /* Сплашът чака АНИМАЦИЯТА, не хронометър. Двете вървят по различни
+       часовници: `setTimeout` мери от изпълнението на скрипта, а CSS
+       анимациите тръгват при първото рисуване. При бавно зареждане
+       разликата стигна половин секунда и сплашът си отиваше, преди да е
+       изсвирил. */
+    var last = el.querySelector('.splash-tag');
+    var anims = (last && last.getAnimations) ? last.getAnimations() : [];
+    var played = anims.length
+      ? Promise.all(anims.map(function (a) { return a.finished; }))
+      : new Promise(function (r) { setTimeout(r, reduce ? 300 : 1400); });
+
+    /* Таванът е предпазител, не разчет: ако нещо задържи рисуването, човек
+       не бива да гледа марка, докато чака обяд. */
+    Promise.race([
+      played.then(function () { return new Promise(function (r) { setTimeout(r, reduce ? 150 : 380); }); }),
+      new Promise(function (r) { setTimeout(r, 3200); }),
+    ]).then(leave).catch(leave);
+
+    /* Докосне ли го човек, си отива веднага. */
+    el.addEventListener('pointerdown', leave);
+  })();
+
   /* ── Демонстрацията ────────────────────────────────────────
      Взима истинското ястие и истинската сметка. Ако утре цената на банана
      се смени, демонстрацията се сменя с нея — тя не помни числа, тя ги смята. */
@@ -3153,7 +3308,7 @@
 
     /* Двата плъзгача се движат ИЗМЕСТЕНИ по фаза. Вървят ли заедно, изглежда
        като един контрол с две глави; изместени, се чете като конфигуриране. */
-    var T = 8000, live = true, seen = true, raf = 0;
+    var T = 6400, live = true, seen = true, raf = 0;
     function swing(p, lo, hi) {
       /* Плавно напред-назад с престой в краищата: окото трябва да свари да
          прочете числото, преди то пак да тръгне. */
@@ -3170,8 +3325,7 @@
       if (!live) return;
       if (seen) {
         var p = (now % T) / T;
-        paint(swing(p, MEAT.min, MEAT.max),
-              swing((p + 0.5) % 1, RICE.min, RICE.max));
+        paint(swing(p, MEAT.min, MEAT.max), RICE.grams);
       }
       raf = requestAnimationFrame(frame);
     }
