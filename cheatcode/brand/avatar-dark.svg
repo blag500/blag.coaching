@@ -1,11 +1,18 @@
-<!-- Профилно кръгче · тъмен вариант, за тъмни носители -->
+<!-- Профилно кръгче · основен вариант
+     Смърчово поле, светъл знак. Плътният кръг се чете и на бял, и на тъмен
+     фийд — прозрачен знак изчезва в единия от двата. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="1024" height="1024">
   <title>Cheat Code</title>
   <circle cx="32" cy="32" r="32" fill="#141C18"/>
-  <g transform="translate(32 32) scale(0.62) translate(-32 -34)"
-     fill="none" stroke="#4FBF8E" stroke-width="7"
-     stroke-linecap="round" stroke-linejoin="round">
-    <path d="M19 22 L32 9 L45 22"/>
-    <path d="M19 38 L32 51 L45 38"/>
+  <mask id="avCutD">
+    <rect width="64" height="64" fill="#fff"/>
+    <g transform="translate(32 32) scale(0.6) translate(-32 -32) rotate(-35 32 32)">
+      <rect x="27" y="23" width="31" height="18" rx="9" fill="none" stroke="#000" stroke-width="12"/>
+    </g>
+  </mask>
+  <g transform="translate(32 32) scale(0.6) translate(-32 -32) rotate(-35 32 32)"
+     fill="none" stroke="#4FBF8E" stroke-width="6.5" stroke-linecap="round">
+    <rect x="6" y="23" width="31" height="18" rx="9" mask="url(#avCutD)"/>
+    <rect x="27" y="23" width="31" height="18" rx="9"/>
   </g>
 </svg>

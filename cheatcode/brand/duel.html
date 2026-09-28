@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Onest:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#141C18;--card:#1B251F;--ink:#E9F0EA;--faint:#74857A;--acc:#4FBF8E}
+*{box-sizing:border-box}
+body{margin:0;width:620px;background:var(--bg);color:var(--ink);font-family:'Onest',sans-serif;padding:24px}
+h1{font-size:17px;font-weight:800;margin:0 0 4px}
+p.l{font-size:12px;color:#A3B3A7;margin:0 0 16px;line-height:1.5}
+.box{background:var(--card);border:1px solid #2A3A32;border-radius:16px;padding:16px;margin-bottom:11px}
+h2{font-size:10px;letter-spacing:2.5px;color:var(--faint);margin:0 0 12px;font-weight:600}
+.strip{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.u{display:grid;justify-items:center}.cap{font-size:9px;color:var(--faint);margin-top:4px}
+.g{filter:invert(78%) sepia(35%) saturate(700%) hue-rotate(96deg)}
+.av{background:#1F6B4E;border-radius:50%;display:grid;place-items:center}
+.w{filter:brightness(0) invert(1)}
+.lock{display:flex;align-items:center;gap:12px}
+.lock b{font-family:'Unbounded';font-weight:800;font-size:22px}
+.lock b i{font-style:normal;color:var(--acc)}
+</style></head><body>
+<h1>Веригата на малките размери — трябват ли два знака?</h1>
+<p class="l">Ако цялата верига се чете на 16–18 и в кръгчето, стрелките са излишни.</p>
+
+<div class="box"><h2>ВЕРИГАТА · ГОЛА</h2><div class="strip">
+ <span class="u"><img src="chain.svg" width="40" class="g"><span class="cap">40</span></span>
+ <span class="u"><img src="chain.svg" width="28" class="g"><span class="cap">28</span></span>
+ <span class="u"><img src="chain-small.svg" width="24" class="g"><span class="cap">24 ▪</span></span>
+ <span class="u"><img src="chain-small.svg" width="18" class="g"><span class="cap">18 ▪</span></span>
+ <span class="u"><img src="chain-small.svg" width="16" class="g"><span class="cap">16 ▪</span></span>
+</div></div>
+
+<div class="box"><h2>ВЕРИГАТА · В КРЪГЧЕ</h2><div class="strip">
+ <span class="u"><span class="av" style="width:64px;height:64px"><img src="chain.svg" width="38" class="w"></span><span class="cap">64</span></span>
+ <span class="u"><span class="av" style="width:40px;height:40px"><img src="chain-small.svg" width="24" class="w"></span><span class="cap">40</span></span>
+ <span class="u"><span class="av" style="width:32px;height:32px"><img src="chain-small.svg" width="20" class="w"></span><span class="cap">32</span></span>
+ <span class="u"><span class="av" style="width:16px;height:16px"><img src="chain-small.svg" width="11" class="w"></span><span class="cap">16 favicon</span></span>
+</div></div>
+
+<div class="box"><h2>СТРЕЛКИТЕ · СЪЩИТЕ МЕСТА, ЗА СРАВНЕНИЕ</h2><div class="strip">
+ <span class="u"><span class="av" style="width:64px;height:64px"><img src="ideas/mark-chevrons.svg" width="36" class="w"></span><span class="cap">64</span></span>
+ <span class="u"><span class="av" style="width:40px;height:40px"><img src="ideas/mark-chevrons-small.svg" width="23" class="w"></span><span class="cap">40</span></span>
+ <span class="u"><span class="av" style="width:32px;height:32px"><img src="ideas/mark-chevrons-small.svg" width="19" class="w"></span><span class="cap">32</span></span>
+ <span class="u"><span class="av" style="width:16px;height:16px"><img src="ideas/mark-chevrons-small.svg" width="10" class="w"></span><span class="cap">16</span></span>
+</div></div>
+
+<div class="box"><h2>ЗАКЛЮЧВАНЕ С ИМЕТО</h2><div class="strip">
+ <span class="lock"><img src="chain.svg" width="40" class="g"><b>CHEAT<i>CODE</i></b></span>
+</div></div>
+</body></html>
