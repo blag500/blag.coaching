@@ -1,0 +1,10 @@
+<!-- Х3 · Подадено
+     Купол върху длан — жестът „заповядай". Класически четим силует. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="4.6"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 34 a17 17 0 0 1 34 0"/>
+  <path d="M11 40 H53"/>
+  <path d="M20 47 q12 7 24 0"/>
+  <path d="M20 47 q-7 -1 -8 -5"/>
+</svg>

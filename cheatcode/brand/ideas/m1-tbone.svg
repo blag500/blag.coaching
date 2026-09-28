@@ -1,0 +1,9 @@
+<!-- М1 · Пържола с кокал
+     Класическият силует. Чете се дребно, защото има ясен контур и една
+     вътрешна подробност — кокалът, — а не пет. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="4.4"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M25 15 C39 10 55 18 55 31 C55 45 41 53 29 50 C17 47 12 35 16 25 C18 20 21 16 25 15 Z"/>
+  <path d="M24 26 a5 5 0 1 0 -0.1 0 M24 40 a5 5 0 1 0 -0.1 0 M24 30 V36"/>
+</svg>

@@ -1,0 +1,10 @@
+<!-- М3 · Купата с парата
+     Единственото от първия кръг, което се четеше. Тук е за сравнение:
+     покрива и трите ястия, но го може всеки. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="4.6"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 34 H52"/>
+  <path d="M15 34 a17 17 0 0 0 34 0"/>
+  <path d="M24 30 V20"/><path d="M32 30 V13"/><path d="M40 30 V24"/>
+</svg>

@@ -1,0 +1,9 @@
+<!-- М2 · Парче без кокал
+     Същият силует, но вътре е решетката от скарата. По-мека форма,
+     по-малко „месарница". -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="4.4"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M26 14 C41 10 56 19 55 32 C54 46 39 54 27 50 C15 46 10 33 15 24 C18 18 22 15 26 14 Z"/>
+  <path d="M23 28 L38 24"/><path d="M26 38 L42 33"/>
+</svg>

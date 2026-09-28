@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#E9F0EA; --soft:#A3B3A7; --faint:#74857A; --acc:#4FBF8E; --bg:#141C18; --card:#1B251F; }
+  * { box-sizing:border-box; }
+  body { margin:0; width:940px; background:var(--bg); color:var(--ink);
+         font-family:'Onest',sans-serif; padding:28px 26px; }
+  h1 { font-size:19px; font-weight:800; margin:0 0 6px; }
+  .lede { color:var(--soft); font-size:13px; margin:0 0 24px; line-height:1.55; }
+  .row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:var(--card); border:1px solid #2A3A32; border-radius:16px; padding:16px 14px 14px; }
+  .card.win { border-color:#4FBF8E; }
+  .tag { font-size:10px; letter-spacing:2.5px; color:var(--faint); font-weight:600; }
+  .nm { font-size:14px; font-weight:800; margin:6px 0 4px; }
+  .why { font-size:11.5px; color:var(--soft); line-height:1.45; min-height:74px; }
+  .big { display:grid; place-items:center; height:118px; background:#0F1613; border-radius:12px;
+         color:var(--acc); margin-top:8px; }
+  .sizes { display:flex; align-items:center; justify-content:center; gap:13px; margin-top:8px;
+           padding:10px; background:#0F1613; border-radius:12px; color:var(--ink); }
+  .circ { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:8px;
+          padding:10px; background:#0F1613; border-radius:12px; }
+  .av { background:#1F6B4E; border-radius:50%; display:grid; place-items:center; color:#F2F4EC; }
+  .u { display:grid; justify-items:center; }
+  .cap { font-size:9px; color:var(--faint); margin-top:4px; }
+  .verdict { font-size:11px; margin-top:9px; padding-top:9px; border-top:1px solid #2A3A32; line-height:1.4; }
+  .ok { color:#4FBF8E; } .no { color:#E08A8A; }
+</style>
+</head>
+<body>
+<h1>Предметни посоки — роднини на ръцете</h1>
+<p class="lede">Знакът на Благ е човешки жест, рисуван обемно, и работи, защото стои голям.
+Тези трябва да споделят сюжета, но да оцелеят на 32 пиксела в кръгче. Вдясно е абстрактният
+за сравнение — не за да победи, а за да има спрямо какво да се мери.</p>
+
+<div class="row">
+
+  <div class="card">
+    <div class="tag">П1</div>
+    <div class="nm">Ръката с купата</div>
+    <div class="why">Прекият роднина: същото тяло, същият жест „вдигнато към камерата", друг предмет.
+      И е буквално всяка снимка, която си правил на тази храна — палец на ръба, купата отдолу.</div>
+    <div class="big"><img src="p1-hand.svg" width="86" style="filter:invert(78%) sepia(35%) saturate(700%) hue-rotate(96deg)"></div>
+    <div class="sizes">
+      <span class="u"><img src="p1-hand.svg" width="40"><span class="cap">40</span></span>
+      <span class="u"><img src="p1-hand.svg" width="28"><span class="cap">28</span></span>
+      <span class="u"><img src="p1-hand.svg" width="18"><span class="cap">18</span></span>
+    </div>
+    <div class="circ">
+      <span class="av" style="width:64px;height:64px"><img src="p1-hand.svg" width="38" style="filter:brightness(0) invert(1)"></span>
+      <span class="av" style="width:40px;height:40px"><img src="p1-hand.svg" width="24" style="filter:brightness(0) invert(1)"></span>
+    </div>
+    <div class="verdict"><span class="ok">Най-топлото и най-твоето.</span> Четирите хода са на ръба на това, което 18 пиксела носи.</div>
+  </div>
+
+  <div class="card">
+    <div class="tag">П2</div>
+    <div class="nm">Купата с числата</div>
+    <div class="why">Купа, чието съдържание е три стълба — храна, направена от макроси.
+      Предметно, но без човек: губи роднинството с ръцете.</div>
+    <div class="big"><img src="p2-bars.svg" width="86" style="filter:invert(78%) sepia(35%) saturate(700%) hue-rotate(96deg)"></div>
+    <div class="sizes">
+      <span class="u"><img src="p2-bars.svg" width="40"><span class="cap">40</span></span>
+      <span class="u"><img src="p2-bars.svg" width="28"><span class="cap">28</span></span>
+      <span class="u"><img src="p2-bars.svg" width="18"><span class="cap">18</span></span>
+    </div>
+    <div class="circ">
+      <span class="av" style="width:64px;height:64px"><img src="p2-bars.svg" width="38" style="filter:brightness(0) invert(1)"></span>
+      <span class="av" style="width:40px;height:40px"><img src="p2-bars.svg" width="24" style="filter:brightness(0) invert(1)"></span>
+    </div>
+    <div class="verdict">Чете се добре дребно. Но стълбовете приличат на свещички за торта.</div>
+  </div>
+
+  <div class="card">
+    <div class="tag">П3</div>
+    <div class="nm">Вилицата-плъзгач</div>
+    <div class="why">Вилица, чиято дръжка е плъзгач с копче. Храната и настройката в един предмет.</div>
+    <div class="big"><img src="p3-fork.svg" width="86" style="filter:invert(78%) sepia(35%) saturate(700%) hue-rotate(96deg)"></div>
+    <div class="sizes">
+      <span class="u"><img src="p3-fork.svg" width="40"><span class="cap">40</span></span>
+      <span class="u"><img src="p3-fork.svg" width="28"><span class="cap">28</span></span>
+      <span class="u"><img src="p3-fork.svg" width="18"><span class="cap">18</span></span>
+    </div>
+    <div class="circ">
+      <span class="av" style="width:64px;height:64px"><img src="p3-fork.svg" width="38" style="filter:brightness(0) invert(1)"></span>
+      <span class="av" style="width:40px;height:40px"><img src="p3-fork.svg" width="24" style="filter:brightness(0) invert(1)"></span>
+    </div>
+    <div class="verdict"><span class="no">Копчето изчезва под 28.</span> Остава обикновена вилица — а вилица има всеки ресторант.</div>
+  </div>
+
+  <div class="card win">
+    <div class="tag">A · за сравнение</div>
+    <div class="nm">Двете посоки</div>
+    <div class="why">Абстрактният от миналия път. Не е роднина на ръцете по сюжет — тук е само за да
+      се види разликата в четимостта.</div>
+    <div class="big"><img src="../mark.svg" width="86" style="filter:invert(78%) sepia(35%) saturate(700%) hue-rotate(96deg)"></div>
+    <div class="sizes">
+      <span class="u"><img src="../mark.svg" width="40"><span class="cap">40</span></span>
+      <span class="u"><img src="../mark-small.svg" width="28"><span class="cap">28</span></span>
+      <span class="u"><img src="../mark-small.svg" width="18"><span class="cap">18</span></span>
+    </div>
+    <div class="circ">
+      <span class="av" style="width:64px;height:64px"><img src="../mark.svg" width="34" style="filter:brightness(0) invert(1)"></span>
+      <span class="av" style="width:40px;height:40px"><img src="../mark-small.svg" width="22" style="filter:brightness(0) invert(1)"></span>
+    </div>
+    <div class="verdict">Оцелява навсякъде, но не казва „храна" и не е роднина на Благ.</div>
+  </div>
+
+</div>
+</body>
+</html>

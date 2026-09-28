@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Клип</title>
+<!-- Шрифтовете се сменят според марката. Ако няма мрежа, ядрото пада на
+     системния и клипът пак се рендерира — само изглежда по-беден. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:#000; overflow:hidden;
+               font-family: system-ui, sans-serif; }
+  #stage { position:fixed; inset:0; display:grid; place-items:center; }
+  canvas { display:block; box-shadow:0 24px 90px rgba(0,0,0,.8); }
+  /* Пултът е за гледане. Скрива се сам и изчезва напълно при заснемане. */
+  #ui { position:fixed; left:0; right:0; bottom:0; padding:14px 22px 18px;
+        display:flex; align-items:center; gap:16px;
+        background:linear-gradient(to top, rgba(0,0,0,.9), transparent);
+        opacity:0; transition:opacity 240ms; }
+  body:hover #ui { opacity:1; }
+  body.shoot #ui { display:none; }
+  #ui button { width:42px; height:42px; flex:none; border:1px solid #333;
+               border-radius:50%; background:rgba(255,255,255,.06);
+               color:#eee; cursor:pointer; }
+  #bar { position:relative; flex:1; height:24px; cursor:pointer; }
+  #bar i { position:absolute; left:0; right:0; top:10px; height:4px;
+           border-radius:2px; background:#222; display:block; }
+  #bar b { position:absolute; left:0; top:10px; height:4px; border-radius:2px;
+           background:#4CE0E8; display:block; width:0; }
+  #tc { font-variant-numeric:tabular-nums; font-size:12px; letter-spacing:2px;
+        color:#888; min-width:96px; text-align:right; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c" width="1920" height="1080"></canvas></div>
+<div id="ui"><button id="play">▶</button><div id="bar"><i></i><b></b></div><div id="tc">0.0</div></div>
+
+<script type="module">
+import { setSize, setPalette, setFonts, C, FPS, hash } from './core.js';
+
+/* ── Марката ────────────────────────────────────────────────
+   Размерът, палитрата и шрифтовете се задават ПРЕДИ сцената да бъде
+   внесена. Сцена, която чете W/H на ниво модул, иначе хваща предишните
+   стойности — затова сцените ги четат вътре в рисуването. */
+const W = 1920, H = 1080, DUR = 10;      // ← 1080×1920 за вертикално
+setSize(W, H);
+setPalette({
+  bg: '#06080A', ink: '#F4F7FA', soft: '#8B97A6', faint: '#3A4450',
+  accent: '#4CE0E8',
+});
+setFonts("'Inter', system-ui, sans-serif");
+
+const { draw } = await import('./scene.js');
+
+const cv = document.getElementById('c');
+cv.width = W; cv.height = H;
+const ctx = cv.getContext('2d', { alpha: false });
+
+/* ── Зърно ──────────────────────────────────────────────────
+   Осем плочки, направени веднъж. Шум на пиксел за всеки кадър е
+   най-скъпото нещо в клипа и се вижда най-малко. На тъмен материал
+   зърното върши и втора работа — ивиците след h264 изчезват. */
+const TILE = 256, TILES = 8, tiles = [];
+for (let k = 0; k < TILES; k++) {
+  const tc = document.createElement('canvas'); tc.width = tc.height = TILE;
+  const g = tc.getContext('2d'), img = g.createImageData(TILE, TILE);
+  for (let i = 0; i < TILE * TILE; i++) {
+    const v = hash(i, k + 1), s = v > 0.5 ? 255 : 0;
+    img.data[i*4] = img.data[i*4+1] = img.data[i*4+2] = s;
+    img.data[i*4+3] = Math.abs(v - 0.5) > 0.36 ? 255 : 0;
+  }
+  g.putImageData(img, 0, 0); tiles.push(tc);
+}
+function grain(frame) {
+  const tile = tiles[frame % TILES];
+  const ox = -(hash(frame, 91) * TILE) | 0, oy = -(hash(frame, 92) * TILE) | 0;
+  ctx.save();
+  ctx.globalAlpha = 0.042;
+  ctx.globalCompositeOperation = 'overlay';
+  for (let y = oy; y < H; y += TILE) for (let x = ox; x < W; x += TILE) ctx.drawImage(tile, x, y);
+  ctx.restore();
+}
+
+function render(t) {
+  t = Math.max(0, Math.min(DUR - 0.001, t));
+  draw(ctx, t);
+  grain(Math.round(t * FPS));
+}
+window.render = render;
+window.__DUR = DUR;
+/* Заснемането чака истински кадър, не обещание: два кадъра напред, за да
+   е сигурно, че рисуването е стигнало до екрана. */
+window.__seek = t => new Promise(res => {
+  render(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => res(true)));
+});
+window.__ready = false;
+
+/* ── Пултът ─────────────────────────────────────────────── */
+const playBtn = document.getElementById('play'), bar = document.getElementById('bar');
+const fill = bar.querySelector('b'), tc = document.getElementById('tc');
+let playing = false, t0 = 0, at = 0;
+function loop(now) {
+  if (playing) {
+    at = (now - t0) / 1000;
+    if (at >= DUR) { at = 0; t0 = now; }
+    render(at);
+    fill.style.width = (at / DUR * 100) + '%';
+    tc.textContent = at.toFixed(1) + ' / ' + DUR.toFixed(1);
+  }
+  requestAnimationFrame(loop);
+}
+playBtn.onclick = () => {
+  playing = !playing;
+  playBtn.textContent = playing ? '❚❚' : '▶';
+  t0 = performance.now() - at * 1000;
+};
+bar.onpointerdown = e => {
+  const move = ev => {
+    const r = bar.getBoundingClientRect();
+    at = Math.max(0, Math.min(DUR, (ev.clientX - r.left) / r.width * DUR));
+    t0 = performance.now() - at * 1000;
+    render(at);
+    fill.style.width = (at / DUR * 100) + '%';
+    tc.textContent = at.toFixed(1) + ' / ' + DUR.toFixed(1);
+  };
+  move(e);
+  const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+  addEventListener('pointermove', move); addEventListener('pointerup', up);
+};
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); playBtn.click(); } });
+
+function fit() {
+  const s = Math.min(innerWidth / W, innerHeight / H);
+  cv.style.width = (W * s) + 'px'; cv.style.height = (H * s) + 'px';
+}
+addEventListener('resize', fit); fit();
+
+/* Шрифтът трябва да е в паметта преди първия кадър, инак началото се
+   рендерира със системния и смяната се вижда в записа. */
+(async () => {
+  try {
+    await document.fonts.load('800 100px Inter');
+    await document.fonts.load('300 40px Inter');
+    await document.fonts.ready;
+  } catch (e) { /* без мрежа — системният върши работа */ }
+  render(0);
+  window.__ready = true;
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

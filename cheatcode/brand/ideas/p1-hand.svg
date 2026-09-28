@@ -1,0 +1,12 @@
+<!-- П1 · Ръката с купата
+     Прекият роднина на ръцете на Благ: същото тяло, същият жест „вдигнато
+     към камерата", друг предмет. И е буквално всяка снимка, която Николай
+     е правил на тази храна — палец на ръба, купата отдолу. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="4.6"
+     stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 27 H49"/>
+  <path d="M17 27 a15 15 0 0 0 30 0"/>
+  <path d="M12 46 Q32 58 52 46"/>
+  <path d="M14 37 Q8 33 12 27"/>
+</svg>

@@ -1,0 +1,9 @@
+<!-- Х1 · Купата отгоре, пръстите отдолу
+     Както изглеждат всичките ти снимки: кръгла кутия, гледана отвисоко,
+     и пръстите, които се подават иззад долния ръб. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     fill="none" stroke="currentColor" stroke-width="4.6"
+     stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="32" cy="29" r="17"/>
+  <path d="M21 46 v6"/><path d="M32 48 v6"/><path d="M43 46 v6"/>
+</svg>
