@@ -347,6 +347,12 @@
     font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft);
   }
   .lmore .nums b { font-size: 12px; font-weight: 700; }
+  /* В количката алергените не са приглушени — там поръчката се потвърждава. */
+  .lallerg {
+    display: block; margin-top: 7px;
+    font-size: 12px; font-weight: 600; color: var(--ink);
+  }
+  .lallerg.none { font-weight: 400; color: var(--ink-faint); }
   .line .price {
     font-family: var(--font-mono); font-weight: 700; font-size: 15px;
     font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -395,6 +401,10 @@
     letter-spacing: 0.06em; margin: 0;
   }
   .done p { margin: 0; font-size: 14.5px; color: var(--ink-soft); max-width: 40ch; }
+  .done-allerg {
+    font-size: 13.5px !important; font-weight: 600;
+    color: var(--ink) !important; max-width: 36ch;
+  }
   .done-note { font-size: 13px !important; color: var(--ink-faint) !important; }
   .done-note b { color: var(--ink); font-weight: 600; }
   .again {
@@ -705,6 +715,33 @@
   /* Числата в един ред, с подпис под всяко — както се чете етикет на
      опаковка. Цветът и рисунките отпадат: те бяха за човек, който търси
      макроси, а страницата е за човек, който търси обяд. */
+  /* Алергените стоят В таблото, до числата, защото се менят със същите
+     плъзгачи. Подчертани, не приглушени: задължителното се откроява. */
+  .allerg {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+    margin: 13px 0 2px;
+  }
+  .allerg .lab {
+    font-size: 11px; letter-spacing: 2.2px; font-weight: 700;
+    color: var(--ink-faint); margin-right: 2px;
+  }
+  .allerg b {
+    font-size: 12.5px; font-weight: 700; color: var(--ink);
+    background: rgba(212, 172, 102, 0.16);
+    border: 1px solid rgba(212, 172, 102, 0.42);
+    border-radius: 999px; padding: 3px 10px;
+  }
+  .allerg b.q::after { content: ' ?'; color: var(--kcal); }
+  .allerg em {
+    font-style: normal; font-size: 12.5px; color: var(--ink-soft);
+  }
+  /* Редът за непроверените данни. Той изчезва сам, щом всички алергени в
+     кутията станат `sure: true` — тоест щом бъдат прочетени от етикет. */
+  .allerg-note {
+    margin: 8px 0 0; font-size: 11.5px; line-height: 1.5;
+    color: var(--kcal);
+  }
+
   .legend {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 10px; margin-top: 16px;
@@ -1438,6 +1475,7 @@
         <i id="cBar" style="background: var(--carbs)"></i>
         <i id="fBar" style="background: var(--fat)"></i>
       </div>
+      <div class="allerg" id="allerg"></div>
       <div class="legend">
         <span class="leg">
           <svg class="pic" width="18" height="18" viewBox="0 0 24 24" style="color: var(--protein)" aria-hidden="true"><use href="#s-protein"/></svg>
@@ -1473,6 +1511,11 @@
     </div>
     </div>
   </section>
+
+  <p class="allerg-note" id="allergNote" hidden>
+    Отбелязаното с <b>?</b> още не е сверено с етикета на опаковката.
+    Докато стои този ред, списъкът е ориентир, не декларация.
+  </p>
 
   <div class="code">
     <i>Твоят код</i>
@@ -1510,6 +1553,7 @@
       <svg class="pic" width="46" height="46" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-check"/></svg>
       <h2 id="doneCode">—</h2>
       <p id="doneWhat"></p>
+      <p class="done-allerg" id="doneAllerg"></p>
       <p class="done-note">Това е проба. Поръчката <b>не е изпратена</b> никъде — няма кой да я приготви още.</p>
       <button type="button" class="again" id="againBtn">Обратно към менюто</button>
     </div>
@@ -1598,8 +1642,14 @@
       packaging: 15,
       base: [
         { id: 'trici', name: 'Трици', grams: 100, min: 50, max: 150, step: 25,
+          /* Овесът е зърно с глутен по списъка на ЕС. Класификацията е
+             сигурна; конкретната опаковка може да обявява и следи. */
+          allergens: [{ id: 'gluten', sure: false }],
           per100: { kcal: 246, protein: 17.3, carbs: 66.2, fat: 7 }, cost100: 46.5 },
         { id: 'kakao', name: 'Какао', grams: 20, min: 0, max: 40, step: 10,
+          /* Какаото често носи „може да съдържа следи от мляко". Трябва
+             етикетът на кутийката от 50 г. */
+          allergens: [{ id: 'milk', sure: false, trace: true }],
           per100: { kcal: 228, protein: 19.6, carbs: 57.9, fat: 13.7 }, cost100: 220 }
       ],
       sizes: [
@@ -1624,9 +1674,13 @@
           per100: { kcal: 89, protein: 1.1, carbs: 22.8, fat: 0.3 }, cost100: 17.8, pack: 0,
           photo: '/cheatcode/banan.jpg', alt: 'Анаболно кремче, залято с банан' },
         { id: 'protein', name: 'Протеинова глазура', grams: 30, min: 15, max: 50, step: 5,
+          allergens: [{ id: 'milk', sure: false }],
           per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2,
           photo: '/cheatcode/protein.jpg', alt: 'Анаболно кремче с протеинова глазура' },
         { id: 'tahan', name: 'Тахан', grams: 20, min: 10, max: 40, step: 5,
+          /* Таханът е сусам по определение — това е единственият алерген
+             тук, който не подлежи на съмнение. */
+          allergens: [{ id: 'sesame', sure: true }],
           per100: { kcal: 595, protein: 17, carbs: 21, fat: 53.8 }, cost100: null, pack: 2,
           photo: null, alt: 'Анаболно кремче с тахан' },
         { id: 'none', name: 'Без глазура', grams: 0, min: 0, max: 0, step: 1,
@@ -1653,6 +1707,8 @@
         /* Подправките са разход без хранителна стойност и не се настройват:
            €1 на тарелка от 1 кг кайма, тоест 25 стотинки на порция. */
         { id: 'podpravki', name: 'Подправки', grams: 1, min: 1, max: 1, step: 1, locked: true,
+          /* Смеси подправки понякога носят синап или целина. Непроверено. */
+          allergens: [],
           per100: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, cost100: 2500 }
       ],
       sizes: [
@@ -1703,6 +1759,9 @@
            добавена захар, НЕ са от пакета. Сменят се от етикета, преди нещо
            от това да излезе пред хора. Цената е вярна: €1.94 за 225 г. */
         { id: 'biskviti', name: 'Бисквити', grams: 30, min: 0, max: 60, step: 10, say: 'натрошени бисквити',
+          /* Глутенът е сигурен за пшенична бисквита. Мляко, соя и ядки
+             се четат от опаковката — още не са. */
+          allergens: [{ id: 'gluten', sure: false }, { id: 'milk', sure: false }],
           per100: { kcal: 425, protein: 8, carbs: 67, fat: 15 }, cost100: 86.2 }
       ],
       sizes: [
@@ -1717,6 +1776,7 @@
         { id: 'extra', label: 'Отгоре', kind: 'extra',
           options: [
             { id: 'protein', name: 'Протеинова глазура', grams: 30, say: 'протеинова глазура',
+              allergens: [{ id: 'milk', sure: false }],
               per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2 },
             { id: 'gorski', name: 'Замразени горски плодове', grams: 100, say: 'замразени горски плодове',
               per100: { kcal: 44, protein: 0.9, carbs: 8.5, fat: 0.4 }, cost100: 50.7, pack: 0 }
@@ -1856,6 +1916,48 @@
     var out = [];
     for (var g = item.min; g <= item.max; g += item.step) out.push(g);
     return out;
+  }
+
+  /* ── Алергените ───────────────────────────────────────────
+     Те се държат като калориите: всяка съставка си носи своите и те се
+     появяват и изчезват с плъзгача. Статичен ред най-отдолу би обявил
+     глутен върху чист грис — грешно в едната посока — и би премълчал
+     мляко, когато глазурата е включена, което е грешно в по-лошата. */
+  var ALLERGENS = {
+    gluten: 'глутен',
+    milk:   'мляко',
+    sesame: 'сусам',
+    soy:    'соя',
+    nuts:   'ядки',
+    egg:    'яйца',
+  };
+
+  function allergensFor(d, grams, gl, tw) {
+    var hit = {};
+    function take(item, g) {
+      if (!(g > 0) || !item.allergens) return;
+      item.allergens.forEach(function (a) {
+        var cur = hit[a.id];
+        /* Ако един и същ алерген идва от две съставки, по-силното твърдение
+           печели: потвърденото бие непотвърденото, същинското бие следите. */
+        if (!cur || (a.sure && !cur.sure) || (cur.trace && !a.trace)) {
+          hit[a.id] = { sure: !!a.sure, trace: !!a.trace };
+        }
+      });
+    }
+    d.base.forEach(function (i) {
+      if (i.id === 'podpravki' && !anySpice(d)) return;
+      take(i, grams[i.id]);
+    });
+    if (gl && gl.id !== 'none') take(gl, grams['glaze']);
+    (d.tweaks || []).forEach(function (t) {
+      if (t.kind !== 'extra') return;
+      t.options.forEach(function (o) { if (tw[t.id + ':' + o.id]) take(o, o.grams); });
+    });
+
+    return Object.keys(hit).map(function (id) {
+      return { id: id, name: ALLERGENS[id] || id, sure: hit[id].sure, trace: hit[id].trace };
+    });
   }
 
   /* ── Сметката ─────────────────────────────────────────────── */
@@ -2385,6 +2487,21 @@
     return out.length ? out.join('') : '<span class="add">—</span>';
   }
 
+  function buildAllergens(d, r) {
+    var list = allergensFor(d, currentGrams(), glaze(), state.tw);
+    var host = $('allerg');
+    if (!list.length) {
+      host.innerHTML = '<span class="lab">АЛЕРГЕНИ</span><em>няма в тази кутия</em>';
+      $('allergNote').hidden = true;
+      return;
+    }
+    host.innerHTML = '<span class="lab">АЛЕРГЕНИ</span>' + list.map(function (a) {
+      return '<b class="' + (a.sure ? '' : 'q') + '">' +
+             a.name + (a.trace ? ' (следи)' : '') + '</b>';
+    }).join('');
+    $('allergNote').hidden = !list.some(function (a) { return !a.sure; });
+  }
+
   function buildClaims(sum) {
     var d = dish();
     var out = (d.claims || []).map(function (c) {
@@ -2425,6 +2542,7 @@
     $('dishName').textContent = d.name;
     $('dishDesc').textContent = descFor(d);
     buildClaims(s);
+    buildAllergens(d, r);
 
     $('kcal').textContent = Math.round(s.kcal);
     $('grams').textContent = Math.round(s.grams) + ' г';
@@ -2514,6 +2632,7 @@
     cart.push({
       name: d.name,
       photo: shotPhoto(d),
+      allerg: allergensFor(d, grams, gl, state.tw),
       cfg: describe(d, grams, gl, state.tw),
       kcal: Math.round(r.sum.kcal),
       p: Math.round(r.sum.protein),
@@ -2571,6 +2690,11 @@
             '<span>М <b>' + l.f + '</b> г</span>' +
             '<span>' + l.grams + ' г</span>' +
           '</span>' +
+          (l.allerg.length
+            ? '<span class="lallerg">Алергени: ' + l.allerg.map(function (a) {
+                return a.name + (a.trace ? ' (следи)' : '') + (a.sure ? '' : ' ?');
+              }).join(', ') + '</span>'
+            : '<span class="lallerg none">Без алергени</span>') +
         '</div></div>' +
         '<span class="ops"><span class="qty">' +
           '<button type="button" data-a="-" aria-label="По-малко">−</button>' +
@@ -2633,6 +2757,21 @@
       err.hidden = false; $('fPhone').focus(); return;
     }
     err.hidden = true;
+
+    /* Обобщение за цялата поръчка: човекът взима една торба, не три кутии
+       поотделно, и трябва да види всичко на едно място. */
+    var all = {};
+    cart.forEach(function (l) {
+      (l.allerg || []).forEach(function (a) {
+        if (!all[a.id] || (a.sure && !all[a.id].sure)) all[a.id] = a;
+      });
+    });
+    var names = Object.keys(all).map(function (k) {
+      return all[k].name + (all[k].trace ? ' (следи)' : '') + (all[k].sure ? '' : ' ?');
+    });
+    $('doneAllerg').textContent = names.length
+      ? 'Алергени в поръчката: ' + names.join(', ')
+      : 'Без алергени в тази поръчка.';
 
     var n = cart.reduce(function (a, l) { return a + l.qty; }, 0);
     var when = $('fWhen').value;
