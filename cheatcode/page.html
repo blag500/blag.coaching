@@ -545,12 +545,19 @@
     border: 1px solid var(--pane-border);
     box-shadow: var(--chip-hi);
     border-radius: var(--r-lg);
-    padding: 15px 17px 13px;
+    padding: 16px 17px 14px;
     margin-bottom: 14px;
   }
+  .demo-head {
+    font-family: var(--font-display); font-weight: 600; font-size: 17px;
+    letter-spacing: -0.01em; margin-bottom: 14px;
+  }
+  .demo-row + .demo-row { margin-top: 16px; }
+  /* Надписът стои НАД пистата, не върху нея: без този въздух редът и
+     плъзгачът се четат като един елемент и окото не знае кое към кое е. */
   .demo-top {
     display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 9px;
+    margin-bottom: 14px;
   }
   .demo-lab { font-size: 11px; letter-spacing: 3px; color: var(--ink-faint); font-weight: 600; }
   .demo-top b { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -571,6 +578,10 @@
     font-variant-numeric: tabular-nums;
   }
   .demo-out b { font-size: 26px; font-weight: 700; color: var(--ink); }
+  /* Протеинът носи пиктограмата си в цвета, който приложението ползва за
+     същия макрос — един тон значи едно нещо навсякъде. */
+  .demo-prot { display: flex; align-items: center; gap: 8px; }
+  .demo-prot .pic { color: var(--protein); flex: none; }
   .demo-price { font-size: 20px; font-weight: 700; color: var(--accent); }
   .demo-note { margin: 9px 0 0; font-size: 11.5px; color: var(--ink-faint); }
 
@@ -1506,16 +1517,32 @@
          Числата не са декорация — смятат се от истинските данни на гриса
          със същата функция, която смята и в самото ястие. -->
     <div class="demo" id="demo" aria-hidden="true">
-      <div class="demo-top">
-        <span class="demo-lab">БАНАН</span>
-        <b id="demoG">100 г</b>
+      <div class="demo-head">Телешки боул</div>
+
+      <div class="demo-row">
+        <div class="demo-top">
+          <span class="demo-lab">ТЕЛЕШКО</span>
+          <b id="demoG1">250 г</b>
+        </div>
+        <div class="demo-track"><i id="demoFill1"></i><s id="demoKnob1"></s></div>
       </div>
-      <div class="demo-track"><i id="demoFill"></i><s id="demoKnob"></s></div>
+
+      <div class="demo-row">
+        <div class="demo-top">
+          <span class="demo-lab">ОРИЗ</span>
+          <b id="demoG2">100 г</b>
+        </div>
+        <div class="demo-track"><i id="demoFill2"></i><s id="demoKnob2"></s></div>
+      </div>
+
       <div class="demo-out">
-        <span><b id="demoKcal">495</b> ккал</span>
-        <span class="demo-price" id="demoPrice">4,20 €</span>
+        <span class="demo-prot">
+          <svg class="pic" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-protein"/></svg>
+          <b id="demoProt">66</b> г протеин
+        </span>
+        <span class="demo-price" id="demoPrice">6,50 €</span>
       </div>
-      <p class="demo-note">Плъзгаш — числата и цената тръгват.</p>
+      <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
     </div>
 
     <div class="fold" id="filtersPanel"><div><div class="panel">
@@ -3097,41 +3124,54 @@
      Взима истинското ястие и истинската сметка. Ако утре цената на банана
      се смени, демонстрацията се сменя с нея — тя не помни числа, тя ги смята. */
   (function () {
-    var d = DISHES.filter(function (x) { return x.id === 'gris'; })[0];
+    var d = DISHES.filter(function (x) { return x.id === 'kayma'; })[0];
     if (!d) return;
 
     var host = $('demo');
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var MEAT = d.base.filter(function (i) { return i.id === 'kayma'; })[0];
+    var RICE = d.base.filter(function (i) { return i.id === 'oriz'; })[0];
 
-    function paint(g) {
+    function paint(meat, rice) {
       var grams = {};
-      d.base.forEach(function (i) { grams[i.id] = i.id === 'banan' ? g : (d.sizes[1].g[i.id] || i.grams); });
+      d.base.forEach(function (i) {
+        grams[i.id] = i.id === 'kayma' ? meat : i.id === 'oriz' ? rice : i.grams;
+      });
       var r = sumFor(d, grams, null, {});
-      var max = 150;
-      $('demoG').textContent = Math.round(g) + ' г';
-      $('demoKcal').textContent = Math.round(r.sum.kcal);
+      $('demoG1').textContent = Math.round(meat) + ' г';
+      $('demoG2').textContent = Math.round(rice) + ' г';
+      $('demoProt').textContent = Math.round(r.sum.protein);
       $('demoPrice').textContent = money(finalPrice(r.sum.cost));
-      var k = (g / max) * 100;
-      $('demoFill').style.width = k + '%';
-      $('demoKnob').style.left = k + '%';
+
+      var k1 = (meat - MEAT.min) / (MEAT.max - MEAT.min) * 100;
+      var k2 = (rice - RICE.min) / (RICE.max - RICE.min) * 100;
+      $('demoFill1').style.width = k1 + '%';  $('demoKnob1').style.left = k1 + '%';
+      $('demoFill2').style.width = k2 + '%';  $('demoKnob2').style.left = k2 + '%';
     }
 
-    if (reduce) { paint(100); return; }
+    if (reduce) { paint(MEAT.grams, RICE.grams); return; }
 
-    /* Цикълът: пълно → празно → пълно, с престой в двата края, за да може
-       окото да прочете числото, преди то пак да тръгне. */
-    var T = 6200, live = true, seen = true, raf = 0;
+    /* Двата плъзгача се движат ИЗМЕСТЕНИ по фаза. Вървят ли заедно, изглежда
+       като един контрол с две глави; изместени, се чете като конфигуриране. */
+    var T = 8000, live = true, seen = true, raf = 0;
+    function swing(p, lo, hi) {
+      /* Плавно напред-назад с престой в краищата: окото трябва да свари да
+         прочете числото, преди то пак да тръгне. */
+      var e = p < 0.14 ? 0
+            : p < 0.44 ? (p - 0.14) / 0.30
+            : p < 0.60 ? 1
+            : p < 0.90 ? 1 - (p - 0.60) / 0.30
+            : 0;
+      e = e < 0 ? 0 : e > 1 ? 1 : e;
+      e = e * e * (3 - 2 * e);
+      return lo + (hi - lo) * e;
+    }
     function frame(now) {
       if (!live) return;
       if (seen) {
         var p = (now % T) / T;
-        var g;
-        if (p < 0.12) g = 100;
-        else if (p < 0.42) g = 100 * (1 - (p - 0.12) / 0.30);
-        else if (p < 0.58) g = 0;
-        else if (p < 0.88) g = 100 * ((p - 0.58) / 0.30);
-        else g = 100;
-        paint(g);
+        paint(swing(p, MEAT.min, MEAT.max),
+              swing((p + 0.5) % 1, RICE.min, RICE.max));
       }
       raf = requestAnimationFrame(frame);
     }
@@ -3141,7 +3181,7 @@
     function stop() {
       live = false;
       cancelAnimationFrame(raf);
-      paint(100);
+      paint(MEAT.grams, RICE.grams);
       host.classList.add('demo-done');
     }
     host.addEventListener('pointerdown', stop);
