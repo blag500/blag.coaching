@@ -558,8 +558,11 @@
   .search input {
     flex: 1; min-width: 0;
     background: none; border: none; outline: none;
-    font: inherit; font-size: 15px; color: var(--ink);
-    padding: 13px 0;
+    /* 16 px не е естетика: iOS увеличава страницата при фокус върху поле
+       с по-малък шрифт и после не я връща. Единственият начин да не се
+       зуумва е полето да е поне толкова. */
+    font: inherit; font-size: 16px; color: var(--ink);
+    padding: 12px 0;
   }
   .search input::placeholder { color: var(--ink-faint); }
   .search input::-webkit-search-cancel-button { -webkit-appearance: none; }
@@ -616,6 +619,7 @@
      което продуктът прави. Спира при докосване и при скрол извън екрана —
      анимация, която върви, докато никой не я гледа, е само батерия. */
   .demo {
+    position: relative;
     background: var(--pane-bg);
     border: 1px solid var(--pane-border);
     box-shadow: var(--chip-hi);
@@ -627,60 +631,47 @@
      колкото да го продаде — продажбата е работа на плочките отдолу.
      Изрезът е на 34% от височината, защото каймата е в горната трета и
      центриран изрез показва само ориза. */
-  .demo-thumb {
-    position: relative; display: block; flex: none;
-    width: 54px; height: 54px; border-radius: var(--r-sm); overflow: hidden;
-  }
   .demo-shot {
-    display: block; width: 100%; height: 100%;
+    width: 54px; height: 54px; flex: none;
     object-fit: cover; object-position: center 34%;
-    transition: filter 260ms var(--ease), transform 260ms var(--ease);
+    border-radius: var(--r-sm);
   }
-  /* Свита, снимката се замъглява и върху нея застава плей. Размазаното е
-     част от съобщението: то казва „това не е съдържание в момента, това е
-     нещо, което ще тръгне", както изглежда пауза на видео. */
-  .demo-head[aria-expanded="false"] .demo-shot {
-    filter: blur(3px) brightness(0.55);
-    transform: scale(1.08);
+  /* Слоят покрива ЦЯЛАТА карта и размазва това, което е под него. Затова
+     плъзгачите и числата остават на мястото си — виждат се, но приглушени,
+     и е ясно че това е спряло, а не изчезнало. */
+  .demo-veil {
+    position: absolute; inset: 0; z-index: 2;
+    display: grid; place-items: center; align-content: center; gap: 10px;
+    border: none; border-radius: var(--r-lg);
+    background: rgba(10, 16, 13, 0.62);
+    backdrop-filter: blur(4px) saturate(120%);
+    -webkit-backdrop-filter: blur(4px) saturate(120%);
+    font: inherit; color: var(--ink); cursor: pointer;
+    opacity: 0; pointer-events: none;
+    transition: opacity 320ms var(--ease);
   }
+  .demo.paused .demo-veil { opacity: 1; pointer-events: auto; }
+  :root[data-theme="light"] .demo-veil { background: rgba(242, 244, 236, 0.66); }
   .demo-play {
-    position: absolute; inset: 0; margin: auto;
-    width: 24px; height: 24px; color: #F2F4EC;
-    opacity: 0; transform: scale(0.72);
-    transition: opacity 240ms var(--ease), transform 240ms var(--ease);
-    pointer-events: none;
+    display: grid; place-items: center;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--accent); color: var(--ground-flat);
+    transform: scale(0.82);
+    transition: transform 320ms var(--ease);
   }
-  .demo-head[aria-expanded="false"] .demo-play { opacity: 1; transform: scale(1); }
-  /* Заглавният ред е бутонът. Той остава видим и в двете състояния —
-     свита, картата още казва кое ястие е и че има какво да се разгъне. */
+  .demo.paused .demo-play { transform: scale(1); }
+  .demo-play svg { width: 26px; height: 26px; display: block; margin-left: 2px; }
+  .demo-again {
+    font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
+    letter-spacing: 1.5px; color: var(--ink-soft);
+  }
+  .demo-veil:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
   .demo-head {
-    display: flex; align-items: center; gap: 12px; width: 100%;
-    background: none; border: none; padding: 0;
-    font: inherit; color: inherit; text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
     font-family: var(--font-display); font-weight: 600; font-size: 17px;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.01em; margin-bottom: 18px;
   }
   .demo-title { flex: 1; min-width: 0; }
-  .demo-hint {
-    font-family: var(--font-body); font-weight: 500; font-size: 12px;
-    color: var(--ink-faint); white-space: nowrap;
-    opacity: 0; transition: opacity 200ms;
-  }
-  .demo-head[aria-expanded="false"] .demo-hint { opacity: 1; }
-  .demo-head .chev {
-    color: var(--ink-faint);
-    transition: transform 260ms var(--ease), opacity 200ms;
-  }
-  /* Свита, стрелката се скрива: плеят вече казва същото, а две подканвания
-     за едно действие се четат като две различни действия. */
-  .demo-head[aria-expanded="false"] .chev { opacity: 0; }
-  .demo-head[aria-expanded="true"] .chev { transform: rotate(180deg); }
-  .demo-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-sm); }
-  /* Отстъпът стои на ВТОРОТО ниво навътре. Пряко дете на `.fold` запазва
-     подложката си и при `0fr` — свитата карта увисваше с 18 празни пиксела.
-     Същото важеше и за панела с филтрите; между разгъващото се и
-     подплатеното винаги стои един гол слой. */
-  .demo-body { padding-top: 18px; }
   /* Оризът стои неподвижен: два движещи се плъзгача карат окото да избира
      кой да следи и в крайна сметка не следи нито един. Един се движи,
      другият показва, че има и втори. */
@@ -1685,28 +1676,10 @@
          Числата не са декорация — смятат се от истинските данни на гриса
          със същата функция, която смята и в самото ястие. -->
     <div class="demo" id="demo">
-      <button type="button" class="demo-head" id="demoToggle"
-              aria-expanded="false" aria-controls="demoFold">
-        <span class="demo-thumb">
-          <img class="demo-shot" src="/cheatcode/kayma.jpg" alt="">
-          <svg class="demo-play" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 7.5 L17 12 L9 16.5 Z" fill="currentColor"
-                  stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
-          </svg>
-        </span>
+      <div class="demo-head">
+        <img class="demo-shot" src="/cheatcode/kayma.jpg" alt="">
         <span class="demo-title">Телешки боул</span>
-        <span class="demo-hint">пусни пак</span>
-        <svg class="pic chev" width="18" height="18" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-             stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-
-      <!-- Ражда се ЗАТВОРЕНА и се отваря от скрипта на следващия кадър.
-           Преход на `grid-template-rows` от елемент, който е рендериран
-           първо с `1fr`, не тръгва изобщо — проверено: същата карта с
-           `transition: none` моментално отива на нула. Другите сгъваеми в
-           страницата работят, защото се раждат затворени. -->
-      <div class="fold" id="demoFold"><div><div class="demo-body">
+      </div>
 
       <div class="demo-row">
         <div class="demo-top">
@@ -1733,7 +1706,18 @@
       </div>
       <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
 
-      </div></div></div>
+      <!-- Паузата. Картата не се свива — тя застива под тъмен слой с плей,
+           както изглежда видео, което е свършило. Свиването криеше точно
+           това, което трябва да се види. -->
+      <button type="button" class="demo-veil" id="demoVeil" aria-label="Пусни пак">
+        <span class="demo-play">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7 L17.5 12 L9 17 Z" fill="currentColor"
+                  stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="demo-again">Пусни пак</span>
+      </button>
     </div>
 
     <div class="fold" id="filtersPanel"><div><div class="panel">
@@ -3349,8 +3333,15 @@
       new Promise(function (r) { setTimeout(r, 3200); }),
     ]).then(leave).catch(leave);
 
-    /* Докосне ли го човек, си отива веднага. */
-    el.addEventListener('pointerdown', leave);
+    /* Докосне ли го човек, си отива веднага — но на `click`, не на
+       `pointerdown`. Махнат при натискане, сплашът пропуска докосването към
+       това, което е отдолу: то се оказваше полето за търсене и телефонът
+       вдигаше клавиатурата. Слоят остава да покрива през цялото избледняване
+       именно за да поеме удара. */
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      leave();
+    });
   })();
 
   /* ── Демонстрацията ────────────────────────────────────────
@@ -3382,34 +3373,17 @@
       $('demoFill2').style.width = k2 + '%';  $('demoKnob2').style.left = k2 + '%';
     }
 
-    if (reduce) {
-      setOpen(true);
-      paint(MEAT.grams, RICE.grams);
-      /* Без движение цикълът няма смисъл, но разгъването остава — човекът
-         пак може да отвори и да прочете числата. */
-      $('demoToggle').addEventListener('click', function () {
-        var open = !$('demoFold').classList.contains('open');
-        $('demoFold').classList.toggle('open', open);
-        this.setAttribute('aria-expanded', String(open));
-      });
-      return;
-    }
+    /* Без движение няма и пауза: числата стоят на фабричното и слоят не се
+       вдига изобщо. */
+    if (reduce) { paint(MEAT.grams, RICE.grams); return; }
 
     /* Двата плъзгача се движат ИЗМЕСТЕНИ по фаза. Вървят ли заедно, изглежда
        като един контрол с две глави; изместени, се чете като конфигуриране. */
     var T = 5000, live = true, seen = true, raf = 0;
-    var fold = $('demoFold'), toggle = $('demoToggle');
-    var t0 = 0, keepOpen = false;
+    var veil = $('demoVeil');
+    var t0 = 0, keepGoing = false;
 
-    function setOpen(on) {
-      /* Изчитането на `offsetHeight` изсилва браузъра да изчисли стиловете
-         СЕГА. Без него смяната попада в същия кадър с рисуването на цикъла
-         и преходът на `grid-template-rows` не тръгва изобщо — картата
-         оставаше отворена, макар класът да е махнат. */
-      void fold.offsetHeight;
-      fold.classList.toggle('open', on);
-      toggle.setAttribute('aria-expanded', String(on));
-    }
+    function pause(on) { host.classList.toggle('paused', on); }
     function swing(p, lo, hi) {
       /* Плавно напред-назад с престой в краищата: окото трябва да свари да
          прочете числото, преди то пак да тръгне. */
@@ -3441,39 +3415,33 @@
       live = false;
       cancelAnimationFrame(raf);
       paint(MEAT.grams, RICE.grams);
-      if (keepOpen) return;
-      setOpen(false);
+      if (keepGoing) return;
+      pause(true);
     }
 
     function replay() {
-      if (fold.classList.contains('open')) { setOpen(false); return; }
-      setOpen(true);
-      keepOpen = true;
+      pause(false);
       live = true; t0 = 0;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(frame);
     }
-    toggle.addEventListener('click', replay);
+    veil.addEventListener('click', replay);
 
     /* Докосне ли я човек, спира завинаги — да се бориш с движеща се
        демонстрация е по-лошо, отколкото да я няма. */
-    /* Докосне ли плъзгачите, спира, но НЕ се прибира — човекът гледа
-       числата в момента. */
+    /* Докосне ли плъзгачите, цикълът спира, но слоят НЕ се вдига — човекът
+       гледа числата в момента и не бива да му се затваря пред очите. */
     function stop() {
       live = false;
-      keepOpen = true;
+      keepGoing = true;
       cancelAnimationFrame(raf);
       paint(MEAT.grams, RICE.grams);
-      host.classList.add('demo-done');
     }
-    fold.addEventListener('pointerdown', stop);
-
-    /* Отваряме чак на следващия кадър: така първото изчислено състояние е
-       затвореното и всяка следваща смяна е истински преход. */
-    requestAnimationFrame(function () {
-      setOpen(true);
-      raf = requestAnimationFrame(frame);
+    host.addEventListener('pointerdown', function (e) {
+      if (!e.target.closest('.demo-veil')) stop();
     });
+
+    raf = requestAnimationFrame(frame);
 
     /* Извън екрана не се смята нищо. */
     if (window.IntersectionObserver) {
