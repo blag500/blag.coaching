@@ -1,0 +1,24 @@
+<!-- П8 · Скъсването като удар
+     Без отломки — къси лъчи от точката на скъсване. Линиите оцеляват
+     дребно по-добре от петна, защото имат същата дебелина като знака. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="Cheat Code">
+  <title>Cheat Code</title>
+  <defs>
+    <mask id="p8cut">
+      <rect width="64" height="64" fill="#fff"/>
+      <path d="M34 23 h10 a9 9 0 0 1 9 9" fill="none" stroke="#000" stroke-width="12"/>
+    </mask>
+  </defs>
+  <g transform="translate(-3 4) scale(0.82) rotate(-35 32 32)" fill="none"
+     stroke="currentColor" stroke-width="6.5" stroke-linecap="round">
+    <rect x="6" y="23" width="31" height="18" rx="9" mask="url(#p8cut)"/>
+    <path d="M32 23 h11 a9 9 0 0 1 8 5"/>
+    <path d="M32 41 h11 a9 9 0 0 0 8 -5"/>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round">
+    <path d="M48 16 l5 -5"/>
+    <path d="M55 24 l6 -2"/>
+    <path d="M44 10 l2 -6"/>
+  </g>
+</svg>
