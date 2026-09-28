@@ -616,11 +616,30 @@
      колкото да го продаде — продажбата е работа на плочките отдолу.
      Изрезът е на 34% от височината, защото каймата е в горната трета и
      центриран изрез показва само ориза. */
-  .demo-shot {
-    width: 54px; height: 54px; flex: none;
-    object-fit: cover; object-position: center 34%;
-    border-radius: var(--r-sm);
+  .demo-thumb {
+    position: relative; display: block; flex: none;
+    width: 54px; height: 54px; border-radius: var(--r-sm); overflow: hidden;
   }
+  .demo-shot {
+    display: block; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 34%;
+    transition: filter 260ms var(--ease), transform 260ms var(--ease);
+  }
+  /* Свита, снимката се замъглява и върху нея застава плей. Размазаното е
+     част от съобщението: то казва „това не е съдържание в момента, това е
+     нещо, което ще тръгне", както изглежда пауза на видео. */
+  .demo-head[aria-expanded="false"] .demo-shot {
+    filter: blur(3px) brightness(0.55);
+    transform: scale(1.08);
+  }
+  .demo-play {
+    position: absolute; inset: 0; margin: auto;
+    width: 24px; height: 24px; color: #F2F4EC;
+    opacity: 0; transform: scale(0.72);
+    transition: opacity 240ms var(--ease), transform 240ms var(--ease);
+    pointer-events: none;
+  }
+  .demo-head[aria-expanded="false"] .demo-play { opacity: 1; transform: scale(1); }
   /* Заглавният ред е бутонът. Той остава видим и в двете състояния —
      свита, картата още казва кое ястие е и че има какво да се разгъне. */
   .demo-head {
@@ -637,8 +656,14 @@
     opacity: 0; transition: opacity 200ms;
   }
   .demo-head[aria-expanded="false"] .demo-hint { opacity: 1; }
-  .demo-head .chev { color: var(--ink-faint); transition: transform 260ms var(--ease); }
-  .demo-head[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+  .demo-head .chev {
+    color: var(--ink-faint);
+    transition: transform 260ms var(--ease), opacity 200ms;
+  }
+  /* Свита, стрелката се скрива: плеят вече казва същото, а две подканвания
+     за едно действие се четат като две различни действия. */
+  .demo-head[aria-expanded="false"] .chev { opacity: 0; }
+  .demo-head[aria-expanded="true"] .chev { transform: rotate(180deg); }
   .demo-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-sm); }
   /* Отстъпът стои на ВТОРОТО ниво навътре. Пряко дете на `.fold` запазва
      подложката си и при `0fr` — свитата карта увисваше с 18 празни пиксела.
@@ -1648,16 +1673,27 @@
          със същата функция, която смята и в самото ястие. -->
     <div class="demo" id="demo">
       <button type="button" class="demo-head" id="demoToggle"
-              aria-expanded="true" aria-controls="demoFold">
-        <img class="demo-shot" src="kayma.jpg" alt="">
+              aria-expanded="false" aria-controls="demoFold">
+        <span class="demo-thumb">
+          <img class="demo-shot" src="kayma.jpg" alt="">
+          <svg class="demo-play" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7.5 L17 12 L9 16.5 Z" fill="currentColor"
+                  stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+          </svg>
+        </span>
         <span class="demo-title">Телешки боул</span>
-        <span class="demo-hint">покажи пак</span>
+        <span class="demo-hint">пусни пак</span>
         <svg class="pic chev" width="18" height="18" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round"
              stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
 
-      <div class="fold open" id="demoFold"><div><div class="demo-body">
+      <!-- Ражда се ЗАТВОРЕНА и се отваря от скрипта на следващия кадър.
+           Преход на `grid-template-rows` от елемент, който е рендериран
+           първо с `1fr`, не тръгва изобщо — проверено: същата карта с
+           `transition: none` моментално отива на нула. Другите сгъваеми в
+           страницата работят, защото се раждат затворени. -->
+      <div class="fold" id="demoFold"><div><div class="demo-body">
 
       <div class="demo-row">
         <div class="demo-top">
@@ -3334,6 +3370,7 @@
     }
 
     if (reduce) {
+      setOpen(true);
       paint(MEAT.grams, RICE.grams);
       /* Без движение цикълът няма смисъл, но разгъването остава — човекът
          пак може да отвори и да прочете числата. */
@@ -3350,6 +3387,16 @@
     var T = 5000, live = true, seen = true, raf = 0;
     var fold = $('demoFold'), toggle = $('demoToggle');
     var t0 = 0, keepOpen = false;
+
+    function setOpen(on) {
+      /* Изчитането на `offsetHeight` изсилва браузъра да изчисли стиловете
+         СЕГА. Без него смяната попада в същия кадър с рисуването на цикъла
+         и преходът на `grid-template-rows` не тръгва изобщо — картата
+         оставаше отворена, макар класът да е махнат. */
+      void fold.offsetHeight;
+      fold.classList.toggle('open', on);
+      toggle.setAttribute('aria-expanded', String(on));
+    }
     function swing(p, lo, hi) {
       /* Плавно напред-назад с престой в краищата: окото трябва да свари да
          прочете числото, преди то пак да тръгне. */
@@ -3385,11 +3432,6 @@
       setOpen(false);
     }
 
-    function setOpen(on) {
-      fold.classList.toggle('open', on);
-      toggle.setAttribute('aria-expanded', String(on));
-    }
-
     function replay() {
       if (fold.classList.contains('open')) { setOpen(false); return; }
       setOpen(true);
@@ -3413,12 +3455,18 @@
     }
     fold.addEventListener('pointerdown', stop);
 
+    /* Отваряме чак на следващия кадър: така първото изчислено състояние е
+       затвореното и всяка следваща смяна е истински преход. */
+    requestAnimationFrame(function () {
+      setOpen(true);
+      raf = requestAnimationFrame(frame);
+    });
+
     /* Извън екрана не се смята нищо. */
     if (window.IntersectionObserver) {
       new IntersectionObserver(function (e) { seen = e[0].isIntersecting; },
         { threshold: 0.2 }).observe(host);
     }
-    raf = requestAnimationFrame(frame);
   })();
 
   /* ── Начало ───────────────────────────────────────────────── */
