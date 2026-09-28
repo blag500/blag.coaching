@@ -621,11 +621,30 @@
     object-fit: cover; object-position: center 34%;
     border-radius: var(--r-sm);
   }
+  /* Заглавният ред е бутонът. Той остава видим и в двете състояния —
+     свита, картата още казва кое ястие е и че има какво да се разгъне. */
   .demo-head {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    background: none; border: none; padding: 0;
+    font: inherit; color: inherit; text-align: left; cursor: pointer;
     font-family: var(--font-display); font-weight: 600; font-size: 17px;
-    letter-spacing: -0.01em; margin-bottom: 18px;
+    letter-spacing: -0.01em;
   }
+  .demo-title { flex: 1; min-width: 0; }
+  .demo-hint {
+    font-family: var(--font-body); font-weight: 500; font-size: 12px;
+    color: var(--ink-faint); white-space: nowrap;
+    opacity: 0; transition: opacity 200ms;
+  }
+  .demo-head[aria-expanded="false"] .demo-hint { opacity: 1; }
+  .demo-head .chev { color: var(--ink-faint); transition: transform 260ms var(--ease); }
+  .demo-head[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+  .demo-head:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-sm); }
+  /* Отстъпът стои на ВТОРОТО ниво навътре. Пряко дете на `.fold` запазва
+     подложката си и при `0fr` — свитата карта увисваше с 18 празни пиксела.
+     Същото важеше и за панела с филтрите; между разгъващото се и
+     подплатеното винаги стои един гол слой. */
+  .demo-body { padding-top: 18px; }
   /* Оризът стои неподвижен: два движещи се плъзгача карат окото да избира
      кой да следи и в крайна сметка не следи нито един. Един се движи,
      другият показва, че има и втори. */
@@ -1627,11 +1646,18 @@
     <!-- Трикът на продукта, показан преди човек да е отворил ястие.
          Числата не са декорация — смятат се от истинските данни на гриса
          със същата функция, която смята и в самото ястие. -->
-    <div class="demo" id="demo" aria-hidden="true">
-      <div class="demo-head">
+    <div class="demo" id="demo">
+      <button type="button" class="demo-head" id="demoToggle"
+              aria-expanded="true" aria-controls="demoFold">
         <img class="demo-shot" src="kayma.jpg" alt="">
-        <span>Телешки боул</span>
-      </div>
+        <span class="demo-title">Телешки боул</span>
+        <span class="demo-hint">покажи пак</span>
+        <svg class="pic chev" width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+
+      <div class="fold open" id="demoFold"><div><div class="demo-body">
 
       <div class="demo-row">
         <div class="demo-top">
@@ -1657,6 +1683,8 @@
         <span class="demo-price" id="demoPrice">6,50 €</span>
       </div>
       <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
+
+      </div></div></div>
     </div>
 
     <div class="fold" id="filtersPanel"><div><div class="panel">
@@ -3305,11 +3333,23 @@
       $('demoFill2').style.width = k2 + '%';  $('demoKnob2').style.left = k2 + '%';
     }
 
-    if (reduce) { paint(MEAT.grams, RICE.grams); return; }
+    if (reduce) {
+      paint(MEAT.grams, RICE.grams);
+      /* Без движение цикълът няма смисъл, но разгъването остава — човекът
+         пак може да отвори и да прочете числата. */
+      $('demoToggle').addEventListener('click', function () {
+        var open = !$('demoFold').classList.contains('open');
+        $('demoFold').classList.toggle('open', open);
+        this.setAttribute('aria-expanded', String(open));
+      });
+      return;
+    }
 
     /* Двата плъзгача се движат ИЗМЕСТЕНИ по фаза. Вървят ли заедно, изглежда
        като един контрол с две глави; изместени, се чете като конфигуриране. */
-    var T = 6400, live = true, seen = true, raf = 0;
+    var T = 5000, live = true, seen = true, raf = 0;
+    var fold = $('demoFold'), toggle = $('demoToggle');
+    var t0 = 0, keepOpen = false;
     function swing(p, lo, hi) {
       /* Плавно напред-назад с престой в краищата: окото трябва да свари да
          прочете числото, преди то пак да тръгне. */
@@ -3324,22 +3364,54 @@
     }
     function frame(now) {
       if (!live) return;
-      if (seen) {
-        var p = (now % T) / T;
-        paint(swing(p, MEAT.min, MEAT.max), RICE.grams);
-      }
+      if (!t0) t0 = now;
+      var run = now - t0;
+      if (seen) paint(swing((run % T) / T, MEAT.min, MEAT.max), RICE.grams);
+      /* Един пълен цикъл и толкова. Отброяването е от ПЪРВИЯ кадър, не от
+         зареждането: анимацията тръгва при първото рисуване, а то може да
+         закъснее половин секунда — иначе цикълът се реже наполовина. */
+      if (run >= T) { finish(); return; }
       raf = requestAnimationFrame(frame);
     }
 
+    /* След цикъла картата се прибира сама. Разгъне ли я човек, тя изсвирва
+       пак и ОСТАВА отворена: автоматичното е сдържано, поисканото е
+       послушно. Карта, която се затваря под пръста, е по-лоша от никаква. */
+    function finish() {
+      live = false;
+      cancelAnimationFrame(raf);
+      paint(MEAT.grams, RICE.grams);
+      if (keepOpen) return;
+      setOpen(false);
+    }
+
+    function setOpen(on) {
+      fold.classList.toggle('open', on);
+      toggle.setAttribute('aria-expanded', String(on));
+    }
+
+    function replay() {
+      if (fold.classList.contains('open')) { setOpen(false); return; }
+      setOpen(true);
+      keepOpen = true;
+      live = true; t0 = 0;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(frame);
+    }
+    toggle.addEventListener('click', replay);
+
     /* Докосне ли я човек, спира завинаги — да се бориш с движеща се
        демонстрация е по-лошо, отколкото да я няма. */
+    /* Докосне ли плъзгачите, спира, но НЕ се прибира — човекът гледа
+       числата в момента. */
     function stop() {
       live = false;
+      keepOpen = true;
       cancelAnimationFrame(raf);
       paint(MEAT.grams, RICE.grams);
       host.classList.add('demo-done');
     }
-    host.addEventListener('pointerdown', stop);
+    fold.addEventListener('pointerdown', stop);
 
     /* Извън екрана не се смята нищо. */
     if (window.IntersectionObserver) {
