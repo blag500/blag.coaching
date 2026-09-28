@@ -166,6 +166,50 @@
     body::before { animation: none; }
   }
 
+  /* ── Дишането ──────────────────────────────────────────────
+     Три петна светлина, които се движат много бавно. Слоят е отделен и
+     `fixed`, за да не се преизчислява при скрол, и се движи само с
+     `transform` — единственото, което не кара браузъра да преначертава.
+     Под `prefers-reduced-motion` изчезва напълно. */
+  .breathe {
+    position: fixed; inset: -25%; z-index: 0; pointer-events: none;
+    opacity: 0.55;
+  }
+  .breathe i {
+    position: absolute; display: block; border-radius: 50%;
+    filter: blur(70px);
+    will-change: transform;
+  }
+  .breathe i:nth-child(1) {
+    width: 46vmax; height: 46vmax; left: 8%; top: 4%;
+    background: rgba(79, 191, 142, 0.16);
+    animation: drift1 46s ease-in-out infinite;
+  }
+  .breathe i:nth-child(2) {
+    width: 38vmax; height: 38vmax; right: 6%; top: 26%;
+    background: rgba(90, 120, 200, 0.13);
+    animation: drift2 58s ease-in-out infinite;
+  }
+  .breathe i:nth-child(3) {
+    width: 42vmax; height: 42vmax; left: 26%; bottom: 2%;
+    background: rgba(79, 191, 142, 0.10);
+    animation: drift3 72s ease-in-out infinite;
+  }
+  @keyframes drift1 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(7vmax, 5vmax, 0) scale(1.12); }
+  }
+  @keyframes drift2 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); }
+    50%      { transform: translate3d(-6vmax, 7vmax, 0) scale(1); }
+  }
+  @keyframes drift3 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(5vmax, -6vmax, 0) scale(1.15); }
+  }
+  :root[data-theme="light"] .breathe { opacity: 0.8; }
+  @media (prefers-reduced-motion: reduce) { .breathe { display: none; } }
+
   .wrap {
     position: relative; z-index: 1;
     /* Изгледите влизат отстрани; докато се плъзгат, стърчат извън екрана и
@@ -256,6 +300,20 @@
     color: var(--ground-flat);
   }
   .sign svg { width: 25px; height: 25px; display: block; }
+  /* Знакът се заплита веднъж, при влизане. Еднократно, не в цикъл: движение,
+     което се повтаря до безкрай в ъгъла на екрана, се превръща в тик.
+     Дължината 150 е с запас над обиколката на капсулата (~110) — по-къс
+     пунктир никога не дочертава последната страна. */
+  .sign svg rect {
+    stroke-dasharray: 150;
+    stroke-dashoffset: 150;
+    animation: linkDraw 900ms cubic-bezier(0.2,0.8,0.2,1) forwards;
+  }
+  .sign svg rect:last-of-type { animation-delay: 220ms; }
+  @keyframes linkDraw { to { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .sign svg rect { animation: none; stroke-dashoffset: 0; }
+  }
   .brand h1 {
     font-family: var(--font-display);
     font-weight: 800;
@@ -478,6 +536,44 @@
 
   /* Решетка, не списък. Снимката отгоре, името отдолу — така се чете меню,
      а редът със снимка отстрани се чете като сметка. */
+  /* ── Демонстрацията ────────────────────────────────────────
+     Цикъл, който е информация, а не движение: показва единственото нещо,
+     което продуктът прави. Спира при докосване и при скрол извън екрана —
+     анимация, която върви, докато никой не я гледа, е само батерия. */
+  .demo {
+    background: var(--pane-bg);
+    border: 1px solid var(--pane-border);
+    box-shadow: var(--chip-hi);
+    border-radius: var(--r-lg);
+    padding: 15px 17px 13px;
+    margin-bottom: 14px;
+  }
+  .demo-top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 9px;
+  }
+  .demo-lab { font-size: 11px; letter-spacing: 3px; color: var(--ink-faint); font-weight: 600; }
+  .demo-top b { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .demo-track {
+    position: relative; height: 6px; border-radius: 3px;
+    background: var(--surface-2);
+  }
+  .demo-track i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--accent); }
+  .demo-track s {
+    position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
+    border-radius: 50%; background: var(--ground-flat);
+    box-shadow: 0 0 0 4px var(--accent); text-decoration: none;
+  }
+  .demo-out {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-top: 15px;
+    font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .demo-out b { font-size: 26px; font-weight: 700; color: var(--ink); }
+  .demo-price { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .demo-note { margin: 9px 0 0; font-size: 11.5px; color: var(--ink-faint); }
+
   .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .dish {
     display: grid; gap: 0;
@@ -1372,6 +1468,8 @@
   </defs>
 </svg>
 
+<div class="breathe" aria-hidden="true"><i></i><i></i><i></i></div>
+
 <div class="wrap">
 
   <div class="topbar" id="topbar">
@@ -1404,6 +1502,22 @@
   </div>
 
   <section id="menuView">
+    <!-- Трикът на продукта, показан преди човек да е отворил ястие.
+         Числата не са декорация — смятат се от истинските данни на гриса
+         със същата функция, която смята и в самото ястие. -->
+    <div class="demo" id="demo" aria-hidden="true">
+      <div class="demo-top">
+        <span class="demo-lab">БАНАН</span>
+        <b id="demoG">100 г</b>
+      </div>
+      <div class="demo-track"><i id="demoFill"></i><s id="demoKnob"></s></div>
+      <div class="demo-out">
+        <span><b id="demoKcal">495</b> ккал</span>
+        <span class="demo-price" id="demoPrice">4,20 €</span>
+      </div>
+      <p class="demo-note">Плъзгаш — числата и цената тръгват.</p>
+    </div>
+
     <div class="fold" id="filtersPanel"><div><div class="panel">
       <div class="frow"><span>Калории</span><div class="chips" id="fKcal"></div></div>
       <div class="frow"><span>Протеин</span><div class="chips" id="fProt"></div></div>
@@ -2978,6 +3092,67 @@
 
   $('backFromCart').addEventListener('click', function () { show('menu'); });
   $('againBtn').addEventListener('click', function () { show('menu'); });
+
+  /* ── Демонстрацията ────────────────────────────────────────
+     Взима истинското ястие и истинската сметка. Ако утре цената на банана
+     се смени, демонстрацията се сменя с нея — тя не помни числа, тя ги смята. */
+  (function () {
+    var d = DISHES.filter(function (x) { return x.id === 'gris'; })[0];
+    if (!d) return;
+
+    var host = $('demo');
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function paint(g) {
+      var grams = {};
+      d.base.forEach(function (i) { grams[i.id] = i.id === 'banan' ? g : (d.sizes[1].g[i.id] || i.grams); });
+      var r = sumFor(d, grams, null, {});
+      var max = 150;
+      $('demoG').textContent = Math.round(g) + ' г';
+      $('demoKcal').textContent = Math.round(r.sum.kcal);
+      $('demoPrice').textContent = money(finalPrice(r.sum.cost));
+      var k = (g / max) * 100;
+      $('demoFill').style.width = k + '%';
+      $('demoKnob').style.left = k + '%';
+    }
+
+    if (reduce) { paint(100); return; }
+
+    /* Цикълът: пълно → празно → пълно, с престой в двата края, за да може
+       окото да прочете числото, преди то пак да тръгне. */
+    var T = 6200, live = true, seen = true, raf = 0;
+    function frame(now) {
+      if (!live) return;
+      if (seen) {
+        var p = (now % T) / T;
+        var g;
+        if (p < 0.12) g = 100;
+        else if (p < 0.42) g = 100 * (1 - (p - 0.12) / 0.30);
+        else if (p < 0.58) g = 0;
+        else if (p < 0.88) g = 100 * ((p - 0.58) / 0.30);
+        else g = 100;
+        paint(g);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    /* Докосне ли я човек, спира завинаги — да се бориш с движеща се
+       демонстрация е по-лошо, отколкото да я няма. */
+    function stop() {
+      live = false;
+      cancelAnimationFrame(raf);
+      paint(100);
+      host.classList.add('demo-done');
+    }
+    host.addEventListener('pointerdown', stop);
+
+    /* Извън екрана не се смята нищо. */
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (e) { seen = e[0].isIntersecting; },
+        { threshold: 0.2 }).observe(host);
+    }
+    raf = requestAnimationFrame(frame);
+  })();
 
   /* ── Начало ───────────────────────────────────────────────── */
 
