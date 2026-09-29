@@ -408,6 +408,8 @@ export default {
   // Shared shell
   'nav.showNav':          'Show navigation',
   'nav.mainNav':          'Main navigation',
+  'nav.cheatcode':        'Cheat Code',
+  'nav.cheatcodeClose':   'Close Cheat Code',
   'header.back':          'Back',
   'header.menu':          'Menu',
   'header.changePhoto':   'Change photo',

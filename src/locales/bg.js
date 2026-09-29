@@ -409,6 +409,8 @@ export default {
   // Shared shell — nav actions, header aria, drawer sections
   'nav.showNav':          'Покажи навигацията',
   'nav.mainNav':          'Основна навигация',
+  'nav.cheatcode':        'Чийт Код',
+  'nav.cheatcodeClose':   'Затвори Чийт Код',
   'header.back':          'Назад',
   'header.menu':          'Меню',
   'header.changePhoto':   'Смени снимка',
