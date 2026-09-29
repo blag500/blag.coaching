@@ -1430,6 +1430,75 @@
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
   }
+  /* Хапчето на показното стои до навигацията, със същото стъкло. Двете
+     заедно се центрират — затова отстъпът отдолу е на реда, не на хапчето. */
+  .nav-row {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 0 auto 10px;
+  }
+  .nav-row .nav-inner { margin: 0; }
+  .nav-show {
+    display: grid; place-items: center; flex: none;
+    width: 50px; height: 50px; padding: 0;
+    border-radius: 999px;
+    background: var(--veil);
+    border: 1px solid var(--chip-border);
+    box-shadow: var(--chip-hi), 0 6px 22px rgba(0,0,0,0.16);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    color: var(--accent); cursor: pointer;
+    transition: transform 110ms var(--ease);
+  }
+  .nav-show:active { transform: scale(0.92); }
+  .nav-show:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Показното ─────────────────────────────────────────────
+     Прозорец над страницата. Фонът се размазва, за да личи, че това е слой,
+     а менюто отдолу си е там. Излиза от долния ляв ъгъл — оттам, където
+     е хапчето, което го извика. */
+  .showcase {
+    position: fixed; inset: 0; z-index: 20;
+    display: grid; place-items: center;
+    padding: calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 18px);
+  }
+  .showcase-scrim {
+    position: absolute; inset: 0;
+    background: rgba(10, 16, 13, 0.46);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    opacity: 0;
+    transition: opacity var(--in) var(--ease);
+  }
+  :root[data-theme="light"] .showcase-scrim { background: rgba(242, 244, 236, 0.5); }
+  .showcase-box {
+    position: relative; width: 100%; max-width: 440px;
+    transform-origin: bottom left;
+    opacity: 0; transform: scale(0.7) translateY(30px);
+    transition: opacity var(--in) var(--ease), transform var(--in) var(--ease);
+  }
+  .showcase.open .showcase-scrim { opacity: 1; }
+  .showcase.open .showcase-box { opacity: 1; transform: none; }
+  .showcase.closing .showcase-scrim,
+  .showcase.closing .showcase-box { transition-duration: var(--out); }
+  /* Картата в прозореца е плътна: полупрозрачна върху размазан фон се чете
+     като част от него. */
+  .showcase .demo { background: var(--surface); margin: 0; }
+  .showcase-x {
+    display: grid; place-items: center;
+    width: 38px; height: 38px; padding: 0;
+    margin: 0 0 10px auto;
+    border-radius: 999px;
+    background: var(--veil);
+    border: 1px solid var(--chip-border);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    color: var(--ink); cursor: pointer;
+  }
+  .showcase-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-scrim, .showcase-box { transition: none; }
+  }
+
   .nav-inner button {
     display: flex; align-items: center; gap: 8px;
     background: none; border: none; padding: 9px 16px;
@@ -1692,57 +1761,6 @@
   </div>
 
   <section id="menuView">
-    <!-- Трикът на продукта, показан преди човек да е отворил ястие.
-         Числата не са декорация — смятат се от истинските данни на гриса
-         със същата функция, която смята и в самото ястие. -->
-    <div class="demo" id="demo">
-      <div class="demo-head">
-        <img class="demo-shot" src="/cheatcode/kayma.jpg" alt="">
-        <span class="demo-title">Телешки боул</span>
-      </div>
-
-      <div class="demo-body" id="demoBody"><div><div>
-      <div class="demo-row">
-        <div class="demo-top">
-          <span class="demo-lab">ТЕЛЕШКО</span>
-          <b id="demoG1">250 г</b>
-        </div>
-        <div class="demo-track"><i id="demoFill1"></i><s id="demoKnob1"></s></div>
-      </div>
-
-      <div class="demo-row still">
-        <div class="demo-top">
-          <span class="demo-lab">ОРИЗ</span>
-          <b id="demoG2">100 г</b>
-        </div>
-        <div class="demo-track"><i id="demoFill2"></i><s id="demoKnob2"></s></div>
-      </div>
-
-      <div class="demo-out">
-        <span class="demo-prot">
-          <svg class="pic" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-protein"/></svg>
-          <b id="demoProt">66</b> г протеин
-        </span>
-        <span class="demo-price" id="demoPrice">6,50 €</span>
-      </div>
-      <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
-      </div></div></div>
-
-      <!-- Паузата е в два хода и редът им е важен: първо картата се сгъва
-           до заглавния си ред, чак после върху него пада тъмният слой с
-           плея. Замъгляване върху нещо, което още се движи, чете като
-           дефект; върху прибраното чете като „свърши". -->
-      <button type="button" class="demo-veil" id="demoVeil" aria-label="Пусни пак">
-        <span class="demo-play">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 7 L17.5 12 L9 17 Z" fill="currentColor"
-                  stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span class="demo-again">Пусни пак</span>
-      </button>
-    </div>
-
     <div class="fold" id="filtersPanel"><div><div class="panel">
       <div class="frow"><span>Калории</span><div class="chips" id="fKcal"></div></div>
       <div class="frow"><span>Протеин</span><div class="chips" id="fProt"></div></div>
@@ -1924,6 +1942,12 @@
 </div>
 
 <nav class="nav" id="nav" aria-label="Основна навигация">
+  <div class="nav-row">
+  <!-- Отделно хапче, не трети раздел: не води никъде, а вика показното
+       отгоре. Знакът е конфигуратор — точно това прави продуктът. -->
+  <button type="button" class="nav-show" id="showBtn" aria-label="Как работи" aria-haspopup="dialog" aria-controls="showcase">
+    <svg class="pic" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h3.5M11.5 6H20M4 12h9.5M17.5 12H20M4 18h1.5M9.5 18H20"/><circle cx="9.5" cy="6" r="2"/><circle cx="15.5" cy="12" r="2"/><circle cx="7.5" cy="18" r="2"/></svg>
+  </button>
   <div class="nav-inner">
     <button type="button" data-go="menu" aria-current="page">
       <svg class="pic" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
@@ -1937,7 +1961,69 @@
       <span>Количка</span>
     </button>
   </div>
+  </div>
 </nav>
+</div>
+
+<!-- Показното не стои в менюто — вика се от хапчето вляво от навигацията.
+     Страницата отдолу се размазва: показното е отгоре, не вместо. -->
+<div class="showcase" id="showcase" role="dialog" aria-modal="true" aria-label="Как работи" hidden>
+  <div class="showcase-scrim" id="showcaseScrim"></div>
+  <div class="showcase-box">
+    <button type="button" class="showcase-x" id="showcaseClose" aria-label="Затвори">
+      <svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <!-- Трикът на продукта, показан преди човек да е отворил ястие.
+         Числата не са декорация — смятат се от истинските данни на гриса
+         със същата функция, която смята и в самото ястие. -->
+    <div class="demo" id="demo">
+      <div class="demo-head">
+        <img class="demo-shot" src="/cheatcode/kayma.jpg" alt="">
+        <span class="demo-title">Телешки боул</span>
+      </div>
+
+      <div class="demo-body" id="demoBody"><div><div>
+      <div class="demo-row">
+        <div class="demo-top">
+          <span class="demo-lab">ТЕЛЕШКО</span>
+          <b id="demoG1">250 г</b>
+        </div>
+        <div class="demo-track"><i id="demoFill1"></i><s id="demoKnob1"></s></div>
+      </div>
+
+      <div class="demo-row still">
+        <div class="demo-top">
+          <span class="demo-lab">ОРИЗ</span>
+          <b id="demoG2">100 г</b>
+        </div>
+        <div class="demo-track"><i id="demoFill2"></i><s id="demoKnob2"></s></div>
+      </div>
+
+      <div class="demo-out">
+        <span class="demo-prot">
+          <svg class="pic" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-protein"/></svg>
+          <b id="demoProt">66</b> г протеин
+        </span>
+        <span class="demo-price" id="demoPrice">6,50 €</span>
+      </div>
+      <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
+      </div></div></div>
+
+      <!-- Паузата е в два хода и редът им е важен: първо картата се сгъва
+           до заглавния си ред, чак после върху него пада тъмният слой с
+           плея. Замъгляване върху нещо, което още се движи, чете като
+           дефект; върху прибраното чете като „свърши". -->
+      <button type="button" class="demo-veil" id="demoVeil" aria-label="Пусни пак">
+        <span class="demo-play">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7 L17.5 12 L9 17 Z" fill="currentColor"
+                  stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="demo-again">Пусни пак</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
@@ -3367,6 +3453,9 @@
     });
   })();
 
+  /* Прозорецът вика показното оттук; самото показно се закача по-долу. */
+  var demoPlay = function () {}, demoStop = function () {};
+
   /* ── Демонстрацията ────────────────────────────────────────
      Взима истинското ястие и истинската сметка. Ако утре цената на банана
      се смени, демонстрацията се сменя с нея — тя не помни числа, тя ги смята. */
@@ -3402,7 +3491,7 @@
 
     /* Двата плъзгача се движат ИЗМЕСТЕНИ по фаза. Вървят ли заедно, изглежда
        като един контрол с две глави; изместени, се чете като конфигуриране. */
-    var T = 5000, live = true, seen = true, raf = 0;
+    var T = 5000, live = false, seen = true, raf = 0;
     var veil = $('demoVeil');
     var t0 = 0, keepGoing = false;
 
@@ -3449,6 +3538,7 @@
 
     function replay() {
       clearTimeout(veilTimer);
+      keepGoing = false;
       pause(false);
       host.classList.remove('folded');
       live = true; t0 = 0;
@@ -3472,13 +3562,59 @@
       if (!e.target.closest('.demo-veil')) stop();
     });
 
-    raf = requestAnimationFrame(frame);
+    /* Не тръгва сама при зареждане: живее в прозорец и се пуска, когато
+       прозорецът се отвори. Затвори ли се, спира и се връща в начало. */
+    demoPlay = replay;
+    demoStop = function () {
+      live = false;
+      clearTimeout(veilTimer);
+      cancelAnimationFrame(raf);
+      pause(false);
+      host.classList.remove('folded');
+      paint(MEAT.grams, RICE.grams);
+    };
+    paint(MEAT.grams, RICE.grams);
 
     /* Извън екрана не се смята нищо. */
     if (window.IntersectionObserver) {
       new IntersectionObserver(function (e) { seen = e[0].isIntersecting; },
         { threshold: 0.2 }).observe(host);
     }
+  })();
+
+  /* ── Прозорецът на показното ──────────────────────────────── */
+  (function () {
+    var box = $('showcase'), btn = $('showBtn'), timer = 0;
+
+    function open() {
+      clearTimeout(timer);
+      box.classList.remove('closing');
+      box.hidden = false;
+      /* Кадър между `hidden` и класа — иначе преходът няма от какво да тръгне. */
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { box.classList.add('open'); });
+      });
+      document.addEventListener('keydown', onKey);
+      $('showcaseClose').focus({ preventScroll: true });
+      demoPlay();
+    }
+    function close() {
+      if (box.hidden || box.classList.contains('closing')) return;
+      box.classList.add('closing');
+      box.classList.remove('open');
+      document.removeEventListener('keydown', onKey);
+      timer = setTimeout(function () {
+        box.hidden = true;
+        box.classList.remove('closing');
+        demoStop();
+      }, 200);
+      btn.focus({ preventScroll: true });
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+
+    btn.addEventListener('click', open);
+    $('showcaseClose').addEventListener('click', close);
+    $('showcaseScrim').addEventListener('click', close);
   })();
 
   /* ── Начало ───────────────────────────────────────────────── */
