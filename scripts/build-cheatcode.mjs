@@ -87,7 +87,7 @@ writeFileSync(join(OUT_DIR, 'index.html'), out);
    Страницата се тегли първо от мрежата (иначе промяна стига до човека чак
    на второто отваряне), снимките и шрифтовете — първо от кеша. */
 const precache = ['/cheatcode/', '/cheatcode/manifest.webmanifest', '/cheatcode/icon-192.png',
-  '/cheatcode/icon-512.png', '/cheatcode/icon-180.png', '/cheatcode/favicon.svg',
+  '/cheatcode/icon-512.png', '/cheatcode/icon-maskable-512.png', '/cheatcode/icon-180.png', '/cheatcode/favicon.svg',
   ...[...wanted].sort().map((f) => `/cheatcode/${f}`)];
 const digest = createHash('sha256');
 digest.update(out);
