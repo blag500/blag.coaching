@@ -613,7 +613,11 @@
     border: 1px solid var(--pane-border);
     box-shadow: var(--chip-hi);
     border-radius: var(--r-lg);
-    padding: 16px 17px 14px;
+    /* Странична подложка НЯМА тук, а в слоевете отвътре. Копчето на
+       плъзгача стърчи 13 пиксела извън пистата си, а сгъващият се слой
+       реже по своя контур — сложи ли се подложката на картата, крайното
+       положение на копчето се отрязва наполовина. */
+    padding: 16px 0 14px;
     margin-bottom: 14px;
   }
   /* Снимката е с размера от количката: колкото да се познае ястието, не
@@ -634,7 +638,7 @@
   }
   .demo.folded .demo-body { grid-template-rows: 0fr; }
   .demo-body > div { overflow: hidden; min-height: 0; }
-  .demo-body > div > div { padding-top: 18px; }
+  .demo-body > div > div { padding: 18px 17px 0; }
   /* Слоят покрива каквото е останало от картата и го размазва. Отворена, тя
      застива с плъзгачите на мястото им; сгъната — само снимката и името,
      както изглежда видео, което е свършило. */
@@ -672,6 +676,7 @@
   .demo-veil:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
   .demo-head {
     display: flex; align-items: center; gap: 12px;
+    padding: 0 17px;
     font-family: var(--font-display); font-weight: 600; font-size: 17px;
     letter-spacing: -0.01em;
   }
