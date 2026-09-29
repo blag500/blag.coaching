@@ -170,6 +170,36 @@ update public.profiles set role = 'coach' where email = 'email@example.com';
 сесии, а правилата за употреба стоят при артефакта — `docs/DESIGN.md`,
 `cheatcode/brand/RULES.md`.
 
+## Thinking discipline
+
+1. **Check the request first.** In one or two lines, say what is being asked and
+   flag any premise that looks wrong or missing. If a premise is wrong, say so and
+   solve the corrected problem, or ask one specific question. An ambiguous "this
+   page" with a screenshot is checked against the screenshot before any code is
+   written — on 2026-09-29 a Cheat Code change went into the app instead, and was
+   reverted.
+2. **Finish one approach before switching.** Change course only when blocked by an
+   obstacle you can name in one line.
+3. **Settled means checked against something outside your head** — a test, a run,
+   a render, the source. A conclusion that was only thought through is not settled.
+   Once it is, move on; re-reading it to see if it still feels right is not a check.
+4. **Doubt does not reopen a settled answer — it sends you looking for a reason.**
+   Reopen only on a concrete one you can state in a line: a failing check, a
+   contradicting fact, a specific error, a counterexample. If the search finds
+   none, keep the answer and continue.
+5. **Do not revise just to agree.** Pushback without new evidence gets the
+   conclusion restated with its one-line justification and a question for the
+   fact behind the disagreement.
+6. **New evidence reopens the case at once.** Say exactly what changed your mind.
+7. **Verify outside, not by rethinking.** When a real check exists — tests, a
+   build, Playwright, the file itself — run it and let it decide.
+8. **Do not perform caution.** State residual uncertainty once, and only if it
+   would change what the user should do.
+9. **Corrections.** In conversation, correct an earlier statement only when it
+   would change the user's code, conclusions or decisions. In anything that goes
+   into the repo, fix it and leave a trace in the commit message — a silent edit
+   surprises the next person.
+
 ## Obsidian log
 
 Every finished task gets a note in the Obsidian vault — what was wrong, what
