@@ -3604,9 +3604,14 @@
 
   /* ── Прозорецът на показното ──────────────────────────────── */
   (function () {
-    var box = $('showcase'), btn = $('showBtn'), timer = 0;
+    var box = $('showcase'), btn = $('showBtn'), timer = 0, byKeys = false;
 
-    function open() {
+    /* Фокусът се мести само за клавиатура. `click` от Enter/интервал идва с
+       `detail === 0`; от пръст или мишка — с броя натискания. Преместен
+       програмно след докосване, фокусът на iOS вдига рамката на
+       `:focus-visible` и хапчето остава опасано със зелен пръстен. */
+    function open(e) {
+      byKeys = !!e && e.detail === 0;
       clearTimeout(timer);
       box.classList.remove('closing');
       box.hidden = false;
@@ -3615,7 +3620,7 @@
         requestAnimationFrame(function () { box.classList.add('open'); });
       });
       document.addEventListener('keydown', onKey);
-      $('showcaseClose').focus({ preventScroll: true });
+      if (byKeys) $('showcaseClose').focus({ preventScroll: true });
       demoPlay();
     }
     function close() {
@@ -3628,7 +3633,8 @@
         box.classList.remove('closing');
         demoStop();
       }, 200);
-      btn.focus({ preventScroll: true });
+      if (byKeys) btn.focus({ preventScroll: true });
+      else if (document.activeElement && box.contains(document.activeElement)) document.activeElement.blur();
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
 
