@@ -57,8 +57,10 @@ const head =
      да е темата ѝ. */
   '<link rel="icon" href="/cheatcode/favicon.svg" type="image/svg+xml">\n' +
   /* iOS не чете SVG за иконка на началния екран, а прозрачен ъгъл боядисва
-     в черно — затова квадратен PNG с плътно поле. */
-  '<link rel="apple-touch-icon" href="/cheatcode/icon-180.png">\n' +
+     в черно — затова квадратен PNG с плътно поле. 1024, не класическите 180:
+     на новите iPhone иконата е по-голяма от 180 пиксела и iOS я разпъваше
+     размазана. Смалява се чисто, разпъване — не. */
+  '<link rel="apple-touch-icon" href="/cheatcode/apple-icon.png">\n' +
   '<link rel="manifest" href="/cheatcode/manifest.webmanifest">\n' +
   '<meta name="apple-mobile-web-app-capable" content="yes">\n' +
   '<meta name="mobile-web-app-capable" content="yes">\n' +
@@ -87,7 +89,7 @@ writeFileSync(join(OUT_DIR, 'index.html'), out);
    Страницата се тегли първо от мрежата (иначе промяна стига до човека чак
    на второто отваряне), снимките и шрифтовете — първо от кеша. */
 const precache = ['/cheatcode/', '/cheatcode/manifest.webmanifest', '/cheatcode/icon-192.png',
-  '/cheatcode/icon-512.png', '/cheatcode/icon-maskable-512.png', '/cheatcode/icon-180.png', '/cheatcode/favicon.svg',
+  '/cheatcode/icon-512.png', '/cheatcode/icon-maskable-512.png', '/cheatcode/apple-icon.png', '/cheatcode/favicon.svg',
   ...[...wanted].sort().map((f) => `/cheatcode/${f}`)];
 const digest = createHash('sha256');
 digest.update(out);
