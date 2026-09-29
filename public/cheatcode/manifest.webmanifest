@@ -1,0 +1,18 @@
+{
+  "id": "/cheatcode/",
+  "name": "Cheat Code",
+  "short_name": "Cheat Code",
+  "description": "Храната, която си знае числата — избираш грамажа, макросите се смятат.",
+  "lang": "bg",
+  "start_url": "/cheatcode/",
+  "scope": "/cheatcode/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141C18",
+  "theme_color": "#141C18",
+  "icons": [
+    { "src": "/cheatcode/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/cheatcode/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/cheatcode/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -107,6 +107,10 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 Снимките живеят направо в `public/cheatcode/` и не се копират — строителят
 само проверява, че всяка поискана наистина е там, и пада с грешка, ако не е.
 Страницата се редактира и гледа директно; артефактът в Claude вече не се ползва.
+Тя е и отделно PWA (инсталира се като „Cheat Code“): манифест и иконки в
+`public/cheatcode/`, а `sw.js` със scope `/cheatcode/` се **генерира** от
+строителя с версия от съдържанието — не се пипа на ръка. Иконките са PNG от
+`cheatcode/brand/app-icon.svg`; iOS не чете SVG за начален екран.
 
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
