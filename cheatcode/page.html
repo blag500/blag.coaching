@@ -3403,12 +3403,32 @@
 
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    /* Полето за търсене е точно под пръста, който маха сплаша. Докосне ли
+       човек сплаша, докато той си отива, iOS довършва докосването върху
+       каквото е отдолу, щом слоят изчезне от DOM-а — и клавиатурата излиза
+       сама. `click`-ът по-долу не го хваща: фокусът идва от края на
+       докосването, не от клика. Затова полето е заключено, докато сплашът
+       е тук, и още малко след него, а фокус, дошъл в този прозорец, се
+       връща обратно. */
+    var q = $('q'), guard = true;
+    q.readOnly = true;
+    function unfocus() { if (guard) q.blur(); }
+    q.addEventListener('focus', unfocus);
+    function release() {
+      guard = false;
+      q.readOnly = false;
+      q.removeEventListener('focus', unfocus);
+    }
+
     var left = false;
     function leave() {
       if (left) return;
       left = true;
       el.classList.add('gone');
-      setTimeout(function () { el.remove(); }, 460);
+      setTimeout(function () {
+        el.remove();
+        setTimeout(release, 600);
+      }, 460);
     }
 
     /* Сплашът чака АНИМАЦИЯТА, не хронометър. Двете вървят по различни
