@@ -625,9 +625,19 @@
     object-fit: cover; object-position: center 34%;
     border-radius: var(--r-sm);
   }
-  /* Слоят покрива ЦЯЛАТА карта и размазва това, което е под него. Затова
-     плъзгачите и числата остават на мястото си — виждат се, но приглушени,
-     и е ясно че това е спряло, а не изчезнало. */
+  /* Тялото се сгъва, заглавният ред остава. Подложката НЕ стои на прякото
+     дете на сгъващото се — при `0fr` тя оцелява и картата остава дебела с
+     18 празни пиксела. Гол слой отвън, подплатеното вътре. */
+  .demo-body {
+    display: grid; grid-template-rows: 1fr;
+    transition: grid-template-rows 420ms var(--ease);
+  }
+  .demo.folded .demo-body { grid-template-rows: 0fr; }
+  .demo-body > div { overflow: hidden; min-height: 0; }
+  .demo-body > div > div { padding-top: 18px; }
+  /* Слоят покрива каквото е останало от картата и го размазва. Отворена, тя
+     застива с плъзгачите на мястото им; сгъната — само снимката и името,
+     както изглежда видео, което е свършило. */
   .demo-veil {
     position: absolute; inset: 0; z-index: 2;
     display: grid; place-items: center; align-content: center; gap: 10px;
@@ -654,11 +664,16 @@
     font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
     letter-spacing: 1.5px; color: var(--ink-soft);
   }
+  /* Сгъната, картата е висока 84 пиксела — надписът под кръга няма къде да
+     стои, а натъпкан изглежда като грешка. Остава само плеят, по-малък. */
+  .demo.folded .demo-play { width: 44px; height: 44px; }
+  .demo.folded .demo-play svg { width: 22px; height: 22px; }
+  .demo.folded .demo-again { display: none; }
   .demo-veil:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
   .demo-head {
     display: flex; align-items: center; gap: 12px;
     font-family: var(--font-display); font-weight: 600; font-size: 17px;
-    letter-spacing: -0.01em; margin-bottom: 18px;
+    letter-spacing: -0.01em;
   }
   .demo-title { flex: 1; min-width: 0; }
   /* Оризът стои неподвижен: два движещи се плъзгача карат окото да избира
@@ -1668,6 +1683,7 @@
         <span class="demo-title">Телешки боул</span>
       </div>
 
+      <div class="demo-body" id="demoBody"><div><div>
       <div class="demo-row">
         <div class="demo-top">
           <span class="demo-lab">ТЕЛЕШКО</span>
@@ -1692,10 +1708,12 @@
         <span class="demo-price" id="demoPrice">6,50 €</span>
       </div>
       <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
+      </div></div></div>
 
-      <!-- Паузата. Картата не се свива — тя застива под тъмен слой с плей,
-           както изглежда видео, което е свършило. Свиването криеше точно
-           това, което трябва да се види. -->
+      <!-- Паузата е в два хода и редът им е важен: първо картата се сгъва
+           до заглавния си ред, чак после върху него пада тъмният слой с
+           плея. Замъгляване върху нещо, което още се движи, чете като
+           дефект; върху прибраното чете като „свърши". -->
       <button type="button" class="demo-veil" id="demoVeil" aria-label="Пусни пак">
         <span class="demo-play">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -3395,19 +3413,26 @@
       raf = requestAnimationFrame(frame);
     }
 
-    /* След цикъла картата се прибира сама. Разгъне ли я човек, тя изсвирва
-       пак и ОСТАВА отворена: автоматичното е сдържано, поисканото е
-       послушно. Карта, която се затваря под пръста, е по-лоша от никаква. */
+    /* След цикъла картата се прибира сама и чак тогава пада слоят. Двете не
+       тръгват заедно: 420 ms сгъване, после 320 ms замъгляване. Натисне ли
+       плея, тя се разгъва, изсвирва и се връща в същото състояние — точно
+       както се държи видео, което е свършило. Докосне ли плъзгачите обаче,
+       остава отворена: карта, която се затваря под пръста, е по-лоша от
+       никаква. */
+    var veilTimer = 0;
     function finish() {
       live = false;
       cancelAnimationFrame(raf);
       paint(MEAT.grams, RICE.grams);
       if (keepGoing) return;
-      pause(true);
+      host.classList.add('folded');
+      veilTimer = setTimeout(function () { pause(true); }, 420);
     }
 
     function replay() {
+      clearTimeout(veilTimer);
       pause(false);
+      host.classList.remove('folded');
       live = true; t0 = 0;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(frame);
@@ -3421,6 +3446,7 @@
     function stop() {
       live = false;
       keepGoing = true;
+      clearTimeout(veilTimer);
       cancelAnimationFrame(raf);
       paint(MEAT.grams, RICE.grams);
     }
