@@ -1,6 +1,4 @@
-import { useState } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
-import CheatCodeSheet from '../CheatCode/CheatCodeSheet'
 import { haptic } from '../../lib/haptics'
 import styles from './BottomNav.module.css'
 
@@ -58,19 +56,6 @@ const MoreIcon = () => (
   </svg>
 )
 
-/* Конфигуратор — три плъзгача. Чийт Код е точно това: ястие, което си
-   нагласяш. */
-const ConfiguratorIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <line x1="4" y1="6"  x2="20" y2="6" />
-    <line x1="4" y1="12" x2="20" y2="12" />
-    <line x1="4" y1="18" x2="20" y2="18" />
-    <circle cx="9"  cy="6"  r="2.2" />
-    <circle cx="15" cy="12" r="2.2" />
-    <circle cx="7"  cy="18" r="2.2" />
-  </svg>
-)
-
 const ALL_TABS = [...LEFT_TABS, ...RIGHT_TABS]
 
 /**
@@ -86,7 +71,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
   const { t } = useSettings()
   const current = ALL_TABS.find(tab => tab.id === activeTab)
   const FoldIcon = current?.Icon ?? MoreIcon
-  const [cheatOpen, setCheatOpen] = useState(false)
 
   function unfold() {
     haptic('tap')
@@ -104,19 +88,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
       >
         <FoldIcon />
       </button>
-
-      {/* Чийт Код — отделно хапче вляво от лентата. Не е раздел: отваря се
-          над страницата, която гледаш, и се затваря обратно в нея. */}
-      <button
-        className={styles.cheat}
-        onClick={() => { haptic('nav'); setCheatOpen(true) }}
-        aria-label={t('nav.cheatcode')}
-        aria-haspopup="dialog"
-        type="button"
-      >
-        <ConfiguratorIcon />
-      </button>
-      <CheatCodeSheet open={cheatOpen} onClose={() => setCheatOpen(false)} />
 
       {/* ── Main nav pill ── */}
       <nav

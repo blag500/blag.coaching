@@ -2,8 +2,7 @@
 .nav {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom) + 10px);
-  /* Отляво стои хапчето на Чийт Код: 56 широко и 8 луфт. */
-  left: calc(12px + 56px + 8px);
+  left: 12px;
   right: 12px;
   height: 56px;
   background: rgba(var(--bg-rgb), 0.52);
@@ -31,54 +30,8 @@
 /* Сгъната: лентата се свива към долния ляв ъгъл, където остава кръгчето.
    Свива се от лявата страна, за да изглежда, че влиза в него, а не че
    изчезва някъде. */
-/* Средата на кръгчето е на 42px от ръба на екрана, а лентата почва на 76px
-   (вляво е хапчето на Чийт Код) — значи точката е 34px преди нея. */
-.nav { transform-origin: -34px 50%; }
+.nav { transform-origin: 28px 50%; }
 :global(html[data-nav="collapsed"]) .nav {
-  transform: scale(0.2);
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    transform 320ms var(--ease-glide),
-    opacity   200ms var(--ease-out);
-}
-
-/* Хапчето на Чийт Код — същото стъкло като лентата, отделно парче вляво.
-   При сгъване се прибира заедно с нея: кръгчето застава на неговото място. */
-.cheat {
-  position: fixed;
-  left: 12px;
-  bottom: calc(env(safe-area-inset-bottom) + 10px);
-  width: 56px;
-  height: 56px;
-  border-radius: var(--r-pill);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  z-index: 100;
-  color: var(--accent);
-  background: rgba(var(--bg-rgb), 0.52);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.38);
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    transform 460ms var(--ease-spring-soft),
-    opacity   360ms var(--ease-glide);
-}
-.cheat svg { width: 22px; height: 22px; }
-/* Кръгчетата на плъзгачите са „дупки" в цвета на фона — иначе линията минава
-   през тях и плъзгачът не се чете. */
-.cheat svg circle { fill: var(--bg); }
-.cheat:active {
-  transform: scale(0.9);
-  transition: transform var(--dur-press) var(--ease-out);
-}
-:global(html[data-nav="collapsed"]) .cheat {
   transform: scale(0.2);
   opacity: 0;
   pointer-events: none;
@@ -132,9 +85,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav, .fold, .cheat,
+  .nav, .fold,
   :global(html[data-nav="collapsed"]) .nav,
-  :global(html[data-nav="collapsed"]) .cheat,
   :global(html[data-nav="collapsed"]) .fold { transition: none; }
 }
 
