@@ -9,20 +9,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import BottomNav from './components/BottomNav/BottomNav'
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary'
 import NavDrawer from './components/NavDrawer/NavDrawer'
-import NutritionCards from './components/NutritionCards/NutritionCards'
-import Compliance from './components/Compliance/Compliance'
-import BlagBot from './components/BlagBot/BlagBot'
 import BotBubble from './components/BlagBot/BotBubble'
-import Training from './components/Training/Training'
-import Profile from './components/Profile/Profile'
-import AuthScreen from './components/Auth/AuthScreen'
 import Splash from './components/Splash/Splash'
-import ChatPage from './components/Chat/ChatPage'
-import RegistrationSuccess from './components/RegistrationSuccess/RegistrationSuccess'
-import PlanSelector from './components/PlanSelector/PlanSelector'
-import WelcomeOverlay from './components/Auth/WelcomeOverlay'
-import TodayDashboard from './components/TodayDashboard/TodayDashboard'
-import FeedPage from './components/Feed/FeedPage'
 import NotificationPrompt from './components/Notifications/NotificationPrompt'
 import UpdateBanner from './components/UpdateBanner/UpdateBanner'
 import { usePushNotifications } from './hooks/usePushNotifications'
@@ -48,6 +36,36 @@ import styles from './App.module.css'
  * съседната страница в началото на хода и я пуска да пътува веднага. Страница,
  * която в този момент тръгне да се тегли, би пътувала празна.
  */
+/* Разделите и всичко, което не е обвивка, идват на отделни парчета.
+   Дотук влизаха в главния файл — около двайсет и пет екрана, от които при
+   отваряне се вижда един. Сега се теглят, докато сплашът е отгоре, а
+   разделите от лентата се дотеглят веднага след първото рисуване
+   (prefetchTabs по-долу), за да не чака плъзгането между тях. */
+const loadTabs = {
+  feed:       () => import('./components/Feed/FeedPage'),
+  nutrition:  () => import('./components/NutritionCards/NutritionCards'),
+  training:   () => import('./components/Training/Training'),
+  profile:    () => import('./components/Profile/Profile'),
+}
+const FeedPage = lazy(loadTabs.feed)
+const NutritionCards = lazy(loadTabs.nutrition)
+const Training = lazy(loadTabs.training)
+const Profile = lazy(loadTabs.profile)
+const Compliance = lazy(() => import('./components/Compliance/Compliance'))
+const TodayDashboard = lazy(() => import('./components/TodayDashboard/TodayDashboard'))
+const ChatPage = lazy(() => import('./components/Chat/ChatPage'))
+const AuthScreen = lazy(() => import('./components/Auth/AuthScreen'))
+const RegistrationSuccess = lazy(() => import('./components/RegistrationSuccess/RegistrationSuccess'))
+/* Ботът е монтиран от началото — праща въпросите, зададени без мрежа, щом
+   тя се върне, — но кодът му не е нужен за първото рисуване. */
+const BlagBot = lazy(() => import('./components/BlagBot/BlagBot'))
+
+function prefetchTabs() {
+  const go = () => Object.values(loadTabs).forEach((load) => load().catch(() => {}))
+  if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 2000 })
+  else setTimeout(go, 300)
+}
+
 const HelpPage = lazy(() => import('./pages/HelpPage'))
 const LandingPage = lazy(() => import('./components/LandingPage/LandingPage'))
 const Onboarding = lazy(() => import('./components/Onboarding/Onboarding'))
@@ -259,6 +277,11 @@ function AppShell() {
      През реф, а не направо: navigate е нова функция при всяко рисуване, а
      слушател, който се сваля и качва по няколко пъти в секунда, е разход без
      полза. */
+  /* Разделите от лентата се дотеглят, щом има сесия — без нея човекът е на
+     началната страница или на входа и те не му трябват. */
+  const signedIn = !!session
+  useEffect(() => { if (signedIn) prefetchTabs() }, [signedIn])
+
   const navRef = useRef(navigate)
   navRef.current = navigate
   useEffect(() => {
@@ -267,7 +290,12 @@ function AppShell() {
     return () => window.removeEventListener('blag:open-rewards', go)
   }, [])
 
-  if (splash) return (
+  /* Сплашът е слой над приложението, не вместо него.
+     Дотук го заместваше: докато течеше, приложението не съществуваше и
+     данните тръгваха чак след него — 3,8 s чакане отгоре на зареждането.
+     Сега то се рисува и тегли отдолу, а при връщане след половин минута
+     не се демонтира — разделът, превъртането и написаното си стоят. */
+  const splashLayer = splash && (
     <Splash coaching={!session} onDone={() => {
       setSplash(false)
       /* Наградите чакат този миг.
@@ -281,190 +309,204 @@ function AppShell() {
     }} />
   )
 
-  if (loading) {
-    return (
-      <div className={styles.loadingScreen}>
-        <span className={styles.loadingDot} />
-      </div>
-    )
-  }
+  return (
+    <>
+      {shellBody()}
+      {splashLayer}
+    </>
+  )
 
-  // Nobody is asked to pick a plan before they have seen the product — the
-  // choice happens after signup, where the free tier is the obvious default.
-  if (!session) {
-    if (!landingSeen) {
+  /* Каквото се вижда под сплаша — същите изходи като преди, по ред. */
+  function shellBody() {
+    if (loading) {
+      return (
+        <div className={styles.loadingScreen}>
+          <span className={styles.loadingDot} />
+        </div>
+      )
+    }
+
+    // Nobody is asked to pick a plan before they have seen the product — the
+    // choice happens after signup, where the free tier is the obvious default.
+    if (!session) {
+      if (!landingSeen) {
+        return (
+          <PageLoader>
+            <LandingPage
+              onContinue={typed => {
+                if (typeof typed === 'string') setAuthEmail(typed)
+                setAuthMode('register'); setLandingSeen(true)
+              }}
+              onLogin={() => { setAuthMode('login'); setLandingSeen(true) }}
+            />
+          </PageLoader>
+        )
+      }
+      return <PageLoader><AuthScreen initialMode={authMode} initialEmail={authEmail} onBack={() => setLandingSeen(false)} /></PageLoader>
+    }
+
+    // Session known but profile not yet fetched — keep showing the loader
+    if (!profile) {
+      return (
+        <div className={styles.loadingScreen}>
+          <span className={styles.loadingDot} />
+        </div>
+      )
+    }
+
+    const isCoach = profile.role === 'coach'
+
+    // Checked before the onboarding gate and the tabs both: once the self-serve
+    // flow arms this, the success screen owns the view until the client taps in —
+    // even while the save is still settling and onboarding_done flips underneath.
+    if (onboardName !== null && !isCoach) {
       return (
         <PageLoader>
-          <LandingPage
-            onContinue={typed => {
-              if (typeof typed === 'string') setAuthEmail(typed)
-              setAuthMode('register'); setLandingSeen(true)
-            }}
-            onLogin={() => { setAuthMode('login'); setLandingSeen(true) }}
+          <RegistrationSuccess
+            name={onboardName}
+            calories={profile.calories}
+            goal={GOAL_KEY[profile.goal] ? tr(GOAL_KEY[profile.goal]) : undefined}
+            ready={profile.onboarding_done}
+            onEnter={() => setOnboardName(null)}
           />
         </PageLoader>
       )
     }
-    return <AuthScreen initialMode={authMode} initialEmail={authEmail} onBack={() => setLandingSeen(false)} />
-  }
 
-  // Session known but profile not yet fetched — keep showing the loader
-  if (!profile) {
+    if (!isCoach && !profile.onboarding_done) {
+      /* Кой е с треньор се решава на едно място — виж utils/plans. Останалите
+         минават през самостоятелния поток, който свършва с офертата. */
+      const coached = isCoached(profile)
+      return (
+        <PageLoader>
+          <Onboarding
+            isCoachingIntake={coached}
+            onComplete={name => setOnboardName(name || '')}
+            onError={() => setOnboardName(null)}
+          />
+        </PageLoader>
+      )
+    }
+
+    // Nothing is sold by card here. PRO is arranged with the coach, who approves
+    // the application himself — so no payment wall stands in anybody's way.
+
+    if (paymentProcessing) {
+      return (
+        <div className={styles.loadingScreen}>
+          <span className={styles.loadingDot} />
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 16 }}>
+            {tr('payment.confirming')}
+          </p>
+        </div>
+      )
+    }
+
+    const openMenu = () => setDrawerOpen(true)
+
+    const pages = {
+      feed:       <FeedPage onNavigate={navigate} onMenuOpen={openMenu} />,
+      /* Таблото вече живее като раздел ДНЕС вътре в Профил. Адресът остава
+         заради треньора, чийто профил е друга страница, и заради всяка връзка,
+         която още сочи насам. */
+      today:      <TodayDashboard onNavigate={navigate} onMenuOpen={openMenu} />,
+      nutrition:  <NutritionCards onNavigate={navigate} onMenuOpen={openMenu} />,
+      compliance: <Compliance onMenuOpen={openMenu} />,
+      training:   <Training onMenuOpen={openMenu} onNavigate={navigate} />,
+      recovery:   <Recovery onMenuOpen={openMenu} />,
+      profile:    <Profile onMenuOpen={openMenu} onNavigate={navigate} />,
+      clients:    <CoachPanel />,
+      coachday:   <CoachMyDay />,
+      explore:    <Explore onMenuOpen={openMenu} />,
+      calendar:   <TrainingCalendar onMenuOpen={openMenu} />,
+      /* Заготовките за заместване на упражнение в дневника. */
+      library:    <ExerciseLibrary onMenuOpen={openMenu} />,
+      learn:      <LearnPage onMenuOpen={openMenu} />,
+      chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} onMenuOpen={openMenu} />,
+      rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
+      budget:     <Budget onMenuOpen={openMenu} />,
+      tasks:      <Tasks onMenuOpen={openMenu} />,
+      protocol:   <PrepProtocol onMenuOpen={openMenu} />,
+      /* Чекинът е седмичен, не всекидневен — затова не е таб, а страница, до
+         която се стига от Профил и от лентата, когато се дължи. */
+      checkin:    <CheckinPage onBack={() => setActiveTab('profile')} />,
+      posing:       <PosingPage onMenuOpen={openMenu} />,
+      supplements:  <SupplementsPage onMenuOpen={openMenu} />,
+      shop:         isCoach ? <ShopPage initialOrderSuccess={!!orderSuccessId} /> : null,
+      orders:       <OrdersPanel />,
+    }
+
+    function dismissWelcome() {
+      localStorage.setItem('blag_welcome_seen', '1')
+      setShowWelcome(false)
+    }
+
     return (
-      <div className={styles.loadingScreen}>
-        <span className={styles.loadingDot} />
-      </div>
-    )
-  }
-
-  const isCoach = profile.role === 'coach'
-
-  // Checked before the onboarding gate and the tabs both: once the self-serve
-  // flow arms this, the success screen owns the view until the client taps in —
-  // even while the save is still settling and onboarding_done flips underneath.
-  if (onboardName !== null && !isCoach) {
-    return (
-      <RegistrationSuccess
-        name={onboardName}
-        calories={profile.calories}
-        goal={GOAL_KEY[profile.goal] ? tr(GOAL_KEY[profile.goal]) : undefined}
-        ready={profile.onboarding_done}
-        onEnter={() => setOnboardName(null)}
-      />
-    )
-  }
-
-  if (!isCoach && !profile.onboarding_done) {
-    /* Кой е с треньор се решава на едно място — виж utils/plans. Останалите
-       минават през самостоятелния поток, който свършва с офертата. */
-    const coached = isCoached(profile)
-    return (
-      <PageLoader>
-        <Onboarding
-          isCoachingIntake={coached}
-          onComplete={name => setOnboardName(name || '')}
-          onError={() => setOnboardName(null)}
-        />
-      </PageLoader>
-    )
-  }
-
-  // Nothing is sold by card here. PRO is arranged with the coach, who approves
-  // the application himself — so no payment wall stands in anybody's way.
-
-  if (paymentProcessing) {
-    return (
-      <div className={styles.loadingScreen}>
-        <span className={styles.loadingDot} />
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--muted)', marginTop: 16 }}>
-          {tr('payment.confirming')}
-        </p>
-      </div>
-    )
-  }
-
-  const openMenu = () => setDrawerOpen(true)
-
-  const pages = {
-    feed:       <FeedPage onNavigate={navigate} onMenuOpen={openMenu} />,
-    /* Таблото вече живее като раздел ДНЕС вътре в Профил. Адресът остава
-       заради треньора, чийто профил е друга страница, и заради всяка връзка,
-       която още сочи насам. */
-    today:      <TodayDashboard onNavigate={navigate} onMenuOpen={openMenu} />,
-    nutrition:  <NutritionCards onNavigate={navigate} onMenuOpen={openMenu} />,
-    compliance: <Compliance onMenuOpen={openMenu} />,
-    training:   <Training onMenuOpen={openMenu} onNavigate={navigate} />,
-    recovery:   <Recovery onMenuOpen={openMenu} />,
-    profile:    <Profile onMenuOpen={openMenu} onNavigate={navigate} />,
-    clients:    <CoachPanel />,
-    coachday:   <CoachMyDay />,
-    explore:    <Explore onMenuOpen={openMenu} />,
-    calendar:   <TrainingCalendar onMenuOpen={openMenu} />,
-    /* Заготовките за заместване на упражнение в дневника. */
-    library:    <ExerciseLibrary onMenuOpen={openMenu} />,
-    learn:      <LearnPage onMenuOpen={openMenu} />,
-    chat:       <ChatPage peerId={chatPeer} key={chatPeer || 'list'} onMenuOpen={openMenu} />,
-    rewards:    <RewardsPage onBack={() => setActiveTab('profile')} />,
-    budget:     <Budget onMenuOpen={openMenu} />,
-    tasks:      <Tasks onMenuOpen={openMenu} />,
-    protocol:   <PrepProtocol onMenuOpen={openMenu} />,
-    /* Чекинът е седмичен, не всекидневен — затова не е таб, а страница, до
-       която се стига от Профил и от лентата, когато се дължи. */
-    checkin:    <CheckinPage onBack={() => setActiveTab('profile')} />,
-    posing:       <PosingPage onMenuOpen={openMenu} />,
-    supplements:  <SupplementsPage onMenuOpen={openMenu} />,
-    shop:         isCoach ? <ShopPage initialOrderSuccess={!!orderSuccessId} /> : null,
-    orders:       <OrdersPanel />,
-  }
-
-  function dismissWelcome() {
-    localStorage.setItem('blag_welcome_seen', '1')
-    setShowWelcome(false)
-  }
-
-  return (
-    <div className={styles.shell}>
-      {!isCoach && showSupplementBanner && supplementPending > 0 && (
-        <SupplementBanner
-          count={supplementPending}
-          onNavigate={() => { setActiveTab('supplements'); setShowSupplementBanner(false) }}
-          onDismiss={() => setShowSupplementBanner(false)}
-        />
-      )}
-      <NavDrawer
-        open={drawerOpen}
-        dragPx={drawerDrag}
-        onClose={() => setDrawerOpen(false)}
-        activeTab={activeTab}
-        onTabChange={navigate}
-        isCoach={isCoach}
-        supplementPending={!isCoach ? supplementPending : 0}
-      />
-
-      <UpdateBanner />
-      <OutboxBanner />
-      <NotificationPrompt />
-      <main className={styles.content}>
-        <SwipePager
-          ref={pagerRef}
-          order={NAV_ORDER}
-          active={activeTab}
-          onChange={navigate}
-          enabled={!drawerOpen && NAV_ORDER.includes(activeTab)}
-          onEdgePull={setDrawerDrag}
-          onEdgeEnd={shouldOpen => { setDrawerDrag(null); setDrawerOpen(shouldOpen) }}
-          /* Предпазителят е около една страница, не около приложението:
-             гръмнал екран не бива да отнася навигацията със себе си —
-             останалите табове работят и човекът има къде да отиде. */
-          render={tab => (
-            <div key={tab} className={styles.page} data-dir={tab === activeTab ? slideDir : 'none'}>
-              <ErrorBoundary key={tab}>
-                <PageLoader>{pages[tab] ?? null}</PageLoader>
-              </ErrorBoundary>
-            </div>
-          )}
-        />
-      </main>
-      {/* Балончето на бота стои тук, а не вътре в страница: разделите се
-          движат с трансформация при плъзгане и fixed вътре в тях се закача за
-          тях, не за прозореца. Оттук е на един и същи ъгъл на всеки екран. */}
-      <BotBubble activeTab={botOpen ? 'bot' : activeTab} onOpen={navigate} />
-
-      <BlagBot open={botOpen} from={botFrom} onClose={() => setBotOpen(false)} />
-
-      {/* На екрана на бота лентата се прибира.
-          Разговорът иска цялата височина: с клавиатура отгоре и лента отдолу
-          за самите реплики остават шейсет пиксела. А и лентата е за „къде да
-          отида", докато тук човек е дошъл да остане. Изходът е менюто в
-          заглавието — същият, който отваря и всяка друга страница. */}
-      {activeTab !== 'bot' && (
-        <BottomNav
+      <div className={styles.shell}>
+        {!isCoach && showSupplementBanner && supplementPending > 0 && (
+          <SupplementBanner
+            count={supplementPending}
+            onNavigate={() => { setActiveTab('supplements'); setShowSupplementBanner(false) }}
+            onDismiss={() => setShowSupplementBanner(false)}
+          />
+        )}
+        <NavDrawer
+          open={drawerOpen}
+          dragPx={drawerDrag}
+          onClose={() => setDrawerOpen(false)}
           activeTab={activeTab}
           onTabChange={navigate}
+          isCoach={isCoach}
+          supplementPending={!isCoach ? supplementPending : 0}
         />
-      )}
-    </div>
-  )
+
+        <UpdateBanner />
+        <OutboxBanner />
+        <NotificationPrompt />
+        <main className={styles.content}>
+          <SwipePager
+            ref={pagerRef}
+            order={NAV_ORDER}
+            active={activeTab}
+            onChange={navigate}
+            enabled={!drawerOpen && NAV_ORDER.includes(activeTab)}
+            onEdgePull={setDrawerDrag}
+            onEdgeEnd={shouldOpen => { setDrawerDrag(null); setDrawerOpen(shouldOpen) }}
+            /* Предпазителят е около една страница, не около приложението:
+               гръмнал екран не бива да отнася навигацията със себе си —
+               останалите табове работят и човекът има къде да отиде. */
+            render={tab => (
+              <div key={tab} className={styles.page} data-dir={tab === activeTab ? slideDir : 'none'}>
+                <ErrorBoundary key={tab}>
+                  <PageLoader>{pages[tab] ?? null}</PageLoader>
+                </ErrorBoundary>
+              </div>
+            )}
+          />
+        </main>
+        {/* Балончето на бота стои тук, а не вътре в страница: разделите се
+            движат с трансформация при плъзгане и fixed вътре в тях се закача за
+            тях, не за прозореца. Оттук е на един и същи ъгъл на всеки екран. */}
+        <BotBubble activeTab={botOpen ? 'bot' : activeTab} onOpen={navigate} />
+
+        <Suspense fallback={null}>
+        <BlagBot open={botOpen} from={botFrom} onClose={() => setBotOpen(false)} />
+      </Suspense>
+
+        {/* На екрана на бота лентата се прибира.
+            Разговорът иска цялата височина: с клавиатура отгоре и лента отдолу
+            за самите реплики остават шейсет пиксела. А и лентата е за „къде да
+            отида", докато тук човек е дошъл да остане. Изходът е менюто в
+            заглавието — същият, който отваря и всяка друга страница. */}
+        {activeTab !== 'bot' && (
+          <BottomNav
+            activeTab={activeTab}
+            onTabChange={navigate}
+          />
+        )}
+      </div>
+    )
+  }
 }
 
 export default function App() {
