@@ -1,7 +1,23 @@
 import bg from '../locales/bg'
-import en from '../locales/en'
 
-const TRANSLATIONS = { bg, en }
+/* Българският е в основния файл — той е и резервата за всеки липсващ ключ.
+   Английският се тегли отделно и само когато е нужен: 42 KB компресиран,
+   които дотук получаваше всеки, включително онези, които никога не го
+   отварят. Кой го чака, решава SettingsProvider. */
+const TRANSLATIONS = { bg }
+let enLoading = null
+
+/** Зареден ли е езикът — тоест може ли да се рисува на него още сега. */
+export function langReady(lang) {
+  return lang !== 'en' || !!TRANSLATIONS.en
+}
+
+/** Тегли езика, ако още не е тук. Обещанието е общо за всички извикващи. */
+export function loadLang(lang) {
+  if (langReady(lang)) return Promise.resolve()
+  enLoading ??= import('../locales/en').then((m) => { TRANSLATIONS.en = m.default })
+  return enLoading
+}
 
 /**
  * Кой Intl локал ползва приложението в момента.

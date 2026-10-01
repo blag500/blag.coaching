@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { syncLocale, tr } from '../utils/locale'
+import { syncLocale, tr, langReady, loadLang } from '../utils/locale'
 import { hapticsEnabled, setHapticsEnabled } from '../lib/haptics'
 import { supabase } from '../lib/supabase'
 
@@ -26,6 +26,20 @@ export function SettingsProvider({ children }) {
      се усеща. Истината живее в lib/haptics, защото се чете и извън React;
      тук стои само отражението ѝ, за да може превключвателят да се пренарисува. */
   const [haptics, setHapticsState] = useState(hapticsEnabled)
+
+  /* Английският идва отделно (utils/locale). Докато не е дошъл, не се рисува
+     нищо — иначе англоговорящият за миг вижда приложението на български.
+     Само при първото рисуване: смяната от Профил първо тегли, после сменя,
+     така че дървото не се демонтира и състоянието не се губи. */
+  const [ready, setReady] = useState(() => langReady(lang))
+  useEffect(() => {
+    if (ready) return
+    let alive = true
+    /* Без мрежа и без кеш езикът не идва — тогава на български, не празен екран. */
+    loadLang(lang).then(() => { if (alive) setReady(true) },
+                        () => { if (alive) { setLangState('bg'); setReady(true) } })
+    return () => { alive = false }
+  }, [ready, lang])
 
   /* Цветът на системната лента следва темата.
      Беше закован на #0A0A0F в index.html — тоест в светлата тема телефонът
@@ -69,7 +83,7 @@ export function SettingsProvider({ children }) {
   }, [restTimer])
 
   function setTheme(v) { setThemeState(v) }
-  function setLang(v)  { setLangState(v) }
+  function setLang(v)  { loadLang(v).then(() => setLangState(v), () => {}) }
   function setRestTimer(v) { setRestTimerState(!!v) }
   function setHaptics(v) { setHapticsEnabled(!!v); setHapticsState(!!v) }
 
@@ -81,7 +95,7 @@ export function SettingsProvider({ children }) {
 
   return (
     <SettingsContext.Provider value={{ theme, setTheme, lang, setLang, restTimer, setRestTimer, haptics, setHaptics, t }}>
-      {children}
+      {ready ? children : null}
     </SettingsContext.Provider>
   )
 }

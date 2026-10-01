@@ -22,7 +22,12 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.js',
       registerType: 'prompt',
-      includeAssets: ['apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
+      /* Иконките не се добавят отделно към предварителния кеш: минават през
+         филтъра в injectManifest като всеки друг файл. includeAssets и
+         иконките на манифеста ги добавяха в обход на него — icon-512 (235 KB)
+         и втори път малките. Голямата икона телефонът тегли сам, веднъж,
+         при инсталиране. */
+      includeManifestIcons: false,
       manifest: {
         name: 'Blag',
         short_name: 'Blag',
@@ -103,6 +108,25 @@ export default defineConfig({
            са мегабайти, а предварителният кеш ги дава на всеки клиент при
            следващото обновяване. */
         globIgnores: ['**/arms.png', '**/arms.jpeg', 'cheatcode/**'],
+        /* Предварителният кеш е за обвивката, не за снимките.
+           Дотук влизаше всичко — рецепти, ястия, фонове, логото за имейлите —
+           около 7 MB, които всеки клиент теглеше при инсталиране и наново
+           при всяко обновяване, по мобилни данни. Кодът (js, css, html)
+           остава целият, защото без него няма приложение офлайн. От
+           картинките остават само малките, които обвивката рисува веднага;
+           останалите се кешират при първото им гледане (CacheFirst в
+           src/sw.js) и после идват от телефона. Дубликатите падат: иконките
+           от манифеста влизаха втори път. */
+        manifestTransforms: [(entries) => {
+          const seen = new Set()
+          const manifest = entries.filter((e) => {
+            if (seen.has(e.url)) return false
+            seen.add(e.url)
+            const image = /\.(png|jpe?g|webp)$/i.test(e.url)
+            return !image || e.size <= 64 * 1024
+          })
+          return { manifest, warnings: [] }
+        }],
       },
     }),
   ],

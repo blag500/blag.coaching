@@ -1,6 +1,7 @@
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
 
 // Don't skipWaiting on install — the client shows a banner and calls
 // SKIP_WAITING from the tap, so the user sees the update coming rather than
@@ -54,6 +55,20 @@ self.addEventListener('fetch', event => {
     return Response.redirect('/?share=1', 303)
   })())
 })
+
+/* Снимките на приложението — при първото гледане, не предварително.
+   Предварителният кеш държи само малките (vite.config.js); всяка друга
+   картинка от нашия адрес се пази тук след първото ѝ показване и после идва
+   от телефона, включително офлайн. Таванът е за телефона, не за нас:
+   стари снимки на рецепти не бива да трупат място без край. */
+registerRoute(
+  ({ request, url }) => request.destination === 'image' && url.origin === self.location.origin
+    && !url.pathname.startsWith('/cheatcode/'),
+  new CacheFirst({
+    cacheName: 'blag-images',
+    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 24 * 60 * 60, purgeOnQuotaError: true })],
+  })
+)
 
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com',
