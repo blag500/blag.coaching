@@ -2159,9 +2159,8 @@
       id: 'gris',
       name: 'Грис на стероиди',
       short: 'Оризов грис, банан, бисквити',
-      desc: 'Оризов грис с банан и натрошени бисквити. Закуска, която се води хранене.',
+      desc: 'Оризов грис с банан и натрошени бисквити.',
       descLead: 'Оризов грис',
-      descTail: 'Закуска, която се води хранене.',
       prep: 15,
       packaging: 15,
       photo: '/cheatcode/gris.jpg', menuPhoto: '/cheatcode/gris-oba.jpg',
@@ -2337,7 +2336,7 @@
     else if (parts.length > 1) {
       lead += ' с ' + parts.slice(0, -1).join(', ') + ' и ' + parts[parts.length - 1];
     }
-    return lead + '. ' + d.descTail;
+    return lead + '.' + (d.descTail ? ' ' + d.descTail : '');
   }
 
   function icon(name, size) {
