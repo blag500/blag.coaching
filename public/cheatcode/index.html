@@ -1176,10 +1176,20 @@
     display: block; font-size: 12.5px; color: var(--ink-faint); margin-bottom: 7px;
   }
   .tweak .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-  .tweak .chip[aria-pressed="false"] { text-decoration: line-through; opacity: 0.6; }
+  /* Избраното се казва с тикче, не с задраскване на другото: задрасканото
+     се чете като „няма го в менюто“, а не като „не съм го избрал“. */
+  .tweak .chip { display: inline-flex; align-items: center; gap: 6px; }
+  .tweak .chip[aria-pressed="true"]::before {
+    content: ''; width: 13px; height: 13px; flex: none; background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
 
   /* ── Плъзгачи, двата един до друг ──────────────────────── */
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  /* Три плъзгача по два на ред оставят третия сам с празно място до него —
+     тогава са един под друг. */
+  .pair:has(> :nth-child(3)) { grid-template-columns: 1fr; }
   .row {
     background: var(--surface-2);
     border: 1px solid transparent;
