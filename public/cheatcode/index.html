@@ -2198,7 +2198,14 @@
               allergens: [{ id: 'milk', sure: false }],
               per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2 },
             { id: 'gorski', name: 'Замразени горски плодове', grams: 100, say: 'замразени горски плодове',
-              per100: { kcal: 44, protein: 0.9, carbs: 8.5, fat: 0.4 }, cost100: 50.7, pack: 0 }
+              per100: { kcal: 44, protein: 0.9, carbs: 8.5, fat: 0.4 }, cost100: 50.7, pack: 0 },
+            /* Нискомаслено какао, разбъркано с малко мляко — около 10 г какао
+               на 30 г мляко. ВНИМАНИЕ: макросите и цената са сметнати от тази
+               пропорция с типични стойности (какаото е като в кремчето, млякото
+               1.5%), не от етикет и не от мерене. Млякото е сигурно — то е мляко. */
+            { id: 'choko', name: 'Дарк чоко поръска', grams: 40, say: 'дарк чоко поръска',
+              allergens: [{ id: 'milk', sure: true }],
+              per100: { kcal: 92, protein: 7.5, carbs: 18.1, fat: 4.6 }, cost100: 66, pack: 0 }
           ] }
       ],
       glazeLabel: null,
@@ -2210,7 +2217,9 @@
         { id: 'v0', name: 'Чист',               photo: '/cheatcode/gris.jpg',          on: [] },
         { id: 'v1', name: 'С банан',            photo: '/cheatcode/gris-banan.jpg',    on: ['banan'] },
         { id: 'v2', name: 'С бисквити',         photo: '/cheatcode/gris-biskviti.jpg', on: ['biskviti'] },
-        { id: 'v3', name: 'С банан и бисквити', photo: '/cheatcode/gris-oba.jpg',      on: ['banan', 'biskviti'] }
+        { id: 'v3', name: 'С банан и бисквити', photo: '/cheatcode/gris-oba.jpg',      on: ['banan', 'biskviti'] },
+        { id: 'v4', name: 'С дарк чоко поръска', photo: '/cheatcode/gris-choko.jpg',   on: ['banan', 'biskviti'],
+          tw: ['extra:choko'] }
       ]
     }
   ];
@@ -2250,6 +2259,16 @@
     return out;
   }
 
+  /* Добавките, които някоя снимка показва. Поръската се вижда на снимката,
+     затова и тя се пуска и спира от плъзгането, както бананът. */
+  function variantTws(d) {
+    var seen = {}, out = [];
+    variantsOf(d).forEach(function (v) {
+      (v.tw || []).forEach(function (k) { if (!seen[k]) { seen[k] = 1; out.push(k); } });
+    });
+    return out;
+  }
+
   function variantAt(d) {
     var vs = variantsOf(d);
     var on = {};
@@ -2261,6 +2280,9 @@
     for (var i = 0; i < vs.length; i++) {
       var v = vs[i], ok = true, count = 0;
       v.on.forEach(function (id) { if (!on[id]) ok = false; count++; });
+      variantTws(d).forEach(function (k) {
+        if (!state.tw[k] !== ((v.tw || []).indexOf(k) < 0)) ok = false;
+      });
       if (ok && count === Object.keys(on).length) return i;
     }
     return -1;
@@ -2638,6 +2660,7 @@
         }
       });
     });
+    variantTws(d).forEach(function (k) { state.tw[k] = (v.tw || []).indexOf(k) >= 0; });
     rebuild();
   }
 
