@@ -1255,6 +1255,28 @@
     transition: background 180ms;
   }
   .sliderwrap .stops span.on { background: rgba(255,255,255,0.55); box-shadow: none; }
+  .sliderwrap input { position: relative; z-index: 1; }
+  .sliderwrap .stops { z-index: 2; }
+
+  /* Палецът диша: светлина, която се разлива от него и угасва, без спиране.
+     Казва „това се мести“, преди някой да го е пипнал. Стои под палеца и
+     върви с него — --f е същото запълване, но като число от 0 до 1.
+     Под `prefers-reduced-motion` я няма. */
+  .sliderwrap::before {
+    content: ''; position: absolute; z-index: 0; pointer-events: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    /* 12px = 9px отстъп на плъзгача + половината от 6px писта. Не 50%: под
+       inline плъзгача обвивката има още ред и средата ѝ е 4px под палеца. */
+    top: 12px; left: calc(11px + (100% - 22px) * var(--f, 0.5));
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+    animation: thumbGlow 2.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+  @keyframes thumbGlow {
+    0%   { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+    70%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.3); }
+  }
+  @media (prefers-reduced-motion: reduce) { .sliderwrap::before { display: none; } }
 
   input[type="range"] {
     -webkit-appearance: none;
@@ -2981,6 +3003,7 @@
     if (input) {
       var span = item.max - item.min || 1;
       input.style.setProperty('--fill', ((state.g[k] - item.min) / span * 100) + '%');
+      input.parentNode.style.setProperty('--f', String((state.g[k] - item.min) / span));
     }
   }
 
