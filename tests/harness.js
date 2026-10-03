@@ -16,6 +16,10 @@ export const PROJECT_REF = 'eiltoadzaqbuqdilsfpi'
 export const USER_ID     = '00000000-0000-4000-8000-000000000001'
 export const COACH_ID    = '00000000-0000-4000-8000-000000000002'
 
+/** Картинка 2×2, която хранилището връща за всеки обект. */
+export const TEST_PNG =
+  'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg=='
+
 /** Днес, като PostgREST би го върнал. */
 export function today(offset = 0) {
   const d = new Date()
@@ -347,6 +351,24 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg', 
         reply: 'Днес си на 1 200 ккал от 2 400.',
         sources: ['днес', 'цели'],
       })
+    }
+
+    /* ── хранилище ──
+       Качването се потвърждава; временните линкове сочат обратно тук, а
+       четенето на обект връща една и съща малка картинка. Така частна кофа
+       (позингът) минава целия път: качване → подпис → <img>, без мрежа. */
+    if (path.includes('/storage/v1/')) {
+      const signMany = path.match(/\/storage\/v1\/object\/sign\/([^/]+)$/)
+      if (signMany && req.method() === 'POST') {
+        let paths = []
+        try { paths = JSON.parse(req.postData() || '{}').paths ?? [] } catch { /* празно */ }
+        return json(route, paths.map(p => ({ path: p, signedURL: `/object/sign/${signMany[1]}/${p}?token=test`, error: null })))
+      }
+      if (req.method() === 'GET') {
+        return route.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'image/png' }, body: Buffer.from(TEST_PNG, 'base64') })
+      }
+      if (req.method() === 'DELETE') return json(route, [])
+      return json(route, { Key: path.split('/object/')[1] ?? '' })
     }
 
     // ── таблици ──

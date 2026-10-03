@@ -1,37 +1,58 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
+import { useAuth } from '../../contexts/AuthContext'
+import { usePosingShots } from '../../hooks/usePosingShots'
+import { haptic } from '../../lib/haptics'
+import { POSES, BLOCKS, orderPoses } from './poses'
+import PosingCamera from './PosingCamera'
+import PosingCompare from './PosingCompare'
 import styles from './PosingPage.module.css'
 import AppHeader from '../AppHeader/AppHeader'
-
-/* Позите носят само id + abbr — имена, описание и cue-та се държат в
-   locales/{bg,en}.js под pose.{id}.* и се резолвват при render. Така всяка
-   поза е един ред тук, а езиковото съдържание живее на едно място. */
-const POSES = [
-  { id: 'fdb', abbr: 'FDB' },
-  { id: 'fls', abbr: 'FLS' },
-  { id: 'sc',  abbr: 'SC'  },
-  { id: 'bdb', abbr: 'BDB' },
-  { id: 'bls', abbr: 'BLS' },
-  { id: 'st',  abbr: 'ST'  },
-  { id: 'at',  abbr: 'A&T' },
-  { id: 'mm',  abbr: 'MM'  },
-]
 
 const DURATIONS = [15, 30, 60]
 
 const R = 44
 const CIRC = 2 * Math.PI * R
 
+/* Изборът на пози е удобство на този телефон, не данни: пази се в браузъра.
+   Празен или повреден запис връща блока на бодибилдинга. */
+const PICK_KEY = 'posing.picked'
+function loadPicked() {
+  try {
+    const v = JSON.parse(localStorage.getItem(PICK_KEY) ?? 'null')
+    if (Array.isArray(v) && v.length) return v.filter(id => POSES.some(p => p.id === id))
+  } catch { /* няма или е повреден */ }
+  return BLOCKS[0].poses
+}
+
 export default function PosingPage({ onMenuOpen }) {
   const { t } = useSettings()
-  const [mode, setMode] = useState('list')
+  const { user } = useAuth()
+  const { shots, save, remove } = usePosingShots(user?.id)
+  const [mode, setMode] = useState('list')   // list | session | done | camera | compare
+  const [picked, setPicked] = useState(loadPicked)
   const [poseIndex, setPoseIndex] = useState(0)
   const [duration, setDuration] = useState(30)
   const [timeLeft, setTimeLeft] = useState(30)
   const [paused, setPaused] = useState(false)
   const timerRef = useRef(null)
 
-  const pose = POSES[poseIndex]
+  useEffect(() => {
+    try { localStorage.setItem(PICK_KEY, JSON.stringify(picked)) } catch { /* частен режим */ }
+  }, [picked])
+
+  const poses = useMemo(() => orderPoses(picked), [picked])
+  const pose = poses[poseIndex] ?? poses[0]
+
+  // Кой блок съвпада точно с избора — той свети. Пипнеш ли поза, блокът
+  // угасва: изборът вече е свой.
+  const activeBlock = BLOCKS.find(b =>
+    b.poses.length === picked.length && b.poses.every(id => picked.includes(id)))?.id
+
+  function togglePose(id) {
+    haptic('toggle')
+    setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id]))
+  }
 
   useEffect(() => {
     if (mode !== 'session' || paused) {
@@ -59,7 +80,7 @@ export default function PosingPage({ onMenuOpen }) {
   }
 
   function advance() {
-    if (poseIndex + 1 >= POSES.length) {
+    if (poseIndex + 1 >= poses.length) {
       setMode('done')
     } else {
       setPoseIndex(i => i + 1)
@@ -74,8 +95,10 @@ export default function PosingPage({ onMenuOpen }) {
     }
   }
 
-  function drillPose(idx) {
-    setPoseIndex(idx)
+  function drillPose(id) {
+    const i = poses.findIndex(p => p.id === id)
+    if (i < 0) return
+    setPoseIndex(i)
     setTimeLeft(duration)
     setPaused(true)
     setMode('session')
@@ -86,12 +109,40 @@ export default function PosingPage({ onMenuOpen }) {
   const mins = Math.floor(timeLeft / 60)
   const secs = timeLeft % 60
 
+  if (mode === 'camera') {
+    return (
+      <div className={styles.page}>
+        <PosingCamera
+          poses={poses}
+          shots={shots}
+          save={save}
+          onClose={() => setMode('list')}
+          onCompare={() => setMode('compare')}
+        />
+      </div>
+    )
+  }
+
+  if (mode === 'compare') {
+    return (
+      <div className={styles.page}>
+        <header className={styles.sessionHeader}>
+          <button className={styles.backBtn} onClick={() => setMode('list')} type="button" aria-label={t('pose.backToList')}>
+            ←
+          </button>
+          <span className={styles.headTitle}>{t('pose.cmp.title')}</span>
+        </header>
+        <PosingCompare shots={shots} save={save} remove={remove} initialPose={poses[0]?.id} />
+      </div>
+    )
+  }
+
   if (mode === 'done') {
     return (
       <div className={styles.page}>
         <div className={styles.doneScreen}>
           <div className={styles.doneTitle}>{t('pose.sessionDone')}</div>
-          <p className={styles.doneSub}>{t('pose.sessionMeta', { n: POSES.length, sec: duration })}</p>
+          <p className={styles.doneSub}>{t('pose.sessionMeta', { n: poses.length, sec: duration })}</p>
           <button className={styles.startBtn} onClick={() => setMode('list')} type="button">
             {t('pose.backToList')}
           </button>
@@ -100,7 +151,7 @@ export default function PosingPage({ onMenuOpen }) {
     )
   }
 
-  if (mode === 'session') {
+  if (mode === 'session' && pose) {
     return (
       <div className={styles.page}>
         <header className={styles.sessionHeader}>
@@ -108,14 +159,14 @@ export default function PosingPage({ onMenuOpen }) {
             ←
           </button>
           <div className={styles.dots}>
-            {POSES.map((_, i) => (
+            {poses.map((_, i) => (
               <span
                 key={i}
                 className={`${styles.dot} ${i === poseIndex ? styles.dotActive : i < poseIndex ? styles.dotDone : ''}`}
               />
             ))}
           </div>
-          <span className={styles.poseCount}>{poseIndex + 1}/{POSES.length}</span>
+          <span className={styles.poseCount}>{poseIndex + 1}/{poses.length}</span>
         </header>
 
         <div className={styles.sessionBody}>
@@ -187,9 +238,35 @@ export default function PosingPage({ onMenuOpen }) {
     )
   }
 
+  const empty = poses.length === 0
+
   return (
     <div className={styles.page}>
       <AppHeader onMenuOpen={onMenuOpen} eyebrow={t('pose.subtitle')} title={t('pose.title')} />
+
+      {/* Блоковете: кой формат се тренира днес. */}
+      <div className={styles.blocks}>
+        {BLOCKS.map(b => (
+          <button
+            key={b.id}
+            type="button"
+            className={`${styles.block} ${activeBlock === b.id ? styles.blockOn : ''}`}
+            onClick={() => { haptic('toggle'); setPicked(b.poses) }}
+          >
+            {t(b.labelKey)}
+            <small>{t('pose.block.count', { n: b.poses.length })}</small>
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.actions}>
+        <button className={styles.startBtn} onClick={() => setMode('camera')} type="button" disabled={empty}>
+          {t('pose.shoot', { n: poses.length })}
+        </button>
+        <button className={styles.ghostBtn} onClick={() => setMode('compare')} type="button">
+          {t('pose.compare')}
+        </button>
+      </div>
 
       <div className={styles.controls}>
         <span className={styles.controlLabel}>{t('pose.pauseOnPose')}</span>
@@ -205,25 +282,41 @@ export default function PosingPage({ onMenuOpen }) {
             </button>
           ))}
         </div>
+        <button className={styles.drillBtn} onClick={startSession} type="button" disabled={empty}>
+          {t('pose.startSession', { n: poses.length })}
+        </button>
       </div>
 
-      <button className={styles.startBtn} onClick={startSession} type="button">
-        {t('pose.startSession', { n: POSES.length })}
-      </button>
-
       <div className={styles.poseList}>
-        {POSES.map((p, i) => (
-          <button
-            key={p.id}
-            className={styles.poseRow}
-            onClick={() => drillPose(i)}
-            type="button"
-          >
-            <span className={styles.poseRowAbbr}>{p.abbr}</span>
-            <span className={styles.poseRowName}>{t(`pose.${p.id}.name`)}</span>
-            <span className={styles.poseRowArrow}>→</span>
-          </button>
-        ))}
+        {POSES.map((p, i) => {
+          const on = picked.includes(p.id)
+          const firstPose = !p.turn && POSES[i - 1]?.turn
+          return (
+            <div key={p.id}>
+              {i === 0 && <div className={styles.listGroup}>{t('pose.group.turns')}</div>}
+              {firstPose && <div className={styles.listGroup}>{t('pose.group.poses')}</div>}
+              <div className={`${styles.poseRow} ${on ? '' : styles.poseRowOff}`}>
+                <button
+                  type="button"
+                  className={styles.poseRowMain}
+                  onClick={() => drillPose(p.id)}
+                  disabled={!on}
+                >
+                  <span className={styles.poseRowAbbr}>{p.abbr}</span>
+                  <span className={styles.poseRowName}>{t(`pose.${p.id}.name`)}</span>
+                </button>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={on}
+                  aria-label={t(`pose.${p.id}.name`)}
+                  className={`${styles.switch} ${on ? styles.switchOn : ''}`}
+                  onClick={() => togglePose(p.id)}
+                />
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
