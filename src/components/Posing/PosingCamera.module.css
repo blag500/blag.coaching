@@ -252,3 +252,38 @@
 }
 .chip:disabled { opacity: 0.35; }
 .chipOn { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+/* Обективът и ръчните настройки — над лентата, на плътен под, за да се
+   четат над светъл кадър. */
+.panel {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-lg);
+  background: rgba(var(--bg-rgb), 0.8);
+}
+.panel .group { flex-wrap: wrap; }
+
+.knob {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.knobHead {
+  display: flex;
+  justify-content: space-between;
+}
+.knobHead b { color: var(--text); font-weight: 600; }
+.knobRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.knobRow input { flex: 1; accent-color: var(--accent); }
+
+.panelNote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}

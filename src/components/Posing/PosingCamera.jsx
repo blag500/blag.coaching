@@ -6,6 +6,7 @@ import { todayStr } from '../../hooks/useCheckin'
 
 import { useClapTrigger } from './useClapTrigger'
 import { useWordTrigger, wordSetup, wordTriggerSupported, isIOS } from './useWordTrigger'
+import { lensName, knobsFor, constraintFor, loadRig, saveRig } from './cameraRig'
 import styles from './PosingCamera.module.css'
 
 /**
@@ -49,7 +50,15 @@ function beep(ctxRef, freq = 880, ms = 90, gain = 0.15) {
 
 export default function PosingCamera({ poses, shots, save, onClose, onCompare }) {
   const { t, lang } = useSettings()
-  const [facing, setFacing] = useState('user')
+  const rig = useMemo(loadRig, [])
+  const [facing, setFacing] = useState(rig.facing ?? 'user')
+  const [lens, setLens] = useState(rig.deviceId ?? null)   // deviceId или null = по facingMode
+  const [devices, setDevices] = useState([])
+  const [caps, setCaps] = useState(null)
+  const [vals, setVals] = useState({})            // стойностите на плъзгачите; null = авто
+  const [torch, setTorch] = useState(false)
+  const [mirrored, setMirrored] = useState(facing === 'user')
+  const [panel, setPanel] = useState(false)
   const [stream, setStream] = useState(null)
   const [camError, setCamError] = useState(null)
   const [idx, setIdx] = useState(0)
@@ -88,8 +97,9 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
     let alive = true
     let got = null
     setCamError(null)
+    const size = { width: { ideal: 1920 }, height: { ideal: 1920 } }
     navigator.mediaDevices?.getUserMedia({
-      video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1920 } },
+      video: lens ? { deviceId: { exact: lens }, ...size } : { facingMode: facing, ...size },
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
     }).then(s => {
       if (!alive) { s.getTracks().forEach(tr => tr.stop()); return }
@@ -97,13 +107,81 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
       setStream(s)
     }).catch(err => {
       if (!alive) return
+      // Запомненият обектив го няма (друг телефон, сменен браузър) — назад към
+      // предна/задна, без грешка на екрана.
+      if (lens && (err?.name === 'OverconstrainedError' || err?.name === 'NotFoundError')) {
+        setLens(null)
+        return
+      }
       setCamError(err?.name === 'NotAllowedError' ? 'denied' : 'none')
     })
     return () => {
       alive = false
       got?.getTracks().forEach(tr => tr.stop())
     }
-  }, [facing])
+  }, [facing, lens])
+
+  /* Новият поток: кои обективи има (етикетите идват едва след разрешението),
+     какво може тази писта и запомнените стойности за този обектив. */
+  useEffect(() => {
+    const track = stream?.getVideoTracks()[0]
+    if (!track) return
+    const st = track.getSettings?.() ?? {}
+    setMirrored(st.facingMode ? st.facingMode === 'user' : facing === 'user')
+    const c = track.getCapabilities?.() ?? {}
+    setCaps(c)
+    setTorch(false)
+    const saved = rig.knobs?.[st.deviceId] ?? {}
+    const next = {}
+    for (const k of knobsFor(c)) {
+      const v = saved[k.id]
+      next[k.id] = v != null && v >= c[k.id].min && v <= c[k.id].max ? v
+        : k.mode ? null : (st[k.id] ?? null)
+      const con = next[k.id] != null ? constraintFor(k, next[k.id]) : null
+      if (con) track.applyConstraints({ advanced: [con] }).catch(() => {})
+    }
+    setVals(next)
+    navigator.mediaDevices.enumerateDevices?.()
+      .then(list => setDevices(list.filter(d => d.kind === 'videoinput')))
+      .catch(() => {})
+  }, [stream]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const knobs = useMemo(() => knobsFor(caps), [caps])
+  const activeId = stream?.getVideoTracks()[0]?.getSettings?.().deviceId ?? lens
+
+  function pickLens(id) {
+    setLens(id)
+    rig.deviceId = id
+    saveRig(rig)
+  }
+
+  function flip() {
+    const f = facing === 'user' ? 'environment' : 'user'
+    setFacing(f)
+    setLens(null)
+    rig.facing = f
+    rig.deviceId = null
+    saveRig(rig)
+  }
+
+  function setKnob(knob, value) {
+    const track = stream?.getVideoTracks()[0]
+    if (!track) return
+    setVals(v => ({ ...v, [knob.id]: value }))
+    const con = constraintFor(knob, value)
+    if (con) track.applyConstraints({ advanced: [con] }).catch(() => {})
+    const id = track.getSettings?.().deviceId
+    if (!id) return
+    rig.knobs = { ...rig.knobs, [id]: { ...rig.knobs?.[id], [knob.id]: value } }
+    saveRig(rig)
+  }
+
+  function toggleTorch() {
+    const track = stream?.getVideoTracks()[0]
+    if (!track) return
+    const on = !torch
+    track.applyConstraints({ advanced: [{ torch: on }] }).then(() => setTorch(on)).catch(() => {})
+  }
 
   useEffect(() => {
     if (videoRef.current && stream) videoRef.current.srcObject = stream
@@ -185,8 +263,6 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
   const { state: wordState } = useWordTrigger({ enabled: !!stream && useWord, appLang: lang, onWord: trigger, deafUntil })
   const { words } = wordSetup(lang)
 
-  const mirrored = facing === 'user'
-
   return createPortal(
     <div className={styles.cam}>
       <video
@@ -206,7 +282,7 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
           <span className={styles.name}>{t(`pose.${pose.id}.name`)}</span>
         </div>
         <button type="button" className={styles.iconBtn}
-          onClick={() => setFacing(f => (f === 'user' ? 'environment' : 'user'))}
+          onClick={flip}
           aria-label={t('pose.cam.flip')}>⟲</button>
       </header>
 
@@ -229,6 +305,49 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
       </div>
 
       <div className={styles.bottom}>
+        {panel && (
+          <div className={styles.panel}>
+            {devices.length > 1 && (
+              <div className={styles.group}>
+                <span>{t('pose.cam.lens')}</span>
+                {devices.map((d, i) => (
+                  <button key={d.deviceId || i} type="button"
+                    className={`${styles.chip} ${d.deviceId === activeId ? styles.chipOn : ''}`}
+                    onClick={() => pickLens(d.deviceId)}
+                    title={d.label}>{lensName(d.label, i)}</button>
+                ))}
+              </div>
+            )}
+            {knobs.map(k => {
+              const c = caps[k.id]
+              const v = vals[k.id]
+              return (
+                <label key={k.id} className={styles.knob}>
+                  <span className={styles.knobHead}>
+                    {t(`pose.cam.k.${k.id}`)}
+                    <b>{v != null ? k.fmt(v) : t('pose.cam.auto')}</b>
+                  </span>
+                  <span className={styles.knobRow}>
+                    <input type="range" min={c.min} max={c.max} step={c.step || (c.max - c.min) / 100}
+                      value={v ?? (k.id === 'zoom' ? c.min : (c.min + c.max) / 2)}
+                      onChange={e => setKnob(k, Number(e.target.value))} />
+                    {(k.mode || k.id === 'exposureCompensation') && v != null && (
+                      <button type="button" className={styles.chip}
+                        onClick={() => setKnob(k, k.mode ? null : 0)}>{t('pose.cam.auto')}</button>
+                    )}
+                  </span>
+                </label>
+              )
+            })}
+            {caps?.torch && (
+              <button type="button" className={`${styles.chip} ${torch ? styles.chipOn : ''}`}
+                onClick={toggleTorch}>{t('pose.cam.torch')}</button>
+            )}
+            {!knobs.length && !caps?.torch && (
+              <p className={styles.panelNote}>{t('pose.cam.noManual')}</p>
+            )}
+          </div>
+        )}
         <div className={styles.strip}>
           {poses.map((p, i) => (
             <button
@@ -281,6 +400,10 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
                 onClick={() => setSens(s)}>{t(`pose.cam.sens.${s}`)}</button>
             ))}
           </div>
+          <button type="button"
+            className={`${styles.chip} ${panel ? styles.chipOn : ''}`}
+            onClick={() => setPanel(p => !p)}
+            aria-expanded={panel}>{t('pose.cam.rig')}</button>
           {wordTriggerSupported() && (
             <button type="button"
               className={`${styles.chip} ${useWord && wordState !== 'failed' ? styles.chipOn : ''}`}
