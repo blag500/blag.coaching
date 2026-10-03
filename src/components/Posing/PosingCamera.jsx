@@ -59,6 +59,7 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
   const [torch, setTorch] = useState(false)
   const [mirrored, setMirrored] = useState(facing === 'user')
   const [panel, setPanel] = useState(false)
+  const [res, setRes] = useState(null)             // „1440×1920“ — какво наистина дава камерата
   const [stream, setStream] = useState(null)
   const [camError, setCamError] = useState(null)
   const [idx, setIdx] = useState(0)
@@ -97,7 +98,10 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
     let alive = true
     let got = null
     setCamError(null)
-    const size = { width: { ideal: 1920 }, height: { ideal: 1920 } }
+    /* 4:3 — целият сензор, както снима системната камера. Искането на
+       квадрат 1920×1920 караше iPhone да даде видео режим 16:9, който реже
+       горе и долу, и всяка камера изглеждаше приближена. */
+    const size = { width: { ideal: 1920 }, height: { ideal: 1440 }, aspectRatio: { ideal: 4 / 3 } }
     navigator.mediaDevices?.getUserMedia({
       video: lens ? { deviceId: { exact: lens }, ...size } : { facingMode: facing, ...size },
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
@@ -127,6 +131,7 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
     const track = stream?.getVideoTracks()[0]
     if (!track) return
     const st = track.getSettings?.() ?? {}
+    setRes(st.width && st.height ? `${st.width}×${st.height}` : null)
     setMirrored(st.facingMode ? st.facingMode === 'user' : facing === 'user')
     const c = track.getCapabilities?.() ?? {}
     setCaps(c)
@@ -351,6 +356,7 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
               <button type="button" className={`${styles.chip} ${torch ? styles.chipOn : ''}`}
                 onClick={toggleTorch}>{t('pose.cam.torch')}</button>
             )}
+            {res && <p className={styles.panelNote}>{t('pose.cam.res', { r: res })}</p>}
             {!knobs.length && !caps?.torch && devices.length < 2 && (
               <p className={styles.panelNote}>{t('pose.cam.noManual')}</p>
             )}

@@ -1188,6 +1188,7 @@ export default {
   'pose.cam.sens.high': 'high',
   'pose.cam.word':      'Word “{w}”',
   'pose.cam.wordFailed':'Word trigger unavailable',
+  'pose.cam.res':       'Frame {r}',
   'pose.cam.rig':       'Camera',
   'pose.cam.lens':      'Lens',
   'pose.cam.auto':      'auto',

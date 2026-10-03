@@ -1189,6 +1189,7 @@ export default {
   'pose.cam.sens.high': 'висока',
   'pose.cam.word':      'Дума „{w}“',
   'pose.cam.wordFailed':'Думата не работи тук',
+  'pose.cam.res':       'Кадър {r}',
   'pose.cam.rig':       'Камера',
   'pose.cam.lens':      'Обектив',
   'pose.cam.auto':      'авто',
