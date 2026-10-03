@@ -3,20 +3,21 @@ import { useEffect, useRef, useState } from 'react'
 /**
  * Дума като спусък — допълнение към пляскането, не замяна.
  *
- * Разпознавателят е на браузъра. На Android слуша на български; на iPhone
- * български няма (виж BlagBot/useDictation.js), затова там слуша на английски
- * и думите са английски. Човекът вижда на екрана коя дума работи при него.
+ * Разпознавателят е на браузъра и слуша на английски на всеки телефон — на
+ * iPhone български няма (виж BlagBot/useDictation.js).
  *
  * Разпознаването свършва само след тишина, а сесията с позите е дълга —
  * затова при край се пуска наново, докато страницата е отворена.
- * Междинните резултати се гледат нарочно: „снимай" трябва да стреля, докато
+ * Междинните резултати се гледат нарочно: „shoot" трябва да стреля, докато
  * човекът още стои в позата, не секунда по-късно, когато фразата се затвори.
  */
 
-const WORDS = {
-  'bg-BG': ['снимай', 'снимка', 'щрак', 'сега'],
-  'en-US': ['cheese', 'snap', 'shoot', 'go'],
-}
+/* Една дума навсякъде — „shoot“. Слуша се на английски на всеки телефон:
+   на iPhone български разпознавател няма, а една и съща дума на всички
+   телефони е по-лесна за запомняне от две. „shot“ — разпознавателят често
+   записва „shoot“ така. */
+const LANG = 'en-US'
+const WORDS = ['shoot', 'shot']
 
 export function isIOS() {
   if (typeof navigator === 'undefined') return false
@@ -31,20 +32,18 @@ function engine() {
 
 export function wordTriggerSupported() { return !!engine() }
 
-/** Езикът и думите, които се слушат на този телефон. */
-export function wordSetup(appLang = 'bg') {
-  const lang = isIOS() || appLang === 'en' ? 'en-US' : 'bg-BG'
-  return { lang, words: WORDS[lang] }
+/** Езикът и думите, които се слушат. */
+export function wordSetup() {
+  return { lang: LANG, words: WORDS }
 }
 
 /**
  * @param {object} opts
  * @param {boolean} opts.enabled
- * @param {string} opts.appLang          'bg' | 'en' от настройките
  * @param {() => void} opts.onWord
  * @param {{current: number}} opts.deafUntil
  */
-export function useWordTrigger({ enabled, appLang, onWord, deafUntil }) {
+export function useWordTrigger({ enabled, onWord, deafUntil }) {
   const [state, setState] = useState('off') // 'off' | 'on' | 'failed'
   const wordRef = useRef(onWord)
   wordRef.current = onWord
@@ -52,7 +51,7 @@ export function useWordTrigger({ enabled, appLang, onWord, deafUntil }) {
   useEffect(() => {
     const Engine = engine()
     if (!enabled || !Engine) { setState('off'); return }
-    const { lang, words } = wordSetup(appLang)
+    const { lang, words } = wordSetup()
 
     let alive = true
     let rec = null
@@ -110,7 +109,7 @@ export function useWordTrigger({ enabled, appLang, onWord, deafUntil }) {
       clearTimeout(retry)
       try { rec?.abort() } catch { /* вече спрян */ }
     }
-  }, [enabled, appLang, deafUntil])
+  }, [enabled, deafUntil])
 
   return { state }
 }

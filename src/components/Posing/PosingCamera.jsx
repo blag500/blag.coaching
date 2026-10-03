@@ -49,7 +49,7 @@ function beep(ctxRef, freq = 880, ms = 90, gain = 0.15) {
 }
 
 export default function PosingCamera({ poses, shots, save, onClose, onCompare }) {
-  const { t, lang } = useSettings()
+  const { t } = useSettings()
   const rig = useMemo(loadRig, [])
   const [facing, setFacing] = useState(rig.facing ?? 'user')
   const [lens, setLens] = useState(rig.deviceId ?? null)   // deviceId или null = по facingMode
@@ -260,8 +260,8 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
   }, [stream, delay, capture])
 
   const { level } = useClapTrigger(stream, { enabled: !!stream, sensitivity: sens, onClap: trigger, deafUntil })
-  const { state: wordState } = useWordTrigger({ enabled: !!stream && useWord, appLang: lang, onWord: trigger, deafUntil })
-  const { words } = wordSetup(lang)
+  const { state: wordState } = useWordTrigger({ enabled: !!stream && useWord, onWord: trigger, deafUntil })
+  const { words } = wordSetup()
 
   return createPortal(
     <div className={styles.cam}>
@@ -339,11 +339,19 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
                 </label>
               )
             })}
+            <div className={styles.group}>
+              <span>{t('pose.cam.sens')}</span>
+              {['low', 'mid', 'high'].map(v => (
+                <button key={v} type="button"
+                  className={`${styles.chip} ${sens === v ? styles.chipOn : ''}`}
+                  onClick={() => setSens(v)}>{t(`pose.cam.sens.${v}`)}</button>
+              ))}
+            </div>
             {caps?.torch && (
               <button type="button" className={`${styles.chip} ${torch ? styles.chipOn : ''}`}
                 onClick={toggleTorch}>{t('pose.cam.torch')}</button>
             )}
-            {!knobs.length && !caps?.torch && (
+            {!knobs.length && !caps?.torch && devices.length < 2 && (
               <p className={styles.panelNote}>{t('pose.cam.noManual')}</p>
             )}
           </div>
@@ -364,53 +372,54 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
           ))}
         </div>
 
+        {/* Три колони като в системната камера: времето и думата отляво,
+            затворът в средата, контурът и настройките отдясно. Рядко
+            пипаното (чувствителност, обектив, плъзгачи) е в панела „Камера“. */}
         <div className={styles.controls}>
-          <div className={styles.meter} aria-hidden="true">
-            <span style={{ transform: `scaleY(${Math.max(0.06, level)})` }} />
+          <div className={styles.side}>
+            <div className={styles.seg} role="group" aria-label={t('pose.cam.delay')}>
+              {COUNTDOWNS.map(d => (
+                <button key={d} type="button"
+                  className={delay === d ? styles.segOn : ''}
+                  aria-pressed={delay === d}
+                  onClick={() => setDelay(d)}>{d ? `${d}s` : '0'}</button>
+              ))}
+            </div>
+            {wordTriggerSupported() && (
+              <button type="button"
+                className={`${styles.chip} ${useWord && wordState !== 'failed' ? styles.chipOn : ''}`}
+                onClick={() => setUseWord(w => !w)}>
+                {wordState === 'failed' ? t('pose.cam.wordFailed') : t('pose.cam.word', { w: words[0] })}
+              </button>
+            )}
           </div>
-          <button
-            type="button"
-            className={styles.shutter}
-            onClick={trigger}
-            disabled={!stream || busy}
-            aria-label={t('pose.cam.shoot')}
-          />
-          <button
-            type="button"
-            className={`${styles.chip} ${ghost ? styles.chipOn : ''}`}
-            onClick={() => setGhost(g => !g)}
-            disabled={!ghostUrl}
-          >{t('pose.cam.ghost')}</button>
-        </div>
 
-        <div className={styles.settings}>
-          <div className={styles.group}>
-            <span>{t('pose.cam.delay')}</span>
-            {COUNTDOWNS.map(d => (
-              <button key={d} type="button"
-                className={`${styles.chip} ${delay === d ? styles.chipOn : ''}`}
-                onClick={() => setDelay(d)}>{d ? `${d}s` : '0'}</button>
-            ))}
+          <div className={styles.shutterCol}>
+            <button
+              type="button"
+              className={styles.shutter}
+              onClick={trigger}
+              disabled={!stream || busy}
+              aria-label={t('pose.cam.shoot')}
+            />
+            {/* Нивото на звука: колко силно трябва да се пляска. */}
+            <div className={styles.meter} aria-hidden="true">
+              <span style={{ transform: `scaleX(${Math.max(0.04, level)})` }} />
+            </div>
           </div>
-          <div className={styles.group}>
-            <span>{t('pose.cam.sens')}</span>
-            {['low', 'mid', 'high'].map(s => (
-              <button key={s} type="button"
-                className={`${styles.chip} ${sens === s ? styles.chipOn : ''}`}
-                onClick={() => setSens(s)}>{t(`pose.cam.sens.${s}`)}</button>
-            ))}
-          </div>
-          <button type="button"
-            className={`${styles.chip} ${panel ? styles.chipOn : ''}`}
-            onClick={() => setPanel(p => !p)}
-            aria-expanded={panel}>{t('pose.cam.rig')}</button>
-          {wordTriggerSupported() && (
+
+          <div className={`${styles.side} ${styles.sideEnd}`}>
+            <button
+              type="button"
+              className={`${styles.chip} ${ghost && ghostUrl ? styles.chipOn : ''}`}
+              onClick={() => setGhost(g => !g)}
+              disabled={!ghostUrl}
+            >{t('pose.cam.ghost')}</button>
             <button type="button"
-              className={`${styles.chip} ${useWord && wordState !== 'failed' ? styles.chipOn : ''}`}
-              onClick={() => setUseWord(w => !w)}>
-              {wordState === 'failed' ? t('pose.cam.wordFailed') : t('pose.cam.word', { w: words[0] })}
-            </button>
-          )}
+              className={`${styles.chip} ${panel ? styles.chipOn : ''}`}
+              onClick={() => setPanel(p => !p)}
+              aria-expanded={panel}>{t('pose.cam.rig')}</button>
+          </div>
         </div>
       </div>
     </div>,
