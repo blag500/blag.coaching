@@ -57,6 +57,9 @@ export function useWordTrigger({ enabled, appLang, onWord, deafUntil }) {
     let alive = true
     let rec = null
     let lastFire = 0
+    let startedAt = 0
+    let quickEnds = 0
+    let retry = 0
     // Една и съща фраза идва няколко пъти като междинен резултат; брои се
     // само първият път.
     let firedIdx = -1
@@ -87,16 +90,24 @@ export function useWordTrigger({ enabled, appLang, onWord, deafUntil }) {
           setState('failed')
         }
       }
+      /* Сесия, която свършва веднага след пускане, не е тишина — разпознавателят
+         не може да слуша (на iPhone микрофонът е зает от камерата). Безкрайното
+         пускане наново на всеки 250 ms задушаваше страницата и екранът спираше
+         да отговаря на докосване. Затова: все по-дълга пауза и отказ след три. */
       rec.onend = () => {
         firedIdx = -1
-        if (alive) setTimeout(start, 250)
+        if (!alive) return
+        quickEnds = performance.now() - startedAt < 2000 ? quickEnds + 1 : 0
+        if (quickEnds >= 3) { alive = false; setState('failed'); return }
+        retry = setTimeout(start, 250 * 2 ** quickEnds)
       }
-      try { rec.start(); setState('on') } catch { setState('failed') }
+      try { startedAt = performance.now(); rec.start(); setState('on') } catch { setState('failed') }
     }
     start()
 
     return () => {
       alive = false
+      clearTimeout(retry)
       try { rec?.abort() } catch { /* вече спрян */ }
     }
   }, [enabled, appLang, deafUntil])

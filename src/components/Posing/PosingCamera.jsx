@@ -5,7 +5,7 @@ import { haptic } from '../../lib/haptics'
 import { todayStr } from '../../hooks/useCheckin'
 
 import { useClapTrigger } from './useClapTrigger'
-import { useWordTrigger, wordSetup, wordTriggerSupported } from './useWordTrigger'
+import { useWordTrigger, wordSetup, wordTriggerSupported, isIOS } from './useWordTrigger'
 import styles from './PosingCamera.module.css'
 
 /**
@@ -59,7 +59,9 @@ export default function PosingCamera({ poses, shots, save, onClose, onCompare })
   const [taken, setTaken] = useState({})          // poseId -> objectURL от тази сесия
   const [delay, setDelay] = useState(3)
   const [sens, setSens] = useState('mid')
-  const [useWord, setUseWord] = useState(wordTriggerSupported())
+  // На iPhone думата е по избор: разпознавателят там се бори с камерата за
+  // микрофона. Пляскането стига; думата се пуска с докосване на чипа.
+  const [useWord, setUseWord] = useState(wordTriggerSupported() && !isIOS())
   const [ghost, setGhost] = useState(true)
   const [failed, setFailed] = useState(false)
 
