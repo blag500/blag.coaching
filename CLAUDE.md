@@ -33,7 +33,7 @@ holds the rewrites. A `netlify.toml` is still in the repo but the domain resolve
 `docs/DESIGN.md` explains what they mean and why. **Read `docs/DESIGN.md` before
 touching anything visible.** The short version:
 
-- Three themes on `<html data-theme>`: dark (default), `light`, `glass`. Every colour
+- Three themes on `<html data-theme>`: `glass` (the crystal one — the default), dark, `light`. Every colour
   token is redefined in all three — never give a colour its only definition inside one.
 - `--bg: #0C0A06`, `--accent: #C8A05A` (antique gold), `--text: #F2E8CF` in the dark theme.
 - `--font-heading: 'Oswald'` (Bebas Neue ships no Cyrillic); `--font-body` is the system
