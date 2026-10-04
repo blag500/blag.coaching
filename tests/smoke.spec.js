@@ -1715,6 +1715,30 @@ test.describe('Заготовки по мускул', () => {
     await expect(page.getByText('вместо Лежанка · само за днес')).toBeVisible()
   })
 
+  test('моливчето поправя заготовка', async ({ page }) => {
+    await enterApp(page)
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(600)
+    await page.getByText('ЗАГОТОВКИ', { exact: true }).first().click()
+    await page.waitForTimeout(1200)
+
+    await page.getByRole('button', { name: 'Поправи Кросовер' }).click()
+    await page.getByLabel('Име на упражнението').fill('Кросоувър на кабел')
+    await page.getByLabel(/Напр\. 3 × 8–10/).fill('4 × 15')
+    await page.getByRole('button', { name: 'ЗАПАЗИ' }).click()
+
+    await expect(page.getByText('Кросоувър на кабел')).toBeVisible()
+    await expect(page.getByText('4 × 15')).toBeVisible()
+    await expect(page.getByText('Кросовер', { exact: true })).toHaveCount(0)
+
+    // Без мускул отива при „без мускул“ — поправката може и това.
+    await page.getByRole('button', { name: 'Поправи Кросоувър на кабел' }).click()
+    await page.getByLabel('Мускул', { exact: true }).selectOption('')
+    await page.getByRole('button', { name: 'ЗАПАЗИ' }).click()
+    await page.getByRole('tab', { name: /БЕЗ МУСКУЛ/ }).click()
+    await expect(page.getByText('Кросоувър на кабел')).toBeVisible()
+  })
+
   test('написаното на ръка от молива влиза в заготовките', async ({ page }) => {
     await enterApp(page)
     await page.waitForTimeout(1600)

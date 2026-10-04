@@ -71,7 +71,7 @@ export function useExerciseLibrary() {
       .eq('id', id)
       .select()
       .single()
-    if (err) return { error: err.message }
+    if (err) return { error: err.code === '23505' ? 'duplicate' : err.message }
     setItems(prev => prev.map(i => (i.id === id ? data : i)))
     return { data }
   }, [])

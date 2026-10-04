@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useExerciseLibrary } from '../../hooks/useExerciseLibrary'
+import { useExerciseAliases } from '../../hooks/useExerciseAliases'
 import { useSettings } from '../../contexts/SettingsContext'
 import { FINE_MUSCLES, guessMuscle } from '../../utils/recovery'
 import { haptic } from '../../lib/haptics'
@@ -22,6 +23,7 @@ import styles from './ExerciseLibrary.module.css'
 export default function ExerciseLibrary({ onBack, onMenuOpen }) {
   const { t } = useSettings()
   const { items, loading, add, remove, update } = useExerciseLibrary()
+  const { merge } = useExerciseAliases()
 
   const [filter, setFilter]   = useState('all')   // 'all' | muscle id | 'none'
   const [open, setOpen]       = useState(false)
@@ -72,6 +74,42 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
     setName(''); setScheme('')
   }
 
+  /* Поправката на ред. Името се пише на ръка и в залата, затова грешките
+     са честа работа, а махане и добавяне наново губи мускула и схемата. */
+  const [edit, setEdit]       = useState(null)   // { id, name, scheme, muscle, was }
+  const [editErr, setEditErr] = useState(null)
+
+  function startEdit(it) {
+    setEditErr(null)
+    setEdit({ id: it.id, name: it.name, scheme: it.scheme ?? '', muscle: it.muscle ?? '', was: it.name })
+  }
+
+  async function saveEdit() {
+    if (!edit || !edit.name.trim() || busy) return
+    setBusy(true)
+    setEditErr(null)
+    const name = edit.name.trim()
+    const { error } = await update(edit.id, {
+      name,
+      scheme: edit.scheme.trim() || null,
+      muscle: edit.muscle || null,
+    })
+    if (error) {
+      setBusy(false)
+      setEditErr(error === 'duplicate' ? t('lib.err.duplicate') : t('lib.err.save'))
+      haptic('reject')
+      return
+    }
+    /* Сериите, вече записани под старото име, остават каквито са били в деня.
+       Обединяване ги държи на една крива с новото — иначе поправената буква
+       разцепва историята на две. Ако старото име вече се влива някъде,
+       обединяването го отказва и това е наред. */
+    if (edit.was.trim().toLowerCase() !== name.toLowerCase()) await merge(edit.was.trim(), name)
+    setBusy(false)
+    haptic('success')
+    setEdit(null)
+  }
+
   const empty = !loading && items.length === 0
 
   return (
@@ -115,7 +153,47 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
             {g.id === 'none' ? t('lib.noMuscle') : muscleLabel(g.id)}
             <span className={styles.count}>{g.list.length}</span>
           </h2>
-          {g.list.map(it => (
+          {g.list.map(it => edit?.id === it.id ? (
+            <div key={it.id} className={styles.form}>
+              <input
+                className={styles.input}
+                value={edit.name}
+                onChange={e => setEdit(p => ({ ...p, name: e.target.value }))}
+                onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
+                placeholder={t('lib.namePh')}
+                aria-label={t('lib.namePh')}
+                autoFocus
+              />
+              <select
+                className={styles.input}
+                value={edit.muscle}
+                onChange={e => setEdit(p => ({ ...p, muscle: e.target.value }))}
+                aria-label={t('lib.musclePh')}
+              >
+                <option value="">{t('lib.noMuscle')}</option>
+                {FINE_MUSCLES.map(m => (
+                  <option key={m.id} value={m.id}>{t(m.labelKey)}</option>
+                ))}
+              </select>
+              <input
+                className={styles.input}
+                value={edit.scheme}
+                onChange={e => setEdit(p => ({ ...p, scheme: e.target.value }))}
+                onKeyDown={e => { if (e.key === 'Enter') saveEdit() }}
+                placeholder={t('lib.schemePh')}
+                aria-label={t('lib.schemePh')}
+              />
+              {editErr && <p className={styles.err}>{editErr}</p>}
+              <div className={styles.formActions}>
+                <button type="button" className={styles.cancelBtn} onClick={() => setEdit(null)}>
+                  {t('lib.cancel')}
+                </button>
+                <button type="button" className={styles.saveBtn} onClick={saveEdit} disabled={busy || !edit.name.trim()}>
+                  {busy ? '...' : t('lib.save')}
+                </button>
+              </div>
+            </div>
+          ) : (
             <div key={it.id} className={styles.row}>
               <div className={styles.rowText}>
                 <span className={styles.rowName}>{it.name}</span>
@@ -134,6 +212,12 @@ export default function ExerciseLibrary({ onBack, onMenuOpen }) {
                   </select>
                 )}
               </div>
+              <button
+                type="button"
+                className={styles.rowEdit}
+                onClick={() => { haptic('tap'); startEdit(it) }}
+                aria-label={t('lib.edit', { name: it.name })}
+              >✎</button>
               <button
                 type="button"
                 className={styles.rowDrop}

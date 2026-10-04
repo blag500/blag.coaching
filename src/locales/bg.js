@@ -182,6 +182,8 @@ export default {
   'lib.setMuscle':        'Задай мускул',
   'lib.noMuscle':         'БЕЗ МУСКУЛ',
   'lib.all':              'Всички',
+  'lib.cancel':           'ОТКАЗ',
+  'lib.edit':             'Поправи {name}',
   'dl.swapFor':           'ЗАМЕСТИ С УПРАЖНЕНИЕ ЗА',
   'dl.swapForAria':       'Мускул, за който да се покажат заместители',
   'dl.swapAll':           'Всички ({n})',

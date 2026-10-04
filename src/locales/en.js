@@ -181,6 +181,8 @@ export default {
   'lib.setMuscle':        'Set muscle',
   'lib.noMuscle':         'NO MUSCLE',
   'lib.all':              'All',
+  'lib.cancel':           'CANCEL',
+  'lib.edit':             'Edit {name}',
   'dl.swapFor':           'SWAP WITH AN EXERCISE FOR',
   'dl.swapForAria':       'Muscle to show substitutes for',
   'dl.swapAll':           'All ({n})',
