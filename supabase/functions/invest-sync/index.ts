@@ -8,7 +8,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
  * случая прави едно и също:
  *
  * 1. Сметка и позиции → един ред в invest_snapshots.
- * 2. Дивиденти и движения на пари → invest_dividends, invest_transactions.
+ * 2. Дивиденти, движения на пари и изпълнени поръчки → invest_dividends,
+ *    invest_transactions, invest_orders.
  *    Новото отгоре докато се появи вече видяно; старата история — на части,
  *    от курсора в invest_sync_state, докато свърши.
  *
@@ -119,22 +120,55 @@ const transactionRow = (t: any) => ({
   currency:  t.currency ?? null,
 })
 
+/* Изпълнената поръчка: какво, колко, и какво е оставила в сметката —
+   реализираната печалба и таксите. Неизпълнените нямат запис (няма fill). */
+// deno-lint-ignore no-explicit-any
+const orderRow = (h: any) => {
+  const o = h.order ?? {}
+  const f = h.fill ?? {}
+  const w = f.walletImpact ?? {}
+  // deno-lint-ignore no-explicit-any
+  const taxes: any[] = Array.isArray(w.taxes) ? w.taxes : []
+  return {
+    reference: o.id != null ? String(o.id) : null,
+    at:        f.filledAt ?? o.createdAt,
+    ticker:    o.ticker ?? o.instrument?.ticker ?? null,
+    name:      o.instrument?.name ?? o.ticker ?? null,
+    side:      o.side ?? null,
+    quantity:  f.quantity ?? o.filledQuantity ?? null,
+    price:     f.price ?? null,
+    currency:  w.currency ?? null,
+    net_value: w.netValue ?? null,
+    realized:  n(w.realisedProfitLoss),
+    fees:      taxes.reduce((sum, t) => sum + Math.abs(n(t.quantity)), 0),
+    fee_items: taxes.length ? taxes.map((t) => ({ name: t.name, quantity: t.quantity, currency: t.currency })) : null,
+    status:    o.status ?? null,
+  }
+}
+
+const KINDS = {
+  dividends:    { table: 'invest_dividends',    path: 'dividends',    row: dividendRow },
+  transactions: { table: 'invest_transactions', path: 'transactions', row: transactionRow },
+  orders:       { table: 'invest_orders',       path: 'orders',       row: orderRow },
+} as const
+type Kind = keyof typeof KINDS
+
 /* Един вид история: новото отгоре, после старото от курсора. */
 async function syncHistory(
   // deno-lint-ignore no-explicit-any
   admin: any,
   get: (p: string) => Promise<any>,
-  kind: 'dividends' | 'transactions',
+  kind: Kind,
 ) {
-  const table = kind === 'dividends' ? 'invest_dividends' : 'invest_transactions'
-  const toRow = kind === 'dividends' ? dividendRow : transactionRow
-  const first = `/api/v0/equity/history/${kind}?limit=50`
+  const { table, row: toRow } = KINDS[kind]
+  const first = `/api/v0/equity/history/${KINDS[kind].path}?limit=50`
   let budget = PAGES_PER_RUN
   let added = 0
 
   // deno-lint-ignore no-explicit-any
   const store = async (items: any[]) => {
-    const rows = items.filter((i) => i?.reference).map(toRow)
+    // deno-lint-ignore no-explicit-any
+    const rows = items.map((i) => (toRow as (x: any) => any)(i)).filter((r) => r.reference && r.at)
     if (!rows.length) return 0
     const refs = rows.map((r) => r.reference)
     const { data: known } = await admin.from(table).select('reference').in('reference', refs)
@@ -221,7 +255,7 @@ Deno.serve(async (req) => {
     /* Историята не бива да спира снимката: ако лимитът е изчерпан, снимката
        вече е записана и следващият час ще продължи оттам. */
     const history: Record<string, number | string> = {}
-    await Promise.all((['dividends', 'transactions'] as const).map(async (kind) => {
+    await Promise.all((Object.keys(KINDS) as Kind[]).map(async (kind) => {
       try { history[kind] = await syncHistory(admin, get, kind) }
       catch (e) { history[kind] = String((e as Error).message ?? e) }
     }))

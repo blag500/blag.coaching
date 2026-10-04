@@ -26,6 +26,38 @@ function toEur(currency) {
   return FIXED_TO_EUR[currency] ?? 1
 }
 
+/** Сума в евро, ако е в лева; иначе както е. */
+export function eur(amount, currency) {
+  return (Number(amount) || 0) * toEur(currency)
+}
+
+/** Откъде идва стойността на сметката.
+ *
+ *  стойност = внесено нето + по отворените позиции + реализирано
+ *             + дивиденти + лихва
+ *
+ *  Всичко, което остане извън това, е движение, което историята на Trading
+ *  212 не показва — не се крие в „печалба", а се пише отделно. Таксите не
+ *  са отделен ред: те вече са в цената на покупките и продажбите. */
+export function bridge({ latest, transactions, orders, dividends }) {
+  if (!latest) return null
+  const deposited = netDeposits(transactions)
+  const unrealized = Number(latest.unrealized) || 0
+  const realized = orders.reduce((s, o) => s + eur(o.realized, o.currency), 0)
+  const divs = dividends.reduce((s, d) => s + eur(d.amount, d.currency), 0)
+  const interest = transactions
+    .filter((t) => t.type === 'INTEREST_ON_FREE_CASH')
+    .reduce((s, t) => s + eur(t.amount, t.currency), 0)
+  const fees = orders.reduce((s, o) => s + eur(o.fees, o.currency), 0)
+  const expected = deposited + unrealized + realized + divs + interest
+  const value = Number(latest.total_value) || 0
+  return {
+    deposited, unrealized, realized, dividends: divs, interest, fees,
+    expected, value, unexplained: value - expected,
+    earned: unrealized + realized + divs + interest,
+  }
+}
+
 export function netDeposits(transactions, until = Infinity) {
   let sum = 0
   for (const t of transactions) {
@@ -124,7 +156,7 @@ export function dividendsByMonth(dividends, months = 12, now = new Date()) {
   const idx = new Map(out.map((o, i) => [o.key, i]))
   for (const d of dividends) {
     const i = idx.get(keyOf(new Date(d.paid_on)))
-    if (i != null) out[i].value += Number(d.amount) || 0
+    if (i != null) out[i].value += eur(d.amount, d.currency)
   }
   return out
 }

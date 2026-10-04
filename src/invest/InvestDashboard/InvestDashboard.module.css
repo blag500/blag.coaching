@@ -178,7 +178,8 @@
     grid-template-areas:
       'hero  chart'
       'pos   split'
-      'pos   div';
+      'pos   div'
+      'pos   bridge';
     align-items: start;
   }
   .hero { grid-area: hero; align-self: stretch; }
@@ -186,6 +187,7 @@
   .positionsCard { grid-area: pos; }
   .splitCard { grid-area: split; }
   .divCard { grid-area: div; }
+  .bridgeCard { grid-area: bridge; }
 }
 
 /* ── Карти ── */
@@ -579,4 +581,52 @@
   text-align: center;
   font-size: 11px;
   color: var(--muted);
+}
+
+/* ── Откъде идва резултатът ── */
+
+.bridge {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.bridgeRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.bridgeRow + .bridgeRow {
+  border-top: 1px solid rgba(var(--text-rgb), 0.06);
+}
+
+.bridgeLabel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bridgeValue {
+  flex: none;
+  font-weight: 600;
+}
+
+/* Сумата без запис не е печалба и не е загуба — тя е въпрос. Затова е в
+   цвета на изчакването, не в червено. */
+.bridgeOdd .bridgeValue {
+  color: var(--series-4);
+}
+
+.bridgeTotal {
+  border-top: 1px solid rgba(var(--text-rgb), 0.18) !important;
+  margin-top: 2px;
+}
+
+.bridgeTotal .bridgeLabel,
+.bridgeTotal .bridgeValue {
+  font-weight: 700;
 }

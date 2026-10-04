@@ -53,9 +53,14 @@ function seed() {
       { reference: 'd2', paid_on: new Date(now - 40 * 24 * HOUR).toISOString(), ticker: 'MSFT_US_EQ', name: 'Microsoft Corporation', amount: 1.52, currency: 'EUR' },
       { reference: 'd3', paid_on: new Date(now - 100 * 24 * HOUR).toISOString(), ticker: 'AAPL_US_EQ', name: 'Apple Inc.', amount: 1.80, currency: 'EUR' },
     ],
+    // Продажба на загуба в лева — сметката връща realized: 0, поръчките не.
+    invest_orders: [
+      { reference: 'o1', at: new Date(now - 200 * 24 * HOUR).toISOString(), ticker: 'WBA_US_EQ', side: 'SELL', realized: -68.42, fees: 0.14, currency: 'BGN' },
+    ],
     invest_sync_state: [
       { kind: 'dividends', done: true },
       { kind: 'transactions', done: true },
+      { kind: 'orders', done: true },
     ],
   }
 }
@@ -65,7 +70,7 @@ test('таблото показва сметката, позициите и ди
   await page.goto('/invest/')
 
   await expect(page.getByRole('heading', { name: /Добро утро|Добър ден|Добър вечер|Лека нощ/ })).toBeVisible()
-  await expect(page.getByText('Стойност на сметката')).toBeVisible()
+  await expect(page.getByText('Стойност на сметката').first()).toBeVisible()
   await expect(page.getByRole('button', { name: /Vanguard S&P 500/ })).toBeVisible()
   // Внесено нето: 5000 + 3000.
   await expect(page.getByText(/8\s?000,00\s€/).first()).toBeVisible()
@@ -75,6 +80,11 @@ test('таблото показва сметката, позициите и ди
 
   await page.getByRole('tab', { name: '3М' }).click()
   await expect(page.getByRole('tab', { name: '3М' })).toHaveAttribute('aria-selected', 'true')
+
+  // Откъде идва резултатът: −68,42 лв. = −34,98 €; остатъкът е без запис.
+  await expect(page.getByText('Откъде идва резултатът')).toBeVisible()
+  await expect(page.getByText(/−34,98\s€/).first()).toBeVisible()
+  await expect(page.getByText('Без запис в историята')).toBeVisible()
 
   await page.getByRole('tab', { name: 'Валута' }).click()
   await expect(page.getByText('GBP', { exact: true })).toBeVisible()

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import {
-  allocation, byCurrency, changeSince, depositSteps, dividendsByMonth,
-  netDeposits, shortName, shortTicker, sofiaMidnight,
+  allocation, bridge, byCurrency, changeSince, depositSteps, dividendsByMonth,
+  eur, netDeposits, shortName, shortTicker, sofiaMidnight,
 } from '../calc'
 import ValueChart from '../ValueChart/ValueChart.jsx'
 import styles from './InvestDashboard.module.css'
@@ -99,6 +99,7 @@ export default function InvestDashboard() {
   const [series, setSeries] = useState([])
   const [transactions, setTransactions] = useState([])
   const [dividends, setDividends] = useState([])
+  const [orders, setOrders] = useState([])
   const [syncState, setSyncState] = useState([])
   const [range, setRange] = useState('1М')
   const [split, setSplit] = useState('positions') // positions | currency
@@ -135,11 +136,12 @@ export default function InvestDashboard() {
     if (!owner) { setState('denied'); return }
 
     try {
-      const [snap, tx, div, sync] = await Promise.all([
+      const [snap, tx, div, ord, sync] = await Promise.all([
         supabase.from('invest_snapshots').select('*')
           .order('taken_at', { ascending: false }).limit(1),
         readAll(() => supabase.from('invest_transactions').select('reference,at,type,amount,currency').order('at')),
         readAll(() => supabase.from('invest_dividends').select('reference,paid_on,ticker,name,amount,currency').order('paid_on', { ascending: false })),
+        readAll(() => supabase.from('invest_orders').select('reference,at,ticker,side,realized,fees,currency').order('at')),
         supabase.from('invest_sync_state').select('kind,done'),
       ])
       if (snap.error) throw snap.error
@@ -147,6 +149,7 @@ export default function InvestDashboard() {
       setLatest(last)
       setTransactions(tx)
       setDividends(div)
+      setOrders(ord)
       setSyncState(sync.data ?? [])
       setState(last ? 'ready' : 'empty')
     } catch (e) {
@@ -192,7 +195,9 @@ export default function InvestDashboard() {
     sortedPositions.forEach((p, i) => m.set(p.ticker, seriesVar(Math.min(i, TOP))))
     return m
   }, [sortedPositions])
-  const historyDone = syncState.length === 2 && syncState.every((s) => s.done)
+  // Готова е, когато и трите вида история са изтеглени докрай.
+  const historyDone = ['dividends', 'transactions', 'orders']
+    .every((k) => syncState.some((s) => s.kind === k && s.done))
   // Стъпалата от половин история лъжат също като сумата.
   const steps = useMemo(() => (historyDone ? depositSteps(transactions) : []), [transactions, historyDone])
 
@@ -216,10 +221,16 @@ export default function InvestDashboard() {
   const divYear = useMemo(() => {
     const y = new Date().getFullYear()
     return dividends.filter((d) => new Date(d.paid_on).getFullYear() === y)
-      .reduce((s, d) => s + Number(d.amount), 0)
+      .reduce((s, d) => s + eur(d.amount, d.currency), 0)
   }, [dividends])
   const div12 = months.reduce((s, m) => s + m.value, 0)
-  const divAll = dividends.reduce((s, d) => s + Number(d.amount), 0)
+  const divAll = dividends.reduce((s, d) => s + eur(d.amount, d.currency), 0)
+  const br = useMemo(
+    () => (historyDone ? bridge({ latest, transactions, orders, dividends }) : null),
+    [historyDone, latest, transactions, orders, dividends],
+  )
+  // Сметката връща realized: 0 дори с продажби на загуба; поръчките са точни.
+  const realized = br ? br.realized : latest?.realized
   const monthMax = Math.max(...months.map((m) => m.value), 0)
 
   /* Чиповете горе: какво си струва да се види, без да се превърта.
@@ -236,7 +247,7 @@ export default function InvestDashboard() {
     }
     const lastDiv = dividends[0]
     if (lastDiv) {
-      out.push({ key: 'div', title: 'Последен дивидент', text: `${money(Number(lastDiv.amount), cur)} · ${new Date(lastDiv.paid_on).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}` })
+      out.push({ key: 'div', title: 'Последен дивидент', text: `${money(eur(lastDiv.amount, lastDiv.currency), cur)} · ${new Date(lastDiv.paid_on).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}` })
     }
     if (!historyDone) out.push({ key: 'sync', dot: 'wait', title: 'Историята', text: 'се тегли на части' })
     return out
@@ -334,7 +345,7 @@ export default function InvestDashboard() {
               <div className={styles.tiles}>
                 <Tile label="Внесени нето" value={transactions.length && historyDone ? money(deposited, cur) : '—'} meta={historyDone ? '' : 'историята се тегли'} />
                 <Tile label="Нереализирана" value={signed(latest.unrealized, cur)} meta={latest.total_cost ? pct(latest.unrealized / latest.total_cost) : ''} toneValue={latest.unrealized} />
-                <Tile label="Реализирана" value={signed(latest.realized, cur)} toneValue={latest.realized} />
+                <Tile label="Реализирана" value={signed(realized, cur)} meta={br?.fees ? `такси ${money(br.fees, cur)}` : ''} toneValue={realized} />
                 <Tile label="Кеш" value={money(latest.cash_free, cur)} meta={latest.cash_in_pies ? `+ ${money(latest.cash_in_pies, cur)} в пайове` : 'свободен'} />
                 <Tile label="Инвестирано" value={money(latest.current_value, cur)} meta={latest.total_cost ? `платено ${money(latest.total_cost, cur, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}` : ''} />
                 <Tile label="Дивиденти" value={money(divAll, cur)} meta="за цялото време" />
@@ -471,12 +482,41 @@ export default function InvestDashboard() {
                       <i className={styles.rowDot} style={{ background: colorOf.get(d.ticker) ?? 'var(--series-6)' }} />
                       <span className={styles.legendName}>{shortName(d)}</span>
                       <span className={styles.meta}>{new Date(d.paid_on).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}</span>
-                      <span className={styles.up}>{money(Number(d.amount), cur)}</span>
+                      <span className={styles.up}>{money(eur(d.amount, d.currency), cur)}</span>
                     </li>
                   ))}
                 </ul>
               )}
             </section>
+
+            {br && (
+              <section className={`${styles.card} ${styles.bridgeCard}`}>
+                <div className={styles.head}>
+                  <span className={styles.label}>Откъде идва резултатът</span>
+                  <span className={`${styles.label} ${tone(br.value - br.deposited)}`}>{signed(br.value - br.deposited, cur)}</span>
+                </div>
+                <ul className={styles.bridge}>
+                  <BridgeRow label="Внесени нето" value={money(br.deposited, cur)} />
+                  <BridgeRow label="По отворените позиции" value={signed(br.unrealized, cur)} toneValue={br.unrealized} />
+                  <BridgeRow label="Реализирано от продажби" value={signed(br.realized, cur)} toneValue={br.realized} />
+                  <BridgeRow label="Дивиденти" value={signed(br.dividends, cur)} toneValue={br.dividends} />
+                  <BridgeRow label="Лихва върху кеша" value={signed(br.interest, cur)} toneValue={br.interest} />
+                  {Math.abs(br.unexplained) >= 0.5 && (
+                    <BridgeRow
+                      label="Без запис в историята"
+                      meta="Trading 212 не дава движение за тази сума"
+                      value={signed(br.unexplained, cur)}
+                      toneValue={br.unexplained}
+                      odd
+                    />
+                  )}
+                  <BridgeRow label="Стойност на сметката" value={money(br.value, cur)} total />
+                </ul>
+                {br.fees > 0 && (
+                  <p className={styles.meta}>Таксите за обмяна на валута ({money(br.fees, cur)}) вече са в цената на покупките и продажбите.</p>
+                )}
+              </section>
+            )}
           </div>
 
           <p className={styles.foot}>
@@ -485,6 +525,18 @@ export default function InvestDashboard() {
         </>
       )}
     </main>
+  )
+}
+
+function BridgeRow({ label, value, meta, toneValue, total, odd }) {
+  return (
+    <li className={`${styles.bridgeRow} ${total ? styles.bridgeTotal : ''} ${odd ? styles.bridgeOdd : ''}`}>
+      <span className={styles.bridgeLabel}>
+        {label}
+        {meta && <span className={styles.meta}>{meta}</span>}
+      </span>
+      <span className={`${styles.bridgeValue} ${tone(toneValue)}`}>{value}</span>
+    </li>
   )
 }
 

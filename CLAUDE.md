@@ -117,9 +117,11 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 (същия адрес), тема кристал, без service worker. Браузърът не говори с Trading
 212: `supabase/functions/invest-sync` снима сметката всеки час (pg_cron
 `invest-sync`, `:07`) и пише в `invest_snapshots`, `invest_dividends`,
-`invest_transactions`; страницата чете само оттам. Чете само собственикът от
+`invest_transactions`, `invest_orders`; страницата чете само оттам. Реализираното
+се смята от поръчките — сметката връща `realized: 0`. Движенията в лева (до 2026)
+се превръщат по фиксирания курс. Чете само собственикът от
 `invest_owner` — не по роля. Ключът е в тайните на функциите (`T212_API_KEY`,
-`T212_API_SECRET`), само за четене. Миграция `123_invest.sql`.
+`T212_API_SECRET`), само за четене. Миграции `123_invest.sql`, `124_invest_orders.sql`.
 
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
