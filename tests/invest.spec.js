@@ -44,7 +44,8 @@ function seed() {
     invest_snapshots: snaps,
     invest_daily: daily,
     invest_transactions: [
-      { reference: 't1', at: new Date(now - 300 * 24 * HOUR).toISOString(), type: 'DEPOSIT', amount: 5000, currency: 'EUR' },
+      // В лева, както са движенията отпреди еврото: 9779,15 лв. = 5000 €.
+      { reference: 't1', at: new Date(now - 300 * 24 * HOUR).toISOString(), type: 'DEPOSIT', amount: 9779.15, currency: 'BGN' },
       { reference: 't2', at: new Date(now - 20 * 24 * HOUR).toISOString(), type: 'DEPOSIT', amount: 3000, currency: 'EUR' },
     ],
     invest_dividends: [

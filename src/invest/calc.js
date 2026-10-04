@@ -9,11 +9,21 @@
  *  лихвата върху кеша (INTEREST_ON_FREE_CASH) е доход — и двете дават 0.
  *  Тегленията включват и плащанията с картата на Trading 212. */
 export function netFlow(t) {
-  const a = Math.abs(Number(t.amount) || 0)
+  const raw = (Number(t.amount) || 0) * toEur(t.currency)
+  const a = Math.abs(raw)
   if (t.type === 'DEPOSIT') return a
   if (t.type === 'WITHDRAW') return -a
-  if (t.type === 'TRANSFER') return Number(t.amount) || 0
+  if (t.type === 'TRANSFER') return raw
   return 0
+}
+
+/* Сметката е в евро, но движенията отпреди 2026 г. са в лева — Trading 212
+ * ги пази във валутата, в която са станали. Левът е вързан с фиксиран курс,
+ * затова превръщането е точно, не приблизително. Друга валута тук не се
+ * среща; ако се появи, остава както е. */
+const FIXED_TO_EUR = { EUR: 1, BGN: 1 / 1.95583 }
+function toEur(currency) {
+  return FIXED_TO_EUR[currency] ?? 1
 }
 
 export function netDeposits(transactions, until = Infinity) {
