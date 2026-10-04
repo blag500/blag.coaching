@@ -1,0 +1,75 @@
+.wrap {
+  position: relative;
+}
+
+.readout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 22px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.readout strong {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y;
+  overflow: visible;
+}
+
+.line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.deposit {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 3;
+}
+
+.gradTop {
+  stop-color: var(--accent);
+  stop-opacity: 0.22;
+}
+
+.gradBottom {
+  stop-color: var(--accent);
+  stop-opacity: 0;
+}
+
+.cursor {
+  stroke: rgba(var(--text-rgb), 0.25);
+  stroke-width: 1;
+}
+
+.dot {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.axis {
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.empty {
+  padding: 32px 8px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}

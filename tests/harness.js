@@ -231,6 +231,7 @@ const RPC = {
   email_status: 'confirmed',
   food_history: [],
   get_all_coaches: [],
+  is_invest_owner: true,
 }
 
 const CORS = {

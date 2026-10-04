@@ -5,6 +5,10 @@
       "destination": "/cheatcode/index.html"
     },
     {
+      "source": "/invest/",
+      "destination": "/invest/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -13,6 +17,11 @@
     {
       "source": "/cheatcode",
       "destination": "/cheatcode/",
+      "permanent": false
+    },
+    {
+      "source": "/invest",
+      "destination": "/invest/",
       "permanent": false
     }
   ],

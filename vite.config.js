@@ -15,6 +15,16 @@ export default defineConfig({
   server: {
     host: true,
   },
+  /* Две страници: приложението и таблото за инвестициите (/invest/). Таблото
+     ползва същия Supabase клиент и същите променливи, но не и обвивката. */
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        invest: 'invest/index.html',
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -107,7 +117,7 @@ export default defineConfig({
         /* Пробната страница на Чийт Код не е част от приложението: снимките ѝ
            са мегабайти, а предварителният кеш ги дава на всеки клиент при
            следващото обновяване. */
-        globIgnores: ['**/arms.png', '**/arms.jpeg', 'cheatcode/**'],
+        globIgnores: ['**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'invest/**', 'assets/invest-*'],
         /* Предварителният кеш е за обвивката, не за снимките.
            Дотук влизаше всичко — рецепти, ястия, фонове, логото за имейлите —
            около 7 MB, които всеки клиент теглеше при инсталиране и наново

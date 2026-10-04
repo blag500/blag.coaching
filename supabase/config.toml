@@ -28,3 +28,9 @@ verify_jwt = false
 # няма Authorization заглавка, а x-bot-secret. Пази се сам.
 [functions.knowledge]
 verify_jwt = false
+
+# invest-sync се вика от разписанието всеки час (x-bot-secret, без JWT) и от
+# бутона на /invest/ (с вход). Пази се сам: тайната или собственикът от
+# invest_owner — никой друг.
+[functions.invest-sync]
+verify_jwt = false
