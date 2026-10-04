@@ -192,11 +192,14 @@ export default function InvestDashboard() {
     sortedPositions.forEach((p, i) => m.set(p.ticker, seriesVar(Math.min(i, TOP))))
     return m
   }, [sortedPositions])
-  const steps = useMemo(() => depositSteps(transactions), [transactions])
   const historyDone = syncState.length === 2 && syncState.every((s) => s.done)
+  // Стъпалата от половин история лъжат също като сумата.
+  const steps = useMemo(() => (historyDone ? depositSteps(transactions) : []), [transactions, historyDone])
 
   const deposited = netDeposits(transactions)
-  const totalReturn = latest && transactions.length ? latest.total_value - deposited : null
+  /* „Общо" е стойността минус внесеното — с половин история на депозитите
+     това е измислено число. Дотогава се показва печалбата по позициите. */
+  const totalReturn = latest && transactions.length && historyDone ? latest.total_value - deposited : null
   const totalReturnPct = totalReturn != null && deposited > 0 ? totalReturn / deposited : null
   const today = changeSince(latest, dayBase, transactions)
 
@@ -329,7 +332,7 @@ export default function InvestDashboard() {
               )}
 
               <div className={styles.tiles}>
-                <Tile label="Внесени нето" value={transactions.length ? money(deposited, cur) : '—'} meta={historyDone ? '' : 'тегли се'} />
+                <Tile label="Внесени нето" value={transactions.length && historyDone ? money(deposited, cur) : '—'} meta={historyDone ? '' : 'историята се тегли'} />
                 <Tile label="Нереализирана" value={signed(latest.unrealized, cur)} meta={latest.total_cost ? pct(latest.unrealized / latest.total_cost) : ''} toneValue={latest.unrealized} />
                 <Tile label="Реализирана" value={signed(latest.realized, cur)} toneValue={latest.realized} />
                 <Tile label="Кеш" value={money(latest.cash_free, cur)} meta={latest.cash_in_pies ? `+ ${money(latest.cash_in_pies, cur)} в пайове` : 'свободен'} />
