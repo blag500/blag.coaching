@@ -63,7 +63,7 @@ test('таблото показва сметката, позициите и ди
   await signIn(page, { theme: 'glass', tables: seed() })
   await page.goto('/invest/')
 
-  await expect(page.getByRole('heading', { name: 'ИНВЕСТИЦИИ' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Добро утро|Добър ден|Добър вечер|Лека нощ/ })).toBeVisible()
   await expect(page.getByText('Стойност на сметката')).toBeVisible()
   await expect(page.getByRole('button', { name: /Vanguard S&P 500/ })).toBeVisible()
   // Внесено нето: 5000 + 3000.
@@ -74,6 +74,14 @@ test('таблото показва сметката, позициите и ди
 
   await page.getByRole('tab', { name: '3М' }).click()
   await expect(page.getByRole('tab', { name: '3М' })).toHaveAttribute('aria-selected', 'true')
+
+  await page.getByRole('tab', { name: 'Валута' }).click()
+  await expect(page.getByText('GBP', { exact: true })).toBeVisible()
+
+  // Балонът на графиката: докосване в средата показва стойност.
+  const chart = page.getByRole('img', { name: 'Стойност на сметката във времето' })
+  const box = await chart.boundingBox()
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5)
 
   await page.screenshot({ path: `shots/invest-${info.project.name}.png`, fullPage: true })
 })

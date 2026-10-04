@@ -10,7 +10,11 @@ import styles from './InvestDashboard.module.css'
 /* Таблото за сметката в Trading 212.
  *
  * Чете само от базата — invest-sync пише там всеки час. Бутонът „Обнови"
- * вика същата функция веднага, вместо да чака часа. */
+ * вика същата функция веднага, вместо да чака часа.
+ *
+ * Златото тук е само в марката, не в данните: лентите и стълбовете носят
+ * тоновете на сериите, а посоката — зелено и червено. Плътен метал върху
+ * всяка лента правеше всичко еднакво важно. */
 
 const RANGES = [
   { key: '1Д', days: 1 },
@@ -22,6 +26,7 @@ const RANGES = [
 ]
 
 const DAY = 24 * 60 * 60 * 1000
+const TOP = 5   // позиции със собствен цвят; останалите са „Други"
 
 function money(v, currency, opts = {}) {
   if (v == null || !Number.isFinite(v)) return '—'
@@ -45,6 +50,10 @@ function pct(v) {
   return (v > 0 ? '+' : v < 0 ? '−' : '') + s + ' %'
 }
 
+function share(v) {
+  return new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 1 }).format(v * 100) + ' %'
+}
+
 function num(v, digits = 2) {
   return new Intl.NumberFormat('bg-BG', { maximumFractionDigits: digits }).format(v)
 }
@@ -62,6 +71,16 @@ function ago(iso) {
   if (h < 24) return `преди ${h} ч`
   return new Date(iso).toLocaleString('bg-BG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
+
+function greeting(now = new Date()) {
+  const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Sofia', hour: 'numeric', hour12: false }).format(now))
+  if (h < 5) return 'Лека нощ'
+  if (h < 11) return 'Добро утро'
+  if (h < 18) return 'Добър ден'
+  return 'Добър вечер'
+}
+
+const seriesVar = (i) => `var(--series-${Math.min(i + 1, 6)})`
 
 /* PostgREST връща най-много 1000 реда наведнъж; историята се чете на парчета. */
 async function readAll(query, page = 1000) {
@@ -82,9 +101,11 @@ export default function InvestDashboard() {
   const [dividends, setDividends] = useState([])
   const [syncState, setSyncState] = useState([])
   const [range, setRange] = useState('1М')
+  const [split, setSplit] = useState('positions') // positions | currency
   const [refreshing, setRefreshing] = useState(false)
   const [note, setNote] = useState('')
   const [open, setOpen] = useState(null)
+  const [dayBase, setDayBase] = useState(null)
 
   const rangeDef = RANGES.find((r) => r.key === range)
 
@@ -141,7 +162,6 @@ export default function InvestDashboard() {
   }, [state, rangeDef, loadSeries, latest])
 
   /* Базата за „Днес": последната снимка преди софийската полунощ. */
-  const [dayBase, setDayBase] = useState(null)
   useEffect(() => {
     if (!latest) return
     supabase.from('invest_snapshots').select('taken_at,total_value')
@@ -167,6 +187,11 @@ export default function InvestDashboard() {
   const cur = latest?.currency || 'EUR'
   const positions = useMemo(() => latest?.positions ?? [], [latest])
   const sortedPositions = useMemo(() => [...positions].sort((a, b) => b.value - a.value), [positions])
+  const colorOf = useMemo(() => {
+    const m = new Map()
+    sortedPositions.forEach((p, i) => m.set(p.ticker, seriesVar(Math.min(i, TOP))))
+    return m
+  }, [sortedPositions])
   const steps = useMemo(() => depositSteps(transactions), [transactions])
   const historyDone = syncState.length === 2 && syncState.every((s) => s.done)
 
@@ -180,8 +205,10 @@ export default function InvestDashboard() {
     return changeSince(latest, series[0], transactions)
   }, [latest, series, transactions])
 
-  const alloc = useMemo(() => allocation(positions), [positions])
-  const currencies = useMemo(() => byCurrency(positions), [positions])
+  const parts = useMemo(
+    () => (split === 'positions' ? allocation(positions, TOP) : byCurrency(positions)),
+    [split, positions],
+  )
   const months = useMemo(() => dividendsByMonth(dividends), [dividends])
   const divYear = useMemo(() => {
     const y = new Date().getFullYear()
@@ -191,6 +218,26 @@ export default function InvestDashboard() {
   const div12 = months.reduce((s, m) => s + m.value, 0)
   const divAll = dividends.reduce((s, d) => s + Number(d.amount), 0)
   const monthMax = Math.max(...months.map((m) => m.value), 0)
+
+  /* Чиповете горе: какво си струва да се види, без да се превърта.
+     Само факти — без оценка и без съвет. */
+  const chips = useMemo(() => {
+    if (!latest) return []
+    const out = []
+    if (today) out.push({ key: 'today', dot: today.abs >= 0 ? 'up' : 'down', title: 'Днес', text: `${signed(today.abs, cur)} · ${pct(today.pct)}` })
+    const losing = positions.filter((p) => p.pnl < 0).length
+    out.push({ key: 'pos', title: `${positions.length} позиции`, text: losing ? `${losing} на загуба` : 'всички на печалба' })
+    const top = sortedPositions[0]
+    if (top && latest.current_value > 0) {
+      out.push({ key: 'top', color: seriesVar(0), title: 'Най-голям дял', text: `${shortTicker(top.ticker)} · ${share(top.value / latest.current_value)}` })
+    }
+    const lastDiv = dividends[0]
+    if (lastDiv) {
+      out.push({ key: 'div', title: 'Последен дивидент', text: `${money(Number(lastDiv.amount), cur)} · ${new Date(lastDiv.paid_on).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}` })
+    }
+    if (!historyDone) out.push({ key: 'sync', dot: 'wait', title: 'Историята', text: 'се тегли на части' })
+    return out
+  }, [latest, today, positions, sortedPositions, dividends, historyDone, cur])
 
   if (state === 'loading') {
     return <main className={styles.page}><p className={styles.center}>Зарежда…</p></main>
@@ -212,18 +259,31 @@ export default function InvestDashboard() {
     return <main className={styles.page}><p className={styles.center}>Грешка: {note}</p></main>
   }
 
+  const now = new Date()
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>ИНВЕСТИЦИИ</h1>
-          <p className={styles.sub}>
-            Trading 212 · Invest{latest ? ` · обновено ${ago(latest.taken_at)}` : ''}
-          </p>
+        <div className={styles.hello}>
+          <span className={styles.date}>
+            {now.toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia', weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+          <h1 className={styles.title}>{greeting(now)}</h1>
         </div>
-        <button className={styles.refresh} onClick={refresh} disabled={refreshing}>
-          {refreshing ? 'Обновява…' : 'Обнови'}
-        </button>
+        <div className={styles.headerSide}>
+          {latest && <span className={styles.updated}>{ago(latest.taken_at)}</span>}
+          <button
+            className={styles.refresh}
+            onClick={refresh}
+            disabled={refreshing}
+            aria-label="Обнови"
+            data-spinning={refreshing || undefined}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {note && <p className={styles.note}>{note}</p>}
@@ -231,139 +291,190 @@ export default function InvestDashboard() {
       {state === 'empty' ? (
         <section className={styles.card}>
           <p className={styles.muted}>
-            Още няма снимка на сметката. Натисни „Обнови" — или изчакай следващия кръгъл час.
+            Още няма снимка на сметката. Натисни бутона горе вдясно — или изчакай следващия кръгъл час.
           </p>
         </section>
       ) : (
         <>
-          <section className={`${styles.card} ${styles.hero}`}>
-            <span className={styles.label}>Стойност на сметката</span>
-            <strong className={styles.big}>{money(latest.total_value, cur)}</strong>
-            {totalReturn != null ? (
-              <span className={`${styles.delta} ${tone(totalReturn)}`}>
-                {signed(totalReturn, cur)} {pct(totalReturnPct)} <em>общо</em>
+          <div className={styles.chips}>
+            {chips.map((c) => (
+              <span key={c.key} className={styles.chip}>
+                {c.dot && <i className={`${styles.dot} ${styles[`dot_${c.dot}`]}`} />}
+                {c.color && <i className={styles.dot} style={{ background: c.color }} />}
+                <b>{c.title}</b>
+                <span>{c.text}</span>
               </span>
-            ) : (
-              <span className={`${styles.delta} ${tone(latest.unrealized)}`}>
-                {signed(latest.unrealized, cur)} <em>по отворените позиции</em>
-              </span>
-            )}
+            ))}
+          </div>
 
-            <div className={styles.tiles}>
-              <Tile label="Днес" value={today ? signed(today.abs, cur) : '—'} sub={today ? pct(today.pct) : 'утре'} toneValue={today?.abs} />
-              <Tile label="Внесени нето" value={transactions.length ? money(deposited, cur) : '—'} sub={historyDone ? '' : 'историята се тегли'} />
-              <Tile label="Нереализирана" value={signed(latest.unrealized, cur)} sub={latest.total_cost ? pct(latest.unrealized / latest.total_cost) : ''} toneValue={latest.unrealized} />
-              <Tile label="Реализирана" value={signed(latest.realized, cur)} toneValue={latest.realized} />
-              <Tile label="Кеш" value={money(latest.cash_free, cur)} sub={latest.cash_in_pies ? `+ ${money(latest.cash_in_pies, cur)} в пайове` : ''} />
-              <Tile label="Дивиденти" value={money(divAll, cur)} sub="за цялото време" />
-            </div>
-          </section>
-
-          <section className={styles.card}>
-            <div className={styles.head}>
-              <h2 className={styles.h2}>Във времето</h2>
-              {rangeChange && (
-                <span className={`${styles.small} ${tone(rangeChange.abs)}`}>
-                  {signed(rangeChange.abs, cur)} {pct(rangeChange.pct)}
+          <div className={styles.grid}>
+            <section className={`${styles.card} ${styles.hero}`}>
+              <div className={styles.head}>
+                <span className={styles.label}>Стойност на сметката</span>
+                <span className={styles.label}>Trading 212 · Invest</span>
+              </div>
+              <strong className={styles.big}>{money(latest.total_value, cur)}</strong>
+              {totalReturn != null ? (
+                <span className={styles.deltaRow}>
+                  <span className={`${styles.pill} ${tone(totalReturn)}`}>
+                    {signed(totalReturn, cur)} · {pct(totalReturnPct)}
+                  </span>
+                  <span className={styles.meta}>спрямо внесеното</span>
+                </span>
+              ) : (
+                <span className={styles.deltaRow}>
+                  <span className={`${styles.pill} ${tone(latest.unrealized)}`}>{signed(latest.unrealized, cur)}</span>
+                  <span className={styles.meta}>по отворените позиции</span>
                 </span>
               )}
-            </div>
-            <div className={styles.chips} role="tablist">
-              {RANGES.map((r) => (
-                <button
-                  key={r.key}
-                  role="tab"
-                  aria-selected={range === r.key}
-                  className={`${styles.chip} ${range === r.key ? styles.chipOn : ''}`}
-                  onClick={() => setRange(r.key)}
-                >{r.key}</button>
-              ))}
-            </div>
-            <ValueChart
-              gradId="invest-value"
-              points={series.map((s) => ({ t: new Date(s.taken_at).getTime(), v: Number(s.total_value) }))}
-              steps={steps}
-              currency={cur}
-              daily={!!rangeDef.daily}
-            />
-            <p className={styles.legend}>
-              <span className={styles.keyValue} /> стойност
-              {steps.length > 0 && <><span className={styles.keyDeposit} /> внесени нето</>}
-            </p>
-          </section>
 
-          <section className={styles.card}>
-            <div className={styles.head}>
-              <h2 className={styles.h2}>Позиции</h2>
-              <span className={styles.small}>{positions.length}</span>
-            </div>
-            <ul className={styles.list}>
-              {sortedPositions.map((p) => {
-                const ret = p.cost ? p.pnl / p.cost : null
-                const isOpen = open === p.ticker
-                return (
-                  <li key={p.ticker}>
-                    <button className={styles.row} onClick={() => setOpen(isOpen ? null : p.ticker)} aria-expanded={isOpen}>
-                      <span className={styles.rowMain}>
-                        <span className={styles.name}>{shortName(p)}</span>
-                        <span className={styles.meta}>{shortTicker(p.ticker)} · {num(p.qty, 4)} бр.</span>
-                      </span>
-                      <span className={styles.rowSide}>
-                        <span className={styles.value}>{money(p.value, cur)}</span>
-                        <span className={`${styles.meta} ${tone(p.pnl)}`}>{signed(p.pnl, cur)} {pct(ret)}</span>
-                      </span>
-                    </button>
-                    {isOpen && (
-                      <dl className={styles.detail}>
-                        <div><dt>Средна цена</dt><dd>{money(p.avg, p.currency)}</dd></div>
-                        <div><dt>Текуща цена</dt><dd>{money(p.price, p.currency)}</dd></div>
-                        <div><dt>Платено</dt><dd>{money(p.cost, cur)}</dd></div>
-                        <div><dt>От курса</dt><dd className={tone(p.fx)}>{signed(p.fx, cur)}</dd></div>
-                        <div><dt>Дял</dt><dd>{latest.current_value ? pct(p.value / latest.current_value).replace('+', '') : '—'}</dd></div>
-                        {p.opened && <div><dt>Отворена</dt><dd>{new Date(p.opened).toLocaleDateString('bg-BG')}</dd></div>}
-                      </dl>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
+              <div className={styles.tiles}>
+                <Tile label="Внесени нето" value={transactions.length ? money(deposited, cur) : '—'} meta={historyDone ? '' : 'тегли се'} />
+                <Tile label="Нереализирана" value={signed(latest.unrealized, cur)} meta={latest.total_cost ? pct(latest.unrealized / latest.total_cost) : ''} toneValue={latest.unrealized} />
+                <Tile label="Реализирана" value={signed(latest.realized, cur)} toneValue={latest.realized} />
+                <Tile label="Кеш" value={money(latest.cash_free, cur)} meta={latest.cash_in_pies ? `+ ${money(latest.cash_in_pies, cur)} в пайове` : 'свободен'} />
+                <Tile label="Инвестирано" value={money(latest.current_value, cur)} meta={latest.total_cost ? `платено ${money(latest.total_cost, cur, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}` : ''} />
+                <Tile label="Дивиденти" value={money(divAll, cur)} meta="за цялото време" />
+              </div>
+            </section>
 
-          <section className={styles.card}>
-            <h2 className={styles.h2}>Разпределение</h2>
-            <Bars items={alloc} currency={cur} />
-            <h3 className={styles.h3}>По валута на книгата</h3>
-            <Bars items={currencies} currency={cur} />
-          </section>
-
-          <section className={styles.card}>
-            <div className={styles.head}>
-              <h2 className={styles.h2}>Дивиденти</h2>
-              <span className={styles.small}>{money(divYear, cur)} тази година</span>
-            </div>
-            <div className={styles.months} aria-label="Дивиденти по месеци">
-              {months.map((m) => (
-                <div key={m.key} className={styles.month} title={`${m.key}: ${money(m.value, cur)}`}>
-                  <span className={styles.monthBar} style={{ height: monthMax ? `${Math.max(2, (m.value / monthMax) * 100)}%` : '2%' }} />
-                  <span className={styles.monthLabel}>
-                    {m.date.toLocaleDateString('bg-BG', { month: 'narrow' })}
+            <section className={`${styles.card} ${styles.chartCard}`}>
+              <div className={styles.head}>
+                <span className={styles.label}>Във времето</span>
+                {rangeChange && (
+                  <span className={`${styles.small} ${tone(rangeChange.abs)}`}>
+                    {signed(rangeChange.abs, cur)} · {pct(rangeChange.pct)}
                   </span>
-                </div>
-              ))}
-            </div>
-            <p className={styles.small}>Последните 12 месеца: {money(div12, cur)}</p>
-            {dividends.length > 0 && (
-              <ul className={styles.payouts}>
-                {dividends.slice(0, 6).map((d) => (
-                  <li key={d.reference}>
-                    <span>{shortName(d)}</span>
-                    <span className={styles.meta}>{new Date(d.paid_on).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}</span>
-                    <span className={styles.up}>{money(Number(d.amount), cur)}</span>
-                  </li>
-                ))}
+                )}
+              </div>
+              <Segmented
+                label="Период"
+                value={range}
+                onChange={setRange}
+                options={RANGES.map((r) => ({ value: r.key, label: r.key }))}
+              />
+              <ValueChart
+                gradId="invest-value"
+                points={series.map((s) => ({ t: new Date(s.taken_at).getTime(), v: Number(s.total_value) }))}
+                steps={steps}
+                currency={cur}
+                daily={!!rangeDef.daily}
+                trend={rangeChange ? Math.sign(rangeChange.abs) : 0}
+              />
+              <p className={styles.legend}>
+                <span className={`${styles.keyValue} ${rangeChange && rangeChange.abs < 0 ? styles.keyDown : ''}`} /> стойност
+                {steps.length > 0 && <><span className={styles.keyDeposit} /> внесени нето</>}
+              </p>
+            </section>
+
+            <section className={`${styles.card} ${styles.positionsCard}`}>
+              <div className={styles.head}>
+                <span className={styles.label}>Позиции</span>
+                <span className={styles.label}>{positions.length} · по стойност</span>
+              </div>
+              <ul className={styles.list}>
+                {sortedPositions.map((p) => {
+                  const ret = p.cost ? p.pnl / p.cost : null
+                  const isOpen = open === p.ticker
+                  return (
+                    <li key={p.ticker}>
+                      <button className={styles.row} onClick={() => setOpen(isOpen ? null : p.ticker)} aria-expanded={isOpen}>
+                        <i className={styles.rowDot} style={{ background: colorOf.get(p.ticker) }} />
+                        <span className={styles.rowMain}>
+                          <span className={styles.name}>{shortName(p)}</span>
+                          <span className={styles.meta}>{shortTicker(p.ticker)} · {num(p.qty, 4)} бр.</span>
+                        </span>
+                        <span className={styles.rowSide}>
+                          <span className={styles.value}>{money(p.value, cur)}</span>
+                          <span className={`${styles.pillSmall} ${tone(p.pnl)}`}>{pct(ret)}</span>
+                        </span>
+                      </button>
+                      {isOpen && (
+                        <dl className={styles.detail}>
+                          <div><dt>Средна цена</dt><dd>{money(p.avg, p.currency)}</dd></div>
+                          <div><dt>Текуща цена</dt><dd>{money(p.price, p.currency)}</dd></div>
+                          <div><dt>Платено</dt><dd>{money(p.cost, cur)}</dd></div>
+                          <div><dt>Печалба</dt><dd className={tone(p.pnl)}>{signed(p.pnl, cur)}</dd></div>
+                          <div><dt>От курса</dt><dd className={tone(p.fx)}>{signed(p.fx, cur)}</dd></div>
+                          <div><dt>Дял</dt><dd>{latest.current_value ? share(p.value / latest.current_value) : '—'}</dd></div>
+                          {p.opened && <div><dt>Отворена</dt><dd>{new Date(p.opened).toLocaleDateString('bg-BG')}</dd></div>}
+                        </dl>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
-            )}
-          </section>
+            </section>
+
+            <section className={`${styles.card} ${styles.splitCard}`}>
+              <div className={styles.head}>
+                <span className={styles.label}>Разпределение</span>
+                <span className={styles.label}>{money(latest.current_value, cur, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</span>
+              </div>
+              <Segmented
+                label="Разпределение по"
+                value={split}
+                onChange={setSplit}
+                options={[{ value: 'positions', label: 'Позиции' }, { value: 'currency', label: 'Валута' }]}
+              />
+              {parts.length ? (
+                <>
+                  <div className={styles.stack} aria-hidden="true">
+                    {parts.map((it, i) => (
+                      <span key={it.key} style={{ flexGrow: it.share, background: it.key === '_rest' ? 'var(--series-6)' : seriesVar(i) }} />
+                    ))}
+                  </div>
+                  <ul className={styles.legendList}>
+                    {parts.map((it, i) => (
+                      <li key={it.key}>
+                        <i className={styles.rowDot} style={{ background: it.key === '_rest' ? 'var(--series-6)' : seriesVar(i) }} />
+                        <span className={styles.legendName}>{it.label}</span>
+                        <span className={styles.meta}>{share(it.share)}</span>
+                        <span className={styles.legendValue}>{money(it.value, cur)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : <p className={styles.muted}>Няма позиции.</p>}
+            </section>
+
+            <section className={`${styles.card} ${styles.divCard}`}>
+              <div className={styles.head}>
+                <span className={styles.label}>Дивиденти</span>
+                <span className={styles.label}>по месеци</span>
+              </div>
+              <div className={styles.divStats}>
+                <div><span className={styles.meta}>12 месеца</span><strong>{money(div12, cur)}</strong></div>
+                <div><span className={styles.meta}>Тази година</span><strong>{money(divYear, cur)}</strong></div>
+                <div><span className={styles.meta}>Общо</span><strong>{money(divAll, cur)}</strong></div>
+              </div>
+              <div className={styles.months} aria-label="Дивиденти по месеци">
+                {months.map((m, i) => (
+                  <div key={m.key} className={styles.month} title={`${m.date.toLocaleDateString('bg-BG', { month: 'long', year: 'numeric' })}: ${money(m.value, cur)}`}>
+                    <span
+                      className={`${styles.monthBar} ${i === months.length - 1 ? styles.monthNow : ''} ${m.value ? '' : styles.monthEmpty}`}
+                      style={{ height: monthMax && m.value ? `${Math.max(6, (m.value / monthMax) * 100)}%` : undefined }}
+                    />
+                    <span className={styles.monthLabel}>
+                      {m.date.toLocaleDateString('bg-BG', { month: 'short' }).replace('.', '').slice(0, 3)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {dividends.length > 0 && (
+                <ul className={styles.payouts}>
+                  {dividends.slice(0, 5).map((d) => (
+                    <li key={d.reference}>
+                      <i className={styles.rowDot} style={{ background: colorOf.get(d.ticker) ?? 'var(--series-6)' }} />
+                      <span className={styles.legendName}>{shortName(d)}</span>
+                      <span className={styles.meta}>{new Date(d.paid_on).toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' })}</span>
+                      <span className={styles.up}>{money(Number(d.amount), cur)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
 
           <p className={styles.foot}>
             Снимка всеки час. Ключът към Trading 212 е само за четене.
@@ -374,31 +485,32 @@ export default function InvestDashboard() {
   )
 }
 
-function Tile({ label, value, sub, toneValue }) {
+function Tile({ label, value, meta, toneValue }) {
   return (
     <div className={styles.tile}>
       <span className={styles.label}>{label}</span>
       <span className={`${styles.tileValue} ${tone(toneValue)}`}>{value}</span>
-      {sub && <span className={styles.meta}>{sub}</span>}
+      {meta && <span className={styles.meta}>{meta}</span>}
     </div>
   )
 }
 
-function Bars({ items, currency }) {
-  if (!items.length) return <p className={styles.muted}>Няма позиции.</p>
+/* Сегментиран превключвател: една писта, избраното е светлото хапче в нея.
+   Не злато — изборът е състояние, не действие. */
+function Segmented({ label, value, options, onChange }) {
+  const idx = Math.max(0, options.findIndex((o) => o.value === value))
   return (
-    <ul className={styles.bars}>
-      {items.map((it, i) => (
-        <li key={it.key}>
-          <span className={styles.barLabel}>{it.label}</span>
-          <span className={styles.barTrack}>
-            <span className={styles.barFill} style={{ width: `${it.share * 100}%`, opacity: 1 - i * 0.09 }} />
-          </span>
-          <span className={styles.barValue} title={money(it.value, currency)}>
-            {new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 1 }).format(it.share * 100)} %
-          </span>
-        </li>
+    <div className={styles.segmented} role="tablist" aria-label={label} style={{ '--n': options.length, '--i': idx }}>
+      <span className={styles.segThumb} aria-hidden="true" />
+      {options.map((o) => (
+        <button
+          key={o.value}
+          role="tab"
+          aria-selected={value === o.value}
+          className={styles.segBtn}
+          onClick={() => onChange(o.value)}
+        >{o.label}</button>
       ))}
-    </ul>
+    </div>
   )
 }

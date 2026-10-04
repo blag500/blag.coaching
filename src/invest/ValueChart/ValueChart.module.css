@@ -1,21 +1,17 @@
 .wrap {
   position: relative;
+  --tone: var(--ok);
+  --tone-rgb: var(--ok-rgb);
 }
 
-.readout {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-height: 22px;
-  font-size: 12px;
-  color: var(--muted);
+.down {
+  --tone: var(--red);
+  --tone-rgb: var(--red-rgb);
 }
 
-.readout strong {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
+.up {
+  --tone: var(--ok);
+  --tone-rgb: var(--ok-rgb);
 }
 
 .svg {
@@ -28,7 +24,7 @@
 
 .line {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--tone);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -42,29 +38,64 @@
 }
 
 .gradTop {
-  stop-color: var(--accent);
-  stop-opacity: 0.22;
+  stop-color: var(--tone);
+  stop-opacity: 0.20;
 }
 
 .gradBottom {
-  stop-color: var(--accent);
+  stop-color: var(--tone);
   stop-opacity: 0;
 }
 
-.cursor {
-  stroke: rgba(var(--text-rgb), 0.25);
+.grid {
+  stroke: rgba(var(--text-rgb), 0.07);
   stroke-width: 1;
 }
 
+.cursor {
+  stroke: rgba(var(--text-rgb), 0.30);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
 .dot {
-  fill: var(--accent);
+  fill: var(--tone);
   stroke: var(--bg);
   stroke-width: 2;
 }
 
 .axis {
-  font-size: 10px;
+  font-size: 9px;
   fill: var(--muted);
+}
+
+/* Балонът над точката — тъмен, плътен, над всичко в картата. */
+.tip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 12px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: var(--r-md);
+  background: var(--panel-solid);
+  border: 1px solid rgba(var(--text-rgb), 0.12);
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--muted);
+  z-index: 1;
+}
+
+.tip[data-align='start'] { transform: translate(-12px, calc(-100% - 12px)); align-items: flex-start; }
+.tip[data-align='end'] { transform: translate(calc(-100% + 12px), calc(-100% - 12px)); align-items: flex-end; }
+
+.tip strong {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
 }
 
 .empty {

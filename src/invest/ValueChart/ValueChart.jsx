@@ -5,19 +5,24 @@ import styles from './ValueChart.module.css'
 
 /* Стойността на сметката във времето, с внесеното нето като стъпала отдолу.
  * Разстоянието между двете линии е печалбата — без нея една линия, която
- * расте, не казва дали расте от пазара или от превода в началото на месеца. */
+ * расте, не казва дали расте от пазара или от превода в началото на месеца.
+ *
+ * Цветът на линията е посоката за избрания период: зелено нагоре, червено
+ * надолу. Златна линия казваше само „това е графика". */
 
 const W = 340
-const H = 170
-const PAD = { top: 12, right: 8, bottom: 22, left: 8 }
+const H = 180
+const PAD = { top: 14, right: 44, bottom: 22, left: 4 }
+const TICKS = 3
 
-function shortMoney(v, currency) {
+function compact(v, currency) {
   return new Intl.NumberFormat('bg-BG', {
-    style: 'currency', currency, currencyDisplay: 'narrowSymbol', notation: 'compact', maximumFractionDigits: 1,
+    style: 'currency', currency, currencyDisplay: 'narrowSymbol',
+    notation: 'compact', maximumFractionDigits: 1,
   }).format(v)
 }
 
-export default function ValueChart({ points, steps, currency, daily, gradId }) {
+export default function ValueChart({ points, steps, currency, daily, gradId, trend = 0 }) {
   const [hover, setHover] = useState(null)
 
   const geo = useMemo(() => {
@@ -47,7 +52,11 @@ export default function ValueChart({ points, steps, currency, daily, gradId }) {
       dep += dep ? ` H${px} V${py}` : `M${px},${py}`
       if (i === deposits.length - 1) dep += ` H${px}`
     })
-    return { pts, line, area, dep, t0, t1, lo, hi, x, y }
+    const ticks = Array.from({ length: TICKS }, (_, i) => {
+      const v = lo + ((hi - lo) * (i + 0.5)) / TICKS
+      return { v, y: y(v) }
+    })
+    return { pts, line, area, dep, t0, t1, ticks }
   }, [points, steps])
 
   if (!geo) {
@@ -69,19 +78,14 @@ export default function ValueChart({ points, steps, currency, daily, gradId }) {
     setHover(best)
   }
 
+  const toneClass = trend < 0 ? styles.down : styles.up
   const hv = hover?.p
+  // Балонът не излиза от картата: при ръба се обръща навътре.
+  const leftPct = hover ? (hover.x / W) * 100 : 0
+  const align = leftPct < 18 ? 'start' : leftPct > 70 ? 'end' : 'center'
+
   return (
-    <div className={styles.wrap}>
-      <div className={styles.readout} aria-live="polite">
-        {hv ? (
-          <>
-            <strong>{new Intl.NumberFormat('bg-BG', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).format(hv.v)}</strong>
-            <span>{new Date(hv.t).toLocaleString('bg-BG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-          </>
-        ) : (
-          <span>{shortMoney(geo.lo, currency)} – {shortMoney(geo.hi, currency)}</span>
-        )}
-      </div>
+    <div className={`${styles.wrap} ${toneClass}`}>
       <svg
         className={styles.svg}
         viewBox={`0 0 ${W} ${H}`}
@@ -97,18 +101,37 @@ export default function ValueChart({ points, steps, currency, daily, gradId }) {
             <stop offset="100%" className={styles.gradBottom} />
           </linearGradient>
         </defs>
+        {geo.ticks.map((t) => (
+          <g key={t.v}>
+            <line x1={PAD.left} x2={W - PAD.right} y1={t.y} y2={t.y} className={styles.grid} />
+            <text x={W - PAD.right + 6} y={t.y + 3} className={styles.axis}>{compact(t.v, currency)}</text>
+          </g>
+        ))}
         <path d={geo.area} fill={`url(#${gradId})`} />
         {geo.dep && <path d={geo.dep} className={styles.deposit} />}
         <path d={geo.line} className={styles.line} />
-        {hover && (
+        {hover ? (
           <>
             <line x1={hover.x} x2={hover.x} y1={PAD.top} y2={H - PAD.bottom} className={styles.cursor} />
-            <circle cx={hover.x} cy={hover.y} r="3.5" className={styles.dot} />
+            <circle cx={hover.x} cy={hover.y} r="4" className={styles.dot} />
           </>
+        ) : (
+          <circle cx={geo.pts[geo.pts.length - 1].x} cy={geo.pts[geo.pts.length - 1].y} r="3.5" className={styles.dot} />
         )}
-        <text x={PAD.left} y={H - 6} className={styles.axis}>{fmtAxis(geo.t0)}</text>
-        <text x={W - PAD.right} y={H - 6} className={styles.axis} textAnchor="end">{fmtAxis(geo.t1)}</text>
+        <text x={PAD.left} y={H - 5} className={styles.axis}>{fmtAxis(geo.t0)}</text>
+        <text x={W - PAD.right} y={H - 5} className={styles.axis} textAnchor="end">{fmtAxis(geo.t1)}</text>
       </svg>
+      {hv && (
+        <div
+          className={styles.tip}
+          data-align={align}
+          style={{ left: `${leftPct}%`, top: `${(hover.y / H) * 100}%` }}
+          aria-live="polite"
+        >
+          <strong>{new Intl.NumberFormat('bg-BG', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' }).format(hv.v)}</strong>
+          <span>{new Date(hv.t).toLocaleString('bg-BG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      )}
     </div>
   )
 }
