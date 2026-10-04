@@ -464,7 +464,7 @@ export function draw(ctx, t) {
     breakMark(ctx, 540, 740, 1.25, t, C.accent);
     textIn(ctx, 'CHEAT CODE', 540, 1330, seg(t, 13.1, 13.8),
       { size: 92, weight: 800, display: true, color: C.ink, align: 'center', track: 2 });
-    textIn(ctx, 'Сглоби своето.', 540, 1420, seg(t, 13.55, 14.2),
+    textIn(ctx, 'Храната, която си знае числата', 540, 1420, seg(t, 13.55, 14.2),
       { size: 50, weight: 600, color: C.soft, align: 'center' });
     const ua = E.outCubic(seg(t, 13.9, 14.4));
     px(ctx, () => {
