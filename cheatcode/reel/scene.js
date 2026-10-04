@@ -197,6 +197,78 @@ function burstMark(ctx, cx, cy, size, pDraw, pRays, color) {
   ctx.drawImage(off, cx - size / 2, cy - size / 2);
 }
 
+
+/* ── Отломки и знакът „скъсване“ по референцията от 2026-10-04 ──
+   Две дебели звена по диагонал, фугата между тях — назъбена дупка, и
+   плътни парчета наоколо: квадрати, триъгълници, шестоъгълник, точка.
+   Само във видеото: на 400+ пиксела плътните отломки се четат. В знака
+   под 32 px стават петна — затова chain-burst.svg остава с лъчи. */
+const SHARD_KINDS = ['sq', 'tri', 'sq', 'hex', 'tri', 'dot'];
+function shard(ctx, kind, x, y, r, rot, color, alpha = 1) {
+  if (alpha <= 0 || r <= 0.5) return;
+  px(ctx, () => {
+    ctx.globalAlpha *= alpha;
+    ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = color;
+    ctx.beginPath();
+    if (kind === 'sq') ctx.rect(-r / 2, -r / 2, r, r);
+    else if (kind === 'tri') { ctx.moveTo(0, -r * 0.62); ctx.lineTo(r * 0.58, r * 0.42); ctx.lineTo(-r * 0.58, r * 0.42); ctx.closePath(); }
+    else if (kind === 'hex') for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55); }
+    else ctx.arc(0, 0, r * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+/* Местата на парчетата в осите на знака (x по веригата, y напреко). Две
+   групи, от двете страни на фугата — както на референцията. */
+const MARK_SHARDS = [
+  ['sq', -78, -168, 30, 0.35], ['sq', -8, -196, 22, 0.7], ['tri', -128, -112, 40, -0.4],
+  ['tri', -30, -130, 30, 0.9], ['dot', -60, -232, 26, 0],
+  ['sq', 84, 150, 26, 0.5], ['tri', 22, 136, 30, 2.6], ['hex', 70, 214, 36, 0.2],
+  ['dot', -6, 176, 26, 0], ['tri', 122, 96, 24, 1.9],
+];
+let markCv = null;
+function breakMark(ctx, cx, cy, k, t, color) {
+  const LL = 300, LH = 150, LW = 48;          // звено: дължина, височина, ход
+  const pIn = E.outCubic(seg(t, 12.25, 12.75));
+  const crack = E.outExpo(seg(t, 12.8, 13.1));
+  const gap = 14 * crack;
+  const size = 980;
+  if (!markCv) { markCv = document.createElement('canvas'); markCv.width = markCv.height = size; }
+  const o = markCv.getContext('2d');
+  o.setTransform(1, 0, 0, 1, 0, 0);
+  o.clearRect(0, 0, size, size);
+  o.translate(size / 2, size / 2); o.rotate(-Math.PI / 4); o.scale(k, k);
+  o.strokeStyle = color; o.lineWidth = LW; o.lineCap = 'round';
+  for (const [sx, d] of [[-92, -1], [92, 1]]) {
+    const x = sx + d * gap + d * (1 - pIn) * 60;
+    roundRect(o, x - LL / 2 + LW / 2, -LH / 2 + LW / 2, LL - LW, LH - LW, (LH - LW) / 2);
+    o.globalAlpha = pIn; o.stroke();
+  }
+  o.globalAlpha = 1;
+  if (crack > 0) {
+    // Фугата: назъбена ивица напреко, изядена от двете звена.
+    o.globalCompositeOperation = 'destination-out';
+    o.beginPath();
+    const L = [[-26, -120], [-44, -66], [-20, -24], [-48, 22], [-24, 64], [-42, 120]];
+    const R = [[34, 120], [16, 62], [44, 18], [20, -28], [42, -74], [24, -120]];
+    const w = crack;
+    [...L, ...R].forEach(([x, y], i) => o[i ? 'lineTo' : 'moveTo'](x * w, y));
+    o.closePath(); o.fill();
+    o.globalCompositeOperation = 'source-over';
+  }
+  ctx.drawImage(markCv, cx - size / 2, cy - size / 2);
+  // Парчетата излитат от фугата към местата си.
+  const pb = E.outBack(seg(t, 12.8, 13.25));
+  if (pb > 0) {
+    const c = Math.cos(-Math.PI / 4), s = Math.sin(-Math.PI / 4);
+    MARK_SHARDS.forEach(([kind, x, y, r, rot], i) => {
+      const lx = x * pb * k, ly = y * pb * k;
+      shard(ctx, kind, cx + lx * c - ly * s, cy + lx * s + ly * c, r * k,
+            rot + (1 - pb) * 3 * (i % 2 ? 1 : -1), color, clamp(pb * 1.5));
+    });
+  }
+}
+
 /* ── Плъзгач, като в page.html: писта 6 → тук 10, палец с ментов пръстен ── */
 function slider(ctx, x, y, w, frac, label, value, alpha, touch) {
   px(ctx, () => {
@@ -303,18 +375,19 @@ export function draw(ctx, t) {
     if (fl > 0 && fl < 1) {
       bloomField(ctx, t, bp.x, bp.y, 900, hexA(C.accent, 0.9), 0.55 * (1 - fl));
     }
-    const rp = seg(t, 5.0, 5.75);
+    // Отломките: плътни парчета от фугата, навън и надолу. Отделно семе за всяко.
+    const rp = seg(t, 5.0, 5.9);
     if (rp > 0 && rp < 1) {
-      px(ctx, () => {
-        ctx.lineCap = 'round'; ctx.strokeStyle = C.accent;
-        for (const [, , dx, dy] of RAYS) {
-          const l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l;
-          const r0 = 50 + 330 * E.outExpo(rp), r1 = r0 + 180 * (1 - rp);
-          ctx.globalAlpha = 1 - E.inQuad(rp);
-          ctx.lineWidth = 26 * (1 - rp * 0.5);
-          ctx.beginPath(); ctx.moveTo(bp.x + ux * r0, bp.y + uy * r0); ctx.lineTo(bp.x + ux * r1, bp.y + uy * r1); ctx.stroke();
-        }
-      });
+      const out = Math.atan2(bp.y - PHONE.cy, bp.x - PHONE.cx);
+      for (let k = 0; k < 12; k++) {
+        const ang = out + (hash(k, 31) - 0.5) * 2.4;
+        const sp = 260 + 520 * hash(k, 32);
+        const e = E.outExpo(rp);
+        const x = bp.x + Math.cos(ang) * sp * e;
+        const y = bp.y + Math.sin(ang) * sp * e + 900 * rp * rp;
+        shard(ctx, SHARD_KINDS[k % SHARD_KINDS.length], x, y, 24 + 26 * hash(k, 33),
+              (hash(k, 34) - 0.5) * 9 * rp, C.accent, 1 - E.inQuad(rp));
+      }
     }
 
     // Надписите на навика.
@@ -388,17 +461,17 @@ export function draw(ctx, t) {
   if (mIn > 0) {
     bloomField(ctx, t, 540, 720, 700, hexA(C.accent, 0.6), 0.16 * mIn);
     const size = 440;
-    burstMark(ctx, 540, 720, size, E.inOutCubic(mIn), E.outBack(seg(t, 12.85, 13.25)), C.accent);
-    textIn(ctx, 'CHEAT CODE', 540, 1235, seg(t, 13.1, 13.8),
+    breakMark(ctx, 540, 740, 1.25, t, C.accent);
+    textIn(ctx, 'CHEAT CODE', 540, 1330, seg(t, 13.1, 13.8),
       { size: 92, weight: 800, display: true, color: C.ink, align: 'center', track: 2 });
-    textIn(ctx, 'Сглоби своето.', 540, 1330, seg(t, 13.55, 14.2),
+    textIn(ctx, 'Сглоби своето.', 540, 1420, seg(t, 13.55, 14.2),
       { size: 50, weight: 600, color: C.soft, align: 'center' });
     const ua = E.outCubic(seg(t, 13.9, 14.4));
     px(ctx, () => {
       ctx.globalAlpha = ua;
       ctx.font = `500 34px "JetBrains Mono", monospace`;
       ctx.textAlign = 'center'; ctx.fillStyle = C.accent;
-      ctx.fillText('blag-coaching.com/cheatcode', 540, 1420 + (1 - ua) * 16);
+      ctx.fillText('blag-coaching.com/cheatcode', 540, 1500 + (1 - ua) * 16);
     });
   }
 
