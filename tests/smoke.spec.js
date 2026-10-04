@@ -1714,6 +1714,34 @@ test.describe('Заготовки по мускул', () => {
     await chips.getByRole('button', { name: 'Кросовер' }).click()
     await expect(page.getByText('вместо Лежанка · само за днес')).toBeVisible()
   })
+
+  test('написаното на ръка от молива влиза в заготовките', async ({ page }) => {
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ТРЕНИРОВКА' }).first().click()
+    await page.waitForTimeout(2000)
+    await page.getByText('Upper A').first().click()
+    await page.waitForTimeout(1500)
+
+    await page.getByRole('button', { name: 'Смени Лежанка за този ден' }).click()
+    await page.getByLabel('Какво направи вместо него').fill('Хамър преса')
+    await page.getByRole('button', { name: 'ГОТОВО' }).click()
+
+    // Само написано — още не е упражнение. Влиза с първата записана серия.
+    await page.getByLabel('Лежанка, серия 1, килограми').fill('60')
+    await page.getByLabel('Лежанка, серия 1, килограми').blur()
+    await page.waitForTimeout(2000)
+
+    // Дневникът е над менюто; излиза се през началото.
+    await page.goto('/')
+    await page.locator('nav').first().waitFor({ state: 'visible', timeout: 20000 })
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(600)
+    await page.getByText('ЗАГОТОВКИ', { exact: true }).first().click()
+    await page.waitForTimeout(1200)
+    await expect(page.getByText('Хамър преса')).toBeVisible()
+    await expect(page.getByText('4 × 6–8')).toBeVisible()
+  })
 })
 
 test.describe('Всяка страница от менюто', () => {

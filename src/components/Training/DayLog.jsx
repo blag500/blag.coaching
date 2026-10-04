@@ -117,7 +117,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
   const { map: exerciseMap, setGroup: setExerciseGroup, clearGroup: clearExerciseGroup } = useExerciseMap()
   /* Заготовките — четат се веднъж за целия дневник, а не при всяко
      отваряне на молива: списъкът е един и същият за всички редове. */
-  const { items: libItems } = useExerciseLibrary()
+  const { items: libItems, add: libAdd, update: libUpdate } = useExerciseLibrary()
   // Кой мускул е избран в панела за заместване, по планирано упражнение.
   const [swapMuscle, setSwapMuscle] = useState({})
   const [zoom, setZoom] = useState(null)
@@ -404,7 +404,25 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
     haptic('success')
     setTimeout(() => setSaved(s => (s === key ? null : s)), 1400)
     if (isNew) startRest(name)
+    if (done !== name) keepSubstitute(name, done)
     onLogged?.()
+  }
+
+  /* Написаното на ръка от молива влиза в заготовките.
+     Името, мускулът и схемата вече са известни — да се пише второ път на
+     страницата със заготовките е труд без нова информация. Влиза едва при
+     първата записана серия, не при писане: недописано или размислено име не
+     е упражнение. Каквото вече е в списъка за заместване — заготовка или
+     упражнение от плана — не се добавя. */
+  const keptRef = useRef(new Set())
+  function keepSubstitute(planned, done) {
+    const key = done.trim().toLowerCase()
+    if (!key || keptRef.current.has(key)) return
+    keptRef.current.add(key)
+    if (swapPool.some(c => c.key === key)) return
+    const ex = exercises.find(e => e.name === planned)
+    const scheme = ex?.sets && ex?.reps ? `${ex.sets} × ${ex.reps}`.slice(0, 40) : ''
+    libAdd({ name: done.trim(), scheme, muscle: exerciseMap[done.trim()] || guessMuscle(done) || null })
   }
 
   function edit(name, i, field, value) {
@@ -714,6 +732,9 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                         const v = e.target.value
                         if (!v) clearExerciseGroup(tagName)
                         else setExerciseGroup(tagName, v)
+                        // Влязлото в заготовките без мускул го получава оттук.
+                        const lib = libItems.find(it => it.name.trim().toLowerCase() === tagName.toLowerCase())
+                        if (v && lib && !lib.muscle) libUpdate(lib.id, { muscle: v })
                       }}
                       aria-label={t('dl.muscleAria')}
                     >
