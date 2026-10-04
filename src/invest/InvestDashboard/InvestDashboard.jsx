@@ -321,6 +321,7 @@ export default function InvestDashboard() {
 
   return (
     <main className={styles.page}>
+      <div className={styles.statusBar} aria-hidden="true" />
       <header className={styles.header}>
         <div className={styles.hello}>
           <span className={styles.date}>
