@@ -179,7 +179,8 @@
       'hero  chart'
       'pos   split'
       'pos   div'
-      'pos   bridge';
+      'pos   bridge'
+      'proj  proj';
     align-items: start;
   }
   .hero { grid-area: hero; align-self: stretch; }
@@ -188,6 +189,7 @@
   .splitCard { grid-area: split; }
   .divCard { grid-area: div; }
   .bridgeCard { grid-area: bridge; }
+  .projCard { grid-area: proj; }
 }
 
 /* ── Карти ── */

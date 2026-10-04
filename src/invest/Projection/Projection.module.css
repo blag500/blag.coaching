@@ -1,0 +1,306 @@
+/* Прогнозата — същият език като останалото табло: без злато, сценариите в
+   тона на първата серия, вложеното пунктир, посоката зелено. */
+
+.card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border, var(--border));
+  box-shadow: var(--panel-shadow, var(--shadow-card));
+  border-radius: var(--r-xl);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.up { color: var(--ok); }
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.big {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--r-lg);
+  background: rgba(var(--text-rgb), 0.04);
+  border: 1px solid rgba(var(--text-rgb), 0.06);
+  min-width: 0;
+}
+
+.stats strong {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Двоен превключвател — същата писта като в таблото, без плъзгача:
+   избраното е светлото хапче. */
+.toggle {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: rgba(var(--text-rgb), 0.05);
+  border: 1px solid rgba(var(--text-rgb), 0.07);
+}
+
+.toggle button {
+  border: none;
+  background: none;
+  border-radius: var(--r-pill);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: background var(--dur-state) var(--ease-glide), color var(--dur-state) var(--ease-glide);
+}
+
+.toggle button[aria-selected='true'] {
+  background: rgba(var(--text-rgb), 0.13);
+  color: var(--text);
+}
+
+.toggle button:active {
+  transform: none;
+}
+
+/* ── Графиката ── */
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grid {
+  stroke: rgba(var(--text-rgb), 0.07);
+  stroke-width: 1;
+}
+
+.axis {
+  font-size: 9px;
+  fill: var(--muted);
+}
+
+.band {
+  fill: var(--series-1);
+  fill-opacity: 0.14;
+}
+
+.base {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.paid {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 3;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.keyBase,
+.keyBand,
+.keyPaid {
+  display: inline-block;
+  width: 14px;
+  margin-left: 8px;
+}
+
+.keyBase:first-child { margin-left: 0; }
+
+.keyBase { border-top: 2px solid var(--ok); }
+.keyPaid { border-top: 1.5px dashed var(--muted); }
+
+.keyBand {
+  height: 8px;
+  border-radius: var(--r-xs);
+  background: var(--series-1);
+  opacity: 0.35;
+}
+
+/* ── Настройките ── */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 13px;
+}
+
+.fieldValue {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--text);
+  height: 24px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(var(--text-rgb), 0.12);
+  background: rgba(var(--text-rgb), 0.04);
+  color: var(--text);
+}
+
+.more {
+  padding: 12px;
+  border-radius: var(--r-lg);
+  background: rgba(var(--text-rgb), 0.03);
+}
+
+.more summary {
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.more[open] summary {
+  margin-bottom: 12px;
+}
+
+.more > * + * {
+  margin-top: 14px;
+}
+
+.link {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Праговете и таблицата ── */
+
+.milestones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  background: rgba(var(--text-rgb), 0.05);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.chip b {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table th {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 0 6px;
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+
+.table td {
+  text-align: right;
+  padding: 7px 0;
+  border-top: 1px solid rgba(var(--text-rgb), 0.06);
+  white-space: nowrap;
+}
+
+.note {
+  font-size: 11px;
+  color: var(--muted);
+}

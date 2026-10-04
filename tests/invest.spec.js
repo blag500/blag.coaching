@@ -86,6 +86,17 @@ test('таблото показва сметката, позициите и ди
   await expect(page.getByText(/−34,98\s€/).first()).toBeVisible()
   await expect(page.getByText('Без запис в историята')).toBeVisible()
 
+  // Прогнозата: при 0 % ръст, без такси, стойността е началото плюс вноските.
+  await expect(page.getByText('Прогноза · buy and hold')).toBeVisible()
+  await page.evaluate(() => localStorage.setItem('blag_invest_projection_v1',
+    JSON.stringify({ annual: 0, spread: 0, ter: 0, fx: 0, years: 10, contribution: 25, frequency: 'week', growth: 0, inflation: 2 })))
+  await page.reload()
+  // Началото е позицията във VUSA: 5620,40 € + 25 € × 52 × 10 = 18 620 €.
+  // При 0 % ръст стойността и вложеното са едно и също число.
+  await expect(page.locator('strong', { hasText: /^18\s620\s€$/ })).toHaveCount(2)
+  await page.evaluate(() => localStorage.removeItem('blag_invest_projection_v1'))
+  await page.reload()
+
   await page.getByRole('tab', { name: 'Валута' }).click()
   await expect(page.getByText('GBP', { exact: true })).toBeVisible()
 

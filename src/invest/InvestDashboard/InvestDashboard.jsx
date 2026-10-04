@@ -5,6 +5,7 @@ import {
   eur, netDeposits, shortName, shortTicker, sofiaMidnight,
 } from '../calc'
 import ValueChart from '../ValueChart/ValueChart.jsx'
+import Projection from '../Projection/Projection.jsx'
 import styles from './InvestDashboard.module.css'
 
 /* Таблото за сметката в Trading 212.
@@ -495,6 +496,13 @@ export default function InvestDashboard() {
                 </ul>
               )}
             </section>
+
+            <div className={styles.projCard}>
+              <Projection
+                start={positions.find((x) => (x.ticker || '').startsWith('VUSA'))?.value ?? 0}
+                startLabel="сегашната позиция във VUSA"
+              />
+            </div>
 
             {br && (
               <section className={`${styles.card} ${styles.bridgeCard}`}>
