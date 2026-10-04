@@ -86,17 +86,6 @@ test('таблото показва сметката, позициите и ди
   await expect(page.getByText(/−34,98\s€/).first()).toBeVisible()
   await expect(page.getByText('Без запис в историята')).toBeVisible()
 
-  // Прогнозата: при 0 % ръст, без такси, стойността е началото плюс вноските.
-  await expect(page.getByText('Прогноза · buy and hold')).toBeVisible()
-  await page.evaluate(() => localStorage.setItem('blag_invest_projection_v1',
-    JSON.stringify({ annual: 0, spread: 0, ter: 0, fx: 0, years: 10, contribution: 25, frequency: 'week', growth: 0, inflation: 2 })))
-  await page.reload()
-  // Началото е позицията във VUSA: 5620,40 € + 25 € × 52 × 10 = 18 620 €.
-  // При 0 % ръст стойността и вложеното са едно и също число.
-  await expect(page.locator('strong', { hasText: /^18\s620\s€$/ })).toHaveCount(2)
-  await page.evaluate(() => localStorage.removeItem('blag_invest_projection_v1'))
-  await page.reload()
-
   await page.getByRole('tab', { name: 'Валута' }).click()
   await expect(page.getByText('GBP', { exact: true })).toBeVisible()
 
@@ -117,4 +106,45 @@ test('без собственик таблото не показва нищо', 
   await page.goto('/invest/')
   await expect(page.getByText('Нямаш достъп до това табло.')).toBeVisible()
   await expect(page.getByText('Vanguard')).toHaveCount(0)
+})
+
+test('прогнозата и планът са в свои табове', async ({ page }, info) => {
+  await signIn(page, { theme: 'glass', tables: seed() })
+  await page.goto('/invest/')
+  const nav = page.getByRole('navigation', { name: 'Раздели' })
+  await expect(nav).toBeVisible()
+
+  // Прогноза: при 0 % ръст, без такси, стойността е началото плюс вноските.
+  await page.evaluate(() => localStorage.setItem('blag_invest_projection_v1',
+    JSON.stringify({ annual: 0, spread: 0, ter: 0, fx: 0, years: 10, contribution: 25, frequency: 'week', growth: 0, inflation: 2 })))
+  await nav.getByRole('button', { name: 'Прогноза' }).click()
+  await page.reload()
+  await expect(page).toHaveURL(/#forecast$/)
+  await expect(page.getByRole('heading', { name: 'Прогноза' })).toBeVisible()
+  // Началото е позицията във VUSA: 5620,40 € + 25 € × 52 × 10 = 18 620 €.
+  // При 0 % ръст стойността и вложеното са едно и също число.
+  await expect(page.locator('strong', { hasText: /^18\s620\s€$/ })).toHaveCount(2)
+
+  // План с подразбиращите се допускания: 100 000 € след 20 години от
+  // 5620,40 € искат 20,30 € седмично — закръглено нагоре, 21 €.
+  await page.evaluate((y) => localStorage.setItem('blag_invest_projection_v1',
+    JSON.stringify({ target: 100000, targetYear: y })), new Date().getFullYear() + 20)
+  await page.reload()
+  await nav.getByRole('button', { name: 'План' }).click()
+  await expect(page).toHaveURL(/#plan$/)
+  await expect(page.getByText('Какво да правиш')).toBeVisible()
+  await expect(page.locator('strong', { hasText: /^21\s€/ })).toBeVisible()
+  await expect(page.getByText(/точно 20,30\s€/)).toBeVisible()
+  // 25 € седмично е повече от нужното: разликата е −4 €.
+  await expect(page.getByText(/^−4\s€$/)).toBeVisible()
+
+  await page.getByRole('tab', { name: 'Веднъж месечно' }).click()
+  await expect(page.locator('strong', { hasText: /^90\s€/ })).toBeVisible()
+
+  await page.screenshot({ path: `shots/invest-plan-${info.project.name}.png`, fullPage: true })
+
+  // Обратно на таблото — адресът се изчиства.
+  await nav.getByRole('button', { name: 'Табло' }).click()
+  await expect(page).not.toHaveURL(/#/)
+  await expect(page.getByText('Стойност на сметката').first()).toBeVisible()
 })

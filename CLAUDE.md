@@ -119,7 +119,11 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 `invest-sync`, `:07`) и пише в `invest_snapshots`, `invest_dividends`,
 `invest_transactions`, `invest_orders`; страницата чете само оттам. Реализираното
 се смята от поръчките — сметката връща `realized: 0`. Движенията в лева (до 2026)
-се превръщат по фиксирания курс. Чете само собственикът от
+се превръщат по фиксирания курс. Три таба — Табло, Прогноза, План (`#forecast`,
+`#plan`) — с долната лента на приложението: `NavBar` от `BottomNav.jsx` е
+самата лента без SettingsContext, `BottomNav` е обвивката с табовете на
+приложението. Прогнозата и планът делят допусканията (`useInvestSettings`,
+localStorage); сметките са в `src/invest/projection.js`. Чете само собственикът от
 `invest_owner` — не по роля. Ключът е в тайните на функциите (`T212_API_KEY`,
 `T212_API_SECRET`), само за четене. Миграции `123_invest.sql`, `124_invest_orders.sql`.
 

@@ -71,3 +71,38 @@ export function milestone(rows, target) {
 export function perYear(p) {
   return p.contribution * (PERIODS[p.frequency] ?? 52)
 }
+
+/* ── Обратната задача: колко да внасям, за да стигна целта ──
+ *
+ * Стойността в края е линейна спрямо вноската: V(c) = V(0) + c · A, където
+ * V(0) е само началото, оставено да расте, а A — колко прави една единица
+ * вноска. Значи вноската не се търси с опити, а се смята точно:
+ * c = (цел − V(0)) / A. */
+
+/** Нужната вноска за цел `target` след `years` години при ръст `annual`.
+ *  real: целта е в днешни пари и се вдига с инфлацията до годината си. */
+export function requiredContribution(start, p, { target, years, real = false, annual = p.annual, frequency = p.frequency }) {
+  if (years <= 0) return { contribution: null, reached: start >= target, nominalTarget: target }
+  const q = { ...p, years, frequency }
+  const nominalTarget = real ? target * Math.pow(1 + p.inflation / 100, years) : target
+  const zero = path(start, { ...q, contribution: 0 }, annual).at(-1).value
+  const unit = path(0, { ...q, contribution: 1 }, annual).at(-1).value
+  if (zero >= nominalTarget) return { contribution: 0, reached: true, nominalTarget, fromStart: zero }
+  return { contribution: (nominalTarget - zero) / unit, reached: false, nominalTarget, fromStart: zero }
+}
+
+/** Годината, в която сегашният план минава целта, или null. */
+export function yearReached(start, p, target, real = false, horizon = 60) {
+  const rows = path(start, { ...p, years: horizon })
+  const hit = rows.find((r) => r.value >= (real ? target * Math.pow(1 + p.inflation / 100, r.year) : target))
+  return hit ? hit.year : null
+}
+
+/** Закръгляне към вноска, която Trading 212 приема и човек помни:
+ *  под 50 € — до цяло евро, над това — до 5 €. Винаги нагоре, за да не
+ *  остане планът на сантиметър под целта. */
+export function roundUp(c) {
+  if (c == null) return null
+  if (c <= 0) return 0
+  return c < 50 ? Math.ceil(c) : Math.ceil(c / 5) * 5
+}

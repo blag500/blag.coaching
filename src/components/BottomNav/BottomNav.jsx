@@ -69,7 +69,27 @@ const ALL_TABS = [...LEFT_TABS, ...RIGHT_TABS]
  */
 export default function BottomNav({ activeTab, onTabChange }) {
   const { t } = useSettings()
-  const current = ALL_TABS.find(tab => tab.id === activeTab)
+  return (
+    <NavBar
+      tabs={ALL_TABS.map((tab) => ({ ...tab, label: t(tab.key) }))}
+      activeTab={activeTab}
+      onTabChange={onTabChange}
+      labels={{ nav: t('nav.mainNav'), show: t('nav.showNav') }}
+    />
+  )
+}
+
+/**
+ * Самата лента, без приложението около нея.
+ *
+ * Отделена, за да я носи и страница без SettingsContext (таблото /invest/) —
+ * същото стъкло, същото сгъване, същите знаци, а не втора лента, която след
+ * месец изглежда малко иначе. Надписите идват готови.
+ *
+ * tabs: [{ id, label, Icon }]
+ */
+export function NavBar({ tabs, activeTab, onTabChange, labels }) {
+  const current = tabs.find(tab => tab.id === activeTab)
   const FoldIcon = current?.Icon ?? MoreIcon
 
   function unfold() {
@@ -83,7 +103,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
       <button
         className={styles.fold}
         onClick={unfold}
-        aria-label={t('nav.showNav')}
+        aria-label={labels.show}
         type="button"
       >
         <FoldIcon />
@@ -93,40 +113,23 @@ export default function BottomNav({ activeTab, onTabChange }) {
       <nav
         className={styles.nav}
         role="navigation"
-        aria-label={t('nav.mainNav')}
+        aria-label={labels.nav}
       >
-        {LEFT_TABS.map(tab => (
+        {tabs.map(tab => (
           <button
             key={tab.id}
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
             onClick={() => { haptic('nav'); onTabChange(tab.id) }}
-            aria-label={t(tab.key)}
+            aria-label={tab.label}
             /* Кой раздел е отворен, казано и с думи. Дотук го казваше само
                овалът отдолу — тоест на човек, който гледа. */
             aria-current={activeTab === tab.id ? 'page' : undefined}
             type="button"
           >
             <span className={styles.iconWrap}><tab.Icon /></span>
-            <span className={styles.label}><span>{t(tab.key)}</span></span>
+            <span className={styles.label}><span>{tab.label}</span></span>
           </button>
         ))}
-
-        {RIGHT_TABS.map(tab => (
-          <button
-            key={tab.id}
-            className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
-            onClick={() => { haptic('nav'); onTabChange(tab.id) }}
-            aria-label={t(tab.key)}
-            /* Кой раздел е отворен, казано и с думи. Дотук го казваше само
-               овалът отдолу — тоест на човек, който гледа. */
-            aria-current={activeTab === tab.id ? 'page' : undefined}
-            type="button"
-          >
-            <span className={styles.iconWrap}><tab.Icon /></span>
-            <span className={styles.label}><span>{t(tab.key)}</span></span>
-          </button>
-        ))}
-
       </nav>
     </>
   )

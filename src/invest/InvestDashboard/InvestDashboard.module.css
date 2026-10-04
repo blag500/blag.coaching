@@ -8,7 +8,9 @@
   max-width: 560px;
   margin: 0 auto;
   min-height: 100%;
-  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 32px);
+  /* Отдолу място за лентата: тя виси над страницата, а последната карта не
+     бива да остава под нея. */
+  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + var(--nav-height) + 28px);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -179,8 +181,7 @@
       'hero  chart'
       'pos   split'
       'pos   div'
-      'pos   bridge'
-      'proj  proj';
+      'pos   bridge';
     align-items: start;
   }
   .hero { grid-area: hero; align-self: stretch; }
@@ -189,7 +190,6 @@
   .splitCard { grid-area: split; }
   .divCard { grid-area: div; }
   .bridgeCard { grid-area: bridge; }
-  .projCard { grid-area: proj; }
 }
 
 /* ── Карти ── */

@@ -1,28 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { DEFAULTS, milestone, perYear, project } from '../projection'
+import { useInvestSettings } from '../useInvestSettings'
 import styles from './Projection.module.css'
 
-/* Прогнозата за buy and hold.
+/* Прогнозата за buy and hold: колко ще имам, ако продължа така.
  *
- * Настройките стоят в телефона (localStorage) — това е лично удобство, не
- * данни: изгубени, връщат се на подразбиращите се, нищо не се чупи.
+ * Настройките са общи с плана (useInvestSettings).
  *
  * Числото на хоризонта е един сценарий, не обещание. Затова до него винаги
  * стои обхватът и стойността в днешни пари — без тях двайсет години напред
  * изглеждат по-богати, отколкото ще бъдат. */
 
-const KEY = 'blag_invest_projection_v1'
 const TARGETS = [10000, 25000, 50000, 100000]
 const W = 340
 const H = 170
 const PAD = { top: 10, right: 44, bottom: 20, left: 4 }
-
-function load() {
-  try {
-    const raw = localStorage.getItem(KEY)
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS
-  } catch { return DEFAULTS }
-}
 
 function money(v, opts = {}) {
   return new Intl.NumberFormat('bg-BG', {
@@ -41,13 +33,9 @@ function compact(v) {
 const num = (v, d = 1) => new Intl.NumberFormat('bg-BG', { maximumFractionDigits: d }).format(v)
 
 export default function Projection({ start, startLabel }) {
-  const [p, setP] = useState(load)
+  const [p, setP] = useInvestSettings()
   const [real, setReal] = useState(false)
   const [startValue, setStartValue] = useState(null) // null = от сметката
-
-  useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify(p)) } catch { /* без памет */ }
-  }, [p])
 
   const set = (k) => (e) => {
     const v = e.target.type === 'range' || e.target.type === 'number' ? Number(e.target.value) : e.target.value
@@ -164,7 +152,7 @@ export default function Projection({ start, startLabel }) {
           <Slider label="Сценарии ±" value={p.spread} min={0} max={6} step={0.5} suffix=" пункта" onChange={set('spread')} />
           <Slider label="Такса на фонда" value={p.ter} min={0} max={1} step={0.01} suffix=" %" onChange={set('ter')} hint="VUSA: 0,07 % годишно" />
           <Slider label="Обмяна на валута" value={p.fx} min={0} max={1} step={0.05} suffix=" % от вноска" onChange={set('fx')} hint="Trading 212: 0,15 % (EUR → GBP)" />
-          <button className={styles.link} onClick={() => { setP(DEFAULTS); setStartValue(null) }}>Върни подразбиращите се</button>
+          <button className={styles.link} onClick={() => { setP((x) => ({ ...x, ...DEFAULTS })); setStartValue(null) }}>Върни подразбиращите се</button>
         </details>
       </div>
 

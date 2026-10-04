@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import {
   allocation, bridge, byCurrency, changeSince, depositSteps, dividendsByMonth,
@@ -6,6 +6,10 @@ import {
 } from '../calc'
 import ValueChart from '../ValueChart/ValueChart.jsx'
 import Projection from '../Projection/Projection.jsx'
+import Plan from '../Plan/Plan.jsx'
+import { NavBar } from '../../components/BottomNav/BottomNav.jsx'
+import Pictogram from '../../components/Pictogram/Pictogram.jsx'
+import { useHideOnScroll } from '../../hooks/useHideOnScroll'
 import styles from './InvestDashboard.module.css'
 
 /* Таблото за сметката в Trading 212.
@@ -27,6 +31,23 @@ const RANGES = [
 ]
 
 const DAY = 24 * 60 * 60 * 1000
+
+/* Трите таба. Табло е какво има, Прогноза — какво ще има, ако продължа
+   така, План — какво трябва да правя, за да стигна цел. Знаците са от
+   общия набор на приложението, лентата е същата като в него. */
+const TABS = [
+  { id: 'board',    label: 'Табло',    Icon: () => <Pictogram name="dashboard" size={18} /> },
+  { id: 'forecast', label: 'Прогноза', Icon: () => <Pictogram name="trend" size={18} /> },
+  { id: 'plan',     label: 'План',     Icon: () => <Pictogram name="target" size={18} /> },
+]
+const TAB_TITLES = { forecast: 'Прогноза', plan: 'План' }
+
+/* Табът стои в адреса (#plan), за да се отваря там, където е оставен, и за да
+   може да се запише на началния екран право на плана. */
+function tabFromHash() {
+  const h = window.location.hash.replace('#', '')
+  return TABS.some((t) => t.id === h) ? h : 'board'
+}
 
 /* Откъдето таблото брои. Сметката е отпреди — през 2024 г. имаше няколко
    покупки в лева, продадени и изтеглени до нула. Тя е затворена глава и не
@@ -115,6 +136,20 @@ export default function InvestDashboard() {
   const [note, setNote] = useState('')
   const [open, setOpen] = useState(null)
   const [dayBase, setDayBase] = useState(null)
+  const [tab, setTab] = useState(tabFromHash)
+
+  useHideOnScroll(true)
+  useLayoutEffect(() => { window.scrollTo(0, 0) }, [tab])
+  useEffect(() => {
+    const onHash = () => setTab(tabFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  function go(id) {
+    setTab(id)
+    history.replaceState(null, '', id === 'board' ? window.location.pathname : `#${id}`)
+  }
 
   const rangeDef = RANGES.find((r) => r.key === range)
 
@@ -282,6 +317,7 @@ export default function InvestDashboard() {
   }
 
   const now = new Date()
+  const vusa = positions.find((x) => (x.ticker || '').startsWith('VUSA'))?.value ?? 0
 
   return (
     <main className={styles.page}>
@@ -290,9 +326,9 @@ export default function InvestDashboard() {
           <span className={styles.date}>
             {now.toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia', weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
-          <h1 className={styles.title}>{greeting(now)}</h1>
+          <h1 className={styles.title}>{TAB_TITLES[tab] ?? greeting(now)}</h1>
         </div>
-        <div className={styles.headerSide}>
+        {tab === 'board' && <div className={styles.headerSide}>
           {latest && <span className={styles.updated}>{ago(latest.taken_at)}</span>}
           <button
             className={styles.refresh}
@@ -305,12 +341,15 @@ export default function InvestDashboard() {
               <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" />
             </svg>
           </button>
-        </div>
+        </div>}
       </header>
 
       {note && <p className={styles.note}>{note}</p>}
 
-      {state === 'empty' ? (
+      {tab === 'forecast' && <Projection start={vusa} startLabel="сегашната позиция във VUSA" />}
+      {tab === 'plan' && <Plan start={vusa} />}
+
+      {tab !== 'board' ? null : state === 'empty' ? (
         <section className={styles.card}>
           <p className={styles.muted}>
             Още няма снимка на сметката. Натисни бутона горе вдясно — или изчакай следващия кръгъл час.
@@ -497,13 +536,6 @@ export default function InvestDashboard() {
               )}
             </section>
 
-            <div className={styles.projCard}>
-              <Projection
-                start={positions.find((x) => (x.ticker || '').startsWith('VUSA'))?.value ?? 0}
-                startLabel="сегашната позиция във VUSA"
-              />
-            </div>
-
             {br && (
               <section className={`${styles.card} ${styles.bridgeCard}`}>
                 <div className={styles.head}>
@@ -539,6 +571,13 @@ export default function InvestDashboard() {
           </p>
         </>
       )}
+
+      <NavBar
+        tabs={TABS}
+        activeTab={tab}
+        onTabChange={go}
+        labels={{ nav: 'Раздели', show: 'Покажи разделите' }}
+      />
     </main>
   )
 }
