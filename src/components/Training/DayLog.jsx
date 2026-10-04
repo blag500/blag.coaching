@@ -425,6 +425,24 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
     libAdd({ name: done.trim(), scheme, muscle: exerciseMap[done.trim()] || guessMuscle(done) || null })
   }
 
+  /* Името се сменя след първата серия, не само преди нея.
+     В залата човек вдига, записва, и чак тогава вижда, че машината е друга.
+     Дотук смяната важеше само за следващите серии: вече записаните оставаха
+     под планираното име, без `replaces` — заместител, който базата не знае,
+     и затова и не влизаше в заготовките. Тук днешните серии на упражнението
+     се пренаписват на казаното сега, а отмяната ги връща. */
+  async function relabel(planned, typed) {
+    const done = String(typed ?? '').trim() ? typed : planned
+    const ids = (rowsRef.current[planned] ?? []).filter(r => r.id).map(r => r.id)
+    if (!ids.length) return
+    const patch = { exercise_name: done, replaces: done === planned ? null : planned }
+    const results = await Promise.all(ids.map(id =>
+      supabase.from('exercise_logs').update(patch).eq('id', id)))
+    if (results.some(r => r.error)) return
+    if (done !== planned) keepSubstitute(planned, done)
+    onLogged?.()
+  }
+
   function edit(name, i, field, value) {
     setRows(prev => ({
       ...prev,
@@ -631,14 +649,14 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                       aria-label={t('dl.swapInput')}
                       autoFocus
                     />
-                    <button type="button" className={styles.swapDone} onClick={() => setEditing(null)}>
+                    <button type="button" className={styles.swapDone} onClick={() => { relabel(ex.name, swap[ex.name]); setEditing(null) }}>
                       {t('dl.swapDone')}
                     </button>
                     {swap[ex.name] && (
                       <button
                         type="button"
                         className={styles.swapReset}
-                        onClick={() => { setSwap(p => ({ ...p, [ex.name]: '' })); setEditing(null) }}
+                        onClick={() => { setSwap(p => ({ ...p, [ex.name]: '' })); relabel(ex.name, ''); setEditing(null) }}
                       >{t('dl.swapUndo')}</button>
                     )}
                   </div>
@@ -707,6 +725,7 @@ export default function DayLog({ date, blockLabels, blocks, onLogged, onComplete
                                   // Мускулът на заместителя е известен — статистиката
                                   // не бива да чака той да се избере втори път отдолу.
                                   if (c.muscle && !exerciseMap[c.name]) setExerciseGroup(c.name, c.muscle)
+                                  relabel(ex.name, c.name)
                                   setEditing(null)
                                 }}
                               >

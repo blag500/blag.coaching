@@ -1739,6 +1739,34 @@ test.describe('Заготовки по мускул', () => {
     await expect(page.getByText('Кросоувър на кабел')).toBeVisible()
   })
 
+  test('името, сменено след първата серия, стига и до нея, и до заготовките', async ({ page }) => {
+    await enterApp(page)
+    await page.waitForTimeout(1600)
+    await page.locator('nav button', { hasText: 'ТРЕНИРОВКА' }).first().click()
+    await page.waitForTimeout(2000)
+    await page.getByText('Upper A').first().click()
+    await page.waitForTimeout(1500)
+
+    // Първо серията, под планираното име — както става в залата.
+    await page.getByLabel('Лежанка, серия 1, килограми').fill('70')
+    await page.getByLabel('Лежанка, серия 1, килограми').blur()
+    await page.waitForTimeout(2000)
+
+    // После се вижда, че машината е друга.
+    await page.getByRole('button', { name: 'Смени Лежанка за този ден' }).click()
+    await page.getByLabel('Какво направи вместо него').fill('Преса technogym')
+    await page.getByRole('button', { name: 'ГОТОВО' }).click()
+    await page.waitForTimeout(1500)
+
+    await page.goto('/')
+    await page.locator('nav').first().waitFor({ state: 'visible', timeout: 20000 })
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(600)
+    await page.getByText('ЗАГОТОВКИ', { exact: true }).first().click()
+    await page.waitForTimeout(1200)
+    await expect(page.getByText('Преса technogym')).toBeVisible()
+  })
+
   test('написаното на ръка от молива влиза в заготовките', async ({ page }) => {
     await enterApp(page)
     await page.waitForTimeout(1600)
