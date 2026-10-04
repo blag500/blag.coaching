@@ -26,6 +26,13 @@ const RANGES = [
 ]
 
 const DAY = 24 * 60 * 60 * 1000
+
+/* Откъдето таблото брои. Сметката е отпреди — през 2024 г. имаше няколко
+   покупки в лева, продадени и изтеглени до нула. Тя е затворена глава и не
+   влиза нито във „внесени", нито в реализираното, нито в дивидентите. Данните
+   остават в базата; таблото просто не ги гледа. Границата е денят на еврото —
+   оттам сметката е в евро и нищо не се превръща. */
+const SINCE = '2026-01-01'
 const TOP = 5   // позиции със собствен цвят; останалите са „Други"
 
 function money(v, currency, opts = {}) {
@@ -139,9 +146,9 @@ export default function InvestDashboard() {
       const [snap, tx, div, ord, sync] = await Promise.all([
         supabase.from('invest_snapshots').select('*')
           .order('taken_at', { ascending: false }).limit(1),
-        readAll(() => supabase.from('invest_transactions').select('reference,at,type,amount,currency').order('at')),
-        readAll(() => supabase.from('invest_dividends').select('reference,paid_on,ticker,name,amount,currency').order('paid_on', { ascending: false })),
-        readAll(() => supabase.from('invest_orders').select('reference,at,ticker,side,realized,fees,currency').order('at')),
+        readAll(() => supabase.from('invest_transactions').select('reference,at,type,amount,currency').gte('at', SINCE).order('at')),
+        readAll(() => supabase.from('invest_dividends').select('reference,paid_on,ticker,name,amount,currency').gte('paid_on', SINCE).order('paid_on', { ascending: false })),
+        readAll(() => supabase.from('invest_orders').select('reference,at,ticker,side,realized,fees,currency').gte('at', SINCE).order('at')),
         supabase.from('invest_sync_state').select('kind,done'),
       ])
       if (snap.error) throw snap.error
@@ -348,7 +355,7 @@ export default function InvestDashboard() {
                 <Tile label="Реализирана" value={signed(realized, cur)} meta={br?.fees ? `такси ${money(br.fees, cur)}` : ''} toneValue={realized} />
                 <Tile label="Кеш" value={money(latest.cash_free, cur)} meta={latest.cash_in_pies ? `+ ${money(latest.cash_in_pies, cur)} в пайове` : 'свободен'} />
                 <Tile label="Инвестирано" value={money(latest.current_value, cur)} meta={latest.total_cost ? `платено ${money(latest.total_cost, cur, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}` : ''} />
-                <Tile label="Дивиденти" value={money(divAll, cur)} meta="за цялото време" />
+                <Tile label="Дивиденти" value={money(divAll, cur)} meta="от 2026 г." />
               </div>
             </section>
 
