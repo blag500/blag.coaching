@@ -107,6 +107,27 @@ test.describe('Теми', () => {
   }
 })
 
+test.describe('Ширината', () => {
+  /* На 390px нищо не бива да излиза встрани. Хоризонтален скрол на телефон
+     значи, че страницата се клати при всеки вертикален суайп — а снимките в
+     shots/ го показват само ако някой се сети да ги отвори. */
+  for (const theme of ['dark', 'light', 'glass']) {
+    test(`нито един раздел не е по-широк от екрана — ${theme}`, async ({ page }) => {
+      test.setTimeout(90000)
+      await page.setViewportSize({ width: 390, height: 844 })
+      await enterApp(page, { theme })
+
+      for (const name of ['ПОТОК', 'ХРАНЕНЕ', 'ТРЕНИРОВКА', 'ПРОФИЛ']) {
+        await page.locator('nav button', { hasText: name }).first().click()
+        await page.waitForTimeout(900)
+        const over = await page.evaluate(() =>
+          document.documentElement.scrollWidth - document.documentElement.clientWidth)
+        expect(over, `${name} е по-широк от екрана с ${over}px`).toBeLessThanOrEqual(0)
+      }
+    })
+  }
+})
+
 test.describe('Времевата линия', () => {
   /* Жестовете тук не са украса: линията е единственият екран, на който нещо
      се създава с влачене, а тези два теста вече хванаха сгрешена мишена —
