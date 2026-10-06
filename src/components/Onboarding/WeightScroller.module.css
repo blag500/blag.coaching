@@ -76,7 +76,7 @@
   justify-content: center;
   font-family: var(--font-heading);
   line-height: 1;
-  transition: color 220ms ease, font-size 220ms ease, opacity 220ms ease;
+  transition: color var(--dur-state) var(--ease-glide), font-size var(--dur-state) var(--ease-glide), opacity var(--dur-state) var(--ease-glide);
 }
 
 .unit {

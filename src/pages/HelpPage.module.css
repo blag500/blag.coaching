@@ -71,7 +71,7 @@
 .langBtn {
   background: none;
   border: none;
-  color: rgba(var(--text-rgb), 0.45);
+  color: var(--muted);
   font-family: var(--font-body);
   font-size: 0.7rem;
   font-weight: 700;
@@ -128,7 +128,7 @@
 
 .kbHeroSub {
   font-size: 0.8rem;
-  color: rgba(var(--text-rgb), 0.35);
+  color: var(--muted);
   letter-spacing: 0.12em;
   margin: 0 0 28px;
   font-family: var(--font-heading);
@@ -165,7 +165,7 @@
 }
 
 .searchInput::placeholder {
-  color: rgba(var(--text-rgb), 0.28);
+  color: var(--muted);
 }
 
 .searchInput:focus {
@@ -180,7 +180,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: rgba(var(--text-rgb), 0.35);
+  color: var(--muted);
   font-size: 0.85rem;
   cursor: pointer;
   padding: 4px;
@@ -304,14 +304,14 @@
 
 .catDesc {
   font-size: 0.75rem;
-  color: rgba(var(--text-rgb), 0.4);
+  color: var(--muted);
   line-height: 1.3;
 }
 
 .catCount {
   font-family: var(--font-body);
   font-size: 0.72rem;
-  color: rgba(var(--text-rgb), 0.25);
+  color: var(--muted);
   flex-shrink: 0;
 }
 
@@ -342,14 +342,14 @@
 
 .contactSub {
   font-size: 0.82rem;
-  color: rgba(var(--text-rgb), 0.5);
+  color: var(--muted);
   line-height: 1.6;
   margin: 0;
 }
 
 .contactEmailLabel {
   font-size: 0.78rem;
-  color: rgba(var(--text-rgb), 0.4);
+  color: var(--muted);
   margin: 14px 0 4px;
 }
 
@@ -394,7 +394,7 @@
   border-radius: var(--r-sm);
   border: none;
   background: none;
-  color: rgba(var(--text-rgb), 0.45);
+  color: var(--muted);
   font-family: var(--font-body);
   font-size: 11px;
   cursor: pointer;
@@ -437,7 +437,7 @@
 
 .pwaUrl {
   font-size: 9px;
-  color: rgba(var(--text-rgb), 0.4);
+  color: var(--muted);
   font-family: var(--font-body);
 }
 
@@ -475,7 +475,7 @@
 .pwaSub {
   font-family: var(--font-body);
   font-size: 10px;
-  color: rgba(var(--text-rgb), 0.4);
+  color: var(--muted);
   line-height: 1.35;
   margin: 0;
 }
@@ -513,14 +513,14 @@
 
 .noResults {
   font-size: 0.9rem;
-  color: rgba(var(--text-rgb), 0.4);
+  color: var(--muted);
   text-align: center;
   padding: 32px 0;
 }
 
 .resultsLabel {
   font-size: 0.75rem;
-  color: rgba(var(--text-rgb), 0.35);
+  color: var(--muted);
   margin: 0 0 12px;
   letter-spacing: 0.06em;
 }
@@ -589,7 +589,7 @@
 
 .catHeaderDesc {
   font-size: 0.82rem;
-  color: rgba(var(--text-rgb), 0.45);
+  color: var(--muted);
   margin: 0;
   line-height: 1.5;
 }
@@ -753,7 +753,7 @@
 .breadCurrent {
   font-family: var(--font-body);
   font-size: 0.75rem;
-  color: rgba(var(--text-rgb), 0.45);
+  color: var(--muted);
 }
 
 /* ── Back button ─────────────────────────────────────────────────────────────── */
@@ -803,7 +803,7 @@
 
 .footerCopy {
   font-size: 0.72rem;
-  color: rgba(var(--text-rgb), 0.25);
+  color: var(--muted);
 }
 
 .footerLink {

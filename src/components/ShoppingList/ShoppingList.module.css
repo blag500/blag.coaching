@@ -431,7 +431,7 @@
   stroke: var(--accent);
   stroke-width: 3;
   stroke-linecap: round;
-  transition: stroke-dasharray 0.4s ease;
+  transition: stroke-dasharray var(--dur-travel) var(--ease-glide);
 }
 
 .ringPct {

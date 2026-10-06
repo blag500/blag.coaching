@@ -440,7 +440,7 @@
   height: 100%;
   background: var(--accent);
   border-radius: var(--r-pill);
-  transition: width 0.6s ease;
+  transition: width var(--dur-travel) var(--ease-glide);
 }
 
 .progressLabel {

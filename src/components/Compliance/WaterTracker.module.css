@@ -57,7 +57,7 @@
   height: 100%;
   background: #42A5F5;
   border-radius: var(--r-xs);
-  transition: width 0.3s ease;
+  transition: width var(--dur-travel) var(--ease-glide);
 }
 
 /* ── Glass icons ── */

@@ -723,7 +723,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: rgba(var(--text-rgb), 0.55);
+  color: var(--muted);
   opacity: 0.85;
 }
 

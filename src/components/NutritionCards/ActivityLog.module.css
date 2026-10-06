@@ -43,7 +43,7 @@
 .selectChevron {
   color: var(--muted);
   transform: rotate(90deg);
-  transition: transform 160ms ease;
+  transition: transform var(--dur-state) var(--ease-glide);
   font-size: 18px;
   line-height: 1;
 }

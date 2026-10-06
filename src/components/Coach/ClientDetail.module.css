@@ -368,7 +368,7 @@
   background: rgba(var(--accent-rgb), 0.55);
   border-radius: 4px 4px 0 0;
   min-height: 2px;
-  transition: height 0.3s ease;
+  transition: height var(--dur-travel) var(--ease-glide);
 }
 
 .bar[data-empty="true"] {
@@ -438,7 +438,7 @@
   height: 100%;
   background: var(--accent);
   border-radius: var(--r-xs);
-  transition: width 0.3s ease;
+  transition: width var(--dur-travel) var(--ease-glide);
 }
 
 .habitCount {

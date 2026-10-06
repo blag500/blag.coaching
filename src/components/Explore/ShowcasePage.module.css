@@ -396,7 +396,7 @@
   width: 100%;
   background: rgba(var(--accent-rgb), 0.5);
   border-radius: var(--r-xs);
-  transition: height 0.3s;
+  transition: height var(--dur-travel) var(--ease-glide);
   min-height: 2px;
 }
 
@@ -451,7 +451,7 @@
 .statBarFill {
   height: 100%;
   border-radius: var(--r-xs);
-  transition: width 0.4s;
+  transition: width var(--dur-travel) var(--ease-glide);
 }
 
 /* ── Check-in photo strip ── */

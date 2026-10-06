@@ -537,7 +537,7 @@
   border: 1.5px solid var(--border);
   border-radius: var(--r-lg);
   cursor: pointer;
-  color: rgba(var(--text-rgb), 0.35);
+  color: var(--muted);
   -webkit-tap-highlight-color: transparent;
   transition: border-color 180ms, color 180ms, background 180ms, box-shadow 180ms;
 }
@@ -819,7 +819,6 @@
   display: inline-block;
   transition: transform 220ms var(--ease-out);
 }
-.nextBtn:hover .nextArrow { transform: translateX(3px); }
 .nextBtn:active:not(:disabled) .nextArrow { transform: translateX(5px); }
 
 .nextBtn:active:not(:disabled) {

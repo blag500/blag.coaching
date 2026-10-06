@@ -107,7 +107,7 @@
   gap: 0;
   background: none;
   border: none;
-  color: rgba(var(--text-rgb), 0.45);
+  color: var(--muted);
   transition: color 200ms var(--ease-out);
   /* Отстъпът е за овала, не за знака.
      Дотук беше два пиксела и докато разделите държаха по една пета от

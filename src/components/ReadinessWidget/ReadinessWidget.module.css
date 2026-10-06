@@ -125,7 +125,7 @@
 .barFill {
   height: 100%;
   border-radius: var(--r-xs);
-  transition: width 0.5s ease;
+  transition: width var(--dur-travel) var(--ease-glide);
 }
 
 .barVal {
