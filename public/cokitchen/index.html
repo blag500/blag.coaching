@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Чийт Код — готова храна, настроена до грам. Представяне за CoKitchen.">
+<!-- Представяне за CoKitchen (Яна, 08.10.2026). Не е част от приложението и не
+     се индексира. Снимките са тези на /cheatcode/; клипът е от
+     cheatcode/reel-config/. Изходът е този файл — редактира се направо. -->
+<title>Чийт Код за CoKitchen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Onest:wght@400;500;600;700&family=Lora:ital,wght@1,500;1,600&display=swap">
+<style>
+  /* Представяне, не таблица. Николай показва на Яна какво иска да прави:
+     ястията, как се поръчва, какво търси от кухнята. Числата са само
+     там, където са самото ястие — протеинът, калориите — нито сметки,
+     нито наем. Светла решетка и стъклената верига от референцията.
+     Ред: hero → менюто в снимки → как работи (клипът) → пробвай →
+     какво търсим. */
+  :root {
+    color-scheme: light;
+    --paper: #F5F6F2;
+    --grid: rgba(20, 40, 30, 0.055);
+    --card: #FFFFFF;
+    --card-2: #F0F2EC;
+    --line: #E1E5DC;
+    --ink: #121815;
+    --ink-soft: #5B665F;
+    --ink-faint: #949D96;
+    --accent: #1F8A5B;
+    --accent-2: #2FB377;
+    --accent-soft: rgba(31, 138, 91, 0.10);
+    --on-accent: #FFFFFF;
+    --protein: #2F7FC0; --carbs: #43904A; --fat: #9A63A6; --kcal: #8A6A2E;
+    --font-sans: 'Onest', -apple-system, 'Segoe UI', sans-serif;
+    --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-brand: 'Unbounded', 'Arial Black', sans-serif;
+    --r-md: 16px; --r-lg: 24px; --r-xl: 32px;
+    --shadow: 0 1px 2px rgba(18, 24, 21, 0.04), 0 10px 30px rgba(18, 24, 21, 0.07);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    background-color: var(--paper);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 56px 56px; background-position: -1px -1px;
+    color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 1.55;
+    font-feature-settings: 'locl' 0;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 72px;
+          display: flex; flex-direction: column; gap: 96px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+  h2 { font-weight: 700; font-size: clamp(28px, 3.6vw, 42px); line-height: 1.1; }
+  h1 em, h2 em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--accent); letter-spacing: -0.01em; }
+  p { margin: 0; }
+  .eyebrow { font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; }
+  .lede { color: var(--ink-soft); font-size: 18px; max-width: 56ch; }
+  section { display: flex; flex-direction: column; gap: 28px; scroll-margin-top: 90px; }
+  .sec-head { display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Навигация ── */
+  .nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 10; align-self: center;
+         display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; width: min(100%, 680px);
+         background: rgba(255,255,255,0.8); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+         border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); }
+  .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); flex: none; }
+  .brand svg { width: 22px; height: 22px; color: var(--accent); }
+  .brand b { font-family: var(--font-brand); font-weight: 800; font-size: 13px; letter-spacing: 0.02em; }
+  .brand b span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2px; margin: 0 auto; }
+  .nav-links a { color: var(--ink-soft); text-decoration: none; font-size: 13.5px; padding: 6px 10px; border-radius: 999px; }
+  .nav-links a:hover { background: var(--card-2); color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 600; border-radius: 999px;
+         padding: 11px 20px; text-decoration: none; border: 0; cursor: pointer; white-space: nowrap; }
+  .btn.dark { background: var(--ink); color: #fff; padding: 8px 14px; font-size: 13px; }
+  .btn.go { color: var(--on-accent); background: linear-gradient(180deg, var(--accent-2), var(--accent));
+            box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 6px 16px rgba(31,138,91,0.32); }
+  .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .btn .play { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 8px; }
+
+  /* ── Hero ── */
+  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; align-items: start; padding-top: 28px; }
+  .hero h1 { grid-column: 1 / -1; font-weight: 700; font-size: clamp(32px, 4.4vw, 52px); line-height: 1.06; white-space: nowrap; }
+  .hero h1 .soft { color: var(--ink-faint); }
+  .chips3 { display: inline-flex; gap: 4px; padding: 5px; border-radius: 14px; vertical-align: middle; margin-left: 8px; transform: translateY(-4px);
+            background: linear-gradient(180deg, var(--accent-2), var(--accent)); box-shadow: 0 6px 16px rgba(31,138,91,0.3); }
+  .chips3 i { width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.18); display: grid; place-items: center; color: #fff; }
+  .chips3 svg { width: 16px; height: 16px; }
+  .hero-copy { display: flex; flex-direction: column; gap: 22px; padding-top: 22px; min-width: 0; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+  .proof { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink-soft); }
+  .faces { display: flex; }
+  .faces img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--paper); margin-left: -9px; }
+  .faces img:first-child { margin-left: 0; }
+  .proof b { color: var(--ink); }
+  .stage { position: relative; min-width: 0; aspect-ratio: 4 / 3; max-height: 400px; width: 100%; margin-top: -36px; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage .fallback { position: absolute; inset: 12%; color: var(--accent); }
+  .stage .glow { position: absolute; left: 20%; right: 20%; bottom: 4%; height: 22%; border-radius: 50%;
+                 background: radial-gradient(closest-side, rgba(47,179,119,0.22), transparent); filter: blur(10px); }
+  .float { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; font-size: 12.5px; line-height: 1.3;
+           background: rgba(255,255,255,0.92); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); max-width: 230px; }
+  .float i { flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 13px; }
+  .float small { display: block; color: var(--ink-faint); font-size: 11px; }
+  .float b { font-weight: 600; }
+  .f1 { top: 2%; right: 0; } .f1 i { background: var(--accent-soft); color: var(--accent); }
+  .f2 { bottom: 14%; left: 2%; } .f2 i { background: rgba(47,127,192,0.12); color: var(--protein); }
+  .f3 { bottom: 0; right: 8%; } .f3 i { background: var(--ink); color: #fff; }
+
+  /* ── Менюто в снимки ── */
+  .menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .dish { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow);
+          display: flex; flex-direction: column; min-width: 0; }
+  .dish img { width: 100%; aspect-ratio: 4 / 3.4; object-fit: cover; display: block; }
+  .dish .txt { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 8px; }
+  .dish h3 { font-size: 22px; font-weight: 700; }
+  .dish p { color: var(--ink-soft); font-size: 15px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .tag { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--card-2); color: var(--ink-soft); }
+  .tag.p { background: rgba(47,127,192,0.10); color: var(--protein); }
+  .tag.g { background: var(--accent-soft); color: var(--accent); }
+  .soon { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--ink-soft); }
+  .soon b { color: var(--ink); }
+  .soon .tag { background: var(--card); border: 1px dashed var(--line); }
+
+  /* ── Галерията ── */
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .gallery figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-lg); display: block; box-shadow: var(--shadow); background: var(--card-2); }
+  .gallery figcaption { font-size: 14px; color: var(--ink-soft); }
+  .gallery figcaption b { color: var(--ink); font-weight: 600; }
+
+  /* ── Как работи ── */
+  .how { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: center; }
+  .phone { justify-self: center; width: min(100%, 320px); aspect-ratio: 9 / 16; border-radius: 36px; overflow: hidden;
+           background: #141C18; box-shadow: 0 0 0 10px #fff, 0 0 0 11px var(--line), 0 30px 60px rgba(18,24,21,0.18); }
+  .phone video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .steps { display: flex; flex-direction: column; gap: 14px; }
+  .step { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: start; background: var(--card); border: 1px solid var(--line);
+          border-radius: var(--r-lg); padding: 18px; box-shadow: var(--shadow); }
+  .step .ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+  .step .ic svg { width: 24px; height: 24px; }
+  .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .step p { color: var(--ink-soft); font-size: 15px; }
+  .step.kitchen { border-color: rgba(31,138,91,0.4); background: linear-gradient(180deg, #fff, #F3FAF6); }
+  .step.kitchen .ic { background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #fff; }
+
+  /* ── Пробвай ── */
+  .try { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; background: var(--card); border: 1px solid var(--line);
+         border-radius: var(--r-xl); padding: 28px; box-shadow: var(--shadow); }
+  .try .shot { border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 4 / 3.2; background: var(--card-2); position: relative; }
+  .try .shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 260ms var(--ease); }
+  .controls { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .ctl { display: flex; flex-direction: column; gap: 8px; }
+  .lab { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 8px 15px; border-radius: 999px; cursor: pointer; }
+  .pill:hover { border-color: var(--accent); }
+  .pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .big { display: flex; gap: 28px; align-items: baseline; flex-wrap: wrap; }
+  .big div { display: flex; flex-direction: column; }
+  .big b { font-size: 40px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .big span { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+  .big .kc b { color: var(--kcal); } .big .pr b { color: var(--protein); }
+
+  /* ── Какво търсим ── */
+  .needs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .need { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow);
+          display: flex; flex-direction: column; gap: 10px; }
+  .need .ic { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--card-2); color: var(--ink); }
+  .need .ic svg { width: 22px; height: 22px; }
+  .need h3 { font-size: 18px; font-weight: 700; }
+  .need p { color: var(--ink-soft); font-size: 15px; }
+  .bring { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; padding: 20px 24px; border-radius: var(--r-lg);
+           background: var(--ink); color: #fff; }
+  .bring b { font-size: 15px; }
+  .bring span { color: rgba(255,255,255,0.75); font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
+  .bring span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }
+
+  footer { font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero h1 { white-space: normal; }
+    .stage { max-width: 460px; justify-self: center; margin-top: 0; }
+    .menu, .needs { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: repeat(2, 1fr); }
+    .how, .try { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .nav { justify-content: space-between; }
+  }
+  @media (max-width: 520px) {
+    .chips3 { display: none; }
+    .float { font-size: 11.5px; max-width: 190px; }
+    .try { padding: 18px; }
+    .big b { font-size: 32px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="#top" aria-label="Чийт Код">
+      <svg viewBox="-260 -260 520 520" aria-hidden="true"><g transform="rotate(-45)" fill="none" stroke="currentColor" stroke-width="56"><rect x="-232" y="-51" width="252" height="102" rx="51"/><rect x="-20" y="-51" width="252" height="102" rx="51"/></g></svg>
+      <b>CHEAT<span>CODE</span></b>
+    </a>
+    <div class="nav-links">
+      <a href="#menu">Менюто</a>
+      <a href="#how">Как работи</a>
+      <a href="#try">Пробвай</a>
+      <a href="#kitchen">Кухнята</a>
+    </div>
+    <a class="btn dark" href="https://blag-coaching.com/cheatcode/" target="_blank" rel="noopener">Отвори страницата →</a>
+  </nav>
+
+  <section class="hero" id="top">
+    <h1 class="headline">Храната, която <em>си знае</em> <span class="soft">числата.</span><span class="chips3" aria-hidden="true">
+        <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg></i>
+        <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M5 8l7-5 7 5"/></svg></i>
+        <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></i>
+      </span></h1>
+    <div class="hero-copy">
+      <p class="lede">Човек настройва порцията до грам, а макросите и цената се движат заедно с нея.</p>
+      <div class="ctas">
+        <a class="btn go" href="#try">Пробвай едно ястие →</a>
+        <a class="btn ghost" href="#how"><span class="play">▶</span> Виж как работи</a>
+      </div>
+      <div class="proof">
+        <span class="faces"><img src="/cheatcode/kayma.jpg" alt=""><img src="/cheatcode/yagodi.jpg" alt=""><img src="/cheatcode/gris-oba.jpg" alt=""></span>
+        <span><b>Три ястия днес</b><br>още две в работа</span>
+      </div>
+    </div>
+    <div class="stage" aria-label="Скъсаната верига — знакът на Чийт Код">
+      <div class="glow"></div>
+      <svg class="fallback" id="chainFallback" viewBox="-260 -260 520 520" aria-hidden="true">
+        <g transform="rotate(-45)" fill="none" stroke="currentColor" stroke-width="44"><rect x="-232" y="-51" width="252" height="102" rx="51"/><rect x="-20" y="-51" width="252" height="102" rx="51"/></g>
+      </svg>
+      <canvas id="chain3d" aria-hidden="true"></canvas>
+      <div class="float f1"><i>✓</i><span><small>Поръчка от страницата</small><b>ЧК-5445 · за 19:06</b></span></div>
+      <div class="float f2"><i>Б</i><span><small>Телешки боул</small><b>66 г протеин</b></span></div>
+      <div class="float f3"><i>✦</i><span><small>Настроено от клиента</small><b>до грам</b></span></div>
+    </div>
+  </section>
+
+  <section id="menu">
+    <div class="sec-head">
+      <span class="eyebrow">Менюто</span>
+      <h2>Три ястия, които се <em>сглобяват</em></h2>
+      <p class="lede">Всичко е от части, които се мерят поотделно — затова клиентът може да ги настрои, а кутията излиза точно такава.</p>
+    </div>
+    <div class="menu">
+      <article class="dish">
+        <img src="/cheatcode/kayma.jpg" alt="Телешки боул">
+        <div class="txt">
+          <h3>Телешки боул</h3>
+          <p>Телешка кайма, ориз и доматен сос.</p>
+          <div class="tags"><span class="tag p">66 г протеин</span><span class="tag">без олио</span></div>
+        </div>
+      </article>
+      <article class="dish">
+        <img src="/cheatcode/yagodi.jpg" alt="Анаболно кремче с ягоди">
+        <div class="txt">
+          <h3>Анаболно кремче</h3>
+          <p>Шоколадов крем от овесени трици, отгоре ягоди, банан или протеин.</p>
+          <div class="tags"><span class="tag g">без добавена захар</span><span class="tag">десерт</span></div>
+        </div>
+      </article>
+      <article class="dish">
+        <img src="/cheatcode/gris-choko.jpg" alt="Грис на стероиди">
+        <div class="txt">
+          <h3>Грис на стероиди</h3>
+          <p>Оризов грис с банан, бисквити и дарк чоко поръска.</p>
+          <div class="tags"><span class="tag g">без добавена захар</span><span class="tag">закуска</span></div>
+        </div>
+      </article>
+    </div>
+    <div class="soon"><b>Следват:</b><span class="tag">Пилешки боул</span><span class="tag">Чийзкейк в чаша</span></div>
+  </section>
+
+  <section id="gallery">
+    <div class="sec-head">
+      <span class="eyebrow">Една основа</span>
+      <h2>Една рецепта, <em>много кутии</em></h2>
+      <p class="lede">Едно и също ястие, сглобено различно. Снимките са на истински кутии.</p>
+    </div>
+    <div class="gallery">
+      <figure><img src="/cheatcode/gris.jpg" alt="Грис чист" loading="lazy"><figcaption><b>Грис</b> чист</figcaption></figure>
+      <figure><img src="/cheatcode/gris-banan.jpg" alt="Грис с банан" loading="lazy"><figcaption><b>Грис</b> с банан</figcaption></figure>
+      <figure><img src="/cheatcode/gris-biskviti.jpg" alt="Грис с бисквити" loading="lazy"><figcaption><b>Грис</b> с бисквити</figcaption></figure>
+      <figure><img src="/cheatcode/gris-choko.jpg" alt="Грис с дарк чоко" loading="lazy"><figcaption><b>Грис</b> с дарк чоко</figcaption></figure>
+      <figure><img src="/cheatcode/kakao.jpg" alt="Кремче без глазура" loading="lazy"><figcaption><b>Кремче</b> без глазура</figcaption></figure>
+      <figure><img src="/cheatcode/banan.jpg" alt="Кремче с банан" loading="lazy"><figcaption><b>Кремче</b> с банан</figcaption></figure>
+      <figure><img src="/cheatcode/protein.jpg" alt="Кремче с протеин" loading="lazy"><figcaption><b>Кремче</b> с протеин</figcaption></figure>
+      <figure><img src="/cheatcode/yagodi.jpg" alt="Кремче с ягоди" loading="lazy"><figcaption><b>Кремче</b> с ягоди</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="how">
+      <div class="phone"><video src="/cokitchen/configurator.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Клип: конфигураторът в действие"></video></div>
+      <div class="steps">
+        <div class="sec-head" style="margin-bottom:8px">
+          <span class="eyebrow">Как работи</span>
+          <h2>От телефона <em>до кутията</em></h2>
+        </div>
+        <div class="step">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span>
+          <div><h3>Избира ястие</h3><p>На страницата, от телефона, ден по-рано.</p></div>
+        </div>
+        <div class="step">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg></span>
+          <div><h3>Настройва до грам</h3><p>Повече месо, по-малко ориз — числата се движат с него.</p></div>
+        </div>
+        <div class="step kitchen">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.9A4 4 0 0 1 8 6a5 5 0 0 1 8 0 4 4 0 0 1 2 7.9V20H6z"/><path d="M6 17h12"/></svg></span>
+          <div><h3>Готвим в кухнята</h3><p>На партиди, после всяка кутия се сглобява на кантар по поръчката.</p></div>
+        </div>
+        <div class="step">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+          <div><h3>Взима кутията</h3><p>С етикет: грамове, алергени и код, който вписва ястието в приложението.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="try">
+    <div class="sec-head">
+      <span class="eyebrow">Пробвай</span>
+      <h2>Едно ястие, <em>твоето</em></h2>
+    </div>
+    <div class="try">
+      <div class="shot"><img id="dishPhoto" src="/cheatcode/yagodi.jpg" alt=""></div>
+      <div class="controls">
+        <div class="ctl"><span class="lab">Ястие</span><div class="pills" id="dishPills"></div></div>
+        <div class="ctl"><span class="lab">Размер</span><div class="pills" id="sizePills"></div></div>
+        <div class="ctl" id="topCtl"><span class="lab" id="topLab">Отгоре</span><div class="pills" id="topPills"></div></div>
+        <div class="big">
+          <div class="kc"><b id="kcal">0</b><span>ккал</span></div>
+          <div class="pr"><b id="prot">0</b><span>г протеин</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="kitchen">
+    <div class="sec-head">
+      <span class="eyebrow">Кухнята</span>
+      <h2>Какво търсим <em>от вас</em></h2>
+    </div>
+    <div class="needs">
+      <div class="need">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <h3>Часове в кухнята</h3>
+        <p>Няколко пъти в седмицата, за готвене на партиди и сглобяване на кутиите.</p>
+      </div>
+      <div class="need">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+        <h3>Място за взимане</h3>
+        <p>Клиентите да минават да си вземат поръчката, в уговорени часове.</p>
+      </div>
+      <div class="need">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 10h14M9 6v1M9 14v3"/></svg></span>
+        <h3>Хладилник и съхранение</h3>
+        <p>Място за продуктите между готвенето и взимането.</p>
+      </div>
+    </div>
+    <div class="bring"><b>От наша страна:</b><span>готово меню</span><span>страница за поръчки</span><span>клиенти от Blag Coaching</span></div>
+  </section>
+
+  <footer>
+    <span>CHEAT CODE · линия на Blag Coaching · Благ Холдинг ЕООД</span>
+    <span>blag-coaching.com/cheatcode</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  /* Само снимката и двете числа, които са самото ястие — калории и протеин.
+     Данните са от cheatcode/page.html (средни стойности на 100 г). */
+  var DISHES = [
+    { name: 'Анаболно кремче', photo: { yagodi: '/cheatcode/yagodi.jpg', banan: '/cheatcode/banan.jpg', protein: '/cheatcode/protein.jpg', none: '/cheatcode/kakao.jpg' }, topLabel: 'Глазура', top: 'yagodi',
+      base: [[246, 17.3, 'trici'], [228, 19.6, 'kakao']],
+      sizes: [['Малка', { trici: 50, kakao: 10 }], ['Средна', { trici: 100, kakao: 20 }], ['Голяма', { trici: 150, kakao: 30 }]],
+      tops: [['yagodi', 'Ягоди', 100, 32, 0.7], ['banan', 'Банан', 100, 89, 1.1], ['protein', 'Протеинова глазура', 30, 380, 75], ['none', 'Без', 0, 0, 0]] },
+    { name: 'Телешки боул', photo: '/cheatcode/kayma.jpg',
+      base: [[156, 22.51, 'kayma'], [339, 8.5, 'oriz'], [20, 1, 'pyure']],
+      sizes: [['Малка', { kayma: 150, oriz: 75, pyure: 100 }], ['Средна', { kayma: 250, oriz: 100, pyure: 125 }], ['Голяма', { kayma: 350, oriz: 150, pyure: 175 }]],
+      tops: [] },
+    { name: 'Грис на стероиди', photo: { choko: '/cheatcode/gris-choko.jpg', _: '/cheatcode/gris-oba.jpg' }, topLabel: 'Отгоре', top: 'none',
+      base: [[348, 6.6, 'gris'], [89, 1.1, 'banan'], [425, 8, 'biskviti', 30]],
+      sizes: [['Малка', { gris: 60, banan: 60 }], ['Средна', { gris: 80, banan: 100 }], ['Голяма', { gris: 100, banan: 140 }]],
+      tops: [['none', 'Нищо', 0, 0, 0], ['choko', 'Дарк чоко поръска', 40, 92, 7.5], ['gorski', 'Горски плодове', 100, 44, 0.9], ['protein', 'Протеинова глазура', 30, 380, 75]] }
+  ];
+  var st = { d: 0, s: 1, top: 'yagodi' };
+  var $ = function (id) { return document.getElementById(id); };
+  function pills(el, list, active, pick) {
+    el.textContent = '';
+    list.forEach(function (label, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pill'; b.textContent = label;
+      b.setAttribute('aria-pressed', i === active ? 'true' : 'false');
+      b.addEventListener('click', function () { pick(i); });
+      el.appendChild(b);
+    });
+  }
+  function render() {
+    var d = DISHES[st.d], size = d.sizes[st.s][1], kcal = 0, prot = 0;
+    d.base.forEach(function (b) { var g = b[3] != null ? b[3] : size[b[2]]; kcal += b[0] * g / 100; prot += b[1] * g / 100; });
+    var t = d.tops.filter(function (x) { return x[0] === st.top; })[0];
+    if (t) { kcal += t[3] * t[2] / 100; prot += t[4] * t[2] / 100; }
+    $('kcal').textContent = Math.round(kcal);
+    $('prot').textContent = Math.round(prot);
+    var pic = typeof d.photo === 'string' ? d.photo : (d.photo[st.top] || d.photo._);
+    var img = $('dishPhoto');
+    if (img.getAttribute('src') !== pic) img.setAttribute('src', pic);
+    img.alt = d.name;
+    pills($('dishPills'), DISHES.map(function (x) { return x.name; }), st.d, function (i) { st.d = i; st.top = DISHES[i].top || null; render(); });
+    pills($('sizePills'), d.sizes.map(function (x) { return x[0]; }), st.s, function (i) { st.s = i; render(); });
+    $('topCtl').hidden = !d.tops.length;
+    if (d.tops.length) {
+      $('topLab').textContent = d.topLabel;
+      pills($('topPills'), d.tops.map(function (x) { return x[1]; }), d.tops.findIndex(function (x) { return x[0] === st.top; }),
+            function (i) { st.top = d.tops[i][0]; render(); });
+    }
+  }
+  render();
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* Скъсаната верига като стъклен обект. Две звена-капсули под прав ъгъл,
+   второто с пролука там, където минава през първото; около пролуката —
+   отломките от знака, в зеленото на марката. Ако WebGL липсва, остава
+   плоският SVG отдолу. Първият кадър се рисува веднага, за да е страницата
+   пълна и без движение. */
+(function () {
+  var canvas = document.getElementById('chain3d');
+  if (!window.THREE || !canvas) return;
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true }); }
+  catch (e) { return; }
+  document.getElementById('chainFallback').style.display = 'none';
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+  camera.position.set(0, 0, 12.5);
+
+  /* Околна светлина за отраженията: малка сцена от светли плоскости. */
+  var envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x9aa69f);
+  [[0, 6, 0, 0xffffff, 14], [-6, 1, 3, 0xdff5ea, 6], [6, -2, 2, 0xffffff, 5], [0, -6, 0, 0xc9d3cc, 4]].forEach(function (p) {
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(p[4], p[4]), new THREE.MeshBasicMaterial({ color: p[3], side: THREE.DoubleSide }));
+    m.position.set(p[0], p[1], p[2]); m.lookAt(0, 0, 0); envScene.add(m);
+  });
+  var pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xdfe6df, 0.55));
+  var key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3, 5, 6); scene.add(key);
+  var rim = new THREE.PointLight(0x2fb377, 1.4, 20); rim.position.set(-3, -2, 3); scene.add(rim);
+
+  /* Капсула (стадион): две прави и две дъги. u ∈ [a, b] е частта от обиколката. */
+  class Stadium extends THREE.Curve {
+    constructor(half, r, a, b) { super(); this.h = half; this.r = r; this.a = a; this.b = b; }
+    getPoint(t, target) {
+      var h = this.h, r = this.r, L = 4 * h + 2 * Math.PI * r;
+      var s = (this.a + (this.b - this.a) * t) * L, v = target || new THREE.Vector3();
+      s = ((s % L) + L) % L;
+      if (s < 2 * h) return v.set(-h + s, r, 0);
+      s -= 2 * h;
+      if (s < Math.PI * r) { var q = Math.PI / 2 - s / r; return v.set(h + r * Math.cos(q), r * Math.sin(q), 0); }
+      s -= Math.PI * r;
+      if (s < 2 * h) return v.set(h - s, -r, 0);
+      s -= 2 * h;
+      var w = -Math.PI / 2 - s / r; return v.set(-h + r * Math.cos(w), r * Math.sin(w), 0);
+    }
+  }
+
+  var glass = new THREE.MeshPhysicalMaterial({
+    color: 0xdde7e1, metalness: 0.35, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.06,
+    envMapIntensity: 1.7
+  });
+  var H = 0.95, R = 0.62, T = 0.2;
+  var chain = new THREE.Group();
+
+  var link1 = new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0, 1), 220, T, 28, true), glass);
+  link1.position.x = -0.95;
+  chain.add(link1);
+
+  /* Второто звено е завъртяно под прав ъгъл и е скъсано на външната си
+     дъга, където нищо не я закрива — при звеното, което минава през
+     първото, пролуката оставаше скрита зад него. Пролуката е 0.30–0.43. */
+  var link2 = new THREE.Group();
+  link2.add(new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0.43, 1.30), 220, T, 28, false), glass));
+  var capGeo = new THREE.IcosahedronGeometry(T * 1.02, 0);
+  var c1 = new Stadium(H, R, 0, 1).getPoint(0.43), c2 = new Stadium(H, R, 0, 1).getPoint(0.30);
+  [c1, c2].forEach(function (p) { var m = new THREE.Mesh(capGeo, glass); m.position.copy(p); link2.add(m); });
+  link2.rotation.x = Math.PI / 2;
+  link2.position.x = 0.95;
+  chain.add(link2);
+
+  /* Отломките: къде са, колко са големи, какви са — по знака. */
+  var green = new THREE.MeshStandardMaterial({ color: 0x2fb377, roughness: 0.35, metalness: 0.1, emissive: 0x0d3b26, emissiveIntensity: 0.25 });
+  var shards = [];
+  var gapAt = new THREE.Vector3().copy(new Stadium(H, R, 0, 1).getPoint(0.365)).applyEuler(new THREE.Euler(Math.PI / 2, 0, 0)).add(new THREE.Vector3(0.95, 0, 0));
+  [['tet', 0.16, [-0.2, 0.9, 0.5]], ['box', 0.12, [0.35, 1.15, -0.2]], ['oct', 0.14, [-0.65, 0.6, 0.85]],
+   ['tet', 0.1, [0.15, -0.95, 0.6]], ['box', 0.09, [-0.5, -0.8, -0.4]], ['oct', 0.11, [0.55, -0.7, 0.3]],
+   ['sph', 0.07, [-0.1, 1.45, 0.1]], ['tet', 0.08, [0.7, 0.4, 0.75]], ['box', 0.07, [-0.85, 0.1, -0.7]], ['sph', 0.06, [0.25, -1.35, -0.3]]]
+    .forEach(function (d, i) {
+      var g = d[0] === 'tet' ? new THREE.TetrahedronGeometry(d[1]) : d[0] === 'box' ? new THREE.BoxGeometry(d[1], d[1], d[1])
+            : d[0] === 'oct' ? new THREE.OctahedronGeometry(d[1]) : new THREE.SphereGeometry(d[1], 16, 12);
+      var m = new THREE.Mesh(g, green);
+      m.position.set(gapAt.x + d[2][0], gapAt.y + d[2][1], gapAt.z + d[2][2]);
+      m.userData = { base: m.position.clone(), seed: i * 1.7 + 0.3 };
+      m.rotation.set(i, i * 0.7, i * 1.3);
+      chain.add(m); shards.push(m);
+    });
+
+  /* Наклонът обръща скъсаното звено към гледащия; люлеенето е малко, за да
+     не завърта пролуката настрани. */
+  chain.rotation.set(-0.8, -0.35, -0.85);
+  scene.add(chain);
+
+  var stage = canvas.parentElement;
+  function size() {
+    var w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  size();
+  if (window.ResizeObserver) new ResizeObserver(function () { size(); draw(last); }).observe(stage);
+
+  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mx = 0, my = 0, last = 0;
+  stage.addEventListener('pointermove', function (e) {
+    var r = stage.getBoundingClientRect();
+    mx = ((e.clientX - r.left) / r.width - 0.5); my = ((e.clientY - r.top) / r.height - 0.5);
+  });
+  function draw(t) {
+    last = t;
+    var s = t / 1000;
+    chain.rotation.y = -0.35 + Math.sin(s * 0.35) * 0.14 + mx * 0.22;
+    chain.rotation.x = -0.8 + Math.sin(s * 0.27) * 0.06 + my * 0.16;
+    shards.forEach(function (m) {
+      var k = m.userData.seed;
+      m.position.y = m.userData.base.y + Math.sin(s * 0.9 + k) * 0.06;
+      m.rotation.x += 0.004; m.rotation.y += 0.006;
+    });
+    renderer.render(scene, camera);
+  }
+  draw(0);
+  if (!still) (function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
+})();
+</script>
+
+</body>
+</html>

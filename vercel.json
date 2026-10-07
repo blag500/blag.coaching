@@ -9,6 +9,10 @@
       "destination": "/invest/index.html"
     },
     {
+      "source": "/cokitchen/",
+      "destination": "/cokitchen/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -22,6 +26,11 @@
     {
       "source": "/invest",
       "destination": "/invest/",
+      "permanent": false
+    },
+    {
+      "source": "/cokitchen",
+      "destination": "/cokitchen/",
       "permanent": false
     }
   ],
