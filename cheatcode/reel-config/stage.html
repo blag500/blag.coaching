@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<title>Чийт Код — конфигураторът</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Onest:wght@500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  /* Сцената: истинската страница в рамка, надпис отгоре, тишина отдолу.
+     540×960 CSS при deviceScaleFactor 2 = 1080×1920. Долните ~14% са празни,
+     защото там седи интерфейсът на платформата. */
+  :root { --ground: #141C18; --ink: #E9F0EA; --soft: #A3B3A7; --accent: #4FBF8E; --line: #35473D; }
+  html, body { margin: 0; width: 540px; height: 960px; overflow: hidden; background: var(--ground); }
+  /* 'locl' 0: с lang="bg" шрифтът рисува българските курсивни форми — д като g,
+     т като m. Същият капан като в приложението. */
+  body { position: relative; font-family: 'Onest', sans-serif; color: var(--ink); font-feature-settings: 'locl' 0;
+         background:
+           radial-gradient(ellipse 110% 50% at 50% -6%, rgba(79,191,142,0.16) 0%, transparent 62%),
+           radial-gradient(ellipse 100% 60% at 88% 92%, rgba(90,120,200,0.08) 0%, transparent 62%),
+           var(--ground); }
+  .cap { position: absolute; left: 0; right: 0; top: 34px; text-align: center; padding: 0 28px; }
+  .cap p { margin: 0; font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 25px;
+           line-height: 1.16; letter-spacing: -0.01em; position: absolute; left: 28px; right: 28px; top: 0; }
+  .cap p span { color: var(--accent); }
+  .phone { position: absolute; left: 80px; top: 150px; width: 380px; height: 676px; border-radius: 30px;
+           overflow: hidden; box-shadow: 0 0 0 1px var(--line), 0 24px 60px rgba(0,0,0,0.45); background: #141C18; }
+  iframe { width: 380px; height: 676px; border: 0; display: block; }
+  .finger { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+            background: rgba(233,240,234,0.30); box-shadow: 0 0 0 2px rgba(233,240,234,0.85), 0 6px 18px rgba(0,0,0,0.35);
+            pointer-events: none; opacity: 0; }
+  .ring { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+          box-shadow: 0 0 0 2px var(--accent); pointer-events: none; opacity: 0; }
+  .end { position: absolute; inset: 0; display: grid; place-items: center; background: var(--ground); opacity: 0; }
+  .end .in { display: grid; justify-items: center; gap: 0; transform: translateY(-60px); }
+  .end svg { width: 150px; height: 150px; color: var(--accent); overflow: visible; }
+  .end h1 { margin: 26px 0 0; font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 44px; letter-spacing: 0.01em; }
+  .end h1 span { color: var(--accent); }
+  .end .tag { margin: 12px 0 0; font-size: 21px; color: var(--soft); font-weight: 600; }
+  .end .url { margin: 30px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 17px; color: var(--accent); }
+</style>
+</head>
+<body>
+  <div class="cap" id="cap">
+    <p id="c0">Готово ястие.<br><span>Настройваш го до грам.</span></p>
+    <p id="c1">Плъзгаш.<br><span>Макросите и цената</span> се движат с теб.</p>
+    <p id="c2">Добавяш.<br><span>Готово.</span></p>
+  </div>
+  <div class="phone" id="phone"><iframe id="app" src="/cheatcode/"></iframe></div>
+  <div class="ring" id="ring"></div>
+  <div class="finger" id="finger"></div>
+  <div class="end" id="end">
+    <div class="in">
+      <!-- Знакът в скъсано състояние — същите единици като сплаша на страницата. -->
+      <svg viewBox="-260 -260 520 520" aria-hidden="true">
+        <g transform="rotate(-45)">
+          <rect id="eL" x="-218" y="-51" width="252" height="102" rx="51" fill="none" stroke="currentColor" stroke-width="48"/>
+          <rect id="eR" x="-34" y="-51" width="252" height="102" rx="51" fill="none" stroke="currentColor" stroke-width="48"/>
+          <polygon id="eGap" fill="#141C18" points="-26,-120 -44,-66 -20,-24 -48,22 -24,64 -42,120 34,120 16,62 44,18 20,-28 42,-74 24,-120"/>
+          <g id="eShards" fill="currentColor">
+            <rect x="-15" y="-15" width="30" height="30" data-x="-78" data-y="-168" data-r="0.35"/>
+            <rect x="-11" y="-11" width="22" height="22" data-x="-8" data-y="-196" data-r="0.7"/>
+            <polygon points="0,-24.8 23.2,16.8 -23.2,16.8" data-x="-128" data-y="-112" data-r="-0.4"/>
+            <polygon points="0,-18.6 17.4,12.6 -17.4,12.6" data-x="-30" data-y="-130" data-r="0.9"/>
+            <circle r="8.3" data-x="-60" data-y="-232" data-r="0"/>
+            <rect x="-13" y="-13" width="26" height="26" data-x="84" data-y="150" data-r="0.5"/>
+            <polygon points="0,-18.6 17.4,12.6 -17.4,12.6" data-x="22" data-y="136" data-r="2.6"/>
+            <polygon points="19.8,0 9.9,17.1 -9.9,17.1 -19.8,0 -9.9,-17.1 9.9,-17.1" data-x="70" data-y="214" data-r="0.2"/>
+            <circle r="8.3" data-x="-6" data-y="176" data-r="0"/>
+            <polygon points="0,-14.9 13.9,10.1 -13.9,10.1" data-x="122" data-y="96" data-r="1.9"/>
+          </g>
+        </g>
+      </svg>
+      <h1>CHEAT<span>CODE</span></h1>
+      <p class="tag">Храната, която си знае числата</p>
+      <p class="url">blag-coaching.com/cheatcode</p>
+    </div>
+  </div>
+
+<script>
+/* Всеки кадър е функция на t. Сцената не помни нищо между кадрите освен
+   кои еднократни действия вече са изпълнени — а те се изпълняват в един и
+   същ ред при всяко пускане, защото кадрите вървят по ред и часовникът на
+   страницата е виртуален (page.clock в film.mjs). */
+window.__DUR = 15;
+const FPS = 30;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const lerp = (a, b, p) => a + (b - a) * p;
+const ease = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const outBack = p => { const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+
+const app = () => document.getElementById('app');
+const doc = () => app().contentDocument;
+const win = () => app().contentWindow;
+const $i = sel => doc().querySelector(sel);
+
+/* Центърът на елемент от страницата в координатите на сцената. */
+function at(sel, dx = 0, dy = 0) {
+  const el = typeof sel === 'string' ? $i(sel) : sel;
+  if (!el) return null;
+  const r = el.getBoundingClientRect(), p = app().getBoundingClientRect();
+  return { x: p.left + r.left + r.width / 2 + dx, y: p.top + r.top + r.height / 2 + dy, r };
+}
+/* Мястото на палеца на плъзгач за дадена стойност. */
+function thumb(id, v) {
+  const el = doc().getElementById(id); if (!el) return null;
+  const r = el.getBoundingClientRect(), p = app().getBoundingClientRect();
+  const f = (v - +el.min) / (+el.max - +el.min);
+  return { x: p.left + r.left + 11 + f * (r.width - 22), y: p.top + r.top + r.height / 2 };
+}
+function setRange(id, v) {
+  const el = doc().getElementById(id); if (!el) return;
+  const step = +el.step || 1, q = Math.round(v / step) * step;
+  if (+el.value !== q) { el.value = q; el.dispatchEvent(new Event('input', { bubbles: true })); }
+}
+function click(sel) { const el = typeof sel === 'string' ? $i(sel) : sel; if (el) el.click(); }
+function scrollTo(y) { win().scrollTo(0, Math.round(y)); }
+const dishCard = n => doc().querySelectorAll('#menuView button.dish')[n];
+const sizeBtn = n => doc().querySelectorAll('#sizes button')[n];
+
+/* Еднократните действия, по време. */
+const done = new Set();
+const once = (t, at_, key, fn) => { if (t >= at_ && !done.has(key)) { done.add(key); fn(); } };
+
+/* Скролът се плъзга между две записани стойности; целта се мери в мига на
+   тръгване, от истинското място на елемента. */
+const scrolls = {};
+function glide(t, key, a, b, target) {
+  if (t < a) return;
+  if (!scrolls[key]) { const from = win().scrollY; scrolls[key] = { from, to: Math.max(0, from + target()) }; }
+  const s = scrolls[key];
+  scrollTo(lerp(s.from, s.to, ease(seg(t, a, b))));
+}
+
+let fingerPos = { x: 330, y: 640 };
+const targets = {};
+function aim(key, fn) { if (!(key in targets)) targets[key] = fn(); return targets[key]; }
+
+window.__apply = function (t) {
+  /* ── Действия в страницата ── */
+  once(t, 1.55, 'openBowl', () => click(dishCard(1)));
+  once(t, 3.05, 'large', () => click(sizeBtn(2)));
+  glide(t, 'toExact', 3.3, 3.9, () => at('#exact').r.top - 70);
+  once(t, 4.05, 'exact', () => click('#exact'));
+  glide(t, 'toSliders', 4.25, 4.95, () => at('#base').r.top - 40);
+  // Оризът: 150 → 50 г, после каймата: 350 → 300 г.
+  if (t >= 5.4 && t <= 8.1) setRange('s_kayma:oriz', lerp(150, 50, ease(seg(t, 5.5, 7.9))));
+  if (t >= 8.3 && t <= 9.9) setRange('s_kayma:kayma', lerp(350, 300, ease(seg(t, 8.4, 9.7))));
+  once(t, 10.75, 'add', () => click('#orderBtn'));
+  // Изгледът се сменя по таймер след натискането — държим менюто горе през цялата сцена.
+  if (t >= 10.8 && t < 12.3) scrollTo(0);
+
+  /* ── Пръстът ── */
+  const path = [
+    // [от, до, цел]
+    [0.6, 1.35, () => aim('card', () => at(dishCard(1), 0, -10))],
+    [2.3, 2.95, () => aim('size', () => at(sizeBtn(2)))],
+    [3.95, 3.96, () => at('#exact')],
+    [5.0, 5.45, () => thumb('s_kayma:oriz', 150)],
+    [5.45, 8.1, true, () => thumb('s_kayma:oriz', +doc().getElementById('s_kayma:oriz')?.value || 50)],
+    [8.1, 8.35, () => thumb('s_kayma:kayma', 350)],
+    [8.35, 9.9, true, () => thumb('s_kayma:kayma', +doc().getElementById('s_kayma:kayma')?.value || 300)],
+    [10.1, 10.7, () => aim('btn', () => at('#orderBtn'))],
+  ];
+  let pos = fingerPos;
+  for (const row of path) {
+    const [a, b] = row, follow = row[2] === true, fn = row[row.length - 1];
+    if (t < a) break;
+    const target = fn(); if (!target) continue;
+    // Влаченето е на палеца, не към него: пръстът стои точно върху плъзгача.
+    if (follow) { pos = target; if (t >= b) fingerPos = target; continue; }
+    pos = t >= b ? target : { x: lerp(pos.x, target.x, ease(seg(t, a, b))), y: lerp(pos.y, target.y, ease(seg(t, a, b))) };
+    if (t >= b) fingerPos = target;
+  }
+  const taps = [1.55, 3.05, 4.05, 10.75];
+  const press = taps.reduce((m, k) => Math.max(m, 1 - Math.abs(t - k) / 0.12), 0);
+  const drag = (t > 5.45 && t < 8.1) || (t > 8.35 && t < 9.9);
+  const fingerOn = seg(t, 0.4, 0.7) * (1 - seg(t, 11.3, 11.6));
+  const f = document.getElementById('finger');
+  f.style.opacity = fingerOn;
+  f.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${1 - 0.18 * Math.max(clamp(press), drag ? 1 : 0)})`;
+  const ringP = taps.reduce((m, k) => (t >= k && t < k + 0.45 ? seg(t, k, k + 0.45) : m), 0);
+  const ring = document.getElementById('ring');
+  ring.style.opacity = ringP > 0 ? (1 - ringP) * fingerOn : 0;
+  ring.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${1 + ringP * 1.4})`;
+
+  /* ── Надписите ── */
+  const caps = [[0.15, 3.9], [4.3, 10.1], [10.4, 12.2]];
+  caps.forEach(([a, b], i) => {
+    const p = document.getElementById('c' + i);
+    const o = seg(t, a, a + 0.35) * (1 - seg(t, b - 0.3, b));
+    p.style.opacity = o;
+    p.style.transform = `translateY(${(1 - seg(t, a, a + 0.45)) * 14}px)`;
+  });
+
+  /* ── Краят: знакът се скъсва, името, адресът ── */
+  const e = document.getElementById('end');
+  e.style.opacity = ease(seg(t, 12.2, 12.6));
+  const pin = ease(seg(t, 12.45, 12.95)), crack = 1 - Math.pow(1 - seg(t, 13.0, 13.3), 4), pb = outBack(seg(t, 13.0, 13.45));
+  const gap = 14 * crack;
+  document.getElementById('eL').setAttribute('transform', `translate(${-gap - (1 - pin) * 60} 0)`);
+  document.getElementById('eR').setAttribute('transform', `translate(${gap + (1 - pin) * 60} 0)`);
+  document.getElementById('eL').style.opacity = pin; document.getElementById('eR').style.opacity = pin;
+  document.getElementById('eGap').setAttribute('transform', `scale(${Math.max(crack, 0.0001)} 1)`);
+  document.querySelectorAll('#eShards > *').forEach((s, i) => {
+    const x = +s.dataset.x * pb, y = +s.dataset.y * pb, r = (+s.dataset.r + (1 - pb) * 3 * (i % 2 ? 1 : -1)) * 180 / Math.PI;
+    s.setAttribute('transform', `translate(${x} ${y}) rotate(${r})`);
+    s.style.opacity = clamp(pb * 1.5);
+  });
+  const txt = document.querySelectorAll('.end h1, .end .tag, .end .url');
+  [[13.3, 13.8], [13.6, 14.1], [13.9, 14.3]].forEach(([a, b], i) => {
+    const p = ease(seg(t, a, b));
+    txt[i].style.opacity = p; txt[i].style.transform = `translateY(${(1 - p) * 12}px)`;
+  });
+};
+
+/* Готовността: шрифтовете на сцената, страницата в рамката, нейните шрифтове. */
+window.__boot = async function () {
+  await Promise.all(['800 25px Unbounded', '600 21px Onest', '500 17px "JetBrains Mono"'].map(f => document.fonts.load(f)));
+  await document.fonts.ready;
+  await new Promise(r => { const ok = () => doc() && doc().readyState === 'complete' && $i('#menuView button.dish'); const k = () => ok() ? r() : setTimeout(k, 50); k(); });
+  await doc().fonts.ready;
+  const st = doc().createElement('style');
+  st.textContent = '*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}' +
+                   'html{scroll-behavior:auto!important}::-webkit-scrollbar{display:none}';
+  doc().head.appendChild(st);
+  return true;
+};
+</script>
+</body>
+</html>
