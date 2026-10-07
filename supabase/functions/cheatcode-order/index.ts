@@ -121,7 +121,10 @@ Deno.serve(async (req) => {
   if (!saved) return json({ error: 'Поръчката не се записа. Опитай пак.' }, 500, headers)
 
   /* Известието е след записа и не решава отговора: ако push-ът падне,
-     поръчката пак е в базата, а клиентът пак получава кода си. */
+     поръчката пак е в базата, а клиентът пак получава кода си. Резултатът
+     обаче се записва в отговора и в лога — без него една тиха грешка
+     изглеждаше като успех (send-push 400 на 07.10). */
+  let push: number | string = 'no-owner'
   try {
     // Само собственикът: редът носи име и телефон на клиент (виж 126).
     const { data: owners } = await db.from('cheatcode_owner').select('user_id')
@@ -129,7 +132,7 @@ Deno.serve(async (req) => {
     if (ids.length) {
       const what = lines.map((l: Line) => (l.qty > 1 ? l.qty + '× ' : '') + l.name).join(', ')
       const eur = (total / 100).toFixed(2).replace('.', ',') + ' €'
-      await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
         body: JSON.stringify({
@@ -139,10 +142,13 @@ Deno.serve(async (req) => {
           tag: 'cheatcode-order',
         }),
       })
+      push = res.status
+      if (!res.ok) console.error('push', res.status, await res.text())
     }
   } catch (e) {
+    push = 'error'
     console.error('push', e)
   }
 
-  return json({ code, test }, 200, headers)
+  return json({ code, test, push }, 200, headers)
 })
