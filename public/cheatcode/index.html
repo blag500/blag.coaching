@@ -183,7 +183,8 @@
   }
 
   /* ── Сплашът ───────────────────────────────────────────────
-     Общо 1.9 секунди със слизането. Приложението си позволява 3.2, защото
+     Общо около 2.2 секунди със слизането — скъсването иска своите 0.9.
+     Приложението си позволява 3.2, защото
      се отваря всеки ден и ритуалът има смисъл; страница за поръчка няма
      такова право — там всяка десета е между човека и обяда му. */
   .splash {
@@ -210,66 +211,87 @@
   .splash-rail.right { transform-origin: right; }
 
   .splash-mid { flex: none; display: grid; justify-items: center; text-align: center; }
-  /* Знакът се скъсва пред очите — финалът на клипа „Скъсай веригата“
-     (`breakMark` в cheatcode/reel/scene.js), в същите единици. Две дебели
-     звена влизат по диагонала отвън, фугата се отваря, отломките излитат.
-     Отломките, отхвърлени за знака под 32 px, тук са на 144 px — четат се,
-     както във видеото. Фугата е запълнена с цвета на фона, не маска: Safari
-     не прерисува маска, чието съдържание се анимира с CSS.
+  /* Чийт Код къса веригата — като началото на клипа „Скъсай веригата“
+     (cheatcode/reel/scene.js), не само финалът му. Две сиви звена влизат
+     отвън и се затварят: старият навик. Веригата се напъва — тресе се
+     все по-силно и се свива навътре — и при скъсването става зелена:
+     фугата се отваря, звената се раздалечават, отломките излитат. Името
+     CHEAT CODE идва в този миг, затова то е, което къса веригата.
+     Единици като breakMark в клипа. Фугата е в цвета на фона, не маска:
+     Safari не прерисува маска, чието съдържание се анимира с CSS.
      Основните стойности са крайното състояние; анимациите тръгват `both`,
-     така че без движение остава скъсаната верига, не празно място. */
+     така че без движение остава скъсаната, зелена верига. */
   .splash-mark { display: block; width: 144px; height: 144px; color: var(--accent); }
-  /* Влизането избледнява целия знак, не всяко звено поотделно: две
-     полупрозрачни звена светват там, където се застъпват. */
-  .splash-mark svg { width: 100%; height: 100%; display: block; overflow: visible;
-                     animation: bmIn 450ms var(--ease) 120ms both; }
+  /* Целият знак: влиза, сив е, напъва се, после позеленява. Избледнява
+     цял, не по звено — две полупрозрачни звена светват при застъпването. */
+  .splash-mark svg {
+    width: 100%; height: 100%; display: block; overflow: visible; transform-origin: 50% 50%;
+    animation: bmIn 300ms var(--ease) 120ms both, bmStrain 1400ms 120ms both, bmTint 1400ms 120ms both;
+  }
   @keyframes bmIn { from { opacity: 0; } }
+  @keyframes bmTint {
+    0%, 52%   { color: var(--ink-faint); }
+    58%, 100% { color: var(--accent); }
+  }
+  /* Напъването: все по-голямо люлеене, после свиване преди скъсването и
+     отскок след него. */
+  @keyframes bmStrain {
+    0%, 22% { transform: rotate(0) scale(1); }
+    28% { transform: rotate(-1.2deg) scale(1); }
+    33% { transform: rotate(1.4deg) scale(0.995); }
+    38% { transform: rotate(-2deg) scale(0.99); }
+    43% { transform: rotate(2.4deg) scale(0.985); }
+    48% { transform: rotate(-3deg) scale(0.975); }
+    53% { transform: rotate(0) scale(0.95); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+    62% { transform: rotate(0) scale(1.05); }
+    74%, 100% { transform: rotate(0) scale(1); }
+  }
   .bm-link { fill: none; stroke: currentColor; stroke-width: 48; }
-  .bm-link.l { transform: translateX(-14px); animation: bmLinkL 1000ms 120ms both; }
-  .bm-link.r { transform: translateX(14px);  animation: bmLinkR 1000ms 120ms both; }
+  .bm-link.l { transform: translateX(-14px); animation: bmLinkL 1400ms 120ms both; }
+  .bm-link.r { transform: translateX(14px);  animation: bmLinkR 1400ms 120ms both; }
   @keyframes bmLinkL {
     0%   { transform: translateX(-60px); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
-    45%  { transform: translateX(0); }
-    50%  { transform: translateX(0); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    68%, 100% { transform: translateX(-14px); }
+    22%  { transform: translateX(0); }
+    53%  { transform: translateX(3px); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+    70%, 100% { transform: translateX(-14px); }
   }
   @keyframes bmLinkR {
     0%   { transform: translateX(60px); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
-    45%  { transform: translateX(0); }
-    50%  { transform: translateX(0); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    68%, 100% { transform: translateX(14px); }
+    22%  { transform: translateX(0); }
+    53%  { transform: translateX(-3px); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+    70%, 100% { transform: translateX(14px); }
   }
-  .bm-gap { fill: var(--ground-flat); animation: bmGap 1000ms 120ms both; }
+  .bm-gap { fill: var(--ground-flat); animation: bmGap 1400ms 120ms both; }
   @keyframes bmGap {
-    0%, 50% { transform: scaleX(0); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    68%, 100% { transform: scaleX(1); }
+    0%, 54% { transform: scaleX(0); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+    70%, 100% { transform: scaleX(1); }
   }
   .bm-shards > * {
     fill: currentColor;
     transform: translate(var(--x), var(--y)) rotate(var(--r));
-    animation: bmShard 1000ms 120ms both;
+    animation: bmShard 1400ms 120ms both;
   }
   .bm-shards > :nth-child(even) { --spin: -3rad; }
   @keyframes bmShard {
-    0%, 50% { opacity: 0; transform: translate(0, 0) rotate(calc(var(--r) + var(--spin, 3rad))) scale(0.4);
+    0%, 54% { opacity: 0; transform: translate(0, 0) rotate(calc(var(--r) + var(--spin, 3rad))) scale(0.4);
               animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
-    62% { opacity: 1; }
-    95%, 100% { opacity: 1; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
+    64% { opacity: 1; }
+    94%, 100% { opacity: 1; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
   }
   .splash-name {
     font-family: var(--font-display); font-weight: 800; font-size: 32px;
     letter-spacing: -0.01em; margin: 16px 0 0; color: var(--ink);
-    animation: splashUp 560ms var(--ease) 420ms both;
+    animation: splashUp 560ms var(--ease) 880ms both;
   }
   .splash-name span { color: var(--accent); }
   .splash-line {
     width: 54px; height: 1px; background: var(--accent); margin-top: 14px;
-    animation: lineOut 420ms var(--ease) 700ms both;
+    animation: lineOut 420ms var(--ease) 1120ms both;
   }
   @keyframes lineOut { from { width: 0; opacity: 0; } }
   .splash-tag {
     margin: 14px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-soft);
-    animation: splashUp 500ms var(--ease) 860ms both;
+    animation: splashUp 500ms var(--ease) 1240ms both;
   }
   @keyframes splashUp { from { opacity: 0; transform: translateY(9px); } }
 
