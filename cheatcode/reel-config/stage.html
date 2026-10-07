@@ -220,7 +220,10 @@ window.__boot = async function () {
   await new Promise(r => { const ok = () => doc() && doc().readyState === 'complete' && $i('#menuView button.dish'); const k = () => ok() ? r() : setTimeout(k, 50); k(); });
   await doc().fonts.ready;
   const st = doc().createElement('style');
-  st.textContent = '*,*::before,*::after{transition:none!important;animation:none!important;caret-color:transparent!important}' +
+  /* Анимациите не се махат, а свършват веднага: някои неща на страницата
+     (знакът в хедъра) се рисуват с анимация и без нея остават в началото си —
+     празно кръгче вместо верига. */
+  st.textContent = '*,*::before,*::after{transition:none!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;caret-color:transparent!important}' +
                    'html{scroll-behavior:auto!important}::-webkit-scrollbar{display:none}';
   doc().head.appendChild(st);
   return true;
