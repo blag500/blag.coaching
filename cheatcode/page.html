@@ -542,6 +542,7 @@
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
   .pay { margin: 14px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+  .trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
   .err { margin: 10px 0 0; font-size: 13.5px; color: #C0392B; }
 
   .done { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 46px 0 10px; }
@@ -1953,6 +1954,8 @@
         <label class="fld"><span>Телефон</span><input id="fPhone" type="tel" autocomplete="tel" placeholder="08…"></label>
         <label class="fld"><span>Кога ще го вземеш</span><input id="fWhen" type="time" step="900"></label>
         <label class="fld"><span>Бележка <small>по избор</small></span><input id="fNote" type="text" placeholder="Нещо, което да знаем"></label>
+        <!-- Капан за ботове: скрито поле, което човек не вижда и не попълва. -->
+        <input id="fSite" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="trap">
       </div>
       <p class="pay">Плащане на място, в брой.</p>
       <p class="err" id="fErr" hidden></p>
@@ -1965,7 +1968,7 @@
       <h2 id="doneCode">—</h2>
       <p id="doneWhat"></p>
       <p class="done-allerg" id="doneAllerg"></p>
-      <p class="done-note">Това е проба. Поръчката <b>не е изпратена</b> никъде — няма кой да я приготви още.</p>
+      <p class="done-note" id="doneNote"></p>
       <button type="button" class="again" id="againBtn">Обратно към менюто</button>
     </div>
   </section>
@@ -3242,10 +3245,16 @@
     if (view === 'cart') $('price').textContent = money(cartTotal());
   }
 
-  /* Поръчката няма къде да отиде — това е проба. Затова последният екран го
-     казва с думи, вместо да остави човек да чака обаждане, което няма да
-     дойде. */
+  /* Поръчката отива във функцията cheatcode-order: тя я записва и праща
+     известие на Николай. Докато LIVE е false, поръчката е белязана като тест
+     и последният екран го казва — кухня още няма и никой не бива да чака
+     обяд, който няма да дойде. Пуска се с един ред, когато има кухня. */
+  var LIVE = false;
+  var ORDER_URL = 'https://eiltoadzaqbuqdilsfpi.supabase.co/functions/v1/cheatcode-order';
+  var sending = false;
+
   function placeOrder() {
+    if (sending) return;
     var name = $('fName').value.trim();
     var phone = $('fPhone').value.trim();
     var err = $('fErr');
@@ -3271,20 +3280,45 @@
     var names = Object.keys(all).map(function (k) {
       return all[k].name + (all[k].trace ? ' (следи)' : '') + (all[k].sure ? '' : ' ?');
     });
-    $('doneAllerg').textContent = names.length
-      ? 'Алергени в поръчката: ' + names.join(', ')
-      : 'Без алергени в тази поръчка.';
 
     var n = cart.reduce(function (a, l) { return a + l.qty; }, 0);
+    var total = cartTotal();
     var when = $('fWhen').value;
-    $('doneCode').textContent = 'ЧК-' + String(1000 + Math.floor(Math.random() * 8999));
-    $('doneWhat').textContent =
-      n + (n === 1 ? ' кутия' : ' кутии') + ' · ' + money(cartTotal()) +
-      (when ? ' · за ' + when : '') + ' · в брой на място';
+    var payload = {
+      name: name, phone: phone, when: when, note: $('fNote').value.trim(),
+      website: $('fSite').value, live: LIVE,
+      lines: cart.map(function (l) {
+        return { name: l.name, cfg: l.cfg, qty: l.qty, unit: l.unit, kcal: l.kcal, p: l.p, c: l.c, f: l.f,
+                 allerg: (l.allerg || []).map(function (a) { return a.name + (a.trace ? ' (следи)' : ''); }) };
+      })
+    };
 
-    cart = [];
-    markCart();
-    show('done');
+    var btn = $('orderBtn');
+    sending = true; btn.disabled = true; btn.setAttribute('aria-busy', 'true');
+    fetch(ORDER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.j.code) throw new Error(res.j.error || 'Поръчката не се изпрати. Опитай пак.');
+        $('doneAllerg').textContent = names.length
+          ? 'Алергени в поръчката: ' + names.join(', ')
+          : 'Без алергени в тази поръчка.';
+        $('doneCode').textContent = res.j.code;
+        $('doneWhat').textContent =
+          n + (n === 1 ? ' кутия' : ' кутии') + ' · ' + money(total) +
+          (when ? ' · за ' + when : '') + ' · в брой на място';
+        $('doneNote').innerHTML = res.j.test
+          ? 'Това е проба. Поръчката стигна до Николай, но <b>не се готви</b> — кухнята още не е отворена.'
+          : 'Поръчката е приета. Ще ти се обадим на ' + phone.replace(/[<>&]/g, '') + ', за да я потвърдим.';
+        cart = [];
+        markCart();
+        show('done');
+      })
+      .catch(function (e) {
+        err.textContent = e && e.message && e.message !== 'Failed to fetch'
+          ? e.message : 'Няма връзка. Поръчката не е изпратена — опитай пак.';
+        err.hidden = false;
+      })
+      .then(function () { sending = false; btn.disabled = false; btn.removeAttribute('aria-busy'); });
   }
 
   function rebuild() {

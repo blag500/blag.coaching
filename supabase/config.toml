@@ -34,3 +34,9 @@ verify_jwt = false
 # invest_owner — никой друг.
 [functions.invest-sync]
 verify_jwt = false
+
+# cheatcode-order приема поръчки от статичната страница /cheatcode — там няма
+# вход, значи няма JWT. Пази се сама: проверява всяко поле, капан за ботове и
+# таван на поръчките по телефон и за час.
+[functions.cheatcode-order]
+verify_jwt = false
