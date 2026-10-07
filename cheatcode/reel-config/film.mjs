@@ -36,7 +36,16 @@ const srv = http.createServer((q, r) => {
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 540, height: 960 }, deviceScaleFactor: 2, colorScheme: 'dark', locale: 'bg-BG' });
-await ctx.addInitScript(() => { try { sessionStorage.setItem('cc_splash', '1'); } catch {} });
+/* Сплашът вече е част от клипа. Страницата сама го маха по свой таймер —
+   тук това се спира, а сцената решава кога си отива (виж stage.html). */
+await ctx.addInitScript(() => {
+  window.__keepSplash = true;
+  const rm = Element.prototype.remove;
+  Element.prototype.remove = function () {
+    if (this.id === 'splash' && window.__keepSplash) return;
+    return rm.call(this);
+  };
+});
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
@@ -45,7 +54,7 @@ await page.goto('http://127.0.0.1:8890/__stage');
 await page.evaluate(() => window.__boot());
 await page.clock.pauseAt(new Date('2026-10-07T10:05:00+03:00'));
 
-const total = Math.round(15 * FPS);
+const total = Math.round((await page.evaluate(() => window.__DUR)) * FPS);
 let ff = null;
 const out = path.join(HERE, 'configurator.mp4');
 if (!sheet) {

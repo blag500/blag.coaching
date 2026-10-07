@@ -80,7 +80,10 @@
    кои еднократни действия вече са изпълнени — а те се изпълняват в един и
    същ ред при всяко пускане, защото кадрите вървят по ред и часовникът на
    страницата е виртуален (page.clock в film.mjs). */
-window.__DUR = 15;
+/* Клипът започва със сплаша на страницата (сивата верига се напъва и се
+   къса) и после е старата история, отместена с OFF секунди. */
+const OFF = 2.4;
+window.__DUR = 15 + OFF;
 const FPS = 30;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const seg = (t, a, b) => clamp((t - a) / (b - a));
@@ -135,7 +138,47 @@ let fingerPos = { x: 330, y: 640 };
 const targets = {};
 function aim(key, fn) { if (!(key in targets)) targets[key] = fn(); return targets[key]; }
 
-window.__apply = function (t) {
+/* Сплашът, кадър по кадър: всяка анимация на страницата се поставя точно в
+   t. Преходите (класът `gone`) се спират — изчезването го води сцената. */
+function splashFrame(t) {
+  const el = doc().getElementById('splash');
+  if (!el) return;
+  el.classList.remove('gone');
+  el.style.setProperty('opacity', String(1 - seg(t, OFF - 0.45, OFF)), 'important');
+  el.style.setProperty('visibility', 'visible', 'important');
+  doc().getAnimations().forEach(a => {
+    if (a.constructor.name === 'CSSTransition') { a.cancel(); return; }
+    a.pause();
+    a.currentTime = t * 1000;
+  });
+}
+let stilled = false;
+function endSplash() {
+  stilled = true;
+  win().__keepSplash = false;
+  const el = doc().getElementById('splash');
+  if (el) el.remove();
+  /* Анимациите не се махат, а свършват веднага: някои неща на страницата
+     (знакът в хедъра) се рисуват с анимация и без нея остават в началото си —
+     празно кръгче вместо верига. */
+  const st = doc().createElement('style');
+  st.textContent = '*,*::before,*::after{transition:none!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;caret-color:transparent!important}' +
+                   'html{scroll-behavior:auto!important}::-webkit-scrollbar{display:none}';
+  doc().head.appendChild(st);
+  doc().getAnimations().forEach(a => { try { a.finish(); } catch (e) { /* безкрайна */ } });
+}
+
+window.__apply = function (T) {
+  if (T < OFF) {
+    splashFrame(T);
+    ['c0', 'c1', 'c2'].forEach(id => { document.getElementById(id).style.opacity = 0; });
+    document.getElementById('finger').style.opacity = 0;
+    document.getElementById('ring').style.opacity = 0;
+    document.getElementById('end').style.opacity = 0;
+    return;
+  }
+  if (!stilled) endSplash();
+  const t = T - OFF;
   /* ── Действия в страницата ── */
   once(t, 1.55, 'openBowl', () => click(dishCard(1)));
   once(t, 3.05, 'large', () => click(sizeBtn(2)));
@@ -195,7 +238,8 @@ window.__apply = function (t) {
   /* ── Краят: знакът се скъсва, името, адресът ── */
   const e = document.getElementById('end');
   e.style.opacity = ease(seg(t, 12.2, 12.6));
-  const pin = ease(seg(t, 12.45, 12.95)), crack = 1 - Math.pow(1 - seg(t, 13.0, 13.3), 4), pb = outBack(seg(t, 13.0, 13.45));
+  /* Знакът е вече скъсан — клипът започна със скъсването; тук само идва. */
+  const pin = ease(seg(t, 12.45, 12.95)), crack = 1, pb = outBack(seg(t, 12.6, 13.1));
   const gap = 14 * crack;
   document.getElementById('eL').setAttribute('transform', `translate(${-gap - (1 - pin) * 60} 0)`);
   document.getElementById('eR').setAttribute('transform', `translate(${gap + (1 - pin) * 60} 0)`);
@@ -219,13 +263,6 @@ window.__boot = async function () {
   await document.fonts.ready;
   await new Promise(r => { const ok = () => doc() && doc().readyState === 'complete' && $i('#menuView button.dish'); const k = () => ok() ? r() : setTimeout(k, 50); k(); });
   await doc().fonts.ready;
-  const st = doc().createElement('style');
-  /* Анимациите не се махат, а свършват веднага: някои неща на страницата
-     (знакът в хедъра) се рисуват с анимация и без нея остават в началото си —
-     празно кръгче вместо верига. */
-  st.textContent = '*,*::before,*::after{transition:none!important;animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;caret-color:transparent!important}' +
-                   'html{scroll-behavior:auto!important}::-webkit-scrollbar{display:none}';
-  doc().head.appendChild(st);
   return true;
 };
 </script>
