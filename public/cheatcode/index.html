@@ -540,7 +540,10 @@
   }
 
   .form { display: grid; gap: 10px; }
-  .fld { display: grid; gap: 5px; }
+  /* minmax(0, 1fr) и min-width: 0: полето за час в Safari носи собствена
+     минимална ширина и в колона на грид надвива width: 100% — излизаше
+     извън екрана на iPhone. */
+  .fld { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; }
   .fld span { font-size: 12.5px; color: var(--ink-faint); }
   .fld input {
     background: var(--pane-bg);
@@ -553,6 +556,14 @@
   }
   /* Пръстенът расте от ръба, вместо да светне наведнъж — и казва кое поле
      чака, без да мести нищо. */
+  .fld input { min-width: 0; box-sizing: border-box; }
+  /* Safari центрира часа и му дава свой вид и височина. Без родния вид
+     полето е като другите — подравнено вляво, със същата височина. */
+  .fld input[type="time"] {
+    -webkit-appearance: none; appearance: none;
+    text-align: left; min-height: 50px; display: block;
+  }
+  .fld input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
   .fld input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
@@ -1682,16 +1693,21 @@
   .order button:active { transform: scale(0.98); }
   .order button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
+  /* Над съдържанието: .wrap е z-index 1 и без собствен слой тостът стоеше
+     под картите. Под сплаша (90), над лентите (3, 5) и листа (20).
+     Центрира се с left/right 0 и auto поле, не с left: 50% — тогава кутия с
+     автоматична ширина получава само половината екран и текстът се пречупва. */
   .toast {
-    position: fixed; left: 50%; bottom: 96px;
-    transform: translateX(-50%) translateY(8px);
+    position: fixed; left: 0; right: 0; bottom: 96px; z-index: 40;
+    width: max-content; margin-inline: auto;
+    transform: translateY(8px);
     background: var(--ink); color: var(--ground-flat);
     font-size: 13px; padding: 10px 16px; border-radius: var(--r-sm);
     opacity: 0; pointer-events: none;
     transition: opacity 200ms, transform 200ms;
     max-width: calc(100vw - 36px); text-align: center;
   }
-  .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.on { opacity: 1; transform: translateY(0); }
 
   .foot { margin-top: 22px; font-size: 11.5px; line-height: 1.6; color: var(--ink-faint); }
 
