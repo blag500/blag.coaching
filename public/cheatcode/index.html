@@ -2324,8 +2324,105 @@
         { id: 'v4', name: 'С дарк чоко поръска', photo: '/cheatcode/gris-choko.jpg',   on: ['banan', 'biskviti'],
           tw: ['extra:choko'] }
       ]
+    },
+
+    /* ── Чернови: не се показват, докато няма снимки и сверени етикети ──
+       Виждат се само с ?draft=1 в адреса. Цените са от METRO София 1 на
+       07.10.2026, с ДДС. ВНИМАНИЕ: макросите на пилето, скира и котиджа са
+       типични стойности, НЕ от етикетите на тези опаковки — сменят се от
+       етикета, преди draft да падне. */
+    {
+      id: 'pile',
+      draft: true,
+      name: 'Пилешки боул',
+      short: 'Пилешко филе, ориз, доматен сос',
+      desc: 'Пилешко филе с ориз и доматен сос. Най-постният протеин в менюто.',
+      prep: 25,
+      packaging: 15,
+      photo: 'draft.svg',
+      alt: 'Пилешки боул — снимката предстои',
+      base: [
+        /* ХЕЛИКС пилешко филе капка, охладено ~3 кг: 6,05 €/кг. */
+        { id: 'pile', name: 'Пилешко филе', unit: 'сурово', grams: 200, min: 150, max: 300, step: 50,
+          per100: { kcal: 120, protein: 22.5, carbs: 0, fat: 2.6 }, cost100: 60.5 },
+        { id: 'oriz', name: 'Ориз', unit: 'сух', grams: 100, min: 50, max: 150, step: 25,
+          per100: { kcal: 339, protein: 8.5, carbs: 75, fat: 0 }, cost100: 19.4 },
+        { id: 'pyure', name: 'Доматено пюре', unit: 'мл', grams: 125, min: 75, max: 175, step: 25,
+          per100: { kcal: 20, protein: 1, carbs: 3.9, fat: 0 }, cost100: 20 },
+        { id: 'podpravki', name: 'Подправки', grams: 1, min: 1, max: 1, step: 1, locked: true,
+          allergens: [],
+          per100: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, cost100: 2500 }
+      ],
+      sizes: [
+        { name: 'Малка',  g: { pile: 150, oriz: 75,  pyure: 100 } },
+        { name: 'Средна', g: { pile: 200, oriz: 100, pyure: 125 } },
+        { name: 'Голяма', g: { pile: 300, oriz: 150, pyure: 175 } }
+      ],
+      claims: ['Без олио'],
+      tweaks: [
+        { id: 'spices', label: 'Подправки', kind: 'multi', on: true,
+          options: [
+            { id: 'cheren',   name: 'Черен пипер' },
+            { id: 'cherven',  name: 'Червен пипер' },
+            { id: 'kimion',   name: 'Кимион' },
+            { id: 'chesan',   name: 'Чесън' },
+            { id: 'lyut',     name: 'Лют пипер' }
+          ] }
+      ],
+      glazeLabel: null,
+      glazes: []
+    },
+    {
+      id: 'cheesecake',
+      draft: true,
+      name: 'Чийзкейк в чаша',
+      short: 'Скир и котидж върху бисквити',
+      desc: 'Крем от скир и котидж върху натрошени бисквити. Десерт с около трийсет грама протеин.',
+      prep: 10,
+      packaging: 15,
+      photo: 'draft.svg',
+      alt: 'Чийзкейк в чаша — снимката предстои',
+      base: [
+        /* Exquisa скир натурален 400 г: 1,43 € при 6+. */
+        { id: 'skir', name: 'Скир', grams: 150, min: 100, max: 250, step: 25,
+          allergens: [{ id: 'milk', sure: true }],
+          per100: { kcal: 64, protein: 11, carbs: 4, fat: 0.2 }, cost100: 35.8 },
+        /* TYPAS котидж 4% 1 кг: 6,98 € при 3+. */
+        { id: 'kotidzh', name: 'Котидж', grams: 100, min: 50, max: 150, step: 25,
+          allergens: [{ id: 'milk', sure: true }],
+          per100: { kcal: 98, protein: 11, carbs: 3.4, fat: 4.3 }, cost100: 69.8 },
+        /* Същите бисквити като в гриса — gullon без захар, METRO. */
+        { id: 'biskviti', name: 'Бисквити', grams: 30, min: 0, max: 50, step: 10, say: 'бисквитена основа',
+          allergens: [{ id: 'gluten', sure: false }, { id: 'milk', sure: false }],
+          per100: { kcal: 425, protein: 8, carbs: 67, fat: 15 }, cost100: 66.0 }
+      ],
+      sizes: [
+        { name: 'Малка',  g: { skir: 100, kotidzh: 75 } },
+        { name: 'Средна', g: { skir: 150, kotidzh: 100 } },
+        { name: 'Голяма', g: { skir: 200, kotidzh: 150 } }
+      ],
+      claims: ['Без добавена захар'],
+      tweaks: [
+        { id: 'sweet', label: 'Сладост', kind: 'single',
+          options: [{ id: 'less', name: 'По-несладко' }, { id: 'more', name: 'По-сладко' }] },
+        { id: 'extra', label: 'Отгоре', kind: 'extra',
+          options: [
+            { id: 'yagodi', name: 'Замразени ягоди', grams: 100, say: 'замразени ягоди',
+              per100: { kcal: 32, protein: 0.7, carbs: 7.7, fat: 0.3 }, cost100: 40.7, pack: 0 },
+            { id: 'gorski', name: 'Замразени горски плодове', grams: 100, say: 'замразени горски плодове',
+              per100: { kcal: 44, protein: 0.9, carbs: 8.5, fat: 0.4 }, cost100: 62.0, pack: 0 },
+            { id: 'protein', name: 'Протеинова глазура', grams: 30, say: 'протеинова глазура',
+              allergens: [{ id: 'milk', sure: false }],
+              per100: { kcal: 380, protein: 75, carbs: 8, fat: 5 }, cost100: 225, pack: 2 }
+          ] }
+      ],
+      glazeLabel: null,
+      glazes: []
     }
-  ];
+  ].filter(function (d) {
+    /* Черновите съществуват само при ?draft=1 — за Николай, не за менюто. */
+    return !d.draft || /[?&]draft=1(&|$)/.test(location.search);
+  });
 
   var $ = function (id) { return document.getElementById(id); };
 
