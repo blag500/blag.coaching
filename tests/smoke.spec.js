@@ -1860,3 +1860,71 @@ test.describe('Библиотеката с рецепти', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0)
   })
 })
+
+
+/* ПОРЪЧКИ е в страничното меню, не в долната лента — отваря се като
+   ЗАГОТОВКИ в тестовете по-горе. */
+async function openOrders(page) {
+  await page.locator('button[aria-label="Меню"]').first().click()
+  await page.waitForTimeout(600)
+  await page.getByText('ПОРЪЧКИ', { exact: true }).first().click()
+  await page.waitForTimeout(1200)
+}
+
+test.describe('Поръчките на Чийт Код', () => {
+  const ORDER = {
+    id: 'o1', code: 'ЧК-5445', created_at: new Date().toISOString(),
+    name: 'Ники', phone: '0898 281 221', pickup_time: '19:06', note: 'без лук',
+    lines: [{ name: 'Телешки боул', cfg: 'Кайма 250 г · Ориз 100 г', qty: 1, unit: 620,
+              kcal: 754, p: 66, c: 90, f: 17, allerg: [] },
+            { name: 'Анаболно кремче', cfg: 'Трици 100 г · Какао 20 г', qty: 2, unit: 450,
+              kcal: 324, p: 22, c: 86, f: 10, allerg: ['Глутен ?'] }],
+    box_count: 3, total_cents: 1520, status: 'new', test: true,
+  }
+
+  /* Собственикът вижда поръчката с всичко, което кухнята трябва да знае, и я
+     мести напред с едно натискане. */
+  test('собственикът вижда поръчката и я потвърждава', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page, {
+      profile: { role: 'coach' },
+      rpc: { is_cheatcode_owner: true },
+      tables: { cheatcode_orders: [ORDER] },
+    })
+    await openOrders(page)
+
+    const card = page.locator('article', { hasText: 'ЧК-5445' })
+    await expect(card).toBeVisible({ timeout: 15000 })
+    await expect(card.getByText('Ники')).toBeVisible()
+    await expect(card.locator('a[href="tel:0898281221"]')).toBeVisible()
+    await expect(card.getByText('Взима в 19:06')).toBeVisible()
+    await expect(card.getByText('Алергени: Глутен ?')).toBeVisible()
+    await expect(card.getByText('15,20 €')).toBeVisible()
+    await expect(card.getByText('Нова')).toBeVisible()
+
+    let patched = null
+    page.on('request', r => {
+      if (r.method() === 'PATCH' && r.url().includes('cheatcode_orders')) {
+        try { patched = JSON.parse(r.postData() || 'null') } catch { /* празно */ }
+      }
+    })
+    await card.getByRole('button', { name: 'ПОТВЪРДИ' }).click()
+    await expect(card.getByText('Потвърдена')).toBeVisible()
+    expect(patched).toMatchObject({ status: 'confirmed' })
+    await expect(card.getByRole('button', { name: 'ГОТОВА' })).toBeVisible()
+  })
+
+  /* Треньор, който не е собственик, не вижда секцията изобщо — редът носи
+     телефон на клиент. */
+  test('друг треньор не вижда поръчките', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page, {
+      profile: { role: 'coach' },
+      tables: { cheatcode_orders: [ORDER] },
+    })
+    await openOrders(page)
+    await page.waitForTimeout(1500)
+    await expect(page.getByText('ЧК-5445')).toHaveCount(0)
+    await expect(page.getByText('ЧИЙТ КОД', { exact: true })).toHaveCount(0)
+  })
+})

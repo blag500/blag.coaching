@@ -1,0 +1,276 @@
+/* Поръчките на Чийт Код в панела на треньора.
+   Същата граматика като секциите на панела: заглавие с черта отгоре, карти
+   на 16px от ръба. Цветът на състоянието не е украса — отгоре е новото,
+   което чака, и то е единственото злато в секцията. Макросите носят своите
+   три цвята и нищо друго не ги взема. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 16px 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.headTitle {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.headMeta {
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: var(--accent-metal);
+  color: var(--bg);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty {
+  margin: 4px 16px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  margin: 0 16px;
+  padding: 14px 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--card-highlight);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color var(--dur-state) var(--ease-glide), opacity var(--dur-state) var(--ease-glide);
+}
+
+/* Новата поръчка е единственото, което чака човек — тя носи златото. */
+.s_new { border-color: rgba(var(--accent-rgb), 0.45); }
+.s_ready { border-color: rgba(var(--ok-rgb), 0.45); }
+.closed { opacity: 0.62; }
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.test {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  padding: 1px 5px;
+}
+
+.status {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.st_new { background: var(--accent-dim); color: var(--accent); }
+.st_ready { background: rgba(var(--ok-rgb), 0.14); color: var(--ok); }
+.st_cancelled { background: rgba(var(--red-rgb), 0.12); color: var(--red); }
+
+.who {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: var(--accent);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.when {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dot { margin: 0 6px; }
+
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lineTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.num { font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.cfg {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.macros {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.macros i { font-style: normal; font-weight: 600; }
+.p { color: var(--macro-protein); }
+.c { color: var(--macro-carbs); }
+.f { color: var(--macro-fat); }
+
+.allerg {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  font-style: italic;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.total {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.total small {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.next {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--accent-metal);
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cancel {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.next:disabled, .cancel:disabled { opacity: 0.5; cursor: default; }
+
+.toggle {
+  align-self: flex-start;
+  margin: 2px 16px 0;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

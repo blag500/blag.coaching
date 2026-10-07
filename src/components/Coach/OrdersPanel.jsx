@@ -3,6 +3,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import styles from './OrdersPanel.module.css'
 import { loc } from '../../utils/locale'
 import Pictogram from '../Pictogram/Pictogram'
+import CheatcodeOrders from './CheatcodeOrders'
 
 const STATUS_LABEL_KEYS = {
   pending_payment: 'op.status.pending_payment',
@@ -40,6 +41,8 @@ const STATUS_COLOR = {
 }
 
 export default function OrdersPanel() {
+  // Без това целият таб падаше с „t is not defined" — картите имаха t, рамката не.
+  const { t } = useSettings()
   const { orders, loading, updateStatus } = useAllOrders()
 
   if (loading) return null
@@ -55,6 +58,10 @@ export default function OrdersPanel() {
           <div className={styles.activeBadge}>{t('op.activeBadge', { n: active.length })}</div>
         )}
       </header>
+
+      {/* Чийт Код е отгоре: там поръчката има час за взимане и чака кухнята.
+          Вижда се само от собственика — за всеки друг компонентът е празен. */}
+      <CheatcodeOrders />
 
       {orders.length === 0 && (
         <div className={styles.empty}>{t('op.empty')}</div>

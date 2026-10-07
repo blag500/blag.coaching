@@ -274,11 +274,15 @@ function wantsSingle(req) {
  *
  * Вика се ПРЕДИ page.goto — заявките тръгват от първия кадър.
  */
-export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg', tables: seed = {} } = {}) {
+export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg', tables: seed = {}, rpc: rpcSeed = {} } = {}) {
   const merged = { ...PROFILE, ...profile }
   /* `seed` подменя цели таблици за един тест. Подменя, не добавя: тест, който
      иска празен ден, не може да го получи, ако общите редове останат отдолу. */
   const tables = { ...TABLES, ...seed, profiles: [merged] }
+  /* `rpc` подменя отговора на отделни функции за един тест — например
+     собственик на Чийт Код, без всички останали треньорски тестове да виждат
+     секцията с поръчките. */
+  const rpcMap = { ...RPC, ...rpcSeed }
 
   await page.addInitScript(
     ({ ref, user, th, lg }) => {
@@ -324,7 +328,7 @@ export async function signIn(page, { theme = 'dark', profile = {}, lang = 'bg', 
 
     // ── функции ──
     const rpc = path.match(/\/rest\/v1\/rpc\/([a-z_]+)$/)
-    if (rpc) return json(route, RPC[rpc[1]] ?? null)
+    if (rpc) return json(route, rpcMap[rpc[1]] ?? null)
 
     /* Крайните функции. Ботът минава през Groq, който тук го няма — затова
        отговорът е измислен, но по формата на истинския: изречение, което казва
