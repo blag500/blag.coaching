@@ -22,6 +22,19 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: CORS })
   }
 
+  /* Кой може да праща. Дотук стигаше публичният ключ — той е в страницата, и
+     всеки можеше да прати известие с какъвто и да е текст до който и да е
+     потребител. Сега: вътрешните функции (service role) или влязъл
+     потребител. Само с публичния ключ — 401. */
+  const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '')
+  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+  if (token !== SERVICE_ROLE_KEY) {
+    const { data, error } = await supabase.auth.getUser(token)
+    if (error || !data?.user) {
+      return new Response('unauthorized', { status: 401, headers: CORS })
+    }
+  }
+
   /* Един получател или списък.
      Дотук функцията знаеше само за един човек, което значеше, че известие до
      петима е пет обиколки от телефона до сървъра — а телефонът чака, докато
@@ -36,8 +49,9 @@ Deno.serve(async (req) => {
   if (recipients.length === 0) {
     return new Response('missing toUserId', { status: 400, headers: CORS })
   }
-
-  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+  if (recipients.length > 100) {
+    return new Response('too many recipients', { status: 400, headers: CORS })
+  }
   const { data: subs } = await supabase
     .from('push_subscriptions')
     .select('endpoint, subscription')
@@ -50,10 +64,10 @@ Deno.serve(async (req) => {
   }
 
   const payload = JSON.stringify({
-    title: title || 'Blag Coaching',
-    body:  body  || 'Ново съобщение',
-    tag:   tag   || 'default',
-    data:  { type: tag || 'default' },
+    title: String(title || 'Blag Coaching').slice(0, 100),
+    body:  String(body  || 'Ново съобщение').slice(0, 300),
+    tag:   String(tag   || 'default').slice(0, 40),
+    data:  { type: String(tag || 'default').slice(0, 40) },
   })
 
   const results = await Promise.allSettled(
