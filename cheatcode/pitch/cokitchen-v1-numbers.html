@@ -1,0 +1,729 @@
+<title>Чийт Код за CoKitchen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Onest:wght@400;500;600;700&family=Lora:ital,wght@1,500;1,600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  /* Светло, въздушно, с фина решетка — по референцията, която Николай посочи
+     (Halcyon), но в света на Чийт Код: зеленото на марката вместо оранжево,
+     скъсаната верига като стъкления обект, истинските числа в плаващите
+     карти. Нарочно една светла тема: страницата се показва на среща, на
+     екран, а видът ѝ е част от идеята. Всички цветове са зададени изрично.
+     Решетка: hero в две колони (текст / обект), после една колона секции. */
+  :root {
+    color-scheme: light;
+    --paper: #F5F6F2;
+    --grid: rgba(20, 40, 30, 0.055);
+    --card: #FFFFFF;
+    --card-2: #F0F2EC;
+    --line: #E1E5DC;
+    --ink: #121815;
+    --ink-soft: #5B665F;
+    --ink-faint: #949D96;
+    --accent: #1F8A5B;
+    --accent-2: #2FB377;
+    --accent-soft: rgba(31, 138, 91, 0.10);
+    --on-accent: #FFFFFF;
+    --warn: #B4581A;
+    --kcal: #8A6A2E; --protein: #2F7FC0; --carbs: #43904A; --fat: #9A63A6;
+    --font-sans: 'Onest', -apple-system, 'Segoe UI', sans-serif;
+    --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-brand: 'Unbounded', 'Arial Black', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+    --r-sm: 10px; --r-md: 16px; --r-lg: 24px;
+    --shadow: 0 1px 2px rgba(18, 24, 21, 0.04), 0 8px 24px rgba(18, 24, 21, 0.06);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; }
+  /* 'locl' 0: без българските курсивни форми (д като g, т като m). */
+  body {
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: -1px -1px;
+    color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 1.55;
+    font-feature-settings: 'locl' 0;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 64px;
+          display: flex; flex-direction: column; gap: 64px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+  h2 { font-family: var(--font-sans); font-weight: 700; font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; }
+  h2 em, h1 em { font-family: var(--font-serif); font-style: italic; font-weight: 500; letter-spacing: -0.01em; }
+  h3 { font-size: 15px; font-weight: 600; letter-spacing: 0; }
+  p { margin: 0; }
+  .eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+  .lede { color: var(--ink-soft); max-width: 62ch; }
+  .num { font-variant-numeric: tabular-nums; }
+  section { display: flex; flex-direction: column; gap: 22px; scroll-margin-top: 90px; }
+  .sec-head { display: flex; flex-direction: column; gap: 10px; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Навигацията: хапче, залепено горе ── */
+  .nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 10; align-self: center;
+         display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; width: min(100%, 760px);
+         background: rgba(255, 255, 255, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+         border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); }
+  .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); flex: none; }
+  .brand svg { width: 22px; height: 22px; color: var(--accent); }
+  .brand b { font-family: var(--font-brand); font-weight: 800; font-size: 13px; letter-spacing: 0.02em; }
+  .brand b span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2px; margin: 0 auto; }
+  .nav-links a { color: var(--ink-soft); text-decoration: none; font-size: 13.5px; padding: 6px 10px; border-radius: 999px; }
+  .nav-links a:hover { background: var(--card-2); color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 600;
+         border-radius: 999px; padding: 10px 18px; text-decoration: none; border: 0; cursor: pointer; white-space: nowrap; }
+  .btn.dark { background: var(--ink); color: #fff; padding: 8px 14px; font-size: 13px; }
+  .btn.go { color: var(--on-accent); background: linear-gradient(180deg, var(--accent-2), var(--accent));
+            box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 6px 16px rgba(31, 138, 91, 0.32); }
+  .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .btn .play { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 8px; }
+
+  /* ── Hero ── */
+  /* Текстът е горе, точно под заглавието — центриран спрямо квадрата на
+     веригата, той слизаше и под заглавието оставаше празна ивица. */
+  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; align-items: start; padding-top: 28px; }
+  .hero-copy { padding-top: 22px; }
+  .hero-copy { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft);
+           background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px 4px 4px; box-shadow: var(--shadow); }
+  .badge b { font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 3px 9px; }
+  /* Заглавието е над двете колони и на един ред — в една колона се чупеше на
+     три. На телефон един ред би бил под 20 px, затова там се пренася. */
+  .hero h1 { grid-column: 1 / -1; font-family: var(--font-sans); font-weight: 700;
+             font-size: clamp(32px, 4.4vw, 52px); line-height: 1.06; white-space: nowrap; }
+  .hero h1 .chips3 { transform: translateY(-4px); }
+  .hero h1 em { color: var(--accent); font-weight: 600; }
+  .hero h1 .soft { color: var(--ink-faint); }
+  .chips3 { display: inline-flex; gap: 4px; padding: 5px; border-radius: 14px; vertical-align: middle; margin-left: 8px;
+            background: linear-gradient(180deg, var(--accent-2), var(--accent)); box-shadow: 0 6px 16px rgba(31,138,91,0.3); transform: translateY(-6px); }
+  .chips3 i { width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.18); display: grid; place-items: center; color: #fff; }
+  .chips3 svg { width: 16px; height: 16px; }
+  .hero .lede { font-size: 17px; }
+  .hero .lede b { color: var(--ink); font-weight: 600; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+  .proof { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-soft); }
+  .faces { display: flex; }
+  .faces img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--paper); margin-left: -8px; background: var(--card-2); }
+  .faces img:first-child { margin-left: 0; }
+  .proof b { color: var(--ink); }
+
+  .stage { position: relative; min-width: 0; aspect-ratio: 4 / 3; max-height: 400px; width: 100%; margin-top: -36px; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage .fallback { position: absolute; inset: 12%; color: var(--accent); }
+  .stage .glow { position: absolute; left: 20%; right: 20%; bottom: 4%; height: 22%; border-radius: 50%;
+                 background: radial-gradient(closest-side, rgba(47, 179, 119, 0.22), transparent); filter: blur(10px); }
+  .float { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; font-size: 12.5px; line-height: 1.3;
+           background: rgba(255,255,255,0.9); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); max-width: 230px; }
+  .float i { flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 13px; }
+  .float small { display: block; color: var(--ink-faint); font-size: 11px; }
+  .float b { font-weight: 600; }
+  .f1 { top: 9%; right: 0; } .f1 i { background: var(--accent-soft); color: var(--accent); }
+  .f2 { bottom: 16%; left: 4%; } .f2 i { background: rgba(47,127,192,0.12); color: var(--protein); }
+  .f3 { bottom: 4%; right: 6%; } .f3 i { background: var(--ink); color: #fff; }
+
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .fact { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow);
+          padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .fact strong { font-family: var(--font-sans); font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  .fact span { font-size: 13px; color: var(--ink-soft); }
+
+  /* ── Конфигураторът ── */
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; box-shadow: var(--shadow); }
+  .config { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .controls { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .ctl { display: flex; flex-direction: column; gap: 8px; }
+  .ctl > label, .ctl > .lab { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+          padding: 7px 14px; border-radius: 999px; cursor: pointer; transition: background 160ms var(--ease), color 160ms var(--ease); }
+  .pill:hover { border-color: var(--accent); }
+  .pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .readout { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .price { font-family: var(--font-sans); font-size: 52px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+  .price small { font-size: 22px; color: var(--ink-soft); }
+  .macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .macro { border-radius: var(--r-sm); background: var(--card-2); padding: 10px; display: flex; flex-direction: column; gap: 2px; }
+  .macro b { font-family: var(--font-mono); font-size: 18px; font-weight: 700; }
+  .macro span { font-size: 12px; color: var(--ink-soft); }
+  .macro.kcal b { color: var(--kcal); } .macro.p b { color: var(--protein); } .macro.c b { color: var(--carbs); } .macro.f b { color: var(--fat); }
+  .split { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--card-2); }
+  .split i { display: block; height: 100%; transition: width 260ms var(--ease); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--ink-soft); }
+  .legend span::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; background: var(--c); }
+  .lines { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .lines td { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .lines td:last-child { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .lines tr.total td { font-weight: 600; border-bottom: 0; padding-top: 9px; }
+  .note { font-size: 13px; color: var(--ink-faint); }
+  /* Снимката следва избора: глазурата на кремчето, поръската на гриса. */
+  .shot { margin: 4px 0 0; position: relative; border-radius: var(--r-md); overflow: hidden; background: var(--card-2);
+          aspect-ratio: 4 / 3; max-width: 100%; box-shadow: var(--shadow); }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shot figcaption { position: absolute; left: 10px; bottom: 10px; font-size: 12.5px; font-weight: 600; color: var(--ink);
+                     background: rgba(255,255,255,0.9); border-radius: 999px; padding: 5px 11px; box-shadow: var(--shadow); }
+
+  /* ── Таблиците ── */
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--card); box-shadow: var(--shadow); }
+  table.grid { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+  .grid th, .grid td { padding: 11px 16px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .grid th:first-child, .grid td:first-child { text-align: left; }
+  .grid th { font-size: 11.5px; font-weight: 500; color: var(--ink-faint); font-family: var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+  .grid td { font-variant-numeric: tabular-nums; }
+  .grid tr:last-child td { border-bottom: 0; }
+  .grid .dish-row td { background: var(--card-2); font-weight: 600; text-align: left; }
+  .grid td.p { color: var(--protein); font-weight: 600; }
+  .grid td.pr { font-weight: 700; }
+  .grid a { text-decoration: none; }
+  .grid a:hover { text-decoration: underline; }
+  .flag { font-size: 12px; color: var(--warn); }
+
+  /* ── Сметката за кухнята ── */
+  .calc { display: grid; grid-template-columns: 1fr 1.2fr; gap: 28px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; color: var(--ink-soft); font-weight: 500; display: flex; justify-content: space-between; gap: 8px; }
+  .field output { font-family: var(--font-mono); color: var(--ink); font-weight: 700; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  input[type="number"] { font: inherit; font-family: var(--font-mono); width: 100%; padding: 10px 12px; border-radius: var(--r-sm);
+                         border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi { border: 1px solid var(--line); border-radius: var(--r-md); padding: 14px; display: flex; flex-direction: column; gap: 2px; background: var(--card); }
+  .kpi.hl { background: linear-gradient(180deg, var(--accent-2), var(--accent)); border-color: var(--accent); color: var(--on-accent); }
+  .kpi.hl span { color: inherit; opacity: 0.88; }
+  .kpi b { font-family: var(--font-sans); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 13px; color: var(--ink-soft); }
+  .addon-bar { display: flex; flex-direction: column; gap: 8px; }
+
+  /* ── Пътят и въпросите ── */
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; box-shadow: var(--shadow); }
+  .step b { font-size: 15px; } .step span { font-size: 14px; color: var(--ink-soft); }
+  .step b::before { content: ''; display: block; width: 24px; height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 10px; }
+  .asks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .ask { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); padding: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; box-shadow: var(--shadow); }
+  .ask ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 4px; }
+  .ask .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+  footer { font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; min-height: 0; }
+    .hero h1 { white-space: normal; }
+    .stage { max-width: 460px; justify-self: center; margin-top: 0; }
+    .config, .calc { grid-template-columns: 1fr; }
+    .facts { grid-template-columns: repeat(2, 1fr); }
+    .asks, .flow { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+    .nav { justify-content: space-between; }
+  }
+  @media (max-width: 520px) {
+    .asks, .flow { grid-template-columns: 1fr; }
+    .macros { grid-template-columns: repeat(2, 1fr); }
+    .price { font-size: 42px; }
+    .chips3 { display: none; }
+    .float { font-size: 11.5px; max-width: 190px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+
+<div class="wrap">
+
+  <nav class="nav">
+    <a class="brand" href="#top" aria-label="Чийт Код">
+      <svg viewBox="-260 -260 520 520" aria-hidden="true"><g transform="rotate(-45)" fill="none" stroke="currentColor" stroke-width="56"><rect x="-232" y="-51" width="252" height="102" rx="51"/><rect x="-20" y="-51" width="252" height="102" rx="51"/></g></svg>
+      <b>CHEAT<span>CODE</span></b>
+    </a>
+    <div class="nav-links">
+      <a href="#config">Менюто</a>
+      <a href="#portions">Порциите</a>
+      <a href="#kitchen">Кухнята</a>
+      <a href="#supply">Доставка</a>
+      <a href="#asks">Въпросите</a>
+    </div>
+    <a class="btn dark" href="https://blag-coaching.com/cheatcode/" target="_blank" rel="noopener">Отвори страницата →</a>
+  </nav>
+
+  <section class="hero" id="top">
+    <h1 class="headline">Храната, която <em>си знае</em> <span class="soft">числата.</span><span class="chips3" aria-hidden="true">
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg></i>
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M5 8l7-5 7 5"/></svg></i>
+          <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></i>
+        </span></h1>
+    <div class="hero-copy">
+      <p class="lede">Човек настройва порцията до грам, а макросите и цената се движат заедно с нея.</p>
+      <div class="ctas">
+        <a class="btn go" href="#config">Настрой едно ястие →</a>
+        <a class="btn ghost" href="#kitchen"><span class="play">▶</span> Сметката за кухнята</a>
+      </div>
+      <div class="proof">
+        <span class="faces"><img src="kayma.jpg" alt=""><img src="yagodi.jpg" alt=""><img src="gris-oba.jpg" alt=""></span>
+        <span><b>3 ястия · 9 порции</b><br>цени от METRO, 7 октомври</span>
+      </div>
+    </div>
+    <div class="stage" aria-label="Скъсаната верига — знакът на Чийт Код">
+      <div class="glow"></div>
+      <svg class="fallback" id="chainFallback" viewBox="-260 -260 520 520" aria-hidden="true">
+        <g transform="rotate(-45)" fill="none" stroke="currentColor" stroke-width="44"><rect x="-232" y="-51" width="252" height="102" rx="51"/><rect x="-20" y="-51" width="252" height="102" rx="51"/></g>
+      </svg>
+      <canvas id="chain3d" aria-hidden="true"></canvas>
+      <div class="float f1"><i>✓</i><span><small>Поръчка от страницата</small><b>ЧК-5445 · за 19:06</b></span></div>
+      <div class="float f2"><i>Б</i><span><small>Телешки боул, средна</small><b>66 г протеин</b></span></div>
+      <div class="float f3"><i>€</i><span><small>Материали → цена</small><b>2,84 € → 6,20 €</b></span></div>
+    </div>
+  </section>
+
+  <div class="facts" id="facts"></div>
+
+
+  <section id="config">
+    <div class="sec-head">
+      <span class="eyebrow">Как работи поръчката</span>
+      <h2>Числата се движат <em>с порцията</em></h2>
+      <p class="lede">Същата сметка, която стои зад страницата за поръчки. Цената е материали плюс фиксирани 3,35 € на кутия, закръглени нагоре до 10 стотинки.</p>
+    </div>
+    <div class="panel config">
+      <div class="controls">
+        <div class="ctl"><span class="lab">Ястие</span><div class="pills" id="dishPills"></div></div>
+        <div class="ctl"><span class="lab">Размер</span><div class="pills" id="sizePills"></div></div>
+        <div class="ctl" id="topCtl"><span class="lab" id="topLab">Отгоре</span><div class="pills" id="topPills"></div></div>
+        <table class="lines" id="lines"></table>
+      </div>
+      <div class="readout">
+        <div class="price-row">
+          <div class="price num" id="price"></div>
+          <span class="note" id="weight"></span>
+        </div>
+        <div class="macros" id="macros"></div>
+        <div class="addon-bar">
+          <div class="split" id="split"></div>
+          <div class="legend" id="splitLegend"></div>
+        </div>
+        <p class="note" id="claims"></p>
+        <figure class="shot">
+          <img id="dishPhoto" src="kayma.jpg" alt="">
+          <figcaption id="photoCap"></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="portions">
+    <div class="sec-head">
+      <span class="eyebrow">Всички девет порции</span>
+      <h2>Себестойност, цена, протеин</h2>
+      <p class="lede">С глазурата, с която ястието се показва по подразбиране. Надбавката е фиксирана, не процент: скъпата и евтината кутия отнемат едно и също време.</p>
+    </div>
+    <div class="scroll"><table class="grid" id="matrix"></table></div>
+  </section>
+
+  <section id="kitchen">
+    <div class="sec-head">
+      <span class="eyebrow">Какво носи на кухнята</span>
+      <h2>Колко часа на седмица и колко от кутията</h2>
+      <p class="lede">Попълни цената на часа и колко кутии сглобяваме на час. Остатъкът от 3,35 € покрива труда, тока, фирата и таксата за плащане.</p>
+    </div>
+    <div class="panel calc">
+      <div class="controls">
+        <div class="field">
+          <label for="boxes">Кутии на седмица <output id="boxesOut" class="num"></output></label>
+          <input type="range" id="boxes" min="20" max="400" step="10" value="80">
+        </div>
+        <div class="field">
+          <label for="perHour">Кутии на час кухня <output id="perHourOut" class="num"></output></label>
+          <input type="range" id="perHour" min="4" max="30" step="1" value="10">
+          <span class="note">Страницата дава 7 / 25 / 15 мин за една порция. На партида е по-малко; мерим го в първата седмица.</span>
+        </div>
+        <div class="field">
+          <label for="rate">Цена на час в CoKitchen, €</label>
+          <input type="number" id="rate" min="0" step="0.5" value="15" inputmode="decimal">
+          <span class="note">15 € е пример, докато не чуем истинската.</span>
+        </div>
+      </div>
+      <div class="readout">
+        <div class="kpis">
+          <div class="kpi hl"><b class="num" id="kHours"></b><span>часа кухня на седмица</span></div>
+          <div class="kpi"><b class="num" id="kPay"></b><span>за CoKitchen на седмица</span></div>
+          <div class="kpi"><b class="num" id="kRevenue"></b><span>оборот на седмица</span></div>
+          <div class="kpi"><b class="num" id="kMat"></b><span>материали на седмица</span></div>
+        </div>
+        <div class="addon-bar">
+          <div class="price-row"><h3>3,35 € от всяка кутия</h3><span class="note num" id="perBox"></span></div>
+          <div class="split" id="addonSplit"></div>
+          <div class="legend" id="addonLegend"></div>
+        </div>
+        <p class="note">Микс: по равно от трите ястия, средна порция, доставни цени от METRO.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="supply">
+    <div class="sec-head">
+      <span class="eyebrow">Откъде идва</span>
+      <h2>Доставката е <em>проверена</em>, не прогнозна</h2>
+      <p class="lede">Цени от METRO София 1 на 7 октомври 2026, с ДДС, за бройка и при покупка на повече. Цената на 100 г е тази, която влиза в сметката.</p>
+    </div>
+    <div class="scroll"><table class="grid" id="supply"></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Пътят на една кутия</span>
+      <h2>Кухнята е едно звено от четири</h2>
+    </div>
+    <div class="flow">
+      <div class="step"><b>Поръчка</b><span>На blag-coaching.com/cheatcode, ден по-рано. Плащане онлайн.</span></div>
+      <div class="step"><b>Готвене</b><span>На партиди в CoKitchen: кайма, ориз, грис, кремовете.</span></div>
+      <div class="step"><b>Сглобяване</b><span>На кантар, по поръчка. Етикет с грамове, алергени и код.</span></div>
+      <div class="step"><b>Взимане</b><span>Клиентът взима кутията и сканира кода. Ястието влиза в дневника му.</span></div>
+    </div>
+  </section>
+
+  <section id="asks">
+    <div class="sec-head">
+      <span class="eyebrow">Какво питаме днес</span>
+      <h2>Пет въпроса, които решават дали тръгваме, и какво носим ние</h2>
+    </div>
+    <div class="asks">
+      <div class="ask"><span class="tag">Регистрация</span><h3>Законово</h3>
+        <ul><li>Обектът в БАБХ и номерът му</li><li>Може ли Благ Холдинг да продава от разстояние с вашия обект като място на производство</li><li>Чий е HACCP планът; какво искате от нас</li></ul></div>
+      <div class="ask"><span class="tag">Взимане</span><h3>Адрес за клиента</h3>
+        <ul><li>Могат ли клиенти да взимат от „Добруджа“ 10</li><li>В кои дни и часове</li></ul></div>
+      <div class="ask"><span class="tag">Цена</span><h3>Час и съхранение</h3>
+        <ul><li>Цена на час, минимум, месечни планове</li><li>Хладилник, фризер, сухо място — колко и включено ли е</li></ul></div>
+      <div class="ask"><span class="tag">Оборудване</span><h3>Шоков охладител</h3>
+        <ul><li>Има ли бласт чилър — каймата и оризът се охлаждат бързо преди порциониране</li><li>Кантар, запечатване, миялна</li><li>Приемане на доставка от METRO</li></ul></div>
+      <div class="ask"><span class="tag">Ритъм</span><h3>График и договор</h3>
+        <ul><li>Колко напред се запазват часове</li><li>Срок и как се излиза от договора</li><li>Може ли да се снима в кухнята</li></ul></div>
+      <div class="ask"><span class="tag">От нас</span><h3>Какво носим</h3>
+        <ul><li>Готово меню с изчислени макроси и алергени</li><li>Страница за поръчки</li><li>Клиенти от Blag Coaching като първа аудитория</li></ul></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Благ Холдинг ЕООД · Николай Благьов</span>
+    <span>Страница за поръчки: blag-coaching.com/cheatcode</span>
+    <span>Сметките са от рецептите на страницата, към 7 октомври 2026</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  /* Данните са преписани от cheatcode/page.html (DISHES). cost100 е в
+     евроцентове на 100 г сурово/сухо; packaging и pack са в евроцентове. */
+  var ADDON = 335;
+  var METRO = { trici: 22.4, kakao: 259.6, kayma: 79.9, gris: 21.4, biskviti: 66, yagodi: 50.7, gorski: 84.7 };
+  var DISHES = [
+    { id: 'kremche', name: 'Анаболно кремче', packaging: 15, claim: 'Без добавена захар',
+      base: [
+        { id: 'trici', name: 'Овесени трици', per100: [246, 17.3, 66.2, 7], cost100: 19.0 },
+        { id: 'kakao', name: 'Какао', per100: [228, 19.6, 57.9, 13.7], cost100: 188.9 } ],
+      sizes: [ { name: 'Малка', g: { trici: 50, kakao: 10 } }, { name: 'Средна', g: { trici: 100, kakao: 20 } }, { name: 'Голяма', g: { trici: 150, kakao: 30 } } ],
+      topLabel: 'Глазура', topDefault: 'yagodi',
+      tops: [
+        { id: 'yagodi', name: 'Ягоди', grams: 100, per100: [32, 0.7, 7.7, 0.3], cost100: 40.7, pack: 0 },
+        { id: 'banan', name: 'Банан', grams: 100, per100: [89, 1.1, 22.8, 0.3], cost100: 17.8, pack: 0 },
+        { id: 'protein', name: 'Протеинова глазура', grams: 30, per100: [380, 75, 8, 5], cost100: 225, pack: 2 },
+        { id: 'none', name: 'Без', grams: 0, per100: [0, 0, 0, 0], cost100: 0, pack: 0 } ] },
+    { id: 'kayma', name: 'Телешки боул', packaging: 15, claim: 'Без олио',
+      base: [
+        { id: 'kayma', name: 'Телешка кайма, сурова', per100: [156, 22.51, 0.5, 6.96], cost100: 79.9 },
+        { id: 'oriz', name: 'Ориз, сух', per100: [339, 8.5, 75, 0], cost100: 19.4 },
+        { id: 'pyure', name: 'Доматено пюре', per100: [20, 1, 3.9, 0], cost100: 20 },
+        { id: 'podpravki', name: 'Подправки', per100: [0, 0, 0, 0], cost100: 2500, fixed: 1 } ],
+      sizes: [ { name: 'Малка', g: { kayma: 150, oriz: 75, pyure: 100 } }, { name: 'Средна', g: { kayma: 250, oriz: 100, pyure: 125 } }, { name: 'Голяма', g: { kayma: 350, oriz: 150, pyure: 175 } } ],
+      tops: [] },
+    { id: 'gris', name: 'Грис на стероиди', packaging: 15, claim: 'Без добавена захар',
+      base: [
+        { id: 'gris', name: 'Оризов грис, сух', per100: [348, 6.6, 79, 0.6], cost100: 16.8 },
+        { id: 'banan', name: 'Банан', per100: [89, 1.1, 22.8, 0.3], cost100: 17.8 },
+        { id: 'biskviti', name: 'Бисквити', per100: [425, 8, 67, 15], cost100: 66.0, fixed: 30 } ],
+      sizes: [ { name: 'Малка', g: { gris: 60, banan: 60 } }, { name: 'Средна', g: { gris: 80, banan: 100 } }, { name: 'Голяма', g: { gris: 100, banan: 140 } } ],
+      topLabel: 'Отгоре', topDefault: 'none',
+      tops: [
+        { id: 'none', name: 'Нищо', grams: 0, per100: [0, 0, 0, 0], cost100: 0, pack: 0 },
+        { id: 'protein', name: 'Протеинова глазура', grams: 30, per100: [380, 75, 8, 5], cost100: 225, pack: 2 },
+        { id: 'gorski', name: 'Горски плодове', grams: 100, per100: [44, 0.9, 8.5, 0.4], cost100: 62.0, pack: 0 },
+        { id: 'choko', name: 'Дарк чоко поръска', grams: 40, per100: [92, 7.5, 18.1, 4.6], cost100: 66, pack: 0 } ] }
+  ];
+  var SUPPLY = [
+    ['Fine Life Овесени трици', '500 г', 1.12, '6+: 0,95 €', 22.4, 46.5, 'BTY-X355805'],
+    ['KRINA Грис оризов', '500 г', 1.07, '6+: 0,84 €', 21.4, 24.2, 'BTY-X308144'],
+    ['gullon Бисквити без захар', '200 г', 1.32, '—', 66, 86.2, 'BTY-X354639'],
+    ['Fine Life Ягоди замразени', '300 г', 1.52, '5+: 1,22 €', 50.7, 56, 'BTY-X308564'],
+    ['Fine Life Горски плодове', '300 г', 2.54, '5+: 1,86 €', 84.7, 50.7, 'BTY-X242956'],
+    ['BIOSET Натурално какао', '5 × 45 г', 5.84, '3+: 4,25 €', 259.6, 220, 'BTY-X223439'],
+    ['METRO Chef Телешка кайма 100%', '~1,5 кг', 7.99, 'за кг', 79.9, 92.2, 'BTY-X356876'],
+    ['Телешка кайма охладена', '1 кг', 5.60, '—', 56, 92.2, 'BTY-X288548'],
+    ['KRINA Ориз балдо', '1 кг', 3.42, '6+: 2,29 €', 34.2, 19.4, 'BTY-X310080'],
+    ['MUTTI Доматено пюре', '700 г', 2.78, '—', 39.7, 20, 'BTY-X153711'],
+    ['SWEETLY Течен подсладител', '1 л', 4.58, '—', 45.8, null, 'BTY-X226134'],
+    ['Купа крафт 750 мл с PET капак', '300 бр', 24.31, 'редовна 37,32 €', null, null, 'BTY-X349646']
+  ];
+
+  var state = { dish: 0, size: 1, top: null, src: 'page' };
+  /* Снимка по ястие и добавка — същите, които страницата за поръчки показва.
+     За протеина и горските плодове при гриса няма отделна снимка: остава
+     основната с банан и бисквити. */
+  var PHOTOS = {
+    kremche: { yagodi: 'yagodi.jpg', banan: 'banan.jpg', protein: 'protein.jpg', none: 'kakao.jpg', _: 'yagodi.jpg' },
+    kayma: 'kayma.jpg',
+    gris: { choko: 'gris-choko.jpg', _: 'gris-oba.jpg' }
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var eur = function (c) { return (c / 100).toFixed(2).replace('.', ',') + ' €'; };
+  var eur0 = function (v) { return Math.round(v).toLocaleString('bg-BG') + ' €'; };
+  var g1 = function (v) { return (Math.round(v * 10) / 10).toString().replace('.', ','); };
+  var cost100 = function (item, src) { return src === 'metro' && METRO[item.id] != null ? METRO[item.id] : item.cost100; };
+  var priceOf = function (c) { return Math.ceil((c + ADDON) / 10) * 10; };
+
+  /* Едно ястие в една конфигурация → редове, макроси, себестойност, цена. */
+  function compute(d, sizeIdx, topId, src) {
+    var size = d.sizes[sizeIdx], rows = [], m = [0, 0, 0, 0], cost = 0, grams = 0;
+    function add(name, g, item) {
+      var c = g * cost100(item, src) / 100;
+      for (var i = 0; i < 4; i++) m[i] += g * item.per100[i] / 100;
+      cost += c; if (item.per100[0] > 0) grams += g;
+      rows.push([name, g, c]);
+    }
+    d.base.forEach(function (b) { add(b.name, b.fixed != null ? b.fixed : size.g[b.id], b); });
+    var top = d.tops.filter(function (t) { return t.id === topId; })[0];
+    if (top && top.grams) { add(top.name, top.grams, top); cost += top.pack; if (top.pack) rows.push(['Кофичка за глазура', null, top.pack]); }
+    cost += d.packaging; rows.push(['Купа, капак, етикет', null, d.packaging]);
+    return { rows: rows, m: m, cost: cost, price: priceOf(cost), grams: grams };
+  }
+
+  function pills(el, items, active, onPick) {
+    el.innerHTML = '';
+    items.forEach(function (it, i) {
+      var b = document.createElement('button');
+      b.className = 'pill'; b.type = 'button'; b.textContent = it;
+      b.setAttribute('aria-pressed', i === active ? 'true' : 'false');
+      b.addEventListener('click', function () { onPick(i); });
+      el.appendChild(b);
+    });
+  }
+
+  function renderConfig() {
+    var d = DISHES[state.dish];
+    if (state.top == null) state.top = d.topDefault || null;
+    pills($('dishPills'), DISHES.map(function (x) { return x.name; }), state.dish, function (i) { state.dish = i; state.top = null; renderConfig(); });
+    pills($('sizePills'), d.sizes.map(function (s) { return s.name; }), state.size, function (i) { state.size = i; renderConfig(); });
+    $('topCtl').hidden = !d.tops.length;
+    if (d.tops.length) {
+      $('topLab').textContent = d.topLabel;
+      var ti = d.tops.findIndex(function (t) { return t.id === state.top; });
+      pills($('topPills'), d.tops.map(function (t) { return t.name; }), ti, function (i) { state.top = d.tops[i].id; renderConfig(); });
+    }
+    var r = compute(d, state.size, state.top, state.src);
+    $('price').innerHTML = eur(r.price).replace(' €', '<small> €</small>');
+    $('weight').textContent = Math.round(r.grams) + ' г сурово/сухо';
+    var labels = [['kcal', 'ккал', 0], ['p', 'протеин, г', 1], ['c', 'въглехидрати, г', 2], ['f', 'мазнини, г', 3]];
+    $('macros').innerHTML = labels.map(function (l) {
+      var v = r.m[l[2]]; return '<div class="macro ' + l[0] + '"><b class="num">' + (l[2] === 0 ? Math.round(v) : g1(v)) + '</b><span>' + l[1] + '</span></div>';
+    }).join('');
+    $('lines').innerHTML = r.rows.map(function (x) {
+      return '<tr><td>' + x[0] + (x[1] != null ? ' <span class="note">' + x[1] + ' г</span>' : '') + '</td><td>' + eur(x[2]) + '</td></tr>';
+    }).join('') + '<tr class="total"><td>Материали</td><td>' + eur(r.cost) + '</td></tr>' +
+      '<tr><td>Надбавка на кутия</td><td>' + eur(ADDON) + '</td></tr>' +
+      '<tr class="total"><td>Цена, закръглена</td><td>' + eur(r.price) + '</td></tr>';
+    var mat = r.cost, add = r.price - r.cost;
+    $('split').innerHTML = '<i style="width:' + (mat / r.price * 100) + '%;background:var(--ink-faint)"></i><i style="width:' + (add / r.price * 100) + '%;background:var(--accent)"></i>';
+    $('splitLegend').innerHTML = '<span style="--c:var(--ink-faint)">Материали ' + Math.round(mat / r.price * 100) + '%</span><span style="--c:var(--accent)">Надбавка и закръгляне ' + Math.round(add / r.price * 100) + '%</span>';
+    $('claims').textContent = d.claim + '. Грамовете са на суровата съставка; кутията е следствие от тях.';
+    var ph = PHOTOS[d.id], pic = typeof ph === 'string' ? ph : (ph[state.top] || ph._);
+    var img = $('dishPhoto');
+    if (img.getAttribute('src') !== pic) img.setAttribute('src', pic);
+    var top = d.tops.filter(function (t) { return t.id === state.top; })[0];
+    img.alt = d.name + (top && top.grams ? ', ' + top.name.toLowerCase() : '');
+    $('photoCap').textContent = d.name + ' · ' + d.sizes[state.size].name.toLowerCase() + (top && top.grams ? ' · ' + top.name.toLowerCase() : '');
+  }
+
+  function renderMatrix() {
+    var h = '<thead><tr><th>Порция</th><th>Материали</th><th>Цена</th><th>Протеин</th><th>ккал</th><th>€ на 10 г протеин</th></tr></thead><tbody>';
+    DISHES.forEach(function (d) {
+      h += '<tr class="dish-row"><td colspan="6">' + d.name + (d.topDefault && d.topDefault !== 'none' ? ' <span class="note">· с ' + d.tops[0].name.toLowerCase() + '</span>' : '') + '</td></tr>';
+      d.sizes.forEach(function (s, i) {
+        var r = compute(d, i, d.topDefault || null, 'page');
+        h += '<tr><td>' + s.name + '</td><td>' + eur(r.cost) + '</td><td class="pr">' + eur(r.price) + '</td><td class="p">' + g1(r.m[1]) + ' г</td><td>' + Math.round(r.m[0]) + '</td><td>' + eur(r.price / r.m[1] * 10) + '</td></tr>';
+      });
+    });
+    $('matrix').innerHTML = h + '</tbody>';
+    var prices = [], prots = [];
+    DISHES.forEach(function (d) { d.sizes.forEach(function (s, i) { var r = compute(d, i, d.topDefault || null, 'page'); prices.push(r.price); prots.push(r.m[1]); }); });
+    var mn = Math.min.apply(null, prices), mx = Math.max.apply(null, prices);
+    $('facts').innerHTML =
+      '<div class="fact"><strong>3 × 3</strong><span>ястия по три размера</span></div>' +
+      '<div class="fact"><strong class="num">' + eur(mn).replace(' €', '') + '–' + eur(mx) + '</strong><span>цена на кутия</span></div>' +
+      '<div class="fact"><strong class="num">' + Math.round(Math.max.apply(null, prots)) + ' г</strong><span>протеин в най-голямата</span></div>' +
+      '<div class="fact"><strong class="num">3,35 €</strong><span>фиксирано на кутия над материалите</span></div>';
+  }
+
+  function renderSupply() {
+    var h = '<thead><tr><th>Продукт</th><th>Опаковка</th><th>Цена</th><th>На повече</th><th>На 100 г</th><th>До 07.10</th></tr></thead><tbody>';
+    SUPPLY.forEach(function (s) {
+      var url = 'https://shop.metro.bg/shop/pv/' + s[6] + '/0032/0021/';
+      var diff = '';
+      if (s[4] != null && s[5] != null) diff = s[4] > s[5] * 1.15 ? ' <span class="flag">по-скъпо</span>' : '';
+      h += '<tr><td><a href="' + url + '" target="_blank" rel="noopener">' + s[0] + '</a></td><td>' + s[1] + '</td><td>' + s[2].toFixed(2).replace('.', ',') + ' €</td><td>' + s[3] + '</td><td>' +
+        (s[4] != null ? eur(s[4]) + diff : (s[6] === 'BTY-X349646' ? '8,1 ст./бр' : '—')) + '</td><td>' + (s[5] != null ? eur(s[5]) : '—') + '</td></tr>';
+    });
+    $('supply').innerHTML = h + '</tbody>';
+  }
+
+  /* Седмичната сметка: микс по равно от трите ястия, средна порция. */
+  var MIX = DISHES.map(function (d) { return compute(d, 1, d.topDefault || null, 'page'); });
+  var avgPrice = MIX.reduce(function (a, r) { return a + r.price; }, 0) / MIX.length;
+  var avgCost = MIX.reduce(function (a, r) { return a + r.cost; }, 0) / MIX.length;
+
+  function renderCalc() {
+    var n = +$('boxes').value, ph = +$('perHour').value, rate = Math.max(0, parseFloat(String($('rate').value).replace(',', '.')) || 0);
+    $('boxesOut').textContent = n; $('perHourOut').textContent = ph;
+    var hours = n / ph, pay = hours * rate, kitchenPerBox = rate / ph * 100;
+    $('kHours').textContent = g1(hours);
+    $('kPay').textContent = eur0(pay);
+    $('kRevenue').textContent = eur0(n * avgPrice / 100);
+    $('kMat').textContent = eur0(n * avgCost / 100);
+    var k = Math.min(kitchenPerBox, ADDON), rest = ADDON - k;
+    $('perBox').textContent = 'кухня ' + eur(kitchenPerBox) + ' на кутия';
+    $('addonSplit').innerHTML = '<i style="width:' + (k / ADDON * 100) + '%;background:' + (kitchenPerBox > ADDON ? 'var(--warn)' : 'var(--protein)') + '"></i><i style="width:' + (rest / ADDON * 100) + '%;background:var(--accent)"></i>';
+    $('addonLegend').innerHTML = '<span style="--c:var(--protein)">Час в CoKitchen ' + eur(kitchenPerBox) + '</span><span style="--c:var(--accent)">Остава за труд, ток, фира, такса ' + eur(Math.max(0, ADDON - kitchenPerBox)) + '</span>' +
+      (kitchenPerBox > ADDON ? '<span class="flag">Часът поглъща цялата надбавка — трябват повече кутии на час.</span>' : '');
+  }
+
+  ['boxes', 'perHour', 'rate'].forEach(function (id) { $(id).addEventListener('input', renderCalc); });
+  renderConfig(); renderMatrix(); renderSupply(); renderCalc();
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* Скъсаната верига като стъклен обект. Две звена-капсули под прав ъгъл,
+   второто с пролука там, където минава през първото; около пролуката —
+   отломките от знака, в зеленото на марката. Ако WebGL липсва, остава
+   плоският SVG отдолу. Първият кадър се рисува веднага, за да е страницата
+   пълна и без движение. */
+(function () {
+  var canvas = document.getElementById('chain3d');
+  if (!window.THREE || !canvas) return;
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true }); }
+  catch (e) { return; }
+  document.getElementById('chainFallback').style.display = 'none';
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+  camera.position.set(0, 0, 12.5);
+
+  /* Околна светлина за отраженията: малка сцена от светли плоскости. */
+  var envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x9aa69f);
+  [[0, 6, 0, 0xffffff, 14], [-6, 1, 3, 0xdff5ea, 6], [6, -2, 2, 0xffffff, 5], [0, -6, 0, 0xc9d3cc, 4]].forEach(function (p) {
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(p[4], p[4]), new THREE.MeshBasicMaterial({ color: p[3], side: THREE.DoubleSide }));
+    m.position.set(p[0], p[1], p[2]); m.lookAt(0, 0, 0); envScene.add(m);
+  });
+  var pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xdfe6df, 0.55));
+  var key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3, 5, 6); scene.add(key);
+  var rim = new THREE.PointLight(0x2fb377, 1.4, 20); rim.position.set(-3, -2, 3); scene.add(rim);
+
+  /* Капсула (стадион): две прави и две дъги. u ∈ [a, b] е частта от обиколката. */
+  class Stadium extends THREE.Curve {
+    constructor(half, r, a, b) { super(); this.h = half; this.r = r; this.a = a; this.b = b; }
+    getPoint(t, target) {
+      var h = this.h, r = this.r, L = 4 * h + 2 * Math.PI * r;
+      var s = (this.a + (this.b - this.a) * t) * L, v = target || new THREE.Vector3();
+      s = ((s % L) + L) % L;
+      if (s < 2 * h) return v.set(-h + s, r, 0);
+      s -= 2 * h;
+      if (s < Math.PI * r) { var q = Math.PI / 2 - s / r; return v.set(h + r * Math.cos(q), r * Math.sin(q), 0); }
+      s -= Math.PI * r;
+      if (s < 2 * h) return v.set(h - s, -r, 0);
+      s -= 2 * h;
+      var w = -Math.PI / 2 - s / r; return v.set(-h + r * Math.cos(w), r * Math.sin(w), 0);
+    }
+  }
+
+  var glass = new THREE.MeshPhysicalMaterial({
+    color: 0xdde7e1, metalness: 0.35, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.06,
+    envMapIntensity: 1.7
+  });
+  var H = 0.95, R = 0.62, T = 0.2;
+  var chain = new THREE.Group();
+
+  var link1 = new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0, 1), 220, T, 28, true), glass);
+  link1.position.x = -0.95;
+  chain.add(link1);
+
+  /* Второто звено е завъртяно под прав ъгъл и е скъсано на външната си
+     дъга, където нищо не я закрива — при звеното, което минава през
+     първото, пролуката оставаше скрита зад него. Пролуката е 0.30–0.43. */
+  var link2 = new THREE.Group();
+  link2.add(new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0.43, 1.30), 220, T, 28, false), glass));
+  var capGeo = new THREE.IcosahedronGeometry(T * 1.02, 0);
+  var c1 = new Stadium(H, R, 0, 1).getPoint(0.43), c2 = new Stadium(H, R, 0, 1).getPoint(0.30);
+  [c1, c2].forEach(function (p) { var m = new THREE.Mesh(capGeo, glass); m.position.copy(p); link2.add(m); });
+  link2.rotation.x = Math.PI / 2;
+  link2.position.x = 0.95;
+  chain.add(link2);
+
+  /* Отломките: къде са, колко са големи, какви са — по знака. */
+  var green = new THREE.MeshStandardMaterial({ color: 0x2fb377, roughness: 0.35, metalness: 0.1, emissive: 0x0d3b26, emissiveIntensity: 0.25 });
+  var shards = [];
+  var gapAt = new THREE.Vector3().copy(new Stadium(H, R, 0, 1).getPoint(0.365)).applyEuler(new THREE.Euler(Math.PI / 2, 0, 0)).add(new THREE.Vector3(0.95, 0, 0));
+  [['tet', 0.16, [-0.2, 0.9, 0.5]], ['box', 0.12, [0.35, 1.15, -0.2]], ['oct', 0.14, [-0.65, 0.6, 0.85]],
+   ['tet', 0.1, [0.15, -0.95, 0.6]], ['box', 0.09, [-0.5, -0.8, -0.4]], ['oct', 0.11, [0.55, -0.7, 0.3]],
+   ['sph', 0.07, [-0.1, 1.45, 0.1]], ['tet', 0.08, [0.7, 0.4, 0.75]], ['box', 0.07, [-0.85, 0.1, -0.7]], ['sph', 0.06, [0.25, -1.35, -0.3]]]
+    .forEach(function (d, i) {
+      var g = d[0] === 'tet' ? new THREE.TetrahedronGeometry(d[1]) : d[0] === 'box' ? new THREE.BoxGeometry(d[1], d[1], d[1])
+            : d[0] === 'oct' ? new THREE.OctahedronGeometry(d[1]) : new THREE.SphereGeometry(d[1], 16, 12);
+      var m = new THREE.Mesh(g, green);
+      m.position.set(gapAt.x + d[2][0], gapAt.y + d[2][1], gapAt.z + d[2][2]);
+      m.userData = { base: m.position.clone(), seed: i * 1.7 + 0.3 };
+      m.rotation.set(i, i * 0.7, i * 1.3);
+      chain.add(m); shards.push(m);
+    });
+
+  /* Наклонът обръща скъсаното звено към гледащия; люлеенето е малко, за да
+     не завърта пролуката настрани. */
+  chain.rotation.set(-0.8, -0.35, -0.85);
+  scene.add(chain);
+
+  var stage = canvas.parentElement;
+  function size() {
+    var w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  size();
+  if (window.ResizeObserver) new ResizeObserver(function () { size(); draw(last); }).observe(stage);
+
+  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mx = 0, my = 0, last = 0;
+  stage.addEventListener('pointermove', function (e) {
+    var r = stage.getBoundingClientRect();
+    mx = ((e.clientX - r.left) / r.width - 0.5); my = ((e.clientY - r.top) / r.height - 0.5);
+  });
+  function draw(t) {
+    last = t;
+    var s = t / 1000;
+    chain.rotation.y = -0.35 + Math.sin(s * 0.35) * 0.14 + mx * 0.22;
+    chain.rotation.x = -0.8 + Math.sin(s * 0.27) * 0.06 + my * 0.16;
+    shards.forEach(function (m) {
+      var k = m.userData.seed;
+      m.position.y = m.userData.base.y + Math.sin(s * 0.9 + k) * 0.06;
+      m.rotation.x += 0.004; m.rotation.y += 0.006;
+    });
+    renderer.render(scene, camera);
+  }
+  draw(0);
+  if (!still) (function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
+})();
+</script>

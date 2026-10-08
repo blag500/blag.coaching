@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheat Code — Числата</title>
+<!-- Шрифтовете идват направо от Google Fonts. Без мрежа клипът пак се
+     рендерира със системните — само изглежда по-беден. -->
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Onest:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:#000; overflow:hidden;
+               font-family: system-ui, sans-serif; }
+  #stage { position:fixed; inset:0; display:grid; place-items:center; }
+  canvas { display:block; box-shadow:0 24px 90px rgba(0,0,0,.8); }
+  #ui { position:fixed; left:0; right:0; bottom:0; padding:14px 22px 18px;
+        display:flex; align-items:center; gap:16px;
+        background:linear-gradient(to top, rgba(0,0,0,.9), transparent);
+        opacity:0; transition:opacity 240ms; }
+  body:hover #ui { opacity:1; }
+  #ui button { width:42px; height:42px; flex:none; border:1px solid #333;
+               border-radius:50%; background:rgba(255,255,255,.06);
+               color:#eee; cursor:pointer; }
+  #bar { position:relative; flex:1; height:24px; cursor:pointer; }
+  #bar i { position:absolute; left:0; right:0; top:10px; height:4px;
+           border-radius:2px; background:#222; display:block; }
+  #bar b { position:absolute; left:0; top:10px; height:4px; border-radius:2px;
+           background:#4FBF8E; display:block; width:0; }
+  #tc { font-variant-numeric:tabular-nums; font-size:12px; letter-spacing:2px;
+        color:#888; min-width:96px; text-align:right; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c" width="1920" height="1080"></canvas></div>
+<div id="ui"><button id="play">▶</button><div id="bar"><i></i><b></b></div><div id="tc">0.0</div></div>
+
+<script type="module">
+import { setSize, setPalette, setFonts, FPS, hash } from './core.js';
+
+/* Размерът и палитрата преди сцената — тя чете W/H вътре в рисуването. */
+const W = 1920, H = 1080, DUR = 15;
+setSize(W, H);
+/* Тъмната тема на Чийт Код, от page.html; земята е по-тъмна, за да свети
+   ментовото като курсора на референцията. */
+setPalette({
+  bg: '#0B110E', ink: '#E9F0EA', soft: '#A3B3A7', faint: '#74857A',
+  line: '#35473D', surface: '#16201B', surface2: '#26332C', accent: '#4FBF8E',
+});
+setFonts("'Onest', system-ui, sans-serif", "'Unbounded', 'Arial Black', sans-serif");
+
+/* Свеж модул при всяко зареждане: простият сървър не казва на браузъра
+   да не кешира, и правката на сцената иначе не се вижда. */
+const { draw, loaded } = await import('./scene.js?v=' + Date.now());
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d', { alpha: false });
+
+/* Зърното: осем плочки, направени веднъж. На тъмно разбива и ивиците
+   на градиентите след h264. */
+const TILE = 256, TILES = 8, tiles = [];
+for (let k = 0; k < TILES; k++) {
+  const tc = document.createElement('canvas'); tc.width = tc.height = TILE;
+  const g = tc.getContext('2d'), img = g.createImageData(TILE, TILE);
+  for (let i = 0; i < TILE * TILE; i++) {
+    const v = hash(i, k + 1), s = v > 0.5 ? 255 : 0;
+    img.data[i*4] = img.data[i*4+1] = img.data[i*4+2] = s;
+    img.data[i*4+3] = Math.abs(v - 0.5) > 0.36 ? 255 : 0;
+  }
+  g.putImageData(img, 0, 0); tiles.push(tc);
+}
+function grain(frame) {
+  const tile = tiles[frame % TILES];
+  const ox = -(hash(frame, 91) * TILE) | 0, oy = -(hash(frame, 92) * TILE) | 0;
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.globalCompositeOperation = 'overlay';
+  for (let y = oy; y < H; y += TILE) for (let x = ox; x < W; x += TILE) ctx.drawImage(tile, x, y);
+  ctx.restore();
+}
+
+function render(t) {
+  t = Math.max(0, Math.min(DUR - 0.001, t));
+  draw(ctx, t);
+  grain(Math.round(t * FPS));
+}
+window.render = render;
+window.__DUR = DUR;
+window.__seek = t => new Promise(res => {
+  render(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => res(true)));
+});
+window.__ready = false;
+
+const playBtn = document.getElementById('play'), bar = document.getElementById('bar');
+const fill = bar.querySelector('b'), tc = document.getElementById('tc');
+let playing = false, t0 = 0, at = 0;
+const show = () => { fill.style.width = (at / DUR * 100) + '%'; tc.textContent = at.toFixed(1) + ' / ' + DUR.toFixed(1); };
+function loop(now) {
+  if (playing) {
+    at = (now - t0) / 1000;
+    if (at >= DUR) { at = 0; t0 = now; }
+    render(at); show();
+  }
+  requestAnimationFrame(loop);
+}
+playBtn.onclick = () => {
+  playing = !playing;
+  playBtn.textContent = playing ? '❚❚' : '▶';
+  t0 = performance.now() - at * 1000;
+};
+bar.onpointerdown = e => {
+  const move = ev => {
+    const r = bar.getBoundingClientRect();
+    at = Math.max(0, Math.min(DUR, (ev.clientX - r.left) / r.width * DUR));
+    t0 = performance.now() - at * 1000;
+    render(at); show();
+  };
+  move(e);
+  const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+  addEventListener('pointermove', move); addEventListener('pointerup', up);
+};
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); playBtn.click(); } });
+
+function fit() {
+  const s = Math.min(innerWidth / W, innerHeight / H);
+  cv.style.width = (W * s) + 'px'; cv.style.height = (H * s) + 'px';
+}
+addEventListener('resize', fit); fit();
+
+/* Шрифтът в паметта преди първия кадър — иначе началото е в системния
+   и смяната се вижда в записа. Точковата матрица също се вади от него. */
+(async () => {
+  try {
+    await document.fonts.load('500 60px "JetBrains Mono"', 'Менюто 754');
+    await document.fonts.load('700 470px "JetBrains Mono"', '754');
+    await document.fonts.load('500 30px Onest', 'Телешки');
+    await document.fonts.load('600 30px Onest', 'ккал');
+    await document.fonts.load('700 30px Onest', 'Телешки боул');
+    await document.fonts.ready;
+  } catch (e) { /* без мрежа — системният върши работа */ }
+  await loaded;
+  render(0);
+  window.__ready = true;
+  /* #sheet=1,4.8,7.4 — контактен лист на изброените секунди, за гледане без
+     рендер; #t=7.4 — един кадър. */
+  const hs = location.hash.match(/^#(sheet|t)=([\d.,]+)/);
+  if (hs) {
+    const ts = hs[2].split(',').map(Number);
+    const z = +(new URLSearchParams(location.search).get('z') || 0);
+    if (hs[1] === 't') {
+      render(ts[0]);
+      if (z) { removeEventListener('resize', fit); document.getElementById('stage').style.placeItems = 'start'; cv.style.width = z + 'px'; cv.style.height = z * H / W + 'px'; }
+      return;
+    }
+    const cols = Math.ceil(Math.sqrt(ts.length)), rows = Math.ceil(ts.length / cols);
+    const sheet = document.createElement('canvas'); sheet.width = W; sheet.height = H * rows / cols;
+    const g = sheet.getContext('2d'), sw = W / cols, sh = H / cols;
+    ts.forEach((tt, i) => {
+      render(tt);
+      g.drawImage(cv, (i % cols) * sw, Math.floor(i / cols) * sh, sw, sh);
+      g.fillStyle = '#f0f'; g.font = '18px monospace';
+      g.fillText(tt, (i % cols) * sw + 8, Math.floor(i / cols) * sh + 22);
+    });
+    cv.width = sheet.width; cv.height = sheet.height;
+    ctx.drawImage(sheet, 0, 0);
+    removeEventListener('resize', fit);
+    cv.style.width = 'auto'; cv.style.height = 'auto';
+    cv.style.maxWidth = '100vw'; cv.style.maxHeight = '100vh';
+    document.getElementById('stage').style.placeItems = 'start';
+    return;
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
