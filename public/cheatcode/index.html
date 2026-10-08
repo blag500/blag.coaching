@@ -2048,6 +2048,7 @@
       <div class="form">
         <label class="fld"><span>Име</span><input id="fName" type="text" autocomplete="name" placeholder="Как да те потърсим"></label>
         <label class="fld"><span>Телефон</span><input id="fPhone" type="tel" autocomplete="tel" placeholder="08…"></label>
+        <label class="fld"><span>Имейл <small>по избор — пишем ти, когато е готова</small></span><input id="fEmail" type="email" autocomplete="email" inputmode="email" placeholder="ime@primer.bg"></label>
         <label class="fld"><span>Кога ще го вземеш</span><input id="fWhen" type="time" step="900"></label>
         <label class="fld"><span>Бележка <small>по избор</small></span><input id="fNote" type="text" placeholder="Нещо, което да знаем"></label>
         <!-- Капан за ботове: скрито поле, което човек не вижда и не попълва. -->
@@ -3489,6 +3490,11 @@
       err.textContent = 'Телефонът изглежда непълен.';
       err.hidden = false; $('fPhone').focus(); return;
     }
+    var email = $('fEmail').value.trim();
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      err.textContent = 'Имейлът изглежда непълен.';
+      err.hidden = false; $('fEmail').focus(); return;
+    }
     err.hidden = true;
 
     /* Обобщение за цялата поръчка: човекът взима една торба, не три кутии
@@ -3507,7 +3513,7 @@
     var total = cartTotal();
     var when = $('fWhen').value;
     var payload = {
-      name: name, phone: phone, when: when, note: $('fNote').value.trim(),
+      name: name, phone: phone, email: email, when: when, note: $('fNote').value.trim(),
       website: $('fSite').value, live: LIVE,
       lines: cart.map(function (l) {
         return { name: l.name, cfg: l.cfg, qty: l.qty, unit: l.unit, kcal: l.kcal, p: l.p, c: l.c, f: l.f,
@@ -3531,6 +3537,7 @@
         $('doneNote').innerHTML = res.j.test
           ? 'Това е проба. Поръчката стигна до Николай, но <b>не се готви</b> — кухнята още не е отворена.'
           : 'Поръчката е приета. Ще ти се обадим на ' + phone.replace(/[<>&]/g, '') + ', за да я потвърдим.';
+        if (email) $('doneNote').innerHTML += '<br>Когато е готова, ще ти пишем на ' + email.replace(/[<>&"]/g, '') + '.';
         remember({
           code: res.j.code, at: new Date().toISOString(), phone: phone, when: when,
           n: n, total: total, test: !!res.j.test, status: 'new',

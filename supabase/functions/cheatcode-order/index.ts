@@ -103,9 +103,12 @@ Deno.serve(async (req) => {
   const digits = phone.replace(/\D/g, '')
   const when = str(body.when, 5)
   const note = str(body.note, 300)
+  // Имейлът е по избор — само за писмото „готова е“ (миграция 131).
+  const email = str(body.email, 120).toLowerCase()
   if (name.length < 2) return json({ error: 'Трябва ни име, за да те потърсим.' }, 400, headers)
   if (digits.length < 9 || digits.length > 15) return json({ error: 'Телефонът изглежда непълен.' }, 400, headers)
   if (when && !/^[0-2]\d:[0-5]\d$/.test(when)) return json({ error: 'Часът не се прочете.' }, 400, headers)
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: 'Имейлът изглежда непълен.' }, 400, headers)
 
   if (!Array.isArray(body.lines) || body.lines.length === 0 || body.lines.length > 20) {
     return json({ error: 'Количката е празна.' }, 400, headers)
@@ -135,7 +138,7 @@ Deno.serve(async (req) => {
   for (let i = 0; i < 5 && !saved; i++) {
     code = 'ЧК-' + String(1000 + Math.floor(Math.random() * 9000))
     const { error } = await db.from('cheatcode_orders').insert({
-      code, name, phone, pickup_time: when || null, note: note || null,
+      code, name, phone, pickup_time: when || null, note: note || null, email: email || null,
       lines, box_count: boxes, total_cents: total, test,
     })
     if (!error) saved = true

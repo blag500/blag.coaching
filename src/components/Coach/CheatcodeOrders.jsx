@@ -46,7 +46,7 @@ export default function CheatcodeOrders() {
     const since = new Date(Date.now() - WEEK).toISOString()
     const { data } = await supabase
       .from('cheatcode_orders')
-      .select('id, code, created_at, name, phone, pickup_time, note, lines, box_count, total_cents, status, test')
+      .select('id, code, created_at, name, phone, email, pickup_time, note, lines, box_count, total_cents, status, test')
       .or(`status.in.(${OPEN.join(',')}),created_at.gte.${since}`)
       .order('created_at', { ascending: false })
       .limit(80)
@@ -141,6 +141,8 @@ function OrderCard({ o, t, busy, onSet }) {
         <a href={`tel:${o.phone.replace(/\s+/g, '')}`} className={styles.phone}>
           <Pictogram name="phone" size={13} /> {o.phone}
         </a>
+        {/* Имейл значи, че „Готова“ и „Откажи“ пращат писмо на клиента (131). */}
+        {o.email && <span className={styles.email}>{o.email}</span>}
       </div>
 
       <p className={styles.when}>

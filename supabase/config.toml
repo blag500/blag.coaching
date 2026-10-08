@@ -40,3 +40,9 @@ verify_jwt = false
 # таван на поръчките по телефон и за час.
 [functions.cheatcode-order]
 verify_jwt = false
+
+# cheatcode-mail праща писмото „готова е“ на клиента. Вика го тригерът в
+# базата през net.http_post — без Authorization, значи без JWT. Пази се сама
+# с тайната от app_secrets в заглавката x-bot-secret.
+[functions.cheatcode-mail]
+verify_jwt = false

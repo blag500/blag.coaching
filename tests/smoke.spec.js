@@ -1874,7 +1874,7 @@ async function openOrders(page) {
 test.describe('Поръчките на Чийт Код', () => {
   const ORDER = {
     id: 'o1', code: 'ЧК-5445', created_at: new Date().toISOString(),
-    name: 'Ники', phone: '0898 281 221', pickup_time: '19:06', note: 'без лук',
+    name: 'Ники', phone: '0898 281 221', email: 'niki@primer.bg', pickup_time: '19:06', note: 'без лук',
     lines: [{ name: 'Телешки боул', cfg: 'Кайма 250 г · Ориз 100 г', qty: 1, unit: 620,
               kcal: 754, p: 66, c: 90, f: 17, allerg: [] },
             { name: 'Анаболно кремче', cfg: 'Трици 100 г · Какао 20 г', qty: 2, unit: 450,
@@ -1897,6 +1897,7 @@ test.describe('Поръчките на Чийт Код', () => {
     await expect(card).toBeVisible({ timeout: 15000 })
     await expect(card.getByText('Ники')).toBeVisible()
     await expect(card.locator('a[href="tel:0898281221"]')).toBeVisible()
+    await expect(card.getByText('niki@primer.bg')).toBeVisible()
     await expect(card.getByText('Взима в 19:06')).toBeVisible()
     await expect(card.getByText('Алергени: Глутен ?')).toBeVisible()
     await expect(card.getByText('15,20 €')).toBeVisible()

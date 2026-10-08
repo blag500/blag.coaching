@@ -12,8 +12,10 @@ test.describe('Чийт Код · моите поръчки', () => {
   test('поръчката остава в „Моите поръчки“, носи статуса си и се поръчва пак', async ({ page }) => {
     test.setTimeout(60000)
     const asked = []
+    let placed = null
     await page.route(ORDER_URL, async route => {
       const body = JSON.parse(route.request().postData() || '{}')
+      if (!body.action) placed = body
       if (body.action === 'status') {
         asked.push(body.orders)
         return route.fulfill({ json: { orders: [{ code: 'ЧК-4321', status: 'ready' }] } })
@@ -28,8 +30,16 @@ test.describe('Чийт Код · моите поръчки', () => {
     await page.locator('.nav-inner [data-go="cart"]').click()
     await page.locator('#fName').fill('Ники')
     await page.locator('#fPhone').fill('0898 281 221')
+    // Имейлът е по избор, но ако е написан, трябва да е цял.
+    await page.locator('#fEmail').fill('niki@')
+    await page.locator('#orderBtn').click()
+    await expect(page.locator('#fErr')).toHaveText('Имейлът изглежда непълен.')
+    expect(placed).toBeNull()
+    await page.locator('#fEmail').fill('niki@primer.bg')
     await page.locator('#orderBtn').click()
     await expect(page.locator('#doneCode')).toHaveText('ЧК-4321')
+    expect(placed.email).toBe('niki@primer.bg')
+    await expect(page.locator('#doneNote')).toContainText('ще ти пишем на niki@primer.bg')
 
     await page.locator('#doneView [data-go="orders"]').click()
     const card = page.locator('.ord', { hasText: 'ЧК-4321' })
