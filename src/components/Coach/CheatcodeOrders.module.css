@@ -144,10 +144,19 @@
 }
 
 .email {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
   font-size: 12px;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+/* Тръгналото писмо е в цвета на действието; липсващото — тихо, не тревога:
+   писмото „приета“ идва до минута след поръчката. */
+.mailed { color: var(--accent); }
+.unmailed { font-style: italic; }
 
 .when {
   margin: 0;

@@ -46,7 +46,7 @@ export default function CheatcodeOrders() {
     const since = new Date(Date.now() - WEEK).toISOString()
     const { data } = await supabase
       .from('cheatcode_orders')
-      .select('id, code, created_at, name, phone, email, pickup_time, note, lines, box_count, total_cents, status, test')
+      .select('id, code, created_at, name, phone, email, mailed, pickup_time, note, lines, box_count, total_cents, status, test')
       .or(`status.in.(${OPEN.join(',')}),created_at.gte.${since}`)
       .order('created_at', { ascending: false })
       .limit(80)
@@ -141,8 +141,19 @@ function OrderCard({ o, t, busy, onSet }) {
         <a href={`tel:${o.phone.replace(/\s+/g, '')}`} className={styles.phone}>
           <Pictogram name="phone" size={13} /> {o.phone}
         </a>
-        {/* Имейл значи, че „Готова“ и „Откажи“ пращат писмо на клиента (131). */}
-        {o.email && <span className={styles.email}>{o.email}</span>}
+        {/* Имейл значи, че поръчката, „Готова“ и „Откажи“ пращат писмо на
+            клиента (131, 132). До него — кои писма наистина са тръгнали:
+            `mailed` се пише чак след като Resend е приел писмото. */}
+        {o.email && (
+          <span className={styles.email}>
+            <Pictogram name="mail" size={13} /> {o.email}
+            <span className={(o.mailed || []).length ? styles.mailed : styles.unmailed}>
+              {(o.mailed || []).length
+                ? t('cco.mail.sent', { list: o.mailed.map(s => t('cco.mail.' + s)).join(', ') })
+                : t('cco.mail.none')}
+            </span>
+          </span>
+        )}
       </div>
 
       <p className={styles.when}>

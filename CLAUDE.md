@@ -146,6 +146,12 @@ after any change to colour, motion, or glass and read the PNGs in `shots/`.
 
 The `ios` project needs a one-time `npx playwright install webkit`.
 
+In a Claude Code cloud session `.claude/hooks/session-start.sh` prepares this on
+start: `npm install`, a `.env.local` with the project URL and a fake key (the
+harness answers every Supabase request, so tests need only the URL), and
+`PW_CHROMIUM_PATH` pointing Playwright at the Chromium in `/opt/pw-browsers`.
+There is no WebKit there — run `--project=chromium --project=mobile`.
+
 The bot's pure functions have their own checks, run separately from Playwright:
 
 ```bash
