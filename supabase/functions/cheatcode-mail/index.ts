@@ -2,8 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 /* Писмата на Чийт Код до клиента.
  *
- *   { id }               — от тригера cheatcode_order_mail (миграции 131, 132):
- *                          „приета“ (с линк към поръчките), „готова“, „отказана“
+ *   { id }               — от тригера cheatcode_order_mail (миграции 131–133):
+ *                          „потвърди“ (с ключа за потвърждение), „готова“, „отказана“
  *   { kind: 'link', email } — от cheatcode-order, когато човек поиска линк
  *
  * Без вход, затова verify_jwt = false в config.toml — пази се сама с тайната
