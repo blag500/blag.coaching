@@ -205,7 +205,17 @@
      Safari не прерисува маска, чието съдържание се анимира с CSS.
      Основните стойности са крайното състояние; анимациите тръгват `both`,
      така че без движение остава скъсаната, зелена верига. */
-  .splash-mark { display: block; width: 144px; height: 144px; color: var(--accent); }
+  .splash-mark { position: relative; display: block; width: 144px; height: 144px; color: var(--accent); }
+  /* Стъклената верига (public/cheatcode/glass-chain.js) заменя плоската само
+     когато three.js вече е в кеша — първото отваряне не чака 600 KB заради
+     марка. Платното е по-голямо от знака: отломките излитат извън него. */
+  .splash-glass {
+    position: absolute; left: 50%; top: 50%; width: 230px; height: 230px;
+    margin: -115px 0 0 -115px; display: block; opacity: 0;
+    transition: opacity 300ms var(--ease);
+  }
+  .splash.glass .splash-glass { opacity: 1; }
+  .splash.glass .splash-mark svg { visibility: hidden; }
   /* Целият знак: влиза, сив е, напъва се, после позеленява. Избледнява
      цял, не по звено — две полупрозрачни звена светват при застъпването. */
   .splash-mark svg {
@@ -1898,6 +1908,7 @@
             </g>
           </g>
         </svg>
+        <canvas class="splash-glass" id="splashGlass" aria-hidden="true"></canvas>
       </span>
       <h1 class="splash-name">CHEAT<span>CODE</span></h1>
       <i class="splash-line"></i>
@@ -4037,6 +4048,52 @@
   $('againBtn').addEventListener('click', function () { show('menu'); });
   $('backFromOrders').addEventListener('click', function () { show('menu'); });
 
+  /* Стъклената верига в сплаша. Същата хореография като плоската (bmStrain,
+     bmShard): 120 ms закъснение, 1400 ms — звената влизат до 22 %, напъват
+     се до 53 %, при 54 % се къса и отломките излитат до 94 %. Само ако
+     three.js и glass-chain.js са вече в кеша на service worker-а: тогава
+     зареждането е мигновено. Иначе плоската си свири, а service worker-ът
+     ги тегли във фона за следващия път (build-cheatcode.mjs, PRECACHE). */
+  function glassSplash(el) {
+    var canvas = $('splashGlass');
+    if (!canvas || !window.caches || !caches.match) return;
+    var t0 = performance.now();
+    var THREE_URL = '/cheatcode/vendor/three-r128.min.js', GC_URL = '/cheatcode/glass-chain.js';
+    Promise.all([caches.match(THREE_URL), caches.match(GC_URL)]).then(function (hit) {
+      // Твърде късно е да се сменя насред скъсването — плоската вече е тръгнала.
+      if (!hit[0] || !hit[1] || performance.now() - t0 > 160) return;
+      return load(THREE_URL).then(function () { return load(GC_URL); }).then(function () {
+        if (performance.now() - t0 > 260 || !document.body.contains(el)) return;
+        var gc = window.GlassChain && GlassChain(canvas, { tone: 'dark', sizeFrom: canvas, scale: 0.86 });
+        if (!gc) return;
+        el.classList.add('glass');
+        var start = t0 + 120;
+        function ease(x) { return 1 - Math.pow(1 - x, 3); }
+        function back(x) { var c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); }
+        (function frame(now) {
+          if (!document.body.contains(el)) return;
+          var p = Math.max(0, Math.min(1, (now - start) / 1400));
+          var apart = p < 0.22 ? 1 - ease(p / 0.22) : 0;
+          var k = p < 0.22 || p > 0.53 ? 0 : (p - 0.22) / 0.31;
+          var shake = Math.sin(p * 1400 / 38) * 0.06 * k * k;
+          var broken = p >= 0.54;
+          var burst = broken ? Math.min(1, back(Math.min(1, (p - 0.54) / 0.4))) : 0;
+          gc.pose({ apart: apart, shake: shake, broken: broken, burst: burst, swing: false });
+          gc.draw(now);
+          requestAnimationFrame(frame);
+        })(performance.now());
+      });
+    }).catch(function () { /* без кеш или без WebGL — плоската */ });
+
+    function load(src) {
+      return new Promise(function (ok, fail) {
+        var sc = document.createElement('script');
+        sc.src = src; sc.onload = ok; sc.onerror = fail;
+        document.head.appendChild(sc);
+      });
+    }
+  }
+
   /* Сплашът слиза сам. Веднъж на сесия — втори път в същия раздел е само
      чакане между човека и обяда му. */
   (function () {
@@ -4048,6 +4105,7 @@
     try { sessionStorage.setItem('cc_splash', '1'); } catch (e) { /* няма памет */ }
 
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) glassSplash(el);
 
     /* Полето за търсене е точно под пръста, който маха сплаша. Докосне ли
        човек сплаша, докато той си отива, iOS довършва докосването върху

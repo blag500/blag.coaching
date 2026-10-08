@@ -1,6 +1,7 @@
 /**
  * Рисува картинките на писмата на Чийт Код:
- *   cheatcode/brand/mail/hero.html → public/cheatcode/mail-hero.png (1200×380)
+ *   cheatcode/brand/mail/glass.html → public/cheatcode/mail-hero.png (1200×380)
+ *                                    и public/cheatcode/og.png (1200×630)
  *   символите s-kcal/s-protein/s-carbs/s-fat от cheatcode/page.html
  *     → public/cheatcode/mail-kcal.png … mail-fat.png (48×48, цветът на
  *       макроса в тъмната тема на страницата)
@@ -16,12 +17,27 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+/* Стъклената верига е WebGL. Без видеокарта (облачна сесия, CI) Chromium
+   рисува със SwiftShader — флаговете го разрешават. */
+const exe = process.env.CHROMIUM_PATH || process.env.PW_CHROMIUM_PATH;
+const browser = await chromium.launch({
+  ...(exe ? { executablePath: exe } : {}),
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
+});
 
-const page = await browser.newPage({ viewport: { width: 600, height: 190 }, deviceScaleFactor: 2 });
-await page.goto(pathToFileURL(resolve('cheatcode/brand/mail/hero.html')).href);
-await page.locator('.hero').screenshot({ path: 'public/cheatcode/mail-hero.png' });
+/* Шапката на писмата и картинката за споделяне — от една страница, със
+   стъклената верига (cheatcode/brand/mail/glass.html). */
+const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 2 });
+page.on('pageerror', (e) => { throw e; });
+await page.goto(pathToFileURL(resolve('cheatcode/brand/mail/glass.html')).href);
+await page.evaluate(() => window.ready);
+await page.locator('#hero').screenshot({ path: 'public/cheatcode/mail-hero.png' });
 console.log('public/cheatcode/mail-hero.png');
+const og = await browser.newPage({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 1 });
+await og.goto(pathToFileURL(resolve('cheatcode/brand/mail/glass.html')).href);
+await og.evaluate(() => window.ready);
+await og.locator('#og').screenshot({ path: 'public/cheatcode/og.png' });
+console.log('public/cheatcode/og.png');
 
 /* Символите се вадят от страницата, не се преписват: една рисунка на едно място. */
 const src = readFileSync('cheatcode/page.html', 'utf8');

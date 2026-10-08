@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- Неподвижните картинки със стъклената верига: шапката на писмата и
+     картинката за споделяне (og:image). Земята на страницата в тъмна тема,
+     стъклената верига от public/cheatcode/glass-chain.js и словният знак без
+     плоската верига (board/art/wordmark-dark.svg) — веригата вече е стъклената.
+     Рисува се с `node scripts/build-mail-art.mjs`:
+       #hero → public/cheatcode/mail-hero.png (1200×380)
+       #og   → public/cheatcode/og.png       (1200×630) -->
+<html><head><meta charset="utf-8"><style>
+  html, body { margin: 0; background: #0b0f0d; }
+  .ground {
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse 110% 90% at 50% -20%, rgba(79, 191, 142, 0.24) 0%, transparent 62%),
+      radial-gradient(ellipse 70% 80% at 6% 70%, rgba(79, 191, 142, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 90% at 96% 110%, rgba(90, 120, 200, 0.12) 0%, transparent 62%),
+      #141C18;
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  /* Сияние зад веригата: стъклото има какво да пречупи. */
+  .glow { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, rgba(79,191,142,0.32), transparent); }
+  canvas { position: absolute; display: block; }
+  .tag { position: absolute; margin: 0; color: #A3B3A7; }
+
+  #hero { width: 600px; height: 190px; }
+  #hero .glow { left: 34px; top: -10px; width: 210px; height: 210px; }
+  #hero canvas { left: 30px; top: -15px; width: 220px; height: 220px; }
+  #hero .word { position: absolute; left: 232px; top: 64px; width: 330px; }
+  #hero .tag { left: 234px; top: 120px; font-size: 17px; }
+
+  #og { width: 1200px; height: 630px; margin-top: 20px; }
+  #og .glow { right: 40px; top: 60px; width: 560px; height: 560px; }
+  #og canvas { right: 30px; top: 25px; width: 600px; height: 600px; }
+  #og .word { position: absolute; left: 80px; top: 228px; width: 560px; }
+  #og .tag { left: 82px; top: 330px; font-size: 32px; line-height: 1.3; }
+  #og .url { left: 82px; bottom: 60px; top: auto; font-size: 22px; color: #74857A; letter-spacing: 0.02em; }
+</style></head><body>
+  <div class="ground" id="hero">
+    <div class="glow"></div><canvas></canvas>
+    <img class="word" src="../board/art/wordmark-dark.svg" alt="">
+    <p class="tag">Храната, която си знае числата ;)</p>
+  </div>
+  <div class="ground" id="og">
+    <div class="glow"></div><canvas></canvas>
+    <img class="word" src="../board/art/wordmark-dark.svg" alt="">
+    <p class="tag">Храната, която<br>си знае числата.</p>
+    <p class="tag url">blag-coaching.com/cheatcode</p>
+  </div>
+  <script src="../../../public/cheatcode/vendor/three-r128.min.js"></script>
+  <script src="../../../public/cheatcode/glass-chain.js"></script>
+  <script>
+    /* Един кадър, без люлеене: скъсана, в покой. `ready` казва на скрипта,
+       че може да снима. */
+    window.ready = Promise.all(Array.prototype.map.call(document.querySelectorAll('.ground canvas'), function (c) {
+      var gc = GlassChain(c, { tone: 'dark', still: true, sizeFrom: c });
+      if (!gc) throw new Error('без WebGL');
+      gc.pose({ swing: false });
+      gc.draw(0);
+      return document.fonts.ready;
+    }));
+  </script>
+</body></html>

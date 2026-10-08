@@ -432,135 +432,19 @@
 })();
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/cheatcode/vendor/three-r128.min.js"></script>
+<script src="/cheatcode/glass-chain.js"></script>
 <script>
-/* Скъсаната верига като стъклен обект. Две звена-капсули под прав ъгъл,
-   второто с пролука там, където минава през първото; около пролуката —
-   отломките от знака, в зеленото на марката. Ако WebGL липсва, остава
-   плоският SVG отдолу. Първият кадър се рисува веднага, за да е страницата
-   пълна и без движение. */
+/* Скъсаната верига като стъклен обект — общата рисунка от
+   /cheatcode/glass-chain.js (същата е в сплаша на Чийт Код и в шапката на
+   писмата). Тук се люлее и следва мишката. Ако WebGL липсва, остава
+   плоският SVG отдолу. */
 (function () {
   var canvas = document.getElementById('chain3d');
-  if (!window.THREE || !canvas) return;
-  var renderer;
-  try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true }); }
-  catch (e) { return; }
+  var gc = window.GlassChain && GlassChain(canvas, { tone: 'light' });
+  if (!gc) return;
   document.getElementById('chainFallback').style.display = 'none';
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-
-  var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-  camera.position.set(0, 0, 12.5);
-
-  /* Околна светлина за отраженията: малка сцена от светли плоскости. */
-  var envScene = new THREE.Scene();
-  envScene.background = new THREE.Color(0x9aa69f);
-  [[0, 6, 0, 0xffffff, 14], [-6, 1, 3, 0xdff5ea, 6], [6, -2, 2, 0xffffff, 5], [0, -6, 0, 0xc9d3cc, 4]].forEach(function (p) {
-    var m = new THREE.Mesh(new THREE.PlaneGeometry(p[4], p[4]), new THREE.MeshBasicMaterial({ color: p[3], side: THREE.DoubleSide }));
-    m.position.set(p[0], p[1], p[2]); m.lookAt(0, 0, 0); envScene.add(m);
-  });
-  var pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(envScene, 0.04).texture;
-
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xdfe6df, 0.55));
-  var key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3, 5, 6); scene.add(key);
-  var rim = new THREE.PointLight(0x2fb377, 1.4, 20); rim.position.set(-3, -2, 3); scene.add(rim);
-
-  /* Капсула (стадион): две прави и две дъги. u ∈ [a, b] е частта от обиколката. */
-  class Stadium extends THREE.Curve {
-    constructor(half, r, a, b) { super(); this.h = half; this.r = r; this.a = a; this.b = b; }
-    getPoint(t, target) {
-      var h = this.h, r = this.r, L = 4 * h + 2 * Math.PI * r;
-      var s = (this.a + (this.b - this.a) * t) * L, v = target || new THREE.Vector3();
-      s = ((s % L) + L) % L;
-      if (s < 2 * h) return v.set(-h + s, r, 0);
-      s -= 2 * h;
-      if (s < Math.PI * r) { var q = Math.PI / 2 - s / r; return v.set(h + r * Math.cos(q), r * Math.sin(q), 0); }
-      s -= Math.PI * r;
-      if (s < 2 * h) return v.set(h - s, -r, 0);
-      s -= 2 * h;
-      var w = -Math.PI / 2 - s / r; return v.set(-h + r * Math.cos(w), r * Math.sin(w), 0);
-    }
-  }
-
-  var glass = new THREE.MeshPhysicalMaterial({
-    color: 0xdde7e1, metalness: 0.35, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.06,
-    envMapIntensity: 1.7
-  });
-  var H = 0.95, R = 0.62, T = 0.2;
-  var chain = new THREE.Group();
-
-  var link1 = new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0, 1), 220, T, 28, true), glass);
-  link1.position.x = -0.95;
-  chain.add(link1);
-
-  /* Второто звено е завъртяно под прав ъгъл и е скъсано на външната си
-     дъга, където нищо не я закрива — при звеното, което минава през
-     първото, пролуката оставаше скрита зад него. Пролуката е 0.30–0.43. */
-  var link2 = new THREE.Group();
-  link2.add(new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0.43, 1.30), 220, T, 28, false), glass));
-  var capGeo = new THREE.IcosahedronGeometry(T * 1.02, 0);
-  var c1 = new Stadium(H, R, 0, 1).getPoint(0.43), c2 = new Stadium(H, R, 0, 1).getPoint(0.30);
-  [c1, c2].forEach(function (p) { var m = new THREE.Mesh(capGeo, glass); m.position.copy(p); link2.add(m); });
-  link2.rotation.x = Math.PI / 2;
-  link2.position.x = 0.95;
-  chain.add(link2);
-
-  /* Отломките: къде са, колко са големи, какви са — по знака. */
-  var green = new THREE.MeshStandardMaterial({ color: 0x2fb377, roughness: 0.35, metalness: 0.1, emissive: 0x0d3b26, emissiveIntensity: 0.25 });
-  var shards = [];
-  var gapAt = new THREE.Vector3().copy(new Stadium(H, R, 0, 1).getPoint(0.365)).applyEuler(new THREE.Euler(Math.PI / 2, 0, 0)).add(new THREE.Vector3(0.95, 0, 0));
-  [['tet', 0.16, [-0.2, 0.9, 0.5]], ['box', 0.12, [0.35, 1.15, -0.2]], ['oct', 0.14, [-0.65, 0.6, 0.85]],
-   ['tet', 0.1, [0.15, -0.95, 0.6]], ['box', 0.09, [-0.5, -0.8, -0.4]], ['oct', 0.11, [0.55, -0.7, 0.3]],
-   ['sph', 0.07, [-0.1, 1.45, 0.1]], ['tet', 0.08, [0.7, 0.4, 0.75]], ['box', 0.07, [-0.85, 0.1, -0.7]], ['sph', 0.06, [0.25, -1.35, -0.3]]]
-    .forEach(function (d, i) {
-      var g = d[0] === 'tet' ? new THREE.TetrahedronGeometry(d[1]) : d[0] === 'box' ? new THREE.BoxGeometry(d[1], d[1], d[1])
-            : d[0] === 'oct' ? new THREE.OctahedronGeometry(d[1]) : new THREE.SphereGeometry(d[1], 16, 12);
-      var m = new THREE.Mesh(g, green);
-      m.position.set(gapAt.x + d[2][0], gapAt.y + d[2][1], gapAt.z + d[2][2]);
-      m.userData = { base: m.position.clone(), seed: i * 1.7 + 0.3 };
-      m.rotation.set(i, i * 0.7, i * 1.3);
-      chain.add(m); shards.push(m);
-    });
-
-  /* Наклонът обръща скъсаното звено към гледащия; люлеенето е малко, за да
-     не завърта пролуката настрани. */
-  chain.rotation.set(-0.8, -0.35, -0.85);
-  scene.add(chain);
-
-  var stage = canvas.parentElement;
-  function size() {
-    var w = stage.clientWidth, h = stage.clientHeight;
-    if (!w || !h) return;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h; camera.updateProjectionMatrix();
-  }
-  size();
-  if (window.ResizeObserver) new ResizeObserver(function () { size(); draw(last); }).observe(stage);
-
-  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var mx = 0, my = 0, last = 0;
-  stage.addEventListener('pointermove', function (e) {
-    var r = stage.getBoundingClientRect();
-    mx = ((e.clientX - r.left) / r.width - 0.5); my = ((e.clientY - r.top) / r.height - 0.5);
-  });
-  function draw(t) {
-    last = t;
-    var s = t / 1000;
-    chain.rotation.y = -0.35 + Math.sin(s * 0.35) * 0.14 + mx * 0.22;
-    chain.rotation.x = -0.8 + Math.sin(s * 0.27) * 0.06 + my * 0.16;
-    shards.forEach(function (m) {
-      var k = m.userData.seed;
-      m.position.y = m.userData.base.y + Math.sin(s * 0.9 + k) * 0.06;
-      m.rotation.x += 0.004; m.rotation.y += 0.006;
-    });
-    renderer.render(scene, camera);
-  }
-  draw(0);
-  if (!still) (function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
+  gc.idle(canvas.parentElement);
 })();
 </script>
 

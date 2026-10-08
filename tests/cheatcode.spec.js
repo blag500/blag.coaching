@@ -187,6 +187,19 @@ test.describe('Чийт Код · моите поръчки', () => {
     await expect(page.getByRole('button', { name: 'Прати линк' })).toBeVisible()
   })
 
+  /* Стъклената верига в сплаша е само от кеша. Първото отваряне не тегли
+     600 KB three.js заради марка — свири плоската. */
+  test('първото отваряне не тегли three.js за сплаша', async ({ page }) => {
+    const asked = []
+    page.on('request', r => { if (r.url().includes('three-r128')) asked.push(r.url()) })
+    await page.goto('/cheatcode/index.html')
+    await expect(page.locator('#splash')).toBeVisible()
+    await page.waitForTimeout(800)
+    await expect(page.locator('#splash.glass')).toHaveCount(0)
+    expect(await page.locator('script[src*="three-r128"]').count()).toBe(0)
+    expect(asked).toEqual([])
+  })
+
   test('без поръчки — казва го', async ({ page }) => {
     await page.addInitScript(() => sessionStorage.setItem('cc_splash', '1'))
     await page.goto('/cheatcode/index.html')

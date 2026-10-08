@@ -111,6 +111,10 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 `public/cheatcode/`, а `sw.js` със scope `/cheatcode/` се **генерира** от
 строителя с версия от съдържанието — не се пипа на ръка. Иконките са PNG от
 `cheatcode/brand/app-icon.svg`; iOS не чете SVG за начален екран.
+Стъклената верига (3D) е една рисунка в `public/cheatcode/glass-chain.js` с
+three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen, сплашът (само
+от кеша) и картинките на писмата/споделянето (`node scripts/build-mail-art.mjs`,
+рисува със SwiftShader и без видеокарта). Правилата — `cheatcode/brand/RULES.md`.
 
 **Инвестиции** (`/invest/`, `invest/index.html` → `src/invest/`): лично табло за
 сметката в Trading 212 — втори вход на Vite, не таб в приложението. Същата сесия

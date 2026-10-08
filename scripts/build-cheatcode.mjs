@@ -51,6 +51,16 @@ const head =
   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
   '<meta name="robots" content="noindex, nofollow">\n' +
   '<meta name="description" content="Конфигурируемо ястие — избираш грамажа, макросите се смятат.">\n' +
+  /* Картинката при споделяне на линка: стъклената верига на тъмната земя
+     (scripts/build-mail-art.mjs → og.png). Пълен адрес — Viber, Messenger и
+     WhatsApp не тръгват по относителен. */
+  '<meta property="og:type" content="website">\n' +
+  '<meta property="og:title" content="CHEAT CODE — храната, която си знае числата">\n' +
+  '<meta property="og:description" content="Настройваш порцията до грам, макросите и цената се движат заедно с нея.">\n' +
+  '<meta property="og:url" content="https://blag-coaching.com/cheatcode/">\n' +
+  '<meta property="og:image" content="https://blag-coaching.com/cheatcode/og.png">\n' +
+  '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n' +
+  '<meta name="twitter:card" content="summary_large_image">\n' +
   '<meta name="theme-color" content="#141C18">\n' +
   /* Знакът: две посоки, нагоре и надолу. SVG-то носи плътен фон нарочно —
      на 16 пиксела прозрачен знак се губи в лентата с раздели, каквато и
@@ -90,6 +100,9 @@ writeFileSync(join(OUT_DIR, 'index.html'), out);
    на второто отваряне), снимките и шрифтовете — първо от кеша. */
 const precache = ['/cheatcode/', '/cheatcode/manifest.webmanifest', '/cheatcode/icon-192.png',
   '/cheatcode/icon-512.png', '/cheatcode/icon-maskable-512.png', '/cheatcode/apple-icon.png', '/cheatcode/favicon.svg',
+  /* Стъклената верига на сплаша: тегли се във фона при инсталирането и от
+     следващото отваряне сплашът е стъклен (page.html, glassSplash). */
+  '/cheatcode/vendor/three-r128.min.js', '/cheatcode/glass-chain.js',
   ...[...wanted].sort().map((f) => `/cheatcode/${f}`)];
 const digest = createHash('sha256');
 digest.update(out);
