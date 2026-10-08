@@ -39,6 +39,8 @@ test.describe('Чийт Код · моите поръчки', () => {
     await page.locator('#orderBtn').click()
     await expect(page.locator('#doneCode')).toHaveText('ЧК-4321')
     expect(placed.email).toBe('niki@primer.bg')
+    // Снимката на ястието тръгва с реда — за писмото до клиента.
+    expect(placed.lines[0].photo).toMatch(/^\/cheatcode\/[\w-]+\.jpe?g$/)
     await expect(page.locator('#doneNote')).toContainText('Пратихме я на niki@primer.bg')
 
     await page.locator('#doneView [data-go="orders"]').click()

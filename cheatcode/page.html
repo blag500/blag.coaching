@@ -3529,7 +3529,7 @@
       name: name, phone: phone, email: email, when: when, note: $('fNote').value.trim(),
       website: $('fSite').value, live: LIVE,
       lines: cart.map(function (l) {
-        return { name: l.name, cfg: l.cfg, qty: l.qty, unit: l.unit, kcal: l.kcal, p: l.p, c: l.c, f: l.f,
+        return { name: l.name, cfg: l.cfg, photo: l.photo, qty: l.qty, unit: l.unit, kcal: l.kcal, p: l.p, c: l.c, f: l.f,
                  allerg: (l.allerg || []).map(function (a) { return a.name + (a.trace ? ' (следи)' : ''); }) };
       })
     };

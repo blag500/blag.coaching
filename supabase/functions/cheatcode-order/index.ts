@@ -48,7 +48,7 @@ async function sha256(s: string) {
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-type Line = { name: string; cfg: string; qty: number; unit: number; kcal: number; p: number; c: number; f: number; allerg: string[] }
+type Line = { name: string; cfg: string; photo?: string; qty: number; unit: number; kcal: number; p: number; c: number; f: number; allerg: string[] }
 
 /* Редът се преписва поле по поле: каквото не е описано тук, не влиза в базата. */
 function cleanLine(raw: any): Line | null {
@@ -57,9 +57,12 @@ function cleanLine(raw: any): Line | null {
   const qty = int(raw.qty, 1, 20)
   const unit = int(raw.unit, 100, 5000)
   if (!name || qty === null || unit === null) return null
+  // Снимката е за писмото до клиента — само наша, само от /cheatcode/.
+  const photo = str(raw.photo, 80)
   return {
     name,
     cfg: str(raw.cfg, 300),
+    ...(/^\/cheatcode\/[\w-]+\.(jpe?g|png)$/.test(photo) ? { photo } : {}),
     qty,
     unit,
     kcal: int(raw.kcal, 0, 5000) ?? 0,

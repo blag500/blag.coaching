@@ -16,6 +16,7 @@
 | `app-icon-maskable.svg` | същото със знака на 60% — за Android, който реже иконката в кръг; от него е `icon-maskable-512.png` |
 | `board/art/wordmark*.svg` | словният знак `CHEATCODE` в контури (Unbounded 800, −0.01em), светъл и тъмен — без жив текст |
 | `board/art/lockup*.svg` | знак + словен знак в ред: веригата е 1.5 пъти височината на главните букви, разстояние 0.4 от нея |
+| `mail/hero.html` | шапката на писмата до клиента: земята на страницата в тъмна тема и `lockup-dark.svg`; `node scripts/build-mail-art.mjs` я рисува в `public/cheatcode/mail-hero.png` — картинка, защото Gmail и Outlook не показват SVG и режат градиентите |
 | `board/board.html`, `board/slides/` | презентационната дъска — знакът в употреба: кутия, плик, чаша, иконка, тениска, профил |
 
 Контурите се правят от `board/make.py`. Шрифтът не е в repo-то: `Unbounded[wght].ttf`

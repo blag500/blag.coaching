@@ -1,5 +1,5 @@
 /* Генериран от scripts/build-cheatcode.mjs — не се пипа на ръка. */
-const CACHE = 'cheatcode-56ebd670e9e7';
+const CACHE = 'cheatcode-e74c135cd461';
 const PRECACHE = ["/cheatcode/","/cheatcode/manifest.webmanifest","/cheatcode/icon-192.png","/cheatcode/icon-512.png","/cheatcode/icon-maskable-512.png","/cheatcode/apple-icon.png","/cheatcode/favicon.svg","/cheatcode/banan.jpg","/cheatcode/gris-banan.jpg","/cheatcode/gris-biskviti.jpg","/cheatcode/gris-choko.jpg","/cheatcode/gris-oba.jpg","/cheatcode/gris.jpg","/cheatcode/kakao.jpg","/cheatcode/kayma.jpg","/cheatcode/protein.jpg","/cheatcode/yagodi.jpg"];
 
 self.addEventListener('install', (e) => {
