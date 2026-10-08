@@ -1913,7 +1913,8 @@ test.describe('Поръчките на Чийт Код', () => {
     })
     await card.getByRole('button', { name: 'ПОТВЪРДИ' }).click()
     await expect(card.getByText('Потвърдена')).toBeVisible()
-    expect(patched).toMatchObject({ status: 'confirmed' })
+    // Екранът се сменя веднага, а заявката тръгва след него — чака се, не се приема.
+    await expect.poll(() => patched).toMatchObject({ status: 'confirmed' })
     await expect(card.getByRole('button', { name: 'ГОТОВА' })).toBeVisible()
   })
 

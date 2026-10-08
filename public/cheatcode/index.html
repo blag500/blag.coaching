@@ -605,7 +605,10 @@
     font-size: 13.5px !important; font-weight: 600;
     color: var(--ink) !important; max-width: 36ch;
   }
-  .done-note { font-size: 13px !important; color: var(--ink-faint) !important; }
+  /* Последният екран не казва „готово“: поръчката чака потвърждение от
+     имейла, и това е единственото, което човекът трябва да направи сега. */
+  .done-title { font-size: 17px !important; font-weight: 700; color: var(--ink) !important; }
+  .done-note { font-size: 13.5px !important; color: var(--ink-soft) !important; }
   .done-note b { color: var(--ink); font-weight: 600; }
   .again {
     margin-top: 12px; background: none; border: 1px solid var(--line);
@@ -2079,7 +2082,7 @@
       <div class="form">
         <label class="fld"><span>Име</span><input id="fName" type="text" autocomplete="name" placeholder="Как да те потърсим"></label>
         <label class="fld"><span>Телефон</span><input id="fPhone" type="tel" autocomplete="tel" placeholder="08…"></label>
-        <label class="fld"><span>Имейл <small>по избор — пишем ти, когато е готова</small></span><input id="fEmail" type="email" autocomplete="email" inputmode="email" placeholder="ime@primer.bg"></label>
+        <label class="fld"><span>Имейл <small>оттам потвърждаваш поръчката</small></span><input id="fEmail" type="email" autocomplete="email" inputmode="email" placeholder="ime@primer.bg"></label>
         <label class="fld"><span>Кога ще го вземеш</span><input id="fWhen" type="time" step="900"></label>
         <label class="fld"><span>Бележка <small>по избор</small></span><input id="fNote" type="text" placeholder="Нещо, което да знаем"></label>
         <!-- Капан за ботове: скрито поле, което човек не вижда и не попълва. -->
@@ -2093,6 +2096,7 @@
   <section id="doneView" hidden>
     <div class="done">
       <svg class="pic" width="46" height="46" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-check"/></svg>
+      <p class="done-title" id="doneTitle"></p>
       <h2 id="doneCode">—</h2>
       <p id="doneWhat"></p>
       <p class="done-allerg" id="doneAllerg"></p>
@@ -3521,8 +3525,14 @@
       err.textContent = 'Телефонът изглежда непълен.';
       err.hidden = false; $('fPhone').focus(); return;
     }
+    /* Имейлът е задължителен: поръчката стига до кухнята чак когато човекът
+       я потвърди от писмото (миграция 133). Така няма нужда от регистрация. */
     var email = $('fEmail').value.trim();
-    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    if (!email) {
+      err.textContent = 'Трябва ни имейл — оттам потвърждаваш поръчката.';
+      err.hidden = false; $('fEmail').focus(); return;
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       err.textContent = 'Имейлът изглежда непълен.';
       err.hidden = false; $('fEmail').focus(); return;
     }
@@ -3565,15 +3575,15 @@
         $('doneWhat').textContent =
           n + (n === 1 ? ' кутия' : ' кутии') + ' · ' + money(total) +
           (when ? ' · за ' + when : '') + ' · в брой на място';
-        $('doneNote').innerHTML = res.j.test
-          ? 'Това е проба. Поръчката стигна до Николай, но <b>не се готви</b> — кухнята още не е отворена.'
-          : 'Поръчката е приета. Ще ти се обадим на ' + phone.replace(/[<>&]/g, '') + ', за да я потвърдим.';
-        if (email) $('doneNote').innerHTML += '<br>Пратихме я на ' + email.replace(/[<>&"]/g, '') +
-          ' — оттам поръчките ти се отварят на всеки телефон. Ще ти пишем и когато е готова.';
+        $('doneTitle').textContent = 'Потвърди от имейла';
+        $('doneNote').innerHTML =
+          'Пратихме писмо на <b>' + email.replace(/[<>&"]/g, '') + '</b>. Натисни „Потвърди поръчката“ в него — ' +
+          'дотогава поръчката не стига до кухнята.' +
+          (res.j.test ? '<br>Това е проба — <b>не се готви</b>, кухнята още не е отворена.' : '');
         keepProfile({ name: name, phone: phone, email: email || profile().email || '' });
         remember({
           code: res.j.code, at: new Date().toISOString(), phone: phone, when: when,
-          n: n, total: total, test: !!res.j.test, status: 'new',
+          n: n, total: total, test: !!res.j.test, status: 'new', confirmed: false,
           lines: cart.map(function (l) { return JSON.parse(JSON.stringify(l)); })
         });
         cart = [];
@@ -3660,10 +3670,10 @@
     var list = myOrders();
     orders.forEach(function (s) {
       var mine = list.filter(function (o) { return o.code === s.code; })[0];
-      if (mine) { mine.status = s.status; mine.test = s.test; return; }
+      if (mine) { mine.status = s.status; mine.test = s.test; mine.confirmed = s.confirmed; return; }
       list.push({
         code: s.code, at: s.at, phone: s.phone, when: s.when, n: s.n, total: s.total,
-        test: s.test, status: s.status, lines: (s.lines || []).map(dressLine)
+        test: s.test, status: s.status, confirmed: s.confirmed, lines: (s.lines || []).map(dressLine)
       });
     });
     list.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
@@ -3705,8 +3715,10 @@
       box.innerHTML =
         '<p class="me-t">Поръчките ти са на всеки телефон</p>' +
         '<p class="me-s">С имейла <b></b>. Отвори линка от писмото на друг телефон и ще ги видиш и там.</p>' +
+        '<p class="me-msg" id="meMsg" hidden></p>' +
         '<button type="button" class="back-plain" id="meOut">Забрави този телефон</button>';
       box.querySelector('.me-s b').textContent = profile().email || '';
+      if (meMsg) { $('meMsg').textContent = meMsg.text; $('meMsg').className = 'me-msg' + (meMsg.bad ? ' bad' : ''); $('meMsg').hidden = false; }
       $('meOut').addEventListener('click', function () {
         callMe({ action: 'logout', token: token }).catch(function () { /* без връзка */ });
         try {
@@ -3769,9 +3781,11 @@
       var card = document.createElement('div');
       card.className = 'ord';
       var st = STATUS[o.status] ? o.status : 'new';
+      /* Непотвърдената поръчка още не е стигнала до кухнята — казва се друго. */
+      var label = st === 'new' && o.confirmed === false ? 'Потвърди от имейла' : STATUS[st];
       card.innerHTML =
         '<div class="ord-head"><span class="ord-code"></span>' +
-          '<span class="ord-st ' + st + '">' + STATUS[st] + '</span></div>' +
+          '<span class="ord-st ' + st + '">' + label + '</span></div>' +
         '<p class="ord-meta"></p>' +
         (o.test ? '<p class="ord-test">Проба — не се готви.</p>' : '');
       card.querySelector('.ord-code').textContent = o.code;
@@ -3819,7 +3833,9 @@
         var fresh = myOrders();
         j.orders.forEach(function (s) {
           fresh.forEach(function (o) {
-            if (o.code === s.code && STATUS[s.status] && o.status !== s.status) { o.status = s.status; changed = true; }
+            if (o.code !== s.code || !STATUS[s.status]) return;
+            if (o.status !== s.status) { o.status = s.status; changed = true; }
+            if (typeof s.confirmed === 'boolean' && o.confirmed !== s.confirmed) { o.confirmed = s.confirmed; changed = true; }
           });
         });
         if (!changed) return;
@@ -4293,6 +4309,36 @@
     meMsg = null;
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* стар браузър */ }
     start = 'orders';
+  }
+
+  /* „Потвърди поръчката“ от писмото: функцията я пуска към кухнята и връща
+     ключ за „Моите поръчки“ — този телефон вече вижда поръчките по имейла. */
+  var ch = /[#&]confirm=([\w-]{20,80})/.exec(location.hash);
+  if (ch) {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* стар браузър */ }
+    start = 'orders';
+    meMsg = { text: 'Потвърждаваме поръчката…' };
+    callMe({ action: 'confirm', token: ch[1] })
+      .then(function (res) {
+        if (!res.ok) {
+          meMsg = { bad: true, text: 'Линкът за потвърждение не се намери. Ако поръчката е отпреди малко, опитай пак от писмото.' };
+        } else {
+          var j = res.j;
+          try { localStorage.setItem(ME_KEY, j.me); } catch (e) { /* частен режим */ }
+          var p = profile();
+          keepProfile({ name: p.name || j.name, phone: p.phone || j.phone, email: j.email });
+          meMsg = { text: j.already
+            ? 'Поръчка ' + j.code + ' вече е потвърдена.'
+            : 'Поръчка ' + j.code + ' е потвърдена и е в кухнята.' + (j.test ? ' (Проба — не се готви.)' : '') };
+          toast('Поръчка ' + j.code + ' е потвърдена');
+          fetchMe();
+        }
+        if (view === 'orders') { buildMe(); buildOrders(); }
+      })
+      .catch(function () {
+        meMsg = { bad: true, text: 'Няма връзка — поръчката не е потвърдена. Отвори линка от писмото пак.' };
+        if (view === 'orders') buildMe();
+      });
   }
 
   openDish(DISHES[0]);

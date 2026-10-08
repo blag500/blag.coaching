@@ -46,11 +46,13 @@ export default function CheatcodeOrders() {
     const since = new Date(Date.now() - WEEK).toISOString()
     const { data } = await supabase
       .from('cheatcode_orders')
-      .select('id, code, created_at, name, phone, email, mailed, pickup_time, note, lines, box_count, total_cents, status, test')
+      .select('id, code, created_at, name, phone, email, mailed, confirmed_at, pickup_time, note, lines, box_count, total_cents, status, test')
       .or(`status.in.(${OPEN.join(',')}),created_at.gte.${since}`)
       .order('created_at', { ascending: false })
       .limit(80)
-    setOrders(data || [])
+    // Непотвърдената от имейла поръчка още не е поръчка (миграция 133):
+    // кухнята я вижда чак след като клиентът натисне „Потвърди“.
+    setOrders((data || []).filter(o => o.confirmed_at !== null))
   }, [])
 
   useEffect(() => {

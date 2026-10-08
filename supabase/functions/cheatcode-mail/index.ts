@@ -22,7 +22,7 @@ const esc = (s: unknown) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 const euro = (cents: number) => (cents / 100).toFixed(2).replace('.', ',') + ' €'
 
-type Line = { name: string; qty: number; unit: number; cfg?: string; photo?: string }
+type Line = { name: string; qty: number; unit: number; cfg?: string; photo?: string; kcal?: number; p?: number; c?: number; f?: number }
 type Order = {
   id: string; code: string; name: string; email: string | null; status: string; test: boolean
   phone: string; note: string | null; created_at: string
@@ -35,12 +35,25 @@ export async function sha256(s: string) {
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-async function newLink(db: any, email: string) {
+function token() {
   const bytes = crypto.getRandomValues(new Uint8Array(24))
-  const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-  const { error } = await db.from('cheatcode_links').insert({ token_hash: await sha256(token), email })
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+async function newLink(db: any, email: string) {
+  const t = token()
+  const { error } = await db.from('cheatcode_links').insert({ token_hash: await sha256(t), email })
   if (error) throw error
-  return PAGE + '#me=' + token
+  return PAGE + '#me=' + t
+}
+
+/* Ключът за „Потвърди поръчката“ се ражда тук, когато тръгва писмото: в
+   базата остава само отпечатъкът му (миграция 133). */
+async function confirmLink(db: any, id: string) {
+  const t = token()
+  const { error } = await db.from('cheatcode_orders').update({ confirm_hash: await sha256(t) }).eq('id', id)
+  if (error) throw error
+  return PAGE + '#confirm=' + t
 }
 
 /* ── Видът ──────────────────────────────────────────────────────
@@ -60,19 +73,25 @@ const SITE = 'https://blag-coaching.com'
 const photoOf = (l: Line) => SITE + (l.photo || '/cheatcode/icon-192.png')
 
 function page(preheader: string, inner: string) {
-  return `<!doctype html><html lang="bg"><head><meta charset="utf-8">` +
+  /* Без lang="bg": в част от пощите на iPhone той пуска българските ръкописни
+     форми (д като g, т като m) и яде интервалите между думите — видяно на
+     писмо ЧК-2951. „light dark“ казва на пощата, че писмото си носи цветовете,
+     и тя не го обръща; фонът е и като картинка-градиент, защото Gmail обръща
+     цвета на фона, но не и картинката. */
+  return `<!doctype html><html><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1">` +
-    `<meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark">` +
+    `<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">` +
+    `<style>:root{color-scheme:light dark;supported-color-schemes:light dark}</style>` +
     `<title>Cheat Code</title></head>` +
-    `<body style="margin:0;padding:0;background:${C.ground}" bgcolor="${C.ground}">` +
+    `<body style="margin:0;padding:0;background:${C.ground};background-image:linear-gradient(${C.ground},${C.ground})" bgcolor="${C.ground}">` +
     // Редът, който пощата показва до заглавието; в самото писмо не се вижда.
     `<div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(preheader)}</div>` +
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.ground}" style="background:${C.ground}">` +
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.ground}" style="background:${C.ground};background-image:linear-gradient(${C.ground},${C.ground})">` +
     `<tr><td align="center" style="padding:0 12px 28px">` +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">` +
     `<tr><td><a href="${PAGE}"><img src="${SITE}/cheatcode/mail-hero.png" width="600" alt="CHEAT CODE — Храната, която си знае числата" ` +
     `style="display:block;width:100%;max-width:600px;height:auto;border:0"></a></td></tr>` +
-    `<tr><td bgcolor="${C.card}" style="background:${C.card};border:1px solid ${C.line};border-radius:22px;padding:26px 22px;font-family:${FONT};color:${C.ink}">` +
+    `<tr><td bgcolor="${C.card}" style="background:${C.card};background-image:linear-gradient(${C.card},${C.card});border:1px solid ${C.line};border-radius:22px;padding:26px 22px;font-family:${FONT};color:${C.ink}">` +
     inner +
     `</td></tr>` +
     `<tr><td style="padding:18px 8px 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${C.faint};text-align:center">` +
@@ -90,6 +109,20 @@ const pill = (text: string, color: string) =>
   `<span style="display:inline-block;padding:4px 11px;border-radius:999px;border:1px solid ${color};` +
   `font-size:11px;font-weight:700;letter-spacing:0.08em;color:${color}">${esc(text)}</span>`
 
+/* Макросите на кутията — със същите знаци и цветове като на страницата. */
+const MACRO = [
+  ['kcal', 'kcal', ' ккал', '#D4AC66'], ['protein', 'p', ' г', '#5FB2F0'],
+  ['carbs', 'c', ' г', '#6FC475'], ['fat', 'f', ' г', '#C58FD0'],
+] as const
+function macros(l: Line) {
+  if (l.kcal == null) return ''
+  return `<div style="margin-top:7px;font-family:${MONO};font-size:12px;color:${C.soft}">` +
+    MACRO.map(([icon, k, unit, color]) =>
+      `<span style="white-space:nowrap;margin-right:10px"><img src="${SITE}/cheatcode/mail-${icon}.png" width="14" height="14" alt="" ` +
+      `style="vertical-align:-2px;border:0"> <b style="color:${color}">${l[k] ?? 0}</b>${unit}</span>`).join('') +
+    `</div>`
+}
+
 function when(iso: string) {
   const d = new Date(iso)
   return isNaN(+d) ? '' : d.toLocaleString('bg-BG', {
@@ -98,7 +131,7 @@ function when(iso: string) {
 }
 
 const STATES: Record<string, { tag: string; title: string; color: string }> = {
-  new: { tag: 'ПРИЕТА', title: 'Поръчката ти е приета', color: C.accent },
+  new: { tag: 'ПОТВЪРДИ', title: 'Потвърди поръчката си', color: C.accent },
   ready: { tag: 'ГОТОВА', title: 'Готова е — ела да я вземеш', color: C.accent },
   cancelled: { tag: 'ОТКАЗАНА', title: 'Поръчката е отказана', color: C.bad },
 }
@@ -107,9 +140,9 @@ const STATES: Record<string, { tag: string; title: string; color: string }> = {
    види, че са верни. Без реклама. */
 export function letter(o: Order, link?: string) {
   const st = STATES[o.status] ?? STATES.new
-  const subject = (o.test ? 'ПРОБА · ' : '') + `Поръчка ${o.code} ${o.status === 'new' ? 'е приета' : o.status === 'ready' ? 'е готова' : 'е отказана'}`
+  const subject = (o.test ? 'ПРОБА · ' : '') + `Поръчка ${o.code} ${o.status === 'new' ? '— потвърди я' : o.status === 'ready' ? 'е готова' : 'е отказана'}`
   const lead = o.status === 'new'
-    ? 'Ще ти се обадим, за да я потвърдим, и ще ти пишем, когато е готова.'
+    ? 'Натисни бутона, за да стигне поръчката до кухнята. Докато не я потвърдиш, не я готвим.'
     : o.status === 'ready'
       ? `Чака те${o.pickup_time ? ' — за ' + esc(o.pickup_time) : ''}. Кажи кода, когато дойдеш.`
       : 'Нищо не се плаща. Ако е грешка, просто поръчай отново.'
@@ -121,6 +154,7 @@ export function letter(o: Order, link?: string) {
     `<div style="font-size:15px;font-weight:600;color:${C.ink}">${esc(l.name)}</div>` +
     `<div style="font-size:12.5px;color:${C.soft};margin-top:2px">${l.qty} × ${euro(l.unit)}</div>` +
     (l.cfg ? `<div style="font-family:${MONO};font-size:11px;line-height:1.55;color:${C.faint};margin-top:5px">${esc(l.cfg)}</div>` : '') +
+    macros(l) +
     `</td><td valign="top" align="right" style="padding:12px 0 12px 10px;border-top:1px solid ${C.line};` +
     `font-family:${MONO};font-size:14px;font-weight:700;color:${C.ink};white-space:nowrap">${euro(l.unit * l.qty)}</td></tr>`).join('')
 
@@ -141,6 +175,7 @@ export function letter(o: Order, link?: string) {
     `<h1 style="margin:14px 0 4px;font-family:${FONT};font-size:23px;line-height:1.25;font-weight:800;color:${C.ink}">${st.title}</h1>` +
     `<div style="font-family:${MONO};font-size:26px;font-weight:700;letter-spacing:0.06em;color:${st.color}">${esc(o.code)}</div>` +
     `<p style="margin:10px 0 0;font-size:15px;line-height:1.55;color:${C.soft}">Здравей, ${esc(o.name)}! ${lead}</p>` +
+    (link ? button(link, 'Потвърди поръчката') : '') +
     (o.test ? `<p style="margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#2A2320;font-size:13px;color:${C.bad}">` +
       `Това е проба — поръчката не се готви.</p>` : '') +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px">${rows}` +
@@ -148,11 +183,11 @@ export function letter(o: Order, link?: string) {
     `<td align="right" style="padding:14px 0 0 10px;border-top:1px solid ${C.line};font-family:${MONO};font-size:20px;font-weight:700;color:${C.ink};white-space:nowrap">${euro(o.total_cents)}</td></tr></table>` +
     `<div style="margin:24px 0 8px;font-size:12px;font-weight:700;letter-spacing:0.08em;color:${C.faint}">ТВОИТЕ ДАННИ</div>` +
     `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-family:${FONT}">${factRows}</table>` +
-    (link ? button(link, 'Моите поръчки') +
-      `<p style="margin:10px 0 0;font-size:12.5px;color:${C.faint}">Линкът отваря поръчките ти на всеки телефон — без парола.</p>` : '')
+    (link ? button(link, 'Потвърди поръчката') +
+      `<p style="margin:10px 0 0;font-size:12.5px;color:${C.faint}">Не си поръчвал ти? Просто не натискай — без потвърждение поръчката не стига до никого.</p>` : '')
 
   const preheader = o.status === 'new'
-    ? `${o.code} · ${euro(o.total_cents)}${o.pickup_time ? ' · за ' + o.pickup_time : ''} — ще ти се обадим да я потвърдим.`
+    ? `${o.code} · ${euro(o.total_cents)}${o.pickup_time ? ' · за ' + o.pickup_time : ''} — потвърди я с едно натискане.`
     : o.status === 'ready' ? `${o.code} те чака. Плащане на място.` : `${o.code} е отказана. Нищо не се плаща.`
   return { subject, html: page(preheader, inner) }
 }
@@ -214,8 +249,8 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true })
     }
 
-    // Линкът е в писмото „приета“ — първото, което човек получава.
-    const link = o.status === 'new' ? await newLink(db, o.email) : undefined
+    // Писмото „потвърди“ носи ключа; потвърждението дава и „Моите поръчки“.
+    const link = o.status === 'new' ? await confirmLink(db, o.id) : undefined
     const { subject, html } = letter(o as Order, link)
     await send(o.email, subject, html)
 

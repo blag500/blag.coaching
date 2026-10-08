@@ -3,7 +3,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 /* Поръчка от Чийт Код → ред в cheatcode_orders → известие до собственика.
  *
  * Същата функция отговаря и на `action: 'status'` — за „Моите поръчки“ — и
- * на 'link' / 'me' / 'logout' — за поръчките по имейл (миграция 132).
+ * на 'link' / 'me' / 'logout' — за поръчките по имейл (миграция 132) — и на
+ * 'confirm' — потвърждението от писмото (миграция 133). Поръчката стига до
+ * кухнята чак след него.
  *
  * Страницата е без вход, затова функцията е публична (verify_jwt = false в
  * config.toml) и се пази сама: проверява всяко поле, режe размера и брои
@@ -73,6 +75,42 @@ function cleanLine(raw: any): Line | null {
   }
 }
 
+/* Известието до собственика тръгва при потвърждението, не при поръчката.
+   Не решава отговора: ако push-ът падне, поръчката пак е потвърдена.
+   Резултатът се записва в лога — без него една тиха грешка изглеждаше като
+   успех (send-push 400 на 07.10). Само собственикът: редът носи име и
+   телефон на клиент (виж 126). */
+async function notifyOwner(db: any, o: any) {
+  try {
+    const { data: owners } = await db.from('cheatcode_owner').select('user_id')
+    const ids = (owners ?? []).map((r: { user_id: string }) => r.user_id)
+    if (!ids.length) return 'no-owner'
+    const what = (o.lines as Line[]).map((l) => (l.qty > 1 ? l.qty + '× ' : '') + l.name).join(', ')
+    const eur = (o.total_cents / 100).toFixed(2).replace('.', ',') + ' €'
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({
+        toUserIds: ids,
+        title: (o.test ? 'ТЕСТ · ' : '') + 'Чийт Код ' + o.code,
+        body: `${o.name} · ${o.phone}${o.pickup_time ? ' · за ' + o.pickup_time : ''}
+${what} · ${eur}`,
+        tag: 'cheatcode-order',
+      }),
+    })
+    if (!res.ok) console.error('push', res.status, await res.text())
+    return res.status
+  } catch (e) {
+    console.error('push', e)
+    return 'error'
+  }
+}
+
+const token = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(24))
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
 Deno.serve(async (req) => {
   const headers = cors(req.headers.get('origin'))
   if (req.method === 'OPTIONS') return new Response(null, { headers })
@@ -95,7 +133,7 @@ Deno.serve(async (req) => {
     if (!pairs.length) return json({ orders: [] }, 200, headers)
     const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
     const { data, error } = await db.from('cheatcode_orders')
-      .select('code, phone, status').in('code', pairs.map((p: { code: string }) => p.code))
+      .select('code, phone, status, confirmed_at').in('code', pairs.map((p: { code: string }) => p.code))
     if (error) {
       console.error('status', error)
       return json({ error: 'Статусът не се прочете.' }, 500, headers)
@@ -103,8 +141,33 @@ Deno.serve(async (req) => {
     const orders = (data ?? [])
       .filter((r: { code: string; phone: string }) =>
         pairs.some((p: { code: string; digits: string }) => p.code === r.code && p.digits === r.phone.replace(/\D/g, '')))
-      .map((r: { code: string; status: string }) => ({ code: r.code, status: r.status }))
+      .map((r: { code: string; status: string; confirmed_at: string | null }) =>
+        ({ code: r.code, status: r.status, confirmed: !!r.confirmed_at }))
     return json({ orders }, 200, headers)
+  }
+
+  /* „Потвърди поръчката“ от писмото (миграция 133). Едва тук поръчката стига
+     до кухнята. Потвърждението връща и ключ за „Моите поръчки“ — телефонът,
+     на който е натиснат линкът, вече вижда поръчките по този имейл. */
+  if (body.action === 'confirm') {
+    const t = str(body.token, 80)
+    if (t.length < 20) return json({ error: 'confirm' }, 404, headers)
+    const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+    const { data: o } = await db.from('cheatcode_orders')
+      .select('id, code, name, phone, email, pickup_time, lines, total_cents, test, confirmed_at, status')
+      .eq('confirm_hash', await sha256(t)).maybeSingle()
+    if (!o) return json({ error: 'confirm' }, 404, headers)
+    const already = !!o.confirmed_at
+    if (!already) {
+      await db.from('cheatcode_orders').update({ confirmed_at: new Date().toISOString() }).eq('id', o.id)
+      await notifyOwner(db, o)
+    }
+    const me = token()
+    await db.from('cheatcode_links').insert({ token_hash: await sha256(me), email: o.email })
+    return json({
+      code: o.code, test: o.test, already, status: o.status, me,
+      name: o.name, phone: o.phone, email: o.email,
+    }, 200, headers)
   }
 
   /* Профилът по имейл (миграция 132): „прати ми линк“, „покажи поръчките по
@@ -150,7 +213,7 @@ Deno.serve(async (req) => {
     if (!link || new Date(link.expires_at) < new Date()) return json({ error: 'link' }, 401, headers)
     await db.from('cheatcode_links').update({ last_used_at: new Date().toISOString() }).eq('token_hash', hash)
     const { data: rows } = await db.from('cheatcode_orders')
-      .select('code, created_at, name, phone, pickup_time, lines, box_count, total_cents, status, test')
+      .select('code, created_at, name, phone, pickup_time, lines, box_count, total_cents, status, test, confirmed_at')
       .eq('email', link.email).order('created_at', { ascending: false }).limit(30)
     const last = rows?.[0]
     return json({
@@ -160,6 +223,7 @@ Deno.serve(async (req) => {
       orders: (rows ?? []).map((r: any) => ({
         code: r.code, at: r.created_at, when: r.pickup_time ?? '', n: r.box_count,
         total: r.total_cents, status: r.status, test: r.test, phone: r.phone, lines: r.lines,
+        confirmed: !!r.confirmed_at,
       })),
     }, 200, headers)
   }
@@ -172,12 +236,13 @@ Deno.serve(async (req) => {
   const digits = phone.replace(/\D/g, '')
   const when = str(body.when, 5)
   const note = str(body.note, 300)
-  // Имейлът е по избор — само за писмото „готова е“ (миграция 131).
+  // Имейлът е задължителен: поръчката се потвърждава от него (миграция 133).
   const email = str(body.email, 120).toLowerCase()
   if (name.length < 2) return json({ error: 'Трябва ни име, за да те потърсим.' }, 400, headers)
   if (digits.length < 9 || digits.length > 15) return json({ error: 'Телефонът изглежда непълен.' }, 400, headers)
   if (when && !/^[0-2]\d:[0-5]\d$/.test(when)) return json({ error: 'Часът не се прочете.' }, 400, headers)
-  if (email && !EMAIL.test(email)) return json({ error: 'Имейлът изглежда непълен.' }, 400, headers)
+  if (!email) return json({ error: 'Трябва ни имейл — оттам потвърждаваш поръчката.' }, 400, headers)
+  if (!EMAIL.test(email)) return json({ error: 'Имейлът изглежда непълен.' }, 400, headers)
 
   if (!Array.isArray(body.lines) || body.lines.length === 0 || body.lines.length > 20) {
     return json({ error: 'Количката е празна.' }, 400, headers)
@@ -191,14 +256,15 @@ Deno.serve(async (req) => {
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
   const test = body.live !== true
 
-  // Таван: 3 поръчки на телефон за 10 минути и 60 общо за час.
+  // Таван: 3 поръчки на телефон или имейл за 10 минути и 60 общо за час.
   const since10 = new Date(Date.now() - 10 * 60_000).toISOString()
   const since60 = new Date(Date.now() - 60 * 60_000).toISOString()
-  const [{ count: byPhone }, { count: all }] = await Promise.all([
+  const [{ count: byPhone }, { count: all }, { count: byEmail }] = await Promise.all([
     db.from('cheatcode_orders').select('id', { count: 'exact', head: true }).eq('phone', phone).gte('created_at', since10),
     db.from('cheatcode_orders').select('id', { count: 'exact', head: true }).gte('created_at', since60),
+    db.from('cheatcode_orders').select('id', { count: 'exact', head: true }).eq('email', email).gte('created_at', since10),
   ])
-  if ((byPhone ?? 0) >= 3) return json({ error: 'Вече имаш поръчка от преди малко. Ще ти се обадим.' }, 429, headers)
+  if ((byPhone ?? 0) >= 3 || (byEmail ?? 0) >= 3) return json({ error: 'Вече имаш поръчка от преди малко. Ще ти се обадим.' }, 429, headers)
   if ((all ?? 0) >= 60) return json({ error: 'Сега не приемаме повече поръчки. Опитай след час.' }, 429, headers)
 
   // Кодът е кратък, за да се казва по телефона. При сблъсък — нов опит.
@@ -207,8 +273,8 @@ Deno.serve(async (req) => {
   for (let i = 0; i < 5 && !saved; i++) {
     code = 'ЧК-' + String(1000 + Math.floor(Math.random() * 9000))
     const { error } = await db.from('cheatcode_orders').insert({
-      code, name, phone, pickup_time: when || null, note: note || null, email: email || null,
-      lines, box_count: boxes, total_cents: total, test,
+      code, name, phone, pickup_time: when || null, note: note || null, email,
+      lines, box_count: boxes, total_cents: total, test, confirmed_at: null,
     })
     if (!error) saved = true
     else if (error.code !== '23505') {
@@ -218,35 +284,8 @@ Deno.serve(async (req) => {
   }
   if (!saved) return json({ error: 'Поръчката не се записа. Опитай пак.' }, 500, headers)
 
-  /* Известието е след записа и не решава отговора: ако push-ът падне,
-     поръчката пак е в базата, а клиентът пак получава кода си. Резултатът
-     обаче се записва в отговора и в лога — без него една тиха грешка
-     изглеждаше като успех (send-push 400 на 07.10). */
-  let push: number | string = 'no-owner'
-  try {
-    // Само собственикът: редът носи име и телефон на клиент (виж 126).
-    const { data: owners } = await db.from('cheatcode_owner').select('user_id')
-    const ids = (owners ?? []).map((o: { user_id: string }) => o.user_id)
-    if (ids.length) {
-      const what = lines.map((l: Line) => (l.qty > 1 ? l.qty + '× ' : '') + l.name).join(', ')
-      const eur = (total / 100).toFixed(2).replace('.', ',') + ' €'
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SERVICE_ROLE_KEY}` },
-        body: JSON.stringify({
-          toUserIds: ids,
-          title: (test ? 'ТЕСТ · ' : '') + 'Чийт Код ' + code,
-          body: `${name} · ${phone}${when ? ' · за ' + when : ''}\n${what} · ${eur}`,
-          tag: 'cheatcode-order',
-        }),
-      })
-      push = res.status
-      if (!res.ok) console.error('push', res.status, await res.text())
-    }
-  } catch (e) {
-    push = 'error'
-    console.error('push', e)
-  }
-
-  return json({ code, test, push }, 200, headers)
+  /* Поръчката още не е потвърдена: в кухнята не отива нищо, докато
+     човекът не натисне „Потвърди поръчката“ в писмото (миграция 133). Писмото
+     тръгва от тригера в базата при вписването. */
+  return json({ code, test, confirm: true }, 200, headers)
 })
