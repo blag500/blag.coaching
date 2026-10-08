@@ -2,7 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 /* Поръчка от Чийт Код → ред в cheatcode_orders → известие до собственика.
  *
- * Същата функция отговаря и на `action: 'status'` — за „Моите поръчки“.
+ * Същата функция отговаря и на `action: 'status'` — за „Моите поръчки“ — и
+ * на 'link' / 'me' / 'logout' — за поръчките по имейл (миграция 132).
  *
  * Страницата е без вход, затова функцията е публична (verify_jwt = false в
  * config.toml) и се пази сама: проверява всяко поле, режe размера и брои
@@ -38,6 +39,14 @@ const json = (body: unknown, status: number, headers: Record<string, string>) =>
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
 const int = (v: unknown, lo: number, hi: number) =>
   typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi ? v : null
+
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+
+/* Линкът към поръчките стои в базата само като отпечатък (миграция 132). */
+async function sha256(s: string) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+}
 
 type Line = { name: string; cfg: string; qty: number; unit: number; kcal: number; p: number; c: number; f: number; allerg: string[] }
 
@@ -95,6 +104,63 @@ Deno.serve(async (req) => {
     return json({ orders }, 200, headers)
   }
 
+  /* Профилът по имейл (миграция 132): „прати ми линк“, „покажи поръчките по
+     линка“, „забрави този телефон“. Линкът се праща от cheatcode-mail. */
+  if (body.action === 'link') {
+    const email = str(body.email, 120).toLowerCase()
+    if (!EMAIL.test(email)) return json({ error: 'Имейлът изглежда непълен.' }, 400, headers)
+    const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+    // Таван: 3 линка на адрес за 10 минути и 60 общо за час. Над него —
+    // мълчаливо „пратено“, за да не става страницата пощенска бомба.
+    const since10 = new Date(Date.now() - 10 * 60_000).toISOString()
+    const since60 = new Date(Date.now() - 60 * 60_000).toISOString()
+    const [{ count: mine }, { count: all }] = await Promise.all([
+      db.from('cheatcode_links').select('token_hash', { count: 'exact', head: true }).eq('email', email).gte('created_at', since10),
+      db.from('cheatcode_links').select('token_hash', { count: 'exact', head: true }).gte('created_at', since60),
+    ])
+    if ((mine ?? 0) < 3 && (all ?? 0) < 60) {
+      const { data: s } = await db.from('app_secrets').select('value').eq('name', 'reminder').maybeSingle()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/cheatcode-mail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-bot-secret': s?.value ?? '' },
+        body: JSON.stringify({ kind: 'link', email }),
+      })
+      if (!res.ok) {
+        console.error('link', res.status, await res.text())
+        return json({ error: 'Писмото не тръгна. Опитай пак след малко.' }, 502, headers)
+      }
+    }
+    return json({ ok: true }, 200, headers)
+  }
+
+  if (body.action === 'me' || body.action === 'logout') {
+    const token = str(body.token, 80)
+    if (token.length < 20) return json({ error: 'link' }, 401, headers)
+    const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+    const hash = await sha256(token)
+    if (body.action === 'logout') {
+      await db.from('cheatcode_links').delete().eq('token_hash', hash)
+      return json({ ok: true }, 200, headers)
+    }
+    const { data: link } = await db.from('cheatcode_links')
+      .select('email, expires_at').eq('token_hash', hash).maybeSingle()
+    if (!link || new Date(link.expires_at) < new Date()) return json({ error: 'link' }, 401, headers)
+    await db.from('cheatcode_links').update({ last_used_at: new Date().toISOString() }).eq('token_hash', hash)
+    const { data: rows } = await db.from('cheatcode_orders')
+      .select('code, created_at, name, phone, pickup_time, lines, box_count, total_cents, status, test')
+      .eq('email', link.email).order('created_at', { ascending: false }).limit(30)
+    const last = rows?.[0]
+    return json({
+      email: link.email,
+      name: last?.name ?? '',
+      phone: last?.phone ?? '',
+      orders: (rows ?? []).map((r: any) => ({
+        code: r.code, at: r.created_at, when: r.pickup_time ?? '', n: r.box_count,
+        total: r.total_cents, status: r.status, test: r.test, phone: r.phone, lines: r.lines,
+      })),
+    }, 200, headers)
+  }
+
   // Капан за ботове: полето е скрито на страницата и човек не го попълва.
   if (str(body.website, 100)) return json({ code: 'ЧК-0000' }, 200, headers)
 
@@ -108,7 +174,7 @@ Deno.serve(async (req) => {
   if (name.length < 2) return json({ error: 'Трябва ни име, за да те потърсим.' }, 400, headers)
   if (digits.length < 9 || digits.length > 15) return json({ error: 'Телефонът изглежда непълен.' }, 400, headers)
   if (when && !/^[0-2]\d:[0-5]\d$/.test(when)) return json({ error: 'Часът не се прочете.' }, 400, headers)
-  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: 'Имейлът изглежда непълен.' }, 400, headers)
+  if (email && !EMAIL.test(email)) return json({ error: 'Имейлът изглежда непълен.' }, 400, headers)
 
   if (!Array.isArray(body.lines) || body.lines.length === 0 || body.lines.length > 20) {
     return json({ error: 'Количката е празна.' }, 400, headers)

@@ -618,7 +618,6 @@
      Без вход няма сметка, затова историята е на телефона, на който е
      поръчано. Поръчката е карта: кодът е това, което се казва по телефона,
      статусът — това, заради което човек изобщо е отворил страницата. */
-  .ords-note { margin: -4px 0 6px; font-size: 13px; color: var(--ink-faint); }
   .ord {
     margin-top: 14px; padding: 16px 16px 14px;
     background: var(--pane-bg);
@@ -642,6 +641,38 @@
   .ord-st.cancelled { color: #C0392B; }
   .ord-meta { margin: 6px 0 2px; font-size: 13px; color: var(--ink-faint); }
   .ord-test { margin: 4px 0 0; font-size: 12px; color: var(--ink-faint); }
+
+  /* Профилът по имейл: не акаунт, а линк, който отваря поръчките на всеки
+     телефон. Стои над списъка, защото е отговорът на „а на другия ми
+     телефон?“ — въпросът, заради който съществува. */
+  .me {
+    margin-top: 6px; padding: 14px 16px;
+    background: var(--pane-bg);
+    border: 1px solid var(--pane-border);
+    box-shadow: var(--chip-hi);
+    border-radius: var(--r-lg);
+  }
+  .me-t { margin: 0; font-weight: 600; font-size: 14.5px; }
+  .me-s { margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .me-s b { color: var(--ink); font-weight: 600; }
+  .me-row { display: flex; gap: 8px; margin-top: 10px; }
+  .me-row input {
+    flex: 1; min-width: 0; box-sizing: border-box;
+    background: var(--surface); border: 1px solid var(--pane-border);
+    border-radius: 999px; padding: 10px 14px;
+    font: inherit; font-size: 16px; color: var(--ink); outline: none;
+  }
+  .me-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .me-row button {
+    flex: none; border: none; border-radius: 999px; padding: 10px 18px;
+    background: var(--accent); color: var(--surface);
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .me-row button:disabled { opacity: 0.6; }
+  .me-msg { margin: 8px 0 0; font-size: 13px; color: var(--ink-soft); }
+  .me-msg.bad { color: #C0392B; }
+  .me .back-plain { margin-top: 6px; }
+  .lhead .noimg { width: 54px; height: 54px; border-radius: var(--r-sm); background: var(--surface-2); }
   .ord .line:last-of-type { border-bottom: none; }
   .ord .again { margin-top: 8px; }
 
@@ -2074,7 +2105,7 @@
   <section id="ordersView" hidden>
     <button type="button" class="back-plain" id="backFromOrders">← Менюто</button>
     <h3 class="sec" style="margin-top:6px">Моите поръчки</h3>
-    <p class="ords-note">Пазят се на това устройство — без профил и без вход.</p>
+    <div class="me" id="meBox"></div>
     <div id="ordList"></div>
     <p class="empty" id="ordEmpty" hidden>Още нямаш поръчки оттук.</p>
   </section>
@@ -3391,7 +3422,7 @@
       row.className = 'line';
       row.innerHTML =
         '<button type="button" class="lhead" aria-expanded="false">' +
-          '<img src="' + l.photo + '" alt="">' +
+          (l.photo ? '<img src="' + l.photo + '" alt="">' : '<span class="noimg"></span>') +
           '<span class="lmid"><b>' + l.name + '</b>' +
             '<small>' + l.qty + ' × ' + money(l.unit) +
               '<svg class="pic chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
@@ -3406,7 +3437,7 @@
             '<span>П <b>' + l.p + '</b> г</span>' +
             '<span>В <b>' + l.c + '</b> г</span>' +
             '<span>М <b>' + l.f + '</b> г</span>' +
-            '<span>' + l.grams + ' г</span>' +
+            (l.grams ? '<span>' + l.grams + ' г</span>' : '') +
           '</span>' +
           (l.allerg.length
             ? '<span class="lallerg">Алергени: ' + l.allerg.map(function (a) {
@@ -3537,7 +3568,9 @@
         $('doneNote').innerHTML = res.j.test
           ? 'Това е проба. Поръчката стигна до Николай, но <b>не се готви</b> — кухнята още не е отворена.'
           : 'Поръчката е приета. Ще ти се обадим на ' + phone.replace(/[<>&]/g, '') + ', за да я потвърдим.';
-        if (email) $('doneNote').innerHTML += '<br>Когато е готова, ще ти пишем на ' + email.replace(/[<>&"]/g, '') + '.';
+        if (email) $('doneNote').innerHTML += '<br>Пратихме я на ' + email.replace(/[<>&"]/g, '') +
+          ' — оттам поръчките ти се отварят на всеки телефон. Ще ти пишем и когато е готова.';
+        keepProfile({ name: name, phone: phone, email: email || profile().email || '' });
         remember({
           code: res.j.code, at: new Date().toISOString(), phone: phone, when: when,
           n: n, total: total, test: !!res.j.test, status: 'new',
@@ -3570,13 +3603,147 @@
   }
 
   function keepOrders(list) {
-    try { localStorage.setItem(ORD_KEY, JSON.stringify(list.slice(0, 20))); } catch (e) { /* частен режим */ }
+    try { localStorage.setItem(ORD_KEY, JSON.stringify(list.slice(0, 30))); } catch (e) { /* частен режим */ }
   }
 
   function remember(o) {
     var list = myOrders().filter(function (x) { return x.code !== o.code; });
     list.unshift(o);
     keepOrders(list);
+  }
+
+  /* Името, телефонът и имейлът от последната поръчка — за да не се пишат
+     всеки път. Идват и от линка по имейл, значи и на нов телефон. */
+  var PROF_KEY = 'cc_profile';
+  function profile() {
+    try { return JSON.parse(localStorage.getItem(PROF_KEY) || '{}') || {}; } catch (e) { return {}; }
+  }
+  function keepProfile(p) {
+    try { localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) { /* частен режим */ }
+  }
+  function prefill() {
+    var p = profile();
+    if (!$('fName').value && p.name) $('fName').value = p.name;
+    if (!$('fPhone').value && p.phone) $('fPhone').value = p.phone;
+    if (!$('fEmail').value && p.email) $('fEmail').value = p.email;
+  }
+
+  /* ── Поръчките по имейл ─────────────────────────────────────
+     Линкът от писмото носи ключ (#me=…). Телефонът го пази и с него пита
+     функцията за всички поръчки на този имейл. Не е акаунт: няма парола,
+     няма регистрация, а без линка от пощата никой не вижда чужди поръчки. */
+  var ME_KEY = 'cc_me';
+  var meMsg = null;
+  function meToken() {
+    try { return localStorage.getItem(ME_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  /* Редовете от базата нямат снимка и алергените им са думи — тук се
+     облича в вида на реда от количката, за да се познае и да се поръча пак. */
+  function dishPhoto(name) {
+    var d = DISHES.filter(function (x) { return x.name === name; })[0];
+    if (!d) return '';
+    var gz = glazesOf(d);
+    return d.menuPhoto || (gz.length ? gz[0].photo : d.photo);
+  }
+  function dressLine(l) {
+    return {
+      name: l.name, photo: dishPhoto(l.name), cfg: l.cfg || '',
+      kcal: l.kcal, p: l.p, c: l.c, f: l.f, unit: l.unit, qty: l.qty,
+      allerg: (l.allerg || []).map(function (a) {
+        return { name: String(a).replace(/ \(следи\)$/, ''), trace: / \(следи\)$/.test(a), sure: true };
+      })
+    };
+  }
+
+  function mergeServer(orders) {
+    var list = myOrders();
+    orders.forEach(function (s) {
+      var mine = list.filter(function (o) { return o.code === s.code; })[0];
+      if (mine) { mine.status = s.status; mine.test = s.test; return; }
+      list.push({
+        code: s.code, at: s.at, phone: s.phone, when: s.when, n: s.n, total: s.total,
+        test: s.test, status: s.status, lines: (s.lines || []).map(dressLine)
+      });
+    });
+    list.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
+    keepOrders(list);
+  }
+
+  function callMe(body) {
+    return fetch(ORDER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    });
+  }
+
+  function fetchMe() {
+    var token = meToken();
+    if (!token) return;
+    callMe({ action: 'me', token: token })
+      .then(function (res) {
+        if (res.status === 401) {
+          try { localStorage.removeItem(ME_KEY); } catch (e) { /* няма памет */ }
+          meMsg = { bad: true, text: 'Линкът е изтекъл. Поискай нов — идва за минута.' };
+          buildMe();
+          return;
+        }
+        if (!res.ok) return;
+        var p = profile();
+        keepProfile({ name: p.name || res.j.name || '', phone: p.phone || res.j.phone || '', email: res.j.email });
+        mergeServer(res.j.orders || []);
+        if (view === 'orders') { buildMe(); buildOrders(); }
+      })
+      .catch(function () { /* без връзка — остава каквото е */ });
+  }
+
+  function buildMe() {
+    var box = $('meBox');
+    var token = meToken();
+    if (token) {
+      box.innerHTML =
+        '<p class="me-t">Поръчките ти са на всеки телефон</p>' +
+        '<p class="me-s">С имейла <b></b>. Отвори линка от писмото на друг телефон и ще ги видиш и там.</p>' +
+        '<button type="button" class="back-plain" id="meOut">Забрави този телефон</button>';
+      box.querySelector('.me-s b').textContent = profile().email || '';
+      $('meOut').addEventListener('click', function () {
+        callMe({ action: 'logout', token: token }).catch(function () { /* без връзка */ });
+        try {
+          localStorage.removeItem(ME_KEY);
+          localStorage.removeItem(ORD_KEY);
+          localStorage.removeItem(PROF_KEY);
+        } catch (e) { /* няма памет */ }
+        meMsg = { text: 'Телефонът е забравен. Поръчките ти остават — с линк по имейла.' };
+        buildMe(); buildOrders();
+      });
+      return;
+    }
+    box.innerHTML =
+      '<p class="me-t">Поръчките ти на всеки телефон</p>' +
+      '<p class="me-s">Пиши имейла си — ще ти пратим линк. Без парола и без регистрация.</p>' +
+      '<div class="me-row"><input id="meEmail" type="email" autocomplete="email" inputmode="email" placeholder="ime@primer.bg" aria-label="Имейл">' +
+      '<button type="button" id="meSend">Прати линк</button></div>' +
+      '<p class="me-msg" id="meMsg" hidden></p>';
+    if (profile().email) $('meEmail').value = profile().email;
+    if (meMsg) { $('meMsg').textContent = meMsg.text; $('meMsg').className = 'me-msg' + (meMsg.bad ? ' bad' : ''); $('meMsg').hidden = false; }
+    $('meSend').addEventListener('click', function () {
+      var btn = this;
+      var email = $('meEmail').value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        meMsg = { bad: true, text: 'Имейлът изглежда непълен.' };
+        buildMe(); $('meEmail').value = email; $('meEmail').focus(); return;
+      }
+      btn.disabled = true;
+      callMe({ action: 'link', email: email })
+        .then(function (res) {
+          meMsg = res.ok
+            ? { text: 'Пратихме линк на ' + email + '. Отвори го на телефона, на който искаш поръчките.' }
+            : { bad: true, text: (res.j && res.j.error) || 'Писмото не тръгна. Опитай пак.' };
+        })
+        .catch(function () { meMsg = { bad: true, text: 'Няма връзка. Опитай пак.' }; })
+        .then(function () { buildMe(); });
+    });
   }
 
   var STATUS = {
@@ -3637,6 +3804,7 @@
   /* Статусът е в базата, а базата не се чете без вход — пита се функцията.
      Без връзка остава последният известен статус. */
   function refreshOrders() {
+    fetchMe();
     var list = myOrders();
     var open = list.filter(function (o) { return o.status !== 'picked_up' && o.status !== 'cancelled'; });
     if (!open.length) return;
@@ -3733,8 +3901,8 @@
     }
 
     if (item) { buildTrack(); rebuild(); }
-    if (which === 'cart') { buildCart(); priceBar(); }
-    if (which === 'orders') { buildOrders(); refreshOrders(); }
+    if (which === 'cart') { buildCart(); priceBar(); prefill(); }
+    if (which === 'orders') { buildMe(); buildOrders(); refreshOrders(); }
     window.scrollTo(0, 0);
     /* Нов изглед, ново начало: лентата излиза, дори да е била прибрана от
        разлистването на предишния. */
@@ -4116,10 +4284,21 @@
   try { saved = localStorage.getItem('cc_theme') || 'dark'; } catch (e) { /* няма памет */ }
   setTheme(saved);
 
+  /* Линкът от писмото: ключът се прибира и се маха от адреса, за да не
+     остане в историята и да не се сподели с копиран адрес. */
+  var start = 'menu';
+  var mh = /[#&]me=([\w-]{20,80})/.exec(location.hash);
+  if (mh) {
+    try { localStorage.setItem(ME_KEY, mh[1]); } catch (e) { /* частен режим */ }
+    meMsg = null;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* стар браузър */ }
+    start = 'orders';
+  }
+
   openDish(DISHES[0]);
   buildFilters();
   buildMenu();
-  show('menu');
+  show(start);
 })();
 </script>
 
