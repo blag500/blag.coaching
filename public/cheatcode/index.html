@@ -366,9 +366,9 @@
   /* Изгледите се сменят с посока: напред идва отдясно, назад отляво.
      Без посока смяната е мигване и човек не знае къде е отишъл.
      Анимация, не преход — преходът не тръгва от `display: none`. */
-  #menuView, #itemView, #cartView, #doneView { animation: viewFwd var(--in) var(--ease) both; }
+  #menuView, #itemView, #cartView, #doneView, #ordersView { animation: viewFwd var(--in) var(--ease) both; }
   body.rewind #menuView, body.rewind #itemView,
-  body.rewind #cartView, body.rewind #doneView { animation-name: viewBack; }
+  body.rewind #cartView, body.rewind #doneView, body.rewind #ordersView { animation-name: viewBack; }
   @keyframes viewFwd  { from { opacity: 0; transform: translateX(16px); } }
   @keyframes viewBack { from { opacity: 0; transform: translateX(-16px); } }
 
@@ -613,6 +613,37 @@
     font: inherit; font-size: 14px; color: var(--ink-soft); cursor: pointer;
   }
   .again:hover { border-color: var(--ink-faint); color: var(--ink); }
+
+  /* ── Моите поръчки ─────────────────────────────────────────
+     Без вход няма сметка, затова историята е на телефона, на който е
+     поръчано. Поръчката е карта: кодът е това, което се казва по телефона,
+     статусът — това, заради което човек изобщо е отворил страницата. */
+  .ords-note { margin: -4px 0 6px; font-size: 13px; color: var(--ink-faint); }
+  .ord {
+    margin-top: 14px; padding: 16px 16px 14px;
+    background: var(--pane-bg);
+    border: 1px solid var(--pane-border);
+    box-shadow: var(--chip-hi);
+    border-radius: var(--r-lg);
+  }
+  .ord-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .ord-code {
+    font-family: var(--font-mono); font-weight: 700; font-size: 17px;
+    letter-spacing: 0.04em;
+  }
+  .ord-st {
+    flex: none; padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    background: var(--surface-2); color: var(--ink-soft);
+  }
+  /* Готовата е единствената, която иска нещо от човека — само тя е в цвят. */
+  .ord-st.ready { background: var(--accent); color: var(--surface); }
+  .ord-st.confirmed { background: var(--accent-soft); color: var(--accent); }
+  .ord-st.cancelled { color: #C0392B; }
+  .ord-meta { margin: 6px 0 2px; font-size: 13px; color: var(--ink-faint); }
+  .ord-test { margin: 4px 0 0; font-size: 12px; color: var(--ink-faint); }
+  .ord .line:last-of-type { border-bottom: none; }
+  .ord .again { margin-top: 8px; }
 
   .find { display: flex; gap: 9px; }
   /* Долният отстъп стои под цялата лента, не под търсачката — иначе стъклото
@@ -1621,6 +1652,15 @@
     color: var(--accent); background: var(--accent-soft);
   }
   .nav-inner button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  /* С трети раздел („Поръчки“) иконка и дума в ред не се побират на телефон:
+     на 360 хапчето на показното излизаше от екрана. Под 420 думата слиза под
+     иконката — както в долната лента на всяко приложение. */
+  @media (max-width: 420px) {
+    .nav-inner button {
+      flex-direction: column; gap: 2px;
+      padding: 6px 14px; font-size: 11px;
+    }
+  }
   .badge-wrap { position: relative; display: block; }
   .badge-wrap i {
     position: absolute; top: -4px; right: -7px;
@@ -2026,13 +2066,23 @@
       <p class="done-allerg" id="doneAllerg"></p>
       <p class="done-note" id="doneNote"></p>
       <button type="button" class="again" id="againBtn">Обратно към менюто</button>
+      <button type="button" class="back-plain" data-go="orders">Моите поръчки →</button>
     </div>
+  </section>
+
+  <section id="ordersView" hidden>
+    <button type="button" class="back-plain" id="backFromOrders">← Менюто</button>
+    <h3 class="sec" style="margin-top:6px">Моите поръчки</h3>
+    <p class="ords-note">Пазят се на това устройство — без профил и без вход.</p>
+    <div id="ordList"></div>
+    <p class="empty" id="ordEmpty" hidden>Още нямаш поръчки оттук.</p>
   </section>
 
   <footer class="feet" id="feet">
     <nav class="feet-links">
       <button type="button" data-go="menu">Менюто</button>
       <button type="button" data-go="cart">Количката</button>
+      <button type="button" data-go="orders">Моите поръчки</button>
       <button type="button" class="theme" id="theme">
         <svg class="pic" width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-sun"/></svg>
         <span id="themeLabel">Светла тема</span>
@@ -2085,6 +2135,10 @@
         <i id="cartCount" hidden>0</i>
       </span>
       <span>Количка</span>
+    </button>
+    <button type="button" data-go="orders">
+      <svg class="pic" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4z"/><path d="M9 8.5h6M9 12h6M9 15.5h3.5"/></svg>
+      <span>Поръчки</span>
     </button>
   </div>
   </div>
@@ -3329,11 +3383,9 @@
     $('cartCount').hidden = n === 0;
   }
 
-  function buildCart() {
-    var host = $('cartLines');
-    host.textContent = '';
-
-    cart.forEach(function (l, idx) {
+  /* Редът е един и същ в количката и в „Моите поръчки“ — човек трябва да
+     познае поръчката по същия вид, в който я е потвърдил. */
+  function lineEl(l) {
       var row = document.createElement('div');
       row.className = 'line';
       row.innerHTML =
@@ -3360,12 +3412,7 @@
                 return a.name + (a.trace ? ' (следи)' : '') + (a.sure ? '' : ' ?');
               }).join(', ') + '</span>'
             : '<span class="lallerg none">Без алергени</span>') +
-        '</div></div>' +
-        '<span class="ops"><span class="qty">' +
-          '<button type="button" data-a="-" aria-label="По-малко">−</button>' +
-          '<b>' + l.qty + '</b>' +
-          '<button type="button" data-a="+" aria-label="Още едно">+</button>' +
-        '</span><button type="button" class="drop">Махни</button></span>';
+        '</div></div>';
 
       var head = row.querySelector('.lhead');
       head.addEventListener('click', function () {
@@ -3374,6 +3421,21 @@
         more.classList.toggle('open', open);
         head.setAttribute('aria-expanded', String(open));
       });
+      return row;
+  }
+
+  function buildCart() {
+    var host = $('cartLines');
+    host.textContent = '';
+
+    cart.forEach(function (l, idx) {
+      var row = lineEl(l);
+      row.insertAdjacentHTML('beforeend',
+        '<span class="ops"><span class="qty">' +
+          '<button type="button" data-a="-" aria-label="По-малко">−</button>' +
+          '<b>' + l.qty + '</b>' +
+          '<button type="button" data-a="+" aria-label="Още едно">+</button>' +
+        '</span><button type="button" class="drop">Махни</button></span>');
 
       row.querySelector('[data-a="-"]').addEventListener('click', function () {
         if (l.qty > 1) { l.qty--; } else { cart.splice(idx, 1); }
@@ -3469,6 +3531,11 @@
         $('doneNote').innerHTML = res.j.test
           ? 'Това е проба. Поръчката стигна до Николай, но <b>не се готви</b> — кухнята още не е отворена.'
           : 'Поръчката е приета. Ще ти се обадим на ' + phone.replace(/[<>&]/g, '') + ', за да я потвърдим.';
+        remember({
+          code: res.j.code, at: new Date().toISOString(), phone: phone, when: when,
+          n: n, total: total, test: !!res.j.test, status: 'new',
+          lines: cart.map(function (l) { return JSON.parse(JSON.stringify(l)); })
+        });
         cart = [];
         markCart();
         show('done');
@@ -3479,6 +3546,112 @@
         err.hidden = false;
       })
       .then(function () { sending = false; btn.disabled = false; btn.removeAttribute('aria-busy'); });
+  }
+
+  /* ── Моите поръчки ────────────────────────────────────────── */
+
+  /* Страницата е без вход, затова поръчките се помнят тук, на устройството:
+     кодът, телефонът (по двете функцията казва статуса) и редовете такива,
+     каквито са били в количката. Последните 20 — по-старите никой не търси. */
+  var ORD_KEY = 'cc_orders';
+
+  function myOrders() {
+    try {
+      var list = JSON.parse(localStorage.getItem(ORD_KEY) || '[]');
+      return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+  }
+
+  function keepOrders(list) {
+    try { localStorage.setItem(ORD_KEY, JSON.stringify(list.slice(0, 20))); } catch (e) { /* частен режим */ }
+  }
+
+  function remember(o) {
+    var list = myOrders().filter(function (x) { return x.code !== o.code; });
+    list.unshift(o);
+    keepOrders(list);
+  }
+
+  var STATUS = {
+    'new': 'Чака потвърждение',
+    confirmed: 'Потвърдена',
+    ready: 'Готова за вземане',
+    picked_up: 'Взета',
+    cancelled: 'Отказана'
+  };
+
+  function placedAt(o) {
+    var d = new Date(o.at);
+    return isNaN(d) ? '' : d.toLocaleString('bg-BG', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function buildOrders() {
+    var list = myOrders();
+    var host = $('ordList');
+    host.textContent = '';
+    $('ordEmpty').hidden = list.length > 0;
+
+    list.forEach(function (o) {
+      var card = document.createElement('div');
+      card.className = 'ord';
+      var st = STATUS[o.status] ? o.status : 'new';
+      card.innerHTML =
+        '<div class="ord-head"><span class="ord-code"></span>' +
+          '<span class="ord-st ' + st + '">' + STATUS[st] + '</span></div>' +
+        '<p class="ord-meta"></p>' +
+        (o.test ? '<p class="ord-test">Проба — не се готви.</p>' : '');
+      card.querySelector('.ord-code').textContent = o.code;
+      card.querySelector('.ord-meta').textContent = [
+        placedAt(o),
+        o.n + (o.n === 1 ? ' кутия' : ' кутии'),
+        money(o.total),
+        o.when ? 'за ' + o.when : ''
+      ].filter(Boolean).join(' · ');
+
+      (o.lines || []).forEach(function (l) { card.appendChild(lineEl(l)); });
+
+      /* Пак същото е най-честата поръчка. Редовете влизат в количката, а не
+         направо в кухнята — часът и бележката са на днешния ден, не на онзи. */
+      var again = document.createElement('button');
+      again.type = 'button';
+      again.className = 'again';
+      again.textContent = 'Поръчай пак';
+      again.addEventListener('click', function () {
+        (o.lines || []).forEach(function (l) { cart.push(JSON.parse(JSON.stringify(l))); });
+        markCart();
+        toast('Поръчка ' + o.code + ' е в количката');
+        show('cart');
+      });
+      card.appendChild(again);
+      host.appendChild(card);
+    });
+  }
+
+  /* Статусът е в базата, а базата не се чете без вход — пита се функцията.
+     Без връзка остава последният известен статус. */
+  function refreshOrders() {
+    var list = myOrders();
+    var open = list.filter(function (o) { return o.status !== 'picked_up' && o.status !== 'cancelled'; });
+    if (!open.length) return;
+    fetch(ORDER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status', orders: open.map(function (o) { return { code: o.code, phone: o.phone }; }) })
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !Array.isArray(j.orders)) return;
+        var changed = false;
+        var fresh = myOrders();
+        j.orders.forEach(function (s) {
+          fresh.forEach(function (o) {
+            if (o.code === s.code && STATUS[s.status] && o.status !== s.status) { o.status = s.status; changed = true; }
+          });
+        });
+        if (!changed) return;
+        keepOrders(fresh);
+        if (view === 'orders') buildOrders();
+      })
+      .catch(function () { /* без връзка — остава каквото е */ });
   }
 
   function rebuild() {
@@ -3493,8 +3666,8 @@
 
   /* Редът на изгледите казва коя посока е напред. Менюто е началото,
      готовото — краят; всичко между тях се мери спрямо тях. */
-  var ORDER = ['menu', 'item', 'cart', 'done'];
-  var VIEWS = { menu: 'menuView', item: 'itemView', cart: 'cartView', done: 'doneView' };
+  var ORDER = ['menu', 'item', 'cart', 'done', 'orders'];
+  var VIEWS = { menu: 'menuView', item: 'itemView', cart: 'cartView', done: 'doneView', orders: 'ordersView' };
   var leaveTimer = null;
 
   function show(which) {
@@ -3532,6 +3705,7 @@
     $('menuView').hidden = which !== 'menu';
     $('cartView').hidden = which !== 'cart';
     $('doneView').hidden = which !== 'done';
+    $('ordersView').hidden = which !== 'orders';
 
     /* Долната лента се мени по изглед: в ястието добавя, в количката поръчва,
        другаде я няма. Броячът е само на ястието — в количката всеки ред си
@@ -3553,6 +3727,7 @@
 
     if (item) { buildTrack(); rebuild(); }
     if (which === 'cart') { buildCart(); priceBar(); }
+    if (which === 'orders') { buildOrders(); refreshOrders(); }
     window.scrollTo(0, 0);
     /* Нов изглед, ново начало: лентата излиза, дори да е била прибрана от
        разлистването на предишния. */
@@ -3687,6 +3862,7 @@
 
   $('backFromCart').addEventListener('click', function () { show('menu'); });
   $('againBtn').addEventListener('click', function () { show('menu'); });
+  $('backFromOrders').addEventListener('click', function () { show('menu'); });
 
   /* Сплашът слиза сам. Веднъж на сесия — втори път в същия раздел е само
      чакане между човека и обяда му. */

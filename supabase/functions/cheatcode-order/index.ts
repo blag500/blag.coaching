@@ -2,6 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 /* Поръчка от Чийт Код → ред в cheatcode_orders → известие до собственика.
  *
+ * Същата функция отговаря и на `action: 'status'` — за „Моите поръчки“.
+ *
  * Страницата е без вход, затова функцията е публична (verify_jwt = false в
  * config.toml) и се пази сама: проверява всяко поле, режe размера и брои
  * поръчките — по телефон и общо за час, за да не може някой да залее
@@ -68,6 +70,30 @@ Deno.serve(async (req) => {
   if (raw.length > 20000) return json({ error: 'Поръчката е твърде голяма.' }, 413, headers)
   let body: any
   try { body = JSON.parse(raw) } catch { return json({ error: 'Поръчката не се прочете.' }, 400, headers) }
+
+  /* „Моите поръчки“: страницата пази кодовете на устройството и пита тук
+     докъде са стигнали. Отговор има само ако кодът и телефонът са от една
+     и съща поръчка — по код сам не се научава нищо, а назад се връща само
+     статусът, не името или телефонът. */
+  if (body.action === 'status') {
+    const asked = Array.isArray(body.orders) ? body.orders.slice(0, 30) : []
+    const pairs = asked
+      .map((o: any) => ({ code: str(o?.code, 12), digits: str(o?.phone, 24).replace(/\D/g, '') }))
+      .filter((o: { code: string; digits: string }) => o.code && o.digits.length >= 9)
+    if (!pairs.length) return json({ orders: [] }, 200, headers)
+    const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+    const { data, error } = await db.from('cheatcode_orders')
+      .select('code, phone, status').in('code', pairs.map((p: { code: string }) => p.code))
+    if (error) {
+      console.error('status', error)
+      return json({ error: 'Статусът не се прочете.' }, 500, headers)
+    }
+    const orders = (data ?? [])
+      .filter((r: { code: string; phone: string }) =>
+        pairs.some((p: { code: string; digits: string }) => p.code === r.code && p.digits === r.phone.replace(/\D/g, '')))
+      .map((r: { code: string; status: string }) => ({ code: r.code, status: r.status }))
+    return json({ orders }, 200, headers)
+  }
 
   // Капан за ботове: полето е скрито на страницата и човек не го попълва.
   if (str(body.website, 100)) return json({ code: 'ЧК-0000' }, 200, headers)
