@@ -4064,7 +4064,7 @@
       if (!hit[0] || !hit[1] || performance.now() - t0 > 160) return;
       return load(THREE_URL).then(function () { return load(GC_URL); }).then(function () {
         if (performance.now() - t0 > 260 || !document.body.contains(el)) return;
-        var gc = window.GlassChain && GlassChain(canvas, { tone: 'dark', sizeFrom: canvas, scale: 0.86 });
+        var gc = window.GlassChain && GlassChain(canvas, { tone: 'dark', sizeFrom: canvas, scale: 0.76 });
         if (!gc) return;
         el.classList.add('glass');
         var start = t0 + 120;

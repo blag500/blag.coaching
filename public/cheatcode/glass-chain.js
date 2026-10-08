@@ -13,8 +13,10 @@
  *   gc.pose({ apart, shake, broken, burst }); gc.draw(ms)
  *   gc.idle(stageEl)   — люлеене и следене на мишката, както в CoKitchen
  *
- * Две звена-капсули под прав ъгъл; второто е скъсано на външната си дъга,
- * където нищо не я закрива. Отломките са в зеленото на марката. */
+ * Две звена-капсули под прав ъгъл. Скъсването е МЕЖДУ тях: второто звено
+ * се къса на дъгата, която минава през първото, и звената се разделят —
+ * първото излиза през пролуката. (До 08.10 пролуката беше на външната дъга
+ * на второто — `gap: 'end'` я връща.) Отломките са в зеленото на марката. */
 (function () {
   'use strict';
 
@@ -89,15 +91,18 @@
     link1.position.x = -0.95;
     chain.add(link1);
 
-    /* Второто звено: цяло (преди скъсването) и скъсано. Пролуката е 0.30–0.43. */
+    /* Второто звено: цяло (преди скъсването) и скъсано. Пролуката е част от
+       обиколката: 0.82–0.93 е средата на лявата дъга — тази, която минава
+       през първото звено; 0.30–0.43 е външната дъга. */
+    var GAP = opts.gap === 'end' ? [0.30, 0.43] : [0.82, 0.93];
     var link2 = new THREE.Group();
     link2.rotation.x = Math.PI / 2;
     link2.position.x = 0.95;
     var whole = new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0, 1), 220, T, 28, true), glass);
     var torn = new THREE.Group();
-    torn.add(new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0.43, 1.30), 220, T, 28, false), glass));
+    torn.add(new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, GAP[1], 1 + GAP[0]), 220, T, 28, false), glass));
     var capGeo = new THREE.IcosahedronGeometry(T * 1.02, 0);
-    [0.43, 0.30].forEach(function (u) {
+    [GAP[1], GAP[0]].forEach(function (u) {
       var m = new THREE.Mesh(capGeo, glass); m.position.copy(new Stadium(H, R, 0, 1).getPoint(u)); torn.add(m);
     });
     link2.add(whole); link2.add(torn);
@@ -111,7 +116,7 @@
        трябва да са цветовете на страницата, а не избелелите им линейни двойници. */
     if (dark) { glass.color.convertSRGBToLinear(); green.color.convertSRGBToLinear(); green.emissive.convertSRGBToLinear(); }
     var shards = [];
-    var gapAt = new THREE.Vector3().copy(new Stadium(H, R, 0, 1).getPoint(0.365))
+    var gapAt = new THREE.Vector3().copy(new Stadium(H, R, 0, 1).getPoint((GAP[0] + GAP[1]) / 2))
       .applyEuler(new THREE.Euler(Math.PI / 2, 0, 0)).add(new THREE.Vector3(0.95, 0, 0));
     [['tet', 0.16, [-0.2, 0.9, 0.5]], ['box', 0.12, [0.35, 1.15, -0.2]], ['oct', 0.14, [-0.65, 0.6, 0.85]],
      ['tet', 0.1, [0.15, -0.95, 0.6]], ['box', 0.09, [-0.5, -0.8, -0.4]], ['oct', 0.11, [0.55, -0.7, 0.3]],
@@ -120,7 +125,12 @@
         var g = d[0] === 'tet' ? new THREE.TetrahedronGeometry(d[1]) : d[0] === 'box' ? new THREE.BoxGeometry(d[1], d[1], d[1])
               : d[0] === 'oct' ? new THREE.OctahedronGeometry(d[1]) : new THREE.SphereGeometry(d[1], 16, 12);
         var m = new THREE.Mesh(g, green);
-        m.userData = { base: new THREE.Vector3(gapAt.x + d[2][0], gapAt.y + d[2][1], gapAt.z + d[2][2]), seed: i * 1.7 + 0.3 };
+        m.userData = {
+          base: new THREE.Vector3(gapAt.x + d[2][0], gapAt.y + d[2][1], gapAt.z + d[2][2]),
+          // Между звената: по-тясно по оста на веригата, широко встрани.
+          off: new THREE.Vector3(d[2][0] * 0.45, d[2][1] * 1.05, d[2][2] * 1.1),
+          seed: i * 1.7 + 0.3
+        };
         m.position.copy(m.userData.base);
         m.rotation.set(i, i * 0.7, i * 1.3);
         chain.add(m); shards.push(m);
@@ -135,8 +145,9 @@
     /* Положението на веригата — за сплаша, където тя се затваря и къса.
        apart: звената раздалечени (1 — влизат отвън); shake: напъване, в
        радиани; broken: цялото звено става скъсано; burst ∈ [0, 1]: колко са
-       излетели отломките. По подразбиране — скъсана и в покой. */
-    var state = { apart: 0, shake: 0, broken: true, burst: 1, mx: 0, my: 0, swing: true };
+       излетели отломките; open: колко са се разделили звената след
+       скъсването (расте заедно с burst). По подразбиране — скъсана и в покой. */
+    var state = { apart: 0, shake: 0, broken: true, burst: 1, open: opts.gap === 'end' ? 0 : 0.85, mx: 0, my: 0, swing: true };
     function pose(p) { for (var k in p) state[k] = p[k]; }
 
     function size() {
@@ -154,15 +165,24 @@
       chain.rotation.y = BASE.y + swingY + state.mx * 0.22;
       chain.rotation.x = BASE.x + swingX + state.my * 0.16;
       chain.rotation.z = BASE.z + state.shake;
-      link1.position.x = -0.95 - state.apart * 1.3;
-      link2.position.x = 0.95 + state.apart * 1.3;
+      var sep = state.apart + (state.broken ? state.open * state.burst : 0);
+      link1.position.x = -0.95 - sep * 1.3;
+      link2.position.x = 0.95 + sep * 1.3;
       whole.visible = !state.broken;
       torn.visible = state.broken;
       var b = state.broken ? state.burst : 0;
+      /* При скъсване между звената отломките са в празното между тях:
+         средата между дъгата на първото и пролуката на второто, която се
+         мести, докато звената се разделят. */
+      var from = gapAt, to = null;
+      if (opts.gap !== 'end') {
+        from = new THREE.Vector3((link1.position.x + H + R + link2.position.x - H - R) / 2, 0, 0);
+      }
       shards.forEach(function (m) {
         var u = m.userData;
         m.visible = b > 0.01;
-        m.position.lerpVectors(gapAt, u.base, b);
+        to = opts.gap === 'end' ? u.base : from.clone().add(u.off);
+        m.position.lerpVectors(from, to, b);
         m.position.y += Math.sin(s * 0.9 + u.seed) * 0.06 * b;
         m.scale.setScalar(0.4 + 0.6 * b);
         if (state.swing) { m.rotation.x += 0.004; m.rotation.y += 0.006; }

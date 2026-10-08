@@ -52,7 +52,7 @@
     /* Един кадър, без люлеене: скъсана, в покой. `ready` казва на скрипта,
        че може да снима. */
     window.ready = Promise.all(Array.prototype.map.call(document.querySelectorAll('.ground canvas'), function (c) {
-      var gc = GlassChain(c, { tone: 'dark', still: true, sizeFrom: c });
+      var gc = GlassChain(c, { tone: 'dark', still: true, sizeFrom: c, scale: 0.8 });
       if (!gc) throw new Error('без WebGL');
       gc.pose({ swing: false });
       gc.draw(0);
