@@ -13,10 +13,11 @@
  *   gc.pose({ apart, shake, broken, burst }); gc.draw(ms)
  *   gc.idle(stageEl)   — люлеене и следене на мишката, както в CoKitchen
  *
- * Две звена-капсули под прав ъгъл. Скъсването е МЕЖДУ тях: второто звено
- * се къса на дъгата, която минава през първото, и звената се разделят —
- * първото излиза през пролуката. (До 08.10 пролуката беше на външната дъга
- * на второто — `gap: 'end'` я връща.) Отломките са в зеленото на марката. */
+ * Две звена-капсули под прав ъгъл, и двете скъсани МЕЖДУ тях — всяко на
+ * дъгата, която минаваше през другото. Звената се разделят и са отворени едно
+ * към друго; отломките в зеленото на марката летят в празното между тях.
+ * (До 08.10 се късаше само второто, на външната си дъга — `gap: 'end'` връща
+ * онзи вид.) */
 (function () {
   'use strict';
 
@@ -87,8 +88,19 @@
     var H = 0.95, R = 0.62, T = 0.2;
     var chain = new THREE.Group();
 
-    var link1 = new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0, 1), 220, T, 28, true), glass);
+    /* Първото звено: цяло и скъсано на дясната си дъга (0.32–0.43) — тази,
+       която минава през второто. При `gap: 'end'` остава цяло. */
+    var link1 = new THREE.Group();
     link1.position.x = -0.95;
+    var whole1 = new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, 0, 1), 220, T, 28, true), glass);
+    var torn1 = new THREE.Group();
+    var GAP1 = [0.32, 0.43];
+    torn1.add(new THREE.Mesh(new THREE.TubeGeometry(new Stadium(H, R, GAP1[1], 1 + GAP1[0]), 220, T, 28, false), glass));
+    var capGeo1 = new THREE.IcosahedronGeometry(T * 1.02, 0);
+    GAP1.forEach(function (u) {
+      var m = new THREE.Mesh(capGeo1, glass); m.position.copy(new Stadium(H, R, 0, 1).getPoint(u)); torn1.add(m);
+    });
+    link1.add(whole1); link1.add(torn1);
     chain.add(link1);
 
     /* Второто звено: цяло (преди скъсването) и скъсано. Пролуката е част от
@@ -111,16 +123,22 @@
     /* Отломките: къде са, колко са големи, какви са — по знака. */
     var green = new THREE.MeshStandardMaterial(dark
       ? { color: 0x4fbf8e, roughness: 0.3, metalness: 0.05, emissive: 0x1f6b4e, emissiveIntensity: 0.9 }
-      : { color: 0x2fb377, roughness: 0.35, metalness: 0.1, emissive: 0x0d3b26, emissiveIntensity: 0.25 });
+      : { color: 0x1f8f5c, roughness: 0.3, metalness: 0.05, emissive: 0x0d3b26, emissiveIntensity: 0.5 });
     /* r128 чете цвета на материала като линеен; на тъмно ментата и стъклото
        трябва да са цветовете на страницата, а не избелелите им линейни двойници. */
-    if (dark) { glass.color.convertSRGBToLinear(); green.color.convertSRGBToLinear(); green.emissive.convertSRGBToLinear(); }
+    if (dark) glass.color.convertSRGBToLinear();
+    green.color.convertSRGBToLinear(); green.emissive.convertSRGBToLinear();
     var shards = [];
     var gapAt = new THREE.Vector3().copy(new Stadium(H, R, 0, 1).getPoint((GAP[0] + GAP[1]) / 2))
       .applyEuler(new THREE.Euler(Math.PI / 2, 0, 0)).add(new THREE.Vector3(0.95, 0, 0));
-    [['tet', 0.16, [-0.2, 0.9, 0.5]], ['box', 0.12, [0.35, 1.15, -0.2]], ['oct', 0.14, [-0.65, 0.6, 0.85]],
-     ['tet', 0.1, [0.15, -0.95, 0.6]], ['box', 0.09, [-0.5, -0.8, -0.4]], ['oct', 0.11, [0.55, -0.7, 0.3]],
-     ['sph', 0.07, [-0.1, 1.45, 0.1]], ['tet', 0.08, [0.7, 0.4, 0.75]], ['box', 0.07, [-0.85, 0.1, -0.7]], ['sph', 0.06, [0.25, -1.35, -0.3]]]
+    /* Изразени, не прашинки: шестнайсет, по-едри и по-широко — на 08.10 десет
+       дребни се губеха до двете отворени звена. */
+    [['tet', 0.26, [-0.25, 1.15, 0.6]], ['box', 0.2, [0.4, 1.5, -0.3]], ['oct', 0.24, [-0.7, 0.75, 1.0]],
+     ['tet', 0.18, [0.2, -1.25, 0.75]], ['box', 0.16, [-0.6, -1.0, -0.5]], ['oct', 0.2, [0.65, -0.95, 0.4]],
+     ['sph', 0.11, [-0.1, 1.95, 0.15]], ['tet', 0.15, [0.8, 0.55, 0.95]], ['box', 0.13, [-0.95, 0.15, -0.85]],
+     ['sph', 0.1, [0.3, -1.85, -0.35]], ['tet', 0.12, [0.1, 0.35, -1.2]], ['oct', 0.15, [-0.35, -0.45, 1.25]],
+     ['box', 0.1, [0.95, -0.2, -0.6]], ['tet', 0.09, [-1.0, 1.35, -0.2]], ['sph', 0.08, [0.55, 2.1, 0.5]],
+     ['oct', 0.12, [-0.2, -2.05, 0.3]]]
       .forEach(function (d, i) {
         var g = d[0] === 'tet' ? new THREE.TetrahedronGeometry(d[1]) : d[0] === 'box' ? new THREE.BoxGeometry(d[1], d[1], d[1])
               : d[0] === 'oct' ? new THREE.OctahedronGeometry(d[1]) : new THREE.SphereGeometry(d[1], 16, 12);
@@ -128,7 +146,7 @@
         m.userData = {
           base: new THREE.Vector3(gapAt.x + d[2][0], gapAt.y + d[2][1], gapAt.z + d[2][2]),
           // Между звената: по-тясно по оста на веригата, широко встрани.
-          off: new THREE.Vector3(d[2][0] * 0.45, d[2][1] * 1.05, d[2][2] * 1.1),
+          off: new THREE.Vector3(d[2][0] * 0.55, d[2][1] * 1.15, d[2][2] * 1.2),
           seed: i * 1.7 + 0.3
         };
         m.position.copy(m.userData.base);
@@ -170,6 +188,9 @@
       link2.position.x = 0.95 + sep * 1.3;
       whole.visible = !state.broken;
       torn.visible = state.broken;
+      var both = opts.gap !== 'end';
+      whole1.visible = !(state.broken && both);
+      torn1.visible = state.broken && both;
       var b = state.broken ? state.burst : 0;
       /* При скъсване между звената отломките са в празното между тях:
          средата между дъгата на първото и пролуката на второто, която се
