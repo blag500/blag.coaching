@@ -162,6 +162,11 @@ document.querySelectorAll('.dish').forEach(function (a) {
     setTimeout(function () { location.href = a.href; }, 350);
   });
 });
+/* Назад от менюто: браузърът връща страницата от паметта си (bfcache), както
+   е била — с отключения катинар. При всяко показване всичко се заключва пак. */
+addEventListener('pageshow', function () {
+  document.querySelectorAll('.dish.unlocked').forEach(function (a) { a.classList.remove('unlocked'); });
+});
 </script>
 </body>
 </html>
