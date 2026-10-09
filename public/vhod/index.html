@@ -75,6 +75,15 @@
   .splash video { width: 230px; height: 230px; display: block; opacity: 0;
                   -webkit-mask-image: radial-gradient(closest-side, #000 82%, transparent); mask-image: radial-gradient(closest-side, #000 82%, transparent); }
   .splash.play video { opacity: 1; }
+  /* Решетката зад веригата — същата като в сплаша на Чийт Код: клетка 23 px,
+     клипът я носи в себе си на същите места. */
+  .vwrap { position: relative; width: 230px; height: 230px; }
+  .vwrap video { position: relative; }
+  .vgrid { position: absolute; left: -230px; top: -230px; width: 690px; height: 690px; pointer-events: none;
+           background-image: linear-gradient(to right, rgba(170,225,195,0.10) 1px, transparent 1px),
+                             linear-gradient(to bottom, rgba(170,225,195,0.10) 1px, transparent 1px);
+           background-size: 23px 23px;
+           -webkit-mask-image: radial-gradient(closest-side, #000 38%, transparent); mask-image: radial-gradient(closest-side, #000 38%, transparent); }
   .splash .sw { height: 22px; width: auto; opacity: 0; transform: translateY(8px);
                 transition: opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1); }
   .splash.name .sw { opacity: 1; transform: none; }
@@ -100,7 +109,9 @@
      се затваря, напъва и къса), на същата земя #1E2923, плюс името. Не тръгне
      ли клипът до 450 ms — само името. Веднъж на сесия. -->
 <div class="splash" id="splash" aria-hidden="true">
-  <video id="splashVid" muted playsinline preload="auto" src="/cheatcode/splash.mp4"></video>
+  <div class="vwrap"><i class="vgrid"></i>
+    <video id="splashVid" muted playsinline preload="auto" src="/cheatcode/splash.mp4"></video>
+  </div>
   <img class="sw" src="/vhod/wordmark.svg" alt="">
 </div>
 <main class="screen wait" id="screen">

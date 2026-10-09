@@ -69,6 +69,8 @@
     --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
     --in:  300ms;
     --out: 190ms;
+    /* Решетката зад стъклената верига в сплаша — линия, не мрежа: едва видима. */
+    --grid-line: rgba(20, 28, 23, 0.07);
   }
 
   /* Тъмната тема е стъпка по-светла от 09.10: на ярка светлина, на улицата,
@@ -102,6 +104,7 @@
       --protein: #5FB2F0;
       --carbs:   #6FC475;
       --fat:     #C58FD0;
+      --grid-line: rgba(170, 225, 195, 0.10);
     }
   }
 
@@ -131,6 +134,7 @@
     --protein: #5FB2F0;
     --carbs:   #6FC475;
     --fat:     #C58FD0;
+    --grid-line: rgba(170, 225, 195, 0.10);
   }
 
   /* display: grid/flex бие атрибута hidden. Обвивката на артефакта носи
@@ -220,6 +224,19 @@
             mask-image: radial-gradient(closest-side, #000 82%, transparent);
   }
   .splash.glass .splash-glass { opacity: 1; }
+  /* Решетка зад веригата — като светлата решетка на представянето за
+     CoKitchen. Клетка 23 px: стъкленият клип е 230 px, десет клетки, и носи
+     същата решетка в себе си (build-splash.mjs), на същите места — краищата
+     му се стапят в тази тук без шев. Не мърда, докато веригата се напъва. */
+  .splash-grid { position: absolute; left: 50%; top: 50%; width: 690px; height: 690px; margin: -345px 0 0 -345px;
+                 pointer-events: none;
+                 background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                                   linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+                 background-size: 23px 23px;
+                 -webkit-mask-image: radial-gradient(closest-side, #000 38%, transparent);
+                         mask-image: radial-gradient(closest-side, #000 38%, transparent);
+                 animation: gridIn 700ms var(--ease) both; }
+  @keyframes gridIn { from { opacity: 0; } }
   /* Докато се реши стъклен или плосък — всичко на първия си кадър. */
   .splash.wait *, .splash.wait *::before, .splash.wait *::after { animation-play-state: paused !important; }
   .splash.glass .splash-mark svg { visibility: hidden; }
@@ -1777,6 +1794,7 @@
     <i class="splash-rail left"></i>
     <div class="splash-mid">
       <span class="splash-mark">
+        <i class="splash-grid" aria-hidden="true"></i>
         <!-- Оста на веригата е x; групата я завърта по диагонала. Отломките
              са в местата си от клипа (MARK_SHARDS), --r е завъртането им. -->
         <svg viewBox="-260 -260 520 520">
