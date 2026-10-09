@@ -548,7 +548,12 @@
      минимална ширина и в колона на грид надвива width: 100% — излизаше
      извън екрана на iPhone. */
   .fld { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; }
-  .fld span { font-size: 12.5px; color: var(--ink-faint); }
+  /* Етикетите са в --ink-soft, не --ink-faint: на светло бледият беше с
+     контраст 2.8 (одит 09.10). Подсказката в <small> е колкото етикета —
+     „оттам потвърждаваш поръчката" е единственото обяснение защо имейлът е
+     задължителен, а като <small> по подразбиране излизаше 10 px. */
+  .fld span { font-size: 12.5px; color: var(--ink-soft); }
+  .fld span small { font-size: 1em; color: var(--ink-faint); }
   .fld input {
     background: var(--pane-bg);
     border: 1px solid var(--pane-border);
@@ -1681,7 +1686,6 @@
   }
   .toast.on { opacity: 1; transform: translateY(0); }
 
-  .foot { margin-top: 22px; font-size: 11.5px; line-height: 1.6; color: var(--ink-faint); }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -1838,7 +1842,6 @@
 
     <div class="menu" id="menu"></div>
     <p class="empty" id="empty" hidden>Нищо не отговаря на това. Махни някой филтър.</p>
-    <p class="foot">Започваме с едно. Останалите идват, когато кухнята се подреди.</p>
   </section>
 
   <section id="itemView" hidden>
@@ -1954,12 +1957,13 @@
         <label class="fld"><span>Име</span><input id="fName" type="text" autocomplete="name" placeholder="Как да те потърсим"></label>
         <label class="fld"><span>Телефон</span><input id="fPhone" type="tel" autocomplete="tel" placeholder="08…"></label>
         <label class="fld"><span>Имейл <small>оттам потвърждаваш поръчката</small></span><input id="fEmail" type="email" autocomplete="email" inputmode="email" placeholder="ime@primer.bg"></label>
-        <label class="fld"><span>Кога ще го вземеш</span><input id="fWhen" type="time" step="900"></label>
+        <label class="fld" id="aptFld" hidden><span>Апартамент <small>и етаж</small></span><input id="fApt" type="text" autocomplete="off" placeholder="напр. ап. 12, ет. 4"></label>
+        <label class="fld"><span id="whenLab">Кога ще го вземеш</span><input id="fWhen" type="time" step="900"></label>
         <label class="fld"><span>Бележка <small>по избор</small></span><input id="fNote" type="text" placeholder="Нещо, което да знаем"></label>
         <!-- Капан за ботове: скрито поле, което човек не вижда и не попълва. -->
         <input id="fSite" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="trap">
       </div>
-      <p class="pay">Плащане на място, в брой.</p>
+      <p class="pay" id="payLine">Плащане на място, в брой.</p>
       <p class="err" id="fErr" hidden></p>
     </div>
   </section>
@@ -3324,9 +3328,25 @@
 
   /* Поръчката отива във функцията cheatcode-order: тя я записва и праща
      известие на Николай. Докато LIVE е false, поръчката е белязана като тест
-     и последният екран го казва — кухня още няма и никой не бива да чака
-     обяд, който няма да дойде. Пуска се с един ред, когато има кухня. */
-  var LIVE = false;
+     и последният екран го казва. От 09.10 е true: пробата с QR кода във
+     входа на блока продава наистина (решение на Николай; Р12). */
+  var LIVE = true;
+
+  /* До вратата. QR кодът във входа води през /vhod/ към ?ot=vhod. Телефонът
+     го помни: съседът и утре, отворил страницата направо, иска кутията до
+     вратата, не да я взима отнякъде. Вместо час на взимане — час на
+     доставка, и апартаментът става задължителен. В бележката към кухнята
+     поръчката тръгва с „До вратата · ап. …", за да се види от пръв поглед. */
+  var DOOR = /[?&]ot=vhod\b/.test(location.search);
+  try {
+    if (DOOR) localStorage.setItem('cc_ot', 'vhod');
+    else DOOR = localStorage.getItem('cc_ot') === 'vhod';
+  } catch (e) { /* частен режим — важи само за това отваряне */ }
+  if (DOOR) {
+    $('aptFld').hidden = false;
+    $('whenLab').textContent = 'Кога да го донеса';
+    $('payLine').textContent = 'Нося го до вратата ти. Плащане в брой при доставка.';
+  }
   var ORDER_URL = 'https://eiltoadzaqbuqdilsfpi.supabase.co/functions/v1/cheatcode-order';
   var sending = false;
 
@@ -3355,6 +3375,11 @@
       err.textContent = 'Имейлът изглежда непълен.';
       err.hidden = false; $('fEmail').focus(); return;
     }
+    var apt = $('fApt').value.trim();
+    if (DOOR && !apt) {
+      err.textContent = 'Напиши апартамента — до коя врата да го донеса.';
+      err.hidden = false; $('fApt').focus(); return;
+    }
     err.hidden = true;
 
     /* Обобщение за цялата поръчка: човекът взима една торба, не три кутии
@@ -3373,7 +3398,8 @@
     var total = cartTotal();
     var when = $('fWhen').value;
     var payload = {
-      name: name, phone: phone, email: email, when: when, note: $('fNote').value.trim(),
+      name: name, phone: phone, email: email, when: when,
+      note: ((DOOR ? 'До вратата · ' + apt + ($('fNote').value.trim() ? ' · ' : '') : '') + $('fNote').value.trim()).slice(0, 300),
       website: $('fSite').value, live: LIVE,
       lines: cart.map(function (l) {
         return { name: l.name, cfg: l.cfg, photo: l.photo, qty: l.qty, unit: l.unit, kcal: l.kcal, p: l.p, c: l.c, f: l.f,
@@ -3393,7 +3419,7 @@
         $('doneCode').textContent = res.j.code;
         $('doneWhat').textContent =
           n + (n === 1 ? ' кутия' : ' кутии') + ' · ' + money(total) +
-          (when ? ' · за ' + when : '') + ' · в брой на място';
+          (when ? ' · за ' + when : '') + (DOOR ? ' · в брой при доставка' : ' · в брой на място');
         $('doneTitle').textContent = 'Потвърди от имейла';
         $('doneNote').innerHTML =
           'Пратихме писмо на <b>' + email.replace(/[<>&"]/g, '') + '</b>. Натисни „Потвърди поръчката“ в него — ' +

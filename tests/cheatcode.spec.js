@@ -70,6 +70,45 @@ test.describe('Чийт Код · моите поръчки', () => {
     await expect(page.locator('#fEmail')).toHaveValue('niki@primer.bg')
   })
 
+  /* QR кодът във входа на блока води през /vhod/ към ?ot=vhod: кутията се
+     носи до вратата. Апартаментът е задължителен и тръгва първи в бележката,
+     а телефонът помни режима и при следващо отваряне без параметъра. */
+  test('от входа на блока — до вратата, с апартамент', async ({ page }) => {
+    let placed = null
+    await page.route(ORDER_URL, async route => {
+      const body = JSON.parse(route.request().postData() || '{}')
+      if (!body.action) placed = body
+      return route.fulfill({ json: { code: 'ЧК-7001', test: false } })
+    })
+    await page.addInitScript(() => sessionStorage.setItem('cc_splash', '1'))
+    await page.goto('/cheatcode/index.html?ot=vhod')
+
+    await page.locator('button.dish:not(.soon)').first().click()
+    await page.locator('#orderBtn').click()
+    await page.locator('.nav-inner [data-go="cart"]').click()
+    await expect(page.locator('#aptFld')).toBeVisible()
+    await expect(page.locator('#whenLab')).toHaveText('Кога да го донеса')
+    await expect(page.locator('#payLine')).toContainText('при доставка')
+    await page.locator('#fName').fill('Ники')
+    await page.locator('#fPhone').fill('0898 281 221')
+    await page.locator('#fEmail').fill('niki@primer.bg')
+    await page.locator('#fNote').fill('звънни два пъти')
+    await page.locator('#orderBtn').click()
+    await expect(page.locator('#fErr')).toHaveText('Напиши апартамента — до коя врата да го донеса.')
+    expect(placed).toBeNull()
+    await page.locator('#fApt').fill('ап. 12, ет. 4')
+    await page.locator('#orderBtn').click()
+    await expect(page.locator('#doneCode')).toHaveText('ЧК-7001')
+    expect(placed.live).toBe(true)
+    expect(placed.note).toBe('До вратата · ап. 12, ет. 4 · звънни два пъти')
+    await expect(page.locator('#doneWhat')).toContainText('в брой при доставка')
+
+    // Помни се: отворена направо, страницата пак пита за апартамента.
+    await page.goto('/cheatcode/index.html')
+    await expect(page.locator('#aptFld')).toBeAttached()
+    expect(await page.locator('#aptFld').evaluate(el => el.hidden)).toBe(false)
+  })
+
   /* „Потвърди поръчката“ от писмото: поръчката отива в кухнята, а телефонът
      получава ключ за „Моите поръчки“ — без регистрация. */
   test('линкът „Потвърди“ потвърждава и отваря поръчките', async ({ page }) => {

@@ -119,6 +119,10 @@ three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen ж
 `splash.mp4`, `head-*.png`), иконките и картинките на писмата/споделянето — PNG
 (`node scripts/build-mail-art.mjs`). И двата рисуват със SwiftShader, без
 видеокарта. „Как работи“ е `how.mp4` от `film.mjs --short`. Правилата — `cheatcode/brand/RULES.md`.
+Пробата в блока (Р12): плакат `cheatcode/brand/poster/vhod.html` (QR →
+`/vhod/`, `node scripts/build-poster.mjs` → PDF) → `public/vhod/index.html`
+(редактира се направо) → Чийт Код с `?ot=vhod`, който телефонът помни
+(`cc_ot`): апартамент задължителен, бележката тръгва с „До вратата · …“.
 
 **Инвестиции** (`/invest/`, `invest/index.html` → `src/invest/`): лично табло за
 сметката в Trading 212 — втори вход на Vite, не таб в приложението. Същата сесия

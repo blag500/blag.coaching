@@ -12,7 +12,9 @@
  * нечия памет:
  *   1. Източникът няма <!doctype>, <head> и charset — тук се слагат.
  *   2. Снимките се сервират от /cheatcode/, не от съседния файл.
- *   3. Страницата е проба: noindex плюс ред, който го казва на човек.
+ *   3. Страницата не се индексира (noindex). Редът „Пробна страница“ отпадна
+ *      на 09.10: заместването отдавна не намираше мястото си, а поръчките
+ *      вече са истински (LIVE в page.html).
  *   4. Тя е и приложение (PWA): манифест, иконки и собствен service worker
  *      със scope /cheatcode/ — по-тесен от този на blag.coaching, значи
  *      тук командва той. `sw.js` се пише оттук с версия от съдържанието:
@@ -36,12 +38,6 @@ let s = readFileSync(SRC, 'utf8');
 const wanted = new Set();
 s = s.replace(/'([\w-]+\.jpe?g)'/g, (_, f) => { wanted.add(f); return `'/cheatcode/${f}'`; });
 s = s.replace(/src="([\w-]+\.jpe?g)"/g, (_, f) => { wanted.add(f); return `src="/cheatcode/${f}"`; });
-
-/* Ред, който казва на човека какво гледа. */
-const notice =
-  '  <p class="foot">Пробна страница. Още не приемаме поръчки — бутонът само ' +
-  'показва какво би отишло в кутията.</p>\n';
-s = s.replace('</div>\n\n<div class="order">', notice + '</div>\n\n<div class="order">');
 
 const title = (s.match(/<title>([^<]*)<\/title>/) || [, 'Чийт Код'])[1];
 

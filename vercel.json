@@ -13,6 +13,10 @@
       "destination": "/cokitchen/index.html"
     },
     {
+      "source": "/vhod/",
+      "destination": "/vhod/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -31,6 +35,11 @@
     {
       "source": "/cokitchen",
       "destination": "/cokitchen/",
+      "permanent": false
+    },
+    {
+      "source": "/vhod",
+      "destination": "/vhod/",
       "permanent": false
     }
   ],
