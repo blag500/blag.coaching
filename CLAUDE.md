@@ -110,8 +110,8 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 Тя е и отделно PWA (инсталира се като „Cheat Code“): манифест и иконки в
 `public/cheatcode/`, а `sw.js` със scope `/cheatcode/` се **генерира** от
 строителя с версия от съдържанието — не се пипа на ръка. Иконките са стъклената
-верига, PNG от `cheatcode/brand/mail/glass.html`; веригата зад хедъра е
-`head-dark/light.png` от `build-splash.mjs`; iOS не
+верига, PNG от `cheatcode/brand/mail/glass.html`; знакът до името в
+хедъра е `head-dark/light.png` от `build-splash.mjs`; iOS не
 чете SVG за начален екран.
 Стъклената верига (3D) е една рисунка в `public/cheatcode/glass-chain.js` с
 three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen жива, а
