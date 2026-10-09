@@ -5,7 +5,11 @@
      плоската верига (board/art/wordmark-dark.svg) — веригата вече е стъклената.
      Рисува се с `node scripts/build-mail-art.mjs`:
        #hero → public/cheatcode/mail-hero.png (1200×380)
-       #og   → public/cheatcode/og.png       (1200×630) -->
+       #og   → public/cheatcode/og.png       (1200×630)
+       #icon → иконката на приложението: apple-icon.png (1024), icon-512.png,
+               icon-192.png; #mask → icon-maskable-512.png (за Android, който
+               реже в кръг — веригата в средните 60%). Квадрат с поле до
+               ръба: прозрачен ъгъл iOS боядисва в черно. -->
 <html><head><meta charset="utf-8"><style>
   html, body { margin: 0; background: #0b0f0d; }
   .ground {
@@ -34,6 +38,14 @@
   #og .word { position: absolute; left: 80px; top: 228px; width: 560px; }
   #og .tag { left: 82px; top: 330px; font-size: 32px; line-height: 1.3; }
   #og .url { left: 82px; bottom: 60px; top: auto; font-size: 22px; color: #74857A; letter-spacing: 0.02em; }
+
+  /* Иконката: без думи, само веригата. Сиянието е по-силно — на 60 точки
+     стъклото без светлина зад себе си се чете като сиво петно. */
+  #icon, #mask { width: 512px; height: 512px; margin-top: 20px; }
+  #icon .glow { left: 36px; top: 36px; width: 440px; height: 440px; background: radial-gradient(closest-side, rgba(79,191,142,0.42), transparent); }
+  #icon canvas { left: -24px; top: -24px; width: 560px; height: 560px; }
+  #mask .glow { left: 86px; top: 86px; width: 340px; height: 340px; background: radial-gradient(closest-side, rgba(79,191,142,0.42), transparent); }
+  #mask canvas { left: 56px; top: 56px; width: 400px; height: 400px; }
 </style></head><body>
   <div class="ground" id="hero">
     <div class="glow"></div><canvas></canvas>
@@ -46,6 +58,8 @@
     <p class="tag">Храната, която<br>си знае числата.</p>
     <p class="tag url">blag-coaching.com/cheatcode</p>
   </div>
+  <div class="ground" id="icon"><div class="glow"></div><canvas></canvas></div>
+  <div class="ground" id="mask"><div class="glow"></div><canvas></canvas></div>
   <script src="../../../public/cheatcode/vendor/three-r128.min.js"></script>
   <script src="../../../public/cheatcode/glass-chain.js"></script>
   <script>

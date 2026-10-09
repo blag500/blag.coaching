@@ -2,6 +2,9 @@
  * Рисува картинките на писмата на Чийт Код:
  *   cheatcode/brand/mail/glass.html → public/cheatcode/mail-hero.png (1200×380)
  *                                    и public/cheatcode/og.png (1200×630)
+ *   иконката на приложението (#icon, #mask в същата страница)
+ *     → public/cheatcode/apple-icon.png, icon-512.png, icon-192.png,
+ *       icon-maskable-512.png
  *   символите s-kcal/s-protein/s-carbs/s-fat от cheatcode/page.html
  *     → public/cheatcode/mail-kcal.png … mail-fat.png (48×48, цветът на
  *       макроса в тъмната тема на страницата)
@@ -38,6 +41,18 @@ await og.goto(pathToFileURL(resolve('cheatcode/brand/mail/glass.html')).href);
 await og.evaluate(() => window.ready);
 await og.locator('#og').screenshot({ path: 'public/cheatcode/og.png' });
 console.log('public/cheatcode/og.png');
+
+/* Иконката на приложението — същата стъклена верига, квадрат. Три размера
+   от една рисунка: devicePixelRatio мащабира платното, не картинката. */
+for (const [sel, dpr, out] of [['#icon', 2, 'apple-icon.png'], ['#icon', 1, 'icon-512.png'],
+  ['#icon', 0.375, 'icon-192.png'], ['#mask', 1, 'icon-maskable-512.png']]) {
+  const ic = await browser.newPage({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: dpr });
+  await ic.goto(pathToFileURL(resolve('cheatcode/brand/mail/glass.html')).href);
+  await ic.evaluate(() => window.ready);
+  await ic.locator(sel).screenshot({ path: `public/cheatcode/${out}` });
+  console.log(`public/cheatcode/${out}`);
+  await ic.close();
+}
 
 /* Символите се вадят от страницата, не се преписват: една рисунка на едно място. */
 const src = readFileSync('cheatcode/page.html', 'utf8');
