@@ -4,440 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Чийт Код — готова храна, настроена до грам. Носим я до вратата ти.">
-<!-- Страницата зад QR кода на таблото във входа на блока (09.10.2026).
-     Тръгва от представянето за CoKitchen (/cokitchen/), но говори на
-     съседите: менюто, как се поръчва, че го носим до вратата. Всеки бутон
-     води към /cheatcode/?ot=vhod — Чийт Код помни, че човекът е дошъл
-     оттук, и пита за апартамента вместо за час на взимане.
-     Отгоре е снимка на ястието, не стъклената верига: без three.js (човек,
-     сканирал код във входа, е на телефон и не чака 600 KB), а неподвижната
-     верига на светла решетка се губеше. Галерията от представянето отпадна —
-     същите снимки, двойно по-дълга страница.
-     Не се индексира. Изходът е този файл — редактира се направо. -->
-<title>Чийт Код — до вратата ти</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Onest:wght@400;500;600;700&family=Lora:ital,wght@1,500;1,600&display=swap">
+<meta name="description" content="Чийт Код — храна, настроена до грам. До вратата ти.">
+<meta name="theme-color" content="#1E2923">
+<!-- Страницата зад картата „Въведи кода" (cheatcode/brand/poster/kod.html).
+     Един екран, без скрол (09.10: дългата версия от представянето за
+     CoKitchen беше „прекалено дълга"): отговорът на загадката, трите ястия
+     с цените и един бутон към Чийт Код с ?ot=vhod — там се пита за адреса.
+     Тъмна, като картата, от която идва човекът. Без three.js. Без „в блока"
+     и „от съседа" — само храната и доставката. Редактира се направо. -->
+<title>Чийт Код — кодът е приет</title>
+<link rel="icon" href="/cheatcode/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Onest:wght@400;500;600;700&display=swap">
 <style>
-  /* Светла решетка и стъклената верига, като в представянето за CoKitchen.
-     Числата са само там, където са самото ястие — протеин, калории, цена.
-     Ред: hero → менюто с цените → как работи (клипът) → пробвай →
-     въпроси. Всеки бутон води към поръчката. */
-  :root {
-    color-scheme: light;
-    --paper: #F5F6F2;
-    --grid: rgba(20, 40, 30, 0.055);
-    --card: #FFFFFF;
-    --card-2: #F0F2EC;
-    --line: #E1E5DC;
-    --ink: #121815;
-    --ink-soft: #5B665F;
-    --ink-faint: #949D96;
-    --accent: #1F8A5B;
-    --accent-2: #2FB377;
-    --accent-soft: rgba(31, 138, 91, 0.10);
-    --on-accent: #FFFFFF;
-    --protein: #2F7FC0; --carbs: #43904A; --fat: #9A63A6; --kcal: #8A6A2E;
-    --font-sans: 'Onest', -apple-system, 'Segoe UI', sans-serif;
-    --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
-    --font-brand: 'Unbounded', 'Arial Black', sans-serif;
-    --r-md: 16px; --r-lg: 24px; --r-xl: 32px;
-    --shadow: 0 1px 2px rgba(18, 24, 21, 0.04), 0 10px 30px rgba(18, 24, 21, 0.07);
-    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  * { box-sizing: border-box; }
-  /* hidden трябва да побеждава display: flex — иначе боулът показваше „Отгоре“
-     с добавките на гриса. В артефакта това го даваше обвивката, тук — не. */
-  [hidden] { display: none !important; }
-  body {
-    background-color: var(--paper);
-    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 56px 56px; background-position: -1px -1px;
-    color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 1.55;
-    font-feature-settings: 'locl' 0;
-  }
-  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 20px 72px;
-          display: flex; flex-direction: column; gap: 96px; }
-  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
-  h2 { font-weight: 700; font-size: clamp(28px, 3.6vw, 42px); line-height: 1.1; }
-  h1 em, h2 em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--accent); letter-spacing: -0.01em; }
-  p { margin: 0; }
-  .eyebrow { font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; }
-  .lede { color: var(--ink-soft); font-size: 18px; max-width: 56ch; }
-  section { display: flex; flex-direction: column; gap: 28px; scroll-margin-top: 90px; }
-  .sec-head { display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  /* ── Навигация ── */
-  .nav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 10; align-self: center;
-         display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; width: min(100%, 680px);
-         background: rgba(255,255,255,0.8); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-         border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); }
-  .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); flex: none; }
-  .brand svg { width: 22px; height: 22px; color: var(--accent); }
-  .brand b { font-family: var(--font-brand); font-weight: 800; font-size: 13px; letter-spacing: 0.02em; }
-  .brand b span { color: var(--accent); }
-  .nav-links { display: flex; gap: 2px; margin: 0 auto; }
-  .nav-links a { color: var(--ink-soft); text-decoration: none; font-size: 13.5px; padding: 6px 10px; border-radius: 999px; }
-  .nav-links a:hover { background: var(--card-2); color: var(--ink); }
-  .btn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 600; border-radius: 999px;
-         padding: 11px 20px; text-decoration: none; border: 0; cursor: pointer; white-space: nowrap; }
-  .btn.dark { background: var(--ink); color: #fff; padding: 8px 14px; font-size: 13px; }
-  .btn.go { color: var(--on-accent); background: linear-gradient(180deg, var(--accent-2), var(--accent));
-            box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 6px 16px rgba(31,138,91,0.32); }
-  .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow); }
-  .btn .play { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 8px; }
-
-  /* ── Hero ── */
-  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; align-items: start; padding-top: 28px; }
-  .hero h1 { grid-column: 1 / -1; font-weight: 700; font-size: clamp(32px, 4.4vw, 52px); line-height: 1.06; white-space: nowrap; }
-  .hero h1 .soft { color: var(--ink-faint); }
-  .chips3 { display: inline-flex; gap: 4px; padding: 5px; border-radius: 14px; vertical-align: middle; margin-left: 8px; transform: translateY(-4px);
-            background: linear-gradient(180deg, var(--accent-2), var(--accent)); box-shadow: 0 6px 16px rgba(31,138,91,0.3); }
-  .chips3 i { width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.18); display: grid; place-items: center; color: #fff; }
-  .chips3 svg { width: 16px; height: 16px; }
-  .hero-copy { display: flex; flex-direction: column; gap: 22px; padding-top: 22px; min-width: 0; }
-  .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
-  .proof { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink-soft); }
-  .faces { display: flex; }
-  .faces img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--paper); margin-left: -9px; }
-  .faces img:first-child { margin-left: 0; }
-  .proof b { color: var(--ink); }
-  .stage { position: relative; min-width: 0; aspect-ratio: 4 / 3; max-height: 400px; width: 100%; margin-top: -36px; }
-  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  .stage .fallback { position: absolute; inset: 12%; color: var(--accent); }
-  .stage .glow { position: absolute; left: 20%; right: 20%; bottom: 4%; height: 22%; border-radius: 50%;
-                 background: radial-gradient(closest-side, rgba(47,179,119,0.22), transparent); filter: blur(10px); }
-  .float { position: absolute; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; font-size: 12.5px; line-height: 1.3;
-           background: rgba(255,255,255,0.92); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); max-width: 230px; }
-  .float i { flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 13px; }
-  .float small { display: block; color: var(--ink-faint); font-size: 11px; }
-  .float b { font-weight: 600; }
-  .f1 { top: 2%; right: 0; } .f1 i { background: var(--accent-soft); color: var(--accent); }
-  .f2 { bottom: 14%; left: 2%; } .f2 i { background: rgba(47,127,192,0.12); color: var(--protein); }
-  .f3 { bottom: 0; right: 8%; } .f3 i { background: var(--ink); color: #fff; }
-
-  /* ── Менюто в снимки ── */
-  .menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .dish { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow);
-          display: flex; flex-direction: column; min-width: 0; }
-  .dish img { width: 100%; aspect-ratio: 4 / 3.4; object-fit: cover; display: block; }
-  .dish .txt { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 8px; }
-  .dish h3 { font-size: 22px; font-weight: 700; }
-  .dish p { color: var(--ink-soft); font-size: 15px; }
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-  .tag { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--card-2); color: var(--ink-soft); }
-  .tag.p { background: rgba(47,127,192,0.10); color: var(--protein); }
-  .tag.g { background: var(--accent-soft); color: var(--accent); }
-  .soon { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--ink-soft); }
-  .soon b { color: var(--ink); }
-  .soon .tag { background: var(--card); border: 1px dashed var(--line); }
-
-  /* ── Галерията ── */
-  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  .gallery figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-  .gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-lg); display: block; box-shadow: var(--shadow); background: var(--card-2); }
-  .gallery figcaption { font-size: 14px; color: var(--ink-soft); }
-  .gallery figcaption b { color: var(--ink); font-weight: 600; }
-
-  /* ── Как работи ── */
-  .how { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: center; }
-  .phone { justify-self: center; width: min(100%, 320px); aspect-ratio: 9 / 16; border-radius: 36px; overflow: hidden;
-           background: #141C18; box-shadow: 0 0 0 10px #fff, 0 0 0 11px var(--line), 0 30px 60px rgba(18,24,21,0.18); }
-  .phone video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .steps { display: flex; flex-direction: column; gap: 14px; }
-  .step { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: start; background: var(--card); border: 1px solid var(--line);
-          border-radius: var(--r-lg); padding: 18px; box-shadow: var(--shadow); }
-  .step .ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
-  .step .ic svg { width: 24px; height: 24px; }
-  .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-  .step p { color: var(--ink-soft); font-size: 15px; }
-  .step.kitchen { border-color: rgba(31,138,91,0.4); background: linear-gradient(180deg, #fff, #F3FAF6); }
-  .step.kitchen .ic { background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #fff; }
-
-  /* ── Пробвай ── */
-  .try { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; background: var(--card); border: 1px solid var(--line);
-         border-radius: var(--r-xl); padding: 28px; box-shadow: var(--shadow); }
-  .try .shot { border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 4 / 3.2; background: var(--card-2); position: relative; }
-  .try .shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 260ms var(--ease); }
-  .controls { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-  .ctl { display: flex; flex-direction: column; gap: 8px; }
-  .lab { font-size: 13px; color: var(--ink-soft); font-weight: 500; }
-  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .pill { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 8px 15px; border-radius: 999px; cursor: pointer; }
-  .pill:hover { border-color: var(--accent); }
-  .pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .big { display: flex; gap: 28px; align-items: baseline; flex-wrap: wrap; }
-  .big div { display: flex; flex-direction: column; }
-  .big b { font-size: 40px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-  .big span { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
-  .big .kc b { color: var(--kcal); } .big .pr b { color: var(--protein); }
-
-  /* ── Какво търсим ── */
-  .needs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .need { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow);
-          display: flex; flex-direction: column; gap: 10px; }
-  .need .ic { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--card-2); color: var(--ink); }
-  .need .ic svg { width: 22px; height: 22px; }
-  .need h3 { font-size: 18px; font-weight: 700; }
-  .need p { color: var(--ink-soft); font-size: 15px; }
-  .bring { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; padding: 20px 24px; border-radius: var(--r-lg);
-           background: var(--ink); color: #fff; }
-  .bring b { font-size: 15px; }
-  .bring span { color: rgba(255,255,255,0.75); font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
-  .bring span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }
-
-  footer { font-size: 13px; color: var(--ink-faint); border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
-
-  @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; }
-    .hero h1 { white-space: normal; }
-    .stage { max-width: 460px; justify-self: center; margin-top: 0; }
-    .menu, .needs { grid-template-columns: 1fr; }
-    .gallery { grid-template-columns: repeat(2, 1fr); }
-    .how, .try { grid-template-columns: 1fr; }
-    .nav-links { display: none; }
-    .nav { justify-content: space-between; }
-  }
-  @media (max-width: 520px) {
-    /* От таблото идват само телефони: заглавието трябва да е в първия екран
-       заедно с бутона, не под празна ивица. */
-    .wrap { gap: 64px; }
-    section.hero { padding-top: 0; margin-top: -40px; }
-    .chips3 { display: none; }
-    .float { font-size: 11.5px; max-width: 190px; }
-    .try { padding: 18px; }
-    .big b { font-size: 32px; }
-  }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-  /* Страницата за входа. Цените стоят до името — човекът от таблото пита
-     първо „колко струва". Картата е линк: цялото ястие води към поръчката. */
-  .dish { color: inherit; text-decoration: none; }
-  .dish h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .dish .price { font-size: 15px; font-weight: 600; color: var(--accent); white-space: nowrap; }
-  /* Отгоре е храната, не знакът: човекът от таблото решава по снимката.
-     Стъклената верига на светла решетка, неподвижна, се губеше. */
-  .stage .hero-dish { position: absolute; inset: 4% 10% 10%; width: 80%; height: 86%; object-fit: cover;
-                      border-radius: var(--r-lg); box-shadow: 0 24px 50px rgba(18,24,21,0.18); }
-  .try .controls > .btn { align-self: flex-start; margin-top: 6px; }
-  .bring .btn { margin-left: auto; }
+  :root { --ground: #1E2923; --ink: #E9F0EA; --soft: #B2C1B6; --faint: #8A9B8F; --mint: #4FBF8E;
+          --pane: rgba(255,255,255,0.06); --pane-border: rgba(255,255,255,0.12); --r: 18px; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--ground); }
+  body { font-family: 'Onest', system-ui, sans-serif; color: var(--ink); font-feature-settings: 'locl' 0;
+         -webkit-font-smoothing: antialiased; }
+  /* Един екран: височината е видимата (svh), не цялата — в Safari лентата
+     отдолу иначе изяжда бутона. Снимките и отстъпите се мерят по нея, за да
+     се събере всичко и на по-нисък телефон. */
+  .screen { height: 100svh; min-height: 560px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column;
+            padding: calc(env(safe-area-inset-top) + 18px) 20px calc(env(safe-area-inset-bottom) + 18px);
+            background:
+              radial-gradient(ellipse 120% 45% at 50% 0%, rgba(79,191,142,0.20) 0%, transparent 65%),
+              radial-gradient(ellipse 90% 40% at 100% 100%, rgba(90,120,200,0.10) 0%, transparent 65%); }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .word { height: 14px; width: auto; display: block; }
+  .ok { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 600;
+        color: var(--mint); background: rgba(79,191,142,0.14); white-space: nowrap; }
+  h1 { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: clamp(26px, 8.2vw, 38px); line-height: 1.08;
+       letter-spacing: -0.01em; margin: 0; }
+  h1 span { color: var(--mint); }
+  .lede { margin: clamp(8px, 1.8svh, 16px) 0 0; font-size: 16px; line-height: 1.45; color: var(--soft); }
   .lede b { color: var(--ink); font-weight: 600; }
-  .unlocked { grid-column: 1 / -1; justify-self: start; padding: 6px 12px; border-radius: 999px;
-              background: var(--accent-soft); color: var(--accent); }
-  /* Клипът (how.mp4) вече носи свой надпис и свой телефон — тук е само
-     рамка с неговата пропорция, не втори телефон около първия. */
-  .phone { aspect-ratio: 720 / 1390; border-radius: var(--r-lg); box-shadow: 0 0 0 1px var(--line), 0 30px 60px rgba(18,24,21,0.18); }
+  .dishes { margin-top: clamp(14px, 3.5svh, 30px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .dish { display: block; color: inherit; text-decoration: none; background: var(--pane); border: 1px solid var(--pane-border);
+          border-radius: var(--r); padding: 6px 6px 10px; }
+  .dish img { width: 100%; height: clamp(78px, 23svh, 200px); object-fit: cover; border-radius: 13px; display: block; background: #2F3D35; }
+  .dish b { display: block; font-size: 13px; font-weight: 600; line-height: 1.2; margin: 8px 3px 0; }
+  .dish span { display: block; font-size: 13px; color: var(--mint); font-weight: 700; margin: 3px 3px 0; }
+  .dish small { display: block; font-size: 12px; color: var(--faint); margin: 2px 3px 0; }
+  /* Средата е центрирана между горния ред и бутона: на висок екран празното
+     се дели над и под нея, вместо да зейне цялото над бутона. */
+  .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 2svh; }
+  .go { padding-top: 16px; }
+  .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 58px; border-radius: 999px;
+         font: 700 18px 'Onest', sans-serif; color: #10251B; text-decoration: none;
+         background: linear-gradient(180deg, #6FD3A6, var(--mint));
+         box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 10px 30px rgba(79,191,142,0.35);
+         transition: transform 110ms cubic-bezier(0.2,0.8,0.2,1); }
+  .btn:active { transform: scale(0.985); }
+  .terms { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--faint); }
+  @media (prefers-reduced-motion: no-preference) {
+    .ok, h1, .lede, .dishes, .go { animation: up 520ms cubic-bezier(0.2,0.8,0.2,1) both; }
+    h1 { animation-delay: 60ms; } .lede { animation-delay: 120ms; } .dishes { animation-delay: 180ms; } .go { animation-delay: 240ms; }
+    @keyframes up { from { opacity: 0; transform: translateY(10px); } }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
+<main class="screen">
+  <div class="top">
+    <img class="word" src="/vhod/wordmark.svg" alt="CHEATCODE">
+    <span class="ok">✓ Кодът е приет</span>
+  </div>
 
-  <nav class="nav">
-    <a class="brand" href="#top" aria-label="Чийт Код">
-      <svg viewBox="-260 -260 520 520" aria-hidden="true"><g transform="rotate(-45)" fill="none" stroke="currentColor" stroke-width="56"><rect x="-232" y="-51" width="252" height="102" rx="51"/><rect x="-20" y="-51" width="252" height="102" rx="51"/></g></svg>
-      <b>CHEAT<span>CODE</span></b>
-    </a>
-    <div class="nav-links">
-      <a href="#menu">Менюто</a>
-      <a href="#how">Как работи</a>
-      <a href="#try">Пробвай</a>
-      <a href="#faq">Въпроси</a>
-    </div>
-    <a class="btn dark" href="/cheatcode/?ot=vhod">Поръчай →</a>
-  </nav>
+  <div class="mid">
+  <h1>Храната, която<br><span>си знае числата.</span></h1>
+  <p class="lede">Настройваш порцията до грам — макросите и цената се движат с нея. <b>Носим я до вратата ти</b>, плащаш в брой.</p>
 
-  <section class="hero" id="top">
-    <!-- Отговорът на картата във входа („↑↑↓↓←→←→ B A · Въведи кода"). -->
-    <span class="eyebrow unlocked">✓ Кодът е приет</span>
-    <h1 class="headline">Храната, която <em>си знае</em> <span class="soft">числата.</span><span class="chips3" aria-hidden="true">
-        <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg></i>
-        <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M5 8l7-5 7 5"/></svg></i>
-        <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></i>
-      </span></h1>
-    <div class="hero-copy">
-      <p class="lede">Настройваш порцията до грам — макросите и цената се движат с нея. Сготвено тук, в блока, и <b>донесено до вратата ти</b>. Плащаш в брой, когато го получиш.</p>
-      <div class="ctas">
-        <a class="btn go" href="/cheatcode/?ot=vhod">Поръчай →</a>
-        <a class="btn ghost" href="#how"><span class="play">▶</span> Виж как работи</a>
-      </div>
-      <div class="proof">
-        <span class="faces"><img src="/cheatcode/kayma.jpg" alt=""><img src="/cheatcode/yagodi.jpg" alt=""><img src="/cheatcode/gris-oba.jpg" alt=""></span>
-        <span><b>Три ястия</b><br>от 3,80 € · доставка без такса</span>
-      </div>
-    </div>
-    <div class="stage">
-      <div class="glow"></div>
-      <img class="hero-dish" src="/cheatcode/kayma.jpg" alt="Телешки боул в кутия">
-      <div class="float f2"><i>Б</i><span><small>Телешки боул</small><b>66 г протеин</b></span></div>
-      <div class="float f3"><i>✦</i><span><small>Настройваш го</small><b>до грам</b></span></div>
-    </div>
-  </section>
+  <div class="dishes">
+    <a class="dish" href="/cheatcode/?ot=vhod"><img src="/cheatcode/kayma.jpg" alt=""><b>Телешки боул</b><span>5,10 €</span><small>66 г протеин</small></a>
+    <a class="dish" href="/cheatcode/?ot=vhod"><img src="/cheatcode/yagodi.jpg" alt=""><b>Анаболно кремче</b><span>3,80 €</span><small>без захар</small></a>
+    <a class="dish" href="/cheatcode/?ot=vhod"><img src="/cheatcode/gris-choko.jpg" alt=""><b>Грис на стероиди</b><span>4,00 €</span><small>закуска</small></a>
+  </div>
+  </div>
 
-  <section id="menu">
-    <div class="sec-head">
-      <span class="eyebrow">Менюто</span>
-      <h2>Три ястия, които се <em>сглобяват</em></h2>
-      <p class="lede">Всичко е от части, които се мерят поотделно — затова можеш да ги настроиш, а кутията излиза точно такава.</p>
-    </div>
-    <div class="menu">
-      <a class="dish" href="/cheatcode/?ot=vhod">
-        <img src="/cheatcode/kayma.jpg" alt="Телешки боул">
-        <div class="txt">
-          <h3>Телешки боул <span class="price">5,10 €</span></h3>
-          <p>Телешка кайма, ориз и доматен сос.</p>
-          <div class="tags"><span class="tag p">66 г протеин</span><span class="tag">без олио</span></div>
-        </div>
-      </a>
-      <a class="dish" href="/cheatcode/?ot=vhod">
-        <img src="/cheatcode/yagodi.jpg" alt="Анаболно кремче с ягоди">
-        <div class="txt">
-          <h3>Анаболно кремче <span class="price">3,80 €</span></h3>
-          <p>Шоколадов крем от овесени трици, отгоре ягоди, банан или протеин.</p>
-          <div class="tags"><span class="tag g">без добавена захар</span><span class="tag">десерт</span></div>
-        </div>
-      </a>
-      <a class="dish" href="/cheatcode/?ot=vhod">
-        <img src="/cheatcode/gris-choko.jpg" alt="Грис на стероиди">
-        <div class="txt">
-          <h3>Грис на стероиди <span class="price">4,00 €</span></h3>
-          <p>Оризов грис с банан, бисквити и дарк чоко поръска.</p>
-          <div class="tags"><span class="tag g">без добавена захар</span><span class="tag">закуска</span></div>
-        </div>
-      </a>
-    </div>
-    <div class="soon"><b>Скоро:</b><span class="tag">Пилешки боул</span><span class="tag">Чийзкейк в чаша</span></div>
-  </section>
-
-  <section id="how">
-    <div class="how">
-      <div class="phone"><video src="/cheatcode/how.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Клип: избираш ястие, натискаш „Настрой точно“ и местиш плъзгачите"></video></div>
-      <div class="steps">
-        <div class="sec-head" style="margin-bottom:8px">
-          <span class="eyebrow">Как работи</span>
-          <h2>От телефона <em>до вратата</em></h2>
-        </div>
-        <div class="step">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span>
-          <div><h3>Избираш ястие</h3><p>От телефона, на страницата на Чийт Код.</p></div>
-        </div>
-        <div class="step">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg></span>
-          <div><h3>Настройваш до грам</h3><p>Повече месо, по-малко ориз — числата се движат с теб.</p></div>
-        </div>
-        <div class="step kitchen">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.9A4 4 0 0 1 8 6a5 5 0 0 1 8 0 4 4 0 0 1 2 7.9V20H6z"/><path d="M6 17h12"/></svg></span>
-          <div><h3>Сготвям го</h3><p>Прясно, и всяка кутия се сглобява на кантар по твоята поръчка.</p></div>
-        </div>
-        <div class="step">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
-          <div><h3>Нося го до вратата ти</h3><p>В часа, който си избрал. Плащаш в брой при доставка.</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="try">
-    <div class="sec-head">
-      <span class="eyebrow">Пробвай</span>
-      <h2>Едно ястие, <em>твоето</em></h2>
-    </div>
-    <div class="try">
-      <div class="shot"><img id="dishPhoto" src="/cheatcode/yagodi.jpg" alt=""></div>
-      <div class="controls">
-        <div class="ctl"><span class="lab">Ястие</span><div class="pills" id="dishPills"></div></div>
-        <div class="ctl"><span class="lab">Размер</span><div class="pills" id="sizePills"></div></div>
-        <div class="ctl" id="topCtl"><span class="lab" id="topLab">Отгоре</span><div class="pills" id="topPills"></div></div>
-        <div class="big">
-          <div class="kc"><b id="kcal">0</b><span>ккал</span></div>
-          <div class="pr"><b id="prot">0</b><span>г протеин</span></div>
-        </div>
-        <a class="btn go" href="/cheatcode/?ot=vhod">Поръчай го →</a>
-      </div>
-    </div>
-  </section>
-
-  <section id="faq">
-    <div class="sec-head">
-      <span class="eyebrow">Въпроси</span>
-      <h2>Кой готви <em>и как</em></h2>
-    </div>
-    <div class="needs">
-      <div class="need">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 4l9 6.5V20H3z"/><path d="M9 20v-6h6v6"/></svg></span>
-        <h3>От съседа</h3>
-        <p>Николай Благьов, треньор от Blag Coaching. Живея в блока — затова доставката е до вратата и без такса.</p>
-      </div>
-      <div class="need">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-        <h3>Кога</h3>
-        <p>При поръчката избираш час. Поръчай ден по-рано — така ястието се готви специално за теб.</p>
-      </div>
-      <div class="need">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v5c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></span>
-        <h3>Какво има вътре</h3>
-        <p>Грамовете, макросите и алергените на всяка кутия са на страницата, още преди да поръчаш.</p>
-      </div>
-    </div>
-    <div class="bring"><b>Плащане:</b><span>в брой при доставка</span><span>потвърждаваш поръчката от имейла</span><a class="btn go" href="/cheatcode/?ot=vhod">Поръчай →</a></div>
-  </section>
-
-  <footer>
-    <span>CHEAT CODE · Blag Coaching</span>
-    <span>blag-coaching.com/cheatcode</span>
-  </footer>
-</div>
-
-<script>
-(function () {
-  /* Само снимката и двете числа, които са самото ястие — калории и протеин.
-     Данните са от cheatcode/page.html (средни стойности на 100 г). */
-  var DISHES = [
-    { name: 'Анаболно кремче', photo: { yagodi: '/cheatcode/yagodi.jpg', banan: '/cheatcode/banan.jpg', protein: '/cheatcode/protein.jpg', none: '/cheatcode/kakao.jpg' }, topLabel: 'Глазура', top: 'yagodi',
-      base: [[246, 17.3, 'trici'], [228, 19.6, 'kakao']],
-      sizes: [['Малка', { trici: 50, kakao: 10 }], ['Средна', { trici: 100, kakao: 20 }], ['Голяма', { trici: 150, kakao: 30 }]],
-      tops: [['yagodi', 'Ягоди', 100, 32, 0.7], ['banan', 'Банан', 100, 89, 1.1], ['protein', 'Протеинова глазура', 30, 380, 75], ['none', 'Без', 0, 0, 0]] },
-    { name: 'Телешки боул', photo: '/cheatcode/kayma.jpg',
-      base: [[156, 22.51, 'kayma'], [339, 8.5, 'oriz'], [20, 1, 'pyure']],
-      sizes: [['Малка', { kayma: 150, oriz: 75, pyure: 100 }], ['Средна', { kayma: 250, oriz: 100, pyure: 125 }], ['Голяма', { kayma: 350, oriz: 150, pyure: 175 }]],
-      tops: [] },
-    { name: 'Грис на стероиди', photo: { choko: '/cheatcode/gris-choko.jpg', _: '/cheatcode/gris-oba.jpg' }, topLabel: 'Отгоре', top: 'none',
-      base: [[348, 6.6, 'gris'], [89, 1.1, 'banan'], [425, 8, 'biskviti', 30]],
-      sizes: [['Малка', { gris: 60, banan: 60 }], ['Средна', { gris: 80, banan: 100 }], ['Голяма', { gris: 100, banan: 140 }]],
-      tops: [['none', 'Нищо', 0, 0, 0], ['choko', 'Дарк чоко поръска', 40, 92, 7.5], ['gorski', 'Горски плодове', 100, 44, 0.9], ['protein', 'Протеинова глазура', 30, 380, 75]] }
-  ];
-  var st = { d: 0, s: 1, top: 'yagodi' };
-  var $ = function (id) { return document.getElementById(id); };
-  function pills(el, list, active, pick) {
-    el.textContent = '';
-    list.forEach(function (label, i) {
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'pill'; b.textContent = label;
-      b.setAttribute('aria-pressed', i === active ? 'true' : 'false');
-      b.addEventListener('click', function () { pick(i); });
-      el.appendChild(b);
-    });
-  }
-  function render() {
-    var d = DISHES[st.d], size = d.sizes[st.s][1], kcal = 0, prot = 0;
-    d.base.forEach(function (b) { var g = b[3] != null ? b[3] : size[b[2]]; kcal += b[0] * g / 100; prot += b[1] * g / 100; });
-    var t = d.tops.filter(function (x) { return x[0] === st.top; })[0];
-    if (t) { kcal += t[3] * t[2] / 100; prot += t[4] * t[2] / 100; }
-    $('kcal').textContent = Math.round(kcal);
-    $('prot').textContent = Math.round(prot);
-    var pic = typeof d.photo === 'string' ? d.photo : (d.photo[st.top] || d.photo._);
-    var img = $('dishPhoto');
-    if (img.getAttribute('src') !== pic) img.setAttribute('src', pic);
-    img.alt = d.name;
-    pills($('dishPills'), DISHES.map(function (x) { return x.name; }), st.d, function (i) { st.d = i; st.top = DISHES[i].top || null; render(); });
-    pills($('sizePills'), d.sizes.map(function (x) { return x[0]; }), st.s, function (i) { st.s = i; render(); });
-    $('topCtl').hidden = !d.tops.length;
-    if (d.tops.length) {
-      $('topLab').textContent = d.topLabel;
-      pills($('topPills'), d.tops.map(function (x) { return x[1]; }), d.tops.findIndex(function (x) { return x[0] === st.top; }),
-            function (i) { st.top = d.tops[i][0]; render(); });
-    }
-  }
-  render();
-})();
-</script>
-
+  <div class="go">
+    <a class="btn" href="/cheatcode/?ot=vhod">Отключи менюто →</a>
+    <p class="terms">Без регистрация · доставка без такса</p>
+  </div>
+</main>
 </body>
 </html>
