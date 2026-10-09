@@ -15,7 +15,7 @@
  * късат и отломките излитат. Първите 120 ms са празна земя — така клипът
  * върви в такт с името и надписа, които остават CSS.
  *
- * Земята е #141C18 — тъмната тема. Рисува се със SwiftShader, без видеокарта.
+ * Земята е #1E2923 — тъмната тема (до 09.10 беше #141C18). Рисува се със SwiftShader, без видеокарта.
  */
 import { chromium } from '@playwright/test';
 import { spawn } from 'node:child_process';
@@ -36,7 +36,7 @@ page.on('pageerror', (e) => { throw e; });
 const base = pathToFileURL(resolve('public/cheatcode')).href + '/';
 const stage = join(mkdtempSync(join(tmpdir(), 'cc-splash-')), 'stage.html');
 writeFileSync(stage, `<!doctype html><base href="${base}">
-<style>html,body{margin:0;background:#141C18}canvas{display:block;width:230px;height:230px}</style>
+<style>html,body{margin:0;background:#1E2923}canvas{display:block;width:230px;height:230px}</style>
 <canvas id="c"></canvas>
 <script src="vendor/three-r128.min.js"></script><script src="glass-chain.js"></script>`);
 await page.goto(pathToFileURL(stage).href);

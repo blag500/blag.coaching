@@ -71,28 +71,32 @@
     --out: 190ms;
   }
 
+  /* Тъмната тема е стъпка по-светла от 09.10: на ярка светлина, на улицата,
+     картите и стъклото се сливаха с почти черната земя (#141C18). Земята е
+     #1E2923, картите и рамките — с толкова по-светли; оттенъкът е същият.
+     Бледият текст (--ink-faint) мина от 4.45 на 5.1 контраст. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground-flat: #141C18;
+      --ground-flat: #1E2923;
       --ground:
-        radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.15)  0%, transparent 62%),
+        radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.19)  0%, transparent 62%),
         radial-gradient(ellipse 90%  55% at 12% 42%, rgba(79, 191, 142, 0.055) 0%, transparent 60%),
         radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 120, 200, 0.075) 0%, transparent 62%),
-        #141C18;
-      --surface:     #1B251F;
-      --surface-2:   #25322B;
-      --line:        #35473D;
+        #1E2923;
+      --surface:     #26332C;
+      --surface-2:   #2F3D35;
+      --line:        #43574B;
       --ink:         #E9F0EA;
-      --ink-soft:    #A3B3A7;
-      --ink-faint:   #74857A;
+      --ink-soft:    #B2C1B6;
+      --ink-faint:   #8A9B8F;
       --accent:      #4FBF8E;
       --accent-soft: rgba(79, 191, 142, 0.14);
       --cocoa:       #6B4430;
-      --chip-bg:     rgba(255, 255, 255, 0.07);
-      --chip-border: rgba(255, 255, 255, 0.11);
-      --pane-bg:     rgba(255, 255, 255, 0.045);
-      --pane-border: rgba(255, 255, 255, 0.085);
-      --veil:        rgba(20, 28, 24, 0.72);
+      --chip-bg:     rgba(255, 255, 255, 0.085);
+      --chip-border: rgba(255, 255, 255, 0.14);
+      --pane-bg:     rgba(255, 255, 255, 0.06);
+      --pane-border: rgba(255, 255, 255, 0.12);
+      --veil:        rgba(30, 41, 35, 0.74);
       --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.10);
       --kcal:    #D4AC66;
       --protein: #5FB2F0;
@@ -102,27 +106,27 @@
   }
 
   :root[data-theme="dark"] {
-    --ground-flat: #141C18;
+    --ground-flat: #1E2923;
     --ground:
-      radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.15)  0%, transparent 62%),
+      radial-gradient(ellipse 110% 60% at 50% -8%, rgba(79, 191, 142, 0.19)  0%, transparent 62%),
       radial-gradient(ellipse 90%  55% at 12% 42%, rgba(79, 191, 142, 0.055) 0%, transparent 60%),
       radial-gradient(ellipse 100% 65% at 88% 88%, rgba(90, 120, 200, 0.075) 0%, transparent 62%),
-      #141C18;
-    --surface:     #1B251F;
-    --surface-2:   #25322B;
-    --line:        #35473D;
+      #1E2923;
+    --surface:     #26332C;
+    --surface-2:   #2F3D35;
+    --line:        #43574B;
     --ink:         #E9F0EA;
-    --ink-soft:    #A3B3A7;
-    --ink-faint:   #74857A;
+    --ink-soft:    #B2C1B6;
+    --ink-faint:   #8A9B8F;
     --accent:      #4FBF8E;
     --accent-soft: rgba(79, 191, 142, 0.14);
     --cocoa:       #6B4430;
-    --chip-bg:     rgba(255, 255, 255, 0.07);
-    --chip-border: rgba(255, 255, 255, 0.11);
-    --pane-bg:     rgba(255, 255, 255, 0.045);
-    --pane-border: rgba(255, 255, 255, 0.085);
+    --chip-bg:     rgba(255, 255, 255, 0.085);
+    --chip-border: rgba(255, 255, 255, 0.14);
+    --pane-bg:     rgba(255, 255, 255, 0.06);
+    --pane-border: rgba(255, 255, 255, 0.12);
     --chip-hi:     inset 0 1px 0 rgba(255, 255, 255, 0.10);
-    --veil:        rgba(20, 28, 24, 0.72);
+    --veil:        rgba(30, 41, 35, 0.74);
     --kcal:    #D4AC66;
     --protein: #5FB2F0;
     --carbs:   #6FC475;
@@ -208,7 +212,7 @@
   .splash-mark { position: relative; display: block; width: 144px; height: 144px; color: var(--accent); }
   /* Стъклената верига — записан клип (splash.mp4), по-голям от знака:
      отломките излитат извън него. Краищата му се стапят в земята, за да не
-     личи рамка, ако видеото е с оттенък по-различно от #141C18. */
+     личи рамка, ако видеото е с оттенък по-различно от земята (#1E2923). */
   .splash-glass {
     position: absolute; left: 50%; top: 50%; width: 230px; height: 230px;
     margin: -115px 0 0 -115px; display: block; opacity: 0;
@@ -3907,7 +3911,7 @@
      после 1400 ms) — името и надписът остават CSS и вървят с него.
      Докато се реши, всичко в сплаша стои на първия си кадър (`.wait`):
      тръгне ли клипът до 450 ms — стъклен; не тръгне ли — плоският, без
-     чакане повече. Само в тъмната тема: земята на клипа е #141C18, а
+     чакане повече. Само в тъмната тема: земята на клипа е #1E2923, а
      Safari не пуска видео с прозрачност. */
   function glassSplash(el) {
     var v = $('splashGlass');

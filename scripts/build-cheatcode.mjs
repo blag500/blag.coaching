@@ -57,7 +57,7 @@ const head =
   '<meta property="og:image" content="https://blag-coaching.com/cheatcode/og.png">\n' +
   '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n' +
   '<meta name="twitter:card" content="summary_large_image">\n' +
-  '<meta name="theme-color" content="#141C18">\n' +
+  '<meta name="theme-color" content="#1E2923">\n' +
   /* Знакът: две посоки, нагоре и надолу. SVG-то носи плътен фон нарочно —
      на 16 пиксела прозрачен знак се губи в лентата с раздели, каквато и
      да е темата ѝ. */
