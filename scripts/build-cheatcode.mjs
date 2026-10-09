@@ -169,9 +169,6 @@ writeFileSync(join(OUT_DIR, 'index.html'), out);
    на второто отваряне), снимките и шрифтовете — първо от кеша. */
 const precache = ['/cheatcode/', '/cheatcode/manifest.webmanifest', '/cheatcode/icon-192.png',
   '/cheatcode/icon-512.png', '/cheatcode/icon-maskable-512.png', '/cheatcode/apple-icon.png', '/cheatcode/favicon.svg',
-  /* Стъклената верига на сплаша: тегли се във фона при инсталирането и от
-     следващото отваряне сплашът е стъклен (page.html, glassSplash). */
-  '/cheatcode/vendor/three-r128.min.js', '/cheatcode/glass-chain.js',
   ...[...wanted].sort().map((f) => `/cheatcode/${f}`)];
 const digest = createHash('sha256');
 digest.update(out);

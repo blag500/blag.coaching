@@ -1,6 +1,6 @@
 /* Генериран от scripts/build-cheatcode.mjs — не се пипа на ръка. */
-const CACHE = 'cheatcode-2bdddb24e4d2';
-const PRECACHE = ["/cheatcode/","/cheatcode/manifest.webmanifest","/cheatcode/icon-192.png","/cheatcode/icon-512.png","/cheatcode/icon-maskable-512.png","/cheatcode/apple-icon.png","/cheatcode/favicon.svg","/cheatcode/vendor/three-r128.min.js","/cheatcode/glass-chain.js","/cheatcode/banan.jpg","/cheatcode/gris-banan.jpg","/cheatcode/gris-biskviti.jpg","/cheatcode/gris-choko.jpg","/cheatcode/gris-oba.jpg","/cheatcode/gris.jpg","/cheatcode/kakao.jpg","/cheatcode/kayma.jpg","/cheatcode/protein.jpg","/cheatcode/yagodi.jpg"];
+const CACHE = 'cheatcode-244a6fea3ffe';
+const PRECACHE = ["/cheatcode/","/cheatcode/manifest.webmanifest","/cheatcode/icon-192.png","/cheatcode/icon-512.png","/cheatcode/icon-maskable-512.png","/cheatcode/apple-icon.png","/cheatcode/favicon.svg","/cheatcode/banan.jpg","/cheatcode/gris-banan.jpg","/cheatcode/gris-biskviti.jpg","/cheatcode/gris-choko.jpg","/cheatcode/gris-oba.jpg","/cheatcode/gris.jpg","/cheatcode/kakao.jpg","/cheatcode/kayma.jpg","/cheatcode/protein.jpg","/cheatcode/yagodi.jpg"];
 
 /* Без skipWaiting при инсталиране: новият чака, докато лентата на
    страницата не го пусне — иначе страницата се сменя под пръста на човека. */

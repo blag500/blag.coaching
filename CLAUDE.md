@@ -109,12 +109,15 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 Страницата се редактира и гледа директно; артефактът в Claude вече не се ползва.
 Тя е и отделно PWA (инсталира се като „Cheat Code“): манифест и иконки в
 `public/cheatcode/`, а `sw.js` със scope `/cheatcode/` се **генерира** от
-строителя с версия от съдържанието — не се пипа на ръка. Иконките са PNG от
-`cheatcode/brand/app-icon.svg`; iOS не чете SVG за начален екран.
+строителя с версия от съдържанието — не се пипа на ръка. Иконките (и знакът в
+хедъра) са стъклената верига, PNG от `cheatcode/brand/mail/glass.html`; iOS не
+чете SVG за начален екран.
 Стъклената верига (3D) е една рисунка в `public/cheatcode/glass-chain.js` с
-three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen, сплашът (само
-от кеша) и картинките на писмата/споделянето (`node scripts/build-mail-art.mjs`,
-рисува със SwiftShader и без видеокарта). Правилата — `cheatcode/brand/RULES.md`.
+three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen жива, а
+страницата само записана: сплашът е видео (`node scripts/build-splash.mjs` →
+`splash.mp4`), иконките и картинките на писмата/споделянето — PNG
+(`node scripts/build-mail-art.mjs`). И двата рисуват със SwiftShader, без
+видеокарта. „Как работи“ е `how.mp4` от `film.mjs --short`. Правилата — `cheatcode/brand/RULES.md`.
 
 **Инвестиции** (`/invest/`, `invest/index.html` → `src/invest/`): лично табло за
 сметката в Trading 212 — втори вход на Vite, не таб в приложението. Същата сесия
