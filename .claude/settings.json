@@ -17,9 +17,16 @@
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
       }
+    },
+    "supabase-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "supabase/agent-skills"
+      }
     }
   },
   "enabledPlugins": {
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "postgres-best-practices@supabase-agent-skills": true
   }
 }
