@@ -219,6 +219,10 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  /* Видеото — направо от мрежата. Safari го тегли на парчета (Range) и
+     иска 206; отговор от кеша е цял файл и iOS отказва да го пусне. */
+  if (url.pathname.endsWith('.mp4')) return;
+
   const fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (fonts || (url.origin === self.location.origin && url.pathname.startsWith('/cheatcode/'))) {
     e.respondWith(

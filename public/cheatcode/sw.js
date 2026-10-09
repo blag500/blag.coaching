@@ -1,5 +1,5 @@
 /* Генериран от scripts/build-cheatcode.mjs — не се пипа на ръка. */
-const CACHE = 'cheatcode-e47fb54771c8';
+const CACHE = 'cheatcode-f61320a01f04';
 const PRECACHE = ["/cheatcode/","/cheatcode/manifest.webmanifest","/cheatcode/icon-192.png","/cheatcode/icon-512.png","/cheatcode/icon-maskable-512.png","/cheatcode/apple-icon.png","/cheatcode/favicon.svg","/cheatcode/vendor/three-r128.min.js","/cheatcode/glass-chain.js","/cheatcode/banan.jpg","/cheatcode/gris-banan.jpg","/cheatcode/gris-biskviti.jpg","/cheatcode/gris-choko.jpg","/cheatcode/gris-oba.jpg","/cheatcode/gris.jpg","/cheatcode/kakao.jpg","/cheatcode/kayma.jpg","/cheatcode/protein.jpg","/cheatcode/yagodi.jpg"];
 
 /* Без skipWaiting при инсталиране: новият чака, докато лентата на
@@ -36,6 +36,10 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
+
+  /* Видеото — направо от мрежата. Safari го тегли на парчета (Range) и
+     иска 206; отговор от кеша е цял файл и iOS отказва да го пусне. */
+  if (url.pathname.endsWith('.mp4')) return;
 
   const fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (fonts || (url.origin === self.location.origin && url.pathname.startsWith('/cheatcode/'))) {

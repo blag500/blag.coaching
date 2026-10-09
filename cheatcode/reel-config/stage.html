@@ -82,8 +82,12 @@
    страницата е виртуален (page.clock в film.mjs). */
 /* Клипът започва със сплаша на страницата (сивата верига се напъва и се
    къса) и после е старата история, отместена с OFF секунди. */
-const OFF = 2.4;
-window.__DUR = 15 + OFF;
+/* ?short=1 — „Как работи“ в самата страница (public/cheatcode/how.mp4):
+   без сплаша, без добавянето и без края. Ястие → „Настрой точно“ →
+   плъзгачите, осем секунди, върти се в кръг. */
+const SHORT = /short/.test(location.search);
+const OFF = SHORT ? 0 : 2.4;
+window.__DUR = SHORT ? 8.2 : 15 + OFF;
 const FPS = 30;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const seg = (t, a, b) => clamp((t - a) / (b - a));
@@ -168,7 +172,58 @@ function endSplash() {
   doc().getAnimations().forEach(a => { try { a.finish(); } catch (e) { /* безкрайна */ } });
 }
 
+function applyShort(t) {
+  if (!stilled) {
+    endSplash();
+    document.getElementById('c0').innerHTML = 'Избираш ястие.<br><span>Настройваш го до грам.</span>';
+    ['c2', 'end'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  }
+  once(t, 1.1, 'openBowl', () => click(dishCard(1)));
+  glide(t, 'toExact', 1.75, 2.3, () => at('#exact').r.top - 70);
+  once(t, 2.5, 'exact', () => click('#exact'));
+  glide(t, 'toSliders', 2.7, 3.3, () => at('#base').r.top - 40);
+  if (t >= 3.7 && t <= 5.7) setRange('s_kayma:oriz', lerp(100, 50, ease(seg(t, 3.8, 5.5))));
+  if (t >= 5.9 && t <= 7.3) setRange('s_kayma:kayma', lerp(250, 320, ease(seg(t, 6.0, 7.1))));
+
+  const path = [
+    [0.4, 1.0, () => aim('card', () => at(dishCard(1), 0, -10))],
+    [2.4, 2.41, () => at('#exact')],
+    [3.3, 3.75, () => thumb('s_kayma:oriz', 100)],
+    [3.75, 5.7, true, () => thumb('s_kayma:oriz', +doc().getElementById('s_kayma:oriz')?.value || 50)],
+    [5.7, 5.95, () => thumb('s_kayma:kayma', 250)],
+    [5.95, 7.3, true, () => thumb('s_kayma:kayma', +doc().getElementById('s_kayma:kayma')?.value || 320)],
+  ];
+  let pos = fingerPos;
+  for (const row of path) {
+    const [a, b] = row, follow = row[2] === true, fn = row[row.length - 1];
+    if (t < a) break;
+    const target = fn(); if (!target) continue;
+    if (follow) { pos = target; if (t >= b) fingerPos = target; continue; }
+    pos = t >= b ? target : { x: lerp(pos.x, target.x, ease(seg(t, a, b))), y: lerp(pos.y, target.y, ease(seg(t, a, b))) };
+    if (t >= b) fingerPos = target;
+  }
+  const taps = [1.1, 2.5];
+  const press = taps.reduce((m, k) => Math.max(m, 1 - Math.abs(t - k) / 0.12), 0);
+  const drag = (t > 3.75 && t < 5.7) || (t > 5.95 && t < 7.3);
+  const fingerOn = seg(t, 0.2, 0.45) * (1 - seg(t, 7.5, 7.8));
+  const f = document.getElementById('finger');
+  f.style.opacity = fingerOn;
+  f.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${1 - 0.18 * Math.max(clamp(press), drag ? 1 : 0)})`;
+  const ringP = taps.reduce((m, k) => (t >= k && t < k + 0.45 ? seg(t, k, k + 0.45) : m), 0);
+  const ring = document.getElementById('ring');
+  ring.style.opacity = ringP > 0 ? (1 - ringP) * fingerOn : 0;
+  ring.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${1 + ringP * 1.4})`;
+
+  [[0.05, 2.7], [3.0, 8.0]].forEach(([a, b], i) => {
+    const p = document.getElementById('c' + i);
+    const o = seg(t, a, a + 0.3) * (1 - seg(t, b - 0.3, b));
+    p.style.opacity = o;
+    p.style.transform = `translateY(${(1 - seg(t, a, a + 0.4)) * 14}px)`;
+  });
+}
+
 window.__apply = function (T) {
+  if (SHORT) return applyShort(T);
   if (T < OFF) {
     splashFrame(T);
     ['c0', 'c1', 'c2'].forEach(id => { document.getElementById(id).style.opacity = 0; });

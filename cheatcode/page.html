@@ -751,124 +751,6 @@
 
   /* Решетка, не списък. Снимката отгоре, името отдолу — така се чете меню,
      а редът със снимка отстрани се чете като сметка. */
-  /* ── Демонстрацията ────────────────────────────────────────
-     Цикъл, който е информация, а не движение: показва единственото нещо,
-     което продуктът прави. Спира при докосване и при скрол извън екрана —
-     анимация, която върви, докато никой не я гледа, е само батерия. */
-  .demo {
-    position: relative;
-    background: var(--pane-bg);
-    border: 1px solid var(--pane-border);
-    box-shadow: var(--chip-hi);
-    border-radius: var(--r-lg);
-    /* Странична подложка НЯМА тук, а в слоевете отвътре. Копчето на
-       плъзгача стърчи 13 пиксела извън пистата си, а сгъващият се слой
-       реже по своя контур — сложи ли се подложката на картата, крайното
-       положение на копчето се отрязва наполовина. */
-    padding: 16px 0 14px;
-    margin-bottom: 14px;
-  }
-  /* Снимката е с размера от количката: колкото да се познае ястието, не
-     колкото да го продаде — продажбата е работа на плочките отдолу.
-     Изрезът е на 34% от височината, защото каймата е в горната трета и
-     центриран изрез показва само ориза. */
-  .demo-shot {
-    width: 54px; height: 54px; flex: none;
-    object-fit: cover; object-position: center 34%;
-    border-radius: var(--r-sm);
-  }
-  /* Тялото се сгъва, заглавният ред остава. Подложката НЕ стои на прякото
-     дете на сгъващото се — при `0fr` тя оцелява и картата остава дебела с
-     18 празни пиксела. Гол слой отвън, подплатеното вътре. */
-  .demo-body {
-    display: grid; grid-template-rows: 1fr;
-    transition: grid-template-rows 420ms var(--ease);
-  }
-  .demo.folded .demo-body { grid-template-rows: 0fr; }
-  .demo-body > div { overflow: hidden; min-height: 0; }
-  .demo-body > div > div { padding: 18px 17px 0; }
-  /* Слоят покрива каквото е останало от картата и го размазва. Отворена, тя
-     застива с плъзгачите на мястото им; сгъната — само снимката и името,
-     както изглежда видео, което е свършило. */
-  .demo-veil {
-    position: absolute; inset: 0; z-index: 2;
-    display: grid; place-items: center; align-content: center; gap: 10px;
-    border: none; border-radius: var(--r-lg);
-    background: rgba(10, 16, 13, 0.62);
-    backdrop-filter: blur(4px) saturate(120%);
-    -webkit-backdrop-filter: blur(4px) saturate(120%);
-    font: inherit; color: var(--ink); cursor: pointer;
-    opacity: 0; pointer-events: none;
-    transition: opacity 320ms var(--ease);
-  }
-  .demo.paused .demo-veil { opacity: 1; pointer-events: auto; }
-  :root[data-theme="light"] .demo-veil { background: rgba(242, 244, 236, 0.66); }
-  .demo-play {
-    display: grid; place-items: center;
-    width: 52px; height: 52px; border-radius: 50%;
-    background: var(--accent); color: var(--ground-flat);
-    transform: scale(0.82);
-    transition: transform 320ms var(--ease);
-  }
-  .demo.paused .demo-play { transform: scale(1); }
-  .demo-play svg { width: 26px; height: 26px; display: block; margin-left: 2px; }
-  .demo-again {
-    font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
-    letter-spacing: 1.5px; color: var(--ink-soft);
-  }
-  /* Сгъната, картата е висока 84 пиксела — надписът под кръга няма къде да
-     стои, а натъпкан изглежда като грешка. Остава само плеят, по-малък. */
-  .demo.folded .demo-play { width: 44px; height: 44px; }
-  .demo.folded .demo-play svg { width: 22px; height: 22px; }
-  .demo.folded .demo-again { display: none; }
-  .demo-veil:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-  .demo-head {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 17px;
-    font-family: var(--font-display); font-weight: 600; font-size: 17px;
-    letter-spacing: -0.01em;
-  }
-  .demo-title { flex: 1; min-width: 0; }
-  /* Оризът стои неподвижен: два движещи се плъзгача карат окото да избира
-     кой да следи и в крайна сметка не следи нито един. Един се движи,
-     другият показва, че има и втори. */
-  .demo-row.still .demo-track i,
-  .demo-row.still .demo-track s { opacity: 0.55; }
-  .demo-row.still .demo-lab,
-  .demo-row.still .demo-top b { color: var(--ink-faint); }
-  .demo-row + .demo-row { margin-top: 16px; }
-  /* Надписът стои НАД пистата, не върху нея: без този въздух редът и
-     плъзгачът се четат като един елемент и окото не знае кое към кое е. */
-  .demo-top {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .demo-lab { font-size: 11px; letter-spacing: 3px; color: var(--ink-faint); font-weight: 600; }
-  .demo-top b { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
-  .demo-track {
-    position: relative; height: 6px; border-radius: 3px;
-    background: var(--surface-2);
-  }
-  .demo-track i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--accent); }
-  .demo-track s {
-    position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
-    border-radius: 50%; background: var(--ground-flat);
-    box-shadow: 0 0 0 4px var(--accent); text-decoration: none;
-  }
-  .demo-out {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin-top: 15px;
-    font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
-  .demo-out b { font-size: 26px; font-weight: 700; color: var(--ink); }
-  /* Протеинът носи пиктограмата си в цвета, който приложението ползва за
-     същия макрос — един тон значи едно нещо навсякъде. */
-  .demo-prot { display: flex; align-items: center; gap: 8px; }
-  .demo-prot .pic { color: var(--protein); flex: none; }
-  .demo-price { font-size: 20px; font-weight: 700; color: var(--accent); }
-  .demo-note { margin: 9px 0 0; font-size: 11.5px; color: var(--ink-faint); }
-
   .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .dish {
     display: grid; gap: 0;
@@ -1646,7 +1528,7 @@
   }
   :root[data-theme="light"] .showcase-scrim { background: rgba(242, 244, 236, 0.5); }
   .showcase-box {
-    position: relative; width: 100%; max-width: 440px;
+    position: relative; width: fit-content; max-width: 100%;
     transform-origin: top center;
     opacity: 0; transform: scale(0.85) translateY(-24px);
     transition: opacity var(--in) var(--ease), transform var(--in) var(--ease);
@@ -1655,9 +1537,15 @@
   .showcase.open .showcase-box { opacity: 1; transform: none; }
   .showcase.closing .showcase-scrim,
   .showcase.closing .showcase-box { transition-duration: var(--out); }
-  /* Картата в прозореца е плътна: полупрозрачна върху размазан фон се чете
-     като част от него. */
-  .showcase .demo { background: var(--surface); margin: 0; }
+  /* Клипът носи своята земя и свой надпис; пропорцията е на изрязания кадър
+     (720×1390, film.mjs --short). Височината решава — колкото позволи
+     екранът под бутона за затваряне. */
+  .showcase .how {
+    display: block; width: auto; aspect-ratio: 720 / 1390;
+    height: min(calc(100dvh - 150px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), calc((100vw - 36px) * 1390 / 720), 720px);
+    object-fit: cover; border-radius: var(--r-lg);
+    background: #141C18; border: 1px solid var(--pane-border);
+  }
   .showcase-x {
     display: grid; place-items: center;
     width: 38px; height: 38px; padding: 0;
@@ -2179,7 +2067,7 @@
 </nav>
 </div>
 
-<!-- Показното не стои в менюто — вика се от хапчето вляво от навигацията.
+<!-- Показното вика картата „Как работи“ най-горе в менюто.
      Страницата отдолу се размазва: показното е отгоре, не вместо. -->
 <div class="showcase" id="showcase" role="dialog" aria-modal="true" aria-label="Как работи" hidden>
   <div class="showcase-scrim" id="showcaseScrim"></div>
@@ -2187,56 +2075,11 @@
     <button type="button" class="showcase-x" id="showcaseClose" aria-label="Затвори">
       <svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
-    <!-- Трикът на продукта, показан преди човек да е отворил ястие.
-         Числата не са декорация — смятат се от истинските данни на гриса
-         със същата функция, която смята и в самото ястие. -->
-    <div class="demo" id="demo">
-      <div class="demo-head">
-        <img class="demo-shot" src="kayma.jpg" alt="">
-        <span class="demo-title">Телешки боул</span>
-      </div>
-
-      <div class="demo-body" id="demoBody"><div><div>
-      <div class="demo-row">
-        <div class="demo-top">
-          <span class="demo-lab">ТЕЛЕШКО</span>
-          <b id="demoG1">250 г</b>
-        </div>
-        <div class="demo-track"><i id="demoFill1"></i><s id="demoKnob1"></s></div>
-      </div>
-
-      <div class="demo-row still">
-        <div class="demo-top">
-          <span class="demo-lab">ОРИЗ</span>
-          <b id="demoG2">100 г</b>
-        </div>
-        <div class="demo-track"><i id="demoFill2"></i><s id="demoKnob2"></s></div>
-      </div>
-
-      <div class="demo-out">
-        <span class="demo-prot">
-          <svg class="pic" width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><use href="#s-protein"/></svg>
-          <b id="demoProt">66</b> г протеин
-        </span>
-        <span class="demo-price" id="demoPrice">6,50 €</span>
-      </div>
-      <p class="demo-note">Плъзгаш — сам конфигурираш ястието си.</p>
-      </div></div></div>
-
-      <!-- Паузата е в два хода и редът им е важен: първо картата се сгъва
-           до заглавния си ред, чак после върху него пада тъмният слой с
-           плея. Замъгляване върху нещо, което още се движи, чете като
-           дефект; върху прибраното чете като „свърши". -->
-      <button type="button" class="demo-veil" id="demoVeil" aria-label="Пусни пак">
-        <span class="demo-play">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 7 L17.5 12 L9 17 Z" fill="currentColor"
-                  stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span class="demo-again">Пусни пак</span>
-      </button>
-    </div>
+    <!-- Истинската страница, снимана: ястие → „Настрой точно“ → плъзгачите.
+         Видео, не пресъздадена карта — човек вижда точно това, което ще
+         докосне. Рисува се с `node cheatcode/reel-config/film.mjs --short`. -->
+    <video class="how" id="howVideo" src="how.mp4" muted loop playsinline preload="none"
+           aria-label="Как работи: избираш ястие, натискаш „Настрой точно“ и местиш плъзгачите"></video>
   </div>
 </div>
 
@@ -4169,134 +4012,14 @@
     });
   })();
 
-  /* Прозорецът вика показното оттук; самото показно се закача по-долу. */
-  var demoPlay = function () {}, demoStop = function () {};
-
-  /* ── Демонстрацията ────────────────────────────────────────
-     Взима истинското ястие и истинската сметка. Ако утре цената на банана
-     се смени, демонстрацията се сменя с нея — тя не помни числа, тя ги смята. */
-  (function () {
-    var d = DISHES.filter(function (x) { return x.id === 'kayma'; })[0];
-    if (!d) return;
-
-    var host = $('demo');
-    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var MEAT = d.base.filter(function (i) { return i.id === 'kayma'; })[0];
-    var RICE = d.base.filter(function (i) { return i.id === 'oriz'; })[0];
-
-    function paint(meat, rice) {
-      var grams = {};
-      d.base.forEach(function (i) {
-        grams[i.id] = i.id === 'kayma' ? meat : i.id === 'oriz' ? rice : i.grams;
-      });
-      var r = sumFor(d, grams, null, {});
-      $('demoG1').textContent = Math.round(meat) + ' г';
-      $('demoG2').textContent = Math.round(rice) + ' г';
-      $('demoProt').textContent = Math.round(r.sum.protein);
-      $('demoPrice').textContent = money(finalPrice(r.sum.cost));
-
-      var k1 = (meat - MEAT.min) / (MEAT.max - MEAT.min) * 100;
-      var k2 = (rice - RICE.min) / (RICE.max - RICE.min) * 100;
-      $('demoFill1').style.width = k1 + '%';  $('demoKnob1').style.left = k1 + '%';
-      $('demoFill2').style.width = k2 + '%';  $('demoKnob2').style.left = k2 + '%';
-    }
-
-    /* Без движение няма и пауза: числата стоят на фабричното и слоят не се
-       вдига изобщо. */
-    if (reduce) { paint(MEAT.grams, RICE.grams); return; }
-
-    /* Двата плъзгача се движат ИЗМЕСТЕНИ по фаза. Вървят ли заедно, изглежда
-       като един контрол с две глави; изместени, се чете като конфигуриране. */
-    var T = 5000, live = false, seen = true, raf = 0;
-    var veil = $('demoVeil');
-    var t0 = 0, keepGoing = false;
-
-    function pause(on) { host.classList.toggle('paused', on); }
-    function swing(p, lo, hi) {
-      /* Плавно напред-назад с престой в краищата: окото трябва да свари да
-         прочете числото, преди то пак да тръгне. */
-      var e = p < 0.14 ? 0
-            : p < 0.44 ? (p - 0.14) / 0.30
-            : p < 0.60 ? 1
-            : p < 0.90 ? 1 - (p - 0.60) / 0.30
-            : 0;
-      e = e < 0 ? 0 : e > 1 ? 1 : e;
-      e = e * e * (3 - 2 * e);
-      return lo + (hi - lo) * e;
-    }
-    function frame(now) {
-      if (!live) return;
-      if (!t0) t0 = now;
-      var run = now - t0;
-      if (seen) paint(swing((run % T) / T, MEAT.min, MEAT.max), RICE.grams);
-      /* Един пълен цикъл и толкова. Отброяването е от ПЪРВИЯ кадър, не от
-         зареждането: анимацията тръгва при първото рисуване, а то може да
-         закъснее половин секунда — иначе цикълът се реже наполовина. */
-      if (run >= T) { finish(); return; }
-      raf = requestAnimationFrame(frame);
-    }
-
-    /* След цикъла картата се прибира сама и чак тогава пада слоят. Двете не
-       тръгват заедно: 420 ms сгъване, после 320 ms замъгляване. Натисне ли
-       плея, тя се разгъва, изсвирва и се връща в същото състояние — точно
-       както се държи видео, което е свършило. Докосне ли плъзгачите обаче,
-       остава отворена: карта, която се затваря под пръста, е по-лоша от
-       никаква. */
-    var veilTimer = 0;
-    function finish() {
-      live = false;
-      cancelAnimationFrame(raf);
-      paint(MEAT.grams, RICE.grams);
-      if (keepGoing) return;
-      host.classList.add('folded');
-      veilTimer = setTimeout(function () { pause(true); }, 420);
-    }
-
-    function replay() {
-      clearTimeout(veilTimer);
-      keepGoing = false;
-      pause(false);
-      host.classList.remove('folded');
-      live = true; t0 = 0;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(frame);
-    }
-    veil.addEventListener('click', replay);
-
-    /* Докосне ли я човек, спира завинаги — да се бориш с движеща се
-       демонстрация е по-лошо, отколкото да я няма. */
-    /* Докосне ли плъзгачите, цикълът спира, но слоят НЕ се вдига — човекът
-       гледа числата в момента и не бива да му се затваря пред очите. */
-    function stop() {
-      live = false;
-      keepGoing = true;
-      clearTimeout(veilTimer);
-      cancelAnimationFrame(raf);
-      paint(MEAT.grams, RICE.grams);
-    }
-    host.addEventListener('pointerdown', function (e) {
-      if (!e.target.closest('.demo-veil')) stop();
-    });
-
-    /* Не тръгва сама при зареждане: живее в прозорец и се пуска, когато
-       прозорецът се отвори. Затвори ли се, спира и се връща в начало. */
-    demoPlay = replay;
-    demoStop = function () {
-      live = false;
-      clearTimeout(veilTimer);
-      cancelAnimationFrame(raf);
-      pause(false);
-      host.classList.remove('folded');
-      paint(MEAT.grams, RICE.grams);
-    };
-    paint(MEAT.grams, RICE.grams);
-
-    /* Извън екрана не се смята нищо. */
-    if (window.IntersectionObserver) {
-      new IntersectionObserver(function (e) { seen = e[0].isIntersecting; },
-        { threshold: 0.2 }).observe(host);
-    }
-  })();
+  /* Видеото тръгва с отварянето и спира със затварянето — да не върти,
+     докато никой не гледа. Отначало всеки път: клипът е осем секунди. */
+  var how = $('howVideo');
+  function demoPlay() {
+    try { how.currentTime = 0; } catch (e) { /* още без метаданни */ }
+    var p = how.play(); if (p && p.catch) p.catch(function () {});
+  }
+  function demoStop() { how.pause(); }
 
   /* ── Прозорецът на показното ──────────────────────────────── */
   (function () {
