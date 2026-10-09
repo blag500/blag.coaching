@@ -22,6 +22,7 @@
 <meta name="apple-mobile-web-app-title" content="Cheat Code">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>*,*::before,*::after{box-sizing:border-box}img{max-width:100%}[hidden]{display:none!important}html{color-scheme:dark light}body{margin:0}</style>
+<style>.upd{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));background:var(--accent);color:var(--ground-flat);font-size:13px;line-height:1.3;animation:updIn 300ms var(--ease) both}.upd button{flex-shrink:0;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;background:var(--ground-flat);color:var(--accent);cursor:pointer;-webkit-tap-highlight-color:transparent}.upd button:focus-visible{outline:2px solid var(--ground-flat);outline-offset:3px}@keyframes updIn{from{transform:translateY(-100%)}to{transform:none}}</style>
 <title>Чийт Код</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1946,6 +1947,7 @@
 
 </head>
 <body>
+<div class="upd" id="upd" role="status" hidden><span>Има нова версия</span><button type="button" id="updGo" aria-label="Обнови" title="Обнови"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.4 12a7.4 7.4 0 1 1-2.2-5.2"/><path d="M19.8 3.9v4.4h-4.4"/></svg></button></div>
 <div class="wrap">
 
   <div class="topbar" id="topbar">
@@ -4414,6 +4416,49 @@
 })();
 </script>
 
-<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/cheatcode/sw.js',{scope:'/cheatcode/'}).catch(function(){})});</script>
+<script>
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var bar = document.getElementById('upd');
+  var reloading = false;
+  function show() { bar.hidden = false; }
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (reloading) { location.reload(); }
+  });
+  document.getElementById('updGo').addEventListener('click', function () {
+    navigator.serviceWorker.getRegistration('/cheatcode/').then(function (reg) {
+      if (reg && reg.waiting) { reloading = true; reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+      else location.reload();
+    });
+  });
+  addEventListener('load', function () {
+    navigator.serviceWorker.register('/cheatcode/sw.js', { scope: '/cheatcode/' }).then(function (reg) {
+      /* Само ако вече има стар worker: първото инсталиране не е „нова версия". */
+      if (reg.waiting && navigator.serviceWorker.controller) show();
+      reg.addEventListener('updatefound', function () {
+        var w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', function () {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) show();
+        });
+      });
+      function check() { reg.update().catch(function () {}); }
+      var timer = null;
+      function poll(on) {
+        if (on && !timer) timer = setInterval(check, 60000);
+        if (!on && timer) { clearInterval(timer); timer = null; }
+      }
+      poll(document.visibilityState === 'visible');
+      document.addEventListener('visibilitychange', function () {
+        var on = document.visibilityState === 'visible';
+        if (on) check();
+        poll(on);
+      });
+      addEventListener('pageshow', check);
+      addEventListener('focus', check);
+    }).catch(function () {});
+  });
+})();
+</script>
 </body>
 </html>

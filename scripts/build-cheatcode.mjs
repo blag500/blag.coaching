@@ -85,11 +85,80 @@ const head =
 
 const bodyAt = s.indexOf('<div class="wrap">');
 /* Регистрацията е тук, не в източника: източникът се гледа и сам, а там
-   service worker няма какво да прави. */
-const register =
-  "<script>if('serviceWorker' in navigator)addEventListener('load',function(){" +
-  "navigator.serviceWorker.register('/cheatcode/sw.js',{scope:'/cheatcode/'}).catch(function(){})});</script>\n";
-const out = head + s.slice(0, bodyAt) + '</head>\n<body>\n' + s.slice(bodyAt) + '\n' + register + '</body>\n</html>\n';
+   service worker няма какво да прави.
+
+   Обновяването е като в blag.coaching (src/lib/pwaUpdate.js): iOS не пита
+   за нов sw.js, докато приложението стои отворено на началния екран, и
+   човек остава на старата версия, докато не го убие от превключвателя.
+   Затова update() при всяко връщане към страницата и на минута, докато се
+   гледа. Новият worker чака; лентата горе го казва и докосването го пуска
+   (SKIP_WAITING) и презарежда, щом поеме — никой не се презарежда насред
+   избора на грамаж. */
+const updateBar =
+  '<div class="upd" id="upd" role="status" hidden>' +
+  '<span>Има нова версия</span>' +
+  '<button type="button" id="updGo" aria-label="Обнови" title="Обнови">' +
+  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M19.4 12a7.4 7.4 0 1 1-2.2-5.2"/><path d="M19.8 3.9v4.4h-4.4"/></svg>' +
+  '</button></div>\n';
+/* Над всичко, сплаша (90) включително: ако има нова версия, това е първото,
+   което човек трябва да види. */
+const updateStyle =
+  '<style>.upd{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;' +
+  'justify-content:space-between;gap:12px;padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));' +
+  'background:var(--accent);color:var(--ground-flat);font-size:13px;line-height:1.3;' +
+  'animation:updIn 300ms var(--ease) both}' +
+  '.upd button{flex-shrink:0;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;' +
+  'background:var(--ground-flat);color:var(--accent);cursor:pointer;-webkit-tap-highlight-color:transparent}' +
+  '.upd button:focus-visible{outline:2px solid var(--ground-flat);outline-offset:3px}' +
+  '@keyframes updIn{from{transform:translateY(-100%)}to{transform:none}}</style>\n';
+const register = `<script>
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var bar = document.getElementById('upd');
+  var reloading = false;
+  function show() { bar.hidden = false; }
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (reloading) { location.reload(); }
+  });
+  document.getElementById('updGo').addEventListener('click', function () {
+    navigator.serviceWorker.getRegistration('/cheatcode/').then(function (reg) {
+      if (reg && reg.waiting) { reloading = true; reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+      else location.reload();
+    });
+  });
+  addEventListener('load', function () {
+    navigator.serviceWorker.register('/cheatcode/sw.js', { scope: '/cheatcode/' }).then(function (reg) {
+      /* Само ако вече има стар worker: първото инсталиране не е „нова версия". */
+      if (reg.waiting && navigator.serviceWorker.controller) show();
+      reg.addEventListener('updatefound', function () {
+        var w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', function () {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) show();
+        });
+      });
+      function check() { reg.update().catch(function () {}); }
+      var timer = null;
+      function poll(on) {
+        if (on && !timer) timer = setInterval(check, 60000);
+        if (!on && timer) { clearInterval(timer); timer = null; }
+      }
+      poll(document.visibilityState === 'visible');
+      document.addEventListener('visibilitychange', function () {
+        var on = document.visibilityState === 'visible';
+        if (on) check();
+        poll(on);
+      });
+      addEventListener('pageshow', check);
+      addEventListener('focus', check);
+    }).catch(function () {});
+  });
+})();
+</script>
+`;
+const out = head + updateStyle + s.slice(0, bodyAt) + '</head>\n<body>\n' + updateBar + s.slice(bodyAt) + '\n' + register + '</body>\n</html>\n';
 
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(join(OUT_DIR, 'index.html'), out);
@@ -115,8 +184,14 @@ const sw = `/* Генериран от scripts/build-cheatcode.mjs — не се
 const CACHE = 'cheatcode-${version}';
 const PRECACHE = ${JSON.stringify(precache)};
 
+/* Без skipWaiting при инсталиране: новият чака, докато лентата на
+   страницата не го пусне — иначе страницата се сменя под пръста на човека. */
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
+});
+
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {

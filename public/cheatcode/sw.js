@@ -1,9 +1,15 @@
 /* Генериран от scripts/build-cheatcode.mjs — не се пипа на ръка. */
-const CACHE = 'cheatcode-b39eec008293';
+const CACHE = 'cheatcode-1b3e3ba08b16';
 const PRECACHE = ["/cheatcode/","/cheatcode/manifest.webmanifest","/cheatcode/icon-192.png","/cheatcode/icon-512.png","/cheatcode/icon-maskable-512.png","/cheatcode/apple-icon.png","/cheatcode/favicon.svg","/cheatcode/vendor/three-r128.min.js","/cheatcode/glass-chain.js","/cheatcode/banan.jpg","/cheatcode/gris-banan.jpg","/cheatcode/gris-biskviti.jpg","/cheatcode/gris-choko.jpg","/cheatcode/gris-oba.jpg","/cheatcode/gris.jpg","/cheatcode/kakao.jpg","/cheatcode/kayma.jpg","/cheatcode/protein.jpg","/cheatcode/yagodi.jpg"];
 
+/* Без skipWaiting при инсталиране: новият чака, докато лентата на
+   страницата не го пусне — иначе страницата се сменя под пръста на човека. */
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
+});
+
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
