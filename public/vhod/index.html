@@ -9,7 +9,7 @@
 <!-- Страницата зад картата „Въведи кода" (cheatcode/brand/poster/kod.html).
      Един екран, без скрол (09.10: дългата версия от представянето за
      CoKitchen беше „прекалено дълга"): отговорът на загадката, трите ястия
-     с цените и един бутон към Чийт Код с ?ot=vhod — там се пита за адреса.
+     като заключени карти — докосване отключва и води към Чийт Код с ?ot=vhod.
      Тъмна, като картата, от която идва човекът. Без three.js. Без „в блока",
      „от съседа", цени и обяснения — заглавието, трите ястия с по един акцент
      и бутонът. Сплаш: стъкленият клип на Чийт Код. Редактира се направо. -->
@@ -44,37 +44,31 @@
   /* Ястията: заключени — замъглена снимка, катинар и само акцентът на
      ястието, със знака и цвета от менюто на Чийт Код. Без цени: картата във
      входа е загадка, не ценоразпис. */
-  .dishes { margin-top: clamp(18px, 4svh, 34px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .dish { position: relative; display: block; height: clamp(110px, 20svh, 170px); border-radius: var(--r); overflow: hidden;
+  /* Без бутон долу: ястията са бутоните. Три широки карти една под друга
+     делят височината на екрана — страницата е пълна на всеки телефон. */
+  .dishes { flex: 1; margin-top: clamp(14px, 3svh, 26px); display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .dish { position: relative; display: block; flex: 1; min-height: 92px; border-radius: var(--r); overflow: hidden;
           border: 1px solid var(--pane-border); text-decoration: none; }
   /* Заключено: снимката е замъглена — вижда се, че е храна, не коя точно —
      и отгоре катинар. Докосването го отключва и води към менюто. */
   .dish img { position: absolute; inset: -12px; width: calc(100% + 24px); height: calc(100% + 24px); object-fit: cover; display: block;
               filter: blur(9px) brightness(0.72) saturate(1.1); transition: filter 380ms cubic-bezier(0.2,0.8,0.2,1); }
-  .lock { position: absolute; left: 50%; top: 40%; z-index: 2; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%;
+  .lock { position: absolute; right: 16px; top: 50%; z-index: 2; width: 52px; height: 52px; margin-top: -26px; border-radius: 50%;
           display: grid; place-items: center; color: var(--ink); background: rgba(20,28,24,0.45);
           border: 1px solid rgba(255,255,255,0.18); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
           transition: transform 240ms cubic-bezier(0.2,0.8,0.2,1), color 240ms; }
-  .lock svg { grid-area: 1 / 1; width: 22px; height: 22px; transition: opacity 200ms; }
+  .lock svg { grid-area: 1 / 1; width: 26px; height: 26px; transition: opacity 200ms; }
   .lock .open { opacity: 0; }
   .dish.unlocked img { filter: blur(0) brightness(0.85); }
   .dish.unlocked .lock { color: var(--mint); transform: scale(1.12); }
   .dish.unlocked .lock .shut { opacity: 0; } .dish.unlocked .lock .open { opacity: 1; }
-  .dish::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(20,28,24,0.85)); }
-  .ins { position: absolute; left: 9px; right: 9px; bottom: 9px; z-index: 1; display: grid; gap: 4px;
-         font-size: 12.5px; font-weight: 600; line-height: 1.2; }
-  .ins svg { width: 18px; height: 18px; }
+  .dish::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20,28,24,0.82) 0%, rgba(20,28,24,0.2) 70%); }
+  .ins { position: absolute; left: 16px; right: 84px; bottom: 14px; z-index: 1; display: flex; align-items: center; gap: 8px;
+         font-size: 17px; font-weight: 600; line-height: 1.2; }
+  .ins svg { width: 24px; height: 24px; flex: none; }
   .ins.p { color: #5FB2F0; } .ins.c, .ins.g { color: #6FC475; }
-  /* Средата е центрирана между горния ред и бутона: на висок екран празното
-     се дели над и под нея, вместо да зейне на едно място. */
-  .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 2svh; }
-  .go { padding-top: 16px; }
-  .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 58px; border-radius: 999px;
-         font: 700 18px 'Onest', sans-serif; color: #10251B; text-decoration: none;
-         background: linear-gradient(180deg, #6FD3A6, var(--mint));
-         box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 10px 30px rgba(79,191,142,0.35);
-         transition: transform 110ms cubic-bezier(0.2,0.8,0.2,1); }
-  .btn:active { transform: scale(0.985); }
+  .mid { flex: 1; display: flex; flex-direction: column; min-height: 0; padding-top: clamp(14px, 3.5svh, 34px); }
+  .hint { margin: 10px 0 0; font-size: 14px; color: var(--soft); }
   .splash { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; align-content: center; gap: 6px;
             background: var(--ground); transition: opacity 420ms cubic-bezier(0.2,0.8,0.2,1), visibility 420ms; }
   .splash.gone { opacity: 0; visibility: hidden; }
@@ -85,8 +79,9 @@
                 transition: opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1); }
   .splash.name .sw { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: no-preference) {
-    .ok, h1, .dishes, .go { animation: up 520ms cubic-bezier(0.2,0.8,0.2,1) both; }
-    h1 { animation-delay: 60ms; } .dishes { animation-delay: 150ms; } .go { animation-delay: 240ms; }
+    .ok, h1, .hint, .dish { animation: up 520ms cubic-bezier(0.2,0.8,0.2,1) both; }
+    h1 { animation-delay: 60ms; } .hint { animation-delay: 110ms; }
+    .dish:nth-child(1) { animation-delay: 160ms; } .dish:nth-child(2) { animation-delay: 220ms; } .dish:nth-child(3) { animation-delay: 280ms; }
     /* Докато е сплашът, страницата чака — влиза, когато той си тръгне. */
     .screen.wait * { animation-play-state: paused; }
     @keyframes up { from { opacity: 0; transform: translateY(10px); } }
@@ -116,6 +111,7 @@
 
   <div class="mid">
   <h1><span class="l1">Храната, която</span><span class="l2">си знае числата ;)</span></h1>
+  <p class="hint">Три ястия са заключени. Докосни едно.</p>
 
   <div class="dishes">
     <a class="dish" href="/cheatcode/?ot=vhod" aria-label="Телешки боул — 66 г протеин"><img src="/cheatcode/kayma.jpg" alt=""><span class="lock"><svg class="shut"><use href="#s-lock"/></svg><svg class="open"><use href="#s-unlock"/></svg></span><span class="ins p"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#s-protein"/></svg>66 г протеин</span></a>
@@ -124,9 +120,6 @@
   </div>
   </div>
 
-  <div class="go">
-    <a class="btn" href="/cheatcode/?ot=vhod">Отключи менюто →</a>
-  </div>
 </main>
 <script>
 (function () {
