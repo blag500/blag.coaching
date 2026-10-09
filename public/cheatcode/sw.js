@@ -1,5 +1,5 @@
 /* Генериран от scripts/build-cheatcode.mjs — не се пипа на ръка. */
-const CACHE = 'cheatcode-1dc648a012ad';
+const CACHE = 'cheatcode-e3c9af42ea8d';
 const PRECACHE = ["/cheatcode/","/cheatcode/manifest.webmanifest","/cheatcode/icon-192.png","/cheatcode/icon-512.png","/cheatcode/icon-maskable-512.png","/cheatcode/apple-icon.png","/cheatcode/favicon.svg","/cheatcode/banan.jpg","/cheatcode/gris-banan.jpg","/cheatcode/gris-biskviti.jpg","/cheatcode/gris-choko.jpg","/cheatcode/gris-oba.jpg","/cheatcode/gris.jpg","/cheatcode/kakao.jpg","/cheatcode/kayma.jpg","/cheatcode/protein.jpg","/cheatcode/yagodi.jpg"];
 
 /* Без skipWaiting при инсталиране: новият чака, докато лентата на

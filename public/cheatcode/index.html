@@ -452,20 +452,21 @@
     gap: 11px;
     padding-block: 20px 14px;
   }
-  /* Веригата зад хедъра: едра, вдясно до името, над търсачката — излиза
-     извън горния ръб и хедърът я реже. Върху бутона за филтри ставаше каша.
-     На светло бялото стъкло изчезва без сянка. */
+  /* Веригата зад хедъра: едра, в средата, над търсачката — излиза извън
+     горния ръб и хедърът я реже. Минава зад името, затова е прозрачна:
+     фон, не знак до него. Върху бутона за филтри ставаше каша. На светло
+     бялото стъкло изчезва без сянка. */
   .headart {
     position: absolute; z-index: 0; pointer-events: none;
-    right: -18px; top: calc(env(safe-area-inset-top) - 48px);
+    left: 0; right: 0; margin-inline: auto; top: calc(env(safe-area-inset-top) - 48px);
     width: 190px; height: 190px;
     background: url(/cheatcode/head-dark.png) center / contain no-repeat;
-    opacity: 0.85;
+    opacity: 0.4;
     animation: headIn 700ms var(--ease) both;
   }
-  :root[data-theme="light"] .headart { background-image: url(/cheatcode/head-light.png); opacity: 1;
+  :root[data-theme="light"] .headart { background-image: url(/cheatcode/head-light.png); opacity: 0.55;
     filter: drop-shadow(0 6px 14px rgba(31, 107, 78, 0.22)); }
-  @keyframes headIn { from { opacity: 0; transform: translateX(24px) rotate(6deg); } }
+  @keyframes headIn { from { opacity: 0; transform: scale(0.9) rotate(6deg); } }
   .topbar > :not(.headart) { position: relative; z-index: 1; }
   .brand h1 {
     font-family: var(--font-display);
