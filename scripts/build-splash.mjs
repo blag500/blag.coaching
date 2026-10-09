@@ -1,6 +1,8 @@
 /**
  * Стъкленият сплаш на Чийт Код като видео:
  *   public/cheatcode/glass-chain.js → public/cheatcode/splash.mp4
+ *                                     и head-dark.png / head-light.png
+ *                                     (веригата зад хедъра, прозрачен фон)
  *
  *   node scripts/build-splash.mjs
  *
@@ -75,5 +77,22 @@ for (let f = 0; f < total; f++) {
 }
 ff.stdin.end();
 await new Promise((r) => ff.on('close', r));
-await browser.close();
 console.log(`${out} — ${total} кадъра`);
+
+/* Веригата зад хедъра: неподвижна, скъсана, на прозрачен фон — PNG, не
+   three.js. Два тона, по един за тема: тъмно стъкло на тъмно, бяло на светло. */
+for (const tone of ['dark', 'light']) {
+  await page.evaluate((tone) => {
+    document.documentElement.style.background = document.body.style.background = 'transparent';
+    const old = document.getElementById('c');
+    const c = document.createElement('canvas');
+    c.id = 'c'; old.replaceWith(c);
+    const g = GlassChain(c, { tone, still: true, sizeFrom: c, scale: 0.8 });
+    g.pose({ swing: false });
+    g.draw(0);
+  }, tone);
+  const file = `public/cheatcode/head-${tone}.png`;
+  await page.screenshot({ path: file, omitBackground: true, clip: { x: 0, y: 0, width: 230, height: 230 } });
+  console.log(file);
+}
+await browser.close();

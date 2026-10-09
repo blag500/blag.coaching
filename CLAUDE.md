@@ -109,13 +109,14 @@ doctype, head, `noindex` и пренаписва пътищата на сним�
 Страницата се редактира и гледа директно; артефактът в Claude вече не се ползва.
 Тя е и отделно PWA (инсталира се като „Cheat Code“): манифест и иконки в
 `public/cheatcode/`, а `sw.js` със scope `/cheatcode/` се **генерира** от
-строителя с версия от съдържанието — не се пипа на ръка. Иконките (и знакът в
-хедъра) са стъклената верига, PNG от `cheatcode/brand/mail/glass.html`; iOS не
+строителя с версия от съдържанието — не се пипа на ръка. Иконките са стъклената
+верига, PNG от `cheatcode/brand/mail/glass.html`; веригата зад хедъра е
+`head-dark/light.png` от `build-splash.mjs`; iOS не
 чете SVG за начален екран.
 Стъклената верига (3D) е една рисунка в `public/cheatcode/glass-chain.js` с
 three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen жива, а
-страницата само записана: сплашът е видео (`node scripts/build-splash.mjs` →
-`splash.mp4`), иконките и картинките на писмата/споделянето — PNG
+страницата само записана: сплашът е видео и хедърът — PNG (`node scripts/build-splash.mjs` →
+`splash.mp4`, `head-*.png`), иконките и картинките на писмата/споделянето — PNG
 (`node scripts/build-mail-art.mjs`). И двата рисуват със SwiftShader, без
 видеокарта. „Как работи“ е `how.mp4` от `film.mjs --short`. Правилата — `cheatcode/brand/RULES.md`.
 

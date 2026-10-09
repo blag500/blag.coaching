@@ -414,6 +414,7 @@
        права линия в страница, чийто речник е от пет радиуса и заоблени
        хапчета — затова се набиваше на очи. */
     border-radius: 0 0 var(--r-lg) var(--r-lg);
+    overflow: hidden;
     background: var(--veil);
     backdrop-filter: blur(16px) saturate(150%);
     -webkit-backdrop-filter: blur(16px) saturate(150%);
@@ -426,19 +427,21 @@
     gap: 11px;
     padding-block: 20px 14px;
   }
-  /* Знакът върви с поле зад себе си. Гол, на този размер и до поле за
-     търсене, той е неразличим от стъпковия бутон на числово поле — а
-     в приложението има осемдесет такива. Кръгът казва „знак", не „бутон". */
-  .sign {
-    flex: none;
-    width: 38px; height: 38px;
-    border-radius: 50%; overflow: hidden;
-    background: #141C18;
-    box-shadow: 0 0 0 1px var(--chip-border);
-    animation: signIn 600ms var(--ease) both;
+  /* Веригата зад хедъра: едра, вдясно до името, над търсачката — излиза
+     извън горния ръб и хедърът я реже. Върху бутона за филтри ставаше каша.
+     На светло бялото стъкло изчезва без сянка. */
+  .headart {
+    position: absolute; z-index: 0; pointer-events: none;
+    right: -18px; top: calc(env(safe-area-inset-top) - 48px);
+    width: 190px; height: 190px;
+    background: url(/cheatcode/head-dark.png) center / contain no-repeat;
+    opacity: 0.85;
+    animation: headIn 700ms var(--ease) both;
   }
-  .sign img { width: 100%; height: 100%; display: block; transform: scale(1.3); }
-  @keyframes signIn { from { opacity: 0; transform: scale(0.8); } }
+  :root[data-theme="light"] .headart { background-image: url(/cheatcode/head-light.png); opacity: 1;
+    filter: drop-shadow(0 6px 14px rgba(31, 107, 78, 0.22)); }
+  @keyframes headIn { from { opacity: 0; transform: translateX(24px) rotate(6deg); } }
+  .topbar > :not(.headart) { position: relative; z-index: 1; }
   .brand h1 {
     font-family: var(--font-display);
     font-weight: 800;
@@ -1807,11 +1810,11 @@
 <div class="wrap">
 
   <div class="topbar" id="topbar">
+    <!-- Стъклената верига зад целия хедър — неподвижна картинка на прозрачен
+         фон (scripts/build-splash.mjs), не three.js. Тя е знакът; кръгче до
+         името би бил втори. -->
+    <i class="headart" aria-hidden="true"></i>
     <header class="brand">
-      <!-- Стъклената верига като неподвижна картинка — иконката на
-           приложението, не three.js: на 38 пиксела в хедъра 3D няма какво
-           да покаже, а 600 KB биха чакали всяко отваряне. -->
-      <span class="sign" aria-hidden="true"><img src="/cheatcode/icon-192.png" alt="" width="38" height="38"></span>
       <span class="lockup"><h1>CHEAT<span>CODE</span></h1><em>Храната, която си знае числата ;)</em></span>
     </header>
     <div class="find" id="find">
