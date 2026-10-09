@@ -10,8 +10,9 @@
      Един екран, без скрол (09.10: дългата версия от представянето за
      CoKitchen беше „прекалено дълга"): отговорът на загадката, трите ястия
      с цените и един бутон към Чийт Код с ?ot=vhod — там се пита за адреса.
-     Тъмна, като картата, от която идва човекът. Без three.js. Без „в блока"
-     и „от съседа" — само храната и доставката. Редактира се направо. -->
+     Тъмна, като картата, от която идва човекът. Без three.js. Без „в блока",
+     „от съседа", цени и обяснения — заглавието, трите ястия с по един акцент
+     и бутонът. Сплаш: стъкленият клип на Чийт Код. Редактира се направо. -->
 <title>Чийт Код — кодът е приет</title>
 <link rel="icon" href="/cheatcode/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Onest:wght@400;500;600;700&display=swap">
@@ -34,20 +35,27 @@
   .word { height: 14px; width: auto; display: block; }
   .ok { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; font-size: 13px; font-weight: 600;
         color: var(--mint); background: rgba(79,191,142,0.14); white-space: nowrap; }
-  h1 { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: clamp(26px, 8.2vw, 38px); line-height: 1.08;
+  /* Два реда, всеки цял: размерът се мери по по-дългия („си знае числата ;)"),
+     за да не се пречупи на нито един телефон. */
+  h1 { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: min(7.3vw, 38px); line-height: 1.1;
        letter-spacing: -0.01em; margin: 0; }
-  h1 span { color: var(--mint); }
-  .lede { margin: clamp(8px, 1.8svh, 16px) 0 0; font-size: 16px; line-height: 1.45; color: var(--soft); }
-  .lede b { color: var(--ink); font-weight: 600; }
-  .dishes { margin-top: clamp(14px, 3.5svh, 30px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .dish { display: block; color: inherit; text-decoration: none; background: var(--pane); border: 1px solid var(--pane-border);
-          border-radius: var(--r); padding: 6px 6px 10px; }
-  .dish img { width: 100%; height: clamp(78px, 23svh, 200px); object-fit: cover; border-radius: 13px; display: block; background: #2F3D35; }
-  .dish b { display: block; font-size: 13px; font-weight: 600; line-height: 1.2; margin: 8px 3px 0; }
-  .dish span { display: block; font-size: 13px; color: var(--mint); font-weight: 700; margin: 3px 3px 0; }
-  .dish small { display: block; font-size: 12px; color: var(--faint); margin: 2px 3px 0; }
+  h1 span { display: block; white-space: nowrap; }
+  h1 .l2 { color: var(--mint); }
+  /* Ястията: затъмнена снимка и само акцентът на ястието — същият знак и цвят
+     като в менюто на Чийт Код. Без цени: картата във входа е загадка, не
+     ценоразпис. */
+  .dishes { margin-top: clamp(18px, 4svh, 34px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .dish { position: relative; display: block; height: clamp(110px, 20svh, 170px); border-radius: var(--r); overflow: hidden;
+          border: 1px solid var(--pane-border); text-decoration: none; }
+  .dish img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+              filter: brightness(0.5) saturate(0.85); }
+  .dish::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(20,28,24,0.85)); }
+  .ins { position: absolute; left: 9px; right: 9px; bottom: 9px; z-index: 1; display: grid; gap: 4px;
+         font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+  .ins svg { width: 18px; height: 18px; }
+  .ins.p { color: #5FB2F0; } .ins.c, .ins.g { color: #6FC475; }
   /* Средата е центрирана между горния ред и бутона: на висок екран празното
-     се дели над и под нея, вместо да зейне цялото над бутона. */
+     се дели над и под нея, вместо да зейне на едно място. */
   .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-bottom: 2svh; }
   .go { padding-top: 16px; }
   .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 58px; border-radius: 999px;
@@ -56,36 +64,79 @@
          box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 10px 30px rgba(79,191,142,0.35);
          transition: transform 110ms cubic-bezier(0.2,0.8,0.2,1); }
   .btn:active { transform: scale(0.985); }
-  .terms { margin: 10px 0 0; text-align: center; font-size: 13px; color: var(--faint); }
+  .splash { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; align-content: center; gap: 6px;
+            background: var(--ground); transition: opacity 420ms cubic-bezier(0.2,0.8,0.2,1), visibility 420ms; }
+  .splash.gone { opacity: 0; visibility: hidden; }
+  .splash video { width: 230px; height: 230px; display: block; opacity: 0;
+                  -webkit-mask-image: radial-gradient(closest-side, #000 82%, transparent); mask-image: radial-gradient(closest-side, #000 82%, transparent); }
+  .splash.play video { opacity: 1; }
+  .splash .sw { height: 22px; width: auto; opacity: 0; transform: translateY(8px);
+                transition: opacity 500ms cubic-bezier(0.2,0.8,0.2,1), transform 500ms cubic-bezier(0.2,0.8,0.2,1); }
+  .splash.name .sw { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: no-preference) {
-    .ok, h1, .lede, .dishes, .go { animation: up 520ms cubic-bezier(0.2,0.8,0.2,1) both; }
-    h1 { animation-delay: 60ms; } .lede { animation-delay: 120ms; } .dishes { animation-delay: 180ms; } .go { animation-delay: 240ms; }
+    .ok, h1, .dishes, .go { animation: up 520ms cubic-bezier(0.2,0.8,0.2,1) both; }
+    h1 { animation-delay: 60ms; } .dishes { animation-delay: 150ms; } .go { animation-delay: 240ms; }
+    /* Докато е сплашът, страницата чака — влиза, когато той си тръгне. */
+    .screen.wait * { animation-play-state: paused; }
     @keyframes up { from { opacity: 0; transform: translateY(10px); } }
   }
 </style>
 </head>
 <body>
-<main class="screen">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="s-protein"><g fill="currentColor" opacity="0.32"><path d="M6.2 14.6c1.4 1.5 3.5 2.2 5.6 1.7.9-.2 1.6-.6 2.2-1.1-.5 1-1.2 1.8-2.5 2.1-2.4.5-4.7-.4-5.9-2.1a6 6 0 0 1-.4-.6z"/></g><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11.2c0-3.5 3.3-6.1 7.6-6.1 3.9 0 6.7 2.1 6.7 4.9 0 2-1.4 3.4-2.8 4.2-1.7 1-2.2 2.7-4.3 3.1-2.4.5-4.7-.4-5.9-2.1-1-1.4-1.3-2.6-1.3-4z"/><circle cx="9.1" cy="10.1" r="1.6"/><path d="M12.9 8.7c1.6.2 3 .7 4 1.4"/></g></g>
+  <g id="s-carbs"><g fill="currentColor" opacity="0.32"><path d="M12 12.8c-2.3-.2-3.7-1.7-3.8-4 2.3.2 3.7 1.7 3.8 4z"/><path d="M12 12.8c2.3-.2 3.7-1.7 3.8-4-2.3.2-3.7 1.7-3.8 4z"/></g><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8.2"/><path d="M12 8.6c-2-.2-3.2-1.6-3.3-3.6 2 .2 3.2 1.6 3.3 3.6z"/><path d="M12 8.6c2-.2 3.2-1.6 3.3-3.6-2 .2-3.2 1.6-3.3 3.6z"/></g></g>
+  <g id="s-check"><g fill="currentColor" opacity="0.32"><circle cx="12" cy="12" r="8.4"/></g><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4"/><path d="M8.2 12.3 10.9 15 15.9 9.3"/></g></g>
+</defs></svg>
+<!-- Сплашът: същият стъклен клип като в Чийт Код (splash.mp4 — веригата
+     се затваря, напъва и къса), на същата земя #1E2923, плюс името. Не тръгне
+     ли клипът до 450 ms — само името. Веднъж на сесия. -->
+<div class="splash" id="splash" aria-hidden="true">
+  <video id="splashVid" muted playsinline preload="auto" src="/cheatcode/splash.mp4"></video>
+  <img class="sw" src="/vhod/wordmark.svg" alt="">
+</div>
+<main class="screen wait" id="screen">
   <div class="top">
     <img class="word" src="/vhod/wordmark.svg" alt="CHEATCODE">
     <span class="ok">✓ Кодът е приет</span>
   </div>
 
   <div class="mid">
-  <h1>Храната, която<br><span>си знае числата.</span></h1>
-  <p class="lede">Настройваш порцията до грам — макросите и цената се движат с нея. <b>Носим я до вратата ти</b>, плащаш в брой.</p>
+  <h1><span class="l1">Храната, която</span><span class="l2">си знае числата ;)</span></h1>
 
   <div class="dishes">
-    <a class="dish" href="/cheatcode/?ot=vhod"><img src="/cheatcode/kayma.jpg" alt=""><b>Телешки боул</b><span>5,10 €</span><small>66 г протеин</small></a>
-    <a class="dish" href="/cheatcode/?ot=vhod"><img src="/cheatcode/yagodi.jpg" alt=""><b>Анаболно кремче</b><span>3,80 €</span><small>без захар</small></a>
-    <a class="dish" href="/cheatcode/?ot=vhod"><img src="/cheatcode/gris-choko.jpg" alt=""><b>Грис на стероиди</b><span>4,00 €</span><small>закуска</small></a>
+    <a class="dish" href="/cheatcode/?ot=vhod" aria-label="Телешки боул — 66 г протеин"><img src="/cheatcode/kayma.jpg" alt=""><span class="ins p"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#s-protein"/></svg>66 г протеин</span></a>
+    <a class="dish" href="/cheatcode/?ot=vhod" aria-label="Анаболно кремче — без добавена захар"><img src="/cheatcode/yagodi.jpg" alt=""><span class="ins g"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#s-check"/></svg>Без добавена захар</span></a>
+    <a class="dish" href="/cheatcode/?ot=vhod" aria-label="Грис на стероиди — 106 г въглехидрати"><img src="/cheatcode/gris-choko.jpg" alt=""><span class="ins c"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#s-carbs"/></svg>106 г въглехидрати</span></a>
   </div>
   </div>
 
   <div class="go">
     <a class="btn" href="/cheatcode/?ot=vhod">Отключи менюто →</a>
-    <p class="terms">Без регистрация · доставка без такса</p>
   </div>
 </main>
+<script>
+(function () {
+  var el = document.getElementById('splash'), v = document.getElementById('splashVid');
+  var seen = false;
+  try { seen = sessionStorage.getItem('vhod_splash') === '1'; sessionStorage.setItem('vhod_splash', '1'); } catch (e) {}
+  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var screen = document.getElementById('screen');
+  if (seen || still) { el.remove(); screen.classList.remove('wait'); return; }
+  var gone = false;
+  function leave() { if (gone) return; gone = true; el.classList.add('gone'); screen.classList.remove('wait'); setTimeout(function () { el.remove(); }, 450); }
+  /* Името идва в мига на скъсването (54 % от клипа, ~0.9 s), както в Чийт Код. */
+  function name(at) { setTimeout(function () { el.classList.add('name'); }, at); }
+  var started = false;
+  v.addEventListener('playing', function () {
+    if (started) return; started = true;
+    el.classList.add('play'); name(880); setTimeout(leave, 2100);
+  });
+  var p = v.play(); if (p && p.catch) p.catch(function () {});
+  setTimeout(function () { if (!started) { started = true; v.remove(); name(0); setTimeout(leave, 900); } }, 450);
+  el.addEventListener('click', leave);
+  setTimeout(leave, 3200);
+})();
+</script>
 </body>
 </html>
