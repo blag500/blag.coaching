@@ -454,26 +454,13 @@
   .sign {
     flex: none;
     width: 38px; height: 38px;
-    display: grid; place-items: center;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--ground-flat);
+    border-radius: 50%; overflow: hidden;
+    background: #141C18;
+    box-shadow: 0 0 0 1px var(--chip-border);
+    animation: signIn 600ms var(--ease) both;
   }
-  .sign svg { width: 25px; height: 25px; display: block; }
-  /* Знакът се заплита веднъж, при влизане. Еднократно, не в цикъл: движение,
-     което се повтаря до безкрай в ъгъла на екрана, се превръща в тик.
-     Дължината 150 е с запас над обиколката на капсулата (~110) — по-къс
-     пунктир никога не дочертава последната страна. */
-  .sign svg rect {
-    stroke-dasharray: 150;
-    stroke-dashoffset: 150;
-    animation: linkDraw 900ms cubic-bezier(0.2,0.8,0.2,1) forwards;
-  }
-  .sign svg rect:last-of-type { animation-delay: 220ms; }
-  @keyframes linkDraw { to { stroke-dashoffset: 0; } }
-  @media (prefers-reduced-motion: reduce) {
-    .sign svg rect { animation: none; stroke-dashoffset: 0; }
-  }
+  .sign img { width: 100%; height: 100%; display: block; transform: scale(1.3); }
+  @keyframes signIn { from { opacity: 0; transform: scale(0.8); } }
   .brand h1 {
     font-family: var(--font-display);
     font-weight: 800;
@@ -1846,20 +1833,10 @@
 
   <div class="topbar" id="topbar">
     <header class="brand">
-      <span class="sign" aria-hidden="true">
-        <svg viewBox="0 0 64 64">
-          <mask id="hdrCut">
-            <rect width="64" height="64" fill="#fff"/>
-            <rect x="27" y="23" width="31" height="18" rx="9"
-                  fill="none" stroke="#000" stroke-width="12"/>
-          </mask>
-          <g transform="rotate(-35 32 32)" fill="none" stroke="currentColor"
-             stroke-width="5.5" stroke-linecap="round">
-            <rect x="6" y="23" width="31" height="18" rx="9" mask="url(#hdrCut)"/>
-            <rect x="27" y="23" width="31" height="18" rx="9"/>
-          </g>
-        </svg>
-      </span>
+      <!-- Стъклената верига като неподвижна картинка — иконката на
+           приложението, не three.js: на 38 пиксела в хедъра 3D няма какво
+           да покаже, а 600 KB биха чакали всяко отваряне. -->
+      <span class="sign" aria-hidden="true"><img src="/cheatcode/icon-192.png" alt="" width="38" height="38"></span>
       <span class="lockup"><h1>CHEAT<span>CODE</span></h1><em>Храната, която си знае числата ;)</em></span>
     </header>
     <div class="find" id="find">
