@@ -1,0 +1,34 @@
+<!-- CHEAT CODE · веригата, в мига на скъсването
+     НЕ е втори знак — това е същата верига в друго състояние, както лого
+     със и без подзаглавие. Звеното вдясно е поддало и от мястото на
+     скъсването излизат три лъча.
+
+     Лъчите са с ход, не плътни петна. Това не е стилово: елемент със същия
+     ход като знака се смалява заедно с него, а плътна точка на 22 пиксела
+     става мръсотия. Точно затова отпаднаха вариантите с отломки.
+
+     От 32 пиксела нагоре. Под това се ползва chain.svg — цялата верига. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="Cheat Code">
+  <title>Cheat Code</title>
+  <defs>
+    <mask id="ccBurstCut">
+      <rect width="64" height="64" fill="#fff"/>
+      <path d="M34 23 h10 a9 9 0 0 1 9 9" fill="none" stroke="#000" stroke-width="12"/>
+    </mask>
+  </defs>
+  <g transform="translate(-2.5 9) scale(0.88) rotate(-35 32 32)" fill="none"
+     stroke="#141C18" stroke-width="5.8" stroke-linecap="round">
+    <rect x="6" y="23" width="31" height="18" rx="9" mask="url(#ccBurstCut)"/>
+    <path d="M32 23 h11 a9 9 0 0 1 8 5"/>
+    <path d="M32 41 h11 a9 9 0 0 0 8 -5"/>
+  </g>
+  <!-- Лъчите: 135°, 157.5° и 105° — чисти ъгли, не „почти". Два градуса
+       отклонение се четат като грешка, не като замах. -->
+  <g transform="translate(0 5)" fill="none" stroke="#141C18"
+     stroke-width="5" stroke-linecap="round">
+    <path d="M47.5 15.5 l5 -5"/>
+    <path d="M54 23.5 l6.2 -2.57"/>
+    <path d="M42.5 10 l1.61 -6"/>
+  </g>
+</svg>

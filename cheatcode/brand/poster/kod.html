@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- Картата за таблото във входа на блока (09.10.2026) — вместо плакат A4,
+     който беше „прекалено старомоден". Една загадка, не меню: класическият
+     чийт код ↑↑↓↓←→←→ B A и QR кодът като мястото, където се „въвежда".
+     Минаващият не чете списък с ястия — спира, защото не разбира, и сканира,
+     за да разбере. Отговорът е на /vhod/: храна, настроена до грам, до вратата.
+
+     Играта е само в типографията. Пикселни персонажи бяха пробвани и
+     отхвърлени като детски (DECISIONS.md, Р2) — тук няма нито един.
+     QR кодът е с корекция H, за да понесе скъсаната верига в средата.
+     105 × 148 мм (A6). PDF и PNG: node scripts/build-poster.mjs -->
+<html lang="bg"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@700&display=swap">
+<style>
+  @page { size: 105mm 148mm; margin: 0; }
+  :root { --ground: #141C18; --ink: #E9F0EA; --soft: #A3B3A7; --mint: #4FBF8E; }
+  html, body { margin: 0; }
+  body { font-family: 'Onest', sans-serif; font-feature-settings: 'locl' 0; }
+  .card { width: 105mm; height: 148mm; box-sizing: border-box; padding: 9mm 8mm 8mm; position: relative; overflow: hidden;
+          display: flex; flex-direction: column; align-items: center; color: var(--ink);
+          background:
+            radial-gradient(ellipse 120% 60% at 50% 45%, rgba(79,191,142,0.20) 0%, transparent 62%),
+            radial-gradient(ellipse 100% 50% at 90% 100%, rgba(90,120,200,0.12) 0%, transparent 62%),
+            var(--ground); }
+  .code { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 17pt; letter-spacing: 0.06em;
+          color: var(--mint); white-space: nowrap; }
+  .code span { color: var(--ink); }
+  .qr { margin-top: 7mm; width: 72mm; height: 72mm; padding: 5mm; box-sizing: border-box; background: #fff; border-radius: 6mm;
+        position: relative; box-shadow: 0 0 0 1.4mm var(--mint), 0 0 12mm rgba(79,191,142,0.45); }
+  .qr > img { width: 100%; height: 100%; display: block; }
+  .qr .mark { position: absolute; left: 50%; top: 50%; width: 13mm; height: 13mm; margin: -6.5mm 0 0 -6.5mm;
+              background: #fff; border-radius: 4mm; display: grid; place-items: center; }
+  .qr .mark img { width: 12mm; height: 12mm; }
+  h1 { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 21pt; line-height: 1.05; letter-spacing: 0.01em;
+       margin: 8mm 0 0; text-align: center; }
+  h1 span { color: var(--mint); }
+  .hint { margin: 3mm 0 0; font-size: 9.5pt; line-height: 1.4; color: var(--soft); text-align: center; }
+  .hint b { color: var(--ink); font-weight: 600; }
+  .foot { margin-top: auto; font-size: 7.5pt; letter-spacing: 0.04em; color: var(--soft); }
+</style></head><body>
+<div class="card">
+  <div class="code">↑ ↑ ↓ ↓ ← → ← → <span>B A</span></div>
+  <div class="qr">
+    <img src="qr-vhod.svg" alt="QR код към blag-coaching.com/vhod">
+    <span class="mark"><img src="chain-burst-dark.svg" alt=""></span>
+  </div>
+  <h1>ВЪВЕДИ<br><span>КОДА.</span></h1>
+  <p class="hint">Отключва обяд, настроен до грам.<br><b>До вратата ти — от съседа.</b></p>
+  <span class="foot">CHEAT CODE · blag-coaching.com/vhod</span>
+</div>
+</body></html>

@@ -1,6 +1,7 @@
 /**
- * Плакатът за таблото във входа: cheatcode/brand/poster/vhod.html
- *   → cheatcode/brand/poster/vhod-a4.pdf (за печат) и vhod-a4.png (за преглед).
+ * Картата за таблото във входа: cheatcode/brand/poster/kod.html
+ *   → cheatcode/brand/poster/kod.pdf (за печат, 105 × 148 мм) и kod.png (за преглед).
+ * (До 09.10 тук беше плакат A4 — „прекалено старомоден", сменен с картата.)
  *
  *   node scripts/build-poster.mjs
  *
@@ -13,11 +14,11 @@ import { pathToFileURL } from 'node:url';
 
 const exe = process.env.CHROMIUM_PATH || process.env.PW_CHROMIUM_PATH;
 const browser = await chromium.launch(exe ? { executablePath: exe } : {});
-const page = await browser.newPage({ viewport: { width: 794, height: 1123 }, deviceScaleFactor: 2 });
+const page = await browser.newPage({ viewport: { width: 500, height: 700 }, deviceScaleFactor: 4 });
 page.on('pageerror', (e) => { throw e; });
-await page.goto(pathToFileURL(resolve('cheatcode/brand/poster/vhod.html')).href, { waitUntil: 'networkidle' });
+await page.goto(pathToFileURL(resolve('cheatcode/brand/poster/kod.html')).href, { waitUntil: 'networkidle' });
 await page.evaluate(() => document.fonts.ready);
-await page.pdf({ path: 'cheatcode/brand/poster/vhod-a4.pdf', format: 'A4', printBackground: true });
-await page.locator('.page').screenshot({ path: 'cheatcode/brand/poster/vhod-a4.png' });
+await page.pdf({ path: 'cheatcode/brand/poster/kod.pdf', width: '105mm', height: '148mm', printBackground: true });
+await page.locator('.card').screenshot({ path: 'cheatcode/brand/poster/kod.png' });
 await browser.close();
-console.log('cheatcode/brand/poster/vhod-a4.pdf, vhod-a4.png');
+console.log('cheatcode/brand/poster/kod.pdf, kod.png');

@@ -221,6 +221,8 @@
   .try .controls > .btn { align-self: flex-start; margin-top: 6px; }
   .bring .btn { margin-left: auto; }
   .lede b { color: var(--ink); font-weight: 600; }
+  .unlocked { grid-column: 1 / -1; justify-self: start; padding: 6px 12px; border-radius: 999px;
+              background: var(--accent-soft); color: var(--accent); }
   /* Клипът (how.mp4) вече носи свой надпис и свой телефон — тук е само
      рамка с неговата пропорция, не втори телефон около първия. */
   .phone { aspect-ratio: 720 / 1390; border-radius: var(--r-lg); box-shadow: 0 0 0 1px var(--line), 0 30px 60px rgba(18,24,21,0.18); }
@@ -244,6 +246,8 @@
   </nav>
 
   <section class="hero" id="top">
+    <!-- Отговорът на картата във входа („↑↑↓↓←→←→ B A · Въведи кода"). -->
+    <span class="eyebrow unlocked">✓ Кодът е приет</span>
     <h1 class="headline">Храната, която <em>си знае</em> <span class="soft">числата.</span><span class="chips3" aria-hidden="true">
         <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h11M18.5 7H20M4 17h3M10.5 17H20"/><circle cx="16.5" cy="7" r="2"/><circle cx="8.5" cy="17" r="2"/></svg></i>
         <i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M5 8l7-5 7 5"/></svg></i>
