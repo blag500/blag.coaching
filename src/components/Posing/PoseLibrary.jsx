@@ -4,6 +4,9 @@ import { haptic } from '../../lib/haptics'
 import { LIBRARY, LEVELS, DIRS } from './library'
 import styles from './PoseLibrary.module.css'
 
+// Снимките са от шаблона на Pete Hartwig — източникът стои под всяка (Р13).
+const SOURCE_URL = 'https://petehartwig.com'
+
 /* Библиотеката: всяка поза е отделен ред, който се разгъва в описание.
    Два филтъра — ниво и посока; редовете са групирани по ниво. */
 export default function PoseLibrary({ onBack }) {
@@ -63,6 +66,7 @@ export default function PoseLibrary({ onBack }) {
                 aria-expanded={isOpen}
                 onClick={() => setOpen(isOpen ? null : p.id)}
               >
+                <img className={styles.thumb} src={p.img} alt="" loading="lazy" decoding="async" />
                 <span className={styles.rowMain}>
                   <span className={styles.name}>{title(p)}</span>
                   <span className={styles.meta}>
@@ -74,6 +78,13 @@ export default function PoseLibrary({ onBack }) {
               </button>
               {isOpen && (
                 <div className={styles.detail}>
+                  <figure className={styles.photo}>
+                    <img src={p.img} alt={p.en} />
+                    <figcaption>
+                      {t('lib.source')}{' '}
+                      <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Pete Hartwig · Bodybuilding Artistry</a>
+                    </figcaption>
+                  </figure>
                   <span className={styles.en}>{p.en}</span>
                   <p>{p.ref ? t(`pose.${p.ref}.desc`) : t(`lib.base.${p.base}.desc`)}</p>
                   {!p.ref && p.dir !== 'front' && <p>{t(`lib.dirNote.${p.dir}`)}</p>}

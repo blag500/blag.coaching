@@ -103,6 +103,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--surface-1);
+}
+
 .rowMain {
   flex: 1;
   display: grid;
@@ -155,6 +164,25 @@
   line-height: 1.5;
   color: var(--text);
 }
+
+.photo {
+  margin: 0 0 4px;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.photo img {
+  width: min(100%, 240px);
+  aspect-ratio: 1;
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+}
+.photo figcaption {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+.photo a { color: var(--muted); }
 
 .en {
   font-family: var(--font-heading);

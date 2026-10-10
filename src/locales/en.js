@@ -1179,6 +1179,7 @@ export default {
   'lib.count':          '{n} poses',
   'lib.all':            'All',
   'lib.empty':          'No pose matches these filters.',
+  'lib.source':         'Photo:',
   'lib.mandatory':      'Mandatory',
   'lib.filterLevel':    'Level',
   'lib.filterDir':      'Direction',

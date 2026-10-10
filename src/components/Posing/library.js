@@ -1,7 +1,9 @@
 /* Библиотеката с пози — за свободната програма, не за сцената на четвъртинки.
    Списъкът следва шаблона на Pete Hartwig (Bodybuilding Artistry, 10.10.2026):
    задължителните осем и незадължителните — прави, на коляно и в страничен
-   напад. От шаблона са взети само имената; описанията са наши.
+   напад. Имената и снимките са от шаблона (снимките — изрязани от него в
+   public/posing-lib/<id>.webp, без надписите), с източника под всяка;
+   описанията са наши. Решението да се ползват снимките — DECISIONS.md, Р13.
 
    Всяка поза е една ръка (base) в една посока (dir) на едно ниво (level).
    Текстът се сглобява от трите в locales/{bg,en}.js под lib.* — така сто
@@ -58,7 +60,7 @@ const ROWS = [
   ['stand', 'twist',     'scorpion', 'Twisting Scorpion'],
   ['stand', 'twist',     'shield',   'Twisting Shielded Warrior'],
   ['stand', 'twist',     'staff',    'Twisting Front Staff'],
-  ['stand', 'twist',     'hbh',      'Twisting Hands Behind Head'],
+  ['stand', 'twistBack', 'hbh',      'Twisting Hands Behind Head'],
   ['stand', 'twistBack', 'fdb',      'Twisting Back Biceps'],
   ['stand', 'twistBack', 'fls',      'Twisting Back Lat-Spread'],
   ['stand', 'twistBack', 'latbi',    'Twisting Rear Lat & Bicep'],
@@ -128,4 +130,5 @@ export const LIBRARY = ROWS.map(([level, dir, base, en, ref]) => ({
   base,
   en,
   ref: ref ?? null,
+  img: `/posing-lib/${level}-${dir}-${base}.webp`,
 }))

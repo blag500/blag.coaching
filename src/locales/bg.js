@@ -1180,6 +1180,7 @@ export default {
   'lib.count':          '{n} пози',
   'lib.all':            'Всички',
   'lib.empty':          'Няма поза с тези филтри.',
+  'lib.source':         'Снимка:',
   'lib.mandatory':      'Задължителна',
   'lib.filterLevel':    'Ниво',
   'lib.filterDir':      'Посока',
