@@ -23,10 +23,17 @@
         "source": "github",
         "repo": "supabase/agent-skills"
       }
+    },
+    "effortless": {
+      "source": {
+        "source": "github",
+        "repo": "HeyCubit/effortless"
+      }
     }
   },
   "enabledPlugins": {
     "claude-md-management@claude-plugins-official": true,
-    "postgres-best-practices@supabase-agent-skills": true
+    "postgres-best-practices@supabase-agent-skills": true,
+    "effortless@effortless": true
   }
 }

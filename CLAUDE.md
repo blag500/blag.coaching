@@ -233,6 +233,12 @@ update public.profiles set role = 'coach' where email = 'email@example.com';
    into the repo, fix it and leave a trace in the commit message — a silent edit
    surprises the next person.
 
+## За компютъра
+
+`docs/ZA-KOMPYUTARA.md` — нещата, които облачната сесия от телефона не може да
+свърши (печат, проверки на iPhone, трезорът, локални инструменти). В локална
+сесия, на „какво имаме да свършим", се отговаря оттам; свършеното се зачерква.
+
 ## Obsidian log
 
 Every finished task gets a note in the Obsidian vault — what was wrong, what
