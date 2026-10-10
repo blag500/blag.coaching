@@ -6,6 +6,8 @@ import { haptic } from '../../lib/haptics'
 import { POSES, BLOCKS, orderPoses } from './poses'
 import PosingCamera from './PosingCamera'
 import PosingCompare from './PosingCompare'
+import PoseLibrary from './PoseLibrary'
+import { LIBRARY } from './library'
 import styles from './PosingPage.module.css'
 import AppHeader from '../AppHeader/AppHeader'
 
@@ -29,7 +31,7 @@ export default function PosingPage({ onMenuOpen }) {
   const { t } = useSettings()
   const { user } = useAuth()
   const { shots, save, remove } = usePosingShots(user?.id)
-  const [mode, setMode] = useState('list')   // list | session | done | camera | compare
+  const [mode, setMode] = useState('list')   // list | session | done | camera | compare | library
   const [picked, setPicked] = useState(loadPicked)
   const [poseIndex, setPoseIndex] = useState(0)
   const [duration, setDuration] = useState(30)
@@ -119,6 +121,14 @@ export default function PosingPage({ onMenuOpen }) {
           onClose={() => setMode('list')}
           onCompare={() => setMode('compare')}
         />
+      </div>
+    )
+  }
+
+  if (mode === 'library') {
+    return (
+      <div className={styles.page}>
+        <PoseLibrary onBack={() => setMode('list')} />
       </div>
     )
   }
@@ -267,6 +277,14 @@ export default function PosingPage({ onMenuOpen }) {
           {t('pose.compare')}
         </button>
       </div>
+
+      <button className={styles.libEntry} onClick={() => setMode('library')} type="button">
+        <span>
+          {t('lib.entry')}
+          <small>{t('lib.entryMeta', { n: LIBRARY.length })}</small>
+        </span>
+        <span className={styles.poseRowArrow} aria-hidden="true">›</span>
+      </button>
 
       <div className={styles.controls}>
         <span className={styles.controlLabel}>{t('pose.pauseOnPose')}</span>

@@ -196,6 +196,34 @@
 }
 .actions .startBtn { margin: 0; }
 
+/* Входът към библиотеката — свободната програма, не сцената. */
+.libEntry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 20px 0;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.libEntry > span:first-child { display: grid; gap: 2px; }
+.libEntry small {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
 .ghostBtn {
   padding: 16px 18px;
   border-radius: var(--r-md);

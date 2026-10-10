@@ -8,7 +8,12 @@ import { enterApp, USER_ID, today } from './harness.js'
  * пиука на секунда и би стрелял, когато си иска — тестът натиска затвора. */
 
 test.use({
-  launchOptions: { args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] },
+  // launchOptions тук замества тези от конфигурацията — пътят до Chromium
+  // в облака (PW_CHROMIUM_PATH) се повтаря, иначе се търси свален браузър.
+  launchOptions: {
+    args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'],
+    ...(process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {}),
+  },
   permissions: ['camera', 'microphone'],
 })
 
@@ -71,4 +76,22 @@ test('сравнението показва две дати на плъзгач'
   await expect(imgs).toHaveCount(4) // две в плъзгача + две в лентата с датите
   await page.getByRole('button', { name: 'Една до друга' }).click()
   await expect(page.locator('figure')).toHaveCount(2)
+})
+
+test('библиотеката: филтрите стесняват, редът се разгъва', async ({ page }) => {
+  await openPosing(page)
+  await page.getByRole('button', { name: /Библиотека с пози/ }).click()
+  await expect(page.getByText('95 пози')).toBeVisible()
+
+  await page.getByRole('button', { name: 'В напад', exact: true }).click()
+  await page.getByRole('button', { name: 'Гръб', exact: true }).click()
+  await expect(page.getByText('9 пози')).toBeVisible()
+
+  await page.getByRole('button', { name: /Стрелец/ }).click()
+  await expect(page.getByText('Side Lunge Rear Archer')).toBeVisible()
+  await expect(page.getByText(/опъва тетива/)).toBeVisible()
+  await expect(page.getByText(/страничен напад: единият крак/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Назад към списъка' }).or(page.locator('button', { hasText: '←' })).first().click()
+  await expect(page.getByText('Класически бодибилдинг')).toBeVisible()
 })
