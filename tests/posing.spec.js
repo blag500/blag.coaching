@@ -92,6 +92,6 @@ test('библиотеката: филтрите стесняват, редът 
   await expect(page.getByText(/опъва тетива/)).toBeVisible()
   await expect(page.getByText(/страничен напад: единият крак/)).toBeVisible()
 
-  await page.getByRole('button', { name: 'Назад към списъка' }).or(page.locator('button', { hasText: '←' })).first().click()
+  await page.getByRole('button', { name: 'Назад' }).first().click()
   await expect(page.getByText('Класически бодибилдинг')).toBeVisible()
 })

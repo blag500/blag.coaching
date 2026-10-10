@@ -6,6 +6,10 @@
   overflow-y: auto;
 }
 
+/* Лентата на приложението се изнася с −16 px за страници с отстъп; тази е
+   от ръб до ръб, затова се връща — иначе хапчето опира в ръба на екрана. */
+.page > header:first-child { margin-left: 0; margin-right: 0; }
+
 /* ── List view ───────────────────────────────── */
 
 .listHeader {
@@ -250,12 +254,6 @@
 .drillBtn:disabled,
 .startBtn:disabled { opacity: 0.4; }
 
-.headTitle {
-  font-family: var(--font-heading);
-  font-size: 18px;
-  letter-spacing: 0.08em;
-  color: var(--text);
-}
 
 .poseRowAbbr {
   font-family: var(--font-heading);
@@ -287,21 +285,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 0 20px 14px;
   border-bottom: 1px solid var(--border);
 }
 
-.backBtn {
-  background: none;
-  border: none;
-  font-family: var(--font-body);
-  font-size: 20px;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-}
 
 .dots {
   display: flex;
@@ -328,12 +315,6 @@
   background: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
-.poseCount {
-  font-family: var(--font-body);
-  font-size: 11px;
-  color: var(--muted);
-  flex-shrink: 0;
-}
 
 .sessionBody {
   flex: 1;

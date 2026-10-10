@@ -3,6 +3,7 @@ import { useSettings } from '../../contexts/SettingsContext'
 import { haptic } from '../../lib/haptics'
 import { LIBRARY, LEVELS, DIRS } from './library'
 import styles from './PoseLibrary.module.css'
+import AppHeader from '../AppHeader/AppHeader'
 
 // Снимките са от шаблона на Pete Hartwig — източникът стои под всяка (Р13).
 const SOURCE_URL = 'https://petehartwig.com'
@@ -41,11 +42,7 @@ export default function PoseLibrary({ onBack }) {
 
   return (
     <div className={styles.wrap}>
-      <header className={styles.head}>
-        <button className={styles.back} onClick={onBack} type="button" aria-label={t('pose.backToList')}>←</button>
-        <span className={styles.headTitle}>{t('lib.title')}</span>
-        <span className={styles.count}>{t('lib.count', { n: shown.length })}</span>
-      </header>
+      <AppHeader onBack={onBack} eyebrow={t('lib.count', { n: shown.length })} title={t('lib.title')} />
 
       <div className={styles.filters}>
         {chips(level, setLevel, LEVELS, 'lib.level')}

@@ -136,12 +136,7 @@ export default function PosingPage({ onMenuOpen }) {
   if (mode === 'compare') {
     return (
       <div className={styles.page}>
-        <header className={styles.sessionHeader}>
-          <button className={styles.backBtn} onClick={() => setMode('list')} type="button" aria-label={t('pose.backToList')}>
-            ←
-          </button>
-          <span className={styles.headTitle}>{t('pose.cmp.title')}</span>
-        </header>
+        <AppHeader onBack={() => setMode('list')} eyebrow={t('pose.title')} title={t('pose.cmp.title')} />
         <PosingCompare shots={shots} save={save} remove={remove} initialPose={poses[0]?.id} />
       </div>
     )
@@ -164,10 +159,8 @@ export default function PosingPage({ onMenuOpen }) {
   if (mode === 'session' && pose) {
     return (
       <div className={styles.page}>
+        <AppHeader onBack={() => setMode('list')} eyebrow={t('pose.title')} title={`${poseIndex + 1}/${poses.length}`} />
         <header className={styles.sessionHeader}>
-          <button className={styles.backBtn} onClick={() => setMode('list')} type="button">
-            ←
-          </button>
           <div className={styles.dots}>
             {poses.map((_, i) => (
               <span
@@ -176,7 +169,6 @@ export default function PosingPage({ onMenuOpen }) {
               />
             ))}
           </div>
-          <span className={styles.poseCount}>{poseIndex + 1}/{poses.length}</span>
         </header>
 
         <div className={styles.sessionBody}>
