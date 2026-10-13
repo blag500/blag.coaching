@@ -143,6 +143,15 @@ export const TABLES = {
             'Обемът се вдига само когато възстановяването го носи — ако спиш по пет часа и се влачиш, добавен сет няма да те направи по-силен, а само по-уморен. Гледайте съня и стъпките преди да гледате килограмите на лоста. Храненето го оставяме както е, без промени до неделя; който има въпрос по макросите, да пише лично, а не тук.',
       photo_url: null, created_at: new Date(Date.now() - 3600e3).toISOString(),
       kind: 'post', meta: null, post_likes: [], post_comments: [] },
+    /* Пост със снимка и постижение — снимката стига до ръбовете на екрана, а
+       постижението е единствената карта в потока; без тях двете разлики не
+       се виждат на нито една снимка. */
+    { id: 'p3', user_id: 'u-ivan', body: 'Днешната закуска.', photo_url: '/cheatcode/gris-banan.jpg',
+      created_at: new Date(Date.now() - 2 * 3600e3).toISOString(),
+      kind: 'post', meta: null, post_likes: [], post_comments: [] },
+    { id: 'p4', user_id: 'u-ivan', body: null, photo_url: null,
+      created_at: new Date(Date.now() - 3 * 3600e3).toISOString(),
+      kind: 'streak', meta: { days: 14 }, post_likes: [], post_comments: [] },
   ],
   friendships: [
     { id: 'fr1', requester_id: USER_ID, addressee_id: 'u-ivan',  status: 'accepted', created_at: new Date().toISOString() },

@@ -18,7 +18,9 @@
   overflow: hidden;
   font-family: var(--font-heading);
   font-size: 14px;
-  color: var(--accent);
+  /* Буквата без снимка е приглушена, не златна — по едно златно кръгче на
+     пост и на коментар и знакът „треньор" не се откроява между тях. */
+  color: var(--muted);
 }
 .avatarImg { width: 100%; height: 100%; object-fit: cover; }
 
@@ -35,24 +37,30 @@
    arrive.module.css предупреждава да не се прави: две копия на един жест се
    разминават още при първата поправка. Оттам идва и отблясъкът, който картите
    в ДНЕС имат, а тези нямаха. */
+/* Постът не е карта. Потокът е за четене, а една карта на пост правеше от
+   два кратки поста половин екран рамки, сенки и заобляния, докато самите
+   думи заемаха малкото място между тях. Постовете лежат на земята и ги дели
+   косъм — структурата идва от линията, не от кутията. Картата остава само за
+   постижението: там рамката казва „приложението написа това", а не „ето още
+   един пост". Отблясъкът отиде с картата — светлина, минала напряко през
+   празно място, не е по нищо. */
 .post {
-  composes: arrive glint from '../../styles/arrive.module.css';
+  composes: arrive from '../../styles/arrive.module.css';
   animation-delay: calc(min(var(--i, 0), 6) * 40ms);
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
-  border-radius: var(--r-lg);
-  padding: 14px;
-  margin-bottom: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .postHead { display: flex; align-items: center; gap: 10px; }
 .postWho  { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 
+/* Името е в шрифта на текста, удебелено — не в Oswald. Заглавният шрифт на
+   всяко име правеше от всеки пост заглавие и страницата викаше на всеки ред;
+   редът се подрежда с дебелина, а Oswald остава за заглавието на страницата. */
 .postAuthor {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 14px;
-  letter-spacing: 0.04em;
+  font-weight: 600;
   color: var(--text);
   display: flex;
   align-items: center;
@@ -142,16 +150,26 @@
   font-family: var(--font-body);
   font-size: 12px;
   letter-spacing: 0.02em;
-  color: var(--accent);
+  /* Приглушено, не златно: „още" е на всеки дълъг пост, а злато, което е
+     навсякъде, престава да значи нещо. Златото на поста остава само за знака
+     „треньор". */
+  color: var(--muted);
 }
 
+/* Снимката стига до ръбовете на екрана. Тя носи поста — в кутийка с отстъп и
+   заобляне беше картинка в картичка. Висока до 4:5, по-висока се реже, за да
+   не стане един портрет цял екран. */
 .postPhoto {
-  margin-top: 12px;
-  border-radius: var(--r-md);
+  margin: 12px -16px 0;
   overflow: hidden;
   background: var(--surface-2);
 }
-.postPhoto img { display: block; width: 100%; object-fit: cover; }
+.postPhoto img {
+  display: block;
+  width: 100%;
+  max-height: calc(min(100vw, 480px) * 1.25);
+  object-fit: cover;
+}
 
 /* Действията са хапчета, не голи иконки.
    Иконка без очертание върху карта е мишена, която се познава само след като
@@ -174,8 +192,8 @@
   padding: 7px 13px;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out),
-              background 160ms var(--ease-out), transform 160ms var(--ease-out);
+  transition: color var(--dur-state) var(--ease-out), border-color var(--dur-state) var(--ease-out),
+              background var(--dur-state) var(--ease-out), transform var(--dur-state) var(--ease-out);
 }
 .postAction:active { transform: scale(0.92); }
 .postActionOn {
@@ -189,7 +207,12 @@
    вместо човека, и разликата трябва да се вижда от една крачка, без надпис,
    който да я обяснява. */
 .postAchievement {
-  border-color: rgba(var(--accent-rgb), 0.35);
+  composes: glint from '../../styles/arrive.module.css';
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: var(--r-lg);
+  box-shadow: var(--panel-shadow);
   background:
     linear-gradient(135deg, rgba(var(--accent-rgb), 0.07) 0%, transparent 62%),
     var(--panel-bg);
@@ -258,9 +281,9 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 12px;
-  letter-spacing: 0.04em;
+  font-weight: 600;
   color: var(--text);
 }
 .commentTime {
