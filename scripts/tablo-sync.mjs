@@ -175,5 +175,5 @@ if (DRY) {
 const file = join(tmpdir(), `tablo-sync-${process.pid}.sql`)
 writeFileSync(file, sql.join('\n'))
 execFileSync('supabase', ['db', 'query', '--linked', '-f', file, '-o', 'csv', '--agent', 'no'],
-  { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'], shell: process.platform === 'win32' })
+  { cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'] })
 console.log('записано')
