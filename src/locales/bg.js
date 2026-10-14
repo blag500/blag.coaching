@@ -948,7 +948,7 @@ export default {
   'ep.f.source':        'Откъде се набавя',
   'ep.f.sourcePh':      'напр. Kaufland, Lidl, онлайн...',
   'ep.f.price':         'Цена',
-  'ep.f.pricePh':       'напр. 4.99 лв / кг',
+  'ep.f.pricePh':       'напр. 2,55 € / кг',
   'ep.f.indicator':     'С какво се отличава',
   'ep.f.indicatorPh':   'напр. Висок протеин, Богат на омега-3...',
   'ep.anon':            'Анонимен',

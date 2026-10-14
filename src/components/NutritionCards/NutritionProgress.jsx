@@ -8,10 +8,15 @@ import { useSettings } from '../../contexts/SettingsContext'
 // colour depending on which tab you are standing on, it has stopped meaning
 // anything and become decoration.
 const MACROS = [
-  { key: 'protein', labelKey: 'np.protein', shortKey: 'macro.p', unit: 'g', color: 'var(--macro-protein)' },
-  { key: 'carbs',   labelKey: 'np.carbs',   shortKey: 'macro.c', unit: 'g', color: 'var(--macro-carbs)' },
-  { key: 'fat',     labelKey: 'np.fat',     shortKey: 'macro.f', unit: 'g', color: 'var(--macro-fat)' },
+  { key: 'protein', labelKey: 'np.protein', shortKey: 'macro.p', color: 'var(--macro-protein)' },
+  { key: 'carbs',   labelKey: 'np.carbs',   shortKey: 'macro.c', color: 'var(--macro-carbs)' },
+  { key: 'fat',     labelKey: 'np.fat',     shortKey: 'macro.f', color: 'var(--macro-fat)' },
 ]
+
+/* Грамовете с десетична запетая и най-много един знак: „120,2 г", не
+   „120.2 g" и не „120.20000000000002 g" — сборът от храни с дробни грамове
+   пристига суров. */
+const gramsFmt = new Intl.NumberFormat('bg-BG', { maximumFractionDigits: 1 })
 
 const R  = 46          // ring radius
 const SW = 10          // stroke width
@@ -29,6 +34,7 @@ export default function NutritionProgress({
   totals, targets, kcalBurned = 0, eatBack = false, idBase = 'np', animateKey = '',
 }) {
   const { t } = useSettings()
+  const unitG = t('unit.g')
 
   /* Пръстенът се изчертава, вместо да го има.
      Дъгата, която тръгва от нула и стига до днешното, казва „ето докъде си
@@ -301,9 +307,9 @@ export default function NutritionProgress({
                     className={styles.values}
                     style={{ color: over ? '#ef4444' : near ? '#f0b323' : m.color }}
                   >
-                    {current}<span className={styles.unit}>{m.unit}</span>
+                    {gramsFmt.format(current)}<span className={styles.unit}>{unitG}</span>
                     <span className={styles.sep}>/</span>
-                    {target}<span className={styles.unit}>{m.unit}</span>
+                    {gramsFmt.format(target)}<span className={styles.unit}>{unitG}</span>
                   </span>
                 </div>
                 <div className={styles.track}>

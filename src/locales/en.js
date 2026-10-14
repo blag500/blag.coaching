@@ -947,7 +947,7 @@ export default {
   'ep.f.source':        'Where to get it',
   'ep.f.sourcePh':      'e.g. Kaufland, Lidl, online...',
   'ep.f.price':         'Price',
-  'ep.f.pricePh':       'e.g. 4.99 BGN / kg',
+  'ep.f.pricePh':       'e.g. €2.55 / kg',
   'ep.f.indicator':     'What stands out',
   'ep.f.indicatorPh':   'e.g. High protein, omega-3 rich...',
   'ep.anon':            'Anonymous',

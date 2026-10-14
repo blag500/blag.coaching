@@ -472,8 +472,11 @@ export default function Budget({ onMenuOpen }) {
   const { config, transactions, loading, upsertConfig, addTransaction, deleteTransaction } = useBudget(selectedMonth)
   const [view,         setView]         = useState('dashboard')
   const [showCalendar, setShowCalendar] = useState(false)
+  /* Сумите се пазят в левове, както са записани от началото; показват се в
+     евро по подразбиране, защото от 1 януари 2026 парите са в евро. Който е
+     избрал левове, ги запазва — изборът стои в localStorage. */
   const [currency, setCurrency] = useState(
-    () => localStorage.getItem('budget_currency') || 'BGN'
+    () => localStorage.getItem('budget_currency') || 'EUR'
   )
 
   const sym   = currency === 'EUR' ? '€' : t('bg.currencyBgn')
