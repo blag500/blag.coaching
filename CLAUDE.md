@@ -139,6 +139,18 @@ localStorage); сметките са в `src/invest/projection.js`. Чете с�
 `invest_owner` — не по роля. Ключът е в тайните на функциите (`T212_API_KEY`,
 `T212_API_SECRET`), само за четене. Миграции `123_invest.sql`, `124_invest_orders.sql`.
 
+**Табло** (`/tablo/`, `tablo/index.html` → `src/tablo/`): личното табло на
+собственика — трети вход на Vite, скелетът на `/invest/` (същият вход, тема
+кристал, без service worker, извън кеша на приложението). Четири таба: Табло
+(светлини, плочки, работата по дни), План (стъпката, седмицата, идеите,
+чакащото — пише се оттук), Работа (сесиите с Claude), Одит (находките).
+Данни: `tablo_items` (всичко, което се пише и отмята — `kind` го различава),
+`tablo_daily` и `tablo_sessions` (пише ги `scripts/tablo-sync.mjs` от компютъра
+през `supabase db query --linked`; задача „Blag Tablo Sync" на всеки час),
+`tablo_business()` (броеве по дни за поръчки, логващи, грешки, бота). Чете само
+`tablo_owner`. Claude допълва таблото след сесия през SQL — стъпката е една.
+Миграция `134_tablo.sql`; решението — Р15.
+
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
 ## Testing
