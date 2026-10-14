@@ -9,6 +9,10 @@
       "destination": "/invest/index.html"
     },
     {
+      "source": "/tablo/",
+      "destination": "/tablo/index.html"
+    },
+    {
       "source": "/cokitchen/",
       "destination": "/cokitchen/index.html"
     },
@@ -30,6 +34,11 @@
     {
       "source": "/invest",
       "destination": "/invest/",
+      "permanent": false
+    },
+    {
+      "source": "/tablo",
+      "destination": "/tablo/",
       "permanent": false
     },
     {

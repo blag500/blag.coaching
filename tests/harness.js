@@ -241,6 +241,8 @@ const RPC = {
   food_history: [],
   get_all_coaches: [],
   is_invest_owner: true,
+  is_tablo_owner: true,
+  tablo_business: null,
 }
 
 const CORS = {
