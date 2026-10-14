@@ -400,6 +400,12 @@
     padding-inline: 18px;
     padding-block: 0 calc(var(--dock-h, 132px) + 26px);
   }
+  /* Докът виси над долния край. Когато браузърът сам превърта до поле —
+     при фокус, при „следващо поле" от клавиатурата — той спира полето на
+     ръба на прозореца, тоест точно под бутона „Поръчай". Отстъпът му казва
+     къде всъщност свършва видимото. */
+  html { scroll-padding-bottom: calc(var(--dock-h, 132px) + 16px); }
+
   /* В изгледа на ястието горното поле изчезва — снимката тръгва от нулата. */
   .wrap.bleed { padding-top: 0; }
 
@@ -574,9 +580,13 @@
     font-variant-numeric: tabular-nums; white-space: nowrap;
   }
   .line .ops { display: flex; align-items: center; gap: 12px; margin: 10px 0 0 66px; }
+  /* Думата е малка, мишената — не: 44 px височина за пръста, а отрицателното
+     поле връща реда там, където беше с 4 px отстъп. */
   .line .drop {
-    margin-left: auto; background: none; border: none; padding: 4px;
+    margin: -10px -6px -10px auto; background: none; border: none;
+    padding: 10px 6px 10px 14px; min-height: 44px;
     font: inherit; font-size: 13px; color: var(--ink-faint); cursor: pointer;
+    touch-action: manipulation;
   }
   .line .drop:hover { color: #C0392B; }
 
@@ -1670,6 +1680,12 @@
     width: 34px; height: 34px; border: none; border-radius: 50%;
     background: none; color: var(--ink); font: inherit; font-size: 19px;
     cursor: pointer; line-height: 1;
+    position: relative; touch-action: manipulation;
+  }
+  /* Кръгчето е 30–34 px, пръстът иска около 44. Невидимото поле около него
+     хваща докосването, без хапчето да става по-дебело. */
+  .qty button::after {
+    content: ''; position: absolute; inset: -6px -3px;
   }
   .qty button:hover { background: var(--surface); }
   .qty button:disabled { color: var(--ink-faint); cursor: default; }
@@ -3909,6 +3925,21 @@
   }
   if (window.ResizeObserver) new ResizeObserver(measureDock).observe(dockEl);
   window.addEventListener('resize', measureDock);
+
+  /* iOS Safari не винаги зачита scroll-padding, когато вдига клавиатурата:
+     полето в количката излизаше под бутона „Поръчай" и не се виждаше какво
+     пишеш. Затова след като клавиатурата се отвори, полето се центрира. */
+  $('cartView').addEventListener('focusin', function (e) {
+    var el = e.target;
+    if (!el.matches || !el.matches('input, select, textarea')) return;
+    setTimeout(function () {
+      var r = el.getBoundingClientRect();
+      var bottom = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - dockEl.offsetHeight;
+      if (r.bottom > bottom - 8 || r.top < 0) {
+        el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      }
+    }, 320);
+  });
 
   /* Надолу лентата пречи на четенето, нагоре — трябва. Прагът е, за да не
      трепти при дребните мръдвания на пръста. */

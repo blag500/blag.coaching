@@ -8,6 +8,26 @@ import { test, expect } from '@playwright/test'
 // на Vercel. Затова страницата се иска по име на файла.
 const ORDER_URL = '**/functions/v1/cheatcode-order'
 
+test.describe('Чийт Код · количката', () => {
+  /* Поръчката и лентата висят над долния край. Поле, до което браузърът
+     превърта при фокус, свършваше под бутона „Поръчай" — пишеш, без да виждаш
+     какво (одит 09.10). */
+  test('полето на фокус не се крие под бутона „Поръчай“', async ({ page }) => {
+    await page.route(ORDER_URL, r => r.fulfill({ json: { orders: [] } }))
+    await page.addInitScript(() => sessionStorage.setItem('cc_splash', '1'))
+    await page.goto('/cheatcode/index.html')
+    await page.locator('button.dish:not(.soon)').first().click()
+    await page.locator('#orderBtn').click()
+    await page.locator('.nav-inner [data-go="cart"]').click()
+    await page.locator('#fNote').focus()
+    await expect.poll(() => page.evaluate(() => {
+      const f = document.getElementById('fNote').getBoundingClientRect()
+      const d = document.getElementById('dock').getBoundingClientRect()
+      return f.bottom <= d.top
+    })).toBe(true)
+  })
+})
+
 test.describe('Чийт Код · моите поръчки', () => {
   test('поръчката остава в „Моите поръчки“, носи статуса си и се поръчва пак', async ({ page }) => {
     test.setTimeout(60000)
