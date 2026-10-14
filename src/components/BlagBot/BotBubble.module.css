@@ -52,6 +52,21 @@
 
 .bubble:active { transform: scale(0.9); }
 
+/* Докато се чете надолу, балончето се прибира към десния ръб заедно с
+   лентата и оставя ивица колкото да се намери. Стоеше върху числата —
+   сбора на въглехидратите в Профил, бутона „Баркод" в Хранене — точно
+   докато човекът ги чете. Нагоре се връща с лентата.
+   `translate`, не `transform`: transform държат натискането и влаченето, а
+   двете не бива да се бият за едно свойство. */
+.bubble {
+  transition: translate var(--dur-enter) var(--ease-glide), opacity var(--dur-state) var(--ease-glide);
+}
+
+:global(html[data-nav="collapsed"]) .bubble:not(.armed) {
+  translate: calc(100% - 14px + var(--bot-right, 18px)) 0;
+  opacity: 0.7;
+}
+
 @keyframes bubbleIn {
   from { opacity: 0; transform: scale(0.6); }
   to   { opacity: 1; transform: scale(1);   }
