@@ -95,6 +95,8 @@ export default {
   'feed.delete.cancel':        'No',
   'feed.comment.placeholder':  'Write a comment',
   'feed.comment.send':         'SEND',
+  'feed.like':                 'Like',
+  'feed.comments':             'Comments',
   'feed.more':                 'MORE',
   'feed.readMore':             'more',
   'feed.empty':                'QUIET IN HERE',

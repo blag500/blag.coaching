@@ -96,6 +96,8 @@ export default {
   'feed.delete.cancel':        'Не',
   'feed.comment.placeholder':  'Напиши коментар',
   'feed.comment.send':         'ПРАТИ',
+  'feed.like':                 'Харесай',
+  'feed.comments':             'Коментари',
   'feed.more':                 'ОЩЕ',
   'feed.readMore':             'още',
   'feed.empty':                'ТУК ОЩЕ Е ТИХО',

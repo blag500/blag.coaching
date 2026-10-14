@@ -309,6 +309,7 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           className={`${styles.postAction} ${post.liked ? styles.postActionOn : ''}`}
           onClick={() => { haptic('toggle'); onToggleLike(post.id) }}
           aria-pressed={post.liked}
+          aria-label={t('feed.like')}
         >
           <HeartIcon filled={post.liked} />
           {post.likeCount > 0 && <span>{post.likeCount}</span>}
@@ -317,6 +318,8 @@ export default function PostCard({ post, onToggleLike, onDelete, onCommentCountC
           type="button"
           className={`${styles.postAction} ${openComments ? styles.postActionOn : ''}`}
           onClick={() => setOpenComments(v => !v)}
+          aria-expanded={openComments}
+          aria-label={t('feed.comments')}
         >
           <CommentIcon />
           {post.commentCount > 0 && <span>{post.commentCount}</span>}

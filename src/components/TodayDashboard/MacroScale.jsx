@@ -64,6 +64,9 @@ export default function MacroScale({ macros, label, log = [], t }) {
       onKeyDown={allHit ? e => { if (e.key === 'Enter' || e.key === ' ') replay() } : undefined}
       aria-label={allHit ? t('today.allMacrosHit') : undefined}
       aria-hidden={back}
+      /* Скритата страна не само мълчи за четеца — и Tab не стига до нея.
+         Иначе фокусът влиза в бутон, който не се вижда. */
+      inert={back ? '' : undefined}
     >
       {burst > 0 && <Confetti burst={burst} />}
 
@@ -88,7 +91,7 @@ export default function MacroScale({ macros, label, log = [], t }) {
       </button>
     </div>
 
-    <div className={`${styles.card} ${styles.face} ${styles.backFace}`} aria-hidden={!back}>
+    <div className={`${styles.card} ${styles.face} ${styles.backFace}`} aria-hidden={!back} inert={back ? undefined : ''}>
       <div className={styles.head}>
         <span className={styles.label}>{t('today.recentAdded')}</span>
         <span className={styles.count}>{entries.length}</span>
