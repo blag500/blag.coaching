@@ -17,7 +17,10 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery]     = useState('')
-  const [checked, setChecked] = useState({})   // name -> bool
+  /* Отметнатото пази самия ред, не само името: търсенето сменя списъка, и
+     отметка, която живее само докато редът се вижда, се губи при второто
+     търсене — „Добави 2“ пращаше един. */
+  const [checked, setChecked] = useState({})   // name -> row
   const [adding, setAdding]   = useState(false)
 
   useEffect(() => {
@@ -42,13 +45,17 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
     }
   }, [onClose])
 
-  const count = Object.values(checked).filter(Boolean).length
-  const toggle = name => setChecked(c => ({ ...c, [name]: !c[name] }))
+  const count = Object.keys(checked).length
+  const toggle = it => setChecked(c => {
+    const next = { ...c }
+    if (next[it.name]) delete next[it.name]
+    else next[it.name] = it
+    return next
+  })
 
   async function addAll() {
     setAdding(true)
-    for (const it of items) {
-      if (!checked[it.name]) continue
+    for (const it of Object.values(checked)) {
       await onAddRaw({
         name:    it.name,
         grams:   Math.round(it.grams) || 0,
@@ -89,7 +96,7 @@ export default function QuickAddSheet({ meal, onAddRaw, onClose }) {
               <button
                 key={it.name}
                 className={`${styles.item} ${checked[it.name] ? styles.itemOn : ''}`}
-                onClick={() => toggle(it.name)}
+                onClick={() => toggle(it)}
                 type="button"
               >
                 <span className={`${styles.box} ${checked[it.name] ? styles.boxOn : ''}`} aria-hidden="true">
