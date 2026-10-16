@@ -63,12 +63,18 @@
   <script src="../../../public/cheatcode/vendor/three-r128.min.js"></script>
   <script src="../../../public/cheatcode/glass-chain.js"></script>
   <script>
-    /* Един кадър, без люлеене: скъсана, в покой. `ready` казва на скрипта,
+    /* Един кадър, без люлеене, в покой. `ready` казва на скрипта,
        че може да снима. */
     window.ready = Promise.all(Array.prototype.map.call(document.querySelectorAll('.ground canvas'), function (c) {
-      var gc = GlassChain(c, { tone: 'dark', still: true, sizeFrom: c, scale: 0.8 });
+      /* Иконката е цялата верига, едра и по-светла: скъсаната с отломките на
+         60 точки ставаше бледо петно с прах около него (16.10). Писмата и
+         споделянето остават скъсани — там има място. */
+      var icon = c.closest('#icon, #mask');
+      var gc = GlassChain(c, icon
+        ? { tone: 'dark', still: true, sizeFrom: c, scale: 1.05, exposure: 1.6 }
+        : { tone: 'dark', still: true, sizeFrom: c, scale: 0.8 });
       if (!gc) throw new Error('без WebGL');
-      gc.pose({ swing: false });
+      gc.pose(icon ? { swing: false, broken: false, burst: 0 } : { swing: false });
       gc.draw(0);
       return document.fonts.ready;
     }));

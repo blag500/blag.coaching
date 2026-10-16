@@ -82,16 +82,18 @@ ff.stdin.end();
 await new Promise((r) => ff.on('close', r));
 console.log(`${out} — ${total} кадъра`);
 
-/* Веригата зад хедъра: неподвижна, скъсана, на прозрачен фон — PNG, не
-   three.js. Два тона, по един за тема: тъмно стъкло на тъмно, бяло на светло. */
+/* Веригата до името в хедъра: неподвижна, цяла, на прозрачен фон — PNG, не
+   three.js. Цяла и по-светла от 16.10 — скъсаната на 46 px беше бледа, с прах
+   наоколо. И двете теми са с ментовото стъкло: бялото на светлата земя
+   изчезваше, щом отломките (единственото зелено в него) отпаднаха. */
 for (const tone of ['dark', 'light']) {
   await page.evaluate((tone) => {
     document.documentElement.style.background = document.body.style.background = 'transparent';
     const old = document.getElementById('c');
     const c = document.createElement('canvas');
     c.id = 'c'; old.replaceWith(c);
-    const g = GlassChain(c, { tone, still: true, sizeFrom: c, scale: 0.8 });
-    g.pose({ swing: false });
+    const g = GlassChain(c, { tone: 'dark', still: true, sizeFrom: c, scale: 1.05, exposure: tone === 'dark' ? 1.6 : 1.0 });
+    g.pose({ swing: false, broken: false, burst: 0 });
     g.draw(0);
   }, tone);
   const file = `public/cheatcode/head-${tone}.png`;

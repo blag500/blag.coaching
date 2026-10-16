@@ -38,7 +38,8 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = dark ? 0.85 : 1.05;
+    // exposure — по-светло за неподвижните картинки (иконката, хедъра).
+    renderer.toneMappingExposure = opts.exposure || (dark ? 0.85 : 1.05);
 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
