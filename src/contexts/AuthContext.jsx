@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { readSource } from '../utils/source'
 import { supabase } from '../lib/supabase'
 import { tr } from '../utils/locale'
@@ -9,6 +9,9 @@ export function AuthProvider({ children }) {
   const [session, setSession]   = useState(undefined) // undefined = still loading
   const [profile, setProfile]   = useState(null)
   const [authError, setAuthError] = useState(null)
+  // Чий профил още се чака и таймерът на следващия опит — виж fetchProfile.
+  const wanted = useRef(null)
+  const retry = useRef({ timer: null, n: 0 })
 
   /* Fires the „нов потребител" известие за OAuth регистранти (Google), които
      не минават през signUp() и иначе не биха се обявили. Идентификаторът в
@@ -45,6 +48,8 @@ export function AuthProvider({ children }) {
       .maybeSingle()
 
     if (data) {
+      clearTimeout(retry.current.timer)
+      retry.current.n = 0
       if (data.role === 'client') {
         const { data: coachId } = await supabase.rpc('get_coach_id')
         setProfile(coachId ? { ...data, coach_id: coachId } : data)
@@ -55,7 +60,36 @@ export function AuthProvider({ children }) {
       // No row and no error — the account really has no profile (deleted). Only
       // then is signing out correct. A transient error leaves the session alone.
       await supabase.auth.signOut()
+    } else {
+      /* …и пита пак. Дотук грешката само се преглъщаше: сесия без профил е
+         екранът с точката, а него нищо не го сменяше. Телефон, пуснат преди
+         мрежата да се е вдигнала, оставаше там, докато човекът не убие
+         приложението. Библиотеката сама опитва три пъти за ~7 s; оттам
+         нататък питаме ние — 2, 4, 8… до 30 s, и веднага щом мрежата се върне
+         или приложението дойде отпред (виж ефекта отдолу). */
+      scheduleRetry(userId)
     }
+  }
+
+  function scheduleRetry(userId) {
+    clearTimeout(retry.current.timer)
+    const delay = Math.min(2000 * 2 ** retry.current.n, 30000)
+    retry.current.n++
+    retry.current.timer = setTimeout(() => retryNow(userId), delay)
+  }
+
+  function retryNow(userId) {
+    clearTimeout(retry.current.timer)
+    if (wanted.current !== userId) return
+    fetchProfile(userId).catch(() => scheduleRetry(userId))
+  }
+
+  /* Името на чакания профил. Пише се преди всяко питане, чисти се при изход —
+     така закъснял опит за предишен човек не пише чужд профил. */
+  function want(userId) {
+    if (wanted.current !== userId) retry.current.n = 0
+    wanted.current = userId
+    if (!userId) clearTimeout(retry.current.timer)
   }
 
   async function refreshProfile() {
@@ -66,6 +100,7 @@ export function AuthProvider({ children }) {
     // Restore existing session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s)
+      want(s?.user?.id ?? null)
       if (s?.user) {
         fetchProfile(s.user.id)
         maybeNotifyFirstOAuthSignup(s.user)
@@ -75,6 +110,7 @@ export function AuthProvider({ children }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
+      want(s?.user?.id ?? null)
       if (s?.user) {
         fetchProfile(s.user.id)
         maybeNotifyFirstOAuthSignup(s.user)
@@ -83,6 +119,20 @@ export function AuthProvider({ children }) {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  /* Мрежата се върна или приложението дойде отпред — ако профилът още се
+     чака, не чакаме и таймера. Без профил няма какво да се покаже. */
+  useEffect(() => {
+    if (profile || !session?.user) return
+    const id = session.user.id
+    const now = () => { if (document.visibilityState === 'visible') retryNow(id) }
+    window.addEventListener('online', now)
+    document.addEventListener('visibilitychange', now)
+    return () => {
+      window.removeEventListener('online', now)
+      document.removeEventListener('visibilitychange', now)
+    }
+  }, [profile, session?.user?.id])
 
   async function signIn(email, password) {
     setAuthError(null)

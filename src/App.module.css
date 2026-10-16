@@ -15,6 +15,34 @@
   animation: pulse 1s ease-in-out infinite;
 }
 
+.loadingScreen { flex-direction: column; }
+
+/* Изходът под точката — тих, за да не плаши, когато все пак е миг. */
+.loadingSlow {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+  left: 16px;
+  right: 16px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--muted);
+  animation: slowIn var(--dur-enter) var(--ease-out) both;
+}
+.loadingSlow p { margin: 0 0 12px; }
+.loadingSlow button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 22px;
+  min-height: 44px;
+  cursor: pointer;
+}
+@keyframes slowIn { from { opacity: 0; } }
+
 @keyframes pulse {
   0%, 100% { opacity: 0.3; transform: scale(0.8); }
   50%       { opacity: 1;   transform: scale(1.2); }

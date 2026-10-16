@@ -2804,6 +2804,8 @@ export default {
   'goal.maintain':         'Maintenance',
   'goal.bulk':             'Bulking',
   'payment.confirming':    'Confirming your payment...',
+  'loading.slow':          'This is taking longer than usual.',
+  'loading.reload':        'Reload',
 
   // ── Recovery ──────────────────────────────────────────────────────
   'rec.fillForm':      'Fill in the form',

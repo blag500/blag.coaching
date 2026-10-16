@@ -108,6 +108,29 @@ function PageLoader({ children }) {
   )
 }
 
+/* Точката, докато сесията и профилът се четат. Обикновено е миг; ако не е —
+   профилът сам се пита пак (виж AuthContext), но след десет секунди човекът
+   получава и изход в свои ръце. Без него единственият път навън от точката
+   беше да убие приложението, а това не всеки знае. */
+function SessionLoader() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 10000)
+    return () => clearTimeout(t)
+  }, [])
+  return (
+    <div className={styles.loadingScreen}>
+      <span className={styles.loadingDot} />
+      {slow && (
+        <div className={styles.loadingSlow}>
+          <p>{tr('loading.slow')}</p>
+          <button type="button" onClick={() => window.location.reload()}>{tr('loading.reload')}</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Goal ids → the word the success chip shows after the calorie target.
 const GOAL_KEY = { cut: 'goal.cut', maintain: 'goal.maintain', bulk: 'goal.bulk' }
 
@@ -318,13 +341,7 @@ function AppShell() {
 
   /* Каквото се вижда под сплаша — същите изходи като преди, по ред. */
   function shellBody() {
-    if (loading) {
-      return (
-        <div className={styles.loadingScreen}>
-          <span className={styles.loadingDot} />
-        </div>
-      )
-    }
+    if (loading) return <SessionLoader />
 
     // Nobody is asked to pick a plan before they have seen the product — the
     // choice happens after signup, where the free tier is the obvious default.
@@ -346,13 +363,7 @@ function AppShell() {
     }
 
     // Session known but profile not yet fetched — keep showing the loader
-    if (!profile) {
-      return (
-        <div className={styles.loadingScreen}>
-          <span className={styles.loadingDot} />
-        </div>
-      )
-    }
+    if (!profile) return <SessionLoader />
 
     const isCoach = profile.role === 'coach'
 

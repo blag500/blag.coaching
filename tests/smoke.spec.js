@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { enterApp, TABLES, USER_ID, today } from './harness.js'
+import { enterApp, signIn, TABLES, USER_ID, today } from './harness.js'
 
 /* Смоук набор срещу приложението, каквото е.
  *
@@ -1931,4 +1931,34 @@ test.describe('Поръчките на Чийт Код', () => {
     await expect(page.getByText('ЧК-5445')).toHaveCount(0)
     await expect(page.getByText('ЧИЙТ КОД', { exact: true })).toHaveCount(0)
   })
+})
+
+/* Отваряне с колеблива мрежа. Телефонът, събуден от джоба, понякога пуска
+   приложението преди мрежата да е готова — и заявката за профила пада.
+   Библиотеката сама опитва още три пъти за около седем секунди; мрежа, която
+   се връща по-късно, заварваше сесия без профил и екран на точката завинаги:
+   грешката се преглъщаше и никой не питаше пак. */
+test('профилът се пита пак, ако мрежата се върне късно', async ({ page }) => {
+  test.setTimeout(90000)
+  await signIn(page)
+  let offlineUntil = 0
+  await page.route('**/rest/v1/profiles*', route => {
+    if (Date.now() < offlineUntil) return route.abort('internetdisconnected')
+    return route.fallback()
+  })
+  offlineUntil = Date.now() + 12000
+  await page.goto('/')
+  await expect(page.locator('nav').first()).toBeVisible({ timeout: 45000 })
+})
+
+/* Ако мрежата не се върне изобщо, точката не е задънена улица: след десет
+   секунди под нея стои „Презареди". */
+test('точката предлага презареждане, ако чакането се проточи', async ({ page }) => {
+  test.setTimeout(60000)
+  await signIn(page)
+  await page.route('**/rest/v1/profiles*', route => route.abort('internetdisconnected'))
+  await page.goto('/')
+  const reload = page.getByRole('button', { name: 'Презареди' })
+  await expect(reload).toBeVisible({ timeout: 20000 })
+  await page.screenshot({ path: 'shots/loading-slow.png' })
 })
