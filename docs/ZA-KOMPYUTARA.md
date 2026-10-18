@@ -8,6 +8,18 @@ _Събрано: 2026-10-09 / 10, от облачната сесия (телеф
 
 ## Първо
 
+- [ ] **Прозорецът от System32 всеки час.** Това е задачата „Blag Tablo Sync" —
+      пуска `tablo-sync.cmd` и Windows му отваря конзола. След `git pull`, в
+      PowerShell:
+      ```powershell
+      $t = Get-ScheduledTask 'Blag Tablo Sync'
+      $vbs = $t.Actions[0].Execute.Trim('"') -replace '\.cmd$', '.vbs'
+      if (-not (Test-Path $vbs)) { throw "Задачата не сочи към tablo-sync.cmd: $($t.Actions[0].Execute)" }
+      Set-ScheduledTask -TaskName 'Blag Tablo Sync' -Action (New-ScheduledTaskAction -Execute 'wscript.exe' -Argument "`"$vbs`"")
+      Start-ScheduledTask 'Blag Tablo Sync'
+      ```
+      Провери: прозорец не излиза, а `%TEMP%\tablo-sync.log` има нов ред.
+
 - [x] ~~**Трезорът.** Копирай `docs/obsidian/2026-10-09 Чийт Код — лента за нова версия.md`
       в `D:\obsidian\blag`, после `git pull --rebase`, commit, push.~~
       _Свършено 13.10: не една, а седем бележки (03.10–13.10); плюс `Начало.md`
