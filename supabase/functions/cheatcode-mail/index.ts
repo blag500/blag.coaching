@@ -16,6 +16,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+/* Къде отиват отговорите на писмата. Празно — писмата са без „отговори“ и
+   без въпроса в „Готова е“: noreply не бива да кани на разговор. */
+const REPLY_TO = Deno.env.get('CHEATCODE_REPLY_TO')?.trim() || null
 const PAGE = 'https://blag-coaching.com/cheatcode/'
 
 const esc = (s: unknown) =>
@@ -184,7 +187,15 @@ export function letter(o: Order, link?: string) {
     `<div style="margin:24px 0 8px;font-size:12px;font-weight:700;letter-spacing:0.08em;color:${C.faint}">ТВОИТЕ ДАННИ</div>` +
     `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-family:${FONT}">${factRows}</table>` +
     (link ? button(link, 'Потвърди поръчката') +
-      `<p style="margin:10px 0 0;font-size:12.5px;color:${C.faint}">Не си поръчвал ти? Просто не натискай — без потвърждение поръчката не стига до никого.</p>` : '')
+      `<p style="margin:10px 0 0;font-size:12.5px;color:${C.faint}">Не си поръчвал ти? Просто не натискай — без потвърждение поръчката не стига до никого.</p>` : '') +
+    /* Един въпрос, и то след храната, не преди нея: кой какво не харесва се
+       научава само ако питаш. Отговорът е просто „Отговор“ в пощата. */
+    (o.status === 'ready' && REPLY_TO
+      ? `<div style="margin:24px 0 0;padding:14px 16px;border-radius:14px;border:1px solid ${C.line}">` +
+        `<div style="font-size:15px;font-weight:700;color:${C.ink}">Какво да е по-добре?</div>` +
+        `<p style="margin:6px 0 0;font-size:13.5px;line-height:1.55;color:${C.soft}">След като я изядеш — отговори на това писмо, ` +
+        `с един ред. Чете го човекът, който я готви.</p></div>`
+      : '')
 
   const preheader = o.status === 'new'
     ? `${o.code} · ${euro(o.total_cents)}${o.pickup_time ? ' · за ' + o.pickup_time : ''} — потвърди я с едно натискане.`
@@ -208,7 +219,10 @@ async function send(to: string, subject: string, html: string) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: 'Cheat Code <noreply@blag-coaching.com>', to: [to], subject, html }),
+    body: JSON.stringify({
+      from: 'Cheat Code <noreply@blag-coaching.com>', to: [to], subject, html,
+      ...(REPLY_TO ? { reply_to: REPLY_TO } : {}),
+    }),
   })
   if (!res.ok) throw new Error(`resend ${res.status} ${await res.text()}`)
 }
