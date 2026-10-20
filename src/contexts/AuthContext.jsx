@@ -25,6 +25,14 @@ export function AuthProvider({ children }) {
       const key = `blag_notified_${user.id}`
       if (localStorage.getItem(key)) return
       localStorage.setItem(key, '1')
+      // signUp() пише откъде е дошъл човекът; Google не минава оттам, затова
+      // същото става тук. Само върху празно поле — никога не презаписва.
+      const source = readSource()
+      if (source) {
+        supabase.from('profiles').update({ source })
+          .eq('id', user.id).is('source', null)
+          .then(() => {}, () => {})
+      }
       const name = user.user_metadata?.full_name || user.user_metadata?.name || null
       supabase.functions.invoke('notify-new-registration', {
         body: { userId: user.id, email: user.email, name },
