@@ -100,6 +100,20 @@ Fill it from an Obsidian vault with `node scripts/sync-knowledge.mjs <folder>
 --scope private` (needs SUPABASE_URL, BOT_SECRET, OWNER_EMAIL); unchanged files
 are skipped by content digest.
 
+**Офертите** (`supabase/functions/offers-sync` + `store_offers`): всяка сутрин
+(pg_cron `offers-sync`, 04:23 UTC → `fire_offers_sync()`) чете офертите на Lidl
+и Kaufland — HTML, не брошура-картинка — и пише само храните, с грамове от
+основния макрос за 1 €. Модел не се вика: разпознаването и макросите на 100 г
+са в таблицата `FOODS` в `parse.ts`. Нова храна или грешно разпозната → ред в
+`FOODS`/`NOT_FOOD` и ред в `checks.ts`. `?dry=1` (със `x-bot-secret`) връща
+всеки разпознат и всеки пропуснат ред, без да пише. `store_offer_runs` пази
+броевете на пускане — `found = 0` значи, че магазинът е сменил страницата.
+Показва се в „Открий“ (`StoreOffers.jsx`). Решението — Р16.
+
+```bash
+npx deno run supabase/functions/offers-sync/checks.ts
+```
+
 **Чийт Код** (`cheatcode/page.html` → `public/cheatcode/index.html`): отделна
 страница, не част от приложението — конфигурируеми ястия за такеауей.
 Източникът е тялото без обвивка; `node scripts/build-cheatcode.mjs` слага

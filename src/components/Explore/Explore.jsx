@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import EfficientProducts from './EfficientProducts'
+import StoreOffers from './StoreOffers'
 import ShoppingList from '../ShoppingList/ShoppingList'
 import ShowcasePage from './ShowcasePage'
 import CalorieCalculator from '../CalorieCalculator/CalorieCalculator'
@@ -51,6 +52,18 @@ const SECTIONS = [
     ),
   },
   {
+    id: 'offers',
+    titleKey: 'exp.offers.title',
+    descKey:  'exp.offers.desc',
+    accent: 'var(--accent)',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="28" height="28" aria-hidden="true">
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+        <line x1="7" y1="7" x2="7.01" y2="7" />
+      </svg>
+    ),
+  },
+  {
     id: 'products',
     titleKey: 'exp.efficient.title',
     descKey:  'exp.efficient.desc',
@@ -90,6 +103,7 @@ export default function Explore({ onMenuOpen }) {
   if (page === 'calculator') return <CalorieCalculator onBack={() => setPage(null)} />
   if (page === 'install')    return <PWAInstallPage    onBack={() => setPage(null)} />
   if (page === 'showcase')   return <ShowcasePage      onBack={() => setPage(null)} />
+  if (page === 'offers')     return <StoreOffers       onBack={() => setPage(null)} />
   if (page === 'products')   return <EfficientProducts onBack={() => setPage(null)} />
   if (page === 'shopping')   return <ShoppingList      onBack={() => setPage(null)} />
 

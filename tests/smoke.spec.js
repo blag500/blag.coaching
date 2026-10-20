@@ -1932,3 +1932,49 @@ test.describe('Поръчките на Чийт Код', () => {
     await expect(page.getByText('ЧИЙТ КОД', { exact: true })).toHaveCount(0)
   })
 })
+
+test.describe('Офертите от магазините', () => {
+  const offer = (o) => ({
+    detail: null, old_price: null, discount: null, valid_from: today(), valid_to: today(),
+    produce: false, protein: 0, carbs: 0, fat: 0, per_eur: null, macro: null, ...o,
+  })
+  const OFFERS = [
+    offer({ id: 1, store: 'lidl', name: 'Прясно пилешко филе', pack: 'за kg', price: 5.69, old_price: 7.49, discount: 24,
+      macro: 'protein', protein: 23, carbs: 0, fat: 1.5, per_eur: 40.4 }),
+    offer({ id: 2, store: 'kaufland', name: 'Извара', detail: 'Димитър Маджаров', pack: 'кг', price: 2.55,
+      macro: 'protein', protein: 12, carbs: 3, fat: 4, per_eur: 47.1 }),
+    offer({ id: 3, store: 'kaufland', name: 'Ориз', pack: '1 кг', price: 0.99,
+      macro: 'carbs', protein: 7, carbs: 78, fat: 0.6, per_eur: 787.9 }),
+    offer({ id: 4, store: 'kaufland', name: 'Моркови', pack: 'кг', price: 0.54, old_price: 1.29, discount: 58,
+      produce: true, protein: 1.5, carbs: 5, fat: 0.3 }),
+  ]
+
+  test('подрежда по грамове за евро и филтрира по магазин и макрос', async ({ page }) => {
+    test.setTimeout(90000)
+    await enterApp(page, { tables: { store_offers: OFFERS } })
+    await page.locator('button[aria-label="Меню"]').first().click()
+    await page.waitForTimeout(500)
+    await page.getByText('ОТКРИЙ', { exact: true }).first().click()
+    await page.getByText('ОФЕРТИТЕ ТАЗИ СЕДМИЦА').first().click()
+
+    // Протеинът е първият таб; изварата дава повече грама за евро от филето.
+    const names = page.locator('ul li span:first-child')
+    await expect(names.first()).toHaveText('Извара')
+    await expect(page.getByText('Прясно пилешко филе')).toBeVisible()
+    await expect(page.getByText('−24%')).toBeVisible()
+    await expect(page.getByText('Ориз')).toHaveCount(0)
+
+    await page.getByRole('button', { name: 'Lidl', exact: true }).click()
+    await expect(page.getByText('Извара')).toHaveCount(0)
+    await expect(page.getByText('Прясно пилешко филе')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Всички магазини' }).click()
+    await page.getByRole('tab', { name: 'ВЪГЛЕХИДРАТИ' }).click()
+    await expect(page.getByText('Ориз')).toBeVisible()
+    await expect(page.getByText('788 г')).toBeVisible()
+
+    await page.getByRole('tab', { name: 'ПЛОДОВЕ И ЗЕЛЕНЧУЦИ' }).click()
+    await expect(page.getByText('Моркови')).toBeVisible()
+    await expect(page.getByText('Ориз')).toHaveCount(0)
+  })
+})

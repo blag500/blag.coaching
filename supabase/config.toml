@@ -35,6 +35,11 @@ verify_jwt = false
 [functions.invest-sync]
 verify_jwt = false
 
+# offers-sync се вика само от разписанието (x-bot-secret, без JWT). Пази се
+# сама с тайната; без нея връща 401.
+[functions.offers-sync]
+verify_jwt = false
+
 # cheatcode-order приема поръчки от статичната страница /cheatcode — там няма
 # вход, значи няма JWT. Пази се сама: проверява всяко поле, капан за ботове и
 # таван на поръчките по телефон и за час.
