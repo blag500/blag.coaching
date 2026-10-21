@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="bg"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --spruce:#1F6B4E; --mint:#4FBF8E; --ink:#141C17; --paper:#F2F4EC; --night:#1E2923; --line:#D2D9C8; --soft:#55645B; }
+  body { margin:0; padding:30px; background:var(--paper); color:var(--ink); font:15px/1.5 Inter,sans-serif; width:1300px; }
+  h1 { font:700 22px Inter; margin:0 0 4px; }
+  p.lead { margin:0; color:var(--soft); font-size:14px; }
+  h2 { font:600 13px Inter; color:var(--soft); margin:22px 0 10px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center; }
+  .card small { display:block; color:var(--soft); font-size:12px; margin-top:6px; }
+  .tiles { display:flex; gap:8px; justify-content:center; }
+  .t { width:130px; height:130px; border-radius:12px; display:grid; place-items:center; }
+  .t.l { background:var(--paper); } .t.d { background:var(--night); }
+  .row { display:flex; gap:18px; align-items:flex-end; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin-bottom:10px; }
+  .row b { font:600 13px Inter; width:30px; align-self:center; }
+  .row .s { text-align:center; } .row .s small { display:block; color:var(--soft); font-size:11px; }
+  .row .dk { background:#1E2923; padding:5px; border-radius:6px; }
+</style></head><body>
+<h1>Средата между сърцето и ръката — трета проба</h1>
+<p class="lead">Три копчета: r — колко кръгъл е юмрукът (20 = дъга на сърце, 6 = квадрат) · p — колко по-висок е бицепсът · w — колко дълбока е китката.</p>
+
+<h2>Осем точки по пътя от сърце (горе вляво) към ръка (долу вдясно)</h2>
+<div class="grid" id="v"></div>
+
+<h2>Размери — 16 · 24 · 32 · 48 · 96 px</h2>
+<div id="sz"></div>
+
+<script>
+// Лявата половина е сърцето; бицепсът се вдига с p, върхът му се мести към прореза.
+// Дясната е юмрук: правоъгълник 55…94 × 10…40 със заобляне r, китка с дълбочина w, после предмишницата до лакътя.
+function path({ r = 20, p = 0, w = 0 }) {
+  const top = 10, L = 55, R = 94, bot = 40
+  const right = `L ${L} ${top + r} A ${r} ${r} 0 0 1 ${L + r} ${top} L ${R - r} ${top} A ${r} ${r} 0 0 1 ${R} ${top + r}`
+  const down = Math.max(top + r, bot - 4)
+  const wrist = w > 0
+    ? `L ${R} ${down} Q ${R} ${bot + 6}, ${R - w} ${bot + 8} C ${R - w - 2} 60, 72 75, 50 91`
+    : `L ${R} ${down} C ${R} 56, 78 70, 50 91`
+  return `M50 91 C 22 70, 6 54, 7 35 C 8 ${19 - p}, ${21 + p} ${10 - p}, ${33 + p / 2} ${11 - p} C ${43 + p / 2} ${12 - p}, 49 19, 50 27 ${right} ${wrist} Z`
+}
+const SLIT = 'M51 29 C 63 39, 66 57, 58 74'
+
+function mark(o, fg, bg, size) {
+  return `<svg width="${size}" height="${size}" viewBox="0 -2 100 100">
+    <path d="${path(o)}" fill="${fg}"/>
+    <path d="${SLIT}" fill="none" stroke="${bg}" stroke-width="5.5" stroke-linecap="round"/></svg>`
+}
+const tiles = (o, note) => `<div class="card"><div class="tiles">
+  <div class="t l">${mark(o, '#1F6B4E', '#F2F4EC', 104)}</div>
+  <div class="t d">${mark(o, '#4FBF8E', '#1E2923', 104)}</div></div><small>${note}</small></div>`
+
+const V = [
+  ['1', { r: 20, p: 0, w: 0 }],
+  ['2', { r: 16, p: 2, w: 0 }],
+  ['3', { r: 14, p: 3, w: 3 }],
+  ['4', { r: 12, p: 4, w: 4 }],
+  ['5', { r: 12, p: 6, w: 6 }],
+  ['6', { r: 10, p: 4, w: 6 }],
+  ['7', { r: 9, p: 6, w: 7 }],
+  ['8', { r: 7, p: 6, w: 8 }],
+]
+document.getElementById('v').innerHTML = V
+  .map(([n, o]) => tiles(o, `${n} · r ${o.r} · p ${o.p} · w ${o.w}`)).join('')
+
+document.getElementById('sz').innerHTML = ['3', '4', '5', '6'].map((n) => {
+  const o = V.find((v) => v[0] === n)[1]
+  return `<div class="row"><b>${n}</b>` + [16, 24, 32, 48, 96]
+    .map((s) => `<div class="s">${mark(o, '#1F6B4E', '#fff', s)}<small>${s}</small></div>`).join('')
+    + [16, 24, 32, 48].map((s) => `<div class="s dk">${mark(o, '#4FBF8E', '#1E2923', s)}</div>`).join('') + '</div>'
+}).join('')
+</script>
+</body></html>
