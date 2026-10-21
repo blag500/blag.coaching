@@ -1,0 +1,66 @@
+/* Гамата на здраве&сила — само за /shop/. Чете се след src/plain.css и
+ * пренаписва неговите токени; таблото остава в простата система.
+ *
+ * Откъде е (бележката „Магазин — вид“ в трезора, 22.10.2026):
+ *   овесената земя — Cowboy: продуктът сам върху топъл неутрален фон;
+ *   мастилото и едрият шрифт — Sofi: две думи и един черен бутон;
+ *   лаймът и доматът — Koffiracha: киселото е действие, червеното е сърцето;
+ *   едрите числа — Polestar: размерите се сравняват с цифри, не с текст.
+ * Правилата за знака и цветовете — shop/brand/RULES.md. */
+
+:root {
+  --ground: #EEEAE1;
+  --card: #FFFFFF;
+  --stage: #F6F3EC;
+  --sunken: #E4DFD3;
+  --hover: #E7E2D7;
+  --ink: #12140F;
+  --ink-2: #57584F;   /* 6,3:1 върху земята */
+  --ink-3: #9A988D;
+  --line: rgba(18, 20, 15, 0.1);
+  --line-2: rgba(18, 20, 15, 0.18);
+  --select: #12140F;
+  --select-bg: #E9F7B2;
+  --on-ink: #FFFFFF;
+
+  --lime: #D4F04A;
+  --on-lime: #12140F;
+  --heart: #E5482F;
+  --cta: #12140F;
+  --on-cta: #D4F04A;
+
+  --ok: #2E7D32;
+  --ok-bg: #E6F1DA;
+
+  --display: 'Unbounded', 'Inter', system-ui, sans-serif;
+  --r-lg: 18px;
+  --r-xl: 26px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #11130E;
+    --card: #1B1E17;
+    --stage: #EFEBE2;  /* снимките на доставчиците са на бяло — стоят като етикет */
+    --sunken: #23271E;
+    --hover: #2A2F24;
+    --ink: #F1EEE6;
+    --ink-2: #ABA99E;
+    --ink-3: #6E6D64;
+    --line: rgba(241, 238, 230, 0.1);
+    --line-2: rgba(241, 238, 230, 0.2);
+    --select: #D4F04A;
+    --select-bg: rgba(212, 240, 74, 0.16);
+    --on-ink: #12140F;
+    --heart: #FF6A4D;
+    --cta: #D4F04A;
+    --on-cta: #12140F;
+    --ok: #9BD67A;
+    --ok-bg: rgba(155, 214, 122, 0.14);
+  }
+}
+
+::selection { background: var(--lime); color: var(--on-lime); }

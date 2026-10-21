@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { euro } from './cart'
-import { CATEGORIES, GOALS, PRICES, Sheet, TAGS, unitPrice } from './ui'
+import { cutoffNote } from './delivery'
+import { CATEGORIES, GOALS, Icon, PRICES, Sheet, TAGS, flavorColor, unitPrice, unitValue } from './ui'
 import styles from './Shop.module.css'
 
 /* Каталогът. Всичко, което човек е избрал — търсене, цел, филтри, подредба —
@@ -10,9 +11,10 @@ import styles from './Shop.module.css'
 
 const SORTS = [
   { id: '', label: 'Препоръчани' },
-  { id: 'dose', label: 'Цена на доза' },
+  { id: 'dose', label: 'Най-изгодно' },
   { id: 'price', label: 'Цена ↑' },
   { id: 'price-desc', label: 'Цена ↓' },
+  { id: 'protein', label: 'Протеин на 100 г' },
 ]
 
 const LISTS = ['cat', 'goal', 'tag', 'price']
@@ -45,12 +47,11 @@ function passes(p, f, skip) {
   return true
 }
 
-const perDose = (p) => (p.servings > 1 ? p.price_cents / p.servings : p.price_cents)
-
-export default function Catalog({ products, query, onAdd }) {
+export default function Catalog({ products, query, onAdd, delivery }) {
   const [f, setF] = useState(() => readQuery(query))
   const [sheet, setSheet] = useState(false)
   const [quick, setQuick] = useState(null)
+  const [justAdded, setJustAdded] = useState(null)
 
   useEffect(() => { writeQuery(f) }, [f])
 
@@ -61,7 +62,7 @@ export default function Catalog({ products, query, onAdd }) {
     return () => sessionStorage.setItem('zs.scroll', String(window.scrollY))
   }, [])
 
-  // Размерите на един продукт са една карта; продуктът ги показва като бутони.
+  // Размерите на един продукт са една карта; продуктът ги показва като редове.
   const cards = useMemo(() => {
     const seen = new Map()
     for (const p of products) {
@@ -73,11 +74,24 @@ export default function Catalog({ products, query, onAdd }) {
     return [...seen.values()]
   }, [products])
 
+  // „Най-изгодно“ — най-ниската цена на доза (на кг за храната) във вида си,
+  // само там, където има с какво да се сравни. Смята се, не се пише на ръка.
+  const best = useMemo(() => {
+    const out = new Set()
+    for (const c of CATEGORIES) {
+      const list = cards.filter((p) => p.category === c.id && unitPrice(p))
+      if (list.length < 3) continue
+      out.add(list.reduce((a, b) => (unitValue(b) < unitValue(a) ? b : a)).id)
+    }
+    return out
+  }, [cards])
+
   const shown = useMemo(() => {
     const list = cards.filter((p) => passes(p, f))
-    if (f.sort === 'dose') list.sort((a, b) => perDose(a) - perDose(b))
+    if (f.sort === 'dose') list.sort((a, b) => unitValue(a) - unitValue(b))
     if (f.sort === 'price') list.sort((a, b) => a.price_cents - b.price_cents)
     if (f.sort === 'price-desc') list.sort((a, b) => b.price_cents - a.price_cents)
+    if (f.sort === 'protein') list.sort((a, b) => (b.per100?.protein ?? -1) - (a.per100?.protein ?? -1))
     return list
   }, [cards, f])
 
@@ -91,24 +105,49 @@ export default function Catalog({ products, query, onAdd }) {
   ].filter((a) => a.label)
   const clearAll = () => setF((s) => ({ ...s, q: '', cat: [], goal: [], tag: [], price: [] }))
 
+  const addNow = (p) => {
+    onAdd(p.id, p.flavors[0] ?? null)
+    setJustAdded(p.id)
+    window.setTimeout(() => setJustAdded((x) => (x === p.id ? null : x)), 900)
+  }
+
+  const courier = delivery.find((d) => d.needs === 'office')
+  const cutoff = cutoffNote()
+
   return (
     <>
       <section className={styles.hero}>
-        <h1 className={styles.h1}>Добавки и протеинови снаксове</h1>
-        <p className={styles.lead}>Тесен избор вместо хиляди продукти, подбран от треньор. Доставка с Еконт, Спиди или до вратата в София.</p>
+        <p className={styles.kicker}><i aria-hidden="true" />{cutoff ? `${cutoff}` : 'Поръчай сега — тръгва в следващия работен ден'}</p>
+        <h1 className={styles.display}>Добавки и храна, <em>подбрани</em> от треньор.</h1>
+        <p className={styles.lead}>Тесен избор вместо хиляди продукти — подбран от Николай Благьов, треньор. До всеки продукт е сметната цената на доза, а до храната — макросите на 100 г.</p>
+        <ul className={styles.promises}>
+          <li><Icon name="clock" /><b>До 15:00</b>тръгва същия ден</li>
+          <li><Icon name="truck" /><b>{courier ? `над ${euro(courier.free_from_cents).replace(',00', '')}` : 'Еконт'}</b>безплатна доставка</li>
+          <li><Icon name="card" /><b>С карта</b>през Stripe</li>
+        </ul>
       </section>
 
       <label className={styles.search}>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
         <input type="search" value={f.q} onChange={(e) => setF((s) => ({ ...s, q: e.target.value }))}
-          placeholder="Търси: креатин, ванилия, витамин D…" aria-label="Търси в магазина" />
+          placeholder="Търси: креатин, грис, ванилия…" aria-label="Търси в магазина" />
       </label>
 
       <h2 className={styles.h2}>По цел</h2>
       <div className={styles.goals}>
         {GOALS.map((g) => (
           <button key={g.id} type="button" className={styles.goal} aria-pressed={f.goal.includes(g.id)} onClick={() => toggle('goal', g.id)}>
+            <Icon name={g.id} size={26} />
             <b>{g.label}</b><small>{g.hint}</small>
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.catRow} role="group" aria-label="Вид">
+        {CATEGORIES.filter((c) => cards.some((p) => p.category === c.id)).map((c) => (
+          <button key={c.id} type="button" className={styles.catChip} aria-pressed={f.cat.includes(c.id)}
+            onClick={() => setF((s) => ({ ...s, cat: s.cat.includes(c.id) ? [] : [c.id] }))}>
+            {c.label}<span>{cards.filter((p) => p.category === c.id).length}</span>
           </button>
         ))}
       </div>
@@ -141,22 +180,40 @@ export default function Catalog({ products, query, onAdd }) {
 
       {shown.length ? (
         <ul className={styles.grid}>
-          {shown.map((p) => (
-            <li key={p.id} className={styles.card}>
+          {shown.map((p, i) => (
+            <li key={p.id} className={styles.card} style={{ '--i': Math.min(i, 12) }}>
               <a href={`#/p/${p.id}`} className={styles.cardLink}>
-                <img src={p.image} alt="" loading="lazy" width="300" height="300" />
+                <span className={styles.stage}>
+                  <img className={styles.stageImg} src={p.image} alt="" loading="lazy" width="300" height="300" />
+                  {best.has(p.id)
+                    ? <span className={styles.flag}>Най-изгодно {p.category === 'pantry' ? 'на кг' : 'на доза'}</span>
+                    : p.tags.includes('high_protein') ? <span className={`${styles.flag} ${styles.flagMuted}`}>Много протеин</span> : null}
+                </span>
                 <span className={styles.cardName}>{p.name}</span>
                 <span className={styles.cardSize}>{p.sizes > 1 ? `${p.sizes} размера` : p.size_label}</span>
-                {p.flavors.length > 1 && <span className={styles.cardMeta}>{p.flavors.length} вкуса</span>}
+                {p.flavors.length > 1 && (
+                  <span className={styles.cardMeta}>
+                    <span className={styles.dots} aria-hidden="true">{p.flavors.slice(0, 5).map((fl) => <i key={fl} style={{ background: flavorColor(fl) }} />)}</span>
+                    {p.flavors.length} вкуса
+                  </span>
+                )}
+                {p.per100 && (
+                  <span className={styles.macroLine} title="на 100 г">
+                    <span>{Math.round(p.per100.protein)} г протеин</span>
+                    <span>{Math.round(p.per100.kcal)} ккал</span>
+                  </span>
+                )}
               </a>
               <div className={styles.cardFoot}>
                 <span className={styles.priceBox}>
                   <span className={styles.price}>{p.sizes > 1 ? 'от ' : ''}{euro(p.price_cents)}</span>
                   {unitPrice(p) && <span className={styles.unit}>{unitPrice(p)}</span>}
                 </span>
-                <button type="button" className={styles.addSmall}
-                  onClick={() => (p.flavors.length > 1 || p.sizes > 1 ? setQuick(p) : onAdd(p.id, p.flavors[0] ?? null))}
-                  aria-label={`Добави ${p.name} в количката`}>Добави</button>
+                <button type="button" className={`${styles.addSmall} ${justAdded === p.id ? styles.addDone : ''}`}
+                  onClick={() => (p.flavors.length > 1 || p.sizes > 1 ? setQuick(p) : addNow(p))}
+                  aria-label={`Добави ${p.name} в количката`}>
+                  <Icon name={justAdded === p.id ? 'check' : 'plus'} size={20} stroke={2.4} />
+                </button>
               </div>
             </li>
           ))}
@@ -231,7 +288,7 @@ function QuickAdd({ product, products, onAdd, onClose }) {
       )}
       {p.flavors.length > 1 && (
         <fieldset className={styles.fGroup}>
-          <legend>Вкус</legend>
+          <legend>Вкус {flavor ? <b>· {flavor}</b> : null}</legend>
           <div className={styles.pills}>
             {p.flavors.map((fl) => (
               <button key={fl} type="button" className={styles.pill} aria-pressed={flavor === fl} onClick={() => setFlavor(fl)}>{fl}</button>

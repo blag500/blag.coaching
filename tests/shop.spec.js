@@ -13,6 +13,8 @@ const PRODUCTS = [
   P({ id: 'crea-300', category: 'creatine', name: 'Тест Креатин', size_label: '300 г · 50 дози', price_cents: 1349, image: '/shop/img/6pak-creatine-300.webp', goals: ['strength'], servings: 50, size_group: 'crea', sort: 1 }),
   P({ id: 'crea-500', category: 'creatine', name: 'Тест Креатин', size_label: '500 г · 83 дози', price_cents: 1999, image: '/shop/img/6pak-creatine-500.webp', goals: ['strength'], servings: 83, size_group: 'crea', sort: 2 }),
   P({ id: 'd3', category: 'vitamins', name: 'Тест D3', size_label: '120 капсули', price_cents: 799, image: '/shop/img/nutriversum-d3k2-120.webp', goals: ['health'], servings: 120, sort: 3 }),
+  P({ id: 'gris', category: 'pantry', name: 'Тест Оризов грис', size_label: '500 г', net_g: 500, price_cents: 199, image: '/shop/img/izzi-rice-semolina-500.webp', goals: ['mealprep'], servings: null, sort: 4,
+    per100: { kcal: 357, protein: 6.5, carbs: 79, fat: 0.6, source: 'Ориентировъчно.' } }),
 ]
 const DELIVERY = [
   { id: 'econt-office', label: 'Офис на Еконт', hint: '', price_cents: 349, free_from_cents: 6000, needs: 'office', sort: 0, active: true },
@@ -31,7 +33,7 @@ async function open(page, path = '/shop/') {
 
 test('каталогът: целта филтрира, размерите са една карта, адресът пази избора', async ({ page }, info) => {
   await open(page)
-  await expect(page.getByText('3 продукта')).toBeVisible()          // двата креатина — една карта
+  await expect(page.getByText('4 продукта')).toBeVisible()          // двата креатина — една карта
   await expect(page.getByText('2 размера')).toBeVisible()
   await expect(page.getByText('1,01 € / доза')).toBeVisible()       // 33,49 / 33
   await page.getByRole('button', { name: /Здраве всеки ден/ }).click()
@@ -39,7 +41,7 @@ test('каталогът: целта филтрира, размерите са �
   await expect(page.getByText('Тест Whey')).toHaveCount(0)
   expect(page.url()).toContain('goal=health')
   await page.getByRole('button', { name: 'Махни Здраве всеки ден' }).click()
-  await expect(page.getByText('3 продукта')).toBeVisible()
+  await expect(page.getByText('4 продукта')).toBeVisible()
   await page.screenshot({ path: `shots/shop-${info.project.name}.png`, fullPage: true })
 })
 
@@ -102,4 +104,14 @@ test('касата: конкретни грешки, офис от списък,
   expect(sent.items).toEqual([{ id: 'd3', flavor: null, qty: 1 }])
   expect(sent.delivery.id).toBe('econt-office')
   expect(sent.delivery.details).toContain('[2]')
+})
+
+test('храната: макросите на 100 г и цената на кг', async ({ page }) => {
+  await open(page)
+  await expect(page.getByText('3,98 € / кг')).toBeVisible()             // 1,99 € за 500 г
+  await page.getByText('Тест Оризов грис').click()
+  const macros = page.getByRole('region', { name: 'Хранителни стойности на 100 г' })
+  await expect(macros.getByText('357')).toBeVisible()
+  await expect(macros.getByText('6,5')).toBeVisible()
+  await expect(page.getByText('Ориентировъчно.')).toBeVisible()
 })

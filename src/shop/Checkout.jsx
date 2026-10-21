@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { euro } from './cart'
 import { arrivalText } from './delivery'
 import { FreeBar, Stepper } from './ui'
+import { Mark } from './Brand.jsx'
 import styles from './Shop.module.css'
 
 /* Количката, касата и благодарността.
@@ -22,7 +23,7 @@ export function Cart({ lines, subtotal, delivery, onQty }) {
       <ul className={styles.lines}>
         {lines.map((l) => (
           <li key={l.key} className={styles.line}>
-            <a href={`#/p/${l.product.id}`}><img src={l.product.image} alt="" width="64" height="64" /></a>
+            <a href={`#/p/${l.product.id}`} className={styles.lineImg}><img src={l.product.image} alt="" width="64" height="64" /></a>
             <div className={styles.lineMain}>
               <span className={styles.lineName}>{l.product.name}</span>
               <span className={styles.cardSize}>{[l.product.size_label, l.flavor].filter(Boolean).join(' · ')}</span>
@@ -83,7 +84,8 @@ export function Checkout({ lines, subtotal, delivery, onPaid }) {
 
   if (done) {
     return (
-      <div className={styles.emptyBox}>
+      <div className={`${styles.emptyBox} ${styles.thanks}`}>
+        <span className="zs-beat"><Mark size={96} /></span>
         <h1 className={styles.h1}>Поръчка № {done}</h1>
         <p>Записана е. Плащането с карта още не е пуснато — ще ти пишем на имейла.</p>
         <a href="#/" className={styles.primary}>Към каталога</a>
@@ -249,7 +251,8 @@ export function Thanks({ order, session, onDone }) {
   }, [order, session, onDone])
   if (state.loading) return <p className={styles.empty}>Проверяваме плащането…</p>
   return (
-    <div className={styles.emptyBox}>
+    <div className={`${styles.emptyBox} ${styles.thanks}`}>
+      {state.paid && <span className="zs-beat"><Mark size={96} /></span>}
       <h1 className={styles.h1}>{state.paid ? `Благодарим! Поръчка № ${state.number}` : 'Плащането не е потвърдено'}</h1>
       <p>{state.paid
         ? 'Плащането мина. Ще ти пишем на имейла, когато пратката тръгне.'
