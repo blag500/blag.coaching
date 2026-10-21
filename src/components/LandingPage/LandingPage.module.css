@@ -417,7 +417,7 @@
   border: none;
   border-radius: var(--r-pill);
   background: var(--accent);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.12em;
@@ -1108,7 +1108,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-md);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 16px;
   letter-spacing: 0.12em;

@@ -680,7 +680,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-sm);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 12px;
   letter-spacing: 0.08em;

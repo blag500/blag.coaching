@@ -464,14 +464,18 @@
   cursor: default;
 }
 
-/* Ястие button — amber accent */
+/* Ястие, Етикет, Баркод — едно нещо в три начина, затова и един вид.
+   Различават се по знака, не по цвета: зеленото и синьото бяха на
+   въглехидратите и протеина, а в светлата тема не се четяха (1,7:1 и 1,8:1,
+   одит 21.10). Буквите са в цвета на текста — златото върху златист фон
+   в светлата тема е 3,95:1; златото остава на знака и на рамката. */
 .foodPhotoBtn {
   flex: 1;
   padding: 11px 8px;
   background: rgba(var(--accent-rgb), 0.12);
   border: 1px solid rgba(var(--accent-rgb), 0.35);
   border-radius: var(--radius);
-  color: var(--accent);
+  color: var(--text);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.06em;
@@ -493,14 +497,12 @@
   cursor: default;
 }
 
-/* Баркод — зеленото на въглехидратите, за да се различава от другите два:
-   ястието и етикетът са четене на снимка, а това е четене на номер. */
 .barcodeBtn {
   padding: 11px 8px;
-  background: rgba(102, 187, 106, 0.08);
-  border: 1px solid rgba(102, 187, 106, 0.28);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   border-radius: var(--radius);
-  color: #81C784;
+  color: var(--text);
   font-family: var(--font-heading);
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -513,17 +515,16 @@
 }
 
 .barcodeBtn:active {
-  background: rgba(102, 187, 106, 0.16);
+  background: rgba(var(--accent-rgb), 0.22);
 }
 
-/* Етикет button — blue/OCR tone */
 .labelScanBtn {
   flex: 1;
   padding: 11px 8px;
-  background: rgba(66, 165, 245, 0.08);
-  border: 1px solid rgba(66, 165, 245, 0.28);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   border-radius: var(--radius);
-  color: #64B5F6;
+  color: var(--text);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.06em;
@@ -537,7 +538,14 @@
 }
 
 .labelScanBtn:active {
-  background: rgba(66, 165, 245, 0.16);
+  background: rgba(var(--accent-rgb), 0.22);
+}
+
+.foodPhotoBtn svg,
+.labelScanBtn svg,
+.barcodeBtn svg {
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 /* Трите на един ред са едно нещо в три цвята, затова са и с една големина:
@@ -626,7 +634,7 @@
 .cookingBtnActive {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0C0A06;
+  color: var(--bg);
   font-weight: 700;
 }
 

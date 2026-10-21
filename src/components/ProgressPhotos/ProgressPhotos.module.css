@@ -74,7 +74,7 @@
   height: 24px;
   border-radius: 50%;
   background: var(--accent);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 0.85rem;
   display: flex;
@@ -104,7 +104,7 @@
 .selectBtnOn {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0C0A06;
+  color: var(--bg);
 }
 
 /* ── Compare bar ── */

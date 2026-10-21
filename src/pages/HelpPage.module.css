@@ -90,7 +90,7 @@
   display: inline-flex;
   align-items: center;
   background: var(--accent);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 0.82rem;
   letter-spacing: 0.06em;

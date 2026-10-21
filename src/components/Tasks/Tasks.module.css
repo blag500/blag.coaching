@@ -157,7 +157,7 @@
 .checkDone {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0C0A06;
+  color: var(--bg);
 }
 
 /* Task body */
@@ -351,7 +351,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-md);
-  color: #0C0A06;
+  color: var(--bg);
   font-size: 22px;
   font-family: var(--font-heading);
   cursor: pointer;

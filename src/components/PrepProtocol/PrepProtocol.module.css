@@ -101,7 +101,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-md);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 15px;
   letter-spacing: 0.1em;
@@ -246,7 +246,7 @@
   opacity: 0.35;
 }
 .dayCellDark {
-  color: #0C0A06;
+  color: var(--bg);
 }
 .dayLabel {
   font-family: var(--font-body);
@@ -295,7 +295,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-sm);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -434,7 +434,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-sm);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -509,7 +509,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--r-sm);
-  color: #0C0A06;
+  color: var(--bg);
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.08em;
