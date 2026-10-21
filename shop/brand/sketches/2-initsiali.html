@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="bg"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --spruce:#1F6B4E; --mint:#4FBF8E; --ink:#141C17; --paper:#F2F4EC; --night:#1E2923; --line:#D2D9C8; --soft:#55645B; }
+  body { margin:0; padding:32px; background:var(--paper); color:var(--ink); font:15px/1.5 Inter,sans-serif; width:1260px; }
+  h1 { font:800 26px/1.1 Unbounded; margin:0 0 4px; }
+  .sub { color:var(--soft); margin:0 0 22px; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .card h2 { font:600 13px Inter; color:var(--soft); margin:0 0 10px; }
+  .pair { display:flex; gap:12px; justify-content:center; align-items:center; }
+  .tile { border-radius:12px; display:grid; place-items:center; }
+  .tile.l { background:var(--paper); }
+  .tile.d { background:var(--night); }
+  .note { font-size:13px; color:var(--soft); margin:10px 0 0; }
+  .words { margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .wm { background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px; display:flex; flex-direction:column; gap:16px; }
+  .lock { display:flex; align-items:center; gap:14px; }
+  .w { font:800 24px/1 Unbounded; letter-spacing:-0.01em; }
+  .w b { color:var(--spruce); font-weight:800; }
+  .w2 { font:700 26px/1 Inter; letter-spacing:-0.02em; }
+  .w2 b { color:var(--spruce); }
+  .dk { background:var(--night); color:#E9F0EA; border-radius:12px; padding:14px; }
+  .dk b { color:var(--mint); }
+  .small { display:flex; gap:12px; align-items:flex-end; }
+</style></head><body>
+<h1>Здраве&amp;Сила · Health&amp;Strength — вплетени инициали</h1>
+<p class="sub">Един ход, заоблени краища, преплитане над-под — техниката на веригата на Чийт Код</p>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <!-- Буквите са с един ход (14) в поле 100×100. -->
+  <path id="Z" d="M24 22 C 34 12, 66 12, 68 32 C 70 48, 54 52, 44 52 C 58 52, 74 58, 72 74 C 70 92, 36 92, 24 80"/>
+  <path id="C" d="M80 26 C 70 12, 46 10, 32 22 C 16 36, 16 66, 32 80 C 46 92, 70 90, 80 76"/>
+  <path id="H" d="M22 14 V 88 M78 14 V 88 M22 51 H 78"/>
+  <path id="S" d="M76 24 C 68 12, 36 10, 30 28 C 24 46, 74 50, 72 70 C 70 90, 34 92, 24 78"/>
+</defs></svg>
+
+<div class="grid" id="grid"></div>
+
+<div class="words">
+  <div class="wm">
+    <span class="w">ЗДРАВЕ<b>&amp;</b>СИЛА</span>
+    <span class="w">HEALTH<b>&amp;</b>STRENGTH</span>
+    <span class="w2">Здраве<b>&amp;</b>Сила</span>
+    <p class="note">Горе: Unbounded 800 само с главни (малките кирилски букви в него са стилизирани — „д“ като „g“). Долу: Inter 700 с малки — ако искаш „Здраве&amp;Сила“ точно така.</p>
+  </div>
+  <div class="wm">
+    <div class="lock" id="lockBG"></div>
+    <div class="lock dk" id="lockEN"></div>
+    <div class="small" id="small"></div>
+  </div>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg'
+// over: коя буква минава отгоре в лявата и в дясната половина на пресичането —
+// така двете се преплитат (над-под), а не лежат една върху друга.
+function mono({ a, b, dx, color, bg, size, sw = 13, weave = true }) {
+  const id = Math.random().toString(36).slice(2)
+  const vb = `-8 -8 ${116 + dx} 116`
+  const use = (ref, x, extra = '') => `<use href="#${ref}" x="${x}" fill="none" stroke-linecap="round" stroke-linejoin="round" ${extra}/>`
+  // Преплитане: B над A в горната половина, A над B в долната.
+  return `<svg width="${size * (116 + dx) / 116}" height="${size}" viewBox="${vb}">
+    <defs><clipPath id="t${id}"><rect x="-10" y="-10" width="${130 + dx}" height="60"/></clipPath>
+          <clipPath id="b${id}"><rect x="-10" y="50" width="${130 + dx}" height="70"/></clipPath></defs>
+    ${use(a, 0, `stroke="${color}" stroke-width="${sw}"`)}
+    <g clip-path="url(#t${id})">${use(b, dx, `stroke="${bg}" stroke-width="${sw + 9}"`)}${use(b, dx, `stroke="${color}" stroke-width="${sw}"`)}</g>
+    <g clip-path="url(#b${id})">${use(b, dx, `stroke="${color}" stroke-width="${sw}"`)}${weave ? use(a, 0, `stroke="${bg}" stroke-width="${sw + 9}"`) + use(a, 0, `stroke="${color}" stroke-width="${sw}"`) : ''}</g>
+  </svg>`
+}
+const opts = [
+  { t: 'ЗС · застъпени наполовина', a: 'Z', b: 'C', dx: 46, n: 'З отляво, С я хваща. Горе С е отгоре, долу — З: истинско преплитане.' },
+  { t: 'HS · застъпени наполовина', a: 'H', b: 'S', dx: 44, n: 'S минава през дясната вертикала на H — над в горната половина, под в долната.' },
+  { t: 'ЗС · плътно сплетени', a: 'Z', b: 'C', dx: 22, n: 'По-компактен, почти квадрат — по-добър за иконка и кръгче; по-труден за четене като букви.' },
+]
+const grid = document.getElementById('grid')
+for (const o of opts) {
+  grid.insertAdjacentHTML('beforeend', `<section class="card"><h2>${o.t}</h2><div class="pair">
+    <div class="tile l" style="width:170px;height:170px">${mono({ a:o.a, b:o.b, dx:o.dx, color:'#1F6B4E', bg:'#F2F4EC', size:120 })}</div>
+    <div class="tile d" style="width:170px;height:170px">${mono({ a:o.a, b:o.b, dx:o.dx, color:'#4FBF8E', bg:'#1E2923', size:120 })}</div>
+  </div><p class="note">${o.n}</p></section>`)
+}
+document.getElementById('lockBG').innerHTML = mono({ a:'Z', b:'C', dx:46, color:'#1F6B4E', bg:'#fff', size:44, sw:15 }) + '<span class="w">ЗДРАВЕ<b>&amp;</b>СИЛА</span>'
+document.getElementById('lockEN').innerHTML = mono({ a:'H', b:'S', dx:44, color:'#4FBF8E', bg:'#1E2923', size:44, sw:15 }) + '<span class="w" style="color:#E9F0EA">HEALTH<b>&amp;</b>STRENGTH</span>'
+document.getElementById('small').innerHTML = [48, 32, 24, 16].map((s) => mono({ a:'Z', b:'C', dx:46, color:'#1F6B4E', bg:'#fff', size:s, sw: s < 30 ? 18 : 15 })).join('')
+</script>
+</body></html>

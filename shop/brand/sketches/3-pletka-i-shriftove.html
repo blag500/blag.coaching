@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="bg"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Onest:wght@700;800&family=Manrope:wght@800&family=Montserrat:wght@800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --spruce:#1F6B4E; --mint:#4FBF8E; --ink:#141C17; --paper:#F2F4EC; --night:#1E2923; --line:#D2D9C8; --soft:#55645B; }
+  body { margin:0; padding:30px; background:var(--paper); color:var(--ink); font:15px/1.5 Inter,sans-serif; width:1300px; }
+  h1 { font:700 22px Inter; margin:0 0 4px; }
+  h2 { font:600 13px Inter; color:var(--soft); margin:22px 0 10px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center; }
+  .card small { display:block; color:var(--soft); font-size:12px; margin-top:6px; }
+  .tiles { display:flex; gap:8px; justify-content:center; }
+  .t { width:130px; height:130px; border-radius:12px; display:grid; place-items:center; }
+  .t.l { background:var(--paper); } .t.d { background:var(--night); }
+  .fonts { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  .f { background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .f .w { font-size:34px; line-height:1.1; letter-spacing:-0.015em; }
+  .f .w b { color:var(--spruce); font-weight:inherit; }
+  .f small { color:var(--soft); font-size:12px; }
+</style></head><body>
+<h1>Вплетени инициали — втора проба · Словният знак с малки букви</h1>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <path id="Z" d="M22 20 C 30 8, 64 6, 68 28 C 71 44, 56 50, 42 50 C 60 50, 76 58, 74 74 C 72 94, 34 96, 20 80"/>
+  <path id="C" d="M82 24 C 72 8, 42 6, 28 22 C 12 40, 14 66, 30 80 C 44 94, 72 92, 82 76"/>
+  <path id="H" d="M24 12 V 88 M76 12 V 88 M24 50 H 76"/>
+  <path id="S" d="M78 24 C 70 10, 36 8, 30 26 C 24 44, 76 48, 74 70 C 72 92, 32 94, 22 78"/>
+</defs></svg>
+
+<h2>ЗС — различни застъпвания (плетка: всяко второ пресичане сменя кое е отгоре)</h2>
+<div class="grid" id="zc"></div>
+<h2>HS — различни застъпвания</h2>
+<div class="grid" id="hs"></div>
+<h2>„Здраве&amp;Сила“ с малки букви — четири шрифта (lang=bg, българските форми изключени)</h2>
+<div class="fonts" id="fonts"></div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg'
+// Точките на пътя, преместени с dx.
+function sample(id, dx, step = 0.6) {
+  const p = document.getElementById(id)
+  // <use> не дава точки — затова временен път със същото d (може да има M…M).
+  const out = []
+  for (const seg of p.getAttribute('d').split(/(?=M)/)) {
+    const el = document.createElementNS(NS, 'path'); el.setAttribute('d', seg)
+    const L = el.getTotalLength()
+    for (let s = 0; s <= L; s += step) { const q = el.getPointAtLength(s); out.push([q.x + dx, q.y]) }
+  }
+  return out
+}
+// Пресичанията: двойки близки точки, групирани в центрове.
+function crossings(a, b, dx) {
+  const A = sample(a, 0), B = sample(b, dx), hits = []
+  for (const p of A) for (const q of B) if (Math.hypot(p[0] - q[0], p[1] - q[1]) < 1.2) hits.push([(p[0] + q[0]) / 2, (p[1] + q[1]) / 2])
+  const groups = []
+  for (const h of hits) {
+    const g = groups.find((g) => Math.hypot(g[0] - h[0], g[1] - h[1]) < 14)
+    if (g) { g[0] = (g[0] * g[2] + h[0]) / (g[2] + 1); g[1] = (g[1] * g[2] + h[1]) / (g[2] + 1); g[2]++ } else groups.push([h[0], h[1], 1])
+  }
+  return groups.sort((p, q) => p[1] - q[1] || p[0] - q[0])
+}
+function mono(a, b, dx, color, bg, size, sw = 13, firstOver = 'b') {
+  const id = Math.random().toString(36).slice(2)
+  const cr = crossings(a, b, dx)
+  const u = (ref, x, s, w) => `<use href="#${ref}" x="${x}" fill="none" stroke="${s}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`
+  let over = ''
+  cr.forEach((c, i) => {
+    const aOver = (i % 2 === 0) === (firstOver === 'a')
+    if (!aOver) return // B е отгоре по подразбиране (рисува се втора)
+    over += `<clipPath id="c${id}${i}"><circle cx="${c[0]}" cy="${c[1]}" r="${sw * 1.35}"/></clipPath>
+      <g clip-path="url(#c${id}${i})">${u(a, 0, bg, sw + 8)}${u(a, 0, color, sw)}</g>`
+  })
+  const w = 100 + dx
+  return `<svg width="${size * (w + 16) / 116}" height="${size}" viewBox="-8 -8 ${w + 16} 116">
+    ${u(a, 0, color, sw)}${u(b, dx, bg, sw + 8)}${u(b, dx, color, sw)}${over}</svg>`
+}
+const card = (a, b, dx, note, first) => `<div class="card"><div class="tiles">
+  <div class="t l">${mono(a, b, dx, '#1F6B4E', '#F2F4EC', 104, 13, first)}</div>
+  <div class="t d">${mono(a, b, dx, '#4FBF8E', '#1E2923', 104, 13, first)}</div></div><small>${note}</small></div>`
+document.getElementById('zc').innerHTML = [
+  card('Z', 'C', 30, 'dx 30', 'b'), card('Z', 'C', 20, 'dx 20', 'b'), card('Z', 'C', 12, 'dx 12 — почти едно в друго', 'a'), card('C', 'Z', -6, 'С обгръща З', 'a'),
+].join('')
+document.getElementById('hs').innerHTML = [
+  card('H', 'S', 0, 'S в средата на H', 'b'), card('H', 'S', 0, 'същото, обратна плетка', 'a'), card('H', 'S', 20, 'dx 20', 'b'), card('H', 'S', 34, 'dx 34', 'a'),
+].join('')
+const fonts = [
+  ['Unbounded', 800, 'Unbounded 800 — шрифтът на CHEATCODE'],
+  ['Onest', 800, 'Onest 800 — правен за кирилица'],
+  ['Manrope', 800, 'Manrope 800'],
+  ['Montserrat', 800, 'Montserrat 800'],
+]
+document.getElementById('fonts').innerHTML = fonts.map(([f, w, n]) => `<div class="f">
+  <div class="w" style="font-family:'${f}';font-weight:${w};font-feature-settings:'locl' 0">Здраве<b>&amp;</b>Сила</div>
+  <div class="w" style="font-family:'${f}';font-weight:${w};font-size:26px;margin-top:6px">Health<b>&amp;</b>Strength</div>
+  <small>${n}</small></div>`).join('')
+</script>
+</body></html>
