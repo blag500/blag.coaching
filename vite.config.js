@@ -15,15 +15,16 @@ export default defineConfig({
   server: {
     host: true,
   },
-  /* Три страници: приложението, таблото за инвестициите (/invest/) и личното
-     табло (/tablo/). Таблата ползват същия Supabase клиент и същите
-     променливи, но не и обвивката. */
+  /* Четири страници: приложението, таблото за инвестициите (/invest/),
+     личното табло (/tablo/) и онлайн магазинът (/shop/). Другите три ползват
+     същия Supabase клиент и същите променливи, но не и обвивката. */
   build: {
     rollupOptions: {
       input: {
         main: 'index.html',
         invest: 'invest/index.html',
         tablo: 'tablo/index.html',
+        shop: 'shop/index.html',
       },
     },
   },
@@ -119,7 +120,7 @@ export default defineConfig({
         /* Пробната страница на Чийт Код не е част от приложението: снимките ѝ
            са мегабайти, а предварителният кеш ги дава на всеки клиент при
            следващото обновяване. */
-        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*'],
+        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'shop/**', 'assets/shop-*'],
         /* Предварителният кеш е за обвивката, не за снимките.
            Дотук влизаше всичко — рецепти, ястия, фонове, логото за имейлите —
            около 7 MB, които всеки клиент теглеше при инсталиране и наново

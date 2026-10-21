@@ -143,7 +143,7 @@ localStorage); сметките са в `src/invest/projection.js`. Чете с�
 собственика — трети вход на Vite, без service worker, извън кеша на приложението.
 **Собствен вид, не темите на приложението:** по PikSpec — светла земя, бели карти
 с тънък ръб, Inter, цвят само за наред/следи/внимание; тъмното следва телефона.
-Токените са в `src/tablo/tablo.css`, не в `src/index.css`. Четири таба, всеки с една
+Токените са в `src/plain.css`, не в `src/index.css`. Четири таба, всеки с една
 работа: Сега (стъпката, „Чака теб“, „Чака решение“, четирите числа на бизнеса —
 отметките са оттук), План (седмицата и идеите; отворено е само „В работа“), Одит
 (предложенията и отвореното; поправеното е сгънато), Работа (токени, промени и
@@ -154,6 +154,21 @@ localStorage); сметките са в `src/invest/projection.js`. Чете с�
 `tablo_business()` (броеве по дни за поръчки, логващи, грешки, бота). Чете само
 `tablo_owner`. Claude допълва таблото след сесия през SQL — стъпката е една.
 Миграция `134_tablo.sql`; решението — Р15.
+
+**Магазин „Здраве и Сила“** (`/shop/`, `shop/index.html` → `src/shop/`): онлайн
+магазинът за добавки — четвърти вход на Vite, простата система (`src/plain.css`),
+без акаунт, без service worker. Отделен е от стария магазин в приложението
+(`catalog_products`, `orders`, 070) — не се смесват. Таблици (135): `shop_products`
+(публичен каталог), `shop_supply` (цена на едро и пазарна — само собственикът),
+`shop_delivery` (петте начина и цените им — сменят се с ред в базата),
+`shop_orders` (пише ги само функцията). `supabase/functions/shop-checkout`: проверява
+количката по цените в базата, пише поръчката и отваря Stripe Checkout; след
+връщането пита Stripe дали е платено (без webhook). Ключът е
+`STRIPE_SHOP_SECRET_KEY` и докато `SHOP_LIVE` не е `1`, се приема само `sk_test_`.
+Асортиментът се генерира от `D:\blag-ai\shop\build_products.py` (каталозите на
+доставчиците, снимките в `public/shop/img/`) → `136_shop_seed.sql`. Цените на едро
+не са в repo-то (то е публично) — те са в `supply.sql` до скрипта и в базата.
+Решението — Р16.
 
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 

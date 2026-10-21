@@ -1,7 +1,7 @@
 import styles from './Charts.module.css'
 
 /* Графиките на таблото. Само SVG, без библиотека — като WeightChart.
- * Цветовете идват от src/tablo/tablo.css: --ok, --warn, --bad, --series-*. */
+ * Цветовете идват от src/plain.css: --ok, --warn, --bad, --series-*. */
 
 const LEVEL_COLOR = { ok: 'var(--ok)', watch: 'var(--warn)', high: 'var(--bad)' }
 

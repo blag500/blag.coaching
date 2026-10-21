@@ -17,7 +17,7 @@ import styles from './TabloApp.module.css'
  *   Одит   — отвореното и предложенията; поправеното е сгънато.
  *   Работа — работата с Claude: токени, промени, сесии. За Claude, не за човека.
  *
- * Видът е собствен (src/tablo/tablo.css), по PikSpec — не темите на
+ * Видът е собствен (src/plain.css), по PikSpec — не темите на
  * приложението. Числата за работата идват от компютъра
  * (scripts/tablo-sync.mjs), бизнесът — от tablo_business(). */
 

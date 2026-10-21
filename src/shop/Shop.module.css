@@ -1,0 +1,553 @@
+/* Магазинът, в простата система (src/plain.css): светло, бели карти с косъм,
+ * снимките на продуктите водят. Цветът е за цената и за бутона — нищо друго. */
+
+.testBar {
+  padding: 6px 16px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--ground) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cartBtn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink);
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 8px 16px 48px;
+}
+
+.foot {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.foot p { margin: 2px 0; }
+
+.empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+.emptyBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+/* ── Каталогът ──────────────────────────────────────────────────────────── */
+
+.hero { padding: 16px 0 8px; }
+
+.h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.lead {
+  margin: 0;
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  margin: 16px -16px 16px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.chip[aria-current='page'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; } }
+@media (min-width: 900px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--card);
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 12px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* Снимките на доставчиците са на бял фон — в тъмното стоят като етикет. */
+.cardLink img,
+.productImg img,
+.line img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: #FFFFFF;
+}
+
+.cardLink img {
+  width: calc(100% + 24px);
+  margin: 0 -12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cardName {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cardSize {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.cardFoot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: auto;
+  padding: 8px 12px 12px;
+}
+
+.price {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.addSmall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* ── Продуктът ──────────────────────────────────────────────────────────── */
+
+.product {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 760px) {
+  .product { grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .back { grid-column: 1 / -1; }
+}
+
+.back {
+  color: var(--ink-2);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.productImg {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: #FFFFFF;
+}
+
+.productBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bigPrice {
+  margin: 6px 0;
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.flavors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.flavors legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.flavor input { position: absolute; opacity: 0; pointer-events: none; }
+
+.flavor span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.flavor input:checked + span {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+.flavor input:focus-visible + span { outline: 2px solid var(--select); outline-offset: 2px; }
+
+.buyRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.buyRow .primary { flex: 1; }
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--card);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.stepper span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ── Бутони ─────────────────────────────────────────────────────────────── */
+
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.primary:disabled { opacity: 0.45; cursor: default; }
+.primary:active:not(:disabled) { opacity: 0.8; }
+.wide { width: 100%; }
+
+/* ── Количката ──────────────────────────────────────────────────────────── */
+
+.lines {
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--card);
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+}
+
+.line + .line { border-top: 1px solid var(--line); }
+
+.line img {
+  width: 64px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.lineMain {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lineName { font-size: 15px; font-weight: 600; }
+
+.linePrice {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sum {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 4px 0;
+  font-size: 17px;
+}
+
+.sum b { font-variant-numeric: tabular-nums; }
+
+.note {
+  margin: 10px 0 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* ── Касата ─────────────────────────────────────────────────────────────── */
+
+.checkout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--card);
+}
+
+.group legend {
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.group > label:not(.option) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.group input:not([type='radio']) {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: var(--card);
+  color: var(--ink);
+}
+
+.option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  cursor: pointer;
+}
+
+.option:has(input:checked) { border-color: var(--ink); }
+
+.option input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
+
+.optionMain { display: flex; flex-direction: column; }
+.optionMain b { font-size: 15px; font-weight: 600; }
+.optionMain small { font-size: 13px; color: var(--ink-2); }
+
+.optionPrice {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 4px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary > div { display: flex; justify-content: space-between; }
+.total { padding-top: 6px; border-top: 1px solid var(--line); font-size: 18px; }
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--bad-bg);
+  color: var(--bad);
+  font-size: 14px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 20px);
+  z-index: 20;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 14px;
+  font-weight: 600;
+}

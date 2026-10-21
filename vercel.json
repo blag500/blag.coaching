@@ -13,6 +13,10 @@
       "destination": "/tablo/index.html"
     },
     {
+      "source": "/shop/",
+      "destination": "/shop/index.html"
+    },
+    {
       "source": "/cokitchen/",
       "destination": "/cokitchen/index.html"
     },
@@ -39,6 +43,11 @@
     {
       "source": "/tablo",
       "destination": "/tablo/",
+      "permanent": false
+    },
+    {
+      "source": "/shop",
+      "destination": "/shop/",
       "permanent": false
     },
     {
