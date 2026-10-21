@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="bg"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --spruce:#1F6B4E; --mint:#4FBF8E; --ink:#141C17; --paper:#F2F4EC; --night:#1E2923; --line:#D2D9C8; --soft:#55645B; }
+  body { margin:0; padding:30px; background:var(--paper); color:var(--ink); font:15px/1.5 Inter,sans-serif; width:1300px; }
+  h1 { font:700 22px Inter; margin:0 0 4px; }
+  p.lead { margin:0; color:var(--soft); font-size:14px; }
+  h2 { font:600 13px Inter; color:var(--soft); margin:22px 0 10px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; text-align:center; }
+  .card small { display:block; color:var(--soft); font-size:12px; margin-top:6px; }
+  .tiles { display:flex; gap:8px; justify-content:center; }
+  .t { width:130px; height:130px; border-radius:12px; display:grid; place-items:center; }
+  .t.l { background:var(--paper); } .t.d { background:var(--night); }
+  .row { display:flex; gap:22px; align-items:flex-end; background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; }
+  .row .s { text-align:center; } .row .s small { display:block; color:var(--soft); font-size:12px; }
+  .k { stroke:#C9D2C2; stroke-width:.6; fill:none; stroke-dasharray:2 2; }
+</style></head><body>
+<h1>Свита ръка, чийто силует е сърце — първа скица (конструкция, не на чисто)</h1>
+<p class="lead">Лакътят е долният връх. Бицепсът — горната лява дъга, юмрукът — дясната. Без разреза е сърце; с него — ръка.</p>
+
+<h2>Четири посоки</h2>
+<div class="grid" id="v"></div>
+
+<h2>E–H · силуетът носи ръката: бицепсът е по-висок връх, юмрукът е квадратен с китка, лакътят — върхът</h2>
+<div class="grid" id="e"></div>
+
+<h2>Конструкцията на A: две окръжности и две допирателни; разрезът е една дъга</h2>
+<div class="grid" id="c"></div>
+
+<h2>Пулсът (движение, не знакът): ръката се стяга — бицепсът расте, сърцето бие · кадри 0 · ½ · 1 · ½</h2>
+<div class="grid" id="p"></div>
+
+<h2>Размери — A на 16 · 24 · 32 · 48 · 96 px</h2>
+<div class="row" id="sz"></div>
+
+<script>
+// Сърцето: две горни дъги (бицепс, юмрук) и връх-лакът. 100×100.
+const HEART = 'M50 91 C 22 70, 6 54, 7 35 C 8 19, 21 11, 32 12 C 42 13, 48 20, 50 27 C 52 20, 58 13, 68 12 C 79 11, 92 19, 93 35 C 94 54, 78 70, 50 91 Z'
+// Разрезът: от прореза надолу; лявият му ръб е издутият бицепс, десният — предмишницата.
+const slit = (flex = 1) => `M51 29 C ${60 + 6 * flex} ${38 + 2 * flex}, ${63 + 5 * flex} 56, 57 73`
+// Китката: къс разрез от външния ръб навътре — отделя юмрука.
+const WRIST = 'M93 44 C 86 45, 80 46, 75 49'
+
+// Ръката: гръб на мишницата → връх на бицепса → прорез → юмрук → китка → предмишница → лакът.
+const ARM = (peak = 0) => `M50 92 L 13 52 C 4 42, 5 ${24 - peak}, 17 ${14 - peak} C 30 ${4 - peak}, 47 ${9 - peak}, 52 27 L 55 19 C 56 12, 60 9, 67 9 L 85 9 C 92 9, 95 13, 95 20 L 95 35 C 95 42, 92 46, 86 48 C 82 60, 68 76, 50 92 Z`
+const ARM_SLIT = 'M52 28 C 62 40, 64 58, 57 75'
+const KNUCKLES = 'M74 9 V 15 M84 9 V 15'
+function arm(o, fg, bg, size) {
+  const { peak = 0, knuckles = false, line = false, mirror = false } = o
+  const tf = mirror ? 'translate(100 0) scale(-1 1)' : ''
+  const sw = line ? 7 : 5.5
+  const body = line
+    ? `<path d="${ARM(peak)}" fill="none" stroke="${fg}" stroke-width="7" stroke-linejoin="round"/><path d="${ARM_SLIT}" fill="none" stroke="${fg}" stroke-width="7" stroke-linecap="round"/>`
+    : `<path d="${ARM(peak)}" fill="${fg}"/><path d="${ARM_SLIT}" fill="none" stroke="${bg}" stroke-width="${sw}" stroke-linecap="round"/>`
+      + (knuckles ? `<path d="${KNUCKLES}" fill="none" stroke="${bg}" stroke-width="4" stroke-linecap="round"/>` : '')
+  return `<svg width="${size}" height="${size}" viewBox="0 -4 100 100"><g transform="${tf}">${body}</g></svg>`
+}
+const atiles = (o, note) => `<div class="card"><div class="tiles">
+  <div class="t l">${arm(o, '#1F6B4E', '#F2F4EC', 104)}</div>
+  <div class="t d">${arm(o, '#4FBF8E', '#1E2923', 104)}</div></div><small>${note}</small></div>`
+
+function mark(o, fg, bg, size) {
+  const { variant = 'A', flex = 1, scale = 1, mirror = false } = o
+  const tf = `translate(50 50) scale(${(mirror ? -1 : 1) * scale} ${scale}) translate(-50 -50)`
+  let body
+  if (variant === 'C') {
+    body = `<path d="${HEART}" fill="none" stroke="${fg}" stroke-width="7" stroke-linejoin="round"/>
+            <path d="${slit(flex)}" fill="none" stroke="${fg}" stroke-width="7" stroke-linecap="round"/>`
+  } else {
+    body = `<path d="${HEART}" fill="${fg}"/>
+            <path d="${slit(flex)}" fill="none" stroke="${bg}" stroke-width="5.5" stroke-linecap="round"/>`
+    if (variant === 'B') body += `<path d="${WRIST}" fill="none" stroke="${bg}" stroke-width="4.5" stroke-linecap="round"/>`
+  }
+  return `<svg width="${size}" height="${size}" viewBox="-2 0 104 100"><g transform="${tf}">${body}</g></svg>`
+}
+const tiles = (o, note) => `<div class="card"><div class="tiles">
+  <div class="t l">${mark(o, '#1F6B4E', '#F2F4EC', 104)}</div>
+  <div class="t d">${mark(o, '#4FBF8E', '#1E2923', 104)}</div></div><small>${note}</small></div>`
+
+document.getElementById('v').innerHTML = [
+  tiles({ variant: 'A' }, 'A · плътно, един разрез'),
+  tiles({ variant: 'B' }, 'B · плюс китка — юмрукът се отделя'),
+  tiles({ variant: 'C' }, 'C · линия, като веригата'),
+  tiles({ variant: 'A', mirror: true }, 'D · огледално — юмрукът отляво'),
+].join('')
+
+document.getElementById('e').innerHTML = [
+  atiles({}, 'E · плътно, юмрук и китка'),
+  atiles({ knuckles: true }, 'F · плюс кокалчета'),
+  atiles({ peak: 5 }, 'G · по-висок бицепс'),
+  atiles({ line: true }, 'H · линия'),
+].join('') + '<div class="row" style="grid-column:1/-1">' + [16, 24, 32, 48, 96]
+  .map((s) => `<div class="s">${arm({}, '#1F6B4E', '#fff', s)}<small>E ${s}</small></div>`).join('') + '</div>'
+
+// Конструкция: окръжностите на дъгите и допирателните към лакътя.
+const constr = (o, note) => {
+  const g = `<circle class="k" cx="31" cy="34" r="23"/><circle class="k" cx="69" cy="34" r="23"/>
+    <line class="k" x1="50" y1="91" x2="9" y2="45"/><line class="k" x1="50" y1="91" x2="91" y2="45"/>`
+  const big = (fg, bg) => mark(o, fg, bg, 104).replace('</g></svg>', `${g}</g></svg>`)
+  return `<div class="card"><div class="tiles"><div class="t l">${big('#1F6B4E', '#F2F4EC')}</div>
+    <div class="t l">${mark({ ...o, variant: 'none' }, '#1F6B4E', '#F2F4EC', 104).replace(/<path d="M51[^>]*>/, '')}</div></div><small>${note}</small></div>`
+}
+document.getElementById('c').innerHTML = [
+  constr({ variant: 'A' }, 'с помощните линии · без разреза = сърце'),
+].join('') + tiles({ variant: 'A', flex: 0.3 }, 'разрезът по-прав — бицепсът по-плосък')
+  + tiles({ variant: 'A', flex: 1.6 }, 'разрезът по-изпъкнал — бицепсът по-голям')
+
+document.getElementById('p').innerHTML = [[0, 0.97, '0 · отпусната'], [0.5, 1.0, '½'], [1.4, 1.05, '1 · стегната'], [0.5, 1.0, '½']]
+  .map(([f, s, n]) => tiles({ variant: 'A', flex: f, scale: s }, n)).join('')
+
+document.getElementById('sz').innerHTML = [16, 24, 32, 48, 96]
+  .map((s) => `<div class="s">${mark({ variant: 'A' }, '#1F6B4E', '#fff', s)}<small>${s}</small></div>`).join('')
+  + [16, 24, 32, 48, 96].map((s) => `<div class="s" style="background:#1E2923;padding:6px;border-radius:6px">${mark({ variant: 'A' }, '#4FBF8E', '#1E2923', s)}</div>`).join('')
+</script>
+</body></html>
