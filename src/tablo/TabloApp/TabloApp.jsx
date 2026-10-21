@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { NavBar } from '../../components/BottomNav/BottomNav.jsx'
-import Pictogram from '../../components/Pictogram/Pictogram.jsx'
-import { useHideOnScroll } from '../../hooks/useHideOnScroll'
 import { addDays, ago, sofiaDay } from '../calc'
-import Overview from './Overview.jsx'
+import Now from './Now.jsx'
 import Plan from './Plan.jsx'
 import Work from './Work.jsx'
 import Audit from './Audit.jsx'
@@ -13,34 +10,27 @@ import styles from './TabloApp.module.css'
 /* Личното табло (/tablo/).
  *
  * Същият вход като приложението и /invest/: който е влязъл в Blag, е влязъл и
- * тук; вижда го само собственикът от tablo_owner. Четири раздела:
- *   Табло  — светлините, плочките, графиките: как върви изобщо.
- *   План   — стъпката, седмицата, идеите, чакащото. Тук се пише и отмята.
- *   Работа — сесиите с Claude и промените по кода, подробно.
- *   Одит   — какво е намерено по проектите: поправено, отворено, предложено.
+ * тук; вижда го само собственикът от tablo_owner. Четири раздела, всеки с
+ * една работа:
+ *   Сега   — какво правя сега: стъпката, чакащото теб, решенията, бизнесът.
+ *   План   — седмицата и идеите.
+ *   Одит   — отвореното и предложенията; поправеното е сгънато.
+ *   Работа — работата с Claude: токени, промени, сесии. За Claude, не за човека.
  *
- * Числата за работата идват от компютъра (scripts/tablo-sync.mjs), бизнесът —
- * от tablo_business(); нищо от тях не се смята в браузъра от сурови редове. */
+ * Видът е собствен (src/tablo/tablo.css), по PikSpec — не темите на
+ * приложението. Числата за работата идват от компютъра
+ * (scripts/tablo-sync.mjs), бизнесът — от tablo_business(). */
 
 const TABS = [
-  { id: 'board', label: 'Табло', Icon: () => <Pictogram name="dashboard" size={18} /> },
-  { id: 'plan',  label: 'План',  Icon: () => <Pictogram name="target" size={18} /> },
-  { id: 'work',  label: 'Работа', Icon: () => <Pictogram name="trend" size={18} /> },
-  { id: 'audit', label: 'Одит',  Icon: () => <Pictogram name="check" size={18} /> },
+  { id: 'now', label: 'Сега', icon: <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /> },
+  { id: 'plan', label: 'План', icon: <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /> },
+  { id: 'audit', label: 'Одит', icon: <path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" /> },
+  { id: 'work', label: 'Работа', icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /> },
 ]
-const TITLES = { plan: 'План', work: 'Работа', audit: 'Одит' }
 
 function tabFromHash() {
   const h = window.location.hash.replace('#', '')
-  return TABS.some((t) => t.id === h) ? h : 'board'
-}
-
-function greeting(now = new Date()) {
-  const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Sofia', hour: 'numeric', hour12: false }).format(now))
-  if (h < 5) return 'Лека нощ'
-  if (h < 11) return 'Добро утро'
-  if (h < 18) return 'Добър ден'
-  return 'Добър вечер'
+  return TABS.some((t) => t.id === h) ? h : 'now'
 }
 
 export default function TabloApp() {
@@ -53,8 +43,6 @@ export default function TabloApp() {
   const [sync, setSync] = useState([])
   const [tab, setTab] = useState(tabFromHash)
 
-  useHideOnScroll(true)
-
   useEffect(() => {
     const onHash = () => setTab(tabFromHash())
     window.addEventListener('hashchange', onHash)
@@ -63,7 +51,7 @@ export default function TabloApp() {
 
   function go(id) {
     setTab(id)
-    history.replaceState(null, '', id === 'board' ? window.location.pathname : `#${id}`)
+    history.replaceState(null, '', id === 'now' ? window.location.pathname : `#${id}`)
     window.scrollTo({ top: 0 })
   }
 
@@ -129,7 +117,7 @@ export default function TabloApp() {
       <main className={styles.page}>
         <div className={styles.center}>
           <p>Таблото е зад входа на Blag.</p>
-          <a className={styles.button} href="/">Влез в приложението</a>
+          <a className={styles.primary} href="/">Влез в приложението</a>
         </div>
       </main>
     )
@@ -143,35 +131,41 @@ export default function TabloApp() {
 
   const now = new Date()
   const computer = sync.find((x) => x.source === 'computer')
+  const current = TABS.find((t) => t.id === tab)
 
   return (
-    <main className={styles.page}>
-      <div className={styles.statusBar} aria-hidden="true" />
-      <header className={styles.header}>
-        <div className={styles.hello}>
-          <span className={styles.date}>
-            {now.toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia', weekday: 'long', day: 'numeric', month: 'long' })}
-          </span>
-          <h1 className={styles.title}>{TITLES[tab] ?? greeting(now)}</h1>
-        </div>
-        <span className={styles.synced} title={computer?.note ?? ''}>
-          Компютърът: {ago(computer?.synced_at)}
-        </span>
-      </header>
+    <>
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <div>
+            <span className={styles.eyebrow}>
+              {now.toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia', weekday: 'long', day: 'numeric', month: 'long' })}
+            </span>
+            <h1 className={styles.title}>{current.label}</h1>
+          </div>
+          <span className={styles.synced} title={computer?.note ?? ''}>Компютърът: {ago(computer?.synced_at)}</span>
+        </header>
 
-      {note && <p className={styles.note} role="status">{note}</p>}
+        {note && <p className={styles.note} role="status">{note}</p>}
 
-      {tab === 'board' && <Overview items={items} daily={daily} sessions={sessions} business={business} onGo={go} />}
-      {tab === 'plan' && <Plan items={items} onSave={saveItem} onAdd={addItem} />}
-      {tab === 'work' && <Work daily={daily} sessions={sessions} />}
-      {tab === 'audit' && <Audit items={items} onSave={saveItem} />}
+        {tab === 'now' && <Now items={items} daily={daily} business={business} onSave={saveItem} onGo={go} />}
+        {tab === 'plan' && <Plan items={items} onSave={saveItem} onAdd={addItem} />}
+        {tab === 'audit' && <Audit items={items} onSave={saveItem} />}
+        {tab === 'work' && <Work daily={daily} sessions={sessions} />}
+      </main>
 
-      <NavBar
-        tabs={TABS}
-        activeTab={tab}
-        onTabChange={go}
-        labels={{ nav: 'Раздели', show: 'Покажи разделите' }}
-      />
-    </main>
+      <nav className={styles.bar} aria-label="Раздели">
+        {TABS.map((t) => (
+          <button key={t.id} type="button" className={styles.barBtn} aria-current={tab === t.id ? 'page' : undefined}
+            onClick={() => go(t.id)}>
+            <span className={styles.barIcon}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8"
+                strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{t.icon}</svg>
+            </span>
+            {t.label}
+          </button>
+        ))}
+      </nav>
+    </>
   )
 }

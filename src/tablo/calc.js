@@ -68,21 +68,12 @@ export function fromPairs(pairs, days, field = 'n') {
 
 export const sum = (a) => a.reduce((s, v) => s + v, 0)
 
-/* Последните 7 срещу седмичното средно на 21-те преди тях. Серията е 28 дни. */
-export function weekVsNormal(values) {
-  const week = sum(values.slice(-7))
-  const before = values.slice(-28, -7)
-  const normal = before.length ? sum(before) / (before.length / 7) : 0
-  const change = normal > 0 ? (week - normal) / normal : null
-  return { week, normal, change }
-}
-
 /* ── Светлините ─────────────────────────────────────────────────────────── */
 
 export const LEVELS = {
-  ok: { label: 'Наред', score: 100 },
-  watch: { label: 'Следи', score: 50 },
-  high: { label: 'Внимание', score: 0 },
+  ok: { label: 'Наред' },
+  watch: { label: 'Следи' },
+  high: { label: 'Внимание' },
 }
 
 /* Праг „до" за наред и следи; над втория е внимание. Обратното (low) значи,
@@ -91,17 +82,6 @@ export function level(value, okUpTo, watchUpTo, { low = false } = {}) {
   if (value == null || Number.isNaN(value)) return 'watch'
   if (!low) return value <= okUpTo ? 'ok' : value <= watchUpTo ? 'watch' : 'high'
   return value >= okUpTo ? 'ok' : value >= watchUpTo ? 'watch' : 'high'
-}
-
-export function healthScore(lights) {
-  if (!lights.length) return 0
-  return Math.round(sum(lights.map((l) => LEVELS[l.level].score)) / lights.length)
-}
-
-/* Колко дни е отворена стъпката. */
-export function daysOpen(iso, now = Date.now()) {
-  if (!iso) return 0
-  return Math.max(0, Math.floor((now - new Date(iso).getTime()) / DAY))
 }
 
 /* ── Формати ────────────────────────────────────────────────────────────── */
@@ -120,12 +100,6 @@ export function compact(v) {
 export function percent(v, digits = 0) {
   if (v == null || !Number.isFinite(v)) return '—'
   return nf(digits).format(v * 100) + ' %'
-}
-
-export function signedPercent(v) {
-  if (v == null || !Number.isFinite(v)) return 'няма с какво да се сравни'
-  const s = nf(0).format(Math.abs(v * 100))
-  return (v > 0 ? '+' : v < 0 ? '−' : '') + s + ' % спрямо обичайното'
 }
 
 export function shortDate(day) {

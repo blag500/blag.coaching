@@ -1,59 +1,9 @@
-import { useId } from 'react'
 import styles from './Charts.module.css'
 
 /* Графиките на таблото. Само SVG, без библиотека — като WeightChart.
- * Цветовете идват от темата: --ok, --accent, --red, --series-*. */
+ * Цветовете идват от src/tablo/tablo.css: --ok, --warn, --bad, --series-*. */
 
-const LEVEL_COLOR = { ok: 'var(--ok)', watch: 'var(--accent)', high: 'var(--red)' }
-
-/* Пръстенът със здравето: по една дъга на светлина, в нейния цвят, с
-   процеп между тях. Числото в средата е средното на светлините. */
-export function HealthRing({ score, lights, size = 132 }) {
-  const r = size / 2 - 10
-  const c = 2 * Math.PI * r
-  const n = Math.max(lights.length, 1)
-  const gap = 6
-  const seg = c / n - gap
-  return (
-    <svg className={styles.ring} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img"
-      aria-label={`Здраве ${score} от 100`}>
-      <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
-        {lights.map((l, i) => (
-          <circle key={l.key} cx={size / 2} cy={size / 2} r={r} fill="none"
-            stroke={LEVEL_COLOR[l.level]} strokeWidth="11" strokeLinecap="round"
-            strokeDasharray={`${Math.max(seg, 1)} ${c}`}
-            strokeDashoffset={-(i * (seg + gap)) - gap / 2} />
-        ))}
-      </g>
-      <text x="50%" y="50%" textAnchor="middle" className={styles.ringNum} dy="0.05em">{score}</text>
-      <text x="50%" y="50%" textAnchor="middle" className={styles.ringLabel} dy="2.2em">здраве</text>
-    </svg>
-  )
-}
-
-/* Тънката крива в плочката: запълнена отдолу, с точка на последния ден. */
-export function Spark({ values, color = 'var(--accent)', height = 40 }) {
-  const id = useId().replace(/:/g, '')
-  const w = 160
-  const max = Math.max(...values, 1)
-  const step = values.length > 1 ? w / (values.length - 1) : w
-  const pts = values.map((v, i) => [i * step, height - 4 - (v / max) * (height - 10)])
-  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
-  const last = pts[pts.length - 1] ?? [0, height]
-  return (
-    <svg className={styles.spark} viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id={`sp${id}`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity="0.28" />
-          <stop offset="1" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={`${line} L${w},${height} L0,${height} Z`} fill={`url(#sp${id})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="1.6" vectorEffect="non-scaling-stroke" />
-      <circle cx={last[0]} cy={last[1]} r="2.6" fill={color} />
-    </svg>
-  )
-}
+const LEVEL_COLOR = { ok: 'var(--ok)', watch: 'var(--warn)', high: 'var(--bad)' }
 
 function niceMax(v) {
   if (v <= 0) return 1
@@ -87,7 +37,7 @@ export function DayBars({ values, labels, normal, fmt = String, height = 180, ti
         return (
           <g key={i}>
             <rect x={pad.l + i * bw + bw * 0.18} y={pad.t + ih - h} width={bw * 0.64} height={h}
-              rx="3" className={hot ? styles.barHot : styles.bar}>
+              rx="2" className={hot ? styles.barHot : styles.bar}>
               <title>{`${labels[i]}: ${fmt(v)}`}</title>
             </rect>
             {(values.length <= 14 || i % 2 === values.length % 2) && (

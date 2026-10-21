@@ -1,27 +1,4 @@
-/* Графиките на таблото: тънки линии от текстовия цвят, числата в tabular-nums. */
-
-.ring { flex: none; display: block; }
-
-.ringNum {
-  font-family: var(--font-heading);
-  font-size: 38px;
-  font-weight: 500;
-  fill: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-.ringLabel {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  fill: var(--muted);
-}
-
-.spark {
-  display: block;
-  width: 100%;
-  height: 40px;
-}
+/* Графиките на таблото: тънки линии, един цвят на серия, числата в tabular-nums. */
 
 .chart {
   display: block;
@@ -30,21 +7,21 @@
 }
 
 .grid {
-  stroke: rgba(var(--text-rgb), 0.08);
+  stroke: var(--line);
   stroke-width: 1;
 }
 
 .axis {
   font-size: 11px;
-  fill: var(--muted);
+  fill: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
 .bar { fill: var(--series-1); }
-.barHot { fill: var(--red); }
+.barHot { fill: var(--bad); }
 
 .normal {
-  stroke: rgba(var(--text-rgb), 0.55);
+  stroke: var(--ink-2);
   stroke-width: 1;
   stroke-dasharray: 4 4;
 }
@@ -60,7 +37,7 @@
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .shareLabel {
@@ -71,21 +48,21 @@
 }
 
 .shareLabel i {
-  width: 9px;
-  height: 9px;
-  border-radius: var(--r-xs);
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   flex: none;
 }
 
 .shareValue {
-  color: var(--muted);
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
 .track {
   height: 6px;
   border-radius: var(--r-pill);
-  background: rgba(var(--text-rgb), 0.08);
+  background: var(--sunken);
   overflow: hidden;
 }
 
@@ -93,13 +70,12 @@
   display: block;
   height: 100%;
   border-radius: var(--r-pill);
-  transition: width var(--dur-travel) var(--ease-glide);
 }
 
 .dot {
   display: inline-block;
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: var(--r-pill);
   flex: none;
 }
