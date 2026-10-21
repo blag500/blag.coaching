@@ -168,6 +168,11 @@ localStorage); сметките са в `src/invest/projection.js`. Чете с�
 Асортиментът се генерира от `D:\blag-ai\shop\build_products.py` (каталозите на
 доставчиците, снимките в `public/shop/img/`) → `136_shop_seed.sql`. Цените на едро
 не са в repo-то (то е публично) — те са в `supply.sql` до скрипта и в базата.
+Подредбата следва проучването (трезорът, „Магазин — проучване на UX“): цели,
+филтри с броя до всеки и в адреса (#/?goal=…), цена на доза (`servings`,
+137), размерите на едно — една карта (`size_group`), дата на доставка
+(`src/shop/delivery.js`, 15:00 е часът за тръгване), офисите на Еконт от
+списък (`node scripts/shop-econt-offices.mjs` → `public/shop/econt-offices.json`).
 Решението — Р16.
 
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
