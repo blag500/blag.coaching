@@ -1,8 +1,5 @@
 # CLAUDE.md
 
-> **Отворено предаване (21.10.2026):** `docs/HANDOFF.md` — прочети го първо.
-> Махни този ред, когато локалната сесия го приеме обратно.
-
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Commands
