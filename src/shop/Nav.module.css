@@ -1,0 +1,126 @@
+/* Страничната навигация на магазина. Токените са в shop.css. */
+
+.wrap { position: fixed; inset: 0; z-index: 70; }
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(10, 12, 8, 0.45);
+  animation: fade 220ms var(--ease-out);
+}
+
+@keyframes fade { from { opacity: 0; } }
+
+.drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(86vw, 340px);
+  background: var(--ground);
+  box-shadow: 12px 0 40px rgba(10, 12, 8, 0.2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: slide 320ms var(--ease-out);
+}
+
+@keyframes slide { from { transform: translateX(-100%); } }
+
+.head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(env(safe-area-inset-top) + 14px) 16px 10px;
+  background: var(--ground);
+}
+
+.close {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--sunken);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.links { display: flex; flex-direction: column; padding: 4px 10px calc(env(safe-area-inset-bottom) + 24px); }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 10px;
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 140ms var(--ease-out);
+}
+
+.row span {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--sunken);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.row[aria-current='page'] { background: var(--ink); color: var(--ground); }
+.row[aria-current='page'] span { background: var(--lime); color: var(--on-lime); }
+
+@media (hover: hover) { .row:hover:not([aria-current='page']):not(.deal) { background: var(--sunken); } }
+
+.deal { background: var(--lime); color: var(--on-lime); margin: 4px 0; }
+.deal span { background: var(--on-lime); color: var(--lime); }
+
+.cat i {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -4px;
+  border-radius: 8px;
+  background: var(--stage);
+  overflow: hidden;
+}
+
+.cat img { width: 88%; height: 88%; object-fit: contain; mix-blend-mode: multiply; }
+
+.group {
+  margin: 18px 10px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.small { margin: 14px 10px 0; font-size: 12px; line-height: 1.45; color: var(--ink-2); }
+
+/* Колоната на широк екран: залепена отляво, с собствен скрол. */
+.rail { display: none; }
+
+@media (min-width: 1100px) {
+  .rail {
+    display: block;
+    position: sticky;
+    top: 80px;
+    align-self: start;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+  .rail .links { padding: 0 0 24px; }
+  .rail .row { min-height: 42px; font-size: 14px; white-space: nowrap; }
+}

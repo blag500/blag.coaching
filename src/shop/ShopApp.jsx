@@ -6,6 +6,8 @@ import Home from './Home.jsx'
 import Product from './Product.jsx'
 import { Cart, Checkout, Thanks } from './Checkout.jsx'
 import { Mark, Splash, Wordmark } from './Brand.jsx'
+import { NavDrawer, NavRail } from './Nav.jsx'
+import { Icon } from './ui'
 import styles from './Shop.module.css'
 
 /* Онлайн магазинът здраве&сила (/shop/).
@@ -34,11 +36,14 @@ export default function ShopApp() {
   const [toast, setToast] = useState(null)
   const [bump, setBump] = useState(0)
   const [scrolled, setScrolled] = useState(false)
+  const [navOpen, setNavOpen] = useState(false)
+  const closeNav = useCallback(() => setNavOpen(false), [])
   const toastTimer = useRef(0)
 
   useEffect(() => {
     const on = () => {
       const next = parseRoute()
+      setNavOpen(false)
       setRoute((prev) => {
         if (next.page !== 'catalog' || prev.page !== 'catalog') window.scrollTo({ top: 0 })
         return next
@@ -98,7 +103,14 @@ export default function ShopApp() {
   else if (route.page === 'cart') body = <Cart lines={lines} subtotal={subtotal} delivery={delivery} onQty={(k, q) => update(setQty(cart, k, q))} />
   else if (route.page === 'checkout') body = <Checkout lines={lines} subtotal={subtotal} delivery={delivery} onPaid={clear} />
   else if (route.page === 'thanks') body = <Thanks order={route.args[0]} session={route.args[1]} onDone={clear} />
-  else if (route.page === 'c') body = <Catalog key={`c-${route.args[0] || 'all'}`} products={products} cat={route.args[0] || 'all'} query={route.query} onAdd={add} />
+  else if (route.page === 'c') {
+    body = (
+      <div className={styles.withRail}>
+        <NavRail products={products} deals={deals} current={`#/c/${route.args[0] || 'all'}`} />
+        <div><Catalog key={`c-${route.args[0] || 'all'}`} products={products} cat={route.args[0] || 'all'} query={route.query} onAdd={add} /></div>
+      </div>
+    )
+  }
   else body = <Home products={products} deals={deals} onAdd={add} />
 
   const onCatalog = (route.page === 'catalog' || route.page === 'c') && products && !error
@@ -107,9 +119,12 @@ export default function ShopApp() {
     <>
       <Splash />
       <div className={styles.testBar} role="note">Тестов режим — плащането е пробно</div>
-      <header className={`${styles.top} ${scrolled ? styles.scrolled : ''}`}>
+      <header className={`${styles.top} ${scrolled ? styles.scrolled : ''} ${route.page === 'c' ? styles.wide : ''}`}>
         <div className={styles.topIn}>
-          <a href="#/" className={styles.brand} aria-label="здраве и сила — към каталога">
+          <button type="button" className={styles.menuBtn} onClick={() => setNavOpen(true)} aria-label="Меню" aria-expanded={navOpen}>
+            <Icon name="menu" size={22} stroke={2} />
+          </button>
+          <a href="#/" className={styles.brand} aria-label="здраве и сила — към началото">
             <Wordmark size={19} className={bump ? 'zs-beat' : ''} key={bump} />
           </a>
           <a href="#/cart" className={`${styles.cartBtn} ${count ? styles.cartFull : ''}`} aria-label={`Количка, ${count} продукта`}>
@@ -120,7 +135,9 @@ export default function ShopApp() {
           </a>
         </div>
       </header>
-      <main className={styles.page}>{body}</main>
+      <main className={`${styles.page} ${route.page === 'c' ? styles.wide : ''}`}>{body}</main>
+      <NavDrawer open={navOpen} onClose={closeNav} products={products ?? []} deals={deals}
+        current={route.page === 'c' ? `#/c/${route.args[0] || 'all'}` : route.page === 'cart' ? '#/cart' : route.page === 'catalog' ? '#/' : ''} />
       <p role="status" className={styles.srOnly}>{toast || ''}</p>
       <footer className={styles.foot}>
         <div className={styles.footMark}><Mark size={34} /><Wordmark size={16} /></div>
