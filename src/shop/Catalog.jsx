@@ -119,7 +119,7 @@ export default function Catalog({ products, query, onAdd, delivery }) {
     <>
       <section className={styles.hero}>
         <HeroArt products={products} />
-        <h1 className={styles.display}>Добавки <Mark size={0} className={styles.amp} /><span className={styles.srOnly}>и</span> храна, подбрани от&nbsp;треньор.</h1>
+        <h1 className={styles.display}>Добавки <Mark size={0} className={styles.amp} /><span className={styles.srOnly}>и</span> храна.</h1>
         <p className={styles.ship}>{cutoff ? 'До 15:00 тръгва днес' : 'Тръгва в работен ден'}{courier ? ` · доставка 0 € над ${euro(courier.free_from_cents).replace(',00', '')}` : ''}</p>
       </section>
 

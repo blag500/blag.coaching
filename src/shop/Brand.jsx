@@ -65,7 +65,7 @@ export function Splash() {
       <div className={styles.splashInner}>
         <Mark size={132} className={styles.draw} />
         <p className={styles.splashName}>здраве<span>&amp;</span>сила</p>
-        <p className={styles.splashLine}>добавки, подбрани от треньор</p>
+        <p className={styles.splashLine}>добавки и храна</p>
       </div>
     </div>
   )
