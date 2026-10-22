@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { euro } from './cart'
 import { cutoffNote } from './delivery'
 import { CATEGORIES, GOALS, Icon, PRICES, Sheet, TAGS, flavorColor, unitPrice, unitValue } from './ui'
+import { Mark } from './Brand.jsx'
 import styles from './Shop.module.css'
 
 /* Каталогът. Всичко, което човек е избрал — търсене, цел, филтри, подредба —
@@ -118,37 +119,20 @@ export default function Catalog({ products, query, onAdd, delivery }) {
     <>
       <section className={styles.hero}>
         <HeroArt products={products} />
-        <p className={styles.kicker}><i aria-hidden="true" />{cutoff ? `${cutoff}` : 'Поръчай сега — тръгва в следващия работен ден'}</p>
-        <h1 className={styles.display}>Добавки и храна, <em>подбрани</em> от треньор.</h1>
-        <p className={styles.lead}>Тесен избор вместо хиляди продукти — подбран от Николай Благьов, треньор. До всеки продукт е сметната цената на доза, а до храната — макросите на 100 г.</p>
-        <ul className={styles.promises}>
-          <li><Icon name="clock" /><b>До 15:00</b>тръгва същия ден</li>
-          <li><Icon name="truck" /><b>{courier ? `над ${euro(courier.free_from_cents).replace(',00', '')}` : 'Еконт'}</b>безплатна доставка</li>
-          <li><Icon name="card" /><b>С карта</b>през Stripe</li>
-        </ul>
+        <h1 className={styles.display}>Добавки <Mark size={0} className={styles.amp} /><span className={styles.srOnly}>и</span> храна, подбрани от&nbsp;треньор.</h1>
+        <p className={styles.ship}>{cutoff ? 'До 15:00 тръгва днес' : 'Тръгва в работен ден'}{courier ? ` · доставка 0 € над ${euro(courier.free_from_cents).replace(',00', '')}` : ''}</p>
       </section>
 
       <label className={styles.search}>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
         <input type="search" value={f.q} onChange={(e) => setF((s) => ({ ...s, q: e.target.value }))}
-          placeholder="Търси: креатин, грис, ванилия…" aria-label="Търси в магазина" />
+          placeholder="Креатин, грис, ванилия…" aria-label="Търси в магазина" />
       </label>
 
-      <h2 className={styles.h2}>По цел</h2>
-      <div className={styles.goals}>
+      <div className={styles.goals} role="group" aria-label="По цел">
         {GOALS.map((g) => (
           <button key={g.id} type="button" className={styles.goal} aria-pressed={f.goal.includes(g.id)} onClick={() => toggle('goal', g.id)}>
-            <Icon name={g.id} size={26} />
-            <b>{g.label}</b><small>{g.hint}</small>
-          </button>
-        ))}
-      </div>
-
-      <div className={styles.catRow} role="group" aria-label="Вид">
-        {CATEGORIES.filter((c) => cards.some((p) => p.category === c.id)).map((c) => (
-          <button key={c.id} type="button" className={styles.catChip} aria-pressed={f.cat.includes(c.id)}
-            onClick={() => setF((s) => ({ ...s, cat: s.cat.includes(c.id) ? [] : [c.id] }))}>
-            {c.label}<span>{cards.filter((p) => p.category === c.id).length}</span>
+            <Icon name={g.id} size={18} />{g.label}
           </button>
         ))}
       </div>
@@ -180,7 +164,7 @@ export default function Catalog({ products, query, onAdd, delivery }) {
       {f.goal.includes('mealprep') && (
         <figure className={styles.banner}>
           <img src="/shop/brand/mealprep.webp" alt="Кутии с ориз басмати, пилешко и броколи" width="1024" height="520" />
-          <figcaption><b>Основата на кутиите — с макросите до всяко.</b><span>Протеин и ккал на 100 г, цена на кг. Снимката е генерирана с истинската опаковка.</span></figcaption>
+          <figcaption>Генерирана снимка, опаковката е истинската</figcaption>
         </figure>
       )}
 
@@ -188,8 +172,8 @@ export default function Catalog({ products, query, onAdd, delivery }) {
 
       {shown.length ? (
         <ul className={styles.grid}>
-          {shown.map((p, i) => (
-            <li key={p.id} className={styles.card} style={{ '--i': Math.min(i, 12) }}>
+          {shown.map((p) => (
+            <li key={p.id} className={styles.card}>
               <a href={`#/p/${p.id}`} className={styles.cardLink}>
                 <span className={styles.stage}>
                   <img className={styles.stageImg} src={p.image} alt="" loading="lazy" width="300" height="300" />
@@ -205,17 +189,13 @@ export default function Catalog({ products, query, onAdd, delivery }) {
                     {p.flavors.length} вкуса
                   </span>
                 )}
-                {p.per100 && (
-                  <span className={styles.macroLine} title="на 100 г">
-                    <span>{Math.round(p.per100.protein)} г протеин</span>
-                    <span>{Math.round(p.per100.kcal)} ккал</span>
-                  </span>
-                )}
               </a>
               <div className={styles.cardFoot}>
                 <span className={styles.priceBox}>
                   <span className={styles.price}>{p.sizes > 1 ? 'от ' : ''}{euro(p.price_cents)}</span>
-                  {unitPrice(p) && <span className={styles.unit}>{unitPrice(p)}</span>}
+                  {p.per100
+                    ? <><span className={styles.tag}>{Math.round(p.per100.protein)} г протеин / 100 г</span>{unitPrice(p) && <span className={styles.unit}>{unitPrice(p)}</span>}</>
+                    : unitPrice(p) && <span className={styles.tag}>{unitPrice(p)}</span>}
                 </span>
                 <button type="button" className={`${styles.addSmall} ${justAdded === p.id ? styles.addDone : ''}`}
                   onClick={() => (p.flavors.length > 1 || p.sizes > 1 ? setQuick(p) : addNow(p))}

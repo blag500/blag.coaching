@@ -68,12 +68,8 @@ const fmt = (n) => (Math.round(n * 10) / 10).toLocaleString('bg-BG')
 export function factsFor(p) {
   const out = []
   const g = grams(p)
-  // Храната показва макросите отделно; тук остават грамажът и цената на кг.
-  if (p.category === 'pantry') {
-    if (g) out.push({ v: g >= 1000 ? `${fmt(g / 1000)} кг` : `${fmt(g)} г`, l: 'в опаковката' })
-    if (unitPrice(p)) { const [v, l] = unitPrice(p).split(' / '); out.push({ v, l: `на ${l}` }) }
-    return out
-  }
+  // Храната показва макросите отделно, а грамажът и цената на кг са до цената.
+  if (p.category === 'pantry') return out
   if (p.servings > 1) out.push({ v: String(p.servings), l: p.serving_unit === 'доза' ? 'дози в опаковката' : `${p.serving_unit} в опаковката` })
   if (g && p.servings > 1 && p.category !== 'vitamins' && !/капсул|таблет/.test(p.size_label)) out.push({ v: fmt(g / p.servings), l: 'г на доза' })
   if (unitPrice(p)) {

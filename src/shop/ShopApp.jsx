@@ -95,7 +95,7 @@ export default function ShopApp() {
   return (
     <>
       <Splash />
-      <div className={styles.testBar} role="note">Тестов режим — плащането е пробно, не се теглят пари.</div>
+      <div className={styles.testBar} role="note">Тестов режим — плащането е пробно</div>
       <header className={`${styles.top} ${scrolled ? styles.scrolled : ''}`}>
         <div className={styles.topIn}>
           <a href="#/" className={styles.brand} aria-label="здраве и сила — към каталога">
@@ -117,15 +117,9 @@ export default function ShopApp() {
       </footer>
       {onCatalog && count > 0 && (
         <a href="#/cart" key={`bar${bump}`} className={`${styles.cartBar} ${bump ? styles.cartBarBump : ''}`}>
-          <span>{count} {count === 1 ? 'продукт' : 'продукта'}<b>{euro(subtotal)}</b></span>
-          <i>Към количката →</i>
+          <span role="status">{toast || `${count} ${count === 1 ? 'продукт' : 'продукта'}`}<b>{euro(subtotal)}</b></span>
+          <i>Количка →</i>
         </a>
-      )}
-      {toast && (
-        <div className={styles.toast} role="status">
-          <span>{toast}</span>
-          {route.page !== 'cart' && <a href="#/cart" onClick={() => setToast(null)}>Виж количката</a>}
-        </div>
       )}
     </>
   )

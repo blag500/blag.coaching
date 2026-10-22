@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { euro } from './cart'
 import { arrivalText, cutoffNote } from './delivery'
-import { GOALS, Icon, Stepper, factsFor, unitPrice, unitValue } from './ui'
+import { Icon, Stepper, factsFor, unitPrice, unitValue } from './ui'
 import styles from './Shop.module.css'
 
 /* Продуктът. Фактите са едри числа (сравнява се с цифри), размерите са редове
@@ -40,7 +40,6 @@ export default function Product({ product, products, delivery, onAdd }) {
   }
   const courier = delivery.find((d) => d.needs === 'office')
   const sofia = delivery.find((d) => d.needs === 'sofia')
-  const goals = GOALS.filter((g) => product.goals.includes(g.id))
   const cutoff = cutoffNote()
   const facts = factsFor(product)
   const m = product.per100
@@ -50,12 +49,9 @@ export default function Product({ product, products, delivery, onAdd }) {
       <a href="#/" onClick={(e) => { if (history.length > 1) { e.preventDefault(); history.back() } }} className={styles.back}>← Каталог</a>
       <div className={styles.productImg}><img src={product.image} alt={product.name} width="300" height="300" /></div>
       <div className={styles.productBody}>
-        {goals.length > 0 && <p className={styles.goalTags}>{goals.map((g) => <a key={g.id} href={`#/?goal=${g.id}`}>{g.label}</a>)}</p>}
         <h1 className={styles.h1}>{product.name}</h1>
-        <p className={styles.cardSize}>{product.size_label}</p>
-        <p className={styles.bigPrice}>{euro(product.price_cents)}
-          {unitPrice(product) && <span className={styles.unit}>{unitPrice(product)}</span>}
-        </p>
+        <p className={styles.bigPrice}>{euro(product.price_cents)}<span className={styles.unit}>{[product.size_label, product.category === 'pantry' && unitPrice(product)].filter(Boolean).join(' · ')}</span></p>
+        {product.description && <p className={styles.why}>{product.description}</p>}
 
         {facts.length > 1 && (
           <div className={styles.factGrid} style={{ '--n': facts.length }}>
@@ -73,13 +69,10 @@ export default function Product({ product, products, delivery, onAdd }) {
               <div><b>{fmt1(m.fat)}</b><small>мазнини</small></div>
             </div>
             <MacroBar m={m} />
-            {m.source && <p className={styles.factNote} style={{ marginTop: 10, color: 'inherit', opacity: 0.6 }}>{m.source}</p>}
+            {m.source && <p className={styles.factNote} style={{ marginTop: 10, color: 'inherit', opacity: 0.6 }}>{shortSource(m.source)}</p>}
           </section>
         )}
 
-        {product.description && (
-          <p className={styles.why}>{product.description}</p>
-        )}
 
         {sizes.length > 1 && (
           <fieldset className={styles.fGroup}>
@@ -116,11 +109,9 @@ export default function Product({ product, products, delivery, onAdd }) {
           </button>
         </div>
 
-        <ul className={styles.facts}>
-          {cutoff && <li><Icon name="clock" size={18} /><span><b>{cutoff}.</b></span></li>}
-          {courier && <li><Icon name="truck" size={18} /><span>Еконт или Спиди: {arrivalText('office')}. Безплатно над {euro(courier.free_from_cents)}.</span></li>}
-          {sofia && <li><Icon name="gift" size={18} /><span>До вратата в София: {arrivalText('sofia')}. Безплатно над {euro(sofia.free_from_cents)}.</span></li>}
-          <li><Icon name="card" size={18} /><span>Плащане с карта през Stripe — данните на картата не стигат до нас.</span></li>
+        <ul className={styles.ships}>
+          {courier && <li><b>Еконт или Спиди</b> — {arrivalText('office')}{cutoff ? ', ако поръчаш до 15:00' : ''} · 0 € над {euro(courier.free_from_cents)}</li>}
+          {sofia && <li><b>До вратата в София</b> — {arrivalText('sofia').replace('до вратата ', '')} · 0 € над {euro(sofia.free_from_cents)}</li>}
         </ul>
       </div>
 
@@ -137,6 +128,13 @@ export default function Product({ product, products, delivery, onAdd }) {
   )
 }
 
+/** Бележката под макросите — кратка; пълната остава, когато обяснява нещо (полиолите). */
+function shortSource(src) {
+  if (/^По етикета/.test(src)) return 'По етикета на производителя.'
+  if (/^Ориентировъчно/.test(src)) return 'Ориентировъчно — точните са на опаковката.'
+  return src
+}
+
 const fmt1 = (n) => (Math.round(n * 10) / 10).toLocaleString('bg-BG')
 
 /** Лентата на калориите: колко идва от протеин, въглехидрати и мазнини (4/4/9). */
@@ -147,13 +145,8 @@ function MacroBar({ m }) {
   const sum = p + c + f || 1
   const pct = (x) => `${Math.round((x / sum) * 100)}%`
   return (
-    <>
-      <div className={styles.macroBar} aria-hidden="true">
-        <i style={{ width: pct(p) }} /><i style={{ width: pct(c) }} /><i style={{ width: pct(f) }} />
-      </div>
-      <div className={styles.macroKey}>
-        <span>протеин {pct(p)}</span><span>въглехидрати {pct(c)}</span><span>мазнини {pct(f)}</span>
-      </div>
-    </>
+    <div className={styles.macroBar} title={`протеин ${pct(p)}, въглехидрати ${pct(c)}, мазнини ${pct(f)} от калориите`}>
+      <i style={{ width: pct(p) }} /><i style={{ width: pct(c) }} /><i style={{ width: pct(f) }} />
+    </div>
   )
 }

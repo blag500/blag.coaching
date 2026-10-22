@@ -37,7 +37,6 @@ export function Cart({ lines, subtotal, delivery, onQty }) {
         ))}
       </ul>
       <div className={styles.sum}><span>Сума</span><b>{euro(subtotal)}</b></div>
-      <p className={styles.note}>Доставката и датата ѝ се избират на следващата стъпка.</p>
       <a href="#/checkout" className={`${styles.primary} ${styles.wide}`}>Към поръчката</a>
       <a href="#/" className={styles.continue}>← Продължи пазаруването</a>
     </>

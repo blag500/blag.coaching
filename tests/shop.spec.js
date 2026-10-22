@@ -113,5 +113,5 @@ test('храната: макросите на 100 г и цената на кг',
   const macros = page.getByRole('region', { name: 'Хранителни стойности на 100 г' })
   await expect(macros.getByText('357')).toBeVisible()
   await expect(macros.getByText('6,5')).toBeVisible()
-  await expect(page.getByText('Ориентировъчно.')).toBeVisible()
+  await expect(page.getByText('Ориентировъчно — точните са на опаковката.')).toBeVisible()
 })

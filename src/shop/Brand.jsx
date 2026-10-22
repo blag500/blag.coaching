@@ -34,7 +34,7 @@ export function Wordmark({ size = 20, className = '' }) {
   )
 }
 
-/* Сплашът: веднъж на сесия, под секунда и половина. Сърцето се чертае,
+/* Сплашът: веднъж на устройство, под секунда и половина. Сърцето се чертае,
  * после краката на „&“, сърцето удря веднъж и екранът се вдига. Докосване
  * го пропуска; при „по-малко движение“ и в тестовете го няма. */
 const SEEN = 'zs.splash'
@@ -43,8 +43,8 @@ function shouldShow() {
   try {
     if (navigator.webdriver) return false
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-    if (sessionStorage.getItem(SEEN)) return false
-    sessionStorage.setItem(SEEN, '1')
+    if (localStorage.getItem(SEEN)) return false
+    localStorage.setItem(SEEN, '1')
     return true
   } catch {
     return false
