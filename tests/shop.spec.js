@@ -25,8 +25,10 @@ const OFFICES = [
   { c: '2', n: 'София Младост 1А', t: 'София', a: 'София бул. Ал. Малинов 27', m: 1 },
 ]
 
-async function open(page, path = '/shop/') {
-  await signIn(page, { tables: { shop_products: PRODUCTS, shop_delivery: DELIVERY } })
+const DEALS = [{ product_id: 'd3', deal_price_cents: 599, was_cents: 799, starts_at: '2026-01-01T00:00:00Z', ends_at: '2099-01-01T00:00:00Z', sort: 1 }]
+
+async function open(page, path = '/shop/#/c/all', deals = []) {
+  await signIn(page, { tables: { shop_products: PRODUCTS, shop_delivery: DELIVERY, shop_deals: deals } })
   await page.route('**/shop/econt-offices.json', (route) => route.fulfill({ json: OFFICES }))
   await page.goto(path)
 }
@@ -114,4 +116,18 @@ test('храната: макросите на 100 г и цената на кг',
   await expect(macros.getByText('357')).toBeVisible()
   await expect(macros.getByText('6,5')).toBeVisible()
   await expect(page.getByText('Ориентировъчно — точните са на опаковката.')).toBeVisible()
+})
+
+test('началото: промоцията с таймер и стара цена, видовете водят към своя страница', async ({ page }) => {
+  await open(page, '/shop/', DEALS)
+  await expect(page.getByRole('heading', { name: 'Промоции на седмицата' })).toBeVisible()
+  await expect(page.getByRole('timer')).toBeVisible()
+  const deal = page.locator('li', { hasText: 'Тест D3' }).first()
+  await expect(deal.getByText('5,99 €')).toBeVisible()
+  await expect(deal.getByText('7,99 €')).toBeVisible()              // старата цена
+  await expect(deal.getByText('−25 %')).toBeVisible()
+  await page.getByRole('link', { name: /Креатин/ }).first().click()
+  await expect(page.getByRole('heading', { name: 'Креатин' })).toBeVisible()
+  await expect(page.getByText('1 продукт', { exact: true })).toBeVisible()  // двата размера — една карта
+  expect(page.url()).toContain('#/c/creatine')
 })

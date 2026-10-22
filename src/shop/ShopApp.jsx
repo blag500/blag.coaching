@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { addLine, euro, lineKey, readCart, setQty, writeCart } from './cart'
 import Catalog from './Catalog.jsx'
+import Home from './Home.jsx'
 import Product from './Product.jsx'
 import { Cart, Checkout, Thanks } from './Checkout.jsx'
 import { Mark, Splash, Wordmark } from './Brand.jsx'
@@ -27,6 +28,7 @@ export default function ShopApp() {
   const [route, setRoute] = useState(parseRoute)
   const [products, setProducts] = useState(null)
   const [delivery, setDelivery] = useState([])
+  const [deals, setDeals] = useState([])
   const [error, setError] = useState('')
   const [cart, setCart] = useState(readCart)
   const [toast, setToast] = useState(null)
@@ -55,12 +57,20 @@ export default function ShopApp() {
 
   useEffect(() => {
     (async () => {
-      const [p, d] = await Promise.all([
+      const now = new Date().toISOString()
+      const [p, d, x] = await Promise.all([
         supabase.from('shop_products').select('*').eq('active', true).order('sort'),
         supabase.from('shop_delivery').select('*').eq('active', true).order('sort'),
+        supabase.from('shop_deals').select('*').lte('starts_at', now).gt('ends_at', now).order('sort'),
       ])
       if (p.error || d.error) { setError('Каталогът не се зареди. Опитай пак след малко.'); return }
-      setProducts(p.data ?? [])
+      // Промоцията сменя цената навсякъде — карта, продукт, количка; касата я
+      // смята пак от базата. was_cents е цената преди нея.
+      const live = new Map((x.data ?? []).map((r) => [r.product_id, r]))
+      setDeals(x.data ?? [])
+      setProducts((p.data ?? []).map((r) => (live.has(r.id)
+        ? { ...r, was_cents: live.get(r.id).was_cents, price_cents: live.get(r.id).deal_price_cents, deal_ends: live.get(r.id).ends_at }
+        : r)))
       setDelivery(d.data ?? [])
     })()
   }, [])
@@ -88,9 +98,10 @@ export default function ShopApp() {
   else if (route.page === 'cart') body = <Cart lines={lines} subtotal={subtotal} delivery={delivery} onQty={(k, q) => update(setQty(cart, k, q))} />
   else if (route.page === 'checkout') body = <Checkout lines={lines} subtotal={subtotal} delivery={delivery} onPaid={clear} />
   else if (route.page === 'thanks') body = <Thanks order={route.args[0]} session={route.args[1]} onDone={clear} />
-  else body = <Catalog key="catalog" products={products} query={route.query} onAdd={add} delivery={delivery} />
+  else if (route.page === 'c') body = <Catalog key={`c-${route.args[0] || 'all'}`} products={products} cat={route.args[0] || 'all'} query={route.query} onAdd={add} />
+  else body = <Home products={products} deals={deals} onAdd={add} />
 
-  const onCatalog = route.page === 'catalog' && products && !error
+  const onCatalog = (route.page === 'catalog' || route.page === 'c') && products && !error
 
   return (
     <>

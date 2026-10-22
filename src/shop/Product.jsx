@@ -46,11 +46,11 @@ export default function Product({ product, products, delivery, onAdd }) {
 
   return (
     <article className={styles.product}>
-      <a href="#/" onClick={(e) => { if (history.length > 1) { e.preventDefault(); history.back() } }} className={styles.back}>← Каталог</a>
+      <a href={`#/c/${product.category}`} onClick={(e) => { if (history.length > 1) { e.preventDefault(); history.back() } }} className={styles.back}>← Назад</a>
       <div className={styles.productImg}><img src={product.image} alt={product.name} width="300" height="300" /></div>
       <div className={styles.productBody}>
         <h1 className={styles.h1}>{product.name}</h1>
-        <p className={styles.bigPrice}>{euro(product.price_cents)}<span className={styles.unit}>{[product.size_label, product.category === 'pantry' && unitPrice(product)].filter(Boolean).join(' · ')}</span></p>
+        <p className={styles.bigPrice}>{euro(product.price_cents)}{product.was_cents && <s className={styles.was}>{euro(product.was_cents)}</s>}<span className={styles.unit}>{[product.size_label, product.category === 'pantry' && unitPrice(product)].filter(Boolean).join(' · ')}</span></p>
         {product.description && <p className={styles.why}>{product.description}</p>}
 
         {facts.length > 1 && (

@@ -68,6 +68,15 @@ async function create(body: Record<string, unknown>, origin: string) {
   const ids = [...new Set(lines.map((l) => clean(l.id, 80)))]
   const { data: products } = await db.from('shop_products').select('id, name, size_label, price_cents, flavors, active').in('id', ids)
   const byId = new Map((products ?? []).map((p) => [p.id, p]))
+  // Промоцията на седмицата (140): важи само докато е в срока — цената е тази
+  // от базата, не каквото е показал браузърът.
+  const nowIso = new Date().toISOString()
+  const { data: deals } = await db.from('shop_deals').select('product_id, deal_price_cents')
+    .in('product_id', ids).lte('starts_at', nowIso).gt('ends_at', nowIso)
+  for (const d of deals ?? []) {
+    const p = byId.get(d.product_id)
+    if (p) byId.set(d.product_id, { ...p, price_cents: d.deal_price_cents })
+  }
 
   const items = []
   for (const l of lines) {

@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { euro } from './cart'
-import { cutoffNote } from './delivery'
 import { CATEGORIES, GOALS, Icon, PRICES, Sheet, TAGS, flavorColor, unitPrice, unitValue } from './ui'
-import { Mark } from './Brand.jsx'
 import styles from './Shop.module.css'
 
-/* Каталогът. Всичко, което човек е избрал — търсене, цел, филтри, подредба —
- * живее в адреса (#/?goal=strength&cat=protein…), за да оцелее „назад“ и да
+/* Списъкът — един вид (#/c/protein) или всичко (#/c/all). Всичко, което човек
+ * е избрал — търсене, цел, филтри, подредба — живее в адреса
+ * (#/c/all?goal=strength…), за да оцелее „назад“ и да
  * може да се прати като линк. Броят до всеки филтър е колко продукта ще
  * останат, ако се добави (проучването: най-силната промяна във филтрите). */
 
@@ -27,13 +26,13 @@ export function readQuery(query) {
   return out
 }
 
-function writeQuery(state) {
+function writeQuery(state, cat) {
   const q = new URLSearchParams()
   if (state.q) q.set('q', state.q)
   for (const k of LISTS) if (state[k].length) q.set(k, state[k].join(','))
   if (state.sort) q.set('sort', state.sort)
   const s = q.toString()
-  history.replaceState(null, '', `#/${s ? `?${s}` : ''}`)
+  history.replaceState(null, '', `#/c/${cat}${s ? `?${s}` : ''}`)
 }
 
 const norm = (s) => s.toLowerCase().replace(/ё/g, 'е')
@@ -48,13 +47,13 @@ function passes(p, f, skip) {
   return true
 }
 
-export default function Catalog({ products, query, onAdd, delivery }) {
+export default function Catalog({ products, cat = 'all', query, onAdd }) {
   const [f, setF] = useState(() => readQuery(query))
   const [sheet, setSheet] = useState(false)
   const [quick, setQuick] = useState(null)
   const [justAdded, setJustAdded] = useState(null)
 
-  useEffect(() => { writeQuery(f) }, [f])
+  useEffect(() => { writeQuery(f, cat) }, [f, cat])
 
   // Връщане от продукт: на същото място в списъка.
   useEffect(() => {
@@ -67,13 +66,14 @@ export default function Catalog({ products, query, onAdd, delivery }) {
   const cards = useMemo(() => {
     const seen = new Map()
     for (const p of products) {
+      if (cat !== 'all' && p.category !== cat) continue
       if (!p.size_group) { seen.set(p.id, { ...p, sizes: 1 }); continue }
       const first = seen.get(p.size_group)
       if (first) first.sizes += 1
       else seen.set(p.size_group, { ...p, sizes: 1 })
     }
     return [...seen.values()]
-  }, [products])
+  }, [products, cat])
 
   // „Най-изгодно“ — най-ниската цена на доза (на кг за храната) във вида си,
   // само там, където има с какво да се сравни. Смята се, не се пише на ръка.
@@ -112,21 +112,19 @@ export default function Catalog({ products, query, onAdd, delivery }) {
     window.setTimeout(() => setJustAdded((x) => (x === p.id ? null : x)), 900)
   }
 
-  const courier = delivery.find((d) => d.needs === 'office')
-  const cutoff = cutoffNote()
+  const title = cat === 'all' ? 'Всички продукти' : CATEGORIES.find((c) => c.id === cat)?.label ?? 'Продукти'
 
   return (
     <>
-      <section className={styles.hero}>
-        <HeroArt products={products} />
-        <h1 className={styles.display}>Добавки <Mark size={0} className={styles.amp} /><span className={styles.srOnly}>и</span> храна.</h1>
-        <p className={styles.ship}>{cutoff ? 'До 15:00 тръгва днес' : 'Тръгва в работен ден'}{courier ? ` · доставка 0 € над ${euro(courier.free_from_cents).replace(',00', '')}` : ''}</p>
-      </section>
+      <header className={styles.listHead}>
+        <a href="#/" className={styles.back}>← Начало</a>
+        <h1 className={styles.h1}>{title}</h1>
+      </header>
 
       <label className={styles.search}>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
         <input type="search" value={f.q} onChange={(e) => setF((s) => ({ ...s, q: e.target.value }))}
-          placeholder="Креатин, грис, ванилия…" aria-label="Търси в магазина" />
+          placeholder={cat === 'all' ? 'Креатин, грис, ванилия…' : `Търси в „${title}“`} aria-label="Търси в магазина" />
       </label>
 
       <div className={styles.goals} role="group" aria-label="По цел">
@@ -161,7 +159,7 @@ export default function Catalog({ products, query, onAdd, delivery }) {
         </div>
       )}
 
-      {f.goal.includes('mealprep') && (
+      {(f.goal.includes('mealprep') || cat === 'pantry') && (
         <figure className={styles.banner}>
           <img src="/shop/brand/mealprep.webp" alt="Кутии с ориз басмати, пилешко и броколи" width="1024" height="520" />
           <figcaption>Генерирана снимка, опаковката е истинската</figcaption>
@@ -177,7 +175,8 @@ export default function Catalog({ products, query, onAdd, delivery }) {
               <a href={`#/p/${p.id}`} className={styles.cardLink}>
                 <span className={styles.stage}>
                   <img className={styles.stageImg} src={p.image} alt="" loading="lazy" width="300" height="300" />
-                  {best.has(p.id)
+                  {p.was_cents ? <span className={`${styles.flag} ${styles.flagDeal}`}>−{Math.round((1 - p.price_cents / p.was_cents) * 100)} %</span>
+                    : best.has(p.id)
                     ? <span className={styles.flag}>Най-изгодно {p.category === 'pantry' ? 'на кг' : 'на доза'}</span>
                     : p.tags.includes('high_protein') ? <span className={`${styles.flag} ${styles.flagMuted}`}>Много протеин</span> : null}
                 </span>
@@ -192,7 +191,7 @@ export default function Catalog({ products, query, onAdd, delivery }) {
               </a>
               <div className={styles.cardFoot}>
                 <span className={styles.priceBox}>
-                  <span className={styles.price}>{p.sizes > 1 ? 'от ' : ''}{euro(p.price_cents)}</span>
+                  <span className={styles.price}>{p.sizes > 1 ? 'от ' : ''}{euro(p.price_cents)}{p.was_cents && <s className={styles.was}>{euro(p.was_cents)}</s>}</span>
                   {p.per100
                     ? <><span className={styles.tag}>{Math.round(p.per100.protein)} г протеин / 100 г</span>{unitPrice(p) && <span className={styles.unit}>{unitPrice(p)}</span>}</>
                     : unitPrice(p) && <span className={styles.tag}>{unitPrice(p)}</span>}
@@ -220,7 +219,7 @@ export default function Catalog({ products, query, onAdd, delivery }) {
             <button type="button" className={styles.primary} onClick={() => setSheet(false)}>Покажи {shown.length} {shown.length === 1 ? 'продукт' : 'продукта'}</button>
           </>}>
           <Group title="Цел" group="goal" items={GOALS} f={f} count={count} toggle={toggle} />
-          <Group title="Вид" group="cat" items={CATEGORIES} f={f} count={count} toggle={toggle} />
+          {cat === 'all' && <Group title="Вид" group="cat" items={CATEGORIES} f={f} count={count} toggle={toggle} />}
           <Group title="Хранене" group="tag" items={TAGS} f={f} count={count} toggle={toggle} />
           <Group title="Цена" group="price" items={PRICES} f={f} count={count} toggle={toggle} />
         </Sheet>
@@ -285,20 +284,5 @@ function QuickAdd({ product, products, onAdd, onClose }) {
         </fieldset>
       )}
     </Sheet>
-  )
-}
-
-/** Колажът вдясно на началото (само на широк екран): по един продукт от вид,
- *  върху лаймов кръг, леко плуващи. Снимките са същите като в каталога. */
-const HERO_PICK = ['core-champs-whey-2270', '6pak-creatine-500', 'izzi-rice-semolina-500', 'oetker-cocoa-100', 'keskin-peanut-butter-280']
-
-function HeroArt({ products }) {
-  const pick = HERO_PICK.map((id) => products.find((p) => p.id === id)).filter(Boolean)
-  if (pick.length < 3) return null
-  return (
-    <div className={styles.heroArt} aria-hidden="true">
-      <span className={styles.heroDisc} />
-      {pick.map((p, i) => <img key={p.id} src={p.image} alt="" className={styles[`heroImg${i}`]} />)}
-    </div>
   )
 }
