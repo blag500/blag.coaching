@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Облачна сесия: прочети първо `docs/HANDOFF.md`** (предаване от 22.10.2026, обед) — работи в клон `claude/…`, не в `main`.
+
 ## Commands
 
 ```bash
