@@ -177,6 +177,13 @@ export default function Catalog({ products, query, onAdd, delivery }) {
         </div>
       )}
 
+      {f.goal.includes('mealprep') && (
+        <figure className={styles.banner}>
+          <img src="/shop/brand/mealprep.webp" alt="Кутии с ориз басмати, пилешко и броколи" width="1024" height="520" />
+          <figcaption><b>Основата на кутиите — с макросите до всяко.</b><span>Протеин и ккал на 100 г, цена на кг. Снимката е генерирана с истинската опаковка.</span></figcaption>
+        </figure>
+      )}
+
       <p className={styles.count} aria-live="polite">{shown.length} {shown.length === 1 ? 'продукт' : 'продукта'}</p>
 
       {shown.length ? (

@@ -168,6 +168,12 @@ localStorage); сметките са в `src/invest/projection.js`. Чете с�
 Асортиментът се генерира от `D:\blag-ai\shop\build_products.py` (каталозите на
 доставчиците, снимките в `public/shop/img/`) → `136_shop_seed.sql`. Цените на едро
 не са в repo-то (то е публично) — те са в `supply.sql` до скрипта и в базата.
+**Вид (Р17):** знакът и гамата на здраве&сила — `shop/brand/RULES.md`;
+токените в `src/shop/shop.css` върху простата система, знакът и сплашът в
+`src/shop/Brand.jsx`. „За готвене“ (`pantry`, 138–139): храна от Promoto и
+METRO с макросите на 100 г (`per100`) и грамаж (`net_g`); генерира се от
+`D:\blag-ai\shop\pantry\build_pantry.py`, цените на едро — `supply-pantry.sql`
+до него. Постовете — `node scripts/build-shop-art.mjs`.
 Подредбата следва проучването (трезорът, „Магазин — проучване на UX“): цели,
 филтри с броя до всеки и в адреса (#/?goal=…), цена на доза (`servings`,
 137), размерите на едно — една карта (`size_group`), дата на доставка

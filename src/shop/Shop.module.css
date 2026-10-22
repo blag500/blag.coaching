@@ -1552,3 +1552,32 @@
 @media (min-width: 960px) {
   .display { max-width: 600px; font-size: 62px; }
 }
+
+/* Лентата на „Готвене за седмицата“ — снимка и едно изречение. */
+.banner {
+  position: relative;
+  margin: 16px 0 0;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--card);
+  animation: cardIn 460ms var(--ease-out) both;
+}
+
+.banner img { display: block; width: 100%; height: auto; aspect-ratio: 1024 / 520; object-fit: cover; }
+
+.banner figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 16px;
+}
+
+.banner b {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'locl' 0;
+}
+
+.banner span { font-size: 12px; color: var(--ink-2); }

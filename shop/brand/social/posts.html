@@ -25,6 +25,9 @@
   .lime { background: var(--lime); }
   .inkbg { background: var(--ink); color: var(--oat); }
   .inkbg { --leg: #EEEAE1; } .inkbg .word, .inkbg .disp { color: var(--oat); } .inkbg .mark .l { stroke: var(--oat); } .inkbg .foot { color: #A9A79C; }
+  .photo { padding: 0; }
+  .photo .ph { position: absolute; inset: 0 0 330px 0; background-size: cover; background-position: center; }
+  .photo .cap { position: absolute; left: 48px; right: 48px; bottom: 48px; background: #fff; border-radius: 40px; padding: 40px 44px; }
   .num { font-family: Unbounded; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
 </style>
 </head>
@@ -81,6 +84,12 @@
   <div class="foot"><span>Плащане с карта през Stripe</span><span>blag-coaching.com/shop</span></div>
 </section>
 
+<!-- 6–8 · Снимка + факт. Снимките са генерирани с истинската опаковка за
+     образец (fal.ai nano-banana, 22.10); числата са от базата. -->
+<section id="p6" class="board post photo" data-photo="gris" data-id="izzi-rice-semolina-500" data-line="Каша за 5 минути"></section>
+<section id="p7" class="board post photo" data-photo="basmati" data-id="metro-basmati-5000" data-line="Около 70 порции по 70 г"></section>
+<section id="p8" class="board post photo" data-photo="whey" data-id="core-champs-whey-2270" data-line="66 дози в кутията"></section>
+
 <!-- Картинката за споделяне -->
 <section id="og" class="board og">
   <div id="ogimgs" style="position:absolute;right:40px;top:40px;width:520px;height:550px">
@@ -94,7 +103,7 @@
 <script>
   const eur = (c) => (c / 100).toLocaleString('bg-BG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
   const img = (p) => window.IMG_BASE + p.image.replace('/shop/img/', '')
-  window.render = (D) => {
+  window.render = async (D) => {
     const by = (id) => D.products.find((p) => p.id === id)
     // 2 — протеините по цена на доза, най-изгодният отгоре
     const prot = D.products.filter((p) => p.category === 'protein' && p.servings > 1)
@@ -144,6 +153,25 @@
     const og = ['core-champs-whey-2270', 'izzi-rice-semolina-500', 'oetker-cocoa-100'].map(by).filter(Boolean)
     const pos = [[150, 110, 300], [20, 260, 200], [340, 300, 170]]
     document.getElementById('ogimgs').insertAdjacentHTML('beforeend', og.map((p, i) => `<img src="${img(p)}" style="position:absolute;left:${pos[i][0]}px;top:${pos[i][1]}px;width:${pos[i][2]}px;height:${pos[i][2]}px;object-fit:contain;mix-blend-mode:multiply">`).join(''))
+    // 6–8 — снимка и карта с цената
+    for (const el of document.querySelectorAll('.photo')) {
+      const p = by(el.dataset.id); if (!p) continue
+      const fact = p.per100 ? `${Math.round(p.per100.kcal)} ккал · ${String(p.per100.protein).replace('.', ',')} г протеин на 100 г`
+        : p.servings > 1 ? `${eur(Math.round(p.price_cents / p.servings))} на доза` : ''
+      el.innerHTML = `<div class="ph" style="background-image:url(photos/${el.dataset.photo}.jpg)"></div>
+        <div class="cap">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:30px">
+            <div><div style="font-size:30px;color:var(--ink2);font-weight:600">${el.dataset.line}</div>
+              <div class="disp" style="font-size:52px;margin-top:10px;line-height:1.05">${p.name}</div>
+              <div style="font-size:28px;font-weight:600;margin-top:14px">${p.size_label}${fact ? ' · ' + fact : ''}</div></div>
+            <div class="num" style="font-size:64px;white-space:nowrap">${eur(p.price_cents)}</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:24px;border-top:2px solid #EEEAE1;font-size:26px;font-weight:600;color:var(--ink2)">
+            <span class="word" style="font-size:32px">здраве<svg class="mark" viewBox="0 0 256 256" width="40" height="40"><use href="#amp" stroke-width="25"/></svg>сила</span><span>blag-coaching.com/shop</span>
+          </div>
+        </div>`
+    }
+    await Promise.all(['gris', 'basmati', 'whey'].map((n) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = `photos/${n}.jpg` })))
     return Promise.all([...document.images].map((im) => im.complete ? 1 : new Promise((r) => { im.onload = im.onerror = r })))
       .then(() => document.fonts.ready)
   }

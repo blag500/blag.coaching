@@ -1,6 +1,6 @@
 /**
  * Рисува постовете и картинката за споделяне на здраве&сила:
- *   shop/brand/social/posts.html → shop/brand/social/out/p1…p5.png (1080×1350)
+ *   shop/brand/social/posts.html → shop/brand/social/out/p1…p5.png (1080×1350); p6–p8 са със снимките от photos/
  *                                 и public/shop/brand/og.png (1200×630)
  *
  *   node scripts/build-shop-art.mjs
@@ -30,7 +30,7 @@ await page.evaluate((base) => { window.IMG_BASE = base }, pathToFileURL(resolve(
 await page.evaluate((D) => window.render(D), { products, delivery })
 await page.evaluate(() => Promise.all(['600 64px Unbounded', '700 30px Inter', '600 30px Inter'].map((f) => document.fonts.load(f, 'здраве сила абв 123'))))
 await page.waitForTimeout(500)
-for (const id of ['p1', 'p2', 'p3', 'p4', 'p5']) {
+for (const id of ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8']) {
   await page.locator('#' + id).screenshot({ path: `shop/brand/social/out/${id}.png` })
   console.log(`shop/brand/social/out/${id}.png`)
 }
