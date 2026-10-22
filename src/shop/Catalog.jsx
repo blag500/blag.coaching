@@ -117,6 +117,7 @@ export default function Catalog({ products, query, onAdd, delivery }) {
   return (
     <>
       <section className={styles.hero}>
+        <HeroArt products={products} />
         <p className={styles.kicker}><i aria-hidden="true" />{cutoff ? `${cutoff}` : 'Поръчай сега — тръгва в следващия работен ден'}</p>
         <h1 className={styles.display}>Добавки и храна, <em>подбрани</em> от треньор.</h1>
         <p className={styles.lead}>Тесен избор вместо хиляди продукти — подбран от Николай Благьов, треньор. До всеки продукт е сметната цената на доза, а до храната — макросите на 100 г.</p>
@@ -297,5 +298,20 @@ function QuickAdd({ product, products, onAdd, onClose }) {
         </fieldset>
       )}
     </Sheet>
+  )
+}
+
+/** Колажът вдясно на началото (само на широк екран): по един продукт от вид,
+ *  върху лаймов кръг, леко плуващи. Снимките са същите като в каталога. */
+const HERO_PICK = ['core-champs-whey-2270', '6pak-creatine-500', 'izzi-rice-semolina-500', 'oetker-cocoa-100', 'keskin-peanut-butter-280']
+
+function HeroArt({ products }) {
+  const pick = HERO_PICK.map((id) => products.find((p) => p.id === id)).filter(Boolean)
+  if (pick.length < 3) return null
+  return (
+    <div className={styles.heroArt} aria-hidden="true">
+      <span className={styles.heroDisc} />
+      {pick.map((p, i) => <img key={p.id} src={p.image} alt="" className={styles[`heroImg${i}`]} />)}
+    </div>
   )
 }

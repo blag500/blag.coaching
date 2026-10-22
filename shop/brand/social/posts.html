@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<title>здраве&amp;сила — постове</title>
+<!-- Платната за постовете и картинката за споделяне. Рисува ги
+     scripts/build-shop-art.mjs; числата идват от shop_products в базата
+     (window.DATA), не са написани на ръка. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+  :root { --oat:#EEEAE1; --ink:#12140F; --ink2:#57584F; --lime:#D4F04A; --heart:#E5482F; --stage:#F6F3EC; --card:#fff; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #777; font-family: Inter, sans-serif; color: var(--ink); font-feature-settings: 'locl' 0; display: flex; flex-direction: column; gap: 40px; padding: 40px; }
+  .board { position: relative; overflow: hidden; background: var(--oat); flex: none; }
+  .post { width: 1080px; height: 1350px; padding: 84px; }
+  .og { width: 1200px; height: 630px; padding: 64px; }
+  .disp { font-family: Unbounded, sans-serif; font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; }
+  .hl { background: linear-gradient(transparent 58%, var(--lime) 58%, var(--lime) 92%, transparent 92%); }
+  .foot { position: absolute; left: 84px; right: 84px; bottom: 72px; display: flex; justify-content: space-between; align-items: center; font-size: 26px; font-weight: 600; color: var(--ink2); }
+  .word { display: inline-flex; align-items: center; gap: 2px; font-family: Unbounded; font-weight: 600; letter-spacing: -0.03em; color: var(--ink); }
+  .mark .h { stroke: var(--heart); } .mark .l { stroke: var(--ink); }
+  .stage { background: var(--stage); border-radius: 36px; display: grid; place-items: center; overflow: hidden; }
+  .stage { position: relative; } .stage img { position: absolute; inset: 4%; width: 92%; height: 92%; object-fit: contain; mix-blend-mode: multiply; }
+  .chip { display: inline-block; padding: 10px 20px; border-radius: 999px; background: var(--card); font-size: 24px; font-weight: 600; }
+  .lime { background: var(--lime); }
+  .inkbg { background: var(--ink); color: var(--oat); }
+  .inkbg { --leg: #EEEAE1; } .inkbg .word, .inkbg .disp { color: var(--oat); } .inkbg .mark .l { stroke: var(--oat); } .inkbg .foot { color: #A9A79C; }
+  .num { font-family: Unbounded; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="amp" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(-8 2)">
+      <path style="stroke:var(--leg,#12140F)" d="M118 130 C 60 162, 48 218, 102 220 C 148 222, 180 192, 200 148"/>
+      <path style="stroke:var(--leg,#12140F)" d="M118 130 L 210 222"/>
+      <path style="stroke:var(--heart)" d="M118 130 C 64 100, 44 46, 86 37 C 103 34, 114 44, 118 56 C 122 44, 133 34, 150 37 C 192 46, 172 100, 118 130"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- 1 · Знакът -->
+<section id="p1" class="board post lime">
+  <svg class="mark" viewBox="0 0 256 256" width="560" height="560" style="position:absolute;right:40px;top:150px"><use href="#amp" stroke-width="25"/></svg>
+  <p class="disp" style="font-size:120px;position:absolute;left:84px;bottom:330px">здраве<br><span style="color:var(--heart)">&amp;</span>сила</p>
+  <p style="position:absolute;left:84px;bottom:230px;font-size:40px;font-weight:600;max-width:760px;line-height:1.25">Добавки и храна, подбрани от треньор.</p>
+  <div class="foot" style="color:var(--ink)"><span>blag-coaching.com/shop</span><span>Еконт · Спиди · до вратата в София</span></div>
+</section>
+
+<!-- 2 · Цена на доза -->
+<section id="p2" class="board post">
+  <p class="chip" style="margin-bottom:40px">Протеин · цена на доза</p>
+  <h1 class="disp" style="font-size:88px;max-width:880px">Сравнявай <span class="hl">дозата</span>, не кутията.</h1>
+  <div id="doses" style="margin-top:64px;display:flex;flex-direction:column;gap:22px"></div>
+  <p style="margin-top:34px;font-size:24px;color:var(--ink2);max-width:860px">Цената на кутията делено на дозите в нея. До всеки продукт в магазина е сметната така.</p>
+  <div class="foot"><span class="word" style="font-size:34px">здраве<svg class="mark" viewBox="0 0 256 256" width="42" height="42"><use href="#amp" stroke-width="25"/></svg>сила</span><span>blag-coaching.com/shop</span></div>
+</section>
+
+<!-- 3 · Протеин на 100 г в храната -->
+<section id="p3" class="board post inkbg">
+  <p class="chip lime" style="margin-bottom:40px;color:var(--ink)">За готвене · протеин на 100 г</p>
+  <h1 class="disp" style="font-size:84px;max-width:900px">Протеинът не е само на прах.</h1>
+  <div id="bars" style="margin-top:60px;display:flex;flex-direction:column;gap:20px"></div>
+  <p style="margin-top:30px;font-size:22px;color:#A9A79C">Ориентировъчно на 100 г продукт; точните стойности са на опаковката.</p>
+  <div class="foot"><span class="word" style="font-size:34px">здраве<svg class="mark" viewBox="0 0 256 256" width="42" height="42"><use href="#amp" stroke-width="25"/></svg>сила</span><span>blag-coaching.com/shop</span></div>
+</section>
+
+<!-- 4 · Седмицата в една количка -->
+<section id="p4" class="board post">
+  <p class="chip" style="margin-bottom:40px">Готвене за седмицата</p>
+  <h1 class="disp" style="font-size:72px;max-width:900px">Основата на кутиите — <span class="hl">с макросите</span> до всяко.</h1>
+  <div id="pantry" style="margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px"></div>
+  <div class="foot"><span class="word" style="font-size:34px">здраве<svg class="mark" viewBox="0 0 256 256" width="42" height="42"><use href="#amp" stroke-width="25"/></svg>сила</span><span id="pcount"></span></div>
+</section>
+
+<!-- 5 · Доставката -->
+<section id="p5" class="board post">
+  <svg class="mark" viewBox="0 0 256 256" width="150" height="150" style="margin-bottom:40px"><use href="#amp" stroke-width="25"/></svg>
+  <h1 class="disp" style="font-size:112px">Поръчай<br>до <span class="hl">15:00</span> —<br>тръгва днес.</h1>
+  <div id="deliv" style="margin-top:70px;display:flex;flex-direction:column;gap:18px"></div>
+  <div class="foot"><span>Плащане с карта през Stripe</span><span>blag-coaching.com/shop</span></div>
+</section>
+
+<!-- Картинката за споделяне -->
+<section id="og" class="board og">
+  <div id="ogimgs" style="position:absolute;right:40px;top:40px;width:520px;height:550px">
+    <div style="position:absolute;inset:30px;border-radius:50%;background:var(--lime)"></div>
+  </div>
+  <p class="word" style="font-size:44px;position:relative">здраве<svg class="mark" viewBox="0 0 256 256" width="54" height="54"><use href="#amp" stroke-width="25"/></svg>сила</p>
+  <h1 class="disp" style="font-size:64px;margin-top:70px;max-width:620px;position:relative">Добавки и храна, <span class="hl">подбрани</span> от треньор.</h1>
+  <p style="position:absolute;left:64px;bottom:56px;font-size:24px;font-weight:600;color:var(--ink2)">Цената на доза и макросите — до всеки продукт.</p>
+</section>
+
+<script>
+  const eur = (c) => (c / 100).toLocaleString('bg-BG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+  const img = (p) => window.IMG_BASE + p.image.replace('/shop/img/', '')
+  window.render = (D) => {
+    const by = (id) => D.products.find((p) => p.id === id)
+    // 2 — протеините по цена на доза, най-изгодният отгоре
+    const prot = D.products.filter((p) => p.category === 'protein' && p.servings > 1)
+      .map((p) => ({ ...p, dose: p.price_cents / p.servings })).sort((a, b) => a.dose - b.dose).slice(0, 3)
+    const max = Math.max(...prot.map((p) => p.dose))
+    document.getElementById('doses').innerHTML = prot.map((p, i) => `
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:24px;align-items:center;background:#fff;border-radius:32px;padding:18px 28px 18px 18px">
+        <div class="stage" style="width:150px;height:150px;border-radius:24px"><img src="${img(p)}"></div>
+        <div>
+          <div style="font-size:30px;font-weight:700">${p.name}</div>
+          <div style="font-size:22px;color:var(--ink2);margin-top:4px">${p.size_label} · ${eur(p.price_cents)}</div>
+          <div style="display:flex;align-items:center;gap:18px;margin-top:14px">
+            <div style="height:16px;border-radius:99px;background:${i ? 'var(--ink)' : 'var(--lime)'};box-shadow:inset 0 0 0 2px ${i ? 'transparent' : 'rgba(0,0,0,.15)'};width:${Math.round((p.dose / max) * 420)}px"></div>
+            <span class="num" style="font-size:34px">${eur(Math.round(p.dose))}</span>
+          </div>
+        </div>
+      </div>`).join('')
+    // 3 — протеин на 100 г в храната
+    const rich = D.products.filter((p) => p.per100 && p.per100.protein >= 13).sort((a, b) => b.per100.protein - a.per100.protein)
+    const seen = new Set(); const kind = (p) => /Риба тон/.test(p.name) ? 'tuna' : /брашно/i.test(p.name) && /Бадем/.test(p.name) ? 'almondflour' : p.id
+    const top = rich.filter((p) => { const k = kind(p); if (seen.has(k)) return false; seen.add(k); return true }).slice(0, 7)
+    document.getElementById('bars').innerHTML = top.map((p) => `
+      <div style="display:grid;grid-template-columns:330px 1fr 110px;gap:22px;align-items:center;font-size:26px;font-weight:600">
+        <span style="line-height:1.15">${p.name.replace(/^Д-р Кескин |^METRO Chef |^Green Line |^Диалба |^OCEAN /, '')}</span>
+        <span style="height:30px;border-radius:99px;background:var(--lime);width:${Math.round(p.per100.protein / 30 * 100)}%"></span>
+        <span class="num" style="font-size:40px;text-align:right">${Math.round(p.per100.protein)} г</span>
+      </div>`).join('')
+    // 4 — шест основни продукта за готвене
+    const pick = ['metro-basmati-5000', 'izzi-rice-semolina-500', 'keskin-oats-500', 'greenline-red-lentils-500', 'oetker-cocoa-100', 'keskin-erythritol-300'].map(by).filter(Boolean)
+    document.getElementById('pantry').innerHTML = pick.map((p) => `
+      <div style="background:#fff;border-radius:32px;padding:12px 12px 20px">
+        <div class="stage" style="height:150px;border-radius:24px"><img src="${img(p)}"></div>
+        <div style="font-size:22px;font-weight:700;margin:12px 8px 0;line-height:1.2;height:27px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${p.name.replace(/^Д-р Кескин |^METRO Chef |^Green Line |^IZZI |^Д-р Йоткер /, '')}</div>
+        <div style="display:flex;gap:8px;margin:12px 8px 0;flex-wrap:wrap">
+          <span style="padding:5px 12px;border-radius:99px;background:var(--lime);font-size:19px;font-weight:700">${Math.round(p.per100.protein)} г протеин</span>
+          <span style="padding:5px 12px;border-radius:99px;background:#E4DFD3;font-size:19px;font-weight:700">${Math.round(p.per100.kcal)} ккал</span>
+        </div>
+        <div class="num" style="font-size:28px;margin:10px 8px 0">${eur(p.price_cents)}</div>
+      </div>`).join('')
+    document.getElementById('pcount').textContent = `${D.products.filter((p) => p.category === 'pantry').length} продукта за готвене`
+    // 5 — доставката от shop_delivery
+    document.getElementById('deliv').innerHTML = D.delivery.map((d) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:28px;padding:24px 32px;font-size:30px;font-weight:600">
+        <span>${d.label}</span><span class="num" style="font-size:32px">${d.price_cents ? eur(d.price_cents) : 'безплатно'}${d.free_from_cents ? `<span style="font-family:Inter;font-size:20px;color:var(--ink2);letter-spacing:0;font-weight:500"> · 0 € над ${eur(d.free_from_cents).replace(',00', '')}</span>` : ''}</span>
+      </div>`).join('')
+    // OG — три продукта върху лаймовия кръг
+    const og = ['core-champs-whey-2270', 'izzi-rice-semolina-500', 'oetker-cocoa-100'].map(by).filter(Boolean)
+    const pos = [[150, 110, 300], [20, 260, 200], [340, 300, 170]]
+    document.getElementById('ogimgs').insertAdjacentHTML('beforeend', og.map((p, i) => `<img src="${img(p)}" style="position:absolute;left:${pos[i][0]}px;top:${pos[i][1]}px;width:${pos[i][2]}px;height:${pos[i][2]}px;object-fit:contain;mix-blend-mode:multiply">`).join(''))
+    return Promise.all([...document.images].map((im) => im.complete ? 1 : new Promise((r) => { im.onload = im.onerror = r })))
+      .then(() => document.fonts.ready)
+  }
+</script>
+</body>
+</html>
