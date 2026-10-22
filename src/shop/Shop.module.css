@@ -1406,3 +1406,9 @@
 }
 
 .page > .h1:first-child { margin-top: 18px; }
+
+/* На широк екран началото държи височината на колажа, а количката е в хедъра. */
+@media (min-width: 960px) {
+  .hero { min-height: 450px; }
+  .cartBar { display: none; }
+}
