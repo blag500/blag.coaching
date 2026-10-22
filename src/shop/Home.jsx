@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { euro } from './cart'
 import { CATEGORIES, GOALS, Icon, unitPrice } from './ui'
 import { Mark } from './Brand.jsx'
@@ -27,9 +27,34 @@ function Countdown({ ends }) {
   const end = new Date(ends).toLocaleString('bg-BG', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
   return (
     <span className={styles.clock} role="timer" aria-label={`Свършва ${end}`}>
-      {l.d > 0 && <span>{l.d} {l.d === 1 ? 'ден' : 'дни'}</span>}
-      <b>{pad(l.h)}:{pad(l.m)}:{pad(l.s)}</b>
+      <AlarmClock tick={Math.floor(now / 1000)} />
+      <span className={styles.clockText}>
+        {l.d > 0 && <>{l.d} {l.d === 1 ? 'ден' : 'дни'} · </>}{pad(l.h)}:{pad(l.m)}:{pad(l.s)}
+      </span>
     </span>
+  )
+}
+
+/* Часовничето: секундарникът прави крачка всяка секунда с лек отскок, а
+ * цялото тяло се клати тик-так. Ъгълът расте от отварянето, без да се
+ * връща към нула — така преходът никога не завърта стрелката обратно. */
+function AlarmClock({ tick }) {
+  // Броят се секундите от отварянето — ъгълът остава малко число.
+  const base = useRef(tick - (tick % 60))
+  const tock = tick % 2 === 0
+  return (
+    <svg className={styles.alarm} viewBox="0 0 40 40" width="38" height="38" aria-hidden="true"
+      style={{ transform: `rotate(${tock ? -5 : 5}deg)` }}>
+      <path className={styles.bell} d="M7 11a6 6 0 0 1 8-6M33 11a6 6 0 0 0-8-6" />
+      <path className={styles.leg} d="M11 34l-3 3M29 34l3 3" />
+      <circle className={styles.face} cx="20" cy="22" r="13" />
+      <path className={styles.hand} d="M20 22V14" />
+      <path className={styles.hand} d="M20 22l5 3" />
+      <g style={{ transform: `rotate(${(tick - base.current) * 6}deg)` }} className={styles.secHand}>
+        <path d="M20 24V11" />
+      </g>
+      <circle cx="20" cy="22" r="1.8" className={styles.pin} />
+    </svg>
   )
 }
 

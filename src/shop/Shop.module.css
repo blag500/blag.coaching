@@ -1463,22 +1463,34 @@
 
 .clock {
   display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: var(--r-pill);
-  background: var(--lime);
-  color: var(--on-lime);
+  align-items: center;
+  gap: 10px;
+  color: var(--on-band);
+}
+
+.clockText {
   font-family: var(--display);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'locl' 0, 'tnum' 1;
 }
 
-.clock span { font-size: 13px; }
-.clock b { font-weight: 600; }
+/* Тик-так: тялото се накланя на всяка секунда, стрелката скача с отскок. */
+.alarm {
+  flex: none;
+  overflow: visible;
+  transform-origin: 50% 60%;
+  transition: transform 180ms var(--spring);
+}
+
+.alarm .face { fill: var(--lime); stroke: var(--lime); stroke-width: 2; }
+.alarm .bell, .alarm .leg { fill: none; stroke: var(--lime); stroke-width: 3; stroke-linecap: round; }
+.alarm .hand { fill: none; stroke: var(--on-lime); stroke-width: 2.6; stroke-linecap: round; }
+.alarm .secHand { transform-origin: 20px 22px; transition: transform 240ms var(--spring); }
+.alarm .secHand path { fill: none; stroke: var(--heart); stroke-width: 1.6; stroke-linecap: round; }
+.alarm .pin { fill: var(--on-lime); }
 
 .dealRow {
   display: grid;
