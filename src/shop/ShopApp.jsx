@@ -105,11 +105,12 @@ export default function ShopApp() {
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2" /><circle cx="10" cy="20" r="1.2" /><circle cx="17" cy="20" r="1.2" />
             </svg>
-            {count > 0 ? <><span>{euro(subtotal)}</span><span key={count} className={styles.badge}>{count}</span></> : <span>Количка</span>}
+            {count > 0 ? <><span aria-hidden="true">{toast ? 'Добавено' : euro(subtotal)}</span><span key={count} className={styles.badge}>{count}</span></> : <span>Количка</span>}
           </a>
         </div>
       </header>
       <main className={styles.page}>{body}</main>
+      <p role="status" className={styles.srOnly}>{toast || ''}</p>
       <footer className={styles.foot}>
         <div className={styles.footMark}><Mark size={34} /><Wordmark size={16} /></div>
         <p>Благ Холдинг ЕООД · ЕИК 208845685 · София</p>
@@ -117,7 +118,7 @@ export default function ShopApp() {
       </footer>
       {onCatalog && count > 0 && (
         <a href="#/cart" key={`bar${bump}`} className={`${styles.cartBar} ${bump ? styles.cartBarBump : ''}`}>
-          <span role="status">{toast || `${count} ${count === 1 ? 'продукт' : 'продукта'}`}<b>{euro(subtotal)}</b></span>
+          <span aria-hidden="true">{toast || `${count} ${count === 1 ? 'продукт' : 'продукта'}`}<b>{euro(subtotal)}</b></span>
           <i>Количка →</i>
         </a>
       )}
