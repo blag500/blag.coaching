@@ -27,8 +27,8 @@ function Countdown({ ends }) {
   const end = new Date(ends).toLocaleString('bg-BG', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
   return (
     <span className={styles.clock} role="timer" aria-label={`Свършва ${end}`}>
-      {l.d > 0 && <><b>{l.d}</b><small>д</small></>}
-      <b>{pad(l.h)}</b><small>ч</small><b>{pad(l.m)}</b><small>м</small><b>{pad(l.s)}</b><small>с</small>
+      {l.d > 0 && <span>{l.d} {l.d === 1 ? 'ден' : 'дни'}</span>}
+      <b>{pad(l.h)}:{pad(l.m)}:{pad(l.s)}</b>
     </span>
   )
 }
@@ -55,7 +55,7 @@ export default function Home({ products, deals, onAdd }) {
         <section className={styles.deals} aria-labelledby="deals-h">
           <header className={styles.dealsHead}>
             <h1 id="deals-h" className={styles.dealsTitle}>Промоции на седмицата</h1>
-            <p className={styles.dealsMeta}>свършват след <Countdown ends={ends} /></p>
+            <p className={styles.dealsMeta}>до края <Countdown ends={ends} /></p>
           </header>
           <ul className={styles.dealRow}>
             {dealProducts.map((p) => {
