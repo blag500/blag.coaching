@@ -190,17 +190,17 @@ export default function Catalog({ products, cat = 'all', query, onAdd }) {
                 )}
               </a>
               <div className={styles.cardFoot}>
-                <span className={styles.priceBox}>
-                  <span className={styles.price}>{p.sizes > 1 ? 'от ' : ''}{euro(p.price_cents)}{p.was_cents && <s className={styles.was}>{euro(p.was_cents)}</s>}</span>
-                  {p.per100
-                    ? <><span className={styles.tag}>{Math.round(p.per100.protein)} г протеин / 100 г</span>{unitPrice(p) && <span className={styles.unit}>{unitPrice(p)}</span>}</>
-                    : unitPrice(p) && <span className={styles.tag}>{unitPrice(p)}</span>}
-                </span>
+                <span className={styles.price}>{p.sizes > 1 ? 'от ' : ''}{euro(p.price_cents)}{p.was_cents && <s className={styles.was}>{euro(p.was_cents)}</s>}</span>
                 <button type="button" className={`${styles.addSmall} ${justAdded === p.id ? styles.addDone : ''}`}
                   onClick={() => (p.flavors.length > 1 || p.sizes > 1 ? setQuick(p) : addNow(p))}
                   aria-label={`Добави ${p.name} в количката`}>
                   <Icon name={justAdded === p.id ? 'check' : 'plus'} size={20} stroke={2.4} />
                 </button>
+                <span className={styles.tags}>
+                  {p.per100 && p.per100.protein >= 5
+                    ? <><span className={styles.tag}>{Math.round(p.per100.protein)} г протеин / 100 г</span>{unitPrice(p) && <span className={styles.unit}>{unitPrice(p)}</span>}</>
+                    : unitPrice(p) && <span className={styles.tag}>{unitPrice(p)}</span>}
+                </span>
               </div>
             </li>
           ))}
