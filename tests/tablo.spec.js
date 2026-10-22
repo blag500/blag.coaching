@@ -122,3 +122,25 @@ test('без собственик таблото не показва нищо', 
   await expect(page.getByText('Нямаш достъп до това табло.')).toBeVisible()
   await expect(page.getByText('Прати гласов текст')).toHaveCount(0)
 })
+
+test('„Магазин" показва маржа на продукт, тънките са първи, промоцията е отделно', async ({ page }, info) => {
+  const now = Date.now()
+  const shop = {
+    shop_products: [
+      { id: 'a', name: 'Тест Креатин', size_label: '300 г', category: 'creatine', price_cents: 1349, active: true, sort: 1 },
+      { id: 'b', name: 'Тест Грис', size_label: '500 г', category: 'pantry', price_cents: 199, active: true, sort: 2 },
+    ],
+    shop_supply: [{ product_id: 'a', supplier: 'fitness1', cost_cents: 827 }, { product_id: 'b', supplier: 'promoto', cost_cents: 124 }],
+    shop_deals: [{ product_id: 'a', deal_price_cents: 999, was_cents: 1349, starts_at: new Date(now - 864e5).toISOString(), ends_at: new Date(now + 864e5).toISOString() }],
+    shop_orders: [{ subtotal_cents: 1998, items: [{ id: 'a', qty: 2, price_cents: 999 }], paid_at: new Date(now).toISOString(), test_mode: false }],
+  }
+  await signIn(page, { tables: { ...seed(), ...shop }, rpc: { tablo_business: BUSINESS } })
+  await page.goto('/tablo/#shop')
+  await expect(page.getByRole('heading', { name: 'Магазин' })).toBeVisible()
+  await expect(page.getByText('39 %').first()).toBeVisible()                 // (13,49 − 8,27) / 13,49
+  await expect(page.getByText('17 %').first()).toBeVisible()                 // с промоцията: (9,99 − 8,27) / 9,99
+  await expect(page.getByText('3,44 €')).toBeVisible()                      // брутната: 2 × (9,99 − 8,27)
+  const first = page.locator('li').filter({ hasText: 'Тест' }).first()
+  await expect(first).toContainText('Тест Креатин')                          // най-тънкият марж първи (17 % < 38 %)
+  await page.screenshot({ path: `shots/tablo-shop-${info.project.name}.png`, fullPage: true })
+})

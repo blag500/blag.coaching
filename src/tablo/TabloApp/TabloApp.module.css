@@ -574,7 +574,7 @@
   bottom: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
   background: var(--card);
   border-top: 1px solid var(--line);
@@ -606,3 +606,17 @@
 
 .barBtn[aria-current='page'] { color: var(--ink); font-weight: 600; }
 .barBtn[aria-current='page'] .barIcon { background: var(--select-bg); color: var(--select); }
+
+/* Магазинът: цена · доставна · марж в един ред, цифрите подравнени. */
+.marginRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 6px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.marginRow span { display: flex; flex-direction: column; white-space: nowrap; }
+.marginRow small { font-size: 11px; color: var(--ink-2); }
+.marginRow b { font-weight: 700; }
