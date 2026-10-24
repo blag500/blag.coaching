@@ -6,7 +6,8 @@ import Home from './Home.jsx'
 import Product from './Product.jsx'
 import { Cart, Checkout, Thanks } from './Checkout.jsx'
 import { Mark, Splash, Wordmark } from './Brand.jsx'
-import { NavDrawer, NavRail } from './Nav.jsx'
+import { NavDrawer, NavRail, TabBar } from './Nav.jsx'
+import { useHideOnScroll } from '../hooks/useHideOnScroll'
 import { Icon } from './ui'
 import styles from './Shop.module.css'
 
@@ -113,7 +114,10 @@ export default function ShopApp() {
   }
   else body = <Home products={products} deals={deals} onAdd={add} />
 
-  const onCatalog = (route.page === 'catalog' || route.page === 'c') && products && !error
+  // Долната лента е на началото, продуктите и количката. Продуктът и касата си
+  // имат своя лента долу („Добави“, „Плащане“) — там тя би стояла върху нея.
+  const tabs = { catalog: 'home', c: 'catalog', cart: 'cart' }[route.page] || null
+  useHideOnScroll(Boolean(tabs))
 
   return (
     <>
@@ -144,12 +148,7 @@ export default function ShopApp() {
         <p>Благ Холдинг ЕООД · ЕИК 208845685 · София</p>
         <p>Подбрано от Николай Благьов — треньор и натурален културист.</p>
       </footer>
-      {onCatalog && count > 0 && (
-        <a href="#/cart" key={`bar${bump}`} className={`${styles.cartBar} ${bump ? styles.cartBarBump : ''}`}>
-          <span aria-hidden="true">{toast || `${count} ${count === 1 ? 'продукт' : 'продукта'}`}<b>{euro(subtotal)}</b></span>
-          <i>Количка →</i>
-        </a>
-      )}
+      {tabs && <TabBar active={tabs} count={count} onMenu={() => setNavOpen(true)} />}
     </>
   )
 }

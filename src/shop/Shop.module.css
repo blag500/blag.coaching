@@ -995,48 +995,6 @@
 
 @media (min-width: 820px) { .dock { display: none; } }
 
-/* Лентата на количката — плава долу на каталога, щом в нея има нещо
-   (по образеца на Koffiracha: количката е под палеца). */
-.cartBar {
-  position: fixed;
-  left: 50%;
-  bottom: calc(env(safe-area-inset-bottom) + 12px);
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: min(calc(100% - 24px), 440px);
-  min-height: 60px;
-  padding: 8px 8px 8px 20px;
-  border-radius: var(--r-pill);
-  background: var(--cta);
-  color: var(--on-cta);
-  text-decoration: none;
-  box-shadow: 0 14px 34px rgba(10, 12, 8, 0.28);
-  transform: translateX(-50%);
-  animation: barIn 420ms var(--ease-out);
-}
-
-@keyframes barIn { from { transform: translate(-50%, 140%); } }
-
-.cartBar span { flex: 1; display: flex; flex-direction: column; font-size: 12px; font-weight: 500; opacity: 0.85; }
-.cartBar b { font-size: 15px; font-weight: 700; opacity: 1; font-variant-numeric: tabular-nums; }
-.cartBar i {
-  display: grid;
-  place-items: center;
-  height: 44px;
-  padding: 0 18px;
-  border-radius: var(--r-pill);
-  background: var(--on-cta);
-  color: var(--cta);
-  font-style: normal;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.cartBarBump { animation: barBump 420ms var(--spring); }
-@keyframes barBump { 30% { transform: translateX(-50%) scale(1.04); } }
-
 /* ── Количката и касата ─────────────────────────────────────────────────── */
 
 .freeBar {
@@ -1413,7 +1371,6 @@
 /* На широк екран началото държи височината на колажа, а количката е в хедъра. */
 @media (min-width: 960px) {
   .hero { min-height: 450px; }
-  .cartBar { display: none; }
 }
 
 /* ── Началото: промоциите на седмицата ─────────────────────────────────── */

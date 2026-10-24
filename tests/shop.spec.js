@@ -131,3 +131,29 @@ test('началото: промоцията с таймер и стара це�
   await expect(page.getByText('1 продукт', { exact: true })).toBeVisible()  // двата размера — една карта
   expect(page.url()).toContain('#/c/creatine')
 })
+
+test('долната лента: на телефона е, сгъва се при четене надолу, броят е върху количката', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await open(page, '/shop/#/c/all')
+  const bar = page.getByRole('navigation', { name: 'Магазин' }).last()
+  await expect(page.getByRole('button', { name: 'Продукти' })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByText('Тест Whey').first()).toBeVisible()
+  await page.screenshot({ path: 'shots/shop-tabbar.png' })
+
+  for (const y of [40, 120, 220, 320]) {
+    await page.evaluate((v) => window.scrollTo(0, v), y)
+    await page.waitForTimeout(60)
+  }
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.nav)).toBe('collapsed')
+  await page.screenshot({ path: 'shots/shop-tabbar-folded.png' })
+  await page.evaluate(() => window.scrollTo(0, 280))
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.nav ?? '')).toBe('')
+
+  await page.getByRole('button', { name: 'Добави Тест D3 в количката' }).click()
+  const cartTab = page.getByRole('button', { name: 'Количка', exact: true })
+  await expect(cartTab).toContainText('1')        // броят е върху знака
+  await cartTab.click()
+  await expect(page).toHaveURL(/#\/cart/)
+  await page.goto('/shop/#/p/whey')
+  await expect(bar).toBeHidden()   // продуктът си има своя лента „Добави“
+})

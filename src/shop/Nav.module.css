@@ -124,3 +124,49 @@
   .rail .links { padding: 0 0 24px; }
   .rail .row { min-height: 42px; font-size: 14px; white-space: nowrap; }
 }
+
+/* Долната лента — NavBar на приложението, оцветен с гамата на магазина.
+   Лентата чете токените на приложението; тук те получават стойности от
+   shop.css. Самият блок стои в потока след футъра и пази място, за да не
+   остане последният ред под стъклото. */
+.tabBar {
+  --bg-rgb: 255, 255, 255;
+  --text: #12140F;            /* думата върху лаймовия овал */
+  --text-rgb: 18, 20, 15;
+  --accent: #12140F;          /* знакът в сгънатото кръгче */
+  --accent-rgb: 18, 20, 15;
+  --chrome-active: var(--lime);
+  --font-body: var(--font);
+  --ease-spring: var(--spring);
+  --ease-spring-soft: cubic-bezier(0.22, 1.12, 0.36, 1);
+  --ease-glide: cubic-bezier(0.2, 0.8, 0.2, 1);
+  height: calc(env(safe-area-inset-bottom) + 76px);
+}
+@media (prefers-color-scheme: dark) {
+  .tabBar {
+    --bg-rgb: 27, 30, 23;
+    --text-rgb: 241, 238, 230;
+    --accent: #D4F04A;
+    --accent-rgb: 212, 240, 74;
+  }
+}
+@media (min-width: 820px) { .tabBar { display: none; } }
+
+.cartIcon { position: relative; display: block; width: 18px; height: 18px; }
+.cartIcon svg { width: 18px; height: 18px; }
+.cartIcon b {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--heart);
+  color: #fff;
+  font: 700 10px/16px var(--font);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  animation: pop 360ms var(--spring);
+}
+@keyframes pop { from { transform: scale(0.4); } }

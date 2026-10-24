@@ -2,7 +2,38 @@ import { useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { CATEGORIES, GOALS, Icon } from './ui'
 import { Wordmark } from './Brand.jsx'
+import { NavBar } from '../components/BottomNav/BottomNav.jsx'
 import styles from './Nav.module.css'
+
+/* Долната лента на телефона — самата лента на приложението (NavBar), само в
+ * гамата на магазина. Свива се в кръгче при четене надолу (useHideOnScroll в
+ * ShopApp); на широк екран я няма, там е колоната отляво. */
+const icon = (name) => function TabIcon() { return <Icon name={name} size={18} stroke={2} /> }
+const HomeIcon = icon('home')
+const GridIcon = icon('grid')
+const MenuIcon = icon('menu')
+
+export function TabBar({ active, count, onMenu }) {
+  // Броят е върху знака на количката — лентата показва дума само под отворения раздел.
+  const CartIcon = useMemo(() => function CartIcon() {
+    return <span className={styles.cartIcon}><Icon name="cart" size={18} stroke={2} />{count > 0 && <b key={count}>{count}</b>}</span>
+  }, [count])
+  const tabs = [
+    { id: 'home', label: 'Начало', Icon: HomeIcon, href: '#/' },
+    { id: 'catalog', label: 'Продукти', Icon: GridIcon, href: '#/c/all' },
+    { id: 'cart', label: 'Количка', Icon: CartIcon, href: '#/cart' },
+    { id: 'menu', label: 'Меню', Icon: MenuIcon },
+  ]
+  const go = (id) => {
+    if (id === 'menu') { onMenu(); return }
+    window.location.hash = tabs.find((t) => t.id === id).href
+  }
+  return (
+    <div className={styles.tabBar}>
+      <NavBar tabs={tabs} activeTab={active} onTabChange={go} labels={{ nav: 'Магазин', show: 'Покажи менюто' }} />
+    </div>
+  )
+}
 
 /* Страничната навигация: панел отляво на всеки екран (☰ в хедъра) и
  * постоянна колона на широк екран в страниците с продукти. Един списък —
