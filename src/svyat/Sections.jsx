@@ -19,7 +19,7 @@ export default function Sections({ lite = false }) {
         <GymBg lite={lite} />
         <div className="copy">
           <p className="kicker">Николай Благьов</p>
-          <h1 className="h1">Треньор. Приложение, храна, магазин.</h1>
+          <h1 className="h1">Зала, приложение, храна, магазин.</h1>
           <p className="lead">Скролвай: залата по изгрев, магазинът през нощта. Кухнята идва скоро.</p>
           <div className="ctas">
             <a className="btn" href="#kontakt" onClick={(e) => { e.preventDefault(); jumpTo('kontakt') }}>Пиши ми <Arrow /></a>
@@ -34,7 +34,7 @@ export default function Sections({ lite = false }) {
         <div className="copy glass">
           <p className="kicker">Blag Coaching</p>
           <h2 className="h2">Залата</h2>
-          <p className="lead">Тренировки и хранене с приложението: вписваш храната и тежестите, виждаш напредъка, пишеш на треньора. Той вижда същото.</p>
+          <p className="lead">Тренировки и хранене с приложението: вписваш храната и тежестите, виждаш напредъка и ми пишеш направо. Аз виждам същото.</p>
           <div className="ctas">
             <a className="btn" href="/">Приложението <Arrow /></a>
             <a className="link" href="#kontakt" onClick={(e) => { e.preventDefault(); jumpTo('kontakt') }}>Консултация →</a>

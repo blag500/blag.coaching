@@ -49,6 +49,7 @@ test('картата казва грешката от сървъра', async ({ 
 })
 
 test('3D: зарежда се, зареждането изчезва, менюто движи камерата', async ({ page }, info) => {
+  test.setTimeout(60000)   // без видеокарта залата се компилира бавно
   await page.goto('/svyat/')
   const webgl = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl2'))
   test.skip(!webgl, 'няма WebGL в този браузър — лекият изглед е покрит отгоре')

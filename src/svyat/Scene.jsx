@@ -14,11 +14,11 @@ import { setScrollEl, takeStart, onHashChange, STOPS } from './nav'
  * 3D-то (Scroll html), а Bloom прави ореола на неона. */
 
 const PAGES = 5
-// [отместване, позиция на камерата, накъде гледа]
+// [отместване, позиция на камерата, накъде гледа, (накъде гледа по x на изправен телефон)]
 const G = GYM_X
 const KEYS = [
-  [0.0, [G - 1.0, 2.3, 11.5], [G - 3.4, 2.7, 0]],     // залата отдалеч — текстът вляво
-  [0.25, [G + 1.3, 1.65, 4.9], [G - 1.1, 1.45, 0.9]],  // при щангата
+  [0.0, [G - 0.6, 2.5, 11.5], [G - 2.6, 3.0, 0], G],   // залата отдалеч — текстът вляво, знакът вдясно
+  [0.25, [G + 1.0, 2.4, 6.8], [G - 1.2, 2.6, 0], G],   // стойката под знака
   [0.5, [-0.4, 2.7, 8.4], [0, 3.6, 0]],               // улицата и неонът
   [0.75, [2.6, 1.6, 4.4], [4.6, 1.35, 0]],            // вратата
   [1.0, [-1.4, 2.1, 6.8], [0, 3.3, 0]],               // картата
@@ -29,13 +29,13 @@ const L = new THREE.Vector3()
 
 function Rig({ reduce }) {
   const scroll = useScroll()
-  const look = useRef(new THREE.Vector3(G - 3.4, 2.7, 0))
+  const look = useRef(new THREE.Vector3(G - 2.6, 3.0, 0))
   useFrame((state, dt) => {
     const o = scroll.offset
     let i = 1
     while (i < KEYS.length - 1 && KEYS[i][0] < o) i++
-    const [a, pa, la] = KEYS[i - 1]
-    const [b, pb, lb] = KEYS[i]
+    const [a, pa, la, qa = la[0]] = KEYS[i - 1]
+    const [b, pb, lb, qb = lb[0]] = KEYS[i]
     const k = ease(THREE.MathUtils.clamp((o - a) / (b - a), 0, 1))
     P.fromArray(pa).lerp(L.fromArray(pb), k)
     const lx = THREE.MathUtils.lerp(la[0], lb[0], k), ly = THREE.MathUtils.lerp(la[1], lb[1], k), lz = THREE.MathUtils.lerp(la[2], lb[2], k)
@@ -45,7 +45,7 @@ function Rig({ reduce }) {
     let lx2 = lx
     // Камерата застава срещу точката, към която гледа — не към нулата на
     // света (там е улицата; залата е на x = −26).
-    if (state.size.width / state.size.height < 0.8) { P.z += 4.5; P.x = THREE.MathUtils.lerp(P.x, lx, 0.8); ly2 = ly - 1.7 }
+    if (state.size.width / state.size.height < 0.8) { lx2 = THREE.MathUtils.lerp(qa, qb, k); P.z += 4.5; P.x = THREE.MathUtils.lerp(P.x, lx2, 0.8); ly2 = ly - 1.7 }
     if (!reduce) { P.x += state.pointer.x * 0.35; P.y += state.pointer.y * 0.18 }
     const s = reduce ? 20 : 3.2
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, P.x, s, dt)
@@ -109,7 +109,7 @@ export default function Scene({ onReady, onSlow, onProgress, reduce }) {
   const { progress } = useProgress()
   useEffect(() => { onProgress?.(progress) }, [progress, onProgress])
   return (
-    <Canvas dpr={[1, 1.75]} camera={{ position: [GYM_X - 1, 2.3, 11.5], fov: 45, near: 0.1, far: 90 }}
+    <Canvas dpr={[1, 1.75]} camera={{ position: [GYM_X - 0.6, 2.5, 11.5], fov: 45, near: 0.1, far: 90 }}
       gl={{ antialias: false, powerPreference: 'high-performance' }}
       style={{ position: 'fixed', inset: 0 }}>
       <PerformanceMonitor onDecline={onSlow} bounds={() => [30, 55]} flipflops={3} />
