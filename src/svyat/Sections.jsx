@@ -20,7 +20,7 @@ export default function Sections({ lite = false }) {
         <div className="copy">
           <p className="kicker">Николай Благьов</p>
           <h1 className="h1">Зала, приложение, храна, магазин.</h1>
-          <p className="lead">Скролвай: залата сутрин, магазинът през нощта. Кухнята идва скоро.</p>
+          <p className="lead">Скролвай: залата, после магазинът през нощта. Кухнята идва скоро.</p>
           <div className="ctas">
             <a className="btn" href="#kontakt" onClick={(e) => { e.preventDefault(); jumpTo('kontakt') }}>Пиши ми <Arrow /></a>
             <a className="link" href="/shop/">Към магазина →</a>

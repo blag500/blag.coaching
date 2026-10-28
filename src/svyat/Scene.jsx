@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { PerformanceMonitor, Scroll, ScrollControls, useProgress, useScroll } from '@react-three/drei'
-import { Bloom, BrightnessContrast, EffectComposer, HueSaturation, Noise, Vignette } from '@react-three/postprocessing'
+import { Bloom, BrightnessContrast, EffectComposer, HueSaturation, Noise, Sepia, Vignette } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Street from './Street.jsx'
 import Gym, { GYM_X } from './Gym.jsx'
@@ -98,16 +98,21 @@ function Grade() {
   const scroll = useScroll()
   const hue = useRef()
   const bc = useRef()
+  const sepia = useRef()
+  // Залата е в сепия (по снимката на Николай: тъмно, топло, зърнесто);
+  // към улицата тонът се връща, за да свети неонът в цвят.
   useFrame(() => {
     const day = 1 - nightAt(scroll.offset)
-    if (hue.current) hue.current.saturation = -0.5 * day
-    if (bc.current) bc.current.contrast = 0.22 * day
+    if (hue.current) hue.current.saturation = -0.3 * day
+    if (bc.current) bc.current.contrast = 0.28 * day
+    if (sepia.current) sepia.current.intensity = 1 * day
   })
   return (
     <EffectComposer multisampling={0}>
-      <Bloom mipmapBlur intensity={0.85} luminanceThreshold={1} luminanceSmoothing={0.2} radius={0.7} />
-      <HueSaturation ref={hue} saturation={-0.5} />
-      <BrightnessContrast ref={bc} contrast={0.22} />
+      <Bloom mipmapBlur intensity={1.1} luminanceThreshold={0.9} luminanceSmoothing={0.25} radius={0.75} />
+      <HueSaturation ref={hue} saturation={-0.3} />
+      <Sepia ref={sepia} intensity={1} />
+      <BrightnessContrast ref={bc} contrast={0.28} />
       <Noise premultiply opacity={0.55} />
       <Vignette offset={0.22} darkness={0.78} />
     </EffectComposer>

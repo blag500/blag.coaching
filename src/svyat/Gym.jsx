@@ -4,12 +4,13 @@ import { RoundedBox, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { clank } from './sound'
 
-/* Залата сутрин (етап 2, Р20) — старата хардкор зала: дълъг тесен коридор с
+/* Залата (етап 2, Р20) — старата хардкор зала: дълъг тесен коридор с
  * нисък таван и ред луминесцентни лампи, стени боядисани до кръста в тъмносиво
  * и мръсно бяло горе, плакати, часовник, тръби по пода, бетон с бели линии,
  * шведска стена, пейки, стойка с щанга до стената, купчини дискове, дъмбели,
- * кулиси в дъното и таблото BLAG GYM на задната стена. Тонът е почти
- * черно-бял (HueSaturation в Scene.jsx), цветът се връща на улицата.
+ * кулиси в дъното и таблото BLAG GYM на задната стена. Вид по снимката на
+ * Николай (28.10): тъмно, топло, сепия и зърно (Sepia в Scene.jsx), кръгли
+ * лампи в тавана, огледала вместо прозорци; цветът се връща на улицата.
  * Щангата се вдига при докосване. Хромът отразява малка рисувана карта на
  * стаята — RoomEnvironment изглеждаше същото, но удвояваше зареждането.
  * Бетонът и релефът на мазилката са фото-текстури от Poly Haven (CC0) в
@@ -56,14 +57,14 @@ function wallTexture() {
   c.width = c.height = S
   const g = c.getContext('2d')
   const split = Math.round(S * (1 - 1.25 / H))
-  g.fillStyle = '#d4d3cc'
+  g.fillStyle = '#3b342c'
   g.fillRect(0, 0, S, split)
-  g.fillStyle = '#4b555a'
+  g.fillStyle = '#1d1a17'
   g.fillRect(0, split, S, S - split)
-  g.fillStyle = '#23292c'
+  g.fillStyle = '#0d0c0b'
   g.fillRect(0, split - 6, S, 9)
   for (let k = 0; k < 8; k++) {                          // едва видими стекли следи
-    g.fillStyle = `rgba(60,55,50,${0.012 + Math.random() * 0.018})`
+    g.fillStyle = `rgba(10,8,6,${0.05 + Math.random() * 0.06})`
     const x = Math.random() * S
     g.fillRect(x, Math.random() * split * 0.6, 4 + Math.random() * 30, 30 + Math.random() * 140)
   }
@@ -77,10 +78,10 @@ function ceilingTexture() {
   const c = document.createElement('canvas')
   c.width = c.height = S
   const g = c.getContext('2d')
-  g.fillStyle = '#8e8e8a'
+  g.fillStyle = '#1b1815'
   g.fillRect(0, 0, S, S)
   for (let k = 0; k < 60; k++) {
-    g.fillStyle = `rgba(${Math.random() < 0.5 ? '40,40,38' : '200,200,195'},${0.05 + Math.random() * 0.08})`
+    g.fillStyle = `rgba(${Math.random() < 0.5 ? '6,5,4' : '70,62,52'},${0.05 + Math.random() * 0.08})`
     g.beginPath()
     g.arc(Math.random() * S, Math.random() * S, 4 + Math.random() * 28, 0, Math.PI * 2)
     g.fill()
@@ -335,7 +336,28 @@ function Fluoro({ z, m }) {
   return (
     <group position={[0.15, H - 0.06, z]}>
       <mesh material={m.frame}><boxGeometry args={[0.2, 0.08, 1.3]} /></mesh>
-      <mesh position={[0, -0.05, 0]}><boxGeometry args={[0.07, 0.03, 1.22]} /><meshStandardMaterial color="#000" emissive="#f2f6ff" emissiveIntensity={2.2} toneMapped={false} /></mesh>
+      <mesh position={[0, -0.05, 0]}><boxGeometry args={[0.07, 0.03, 1.22]} /><meshStandardMaterial color="#000" emissive="#ffd6a0" emissiveIntensity={2.6} toneMapped={false} /></mesh>
+    </group>
+  )
+}
+
+/** Кръгла лампа в тавана — само светещ диск; в далечината Bloom я прави на
+ *  размито петно като на снимката, без светлина в сцената. */
+function Downlight({ x, z }) {
+  return (
+    <mesh position={[x, H - 0.005, z]} rotation-x={Math.PI / 2}>
+      <circleGeometry args={[0.09, 24]} />
+      <meshStandardMaterial color="#000" emissive="#ffd29a" emissiveIntensity={3.4} toneMapped={false} />
+    </mesh>
+  )
+}
+
+/** Огледало на стената: тъмно, гладко, отразява картата на стаята. */
+function Mirror({ m }) {
+  return (
+    <group>
+      <mesh position={[0, 0, -0.01]} material={m.frame}><boxGeometry args={[1.3, 2.1, 0.03]} /></mesh>
+      <mesh><planeGeometry args={[1.2, 2.0]} /><meshStandardMaterial color="#2a2622" metalness={1} roughness={0.06} envMap={m.env} envMapIntensity={0.9} /></mesh>
     </group>
   )
 }
@@ -398,18 +420,6 @@ function Clock() {
   )
 }
 
-/** Прозорец с дневна светлина: светлото стъкло свети, рамката е бяла. */
-function DayWindow() {
-  return (
-    <group>
-      <mesh><planeGeometry args={[1.1, 1.3]} /><meshBasicMaterial color="#e9eef1" toneMapped={false} /></mesh>
-      {[[0, 0.67, 1.2, 0.06], [0, -0.67, 1.2, 0.06], [-0.57, 0, 0.06, 1.4], [0.57, 0, 0.06, 1.4], [0, 0, 0.04, 1.3], [0, 0.15, 1.1, 0.04]].map(([x, y, w, h], i) => (
-        <mesh key={i} position={[x, y, 0.02]}><boxGeometry args={[w, h, 0.05]} /><meshStandardMaterial color="#e0e0dc" roughness={0.6} /></mesh>
-      ))}
-    </group>
-  )
-}
-
 /** Лежанката: колони с куки, пейка под щангата, щангата отгоре. */
 function PressStation({ m }) {
   return (
@@ -438,11 +448,10 @@ export default function Gym() {
   const wall = useMemo(() => { const t = wallTexture(); t.repeat.set(LEN / 3.2, 1); return t }, [])
   const backWall = useMemo(() => { const t = wall.clone(); t.repeat.set((2 * RW) / 3.2, 1); t.needsUpdate = true; return t }, [wall])
   const [fDiff, fNor, fRough, wNor, wRough] = useLoader(THREE.TextureLoader, TEX)
-  // бетонът от снимката е тъмен (средно 86/255), а лампите са на 3,4 м —
-  // цветът над 1 вдига албедото, без да се пипа светлината на цялата сцена
+  // подът е тъмен като гума: фото-бетонът, притъмнен и затоплен
   const floorMat = useMemo(() => {
     const rep = (t, srgb) => { const c = t.clone(); c.wrapS = c.wrapT = THREE.RepeatWrapping; c.repeat.set(2 * RW / 2.2, LEN / 2.2); c.anisotropy = 8; if (srgb) c.colorSpace = THREE.SRGBColorSpace; c.needsUpdate = true; return c }
-    return new THREE.MeshStandardMaterial({ map: rep(fDiff, true), normalMap: rep(fNor), roughnessMap: rep(fRough), color: new THREE.Color(1.9, 1.88, 1.82), normalScale: new THREE.Vector2(0.6, 0.6) })
+    return new THREE.MeshStandardMaterial({ map: rep(fDiff, true), normalMap: rep(fNor), roughnessMap: rep(fRough), color: new THREE.Color(0.62, 0.58, 0.54), normalScale: new THREE.Vector2(0.6, 0.6) })
   }, [fDiff, fNor, fRough])
   const wallMat = useMemo(() => {
     const rel = (t, len) => { const c = t.clone(); c.wrapS = c.wrapT = THREE.RepeatWrapping; c.repeat.set(len / 1.6, H / 1.6); c.needsUpdate = true; return c }
@@ -498,19 +507,19 @@ export default function Gym() {
       </mesh>
 
       {/* белите линии по бетона */}
-      {[-0.7, 0.95].map((x) => <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.004, midZ]}><planeGeometry args={[0.05, LEN]} /><meshStandardMaterial color="#d9d9d4" roughness={0.7} /></mesh>)}
-      <mesh rotation-x={-Math.PI / 2} position={[0.1, 0.004, -6]}><planeGeometry args={[1.7, 0.05]} /><meshStandardMaterial color="#d9d9d4" /></mesh>
+      {[-0.7, 0.95].map((x) => <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.004, midZ]}><planeGeometry args={[0.05, LEN]} /><meshStandardMaterial color="#5c544a" roughness={0.7} /></mesh>)}
+      <mesh rotation-x={-Math.PI / 2} position={[0.1, 0.004, -6]}><planeGeometry args={[1.7, 0.05]} /><meshStandardMaterial color="#5c544a" /></mesh>
 
       {/* тръбите по пода покрай лявата стена */}
       {[0.16, 0.27].map((y) => <mesh key={y} position={[-RW + 0.08, y, midZ]} rotation-x={Math.PI / 2} material={m.frame}><cylinderGeometry args={[0.028, 0.028, LEN, 10]} /></mesh>)}
 
       {/* лампите и светлината им */}
       {[0.2, -2.6, -5.4, -8.2, -11, -13.8].map((z) => <Fluoro key={z} z={z} m={m} />)}
-      {[-0.5, -5, -9.5, -14].map((z) => <pointLight key={z} position={[0.1, H - 0.4, z]} intensity={7} distance={8} decay={1.6} color="#eef3ff" />)}
+      {[-1.2, -4, -6.8, -9.6, -12.4, -15.2].flatMap((z) => [-2.2, 2.4].map((x) => <Downlight key={`${x}${z}`} x={x} z={z} />))}
+      {[-0.5, -5, -9.5, -14].map((z) => <pointLight key={z} position={[0.1, H - 0.4, z]} intensity={15} distance={8} decay={1.7} color="#ffc27e" />)}
 
       {/* прозорците отляво, плакатите и часовникът отдясно */}
-      {[-0.2, -3.3].map((z) => <group key={z} position={[-RW + 0.01, 2.15, z]} rotation-y={Math.PI / 2}><DayWindow /></group>)}
-      <pointLight position={[-2.4, 2.2, -1.6]} intensity={5} distance={5} color="#e6eef4" />
+      {[-0.2, -3.3, -6.4].map((z) => <group key={z} position={[-RW + 0.02, 1.35, z]} rotation-y={Math.PI / 2}><Mirror m={m} /></group>)}
       {[[-2.2, 'stand-front-fdb'], [-4.6, 'stand-back-latbi'], [-7.8, 'stand-side-sc'], [-10.8, 'stand-front-mm'], [-13, 'stand-back-fdb']].map(([z, pose]) => (
         <group key={z} position={[RW - 0.01, 2.35, z]} rotation-y={-Math.PI / 2}><Poster url={`/posing-lib/${pose}.webp`} /></group>
       ))}

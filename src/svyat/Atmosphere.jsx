@@ -10,7 +10,7 @@ import * as THREE from 'three'
 export const NIGHT_FROM = 0.27
 export const NIGHT_TO = 0.46
 
-const DAWN = new THREE.Color('#2b2e30')
+const DAWN = new THREE.Color('#110e0b')
 const NIGHT = new THREE.Color('#05070a')
 
 export function nightAt(o) {
@@ -35,14 +35,14 @@ export default function Atmosphere() {
     scene.fog.far = THREE.MathUtils.lerp(44, 30, n)
     if (sun.current) sun.current.intensity = 1.2 * (1 - n)
     if (moon.current) moon.current.intensity = 0.22 * n
-    if (hemi.current) hemi.current.intensity = THREE.MathUtils.lerp(0.55, 0.3, n)
-    if (hemi.current) hemi.current.color.set(n > 0.5 ? '#2a3a66' : '#e8ecef')
+    if (hemi.current) hemi.current.intensity = THREE.MathUtils.lerp(0.22, 0.3, n)
+    if (hemi.current) hemi.current.color.set(n > 0.5 ? '#2a3a66' : '#c9a882')
     if (stars.current) stars.current.visible = n > 0.6
   })
   return (
     <>
       <ambientLight intensity={0.05} />
-      <hemisphereLight ref={hemi} args={['#e8ecef', '#080a07', 0.5]} />
+      <hemisphereLight ref={hemi} args={['#c9a882', '#080a07', 0.22]} />
       {/* дневната светлина влиза в залата отляво, през прозорците */}
       <directionalLight ref={sun} position={[-34, 4, -2]} intensity={1.2} color="#f2f4f6" />
       <directionalLight ref={moon} position={[-6, 10, 8]} intensity={0} color="#8fa6ff" />
