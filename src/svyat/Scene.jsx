@@ -14,7 +14,7 @@ import { setScrollEl, jumpTo, takeStart } from './nav'
 const PAGES = 4
 // [отместване, позиция на камерата, накъде гледа]
 const KEYS = [
-  [0.0, [0, 1.7, 15.5], [0, 3.2, 0]],
+  [0.0, [-1.6, 1.7, 15.5], [-3.0, 3.2, 0]],   // неонът вдясно — заглавието е вляво
   [0.34, [-0.4, 2.7, 8.4], [0, 3.6, 0]],
   [0.67, [2.6, 1.6, 4.4], [4.6, 1.35, 0]],
   [1.0, [-1.4, 2.1, 6.8], [0, 3.3, 0]],
@@ -38,14 +38,15 @@ function Rig({ reduce }) {
     // Изправен телефон: по-назад и погледът по-ниско — неонът отива в горната
     // половина, текстът е долу (svyat.css, @media (max-aspect-ratio: 4/5)).
     let ly2 = ly
-    if (state.size.width / state.size.height < 0.8) { P.z += 4.5; P.x *= 0.4; ly2 = ly - 1.7 }
+    let lx2 = lx
+    if (state.size.width / state.size.height < 0.8) { P.z += 4.5; P.x *= 0.2; ly2 = ly - 1.7; lx2 = lx * 0.2 }
     if (!reduce) { P.x += state.pointer.x * 0.35; P.y += state.pointer.y * 0.18 }
     const s = reduce ? 20 : 3.2
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, P.x, s, dt)
     state.camera.position.y = THREE.MathUtils.damp(state.camera.position.y, P.y, s, dt)
     state.camera.position.z = THREE.MathUtils.damp(state.camera.position.z, P.z, s, dt)
     look.current.set(
-      THREE.MathUtils.damp(look.current.x, lx, s, dt),
+      THREE.MathUtils.damp(look.current.x, lx2, s, dt),
       THREE.MathUtils.damp(look.current.y, ly2, s, dt),
       THREE.MathUtils.damp(look.current.z, lz, s, dt),
     )
