@@ -43,7 +43,9 @@ function Rig({ reduce }) {
     // половина, текстът е долу (svyat.css, @media (max-aspect-ratio: 4/5)).
     let ly2 = ly
     let lx2 = lx
-    if (state.size.width / state.size.height < 0.8) { P.z += 4.5; P.x *= 0.2; ly2 = ly - 1.7; lx2 = lx * 0.2 }
+    // Камерата застава срещу точката, към която гледа — не към нулата на
+    // света (там е улицата; залата е на x = −26).
+    if (state.size.width / state.size.height < 0.8) { P.z += 4.5; P.x = THREE.MathUtils.lerp(P.x, lx, 0.8); ly2 = ly - 1.7 }
     if (!reduce) { P.x += state.pointer.x * 0.35; P.y += state.pointer.y * 0.18 }
     const s = reduce ? 20 : 3.2
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, P.x, s, dt)
