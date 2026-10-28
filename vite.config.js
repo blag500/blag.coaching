@@ -15,8 +15,8 @@ export default defineConfig({
   server: {
     host: true,
   },
-  /* Четири страници: приложението, таблото за инвестициите (/invest/),
-     личното табло (/tablo/) и онлайн магазинът (/shop/). Другите три ползват
+  /* Пет страници: приложението, таблото за инвестициите (/invest/),
+     личното табло (/tablo/), онлайн магазинът (/shop/) и светът (/svyat/). Другите три ползват
      същия Supabase клиент и същите променливи, но не и обвивката. */
   build: {
     rollupOptions: {
@@ -25,6 +25,7 @@ export default defineConfig({
         invest: 'invest/index.html',
         tablo: 'tablo/index.html',
         shop: 'shop/index.html',
+        svyat: 'svyat/index.html',
       },
     },
   },
@@ -120,7 +121,7 @@ export default defineConfig({
         /* Пробната страница на Чийт Код не е част от приложението: снимките ѝ
            са мегабайти, а предварителният кеш ги дава на всеки клиент при
            следващото обновяване. */
-        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'shop/**', 'assets/shop-*'],
+        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'shop/**', 'assets/shop-*', 'svyat/**', 'assets/svyat-*', 'assets/Scene-*'],
         /* Предварителният кеш е за обвивката, не за снимките.
            Дотук влизаше всичко — рецепти, ястия, фонове, логото за имейлите —
            около 7 MB, които всеки клиент теглеше при инсталиране и наново

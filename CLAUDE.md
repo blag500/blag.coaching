@@ -186,6 +186,19 @@ METRO с макросите на 100 г (`per100`) и грамаж (`net_g`); г
 списък (`node scripts/shop-econt-offices.mjs` → `public/shop/econt-offices.json`).
 Решението — Р16.
 
+**Светът „Благ“** (`/svyat/`, `svyat/index.html` → `src/svyat/`): 3D витрина —
+пети вход на Vite, без service worker (`globIgnores` пази `assets/Scene-*` и
+`assets/svyat-*` извън кеша на приложението). Собствен вид (`src/svyat/svyat.css`),
+не темите на приложението. React Three Fiber + drei + postprocessing се теглят
+само в `Scene.jsx` (lazy); без WebGL, с `?lite=1` или при бавни кадри — лек
+изглед със същия текст (`Sections.jsx`). Неонът е 3D тръби от SVG в
+`public/svyat/neon/` (източник `D:lag-ai\metro-city
+eon	ubes.js`);
+паленето и примигването са в `neon.js`, звукът — синтезиран в `sound.js`.
+Скокът по спирки е по номер (`nav.js`, `STOPS`), а `#адресът` се прибира в
+`main.jsx` преди React — иначе браузърът сам скача в слоя с текста. Картата
+„Пиши ми“ → `svyat-contact` → `svyat_messages` (145). Решението — Р20.
+
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
 ## Testing

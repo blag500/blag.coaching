@@ -1,0 +1,112 @@
+/* Светът „Благ“ — собствен вид: нощ, неон, стъкло. Не ползва темите на
+   приложението (src/index.css) — тук всичко е тъмно по замисъл. */
+:root {
+  --bg: #07090a;
+  --ink: #f2eee6;
+  --ink-2: rgba(242, 238, 230, 0.72);
+  --ink-3: rgba(242, 238, 230, 0.48);
+  --lime: #d4f04a;
+  --on-lime: #11130e;
+  --coral: #ff8a70;
+  --card: rgba(14, 16, 13, 0.78);
+  --card-line: rgba(242, 238, 230, 0.12);
+  --field: rgba(242, 238, 230, 0.06);
+  --r-md: 14px;
+  --r-lg: 26px;
+  --r-pill: 999px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --display: 'Golos Text', system-ui, sans-serif;
+  --body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--body); }
+body { -webkit-font-smoothing: antialiased; overflow: hidden; }
+body.lite { overflow: auto; }
+a { color: inherit; }
+button { font: inherit; }
+
+.skip { position: fixed; left: 12px; top: -60px; z-index: 50; padding: 10px 14px; background: var(--lime); color: var(--on-lime); border-radius: var(--r-md); }
+.skip:focus { top: 12px; }
+
+/* ── горна лента ── */
+.bar { position: fixed; inset: 0 0 auto; z-index: 20; display: flex; align-items: center; gap: 16px;
+  padding: max(14px, env(safe-area-inset-top)) clamp(16px, 4vw, 40px) 14px; pointer-events: none; }
+.bar > * { pointer-events: auto; }
+.logo { font-family: var(--display); font-weight: 800; letter-spacing: 0.18em; font-size: 15px; text-decoration: none; }
+.menu { display: flex; gap: clamp(12px, 2.4vw, 28px); margin-left: auto; }
+.menu button, .menu a { background: none; border: 0; color: var(--ink); cursor: pointer; font-size: 15px; padding: 6px 0; text-decoration: none; }
+.menu button:hover, .menu a:hover { color: var(--lime); }
+.sound { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--card-line); background: var(--card);
+  color: var(--ink); display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(10px); }
+.sound[aria-pressed='true'] { color: var(--lime); border-color: var(--lime); }
+@media (max-width: 640px) { .menu .wideOnly { display: none; } }
+
+/* ── секциите над 3D ── */
+.section { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding: 96px clamp(16px, 6vw, 96px) 72px; position: relative; }
+.section.right { justify-content: flex-end; }
+.section.center { justify-content: center; }
+.copy { max-width: 520px; }
+.kicker { font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--lime); margin: 0 0 14px; }
+.h1 { font-family: var(--display); font-weight: 800; font-size: clamp(38px, 6.2vw, 76px); line-height: 1.02; margin: 0 0 18px; letter-spacing: -0.01em; }
+.h2 { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 4.6vw, 56px); line-height: 1.05; margin: 0 0 16px; }
+.lead { font-size: clamp(16px, 1.6vw, 19px); line-height: 1.55; color: var(--ink-2); margin: 0 0 26px; }
+.small { font-size: 13px; color: var(--ink-3); margin-top: 18px; }
+.ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 12px; padding: 8px 8px 8px 22px; border-radius: var(--r-pill); background: var(--lime);
+  color: var(--on-lime); font-weight: 700; text-decoration: none; border: 0; cursor: pointer; transition: transform 0.25s var(--ease); }
+.btn:hover { transform: translateY(-2px); }
+.btn .arrow { width: 38px; height: 38px; border-radius: var(--r-pill); background: var(--on-lime); color: var(--lime); display: grid; place-items: center; }
+.link { color: var(--ink); text-decoration: none; padding: 10px 4px; border-bottom: 1px solid var(--card-line); }
+.link:hover { color: var(--lime); border-color: var(--lime); }
+.glass { background: var(--card); border: 1px solid var(--card-line); border-radius: var(--r-lg); padding: clamp(20px, 3vw, 32px); backdrop-filter: blur(14px); }
+.hint { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px;
+  color: var(--ink-2); font-style: italic; font-size: 17px; white-space: nowrap; }
+.hint::before, .hint::after { content: ''; width: 64px; height: 1px; background: var(--ink-3); }
+
+/* Изправен телефон: неонът е горе (Scene.jsx), текстът — долу. */
+@media (max-aspect-ratio: 4/5) {
+  .section { align-items: flex-end; padding-bottom: 88px; }
+  .section.center { align-items: center; }
+  .h1 { font-size: clamp(34px, 9vw, 44px); }
+  .glass .lead { font-size: 15px; }
+  body.lite .section { align-items: center; }
+}
+
+/* ── картата ── */
+.card { width: min(480px, 100%); }
+.card form { display: grid; gap: 12px; }
+.card .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .card .row { grid-template-columns: 1fr; } }
+.card label { display: grid; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.card input, .card textarea { width: 100%; border: 1px solid var(--card-line); background: var(--field); color: var(--ink); border-radius: var(--r-md);
+  padding: 12px 14px; font: inherit; font-size: 16px; }
+.card textarea { min-height: 96px; resize: vertical; }
+.card input:focus, .card textarea:focus { outline: 2px solid var(--lime); outline-offset: 1px; }
+.card .field { display: grid; gap: 6px; }
+.err { color: var(--coral); font-size: 13px; }
+.trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.done { color: var(--lime); }
+.contacts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; font-size: 14px; color: var(--ink-2); }
+
+/* ── зареждане ── */
+.loader { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: var(--bg); transition: opacity 0.8s var(--ease); }
+.loader.gone { opacity: 0; pointer-events: none; }
+.loader .in { display: grid; justify-items: center; gap: 18px; }
+.loader img { width: 72px; height: 72px; animation: beat 1.4s var(--ease) infinite; }
+.loader .count { font-family: var(--display); font-weight: 700; letter-spacing: 0.2em; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+@keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.08); } 30% { transform: scale(1); } }
+
+/* ── предложение за лекия изглед ── */
+.toast { position: fixed; left: 16px; bottom: 16px; z-index: 30; max-width: 360px; font-size: 14px; line-height: 1.45; }
+.toast .ctas { margin-top: 12px; }
+.ghost { background: none; border: 1px solid var(--card-line); color: var(--ink); border-radius: var(--r-pill); padding: 10px 16px; cursor: pointer; }
+
+/* ── лекият изглед ── */
+.lite .backdrop { position: fixed; inset: 0; z-index: -1; background: center / cover no-repeat url('/svyat/lite-street.webp'); filter: brightness(0.55); }
+
+@media (prefers-reduced-motion: reduce) {
+  .loader img { animation: none; }
+  .btn, .loader { transition: none; }
+}

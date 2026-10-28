@@ -1,0 +1,55 @@
+import { test, expect } from '@playwright/test'
+
+/* Светът „Благ“ (/svyat/, Р20). Лекият изглед носи същия текст и същата
+ * карта — тестовете на съдържанието вървят там (без зависимост от WebGL);
+ * 3D изгледът се проверява, че тръгва и че менюто движи скрола. Снимките
+ * отиват в shots/. */
+
+test('лекият изглед: адресът отваря спирката, менюто скача, картата праща', async ({ page }, info) => {
+  let sent = null
+  await page.route('**/functions/v1/svyat-contact', async (route) => {
+    sent = route.request().postDataJSON()
+    await route.fulfill({ json: { ok: true } })
+  })
+  await page.goto('/svyat/?lite=1#magazin')
+  await expect(page.getByRole('heading', { name: 'Здраве и Сила' })).toBeInViewport()
+  await expect(page.getByText('Докосни неона.')).toHaveCount(0)
+  await page.screenshot({ path: `shots/svyat-lite-${info.project.name}.png` })
+
+  await page.getByRole('navigation', { name: 'Светът' }).getByRole('button', { name: 'Контакт' }).click()
+  await expect(page.getByRole('heading', { name: 'Пиши ми.' })).toBeInViewport()
+  await page.getByRole('button', { name: /Прати с неона/ }).click()
+  await expect(page.getByText('Напиши поне няколко думи.')).toBeVisible()
+  await expect(page.getByText('Имейлът изглежда непълен.')).toBeVisible()
+  expect(sent).toBeNull()
+
+  await page.getByLabel('Какво ти трябва?').fill('Искам програма за маса.')
+  await page.getByRole('textbox', { name: 'Име', exact: true }).fill('Иван')
+  await page.getByRole('textbox', { name: 'Имейл' }).fill('ivan@example.com')
+  await page.getByRole('button', { name: /Прати с неона/ }).click()
+  await expect(page.getByText('Получено. Ще ти отговоря на имейла.')).toBeVisible()
+  expect(sent).toEqual({ body: 'Искам програма за маса.', name: 'Иван', email: 'ivan@example.com', website: '' })
+})
+
+test('картата казва грешката от сървъра', async ({ page }) => {
+  await page.route('**/functions/v1/svyat-contact', (route) => route.fulfill({ status: 429, json: { error: 'Много писма за кратко. Опитай пак след час.' } }))
+  await page.goto('/svyat/?lite=1#kontakt')
+  await page.getByLabel('Какво ти трябва?').fill('Здравей, въпрос.')
+  await page.getByRole('textbox', { name: 'Име', exact: true }).fill('Иван')
+  await page.getByRole('textbox', { name: 'Имейл' }).fill('ivan@example.com')
+  await page.getByRole('button', { name: /Прати с неона/ }).click()
+  await expect(page.getByRole('alert')).toHaveText('Много писма за кратко. Опитай пак след час.')
+})
+
+test('3D: зарежда се, зареждането изчезва, менюто движи камерата', async ({ page }, info) => {
+  await page.goto('/svyat/')
+  const webgl = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl2'))
+  test.skip(!webgl, 'няма WebGL в този браузър — лекият изглед е покрит отгоре')
+  await expect(page.locator('canvas')).toBeVisible({ timeout: 20000 })
+  await expect(page.locator('.loader.gone')).toHaveCount(1, { timeout: 20000 })
+  await page.waitForTimeout(3500)                                   // неонът се пали
+  await page.screenshot({ path: `shots/svyat-3d-${info.project.name}.png` })
+  await page.getByRole('navigation', { name: 'Светът' }).getByRole('button', { name: 'Контакт' }).click()
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#kontakt')
+  await expect(page.getByRole('heading', { name: 'Пиши ми.' })).toBeInViewport({ timeout: 5000 })
+})
