@@ -98,10 +98,12 @@
     scene.add(holder);
 
     var BASE = { x: -0.12, y: 0.32 };
-    var state = { mx: 0, my: 0, beatAt: -1e9, swing: true };
+    var state = { mx: 0, my: 0, beatAt: -1e9, swing: true, grow: 1, turn: 0 };
     var clock = 0;
 
     function beat() { state.beatAt = clock; }
+    /* За записа на сплаша: grow — колко е израсъл (0…1), turn — допълнително завъртане. */
+    function pose(p) { for (var k in p) state[k] = p[k]; }
 
     function size() {
       var el = opts.sizeFrom || canvas.parentElement || canvas;
@@ -122,7 +124,8 @@
       clock = (ms || 0) / 1000;
       var s = clock;
       var swingY = state.swing ? Math.sin(s * 0.45) * 0.22 : 0, swingX = state.swing ? Math.sin(s * 0.33) * 0.07 : 0;
-      holder.rotation.y = BASE.y + swingY + state.mx * 0.5;
+      holder.rotation.y = BASE.y + swingY + state.mx * 0.5 + state.turn;
+      holder.scale.setScalar(k * state.grow);
       holder.rotation.x = BASE.x + swingX + state.my * 0.35;
       holder.position.y = (opts.lift || 0) + (state.swing ? Math.sin(s * 0.8) * 0.06 : 0);
       var p = pulse(s - state.beatAt);
@@ -151,7 +154,7 @@
     }
 
     size();
-    return { draw: draw, beat: beat, size: size, idle: idle, renderer: renderer, state: state };
+    return { draw: draw, beat: beat, pose: pose, size: size, idle: idle, renderer: renderer, state: state };
   }
 
   window.GlassMark = GlassMark;

@@ -30,9 +30,10 @@ export function Wordmark({ size = 20, className = '' }) {
   )
 }
 
-/* Сплашът: веднъж на устройство, под секунда и половина. Знакът изплува,
- * удря веднъж като сърце и екранът се вдига. Докосване го пропуска;
- * при „по-малко движение“ и в тестовете го няма. */
+/* Сплашът: веднъж на устройство, под секунда и половина. Стъкленият знак
+ * изплува и удря като сърце — записан е като видео (scripts/build-shop-splash.mjs),
+ * защото живият иска three.js и на телефон не смогва да тръгне навреме.
+ * Докосване го пропуска; при „по-малко движение“ и в тестовете го няма. */
 const SEEN = 'zs.splash'
 
 function shouldShow() {
@@ -59,7 +60,8 @@ export function Splash() {
   return (
     <div className={`${styles.splash} ${phase === 'out' ? styles.splashOut : ''}`} onClick={() => setPhase('out')} aria-hidden="true">
       <div className={styles.splashInner}>
-        <Mark size={150} className={styles.draw} />
+        <video className={styles.splashVideo} src="/shop/brand/splash.mp4" poster="/shop/brand/splash-poster.png"
+          width={180} height={180} autoPlay muted playsInline />
         <p className={styles.splashName}>ЗДРАВЕ И СИЛА</p>
         <p className={styles.splashLine}>добавки и храна</p>
       </div>
