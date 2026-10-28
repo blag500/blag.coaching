@@ -38,6 +38,23 @@ export function setHum(v) {
   hum.gain.setTargetAtTime(v * 0.045, ctx.currentTime, 0.04)
 }
 
+/** Звънът на щангата, когато падне на куките: нехармонични тонове, които
+ *  затихват бързо — като стомана, а не като камбана. */
+export function clank() {
+  if (!ctx || ctx.state !== 'running') return
+  const t = ctx.currentTime
+  for (const [f, g, d] of [[180, 0.25, 0.35], [432, 0.18, 0.28], [1170, 0.09, 0.18], [2310, 0.05, 0.1]]) {
+    const o = ctx.createOscillator()
+    const a = ctx.createGain()
+    o.frequency.value = f
+    a.gain.setValueAtTime(g, t)
+    a.gain.exponentialRampToValueAtTime(0.0001, t + d)
+    o.connect(a).connect(ctx.destination)
+    o.start(t)
+    o.stop(t + d + 0.02)
+  }
+}
+
 /** Щракването на газа при палене — кратък шум. */
 export function click() {
   if (!ctx || ctx.state !== 'running') return

@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { MeshReflectorMaterial, Stars } from '@react-three/drei'
+import { MeshReflectorMaterial, useScroll } from '@react-three/drei'
+import { nightAt } from './Atmosphere.jsx'
 import * as THREE from 'three'
 import Neon from './Neon.jsx'
 import { glow } from './neon'
@@ -91,6 +92,27 @@ function Door() {
   )
 }
 
+/* Улична лампа по пътя от залата: свети, когато падне нощта. */
+function Lamp({ x }) {
+  const scroll = useScroll()
+  const light = useRef()
+  const head = useRef()
+  useFrame(() => {
+    const n = nightAt(scroll.offset)
+    if (light.current) light.current.intensity = 16 * n
+    if (head.current) head.current.emissiveIntensity = 0.1 + 2.6 * n
+  })
+  return (
+    <group position={[x, 0, 1.6]}>
+      <mesh position={[0, 2.1, 0]}><cylinderGeometry args={[0.04, 0.06, 4.2, 10]} /><meshStandardMaterial color="#121412" metalness={0.6} roughness={0.5} /></mesh>
+      <mesh position={[0, 4.18, 0.22]}><boxGeometry args={[0.06, 0.06, 0.5]} /><meshStandardMaterial color="#121412" metalness={0.6} /></mesh>
+      <mesh position={[0, 4.08, 0.45]}><boxGeometry args={[0.32, 0.08, 0.2]} />
+        <meshStandardMaterial ref={head} color="#111" emissive="#ffc98a" emissiveIntensity={0.1} toneMapped={false} /></mesh>
+      <pointLight ref={light} position={[0, 3.9, 0.5]} intensity={0} distance={6.5} color="#ffc98a" />
+    </group>
+  )
+}
+
 /* Бръмченето следва колко свети неонът. */
 function Hum() {
   useFrame(() => setHum(glow()))
@@ -99,31 +121,30 @@ function Hum() {
 
 export default function Street() {
   const map = useMemo(bricks, [])
+  // стената е 28 широка — повторението се разтяга, за да са тухлите същия размер
+  const wallMap = useMemo(() => { const t = map.clone(); t.repeat.set(3 * 28 / 18, 3.4); t.needsUpdate = true; return t }, [map])
   return (
     <>
-      <color attach="background" args={['#05070a']} />
-      <fog attach="fog" args={['#05070a', 10, 30]} />
-      <ambientLight intensity={0.05} />
-      <hemisphereLight args={['#2a3a66', '#080a07', 0.3]} />
-      <directionalLight position={[-6, 10, 8]} intensity={0.22} color="#8fa6ff" />
-      <Stars radius={70} depth={30} count={1800} factor={3} fade speed={0.4} />
+      {/* небето, мъглата и общата светлина — в Atmosphere (денят тече) */}
 
       {/* стената и корнизът */}
-      <mesh position={[0, 3.4, 0]}>
-        <planeGeometry args={[18, 6.8]} />
-        <meshStandardMaterial map={map} bumpMap={map} bumpScale={2.2} roughness={0.95} color="#b9cbbd" />
+      <mesh position={[-5, 3.4, 0]}>
+        <planeGeometry args={[28, 6.8]} />
+        <meshStandardMaterial map={wallMap} bumpMap={wallMap} bumpScale={2.2} roughness={0.95} color="#b9cbbd" />
       </mesh>
-      <mesh position={[0, 6.95, 0.2]}><boxGeometry args={[18, 0.3, 0.5]} /><meshStandardMaterial color="#0b0e0b" roughness={0.8} /></mesh>
+      <mesh position={[-5, 6.95, 0.2]}><boxGeometry args={[28, 0.3, 0.5]} /><meshStandardMaterial color="#0b0e0b" roughness={0.8} /></mesh>
 
       <Neon />
+      <Lamp x={-13.5} />
+      <Lamp x={-7.5} />
       <Door />
       <Hum />
 
       {/* тротоарът */}
-      <mesh position={[0, 0.06, 0.95]}><boxGeometry args={[18, 0.12, 1.9]} /><meshStandardMaterial color="#1a1e1b" roughness={0.85} /></mesh>
+      <mesh position={[-5, 0.06, 0.95]}><boxGeometry args={[28, 0.12, 1.9]} /><meshStandardMaterial color="#1a1e1b" roughness={0.85} /></mesh>
       {/* мокрият асфалт */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 10]}>
-        <planeGeometry args={[44, 18]} />
+      <mesh rotation-x={-Math.PI / 2} position={[-4, 0, 10]}>
+        <planeGeometry args={[34, 18]} />
         <MeshReflectorMaterial blur={[400, 120]} resolution={512} mixBlur={1} mixStrength={22} roughness={0.9}
           depthScale={1.1} minDepthThreshold={0.4} maxDepthThreshold={1.4} color="#0b0d0e" metalness={0.6} mirror={0.7} />
       </mesh>

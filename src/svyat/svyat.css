@@ -108,6 +108,7 @@ button { font: inherit; }
 .ghost { background: none; border: 1px solid var(--card-line); color: var(--ink); border-radius: var(--r-pill); padding: 10px 16px; cursor: pointer; }
 
 /* ── лекият изглед ── */
+.lite .sectionBg { position: absolute; inset: 0; z-index: -1; background: center / cover no-repeat; filter: brightness(0.55); }
 .lite .backdrop { position: fixed; inset: 0; z-index: -1; background: center / cover no-repeat url('/svyat/lite-street.webp'); filter: brightness(0.55); }
 
 @media (prefers-reduced-motion: reduce) {

@@ -31,6 +31,13 @@ test('лекият изглед: адресът отваря спирката, �
   expect(sent).toEqual({ body: 'Искам програма за маса.', name: 'Иван', email: 'ivan@example.com', website: '' })
 })
 
+test('лекият изглед: залата има своя спирка и води към приложението', async ({ page }) => {
+  await page.goto('/svyat/?lite=1#zala')
+  await expect(page.getByRole('heading', { name: 'Залата' })).toBeInViewport()
+  await expect(page.locator('#zala').getByRole('link', { name: /Приложението/ })).toHaveAttribute('href', '/')
+  await expect(page.getByText('Натисни щангата.')).toHaveCount(0)
+})
+
 test('картата казва грешката от сървъра', async ({ page }) => {
   await page.route('**/functions/v1/svyat-contact', (route) => route.fulfill({ status: 429, json: { error: 'Много писма за кратко. Опитай пак след час.' } }))
   await page.goto('/svyat/?lite=1#kontakt')

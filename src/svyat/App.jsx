@@ -37,6 +37,7 @@ export default function App() {
       <header className="bar">
         <a className="logo" href="/svyat/">BLAG</a>
         <nav className="menu" aria-label="Светът">
+          <button type="button" onClick={() => go('zala')}>Залата</button>
           <button type="button" onClick={() => go('magazin')}>Магазинът</button>
           <button type="button" className="wideOnly" onClick={() => go('vhod')}>Входът</button>
           <button type="button" onClick={() => go('kontakt')}>Контакт</button>

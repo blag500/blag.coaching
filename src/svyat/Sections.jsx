@@ -8,20 +8,38 @@ import { jumpTo } from './nav'
  * къде е, какво да натиснеш. Обектът още не е отворен и текстът го казва. */
 
 const Arrow = () => <span className="arrow" aria-hidden="true">→</span>
+// Лекият изглед: залата има своя картина; улицата е общият фон (App).
+const GymBg = ({ lite }) => (lite ? <div className="sectionBg" style={{ backgroundImage: "url('/svyat/lite-gym.webp')" }} aria-hidden="true" /> : null)
 
 export default function Sections({ lite = false }) {
   const h = lite ? undefined : { height: '100vh', minHeight: 0 }
   return (
     <>
       <section id="nachalo" className="section" style={h}>
+        <GymBg lite={lite} />
         <div className="copy">
           <p className="kicker">Николай Благьов</p>
           <h1 className="h1">Треньор. Приложение, храна, магазин.</h1>
-          <p className="lead">Тук е улицата с магазина. Залата и кухнята идват след нея.</p>
+          <p className="lead">Скролвай: залата по изгрев, магазинът през нощта. Кухнята идва скоро.</p>
           <div className="ctas">
             <a className="btn" href="#kontakt" onClick={(e) => { e.preventDefault(); jumpTo('kontakt') }}>Пиши ми <Arrow /></a>
             <a className="link" href="/shop/">Към магазина →</a>
           </div>
+        </div>
+        {!lite && <p className="hint">към залата</p>}
+      </section>
+
+      <section id="zala" className="section" style={h}>
+        <GymBg lite={lite} />
+        <div className="copy glass">
+          <p className="kicker">Blag Coaching</p>
+          <h2 className="h2">Залата</h2>
+          <p className="lead">Тренировки и хранене с приложението: вписваш храната и тежестите, виждаш напредъка, пишеш на треньора. Той вижда същото.</p>
+          <div className="ctas">
+            <a className="btn" href="/">Приложението <Arrow /></a>
+            <a className="link" href="#kontakt" onClick={(e) => { e.preventDefault(); jumpTo('kontakt') }}>Консултация →</a>
+          </div>
+          {!lite && <p className="small">Натисни щангата.</p>}
         </div>
         {!lite && <p className="hint">към улицата</p>}
       </section>

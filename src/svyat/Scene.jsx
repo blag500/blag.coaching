@@ -4,20 +4,24 @@ import { PerformanceMonitor, Scroll, ScrollControls, useProgress, useScroll } fr
 import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Street from './Street.jsx'
+import Gym, { GYM_X } from './Gym.jsx'
+import Atmosphere from './Atmosphere.jsx'
 import Sections from './Sections.jsx'
 import { ignite } from './neon'
-import { setScrollEl, jumpTo, takeStart } from './nav'
+import { setScrollEl, takeStart, onHashChange, STOPS } from './nav'
 
 /* Сцената: скролът движи камерата по ключови кадри, HTML секциите текат над
  * 3D-то (Scroll html), а Bloom прави ореола на неона. */
 
-const PAGES = 4
+const PAGES = 5
 // [отместване, позиция на камерата, накъде гледа]
+const G = GYM_X
 const KEYS = [
-  [0.0, [-1.6, 1.7, 15.5], [-3.0, 3.2, 0]],   // неонът вдясно — заглавието е вляво
-  [0.34, [-0.4, 2.7, 8.4], [0, 3.6, 0]],
-  [0.67, [2.6, 1.6, 4.4], [4.6, 1.35, 0]],
-  [1.0, [-1.4, 2.1, 6.8], [0, 3.3, 0]],
+  [0.0, [G - 1.0, 2.3, 11.5], [G - 3.4, 2.7, 0]],     // залата отдалеч — текстът вляво
+  [0.25, [G + 1.3, 1.65, 4.9], [G - 1.1, 1.45, 0.9]],  // при щангата
+  [0.5, [-0.4, 2.7, 8.4], [0, 3.6, 0]],               // улицата и неонът
+  [0.75, [2.6, 1.6, 4.4], [4.6, 1.35, 0]],            // вратата
+  [1.0, [-1.4, 2.1, 6.8], [0, 3.3, 0]],               // картата
 ]
 const ease = (x) => x * x * (3 - 2 * x)
 const P = new THREE.Vector3()
@@ -25,7 +29,7 @@ const L = new THREE.Vector3()
 
 function Rig({ reduce }) {
   const scroll = useScroll()
-  const look = useRef(new THREE.Vector3(0, 3.2, 0))
+  const look = useRef(new THREE.Vector3(G - 3.4, 2.7, 0))
   useFrame((state, dt) => {
     const o = scroll.offset
     let i = 1
@@ -51,6 +55,7 @@ function Rig({ reduce }) {
       THREE.MathUtils.damp(look.current.z, lz, s, dt),
     )
     state.camera.lookAt(look.current)
+    if (o > 0.4) ignite()
   })
   return null
 }
@@ -58,23 +63,41 @@ function Rig({ reduce }) {
 /* Дава на менюто скролващия елемент и скача към #адреса при отваряне. */
 function Nav() {
   const scroll = useScroll()
+  const pending = useRef(null)
   useEffect(() => {
     setScrollEl(scroll.el)
     const id = takeStart()
-    if (id) requestAnimationFrame(() => jumpTo(id, 'auto'))
-    return () => setScrollEl(null)
+    if (id && STOPS.includes(id)) pending.current = { i: STOPS.indexOf(id), id, frames: 0 }
+    window.addEventListener('hashchange', onHashChange)
+    return () => { setScrollEl(null); window.removeEventListener('hashchange', onHashChange) }
   }, [scroll.el])
+  // Скокът при отваряне се повтаря кадър по кадър, докато drei наистина го
+  // прочете: слушателят му се закача с закъснение (и след шрифта на залата),
+  // а събитие преди това се губи. До 4 секунди.
+  useFrame(() => {
+    const p = pending.current
+    if (!p) return
+    const target = p.i / (STOPS.length - 1)
+    if (Math.abs(scroll.offset - target) < 0.02 || p.frames++ > 240) {
+      history.replaceState(null, '', `#${p.id}`)
+      pending.current = null
+      return
+    }
+    const el = scroll.el
+    el.scrollTop = target * (el.scrollHeight - el.clientHeight)
+    el.dispatchEvent(new Event('scroll'))
+  })
   return null
 }
 
-/* Неонът се пали малко след като сцената е готова — първото „уау“. */
+/* Първият кадър е нарисуван — зареждането може да се махне. Неонът се пали
+   в Rig, когато камерата стигне улицата. */
 function Ignite({ onReady }) {
   const done = useRef(false)
   useFrame(() => {
     if (done.current) return
     done.current = true
     onReady?.()
-    setTimeout(ignite, 900)
   })
   return null
 }
@@ -84,12 +107,14 @@ export default function Scene({ onReady, onSlow, onProgress, reduce }) {
   const { progress } = useProgress()
   useEffect(() => { onProgress?.(progress) }, [progress, onProgress])
   return (
-    <Canvas dpr={[1, 1.75]} camera={{ position: [0, 1.7, 15.5], fov: 45, near: 0.1, far: 90 }}
+    <Canvas dpr={[1, 1.75]} camera={{ position: [GYM_X - 1, 2.3, 11.5], fov: 45, near: 0.1, far: 90 }}
       gl={{ antialias: false, powerPreference: 'high-performance' }}
       style={{ position: 'fixed', inset: 0 }}>
       <PerformanceMonitor onDecline={onSlow} bounds={() => [30, 55]} flipflops={3} />
       <Suspense fallback={null}>
         <ScrollControls pages={PAGES} damping={0.22}>
+          <Atmosphere />
+          <Gym />
           <Street />
           <Rig reduce={reduce} />
           <Nav />

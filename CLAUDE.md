@@ -197,6 +197,12 @@ METRO с макросите на 100 г (`per100`) и грамаж (`net_g`); г
 Скокът по спирки е по номер (`nav.js`, `STOPS`), а `#адресът` се прибира в
 `main.jsx` преди React — иначе браузърът сам скача в слоя с текста. Картата
 „Пиши ми“ → `svyat-contact` → `svyat_messages` (145). Решението — Р20.
+Спирките (`STOPS`): начало и залата (`Gym.jsx`, вляво на x = −26, изгрев) →
+улицата с неона → вратата → картата. Денят тече със скрола (`Atmosphere.jsx`,
+`nightAt`): небе, мъгла, слънце и луна; неонът се пали при отместване > 0.4.
+Скокът при отваряне се повтаря в `useFrame`, докато drei го прочете — слушателят
+му се закача със закъснение. Цел за докосване: прозрачна, не `visible={false}`
+(скрит обект не получава събития).
 
 **Service Worker** (`src/sw.js`): Workbox precache + cache strategies for fonts (CacheFirst) and Open Food Facts API (NetworkFirst). Handles `push` and `notificationclick` events.
 
