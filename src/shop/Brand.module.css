@@ -7,16 +7,17 @@
 .word {
   display: inline-flex;
   align-items: center;
-  gap: 0.02em;
+  gap: 0.22em;
   font-family: var(--logo);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   line-height: 1;
   color: var(--ink);
-  font-feature-settings: 'locl' 0;
 }
 
-.inline { margin: -0.12em 0.08em 0; }
+/* Главните нямат долни елементи — знакът се центрира по тях, а не по реда. */
+.word > span { display: block; line-height: 0.74; padding-top: 0.02em; }
+.inline { display: block; }
 
 /* Знакът удря веднъж като сърце, когато нещо влезе в количката (класът го слага ShopApp). */
 :global(.zs-beat) .mark {
@@ -73,10 +74,9 @@
   margin: 0;
   font-family: var(--logo);
   font-size: 30px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   color: var(--on-brand);
-  font-feature-settings: 'locl' 0;
   opacity: 0;
   transform: translateY(8px);
   animation: rise 420ms var(--ease-out) 640ms forwards;

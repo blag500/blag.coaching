@@ -38,10 +38,11 @@
 
   /* Шрифтът е на телефона — SF Pro на iPhone, Roboto на Android, както при
      GymBeam и както в самото приложение. Inter с Unbounded изглеждаха като
-     генериран сайт (24.10.2026). Unbounded остава само в знака. */
+     генериран сайт (24.10.2026). Името „ЗДРАВЕ И СИЛА“ е в Golos Text 800,
+     главни, като на табелата (28.10) — зарежда се само за неговите букви. */
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --logo: 'Unbounded', var(--display);
+  --logo: 'Golos Text', var(--display);
   --r-lg: 18px;
   --r-xl: 26px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
