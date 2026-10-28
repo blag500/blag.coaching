@@ -61,7 +61,9 @@ export default function App() {
           </Suspense>
           <div className={`loader ${ready ? 'gone' : ''}`} role="status" aria-live="polite">
             <div className="in">
-              <img src="/shop/brand/icon.svg" alt="" />
+              {/* Знакът като неонова тръба: пали се, докато сцената се зарежда. */}
+              <img className="neonMark" src="/svyat/neon/tube-mark.svg" alt=""
+                style={{ '--p': progress / 100 }} />
               <span className="count">{String(Math.round(progress)).padStart(3, '0')} / 100</span>
               <span className="small">Палим светлините</span>
             </div>
