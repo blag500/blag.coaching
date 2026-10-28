@@ -1,0 +1,10 @@
+import { chromium } from '@playwright/test';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+const here = dirname(fileURLToPath(import.meta.url));
+const b = await chromium.launch({ args: ['--allow-file-access-from-files'] });
+const p = await b.newPage({ viewport: { width: 1760, height: 1000 } });
+await p.goto(pathToFileURL(join(here, 'concepts.html')).href);
+await p.evaluate(() => document.fonts.ready);
+await p.locator('.wrap').screenshot({ path: join(here, 'concepts.png') });
+await b.close();

@@ -5,7 +5,7 @@ import Catalog from './Catalog.jsx'
 import Home from './Home.jsx'
 import Product from './Product.jsx'
 import { Cart, Checkout, Thanks } from './Checkout.jsx'
-import { Mark, Splash, Wordmark } from './Brand.jsx'
+import { Splash, Wordmark } from './Brand.jsx'
 import { NavDrawer, NavRail, TabBar } from './Nav.jsx'
 import { useHideOnScroll } from '../hooks/useHideOnScroll'
 import { Icon } from './ui'
@@ -144,7 +144,7 @@ export default function ShopApp() {
         current={route.page === 'c' ? `#/c/${route.args[0] || 'all'}` : route.page === 'cart' ? '#/cart' : route.page === 'catalog' ? '#/' : ''} />
       <p role="status" className={styles.srOnly}>{toast || ''}</p>
       <footer className={styles.foot}>
-        <div className={styles.footMark}><Mark size={34} /><Wordmark size={16} /></div>
+        <div className={styles.footMark}><Wordmark size={18} /></div>
         <p>Благ Холдинг ЕООД · ЕИК 208845685 · София</p>
         <p>Подбрано от Николай Благьов — треньор и натурален културист.</p>
       </footer>

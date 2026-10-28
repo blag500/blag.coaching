@@ -1,42 +1,36 @@
 import { useEffect, useState } from 'react'
 import styles from './Brand.module.css'
+import { MARK, MARK_BOLD, VIEWBOX } from './markPaths.js'
 
-/* Знакът на здраве&сила: амперсанд, чиято горна примка е сърце, а опашката
- * му се вдига нагоре. Името вече е „здраве и сила“ — знакът е самото „и“.
- * Чертежът е в shop/brand/logo/, правилата — в shop/brand/RULES.md. Тук е
- * същата геометрия, за да може да се анимира по части. */
-
-const HEART = 'M118 130 C 64 100, 44 46, 86 37 C 103 34, 114 44, 118 56 C 122 44, 133 34, 150 37 C 192 46, 172 100, 118 130'
-const LEG = 'M118 130 L 210 222'
-const BOWL = 'M118 130 C 60 162, 48 218, 102 220 C 148 222, 180 192, 200 148'
+/* Знакът на здраве и сила: сърце, чиято дясна половина е стегната ръка —
+ * юмрук, бицепс, предмишница. Чертежът е проследен 1:1 от образеца
+ * (shop/brand/logo/v5/), пътищата идват от scripts/build-shop-mark.mjs.
+ * Под 40 px се рисува версията с по-дебели линии — тънките детайли
+ * на ръката там се сливат. Правилата — shop/brand/RULES.md. */
 
 export function Mark({ size = 32, mono = false, className = '', title }) {
   return (
-    <svg viewBox="0 0 256 256" width={size} height={size} className={`${styles.mark} ${mono ? styles.mono : ''} ${className}`}
+    <svg viewBox={VIEWBOX} width={size || undefined} height={size || undefined} className={`${styles.mark} ${mono ? styles.mono : ''} ${className}`}
       role={title ? 'img' : undefined} aria-label={title} aria-hidden={title ? undefined : true}>
-      <g transform="translate(-8 2)" fill="none" strokeWidth={size < 24 ? 30 : 25} strokeLinecap="round" strokeLinejoin="round">
-        <path className={styles.bowl} d={BOWL} pathLength="1" />
-        <path className={styles.leg} d={LEG} pathLength="1" />
-        <path className={styles.heart} d={HEART} pathLength="1" />
-      </g>
+      <path fillRule="evenodd" d={size && size < 40 ? MARK_BOLD : MARK} />
     </svg>
   )
 }
 
-/** „здраве&сила“ — името с малки букви, знакът на мястото на „&“. */
+/** „здраве [знак] сила“ — като на табелата: знакът стои между думите. */
 export function Wordmark({ size = 20, className = '' }) {
   return (
     <span className={`${styles.word} ${className}`} style={{ fontSize: size }}>
       <span>здраве</span>
-      <Mark size={Math.round(size * 1.15)} className={styles.inline} />
+      <Mark size={Math.round(size * 1.4)} className={styles.inline} />
       <span>сила</span>
     </span>
   )
 }
 
-/* Сплашът: веднъж на устройство, под секунда и половина. Сърцето се чертае,
- * после краката на „&“, сърцето удря веднъж и екранът се вдига. Докосване
- * го пропуска; при „по-малко движение“ и в тестовете го няма. */
+/* Сплашът: веднъж на устройство, под секунда и половина. Знакът изплува,
+ * удря веднъж като сърце и екранът се вдига. Докосване го пропуска;
+ * при „по-малко движение“ и в тестовете го няма. */
 const SEEN = 'zs.splash'
 
 function shouldShow() {
@@ -63,8 +57,8 @@ export function Splash() {
   return (
     <div className={`${styles.splash} ${phase === 'out' ? styles.splashOut : ''}`} onClick={() => setPhase('out')} aria-hidden="true">
       <div className={styles.splashInner}>
-        <Mark size={132} className={styles.draw} />
-        <p className={styles.splashName}>здраве<span>&amp;</span>сила</p>
+        <Mark size={150} className={styles.draw} />
+        <p className={styles.splashName}>здраве и сила</p>
         <p className={styles.splashLine}>добавки и храна</p>
       </div>
     </div>

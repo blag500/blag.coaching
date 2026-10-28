@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="bg">
+<meta charset="utf-8">
+<title>здраве&сила — долната част и зелено</title>
+<style>
+  html, body { margin: 0; background: #F4F2EC; font-family: 'Segoe UI', system-ui, sans-serif; color: #12140F; }
+  .wrap { padding: 48px 56px 56px; width: max-content; }
+  h1 { font-size: 34px; margin: 0 0 6px; }
+  .lead { font-size: 18px; color: #55584F; margin: 0 0 32px; }
+  table { border-collapse: separate; border-spacing: 14px; margin-left: -14px; }
+  th { font-size: 16px; font-weight: 600; text-align: left; color: #55584F; padding: 0 4px 4px; }
+  td.name { width: 190px; vertical-align: middle; padding-right: 8px; }
+  td.name b { display: block; font-size: 20px; }
+  td.name span { font-size: 15px; color: #55584F; }
+  .cell { width: 200px; height: 200px; border-radius: 22px; display: grid; place-items: center; }
+  .cell svg { width: 156px; height: 156px; }
+  .small { display: flex; gap: 14px; align-items: end; margin-top: 8px; }
+  .small svg { display: block; }
+  .small i { font-size: 12px; color: #77796F; font-style: normal; display: block; text-align: center; }
+</style>
+<div class="wrap">
+  <h1>здраве&amp;сила · долната част и зелена гама</h1>
+  <p class="lead">Сърцето е същото навсякъде. Редовете сменят долната част, колоните — цветовете.</p>
+  <table id="t"></table>
+</div>
+<script>
+const HEART = 'M118 130 C 64 100, 44 46, 86 37 C 103 34, 114 44, 118 56 C 122 44, 133 34, 150 37 C 192 46, 172 100, 118 130';
+const SHAPES = [
+  { id: 'A', name: 'A · сега', note: 'купа, крак и вдигната опашка', t: '-8 2',
+    legs: ['M118 130 C 60 162, 48 218, 102 220 C 148 222, 180 192, 200 148', 'M118 130 L 210 222'] },
+  { id: 'E', name: 'E · по-малка', note: 'същото, но по-стегнато — сърцето води', t: '-4 10',
+    legs: ['M118 130 C 76 152, 68 200, 106 202 C 138 203, 158 186, 170 162', 'M118 130 L 188 200'] },
+  { id: 'C', name: 'C · една черта', note: 'без крак: една линия, която се вдига', t: '-8 2',
+    legs: ['M118 130 C 58 158, 46 220, 102 222 C 160 224, 198 184, 214 112'] },
+  { id: 'D', name: 'D · отметка', note: 'кракът завършва с отметка', t: '-8 2',
+    legs: ['M118 130 C 60 162, 48 218, 102 220 C 132 221, 152 208, 166 192', 'M118 130 L 172 200 L 226 142'] },
+  { id: 'F', name: 'F · примка', note: 'ръкописно „&“: опашката минава през купата', t: '-6 4',
+    legs: ['M118 130 C 62 160, 52 218, 104 220 C 146 222, 168 200, 182 176 C 190 162, 200 156, 214 158'] },
+  { id: 'B', name: 'B · пудовка', note: 'сърцето е дръжката, долу тежест', t: '10 -8',
+    legs: ['M118 130 C 58 140, 52 236, 118 236 C 184 236, 178 140, 118 130'] },
+];
+const PALETTES = [
+  { name: 'сега', bg: '#EEEAE1', legs: '#12140F', heart: '#E5482F' },
+  { name: 'зелено мастило', bg: '#EEEAE1', legs: '#173F2E', heart: '#E5482F' },
+  { name: 'изцяло зелено', bg: '#EEEAE1', legs: '#173F2E', heart: '#38A35A' },
+  { name: 'върху тъмнозелено', bg: '#173F2E', legs: '#EEEAE1', heart: '#FF6A4D' },
+  { name: 'лаймово сърце', bg: '#12140F', legs: '#EEEAE1', heart: '#D4F04A' },
+];
+const svg = (s, p, size, sw = 25) => `<svg viewBox="0 0 256 256" width="${size}" height="${size}"><g transform="translate(${s.t})" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${s.legs.map(d => `<path stroke="${p.legs}" d="${d}"/>`).join('')}<path stroke="${p.heart}" d="${HEART}"/></g></svg>`;
+const t = document.getElementById('t');
+t.innerHTML = '<tr><th></th>' + PALETTES.map(p => `<th>${p.name}</th>`).join('') + '<th>32 / 16 px</th></tr>' +
+  SHAPES.map(s => `<tr><td class="name"><b>${s.name}</b><span>${s.note}</span></td>` +
+    PALETTES.map(p => `<td><div class="cell" style="background:${p.bg}">${svg(s, p, 156)}</div></td>`).join('') +
+    `<td><div class="small">${svg(s, PALETTES[0], 32)}${svg(s, PALETTES[0], 16, 30)}${svg(s, PALETTES[2], 32)}${svg(s, PALETTES[2], 16, 30)}</div></td></tr>`).join('');
+</script>

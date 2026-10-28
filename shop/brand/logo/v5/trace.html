@@ -1,0 +1,120 @@
+<!doctype html>
+<meta charset="utf-8">
+<!-- Растер → SVG: изолиния на яркостта (marching squares, под пиксел), свързване в контури,
+     опростяване (Ramer–Douglas–Peucker) и гладки криви (Catmull-Rom → кубични Безие).
+     Резултатът е в window.result; trace.mjs го записва. -->
+<canvas id="c"></canvas>
+<script>
+const P = new URLSearchParams(location.search);
+const SRC = P.get('src'), EPS = +(P.get('eps') || 0.7), LEVEL = +(P.get('level') || 0.5), MINLEN = +(P.get('min') || 12);
+window.result = null;
+const img = new Image();
+img.onload = () => {
+  const W = img.width, H = img.height, c = document.getElementById('c');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  const px = g.getImageData(0, 0, W, H).data;
+  // Тъмнина 0…1 (1 = мастило), с рамка от празно, за да се затварят контурите.
+  const w = W + 2, h = H + 2, v = new Float32Array(w * h);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4, lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
+    v[(y + 1) * w + x + 1] = 1 - lum;
+  }
+  // fill=1: всичко, до което фонът не стига отвън, става мастило — силуетът за малките размери.
+  if (P.get('fill') === '1') {
+    const out = new Uint8Array(w * h), st = [0];
+    out[0] = 1;
+    while (st.length) {
+      const i = st.pop(), x = i % w, y = (i / w) | 0;
+      for (const j of [i - 1, i + 1, i - w, i + w]) {
+        if (j < 0 || j >= w * h || out[j]) continue;
+        const jx = j % w; if (Math.abs(jx - x) > 1) continue;
+        if (v[j] < 0.5) { out[j] = 1; st.push(j); }
+      }
+    }
+    for (let i = 0; i < w * h; i++) if (!out[i]) v[i] = 1;
+  }
+  // grow=N: линиите стават по-дебели с N px от всяка страна (разделим максимум-филтър) — за малките размери.
+  const G = +(P.get('grow') || 0);
+  if (G > 0) {
+    const tmp = new Float32Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let m = 0; for (let k = Math.max(0, x - G); k <= Math.min(w - 1, x + G); k++) m = Math.max(m, v[y * w + k]); tmp[y * w + x] = m;
+    }
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let m = 0; for (let k = Math.max(0, y - G); k <= Math.min(h - 1, y + G); k++) m = Math.max(m, tmp[k * w + x]); v[y * w + x] = m;
+    }
+  }
+  const at = (x, y) => v[y * w + x];
+  const L = 1 - LEVEL; // прагът е по тъмнина
+  // Ръбовете на клетка: 0 горе, 1 дясно, 2 долу, 3 ляво — точка на изолинията.
+  const pt = (x, y, e) => {
+    const lerp = (a, b) => (L - a) / (b - a);
+    if (e === 0) return [x + lerp(at(x, y), at(x + 1, y)), y];
+    if (e === 1) return [x + 1, y + lerp(at(x + 1, y), at(x + 1, y + 1))];
+    if (e === 2) return [x + lerp(at(x, y + 1), at(x + 1, y + 1)), y + 1];
+    return [x, y + lerp(at(x, y), at(x, y + 1))];
+  };
+  // Таблица: за всеки случай двойки ръбове (посоката държи мастилото отдясно).
+  const T = { 1: [[3, 2]], 2: [[2, 1]], 3: [[3, 1]], 4: [[1, 0]], 5: [[3, 0], [1, 2]], 6: [[2, 0]], 7: [[3, 0]],
+              8: [[0, 3]], 9: [[0, 2]], 10: [[0, 1], [2, 3]], 11: [[0, 1]], 12: [[1, 3]], 13: [[1, 2]], 14: [[2, 3]] };
+  const key = (x, y, e) => { // общ ключ за ръба между две клетки
+    if (e === 0) return `h${x},${y}`; if (e === 2) return `h${x},${y + 1}`;
+    if (e === 3) return `v${x},${y}`; return `v${x + 1},${y}`;
+  };
+  const next = new Map(), point = new Map();
+  for (let y = 0; y < h - 1; y++) for (let x = 0; x < w - 1; x++) {
+    const b = (at(x, y) > L ? 8 : 0) | (at(x + 1, y) > L ? 4 : 0) | (at(x + 1, y + 1) > L ? 2 : 0) | (at(x, y + 1) > L ? 1 : 0);
+    for (const [a, z] of T[b] || []) {
+      const ka = key(x, y, a), kz = key(x, y, z);
+      next.set(ka, kz);
+      if (!point.has(ka)) point.set(ka, pt(x, y, a));
+      if (!point.has(kz)) point.set(kz, pt(x, y, z));
+    }
+  }
+  const seen = new Set(), loops = [];
+  for (const start of next.keys()) {
+    if (seen.has(start)) continue;
+    const loop = []; let k = start;
+    while (k && !seen.has(k)) { seen.add(k); const p = point.get(k); loop.push([p[0] - 1, p[1] - 1]); k = next.get(k); }
+    if (loop.length >= MINLEN) loops.push(loop);
+  }
+  // RDP за затворен контур: разделяме на две половини при най-далечната точка.
+  function rdp(pts, eps) {
+    if (pts.length < 3) return pts;
+    const [a, b] = [pts[0], pts[pts.length - 1]];
+    let dmax = 0, idx = 0;
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const d = Math.abs(dy * pts[i][0] - dx * pts[i][1] + b[0] * a[1] - b[1] * a[0]) / len;
+      if (d > dmax) { dmax = d; idx = i; }
+    }
+    if (dmax <= eps) return [a, b];
+    return rdp(pts.slice(0, idx + 1), eps).slice(0, -1).concat(rdp(pts.slice(idx), eps));
+  }
+  const f = (n) => +n.toFixed(1);
+  let d = '';
+  for (const loop of loops) {
+    let far = 0, fd = 0;
+    for (let i = 0; i < loop.length; i++) { const q = Math.hypot(loop[i][0] - loop[0][0], loop[i][1] - loop[0][1]); if (q > fd) { fd = q; far = i; } }
+    const s = rdp(loop.slice(0, far + 1), EPS).slice(0, -1).concat(rdp(loop.slice(far).concat([loop[0]]), EPS).slice(0, -1));
+    const n = s.length; if (n < 3) continue;
+    // Catmull-Rom (затворен) → Безие; на остри ъгли (под ~60°) — права линия, за да не се закръглят.
+    const sharp = (i) => {
+      const p0 = s[(i - 1 + n) % n], p1 = s[i], p2 = s[(i + 1) % n];
+      const a1 = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]), a2 = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]);
+      let t = Math.abs(a2 - a1); if (t > Math.PI) t = 2 * Math.PI - t; return t > 1.9;
+    };
+    d += `M${f(s[0][0])} ${f(s[0][1])}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = s[(i - 1 + n) % n], p1 = s[i], p2 = s[(i + 1) % n], p3 = s[(i + 2) % n];
+      if (sharp(i) || sharp((i + 1) % n)) { d += `L${f(p2[0])} ${f(p2[1])}`; continue; }
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += `C${f(c1[0])} ${f(c1[1])} ${f(c2[0])} ${f(c2[1])} ${f(p2[0])} ${f(p2[1])}`;
+    }
+    d += 'Z';
+  }
+  window.result = { W, H, loops: loops.length, d };
+};
+img.src = SRC;
+</script>

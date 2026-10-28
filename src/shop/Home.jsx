@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { euro } from './cart'
 import { CATEGORIES, GOALS, Icon, unitPrice } from './ui'
-import { Mark } from './Brand.jsx'
 import styles from './Shop.module.css'
 
 /* Началото. Най-горе — промоциите на седмицата с таймер (shop_deals, 140):
@@ -114,7 +113,7 @@ export default function Home({ products, deals, onAdd }) {
       )}
 
       <section className={styles.home}>
-        <h2 className={styles.display}>Добавки <Mark size={0} className={styles.amp} /><span className={styles.srOnly}>и</span> храна.</h2>
+        <h2 className={styles.display}>Добавки и храна.</h2>
 
         <form className={styles.search} onSubmit={search} role="search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="bg">
+<meta charset="utf-8">
+<title>здраве&сила — долната част със смисъл</title>
+<style>
+  html, body { margin: 0; background: #F4F2EC; font-family: 'Segoe UI', system-ui, sans-serif; color: #12140F; }
+  .wrap { padding: 48px 56px 56px; width: max-content; }
+  h1 { font-size: 34px; margin: 0 0 6px; }
+  .lead { font-size: 18px; color: #55584F; margin: 0 0 32px; max-width: 1180px; }
+  table { border-collapse: separate; border-spacing: 14px; margin-left: -14px; }
+  th { font-size: 16px; font-weight: 600; text-align: left; color: #55584F; padding: 0 4px 4px; }
+  td.name { width: 230px; vertical-align: middle; padding-right: 8px; }
+  td.name b { display: block; font-size: 20px; }
+  td.name span { font-size: 15px; color: #55584F; }
+  .cell { width: 200px; height: 200px; border-radius: 22px; display: grid; place-items: center; }
+  .cell svg { width: 156px; height: 156px; }
+  .small { display: flex; gap: 14px; align-items: end; }
+</style>
+<div class="wrap">
+  <h1>Долната част носи „сила“ или „храна“</h1>
+  <p class="lead">Сърцето е „здраве“ и остава. Отдолу вече не е просто линия: всяка форма казва какво е магазинът.</p>
+  <table id="t"></table>
+</div>
+<script>
+const HEART = 'M118 130 C 64 100, 44 46, 86 37 C 103 34, 114 44, 118 56 C 122 44, 133 34, 150 37 C 192 46, 172 100, 118 130';
+// Всяка форма: щрихи (stroke) и плътни части (fill) в цвета на долната част.
+const SHAPES = [
+  { name: 'G · & с дъмбел', note: 'амперсандът остава, кракът завършва с тежести', t: '-12 0',
+    strokes: ['M118 130 C 60 162, 48 218, 102 220 C 148 222, 180 192, 200 148', 'M118 130 L 204 216',
+      'M222 186 L 186 222', 'M234 206 L 206 234'], fills: [] },
+  { name: 'H · пудовка', note: 'сърцето е дръжката, отдолу плътна тежест', t: '10 -6',
+    strokes: [], fills: ['M118 118 C 158 118, 186 146, 186 184 C 186 210, 174 228, 162 238 L 74 238 C 62 228, 50 210, 50 184 C 50 146, 78 118, 118 118 Z'] },
+  { name: 'J · купа', note: 'сърцето се вдига от купа храна', t: '10 -4',
+    strokes: ['M46 176 L 190 176'], fills: ['M58 188 L 178 188 C 174 222, 148 240, 118 240 C 88 240, 62 222, 58 188 Z'] },
+  { name: 'K · вдигнато сърце', note: 'сърцето стои на щанга — „здраве върху сила“', t: '10 -6',
+    strokes: ['M118 136 L 118 204', 'M40 204 L 196 204', 'M52 178 L 52 230', 'M74 186 L 74 222', 'M184 178 L 184 230', 'M162 186 L 162 222'], fills: [] },
+];
+const PALETTES = [
+  { name: 'мастило и домат', bg: '#EEEAE1', legs: '#12140F', heart: '#E5482F' },
+  { name: 'зелено мастило', bg: '#EEEAE1', legs: '#173F2E', heart: '#E5482F' },
+  { name: 'изцяло зелено', bg: '#EEEAE1', legs: '#173F2E', heart: '#38A35A' },
+  { name: 'върху тъмнозелено', bg: '#173F2E', legs: '#EEEAE1', heart: '#FF6A4D' },
+];
+const svg = (s, p, size, sw = 25) => `<svg viewBox="0 0 256 256" width="${size}" height="${size}"><g transform="translate(${s.t})" stroke-linecap="round" stroke-linejoin="round">` +
+  s.fills.map(d => `<path fill="${p.legs}" d="${d}"/>`).join('') +
+  s.strokes.map(d => `<path fill="none" stroke="${p.legs}" stroke-width="${sw}" d="${d}"/>`).join('') +
+  `<path fill="none" stroke="${p.heart}" stroke-width="${sw}" d="${HEART}"/></g></svg>`;
+document.getElementById('t').innerHTML = '<tr><th></th>' + PALETTES.map(p => `<th>${p.name}</th>`).join('') + '<th>32 / 16 px</th></tr>' +
+  SHAPES.map(s => `<tr><td class="name"><b>${s.name}</b><span>${s.note}</span></td>` +
+    PALETTES.map(p => `<td><div class="cell" style="background:${p.bg}">${svg(s, p, 156)}</div></td>`).join('') +
+    `<td><div class="small">${svg(s, PALETTES[0], 32)}${svg(s, PALETTES[0], 16, 30)}${svg(s, PALETTES[2], 32)}${svg(s, PALETTES[2], 16, 30)}</div></td></tr>`).join('');
+</script>

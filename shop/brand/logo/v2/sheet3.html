@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="bg">
+<meta charset="utf-8">
+<title>здраве&сила — верига</title>
+<style>
+  html, body { margin: 0; background: #F4F2EC; font-family: 'Segoe UI', system-ui, sans-serif; color: #12140F; }
+  .wrap { padding: 48px 56px 56px; width: max-content; }
+  h1 { font-size: 34px; margin: 0 0 6px; }
+  .lead { font-size: 18px; color: #55584F; margin: 0 0 32px; max-width: 1180px; }
+  table { border-collapse: separate; border-spacing: 14px; margin-left: -14px; }
+  th { font-size: 16px; font-weight: 600; text-align: left; color: #55584F; padding: 0 4px 4px; }
+  td.name { width: 230px; vertical-align: middle; padding-right: 8px; }
+  td.name b { display: block; font-size: 20px; }
+  td.name span { font-size: 15px; color: #55584F; }
+  .cell { width: 200px; height: 200px; border-radius: 22px; display: grid; place-items: center; }
+  .cell svg { width: 160px; height: 160px; }
+  .small { display: flex; gap: 14px; align-items: end; }
+  #probe { position: absolute; left: 0; top: 0; width: 256px; height: 256px; visibility: hidden; }
+</style>
+<div class="wrap">
+  <h1>Верига: сърцето е една от брънките</h1>
+  <p class="lead">Сърцето („здраве“) е закачено за брънка („сила“). На едното пресичане брънката минава отпред, на другото — отзад; затова се чете като верига, а не като две фигури една до друга.</p>
+  <table id="t"></table>
+</div>
+<svg id="probe" viewBox="0 0 256 256"></svg>
+<script>
+const HEART = 'M118 130 C 64 100, 44 46, 86 37 C 103 34, 114 44, 118 56 C 122 44, 133 34, 150 37 C 192 46, 172 100, 118 130';
+const ellipse = (cx, cy, rx, ry) => `M${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy}`;
+
+/* Сърцето е брънка A, пръстенът — брънка B. По подразбиране B е отгоре;
+   на пресичането, посочено в heartOver, A се рисува пак отгоре (с ореол
+   в цвета на фона), изрязано в малък кръг около точката. */
+const SHAPES = [
+  { name: 'M · две брънки, отвесно', note: 'сърцето виси, пръстенът минава през долния му връх', t: '10 -12',
+    heart: { tf: '' }, ring: ellipse(118, 170, 30, 58), heartOver: 'right' },
+  { name: 'N · две брънки, хоризонтално', note: '„здраве“ и „сила“, хванати една за друга — „и“-то е самата връзка', t: '0 0',
+    heart: { tf: 'translate(22 40) scale(0.72)' }, ring: ellipse(170, 128, 56, 36), heartOver: 'bottom' },
+  { name: 'O · по-тежък пръстен', note: 'като M, но пръстенът е широк и нисък — по-скоро тежест', t: '10 -12',
+    heart: { tf: '' }, ring: ellipse(118, 176, 46, 48), heartOver: 'right' },
+];
+const PALETTES = [
+  { name: 'мастило и домат', bg: '#EEEAE1', legs: '#12140F', heart: '#E5482F' },
+  { name: 'зелено мастило', bg: '#EEEAE1', legs: '#173F2E', heart: '#E5482F' },
+  { name: 'изцяло зелено', bg: '#EEEAE1', legs: '#173F2E', heart: '#38A35A' },
+  { name: 'върху тъмнозелено', bg: '#173F2E', legs: '#EEEAE1', heart: '#FF6A4D' },
+];
+
+// Пресичанията на двете осеви линии, в координатите на viewBox.
+const probe = document.getElementById('probe');
+function points(d, tf) {
+  probe.innerHTML = `<path d="${d}"/>`;
+  const m = /translate\(([-\d.]+) ([-\d.]+)\) scale\(([-\d.]+)\)/.exec(tf) || [0, 0, 0, 1];
+  const [tx, ty, k] = [+m[1], +m[2], +m[3]];
+  const p = probe.querySelector('path'), L = p.getTotalLength(), out = [];
+  for (let i = 0; i <= 900; i++) { const q = p.getPointAtLength(L * i / 900); out.push([tx + k * q.x, ty + k * q.y]); }
+  return out;
+}
+function crossings(s) {
+  const a = points(HEART, s.heart.tf), b = points(s.ring, ''), hits = [];
+  for (const p of a) for (const q of b) if (Math.hypot(p[0] - q[0], p[1] - q[1]) < 1.6) hits.push(p);
+  const groups = [];
+  for (const h of hits) { const g = groups.find(g => Math.hypot(g[0][0] - h[0], g[0][1] - h[1]) < 20); g ? g.push(h) : groups.push([h]); }
+  return groups.map(g => [g.reduce((s, p) => s + p[0], 0) / g.length, g.reduce((s, p) => s + p[1], 0) / g.length]);
+}
+let clipN = 0;
+function svg(s, p, size, sw = 25) {
+  const xs = crossings(s);
+  if (!xs.length) throw new Error('няма пресичане: ' + s.name);
+  const pick = s.heartOver === 'right' ? xs.sort((u, v) => v[0] - u[0])[0] : xs.sort((u, v) => v[1] - u[1])[0];
+  const hw = s.heart.tf ? sw / 0.72 : sw;
+  const heart = (stroke, w) => `<g transform="${s.heart.tf}"><path stroke="${stroke}" stroke-width="${w}" d="${HEART}"/></g>`;
+  const id = 'c' + (clipN++);
+  let o = `<svg viewBox="0 0 256 256" width="${size}" height="${size}"><defs><clipPath id="${id}"><circle cx="${pick[0]}" cy="${pick[1]}" r="${sw * 1.5}"/></clipPath></defs>`;
+  o += `<g transform="translate(${s.t})" fill="none" stroke-linecap="round" stroke-linejoin="round">`;
+  o += heart(p.heart, hw);
+  o += `<path stroke="${p.bg}" stroke-width="${sw + 12}" d="${s.ring}"/><path stroke="${p.legs}" stroke-width="${sw}" d="${s.ring}"/>`;
+  // Сърцето пак отгоре, само около избраното пресичане.
+  o += `<g clip-path="url(#${id})">${heart(p.bg, hw + 12 / (s.heart.tf ? 0.72 : 1))}${heart(p.heart, hw)}</g>`;
+  return o + '</g></svg>';
+}
+document.getElementById('t').innerHTML = '<tr><th></th>' + PALETTES.map(p => `<th>${p.name}</th>`).join('') + '<th>32 / 16 px</th></tr>' +
+  SHAPES.map(s => `<tr><td class="name"><b>${s.name}</b><span>${s.note}</span></td>` +
+    PALETTES.map(p => `<td><div class="cell" style="background:${p.bg}">${svg(s, p, 160)}</div></td>`).join('') +
+    `<td><div class="small">${svg(s, PALETTES[0], 32)}${svg(s, PALETTES[0], 16, 30)}${svg(s, PALETTES[2], 32)}${svg(s, PALETTES[2], 16, 30)}</div></td></tr>`).join('');
+</script>

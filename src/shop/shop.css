@@ -26,6 +26,10 @@
   --lime: #D4F04A;
   --on-lime: #12140F;
   --heart: #E5482F;
+  /* Знакът (сърце-ръка): зелен върху овес; сплашът и иконката — овес на зелено. */
+  --mark: #173F2E;
+  --brand: #173F2E;
+  --on-brand: #EEEAE1;
   --cta: #12140F;
   --on-cta: #D4F04A;
 
@@ -61,6 +65,7 @@
     --select-bg: rgba(212, 240, 74, 0.16);
     --on-ink: #12140F;
     --heart: #FF6A4D;
+    --mark: #EEEAE1;
     --cta: #D4F04A;
     --on-cta: #12140F;
     --ok: #9BD67A;

@@ -1,12 +1,8 @@
-/* Знакът, името и сплашът на здраве&сила. Цветовете идват от shop.css. */
+/* Знакът, името и сплашът на здраве и сила. Цветовете идват от shop.css. */
 
 .mark { display: block; flex: none; overflow: visible; }
-.mark .heart { stroke: var(--heart); }
-.mark .leg,
-.mark .bowl { stroke: var(--ink); }
-.mono .heart { stroke: currentColor; }
-.mono .leg,
-.mono .bowl { stroke: currentColor; }
+.mark { fill: var(--mark); }
+.mono { fill: currentColor; }
 
 .word {
   display: inline-flex;
@@ -20,10 +16,10 @@
   font-feature-settings: 'locl' 0;
 }
 
-.inline { margin: -0.1em -0.04em 0; }
+.inline { margin: -0.12em 0.08em 0; }
 
-/* Сърцето удря веднъж, когато нещо влезе в количката (класът го слага ShopApp). */
-:global(.zs-beat) .heart {
+/* Знакът удря веднъж като сърце, когато нещо влезе в количката (класът го слага ShopApp). */
+:global(.zs-beat) .mark {
   transform-box: fill-box;
   transform-origin: 50% 70%;
   animation: beat 520ms var(--ease-out);
@@ -45,7 +41,7 @@
   z-index: 100;
   display: grid;
   place-items: center;
-  background: var(--ground);
+  background: var(--brand);
   transition: transform 520ms var(--ease-in-out), opacity 520ms var(--ease-in-out);
 }
 
@@ -62,25 +58,16 @@
   gap: 18px;
 }
 
-.draw .heart,
-.draw .leg,
-.draw .bowl {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw 520ms var(--ease-in-out) forwards;
+/* На сплаша знакът е овес на зелено — така, както е иконката. */
+.draw {
+  fill: var(--on-brand);
+  opacity: 0;
+  transform: scale(0.88);
+  transform-origin: 50% 60%;
+  animation: appear 480ms var(--ease-out) 60ms forwards, beat 560ms var(--ease-out) 760ms;
 }
 
-.draw .heart { animation-delay: 60ms; }
-.draw .bowl { animation-delay: 380ms; }
-.draw .leg { animation-delay: 520ms; animation-duration: 320ms; }
-
-.draw .heart {
-  transform-box: fill-box;
-  transform-origin: 50% 70%;
-  animation: draw 520ms var(--ease-in-out) 60ms forwards, beat 560ms var(--ease-out) 880ms;
-}
-
-@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes appear { to { opacity: 1; transform: scale(1); } }
 
 .splashName {
   margin: 0;
@@ -88,19 +75,17 @@
   font-size: 30px;
   font-weight: 600;
   letter-spacing: -0.03em;
-  color: var(--ink);
+  color: var(--on-brand);
   font-feature-settings: 'locl' 0;
   opacity: 0;
   transform: translateY(8px);
   animation: rise 420ms var(--ease-out) 640ms forwards;
 }
 
-.splashName span { color: var(--heart); }
-
 .splashLine {
   margin: -8px 0 0;
   font-size: 14px;
-  color: var(--ink-2);
+  color: var(--on-brand);
   opacity: 0;
   animation: rise 420ms var(--ease-out) 760ms forwards;
 }
