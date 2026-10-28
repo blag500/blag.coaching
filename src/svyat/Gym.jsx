@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { RoundedBox, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { clank } from './sound'
 
@@ -11,7 +11,9 @@ import { clank } from './sound'
  * кулиси в дъното и таблото BLAG GYM на задната стена. Тонът е почти
  * черно-бял (HueSaturation в Scene.jsx), цветът се връща на улицата.
  * Щангата се вдига при докосване. Хромът отразява малка рисувана карта на
- * стаята — RoomEnvironment изглеждаше същото, но удвояваше зареждането. */
+ * стаята — RoomEnvironment изглеждаше същото, но удвояваше зареждането.
+ * Бетонът и релефът на мазилката са фото-текстури от Poly Haven (CC0) в
+ * public/svyat/tex/; цветът на стените остава рисуван (двата тона). */
 
 export const GYM_X = -26
 // стаята: широка 6.8 м, отворена отпред (z = 1.5), дълга до z = −16, таван 3.4 м
@@ -44,33 +46,6 @@ function canvasTexture(c, repeat) {
   t.anisotropy = 8
   if (repeat) t.repeat.set(...repeat)
   return t
-}
-
-/** Бетон: петна, пукнатини, магнезий. */
-function concreteTexture() {
-  const S = 512
-  const c = document.createElement('canvas')
-  c.width = c.height = S
-  const g = c.getContext('2d')
-  g.fillStyle = '#5f6162'
-  g.fillRect(0, 0, S, S)
-  for (let k = 0; k < 40; k++) {
-    g.fillStyle = `rgba(${Math.random() < 0.5 ? '20,20,20' : '230,230,225'},${0.03 + Math.random() * 0.05})`
-    g.beginPath()
-    g.arc(Math.random() * S, Math.random() * S, 10 + Math.random() * 80, 0, Math.PI * 2)
-    g.fill()
-  }
-  g.strokeStyle = 'rgba(15,15,15,0.35)'
-  g.lineWidth = 1.2
-  for (let k = 0; k < 5; k++) {
-    let x = Math.random() * S, y = Math.random() * S
-    g.beginPath()
-    g.moveTo(x, y)
-    for (let j = 0; j < 8; j++) { x += (Math.random() - 0.5) * 60; y += Math.random() * 40; g.lineTo(x, y) }
-    g.stroke()
-  }
-  grain(g, S, 26)
-  return canvasTexture(c)
 }
 
 /** Стената: долу боядисано тъмносиво до 1.25 м, ивица, горе мръсно бяло с
@@ -231,9 +206,9 @@ function PlateTree({ m }) {
 function Bench({ m, incline = 0 }) {
   return (
     <group>
-      <mesh position={[0, 0.44, 0.35]} material={m.leather}><boxGeometry args={[0.3, 0.09, 0.55]} /></mesh>
+      <RoundedBox args={[0.3, 0.09, 0.55]} radius={0.035} smoothness={3} position={[0, 0.44, 0.35]} material={m.leather} />
       <group position={[0, 0.44, 0.05]} rotation-x={-incline}>
-        <mesh position={[0, 0, -0.42]} material={m.leather}><boxGeometry args={[0.3, 0.09, 0.85]} /></mesh>
+        <RoundedBox args={[0.3, 0.09, 0.85]} radius={0.035} smoothness={3} position={[0, 0, -0.42]} material={m.leather} />
       </group>
       <mesh position={[0, 0.2, -0.1]} material={m.frame}><boxGeometry args={[0.08, 0.06, 1.3]} /></mesh>
       {[-0.65, 0.55].map((z) => (
@@ -454,13 +429,38 @@ function PressStation({ m }) {
   )
 }
 
+const TEX = ['floor-diff', 'floor-nor', 'floor-rough', 'wall-nor', 'wall-rough'].map((n) => `/svyat/tex/${n}.webp`)
+
 const SHADOWS = [[1.65, -2.6, 1.4, 2.6], [-1.6, -3.4, 0.9, 1.7], [-2.2, -6.6, 0.8, 1.6], [-1.5, -9.8, 0.9, 1.6], [2.9, -8, 1, 3], [2.6, -11.2, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2]]
 
 export default function Gym() {
   const m = useMaterials()
   const wall = useMemo(() => { const t = wallTexture(); t.repeat.set(LEN / 3.2, 1); return t }, [])
   const backWall = useMemo(() => { const t = wall.clone(); t.repeat.set((2 * RW) / 3.2, 1); t.needsUpdate = true; return t }, [wall])
-  const floor = useMemo(() => { const t = concreteTexture(); t.repeat.set(2, LEN / 3.4); return t }, [])
+  const [fDiff, fNor, fRough, wNor, wRough] = useLoader(THREE.TextureLoader, TEX)
+  // бетонът от снимката е тъмен (средно 86/255), а лампите са на 3,4 м —
+  // цветът над 1 вдига албедото, без да се пипа светлината на цялата сцена
+  const floorMat = useMemo(() => {
+    const rep = (t, srgb) => { const c = t.clone(); c.wrapS = c.wrapT = THREE.RepeatWrapping; c.repeat.set(2 * RW / 2.2, LEN / 2.2); c.anisotropy = 8; if (srgb) c.colorSpace = THREE.SRGBColorSpace; c.needsUpdate = true; return c }
+    return new THREE.MeshStandardMaterial({ map: rep(fDiff, true), normalMap: rep(fNor), roughnessMap: rep(fRough), color: new THREE.Color(1.9, 1.88, 1.82), normalScale: new THREE.Vector2(0.6, 0.6) })
+  }, [fDiff, fNor, fRough])
+  const wallMat = useMemo(() => {
+    const rel = (t, len) => { const c = t.clone(); c.wrapS = c.wrapT = THREE.RepeatWrapping; c.repeat.set(len / 1.6, H / 1.6); c.needsUpdate = true; return c }
+    const mk = (map, len) => new THREE.MeshStandardMaterial({ map, normalMap: rel(wNor, len), roughnessMap: rel(wRough, len), normalScale: new THREE.Vector2(0.6, 0.6) })
+    return { side: mk(wall, LEN), back: mk(backWall, 2 * RW) }
+  }, [wall, backWall, wNor, wRough])
+  const corner = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = 4
+    c.height = 64
+    const g = c.getContext('2d')
+    const gr = g.createLinearGradient(0, 0, 0, 64)
+    gr.addColorStop(0, 'rgba(255,255,255,0.32)')
+    gr.addColorStop(1, 'rgba(255,255,255,0)')
+    g.fillStyle = gr
+    g.fillRect(0, 0, 4, 64)
+    return new THREE.CanvasTexture(c)
+  }, [])
   const ceiling = useMemo(ceilingTexture, [])
   const blob = useMemo(() => {
     const c = document.createElement('canvas')
@@ -478,12 +478,24 @@ export default function Gym() {
   return (
     <group position={[GYM_X, 0, 0]}>
       {/* под, таван, стени: дълъг коридор, отворен отпред */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, midZ]}><planeGeometry args={[2 * RW, LEN]} /><meshStandardMaterial map={floor} roughness={0.85} /></mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0, midZ]} material={floorMat}><planeGeometry args={[2 * RW, LEN]} /></mesh>
       <mesh rotation-x={Math.PI / 2} position={[0, H, midZ]}><planeGeometry args={[2 * RW, LEN]} /><meshStandardMaterial map={ceiling} roughness={1} /></mesh>
-      <mesh position={[-RW, H / 2, midZ]} rotation-y={Math.PI / 2}><planeGeometry args={[LEN, H]} /><meshStandardMaterial map={wall} roughness={0.9} /></mesh>
+      <mesh position={[-RW, H / 2, midZ]} rotation-y={Math.PI / 2} material={wallMat.side}><planeGeometry args={[LEN, H]} /></mesh>
       {/* дясната стена спира 2 м преди отвора — оттам камерата излиза на улицата */}
-      <mesh position={[RW, H / 2, BACK + rightLen / 2]} rotation-y={-Math.PI / 2}><planeGeometry args={[rightLen, H]} /><meshStandardMaterial map={wall} roughness={0.9} /></mesh>
-      <mesh position={[0, H / 2, BACK]}><planeGeometry args={[2 * RW, H]} /><meshStandardMaterial map={backWall} roughness={0.9} /></mesh>
+      <mesh position={[RW, H / 2, BACK + rightLen / 2]} rotation-y={-Math.PI / 2} material={wallMat.side}><planeGeometry args={[rightLen, H]} /></mesh>
+      <mesh position={[0, H / 2, BACK]} material={wallMat.back}><planeGeometry args={[2 * RW, H]} /></mesh>
+
+      {/* тъмното в ъглите под–стена: светлината не стига там (вместо AO) */}
+      {[[-RW + 0.3, midZ, Math.PI / 2, LEN], [RW - 0.3, BACK + rightLen / 2, -Math.PI / 2, rightLen]].map(([x, z, ry, len], i) => (
+        <mesh key={i} position={[x, 0.006, z]} rotation={[-Math.PI / 2, 0, ry]} renderOrder={1}>
+          <planeGeometry args={[len, 0.6]} />
+          <meshBasicMaterial map={corner} transparent depthWrite={false} color="#000000" />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.006, BACK + 0.3]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
+        <planeGeometry args={[2 * RW, 0.6]} />
+        <meshBasicMaterial map={corner} transparent depthWrite={false} color="#000000" />
+      </mesh>
 
       {/* белите линии по бетона */}
       {[-0.7, 0.95].map((x) => <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.004, midZ]}><planeGeometry args={[0.05, LEN]} /><meshStandardMaterial color="#d9d9d4" roughness={0.7} /></mesh>)}
