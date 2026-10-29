@@ -92,7 +92,7 @@ function ceilingTexture() {
   const c = document.createElement('canvas')
   c.width = c.height = S
   const g = c.getContext('2d')
-  g.fillStyle = '#1b1815'
+  g.fillStyle = '#3a342c'
   g.fillRect(0, 0, S, S)
   for (let k = 0; k < 60; k++) {
     g.fillStyle = `rgba(${Math.random() < 0.5 ? '6,5,4' : '70,62,52'},${0.05 + Math.random() * 0.08})`
@@ -537,7 +537,7 @@ export default function Gym() {
       <group position={[0.8, 0, -14.6]} rotation-y={0.25}><Model url="/svyat/models/barbell.glb" scale={1.1} m={m} /></group>
 
       {/* разхвърляни дискове по пода */}
-      <group position={[-0.5, 0, -1.2]}><PlatePile n={1} r={0.2} m={m} /></group>
+      <group position={[-0.6, 0, -4.2]}><PlatePile n={1} r={0.2} m={m} /></group>
       <group position={[1.6, 0, -6.4]}><PlatePile n={2} r={0.14} m={m} /></group>
       <group position={[0.4, 0, -11]}><PlatePile n={1} m={m} /></group>
       {/* сенките под уредите — нарисувани петна, без втори рендер */}

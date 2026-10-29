@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { PerformanceMonitor, Scroll, ScrollControls, useProgress, useScroll } from '@react-three/drei'
-import { Bloom, BrightnessContrast, EffectComposer, HueSaturation, Noise, Sepia, Vignette } from '@react-three/postprocessing'
+import { Bloom, BrightnessContrast, EffectComposer, HueSaturation, Noise, SMAA, Sepia, Vignette } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Street from './Street.jsx'
 import Gym, { GYM_X } from './Gym.jsx'
@@ -107,6 +107,7 @@ function Grade() {
   const bc = useRef()
   const sepia = useRef()
   const amber = useRef()
+  const vig = useRef()
   // Залата е в сепия (по снимката на Николай: тъмно, топло, зърнесто);
   // към улицата тонът се връща, за да свети неонът в цвят. Сепията сама е
   // бледа — amber я насища до кехлибар (29.10, „много бледо“).
@@ -116,16 +117,20 @@ function Grade() {
     if (bc.current) bc.current.contrast = 0.28 * day
     if (sepia.current) sepia.current.intensity = 1 * day
     if (amber.current) { amber.current.saturation = AMBER * day; amber.current.hue = AMBER_HUE * day }
+    // в залата винетката е лека — на изправен телефон тежката чернееше горе и долу
+    if (vig.current) vig.current.darkness = THREE.MathUtils.lerp(0.78, 0.42, day)
   })
   return (
     <EffectComposer multisampling={0}>
+      {/* без изглаждане ръбовете на лампите и линиите излизаха на стъпала */}
+      <SMAA />
       <Bloom mipmapBlur intensity={1.1} luminanceThreshold={0.9} luminanceSmoothing={0.25} radius={0.75} />
       <HueSaturation ref={hue} saturation={-0.3} />
       <Sepia ref={sepia} intensity={1} />
       <HueSaturation ref={amber} saturation={AMBER} hue={AMBER_HUE} />
       <BrightnessContrast ref={bc} contrast={0.28} />
-      <Noise premultiply opacity={0.55} />
-      <Vignette offset={0.22} darkness={0.78} />
+      <Noise premultiply opacity={0.35} />
+      <Vignette ref={vig} offset={0.22} darkness={0.42} />
     </EffectComposer>
   )
 }
