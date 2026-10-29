@@ -442,7 +442,7 @@ function PressStation({ m }) {
 
 const TEX = ['floor-diff', 'floor-nor', 'floor-rough', 'wall-nor', 'wall-rough'].map((n) => `/svyat/tex/${n}.webp`)
 
-const SHADOWS = [[1.65, -2.6, 1.4, 2.6], [-1.6, -3.4, 0.9, 1.7], [-2.35, -6.6, 1.7, 2.1], [-1.5, -9.8, 0.9, 1.6], [2.9, -8, 1, 3], [2.6, -11.2, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2]]
+const SHADOWS = [[1.65, -2.6, 1.4, 2.6], [-1.6, -3.4, 0.9, 1.7], [-1.45, -6.4, 1.7, 2.1], [-1.5, -9.8, 0.9, 1.6], [1.9, -6, 1, 1.8], [2.6, -11.2, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2]]
 
 export default function Gym() {
   const m = useMaterials()
@@ -532,7 +532,8 @@ export default function Gym() {
       {/* лявата страна: шведска стена, пейки, накрая кулиси */}
       <group position={[-RW + 0.1, 0, -1.6]}><WallBars m={m} /></group>
       <group position={[-1.6, 0, -3.4]} rotation-y={0.35}><Bench m={m} incline={0.6} /></group>
-      <group position={[-2.35, 0, -6.6]}><Model url="/svyat/models/rack.glb" scale={1.05} dim={0.25} m={m} /></group>
+      {/* стойката и стелажът са навътре: тесният кадър на телефона хваща само средата */}
+      <group position={[-1.45, 0, -6.4]}><Model url="/svyat/models/rack.glb" scale={1.05} dim={0.25} m={m} /></group>
       <group position={[-1.5, 0, -9.8]} rotation-y={-0.4}><Bench m={m} incline={0.45} /></group>
       <group position={[-2.3, 0, -14.6]}><CableTower m={m} /></group>
       <group position={[2.3, 0, -14.6]}><CableTower m={m} /></group>
@@ -541,7 +542,7 @@ export default function Gym() {
       <group position={[2.65, 0, -2.6]} rotation-y={-Math.PI / 2}><PressStation m={m} /></group>
       <group position={[2.9, 0, -5.0]}><PlatePile n={5} m={m} /></group>
       <group position={[2.85, 0, 0.6]}><PlatePile n={3} r={0.2} m={m} /></group>
-      <group position={[2.8, 0, -8.0]} rotation-y={-Math.PI / 2}><Model url="/svyat/models/dumbbells.glb" scale={0.8} m={m} /></group>
+      <group position={[1.9, 0, -6.0]} rotation-y={-Math.PI / 2}><Model url="/svyat/models/dumbbells.glb" scale={0.8} m={m} /></group>
       <group position={[0.2, 0, -12.6]} rotation-y={0.25}><Model url="/svyat/models/barbell.glb" scale={1.1} m={m} /></group>
       <group position={[2.6, 0, -11.2]}><PlateTree m={m} /></group>
 
