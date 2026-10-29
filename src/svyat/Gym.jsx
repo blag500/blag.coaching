@@ -150,40 +150,30 @@ function IronPlate({ r, w, m, x = 0 }) {
   )
 }
 
-/** Хромиран дъмбел с кръгли глави. Оста му е X. */
-function Dumbbell({ size, m }) {
-  const r = 0.055 + size * 0.012
-  return (
-    <group>
-      <mesh rotation={[0, 0, Math.PI / 2]} material={m.chrome}><cylinderGeometry args={[0.017, 0.017, 0.34, 12]} /></mesh>
-      {[-1, 1].map((s) => (
-        <group key={s} position={[s * (0.15 + size * 0.006), 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <mesh material={m.chrome}><cylinderGeometry args={[r, r, 0.05 + size * 0.008, 28]} /></mesh>
-          <mesh position={[0, s * (0.03 + size * 0.004), 0]} material={m.chrome}><cylinderGeometry args={[r * 0.5, r * 0.5, 0.02, 20]} /></mesh>
-        </group>
-      ))}
-    </group>
-  )
-}
-
 /** Готов модел от public/svyat/models: мащабиран и стъпил на пода (моделите
  *  идват центрирани около нулата). Идват нови и светли — dim ги потъмнява до
  *  старото желязо на залата. Хромът им отразява картата на стаята. */
-function Model({ url, scale, dim = 0.45, m }) {
+function Model({ url, scale, dim = 0.45, only, m }) {
   const { scene } = useGLTF(url)
   const obj = useMemo(() => {
     const o = scene.clone()
+    const drop = []
     o.traverse((n) => {
       if (!n.isMesh) return
+      if (only && n.material.name !== only) { drop.push(n); return }
       n.material = n.material.clone()
       n.material.color.multiplyScalar(dim)
       n.material.envMap = m.env
       n.material.envMapIntensity = 0.35
     })
+    drop.forEach((n) => n.removeFromParent())
     o.scale.setScalar(scale)
-    o.position.y = -new THREE.Box3().setFromObject(o).min.y
+    const box = new THREE.Box3().setFromObject(o)
+    o.position.y = -box.min.y
+    // една част от модела (only) не е в средата му — центрира се отделно
+    if (only) { const c = box.getCenter(new THREE.Vector3()); o.position.x = -c.x; o.position.z = -c.z }
     return o
-  }, [scene, scale, dim, m.env])
+  }, [scene, scale, dim, only, m.env])
   return <primitive object={obj} />
 }
 
@@ -434,7 +424,8 @@ function PressStation({ m }) {
         ))}
         <mesh position={[0, 0.03, 0.35]} material={m.frame}><boxGeometry args={[2.3, 0.06, 0.5]} /></mesh>
       </group>
-      <group position={[0, 0, 1.7]}><Bench m={m} /></group>
+      {/* пейката от модела на стойката, без стойката */}
+      <group position={[0, 0, 1.63]}><Model url="/svyat/models/rack.glb" only="Bench" scale={1.05} dim={0.25} m={m} /></group>
       <Barbell m={m} />
     </group>
   )
@@ -546,12 +537,10 @@ export default function Gym() {
       <group position={[0.2, 0, -12.6]} rotation-y={0.25}><Model url="/svyat/models/barbell.glb" scale={1.1} m={m} /></group>
       <group position={[2.6, 0, -11.2]}><PlateTree m={m} /></group>
 
-      {/* разхвърляни дискове и дъмбел по пода */}
+      {/* разхвърляни дискове по пода */}
       <group position={[-0.5, 0, -1.2]}><PlatePile n={1} r={0.2} m={m} /></group>
       <group position={[-0.1, 0, -1.6]}><PlatePile n={2} r={0.14} m={m} /></group>
       <group position={[0.6, 0, -7.2]}><PlatePile n={1} m={m} /></group>
-      <group position={[-1.0, 0.075, -5.3]} rotation-y={0.4}><Dumbbell size={10} m={m} /></group>
-
       {/* сенките под уредите — нарисувани петна, без втори рендер */}
       {SHADOWS.map(([x, z, w, d], i) => (
         <mesh key={i} position={[x, 0.008, z]} rotation-x={-Math.PI / 2} renderOrder={1}>
