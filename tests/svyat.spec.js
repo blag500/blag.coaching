@@ -60,4 +60,10 @@ test('3D: зарежда се, зареждането изчезва, менют
   await page.getByRole('navigation', { name: 'Светът' }).getByRole('button', { name: 'Контакт' }).click()
   await expect.poll(() => page.evaluate(() => location.hash)).toBe('#kontakt')
   await expect(page.getByRole('heading', { name: 'Пиши ми.' })).toBeInViewport({ timeout: 5000 })
+  // окото скрива текста и менюто, второто натискане ги връща
+  await page.getByRole('button', { name: 'Скрий текста' }).click()
+  await expect(page.locator('body.clean')).toHaveCount(1)
+  await expect(page.locator('.card')).toHaveCSS('opacity', '0')
+  await page.getByRole('button', { name: 'Покажи текста' }).click()
+  await expect(page.locator('body.clean')).toHaveCount(0)
 })

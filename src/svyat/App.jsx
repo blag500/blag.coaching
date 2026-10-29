@@ -20,10 +20,13 @@ export default function App() {
   const [slow, setSlow] = useState(false)
   const [keep, setKeep] = useState(false)
   const [sound, setSound] = useState(false)
+  const [clean, setClean] = useState(false)
   const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
   const [progress, setProgress] = useState(0)
 
   useEffect(() => { document.body.classList.toggle('lite', lite) }, [lite])
+  // Окото: текстът и менюто изчезват, сцената остава и скролът си работи.
+  useEffect(() => { document.body.classList.toggle('clean', clean && !lite) }, [clean, lite])
   useEffect(() => {
     const id = lite && takeStart()
     if (id) setTimeout(() => jumpTo(id, 'auto'), 0)
@@ -43,6 +46,13 @@ export default function App() {
           <button type="button" onClick={() => go('kontakt')}>Контакт</button>
           <a className="wideOnly" href="/">Приложението</a>
         </nav>
+        {!lite && (
+          <button type="button" className="sound" aria-pressed={clean} aria-label={clean ? 'Покажи текста' : 'Скрий текста'} onClick={() => setClean(!clean)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" />{clean && <path d="M3 3l18 18" />}
+            </svg>
+          </button>
+        )}
         <button type="button" className="sound" aria-pressed={sound} aria-label={sound ? 'Спри звука' : 'Пусни звука'} onClick={toggleSound}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true">
             <path d="M4 9v6h4l5 4V5L8 9H4z" />{sound ? <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /> : <path d="M17 9l5 6M22 9l-5 6" />}

@@ -40,8 +40,9 @@ button { font: inherit; }
 .menu button:hover, .menu a:hover { color: var(--lime); }
 .sound { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--card-line); background: var(--card);
   color: var(--ink); display: grid; place-items: center; cursor: pointer; backdrop-filter: blur(10px); }
-.sound[aria-pressed='true'] { color: var(--lime); border-color: var(--lime); }
-@media (max-width: 640px) { .menu .wideOnly { display: none; } }
+.sound[aria-pressed='true'] { color: var(--lime); border-color: var(--lime); }@media (max-width: 640px) { .menu .wideOnly { display: none; } }
+/* с окото лентата има два бутона — на тесен телефон се сгъстява */
+@media (max-width: 400px) { .bar { gap: 10px; } .menu { gap: 10px; } .menu button { font-size: 14px; } }
 
 /* ── секциите над 3D ── */
 .section { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding: 96px clamp(16px, 6vw, 96px) 72px; position: relative; }
@@ -72,7 +73,16 @@ button { font: inherit; }
   .h1 { font-size: clamp(34px, 9vw, 44px); }
   .glass .lead { font-size: 15px; }
   body.lite .section { align-items: center; }
+  /* Картата е по-висока от екрана на телефона, а секцията е точно един екран —
+     превърта се сама; margin: auto я центрира, когато се събира. */
+  .section.center { align-items: flex-start; overflow-y: auto; padding-top: 84px; padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+  .section.center > .card { margin-block: auto; }
+  .card textarea { min-height: 72px; }
 }
+
+/* ── окото: скрива текста, за да се гледа само сцената ── */
+.copy, .card, .hint, .menu { transition: opacity 0.35s var(--ease); }
+body.clean .copy, body.clean .card, body.clean .hint, body.clean .menu, body.clean .toast { opacity: 0; pointer-events: none; }
 
 /* ── картата ── */
 .card { width: min(480px, 100%); }
