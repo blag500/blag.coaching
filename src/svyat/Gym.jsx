@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
-import { RoundedBox, Text } from '@react-three/drei'
+import { RoundedBox, Text, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { clank } from './sound'
 
@@ -14,7 +14,11 @@ import { clank } from './sound'
  * Щангата се вдига при докосване. Хромът отразява малка рисувана карта на
  * стаята — RoomEnvironment изглеждаше същото, но удвояваше зареждането.
  * Бетонът и релефът на мазилката са фото-текстури от Poly Haven (CC0) в
- * public/svyat/tex/; цветът на стените остава рисуван (двата тона). */
+ * public/svyat/tex/; цветът на стените остава рисуван (двата тона).
+ * Стойката за клек, стелажът с дъмбелите и щангата с дисковете на пода са
+ * „Weight Room Set 1–3“ от Tytan в Sketchfab (CC BY 4.0) — надписът е в
+ * контакта; оригиналите са в D:\blag-ai\gym-models\sketchfab, свити с
+ * gltf-transform до текстури 256 px в public/svyat/models/. */
 
 export const GYM_X = -26
 // стаята: широка 6.8 м, отворена отпред (z = 1.5), дълга до z = −16, таван 3.4 м
@@ -162,28 +166,25 @@ function Dumbbell({ size, m }) {
   )
 }
 
-/** Стелажът с дъмбелите: два реда, леките отляво. */
-function DumbbellRack({ m }) {
-  const legs = [-1.25, 0, 1.25]
-  return (
-    <group>
-      {legs.map((x) => (
-        <group key={x} position={[x, 0, 0]}>
-          <mesh position={[0, 0.45, -0.18]} material={m.frame}><boxGeometry args={[0.06, 0.9, 0.06]} /></mesh>
-          <mesh position={[0, 0.3, 0.2]} material={m.frame}><boxGeometry args={[0.06, 0.6, 0.06]} /></mesh>
-        </group>
-      ))}
-      {/* рафтовете — горният по-назад и по-високо */}
-      <mesh position={[0, 0.88, -0.18]} rotation-x={0.25} material={m.frame}><boxGeometry args={[2.7, 0.04, 0.32]} /></mesh>
-      <mesh position={[0, 0.58, 0.2]} rotation-x={0.25} material={m.frame}><boxGeometry args={[2.7, 0.04, 0.32]} /></mesh>
-      {Array.from({ length: 7 }, (_, i) => (
-        <group key={`t${i}`} position={[-1.08 + i * 0.36, 0.97, -0.18]} rotation={[0, Math.PI / 2, 0]}><Dumbbell size={i} m={m} /></group>
-      ))}
-      {Array.from({ length: 6 }, (_, i) => (
-        <group key={`b${i}`} position={[-1.0 + i * 0.4, 0.7, 0.2]} rotation={[0, Math.PI / 2, 0]}><Dumbbell size={i + 7} m={m} /></group>
-      ))}
-    </group>
-  )
+/** Готов модел от public/svyat/models: мащабиран и стъпил на пода (моделите
+ *  идват центрирани около нулата). Идват нови и светли — dim ги потъмнява до
+ *  старото желязо на залата. Хромът им отразява картата на стаята. */
+function Model({ url, scale, dim = 0.45, m }) {
+  const { scene } = useGLTF(url)
+  const obj = useMemo(() => {
+    const o = scene.clone()
+    o.traverse((n) => {
+      if (!n.isMesh) return
+      n.material = n.material.clone()
+      n.material.color.multiplyScalar(dim)
+      n.material.envMap = m.env
+      n.material.envMapIntensity = 0.35
+    })
+    o.scale.setScalar(scale)
+    o.position.y = -new THREE.Box3().setFromObject(o).min.y
+    return o
+  }, [scene, scale, dim, m.env])
+  return <primitive object={obj} />
 }
 
 /** Дървото за дискове: колона и шест щифта. */
@@ -441,7 +442,7 @@ function PressStation({ m }) {
 
 const TEX = ['floor-diff', 'floor-nor', 'floor-rough', 'wall-nor', 'wall-rough'].map((n) => `/svyat/tex/${n}.webp`)
 
-const SHADOWS = [[1.65, -2.6, 1.4, 2.6], [-1.6, -3.4, 0.9, 1.7], [-2.2, -6.6, 0.8, 1.6], [-1.5, -9.8, 0.9, 1.6], [2.9, -8, 1, 3], [2.6, -11.2, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2]]
+const SHADOWS = [[1.65, -2.6, 1.4, 2.6], [-1.6, -3.4, 0.9, 1.7], [-2.35, -6.6, 1.7, 2.1], [-1.5, -9.8, 0.9, 1.6], [2.9, -8, 1, 3], [2.6, -11.2, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2]]
 
 export default function Gym() {
   const m = useMaterials()
@@ -531,7 +532,7 @@ export default function Gym() {
       {/* лявата страна: шведска стена, пейки, накрая кулиси */}
       <group position={[-RW + 0.1, 0, -1.6]}><WallBars m={m} /></group>
       <group position={[-1.6, 0, -3.4]} rotation-y={0.35}><Bench m={m} incline={0.6} /></group>
-      <group position={[-2.2, 0, -6.6]}><Bench m={m} /></group>
+      <group position={[-2.35, 0, -6.6]}><Model url="/svyat/models/rack.glb" scale={1.05} dim={0.25} m={m} /></group>
       <group position={[-1.5, 0, -9.8]} rotation-y={-0.4}><Bench m={m} incline={0.45} /></group>
       <group position={[-2.3, 0, -14.6]}><CableTower m={m} /></group>
       <group position={[2.3, 0, -14.6]}><CableTower m={m} /></group>
@@ -540,7 +541,8 @@ export default function Gym() {
       <group position={[2.65, 0, -2.6]} rotation-y={-Math.PI / 2}><PressStation m={m} /></group>
       <group position={[2.9, 0, -5.0]}><PlatePile n={5} m={m} /></group>
       <group position={[2.85, 0, 0.6]}><PlatePile n={3} r={0.2} m={m} /></group>
-      <group position={[3.0, 0, -8.0]} rotation-y={-Math.PI / 2}><DumbbellRack m={m} /></group>
+      <group position={[2.8, 0, -8.0]} rotation-y={-Math.PI / 2}><Model url="/svyat/models/dumbbells.glb" scale={0.8} m={m} /></group>
+      <group position={[0.2, 0, -12.6]} rotation-y={0.25}><Model url="/svyat/models/barbell.glb" scale={1.1} m={m} /></group>
       <group position={[2.6, 0, -11.2]}><PlateTree m={m} /></group>
 
       {/* разхвърляни дискове и дъмбел по пода */}
