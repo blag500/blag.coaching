@@ -49,7 +49,7 @@ function Rig({ reduce }) {
     // отваря и към улицата се връща на 45 (неонът е нагласен за него).
     const fov = state.size.width / state.size.height < 0.8 ? THREE.MathUtils.lerp(64, 45, THREE.MathUtils.clamp((o - 0.25) / 0.25, 0, 1)) : 45
     if (Math.abs(state.camera.fov - fov) > 0.01) { state.camera.fov = fov; state.camera.updateProjectionMatrix() }
-    if (state.size.width / state.size.height < 0.8) { lx2 = THREE.MathUtils.lerp(qa, qb, k); P.z += o < 0.32 ? 1.2 : 4.5; P.x = THREE.MathUtils.lerp(P.x, lx2, 0.8); ly2 = ly - (o < 0.32 ? 0.6 : 1.7) }   // в тесния коридор — само крачка назад
+    if (state.size.width / state.size.height < 0.8) { lx2 = THREE.MathUtils.lerp(qa, qb, k); P.z += o < 0.32 ? THREE.MathUtils.lerp(-5, 0, Math.min(o / 0.25, 1)) : 4.5; P.x = THREE.MathUtils.lerp(P.x, lx2, 0.8); ly2 = ly - (o < 0.32 ? THREE.MathUtils.lerp(2.2, 0.6, Math.min(o / 0.25, 1)) : 1.7) }   // в залата камерата е вътре: с ъгъла 64° отвън се вижда черното пред пода
     if (!reduce) { P.x += state.pointer.x * 0.35; P.y += state.pointer.y * 0.18 }
     const s = reduce ? 20 : 3.2
     state.camera.position.x = THREE.MathUtils.damp(state.camera.position.x, P.x, s, dt)
