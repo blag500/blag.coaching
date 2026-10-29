@@ -144,7 +144,7 @@ function Contact() {
         <a href="/cheatcode/">Чийт Код</a>
       </div>
       {/* CC BY изисква името на автора */}
-      <p className="small">3D уредите в залата: <a href="https://sketchfab.com/tylerhalterman" target="_blank" rel="noreferrer">Tytan</a>, CC BY 4.0</p>
+      <p className="small">3D уредите в залата: <a href="https://sketchfab.com/tylerhalterman" target="_blank" rel="noreferrer">Tytan</a> и <a href="https://sketchfab.com/sousinho" target="_blank" rel="noreferrer">Sousinho</a>, CC BY 4.0</p>
     </div>
   )
 }

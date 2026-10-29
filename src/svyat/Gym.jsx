@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
-import { RoundedBox, Text, useGLTF } from '@react-three/drei'
+import { Text, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { clank } from './sound'
 
@@ -20,12 +20,15 @@ import { clank } from './sound'
  * контакта; оригиналите са в D:\blag-ai\gym-models\sketchfab, свити с
  * gltf-transform до текстури 256 px в public/svyat/models/. */
 
-export const GYM_X = -26
-// стаята: широка 6.8 м, отворена отпред (z = 1.5), дълга до z = −16, таван 3.4 м
-const RW = 3.4
+// Залата е отворена като старите калифорнийски зали от 70-те (снимките на
+// Николай, 29.10): широка, висок таван, огледала по цялата лява стена,
+// станции на гумени настилки. x = −30, за да не стига до сградата на улицата (до −19).
+export const GYM_X = -30
+// стаята: широка 12 м, отворена отпред (z = 1.5), дълга до z = −20, таван 4.6 м
+const RW = 6
 const FRONT = 1.5
-const BACK = -16
-const H = 3.4
+const BACK = -20
+const H = 4.6
 const LEN = FRONT - BACK
 
 const GOLD = '#d9b26a'
@@ -53,7 +56,7 @@ function canvasTexture(c, repeat) {
   return t
 }
 
-/** Стената: долу боядисано тъмносиво до 1.25 м, ивица, горе мръсно бяло с
+/** Стената: долу боядисани блокчета до 1.25 м, ивица, горе светла мазилка с
  *  потъмнели следи. Височината на текстурата е цялата стена (H). */
 function wallTexture() {
   const S = 512
@@ -61,10 +64,17 @@ function wallTexture() {
   c.width = c.height = S
   const g = c.getContext('2d')
   const split = Math.round(S * (1 - 1.25 / H))
-  g.fillStyle = '#3b342c'
+  g.fillStyle = '#5b5348'
   g.fillRect(0, 0, S, split)
-  g.fillStyle = '#1d1a17'
+  g.fillStyle = '#2b2723'
   g.fillRect(0, split, S, S - split)
+  // фугите на блокчетата: ред от 20 см, всеки втори изместен
+  const row = (0.2 / H) * S
+  g.fillStyle = 'rgba(8,7,6,0.55)'
+  for (let y = split + row, r = 0; y < S; y += row, r++) {
+    g.fillRect(0, y, S, 2)
+    for (let x = (r % 2) * 40; x < S; x += 80) g.fillRect(x, y - row, 2, row)
+  }
   g.fillStyle = '#0d0c0b'
   g.fillRect(0, split - 6, S, 9)
   for (let k = 0; k < 8; k++) {                          // едва видими стекли следи
@@ -153,14 +163,14 @@ function IronPlate({ r, w, m, x = 0 }) {
 /** Готов модел от public/svyat/models: мащабиран и стъпил на пода (моделите
  *  идват центрирани около нулата). Идват нови и светли — dim ги потъмнява до
  *  старото желязо на залата. Хромът им отразява картата на стаята. */
-function Model({ url, scale, dim = 0.45, only, m }) {
+function Model({ url, scale, dim = 0.45, only, skip, m }) {
   const { scene } = useGLTF(url)
   const obj = useMemo(() => {
     const o = scene.clone()
     const drop = []
     o.traverse((n) => {
       if (!n.isMesh) return
-      if (only && n.material.name !== only) { drop.push(n); return }
+      if ((only && n.material.name !== only) || n.material.name === skip) { drop.push(n); return }
       n.material = n.material.clone()
       n.material.color.multiplyScalar(dim)
       n.material.envMap = m.env
@@ -173,7 +183,7 @@ function Model({ url, scale, dim = 0.45, only, m }) {
     // една част от модела (only) не е в средата му — центрира се отделно
     if (only) { const c = box.getCenter(new THREE.Vector3()); o.position.x = -c.x; o.position.z = -c.z }
     return o
-  }, [scene, scale, dim, only, m.env])
+  }, [scene, scale, dim, only, skip, m.env])
   return <primitive object={obj} />
 }
 
@@ -190,24 +200,6 @@ function PlateTree({ m }) {
           <group position={[0, 0, 0.19]} rotation={[0, Math.PI / 2, 0]}><IronPlate r={r} w={0.045} m={m} /></group>
         </group>
       ))}
-    </group>
-  )
-}
-
-/** Пейка с бордо кожа; incline > 0 вдига облегалката. */
-function Bench({ m, incline = 0 }) {
-  return (
-    <group>
-      <RoundedBox args={[0.3, 0.09, 0.55]} radius={0.035} smoothness={3} position={[0, 0.44, 0.35]} material={m.leather} />
-      <group position={[0, 0.44, 0.05]} rotation-x={-incline}>
-        <RoundedBox args={[0.3, 0.09, 0.85]} radius={0.035} smoothness={3} position={[0, 0, -0.42]} material={m.leather} />
-      </group>
-      <mesh position={[0, 0.2, -0.1]} material={m.frame}><boxGeometry args={[0.08, 0.06, 1.3]} /></mesh>
-      {[-0.65, 0.55].map((z) => (
-        <mesh key={z} position={[0, 0.03, z]} material={m.frame}><boxGeometry args={[0.5, 0.06, 0.07]} /></mesh>
-      ))}
-      <mesh position={[0, 0.3, 0.3]} material={m.frame}><boxGeometry args={[0.06, 0.3, 0.06]} /></mesh>
-      <mesh position={[0, 0.3, -0.5]} material={m.frame}><boxGeometry args={[0.06, 0.3, 0.06]} /></mesh>
     </group>
   )
 }
@@ -277,7 +269,8 @@ function Mark({ m }) {
 }
 
 /** Щангата: натискаш → вдига се, дисковете се въртят → пада със звън. */
-function Barbell({ m }) {
+function Barbell({ m, at }) {
+  const [x0, y0, z0] = at
   const bar = useRef()
   const plates = useRef()
   const clock = useThree((s) => s.clock)
@@ -286,7 +279,7 @@ function Barbell({ m }) {
     const t = clock.elapsedTime - lift.current.start
     // нагоре 0.5 s, горе 0.5 s, надолу 0.4 s
     const up = t < 0 ? 0 : t < 0.5 ? t / 0.5 : t < 1 ? 1 : t < 1.4 ? 1 - (t - 1) / 0.4 : 0
-    if (bar.current) bar.current.position.y = 1.42 + 0.62 * (up * up * (3 - 2 * up))
+    if (bar.current) bar.current.position.y = y0 + 0.62 * (up * up * (3 - 2 * up))
     if (plates.current && t > 0 && t < 1.4) plates.current.rotation.x += dt * 7
     if (t >= 1.4 && !lift.current.landed) { lift.current.landed = true; clank() }
   })
@@ -297,7 +290,7 @@ function Barbell({ m }) {
   }
   const hover = (on) => () => { document.body.style.cursor = on ? 'pointer' : '' }
   return (
-    <group ref={bar} position={[0, 1.42, 0.95]}>
+    <group ref={bar} position={[x0, y0, z0]}>
       <mesh rotation={[0, 0, Math.PI / 2]} material={m.chrome}><cylinderGeometry args={[0.016, 0.016, 2.2, 16]} /></mesh>
       <group ref={plates}>
         {[-1, 1].map((s) => (
@@ -323,9 +316,9 @@ function Barbell({ m }) {
 
 /** Луминесцентно тяло: метална кутия, светеща тръба отдолу. Светлините на
  *  стаята са отделно (четири за цялата дължина) — всяка лампа струва пиксели. */
-function Fluoro({ z, m }) {
+function Fluoro({ x = 0.15, z, m }) {
   return (
-    <group position={[0.15, H - 0.06, z]}>
+    <group position={[x, H - 0.06, z]}>
       <mesh material={m.frame}><boxGeometry args={[0.2, 0.08, 1.3]} /></mesh>
       <mesh position={[0, -0.05, 0]}><boxGeometry args={[0.07, 0.03, 1.22]} /><meshStandardMaterial color="#000" emissive="#ffd6a0" emissiveIntensity={2.6} toneMapped={false} /></mesh>
     </group>
@@ -343,12 +336,23 @@ function Downlight({ x, z }) {
   )
 }
 
-/** Огледало на стената: тъмно, гладко, отразява картата на стаята. */
-function Mirror({ m }) {
+/** Огледало на стената: гладко, отразява картата на стаята; w × h. */
+function Mirror({ m, w = 1.2, h = 2.0 }) {
   return (
     <group>
-      <mesh position={[0, 0, -0.01]} material={m.frame}><boxGeometry args={[1.3, 2.1, 0.03]} /></mesh>
-      <mesh><planeGeometry args={[1.2, 2.0]} /><meshStandardMaterial color="#2a2622" metalness={1} roughness={0.06} envMap={m.env} envMapIntensity={0.9} /></mesh>
+      {/* рамката е изцяло зад стъклото — иначе предната ѝ стена го покрива */}
+      <mesh position={[0, 0, -0.02]} material={m.frame}><boxGeometry args={[w + 0.06, h + 0.06, 0.03]} /></mesh>
+      <mesh><planeGeometry args={[w, h]} /><meshStandardMaterial color="#5d574e" metalness={1} roughness={0.04} envMap={m.env} envMapIntensity={1} /></mesh>
+    </group>
+  )
+}
+
+/** Гумена настилка под станция: тъмен квадрат с ръб. */
+function Mat({ w, d }) {
+  return (
+    <group>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.012, 0]}><planeGeometry args={[w, d]} /><meshStandardMaterial color="#0e0d0c" roughness={0.95} /></mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.01, 0]}><planeGeometry args={[w + 0.06, d + 0.06]} /><meshStandardMaterial color="#26221e" roughness={0.9} /></mesh>
     </group>
   )
 }
@@ -411,29 +415,22 @@ function Clock() {
   )
 }
 
-/** Лежанката: колони с куки, пейка под щангата, щангата отгоре. */
-function PressStation({ m }) {
+/** Олимпийската лежанка (Flat Bench, Sousinho, CC BY). live: щангата на
+ *  модела е заменена с нашата, която се вдига; куките са на 1.08 м, z −0.38. */
+function PressStation({ m, live = false }) {
   return (
     <group>
-      <group position={[0, 0, 0.6]}>
-        {[-1.05, 1.05].map((x) => (
-          <group key={x} position={[x, 0, 0.35]}>
-            <mesh position={[0, 0.8, 0]} material={m.frame}><boxGeometry args={[0.08, 1.6, 0.08]} /></mesh>
-            <mesh position={[0, 1.36, 0.07]} material={m.chrome}><boxGeometry args={[0.08, 0.05, 0.16]} /></mesh>
-          </group>
-        ))}
-        <mesh position={[0, 0.03, 0.35]} material={m.frame}><boxGeometry args={[2.3, 0.06, 0.5]} /></mesh>
-      </group>
-      {/* пейката от модела на стойката, без стойката */}
-      <group position={[0, 0, 1.63]}><Model url="/svyat/models/rack.glb" only="Bench" scale={1.05} dim={0.25} m={m} /></group>
-      <Barbell m={m} />
+      {/* настилката е в координатите на модела: рамката е x −0.95…1.05, z −0.6…1.6 */}
+      <group position={[0.05, 0, 0.5]}><Mat w={2.4} d={2.5} /></group>
+      <Model url="/svyat/models/flat-bench.glb" skip={live ? '20kg_barbell' : undefined} scale={1.15} dim={0.3} m={m} />
+      {live && <Barbell m={m} at={[0.06, 1.08, -0.38]} />}
     </group>
   )
 }
 
 const TEX = ['floor-diff', 'floor-nor', 'floor-rough', 'wall-nor', 'wall-rough'].map((n) => `/svyat/tex/${n}.webp`)
 
-const SHADOWS = [[1.65, -2.6, 1.4, 2.6], [-1.6, -3.4, 0.9, 1.7], [-1.45, -6.4, 1.7, 2.1], [-1.5, -9.8, 0.9, 1.6], [1.9, -6, 1, 1.8], [2.6, -11.2, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2]]
+const SHADOWS = [[3.8, -3, 2.2, 2.2], [3.8, -9.5, 2.2, 2.2], [-2.2, -3, 1, 1.8], [-2.6, -7, 1.7, 2.1], [-2.4, -10.6, 1, 1.8], [-5.1, -13.5, 1.2, 2.2], [5.2, -6.8, 1.1, 1.1], [-RW + 0.4, -1.6, 0.6, 1.2], [-3.5, -18.6, 1.2, 0.9], [3.5, -18.6, 1.2, 0.9]]
 
 export default function Gym() {
   const m = useMaterials()
@@ -499,48 +496,50 @@ export default function Gym() {
       </mesh>
 
       {/* белите линии по бетона */}
-      {[-0.7, 0.95].map((x) => <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.004, midZ]}><planeGeometry args={[0.05, LEN]} /><meshStandardMaterial color="#5c544a" roughness={0.7} /></mesh>)}
-      <mesh rotation-x={-Math.PI / 2} position={[0.1, 0.004, -6]}><planeGeometry args={[1.7, 0.05]} /><meshStandardMaterial color="#5c544a" /></mesh>
+      {[-1.2, 1.2].map((x) => <mesh key={x} rotation-x={-Math.PI / 2} position={[x, 0.004, midZ]}><planeGeometry args={[0.05, LEN]} /><meshStandardMaterial color="#5c544a" roughness={0.7} /></mesh>)}
 
       {/* тръбите по пода покрай лявата стена */}
       {[0.16, 0.27].map((y) => <mesh key={y} position={[-RW + 0.08, y, midZ]} rotation-x={Math.PI / 2} material={m.frame}><cylinderGeometry args={[0.028, 0.028, LEN, 10]} /></mesh>)}
 
-      {/* лампите и светлината им */}
-      {[0.2, -2.6, -5.4, -8.2, -11, -13.8].map((z) => <Fluoro key={z} z={z} m={m} />)}
-      {[-1.2, -4, -6.8, -9.6, -12.4, -15.2].flatMap((z) => [-2.2, 2.4].map((x) => <Downlight key={`${x}${z}`} x={x} z={z} />))}
-      {[-0.5, -5, -9.5, -14].map((z) => <pointLight key={z} position={[0.1, H - 0.4, z]} intensity={15} distance={8} decay={1.7} color="#ffc27e" />)}
+      {/* лампите: два реда тела, кръгли до стените; светлините са пет за цялата зала */}
+      {[0.2, -3, -6.2, -9.4, -12.6, -15.8].flatMap((z) => [-1.8, 1.8].map((x) => <Fluoro key={`${x}${z}`} x={x} z={z} m={m} />))}
+      {[-1.4, -4.6, -7.8, -11, -14.2, -17.4].flatMap((z) => [-4, 4].map((x) => <Downlight key={`${x}${z}`} x={x} z={z} />))}
+      {[-0.5, -5, -9.5, -14, -18].map((z) => <pointLight key={z} position={[0, H - 0.5, z]} intensity={24} distance={12} decay={1.6} color="#ffc27e" />)}
 
-      {/* прозорците отляво, плакатите и часовникът отдясно */}
-      {[-0.2, -3.3, -6.4].map((z) => <group key={z} position={[-RW + 0.02, 1.35, z]} rotation-y={Math.PI / 2}><Mirror m={m} /></group>)}
-      {[[-2.2, 'stand-front-fdb'], [-4.6, 'stand-back-latbi'], [-7.8, 'stand-side-sc'], [-10.8, 'stand-front-mm'], [-13, 'stand-back-fdb']].map(([z, pose]) => (
-        <group key={z} position={[RW - 0.01, 2.35, z]} rotation-y={-Math.PI / 2}><Poster url={`/posing-lib/${pose}.webp`} /></group>
+      {/* огледалата по цялата лява стена, плакатите и часовникът отдясно */}
+      {Array.from({ length: 10 }, (_, i) => (
+        <group key={i} position={[-RW + 0.02, 1.55, -3.6 - i * 1.6]} rotation-y={Math.PI / 2}><Mirror m={m} w={1.56} h={2.2} /></group>
       ))}
-      <group position={[RW - 0.03, 2.55, -6.3]} rotation-y={-Math.PI / 2}><Clock /></group>
+      {[[-1.8, 'stand-front-fdb'], [-5, 'stand-back-latbi'], [-8.2, 'stand-side-sc'], [-11.4, 'stand-front-mm'], [-14.6, 'stand-back-fdb']].map(([z, pose]) => (
+        <group key={z} position={[RW - 0.01, 2.9, z]} rotation-y={-Math.PI / 2}><Poster url={`/posing-lib/${pose}.webp`} /></group>
+      ))}
+      <group position={[RW - 0.03, 3.2, -6.6]} rotation-y={-Math.PI / 2}><Clock /></group>
 
       {/* таблото BLAG GYM на задната стена — вижда се от входа през цялата зала */}
-      <group position={[0, 2.3, BACK + 0.04]} scale={0.62}><Mark m={m} /></group>
+      <group position={[0, 3.1, BACK + 0.04]} scale={0.8}><Mark m={m} /></group>
 
-      {/* лявата страна: шведска стена, пейки, накрая кулиси */}
+      {/* лявата страна: шведска стена, регулируемите пейки, стойката, дъмбелите пред огледалото */}
       <group position={[-RW + 0.1, 0, -1.6]}><WallBars m={m} /></group>
-      <group position={[-1.6, 0, -3.4]} rotation-y={0.35}><Bench m={m} incline={0.6} /></group>
-      {/* стойката и стелажът са навътре: тесният кадър на телефона хваща само средата */}
-      <group position={[-1.45, 0, -6.4]}><Model url="/svyat/models/rack.glb" scale={1.05} dim={0.25} m={m} /></group>
-      <group position={[-1.5, 0, -9.8]} rotation-y={-0.4}><Bench m={m} incline={0.45} /></group>
-      <group position={[-2.3, 0, -14.6]}><CableTower m={m} /></group>
-      <group position={[2.3, 0, -14.6]}><CableTower m={m} /></group>
+      <group position={[-2.2, 0, -3]} rotation-y={0.4}><Model url="/svyat/models/incline-bench.glb" scale={1} dim={0.35} m={m} /></group>
+      <group position={[-2.6, 0, -7]}><Mat w={2.6} d={2.6} /></group>
+      <group position={[-2.6, 0, -7]}><Model url="/svyat/models/rack.glb" scale={1.05} dim={0.25} m={m} /></group>
+      <group position={[-2.4, 0, -10.6]} rotation-y={-0.5}><Model url="/svyat/models/incline-bench.glb" scale={1} dim={0.35} m={m} /></group>
+      <group position={[-5.1, 0, -13.5]} rotation-y={Math.PI / 2}><Model url="/svyat/models/dumbbells.glb" scale={0.9} m={m} /></group>
+      <group position={[-3.5, 0, -18.6]}><CableTower m={m} /></group>
+      <group position={[3.5, 0, -18.6]}><CableTower m={m} /></group>
 
-      {/* дясната страна: лежанката със щангата до стената, дискове, дъмбели */}
-      <group position={[2.65, 0, -2.6]} rotation-y={-Math.PI / 2}><PressStation m={m} /></group>
-      <group position={[2.9, 0, -5.0]}><PlatePile n={5} m={m} /></group>
-      <group position={[2.85, 0, 0.6]}><PlatePile n={3} r={0.2} m={m} /></group>
-      <group position={[1.9, 0, -6.0]} rotation-y={-Math.PI / 2}><Model url="/svyat/models/dumbbells.glb" scale={0.8} m={m} /></group>
-      <group position={[0.2, 0, -12.6]} rotation-y={0.25}><Model url="/svyat/models/barbell.glb" scale={1.1} m={m} /></group>
-      <group position={[2.6, 0, -11.2]}><PlateTree m={m} /></group>
+      {/* дясната страна: две олимпийски лежанки на настилки, дискове; първата е живата */}
+      <group position={[4.4, 0, -3]} rotation-y={-Math.PI / 2}><PressStation m={m} live /></group>
+      <group position={[4.4, 0, -9.5]} rotation-y={-Math.PI / 2}><PressStation m={m} /></group>
+      <group position={[5.4, 0, -5.2]}><PlatePile n={5} m={m} /></group>
+      <group position={[5.3, 0, 0.6]}><PlatePile n={3} r={0.2} m={m} /></group>
+      <group position={[5.2, 0, -6.8]}><PlateTree m={m} /></group>
+      <group position={[0.8, 0, -14.6]} rotation-y={0.25}><Model url="/svyat/models/barbell.glb" scale={1.1} m={m} /></group>
 
       {/* разхвърляни дискове по пода */}
       <group position={[-0.5, 0, -1.2]}><PlatePile n={1} r={0.2} m={m} /></group>
-      <group position={[-0.1, 0, -1.6]}><PlatePile n={2} r={0.14} m={m} /></group>
-      <group position={[0.6, 0, -7.2]}><PlatePile n={1} m={m} /></group>
+      <group position={[1.6, 0, -6.4]}><PlatePile n={2} r={0.14} m={m} /></group>
+      <group position={[0.4, 0, -11]}><PlatePile n={1} m={m} /></group>
       {/* сенките под уредите — нарисувани петна, без втори рендер */}
       {SHADOWS.map(([x, z, w, d], i) => (
         <mesh key={i} position={[x, 0.008, z]} rotation-x={-Math.PI / 2} renderOrder={1}>
