@@ -92,6 +92,9 @@ function Nav() {
   return null
 }
 
+const AMBER = 0.6
+const AMBER_HUE = -0.12 // от жълтото към оранжевото
+
 /* Тонът: залата е почти черно-бяла и контрастна като стара снимка; с
    нощта цветът се връща и неонът на улицата е в цвят. */
 function Grade() {
@@ -99,19 +102,23 @@ function Grade() {
   const hue = useRef()
   const bc = useRef()
   const sepia = useRef()
+  const amber = useRef()
   // Залата е в сепия (по снимката на Николай: тъмно, топло, зърнесто);
-  // към улицата тонът се връща, за да свети неонът в цвят.
+  // към улицата тонът се връща, за да свети неонът в цвят. Сепията сама е
+  // бледа — amber я насища до кехлибар (29.10, „много бледо“).
   useFrame(() => {
     const day = 1 - nightAt(scroll.offset)
     if (hue.current) hue.current.saturation = -0.3 * day
     if (bc.current) bc.current.contrast = 0.28 * day
     if (sepia.current) sepia.current.intensity = 1 * day
+    if (amber.current) { amber.current.saturation = AMBER * day; amber.current.hue = AMBER_HUE * day }
   })
   return (
     <EffectComposer multisampling={0}>
       <Bloom mipmapBlur intensity={1.1} luminanceThreshold={0.9} luminanceSmoothing={0.25} radius={0.75} />
       <HueSaturation ref={hue} saturation={-0.3} />
       <Sepia ref={sepia} intensity={1} />
+      <HueSaturation ref={amber} saturation={AMBER} hue={AMBER_HUE} />
       <BrightnessContrast ref={bc} contrast={0.28} />
       <Noise premultiply opacity={0.55} />
       <Vignette offset={0.22} darkness={0.78} />
