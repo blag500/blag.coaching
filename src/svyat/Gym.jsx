@@ -403,6 +403,28 @@ function Poster({ url }) {
   )
 }
 
+/** Голямата снимка от Варна (30.10.2026): изрязана от сцената с логата,
+ *  сложена на тъмен фон с прожектор и в сепия — D:\blag-ai\svyat-photo.
+ *  Дебела черна рамка, паспарту, лампа за картини отгоре — без нова светлина,
+ *  лампата само свети и Bloom я размива. */
+function Portrait({ m, w = 1.2 }) {
+  const photo = useLoader(THREE.TextureLoader, '/svyat/varna-pose.webp')
+  const map = useMemo(() => { photo.colorSpace = THREE.SRGBColorSpace; photo.anisotropy = 8; return photo }, [photo])
+  const h = w * 1.25
+  return (
+    <group>
+      <mesh position={[0, 0, -0.03]} material={m.frame}><boxGeometry args={[w + 0.32, h + 0.32, 0.05]} /></mesh>
+      <mesh position={[0, 0, -0.004]}><planeGeometry args={[w + 0.2, h + 0.2]} /><meshStandardMaterial color="#d8d2c4" roughness={0.9} /></mesh>
+      <mesh><planeGeometry args={[w, h]} /><meshStandardMaterial map={map} roughness={0.35} emissive="#ffffff" emissiveMap={map} emissiveIntensity={0.12} /></mesh>
+      <group position={[0, h / 2 + 0.3, 0.12]}>
+        <mesh material={m.frame} rotation-z={Math.PI / 2}><cylinderGeometry args={[0.035, 0.035, w * 0.6, 16]} /></mesh>
+        <mesh position={[0, -0.03, 0.01]}><boxGeometry args={[w * 0.56, 0.012, 0.02]} /><meshBasicMaterial color="#ffd59a" toneMapped={false} /></mesh>
+        <mesh position={[0, 0.05, -0.08]} material={m.frame}><boxGeometry args={[0.03, 0.03, 0.16]} /></mesh>
+      </group>
+    </group>
+  )
+}
+
 /** Стенен часовник; лицето гледа по +Z. */
 function Clock() {
   return (
@@ -514,6 +536,7 @@ export default function Gym() {
         <group key={z} position={[RW - 0.01, 2.9, z]} rotation-y={-Math.PI / 2}><Poster url={`/posing-lib/${pose}.webp`} /></group>
       ))}
       <group position={[RW - 0.03, 3.2, -6.6]} rotation-y={-Math.PI / 2}><Clock /></group>
+      <group position={[RW - 0.04, 2.15, -3.4]} rotation-y={-Math.PI / 2}><Portrait m={m} /></group>
 
       {/* таблото BLAG GYM на задната стена — вижда се от входа през цялата зала */}
       <group position={[0, 3.1, BACK + 0.04]} scale={0.8}><Mark m={m} /></group>

@@ -49,12 +49,15 @@ test('картата казва грешката от сървъра', async ({ 
 })
 
 test('3D: зарежда се, зареждането изчезва, менюто движи камерата', async ({ page }, info) => {
-  test.setTimeout(60000)   // без видеокарта залата се компилира бавно
+  test.setTimeout(120000)  // без видеокарта залата се компилира бавно; паралелно — още по-бавно
   await page.goto('/svyat/')
   const webgl = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl2'))
   test.skip(!webgl, 'няма WebGL в този браузър — лекият изглед е покрит отгоре')
   await expect(page.locator('canvas')).toBeVisible({ timeout: 20000 })
   await expect(page.locator('.loader.gone')).toHaveCount(1, { timeout: 20000 })
+  // без спирка в адреса излиза изборът на проект; „Към целия свят“ го маха
+  await page.getByRole('dialog', { name: 'Избери проект' }).getByRole('button', { name: /Към целия свят/ }).click()
+  await expect(page.getByRole('dialog', { name: 'Избери проект' })).toHaveCount(0)
   await page.waitForTimeout(3500)                                   // неонът се пали
   await page.screenshot({ path: `shots/svyat-3d-${info.project.name}.png` })
   await page.getByRole('navigation', { name: 'Светът' }).getByRole('button', { name: 'Контакт' }).click()
