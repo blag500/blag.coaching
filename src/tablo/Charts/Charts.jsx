@@ -16,7 +16,7 @@ function niceMax(v) {
    обичайното. labels — подписите отдолу; fmt — как се пише числото по оста. */
 export function DayBars({ values, labels, normal, fmt = String, height = 180, title }) {
   const W = 520
-  const pad = { l: 44, r: 12, t: 10, b: 26 }
+  const pad = { l: 58, r: 12, t: 10, b: 26 }
   const top = niceMax(Math.max(...values, normal || 0, 1))
   const ih = height - pad.t - pad.b
   const iw = W - pad.l - pad.r
@@ -130,6 +130,41 @@ export function Spark({ values, label }) {
       <path d={line} className={styles.sparkLine} vectorEffect="non-scaling-stroke" />
       <circle cx={lx} cy={ly} r="2.5" className={styles.sparkDot} />
     </svg>
+  )
+}
+
+/* Пръстен (по „Home health" и енергията в образеца): дял от 0 до 1, число в
+   средата. Цветът е смисълът — наред/следи/внимание — или серия. */
+export function Ring({ value, label, unit, color = 'var(--select)', size = 76, title }) {
+  const r = 42, c = 2 * Math.PI * r
+  const v = Math.max(0, Math.min(1, value || 0))
+  return (
+    <svg className={styles.ring} width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={title}>
+      <circle cx="50" cy="50" r={r} className={styles.ringTrack} />
+      <circle cx="50" cy="50" r={r} className={styles.ringFill} stroke={color} style={{ color }}
+        strokeDasharray={`${v * c} ${c}`} transform="rotate(-90 50 50)" />
+      <text x="50" y="50" dy="0.35em" textAnchor="middle" className={styles.ringText}>
+        {label}{unit && <tspan className={styles.ringUnit}>{unit}</tspan>}
+      </text>
+    </svg>
+  )
+}
+
+/* Ленти с дял (по „Top consumers"): име, лента в цвят, число, процент. */
+export function Meter({ rows, fmt = String }) {
+  const max = Math.max(...rows.map((r) => r.value), 1)
+  const total = rows.reduce((s, r) => s + r.value, 0)
+  return (
+    <ul className={styles.meter}>
+      {rows.map((r) => (
+        <li key={r.name}>
+          <span className={styles.meterName}>{r.name}</span>
+          <span className={styles.meterTrack}><span style={{ width: `${(r.value / max) * 100}%`, background: r.color || 'var(--series-2)' }} /></span>
+          <span className={styles.meterValue}>{fmt(r.value)}</span>
+          <span className={styles.meterPct}>{total ? Math.round((r.value / total) * 100) : 0}%</span>
+        </li>
+      ))}
+    </ul>
   )
 }
 

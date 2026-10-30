@@ -1,0 +1,43 @@
+/* Таблото — по образеца на Home Assistant, който Николай прати (31.10):
+ * тъмно винаги, плочки със заоблени ъгли, пръстени и ленти, едно число на
+ * плочка. Наслагва се върху src/plain.css само за /tablo/ — магазинът остава
+ * на простата система. Цветът казва нещо: зелено наред, жълто следи, червено
+ * внимание; лилавото е изборът (бутон, избран таб), синьото и оранжевото —
+ * сериите в графиките. */
+
+:root {
+  color-scheme: dark;
+
+  --ground: #0B0C10;
+  --card: #15171D;
+  --card-hi: #1B1E25;
+  --sunken: #20232B;
+  --hover: #262A33;
+  --ink: #F1F2F5;
+  --ink-2: #A2A7B3;   /* 7,6:1 върху плочката */
+  --ink-3: #626876;   /* оси и празно — не за четене */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --select: #A594FF;
+  --select-bg: rgba(165, 148, 255, 0.16);
+  --on-ink: #0B0C10;
+
+  --ok: #4CC38A;
+  --warn: #F2B45A;
+  --bad: #FF7A70;
+  --ok-bg: rgba(76, 195, 138, 0.14);
+  --warn-bg: rgba(242, 180, 90, 0.14);
+  --bad-bg: rgba(255, 122, 112, 0.14);
+
+  --series-1: #5AB8FF;
+  --series-2: #A594FF;
+  --series-3: #F29A4A;
+  --series-4: #626876;
+
+  --check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='%230B0C10' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23A2A7B3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+}

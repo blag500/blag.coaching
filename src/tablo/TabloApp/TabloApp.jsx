@@ -19,7 +19,8 @@ import styles from './TabloApp.module.css'
  *   Магазин — маржът на всеки продукт и промоциите (цените на едро са само тук).
  *   Работа — работата с Claude: токени, промени, сесии. За Claude, не за човека.
  *
- * Видът е собствен (src/plain.css), по PikSpec — не темите на
+ * Видът е собствен: src/plain.css и отгоре src/tablo/tablo.css — тъмно
+ * винаги, плочки по образеца на Home Assistant (31.10), не темите на
  * приложението. Числата за работата идват от компютъра
  * (scripts/tablo-sync.mjs), бизнесът — от tablo_business(). */
 
@@ -30,6 +31,11 @@ const TABS = [
   { id: 'shop', label: 'Магазин', icon: <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2M10 20h.01M17 20h.01" /> },
   { id: 'work', label: 'Работа', icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /> },
 ]
+
+function greeting(d) {
+  const h = Number(d.toLocaleString('en-GB', { timeZone: 'Europe/Sofia', hour: '2-digit', hour12: false }))
+  return h >= 4 && h < 11 ? 'Добро утро' : h >= 11 && h < 18 ? 'Добър ден' : 'Добър вечер'
+}
 
 function tabFromHash() {
   const h = window.location.hash.replace('#', '')
@@ -46,6 +52,12 @@ export default function TabloApp() {
   const [sync, setSync] = useState([])
   const [shop, setShop] = useState({ products: [], supply: [], deals: [], orders: [] })
   const [tab, setTab] = useState(tabFromHash)
+  const [clock, setClock] = useState(() => new Date())
+
+  useEffect(() => {
+    const t = setInterval(() => setClock(new Date()), 20000)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
     const onHash = () => setTab(tabFromHash())
@@ -139,21 +151,40 @@ export default function TabloApp() {
     return <main className={styles.page}><p className={styles.center}>Грешка: {note}</p></main>
   }
 
-  const now = new Date()
   const computer = sync.find((x) => x.source === 'computer')
   const current = TABS.find((t) => t.id === tab)
+  const open = (k) => items.filter((i) => i.kind === k && !i.done).length
+  const proposals = items.filter((i) => i.kind === 'finding' && i.state === 'proposal').length
+  const waiting = open('you')
+
+  // Броевете горе водят до своето: двата първи — до списъка в „Сега“.
+  function jump(id) {
+    if (tab !== 'now') go('now')
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+  }
 
   return (
     <>
       <main className={styles.page}>
         <header className={styles.header}>
-          <div>
-            <span className={styles.eyebrow}>
-              {now.toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia', weekday: 'long', day: 'numeric', month: 'long' })}
-            </span>
-            <h1 className={styles.title}>{current.label}</h1>
+          <div className={styles.hello}>
+            <p className={styles.greet}>{greeting(clock)}</p>
+            <div className={styles.where}>
+              <h1 className={styles.title}>{current.label}</h1>
+              <span>{clock.toLocaleDateString('bg-BG', { timeZone: 'Europe/Sofia', weekday: 'long', day: 'numeric', month: 'long' })}</span>
+            </div>
           </div>
-          <span className={styles.synced} title={computer?.note ?? ''}>Компютърът: {ago(computer?.synced_at)}</span>
+          <time className={styles.clock} dateTime={clock.toISOString()}>
+            {clock.toLocaleTimeString('bg-BG', { timeZone: 'Europe/Sofia', hour: '2-digit', minute: '2-digit' })}
+          </time>
+          <div className={styles.pills}>
+            <button type="button" className={styles.pill} data-lv={waiting ? 'watch' : 'ok'} onClick={() => jump('youH')}>
+              <i aria-hidden="true" />{waiting} {waiting === 1 ? 'нещо те чака' : 'неща те чакат'}
+            </button>
+            <button type="button" className={styles.pill} onClick={() => jump('decH')}>{open('decide')} за решаване</button>
+            <button type="button" className={styles.pill} onClick={() => go('audit')}>{proposals} от одита</button>
+            <span className={styles.pill} data-quiet title={computer?.note ?? ''}>Компютърът: {ago(computer?.synced_at)}</span>
+          </div>
         </header>
 
         {note && <p className={styles.note} role="status">{note}</p>}

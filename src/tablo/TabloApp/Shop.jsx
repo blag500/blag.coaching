@@ -73,20 +73,22 @@ export default function Shop({ products, supply, deals, orders }) {
         ))}
       </div>
 
-      <div className={styles.chips} role="tablist" aria-label="Вид" style={{ marginTop: 20 }}>
+      <section className={styles.tile} aria-labelledby="shopH">
+      <div className={styles.tileHead}><h2 id="shopH" className={styles.tileH}>Продуктите</h2><span className={styles.tileHint}>{shown.length} · доставна цена с ДДС</span></div>
+      <div className={styles.chips} role="tablist" aria-label="Вид">
         {[['all', 'Всички'], ...Object.entries(CATS)].filter(([id]) => id === 'all' || rows.some((r) => r.category === id)).map(([id, label]) => (
           <button key={id} type="button" role="tab" aria-selected={cat === id} className={styles.chip} onClick={() => setCat(id)}>{label}</button>
         ))}
       </div>
 
-      <div className={styles.itemFoot} style={{ margin: '12px 0 8px' }}>
-        <span className={styles.statSub}>{shown.length} продукта · доставна цена с ДДС</span>
+      <div className={styles.itemFoot}>
+        <span />
         <select className={styles.select} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Подреди">
           {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
       </div>
 
-      <ul className={`${styles.card} ${styles.list}`}>
+      <ul className={styles.rows}>
         {shown.map((r) => (
           <li key={r.id} className={styles.item}>
             <span className={styles.itemMeta}>
@@ -104,6 +106,7 @@ export default function Shop({ products, supply, deals, orders }) {
           </li>
         ))}
       </ul>
+      </section>
     </>
   )
 }

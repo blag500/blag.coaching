@@ -84,40 +84,43 @@ test('„Сега" показва стъпката, чакащото и бизн
   await page.screenshot({ path: `shots/tablo-${info.project.name}.png`, fullPage: true })
 })
 
-test('„План" отваря само „В работа" и сменя състоянието на идея', async ({ page }, info) => {
+test('„План" показва само „В работа" и сменя състоянието на идея', async ({ page }, info) => {
   await signIn(page, { tables: seed(), rpc: { tablo_business: BUSINESS } })
   await page.goto('/tablo/#plan')
   await expect(page.getByRole('heading', { name: 'План' })).toBeVisible()
   await expect(page.getByText('Онлайн лекция от 14:00').first()).toBeVisible()
   await expect(page.getByText('Сертификатът от J3U')).toBeVisible()
-  // „Отложено" е сгънато, докато не се натисне.
+  // Вижда се едно състояние наведнъж; „Отложено" е зад превключвателя.
   await expect(page.getByText('Тениската')).toBeHidden()
-  await page.getByRole('heading', { name: 'Отложено' }).click()
+  await page.getByRole('tab', { name: /Отложено/ }).click()
   await page.getByRole('combobox', { name: 'Състояние на „Тениската“' }).selectOption('think')
-  await expect(page.getByRole('heading', { name: 'Обмисля се' })).toBeVisible()
+  await page.getByRole('tab', { name: /Обмисля се/ }).click()
+  await expect(page.getByText('Тениската')).toBeVisible()
 
   await page.getByRole('textbox', { name: 'Нова идея' }).fill('Подкаст')
   await page.getByRole('button', { name: 'Добави' }).click()
-  await page.getByRole('heading', { name: 'Искра' }).click()
+  await page.getByRole('tab', { name: /Искра/ }).click()
   await expect(page.getByText('Подкаст')).toBeVisible()
 
   await page.screenshot({ path: `shots/tablo-plan-${info.project.name}.png`, fullPage: true })
 })
 
-test('„Одит" показва предложенията и отвореното, поправеното е сгънато', async ({ page }) => {
+test('„Одит" показва предложенията и отвореното, поправеното е сгънато', async ({ page }, info) => {
   await signIn(page, { tables: seed(), rpc: { tablo_business: BUSINESS } })
   await page.goto('/tablo/#audit')
   await expect(page.getByRole('heading', { name: 'Отворени' })).toBeVisible()
   await expect(page.getByText('Бутонът се крие под лентата')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Чакат твоето „да“' })).toBeVisible()
   await expect(page.getByText('Шрифтът е оправен')).toBeHidden()
+  await page.screenshot({ path: `shots/tablo-audit-${info.project.name}.png`, fullPage: true })
 })
 
-test('„Работа" държи сесиите и тежестта', async ({ page }) => {
+test('„Работа" държи сесиите и тежестта', async ({ page }, info) => {
   await signIn(page, { tables: seed(), rpc: { tablo_business: BUSINESS } })
   await page.goto('/tablo/#work')
   await expect(page.getByText('Таблото и одитът')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Откъде идва тежестта' })).toBeVisible()
+  await page.screenshot({ path: `shots/tablo-work-${info.project.name}.png`, fullPage: true })
 })
 
 test('без собственик таблото не показва нищо', async ({ page }) => {

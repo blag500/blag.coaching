@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { fromPairs, lastDays, level, LEVELS, sum } from '../calc'
-import { BarList, Dot, Spark } from '../Charts/Charts.jsx'
+import { Dot, Ring, Spark } from '../Charts/Charts.jsx'
 import styles from './TabloApp.module.css'
 
-/* Разделът „Сега" отговаря на един въпрос: какво правя сега. Отгоре
- * стъпката, после чакащото теб и решенията — с отметка направо оттук.
- * Отдолу четирите числа на бизнеса, всяко със своята светлина. Нищо за
- * работата на Claude — то е в „Работа". */
+/* Разделът „Сега" отговаря на един въпрос: какво правя сега. Плочки по
+ * образеца на Home Assistant: в първата колона стъпката и това, което върви
+ * на компютъра; във втората чакащото теб по проекти и решенията; в третата
+ * бизнесът — пръстен с колко от числата са наред и редовете под него —
+ * грешките и наблюдението.
+ * Броевете са горе, в лентата. Нищо за работата на Claude — то е в „Работа". */
 
 export default function Now({ items, business, onSave, onGo }) {
   const days28 = useMemo(() => lastDays(28), [])
@@ -41,109 +43,143 @@ export default function Now({ items, business, onSave, onGo }) {
     { key: 'orders', label: 'Поръчки', value: ordersWeek, sub: `за 7 дни · ${business?.orders_total ?? 0} досега`, lv: level(ordersWeek, 3, 1, { low: true }), series: orders, delta: delta(orders) },
     { key: 'errors', label: 'Грешки', value: errorsWeek, sub: 'от телефоните, 7 дни', lv: level(errorsWeek, 5, 20), series: errors, delta: delta(errors, { lowerIsBetter: true }) },
   ]
-  const openYou = you.filter((t) => !t.done).length
-  const openDecide = decide.filter((t) => !t.done).length
+  // Пръстенът: колко от числата със светлина са наред. Не измислена оценка —
+  // броят е точно този, който се вижда в редовете отдолу.
+  const lit = stats.filter((s) => s.lv)
+  const okN = lit.filter((s) => s.lv === 'ok').length
+  const worst = lit.find((s) => s.lv === 'high') || lit.find((s) => s.lv === 'watch')
+  const health = worst ? worst.lv : 'ok'
 
   return (
-    <>
-      <nav className={styles.overview} aria-label="Накратко">
-        <a href="#youH"><strong>{openYou}</strong><span>чака теб</span></a>
-        <a href="#decH"><strong>{openDecide}</strong><span>за решаване</span></a>
-        <button type="button" onClick={() => onGo('audit')}><strong>{proposals}</strong><span>от одита</span></button>
-      </nav>
-      <Jobs />
-      {focus && (
-        <section className={`${styles.card} ${styles.step}`} aria-labelledby="stepH">
-          <span id="stepH" className={styles.eyebrow}>Следващата стъпка</span>
-          {focus.done ? (
-            <p className={styles.stepText}>Отметната. Кажи на Claude за следващата.</p>
-          ) : (
-            <>
-              <p className={styles.stepText}>{focus.title}</p>
-              {focus.why && <p className={styles.muted}>{focus.why}</p>}
-              <button type="button" className={styles.primary}
-                onClick={() => onSave(focus.id, { done: true, done_at: new Date().toISOString() })}>Готово</button>
-            </>
-          )}
-        </section>
-      )}
+    <div className={styles.cols}>
+      <div className={styles.col}>
+        {focus && (
+          <section className={`${styles.tile} ${styles.step}`} aria-labelledby="stepH">
+            <div className={styles.tileHead}><h2 id="stepH" className={styles.tileH}>Следващата стъпка</h2></div>
+            {focus.done ? (
+              <p className={styles.stepText}>Отметната. Кажи на Claude за следващата.</p>
+            ) : (
+              <>
+                <p className={styles.stepText}>{focus.title}</p>
+                {focus.why && <p className={styles.muted}>{focus.why}</p>}
+                <button type="button" className={styles.primary}
+                  onClick={() => onSave(focus.id, { done: true, done_at: new Date().toISOString() })}>Готово</button>
+              </>
+            )}
+          </section>
+        )}
+        <Jobs />
+      </div>
 
-      <Tasks title="Чака теб" id="youH" rows={you} onSave={onSave} empty="Нищо не те чака." />
-      <Tasks title="Чака решение" id="decH" rows={decide} onSave={onSave} empty="Няма отворени решения." />
+      <div className={styles.col}>
+        <Tasks title="Чака теб" id="youH" rows={you} onSave={onSave} empty="Нищо не те чака." byArea />
+        <Tasks title="Чака решение" id="decH" rows={decide} onSave={onSave} empty="Няма отворени решения." />
+        {proposals > 0 && (
+          <button type="button" className={`${styles.tile} ${styles.linkCard}`} onClick={() => onGo('audit')}>
+            <span>{proposals} {proposals === 1 ? 'предложение' : 'предложения'} от одита чакат твоето „да“</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        )}
+      </div>
 
-      {proposals > 0 && (
-        <button type="button" className={`${styles.card} ${styles.linkCard}`} onClick={() => onGo('audit')}>
-          <span>{proposals} {proposals === 1 ? 'предложение' : 'предложения'} от одита чакат твоето „да“</span>
-          <span aria-hidden="true">→</span>
-        </button>
-      )}
-
-      <section className={styles.section} aria-labelledby="bizH">
-        <div className={styles.sectionHead}>
-          <h2 id="bizH" className={styles.h2}>Бизнесът</h2>
-        </div>
-        <div className={styles.stats}>
-          {stats.map((s) => (
-            <div key={s.key} className={styles.stat}>
-              <span className={styles.statLabel}>
-                {s.lv && <Dot level={s.lv} />}{s.label}
-                {s.lv && <span className={styles.srOnly}> · {LEVELS[s.lv].label}</span>}
-              </span>
-              <span className={styles.statValue}>{s.value}</span>
-              <Spark values={s.series} label={`${s.label} за 28 дни`} />
-              <span className={styles.statSub}>{s.sub}</span>
-              <span className={styles.statDelta} data-dir={s.delta.dir}>{s.delta.text}</span>
+      <div className={styles.col}>
+        <section className={styles.tile} aria-labelledby="bizH">
+          <div className={styles.tileHead}>
+            <h2 id="bizH" className={styles.tileH}>Бизнесът</h2>
+            <span className={styles.tileHint}>28 дни</span>
+          </div>
+          <div className={styles.health}>
+            <Ring value={lit.length ? okN / lit.length : 0} label={`${okN}/${lit.length}`} color={LEVEL_VAR[health]}
+              title={`${okN} от ${lit.length} числа са наред`} />
+            <div>
+              <strong>{LEVELS[health].label}</strong>
+              <p className={styles.muted}>{worst ? `${worst.label}: ${worst.value} ${worst.sub}` : 'Всички числа са наред.'}</p>
             </div>
-          ))}
-        </div>
-        {!!business?.top_errors?.length && (
-          <ul className={`${styles.card} ${styles.list}`}>
-            {business.top_errors.map((e) => (
-              <li key={e.message} className={styles.row}>
-                <span className={styles.rowMain}>{e.message}</span>
-                <span className={styles.rowSide}>{e.n}× · {e.screen || '—'}</span>
+          </div>
+          <ul className={styles.rows}>
+            {stats.map((s) => (
+              <li key={s.key} className={styles.statRow}>
+                <span className={styles.statLabel}>
+                  {s.lv ? <Dot level={s.lv} /> : <i className={styles.dotGap} />}{s.label}
+                  {s.lv && <span className={styles.srOnly}> · {LEVELS[s.lv].label}</span>}
+                </span>
+                <span className={styles.statValue}>{s.value}</span>
+                <Spark values={s.series} label={`${s.label} за 28 дни`} />
+                <span className={styles.statSub}>{s.sub} · <span className={styles.statDelta} data-dir={s.delta.dir}>{s.delta.text}</span></span>
               </li>
             ))}
           </ul>
-        )}
-      </section>
-
-      {insight && (
-        <section className={styles.section} aria-labelledby="insH">
-          <div className={styles.sectionHead}><h2 id="insH" className={styles.h2}>Наблюдение</h2></div>
-          <blockquote className={styles.quote}>{insight.title}</blockquote>
         </section>
-      )}
-    </>
+        {!!business?.top_errors?.length && (
+          <section className={styles.tile} aria-labelledby="errH">
+            <div className={styles.tileHead}>
+              <h2 id="errH" className={styles.tileH}>Грешките</h2>
+              <span className={styles.tileHint}>от телефоните</span>
+            </div>
+            <ul className={styles.rows}>
+              {business.top_errors.map((e) => (
+                <li key={e.message} className={styles.row}>
+                  <span className={styles.rowMain}>{e.message}</span>
+                  <span className={styles.rowSide}>{e.n}× · {e.screen || '—'}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {insight && (
+          <section className={styles.tile} aria-labelledby="insH">
+            <div className={styles.tileHead}><h2 id="insH" className={styles.tileH}>Наблюдение</h2></div>
+            <blockquote className={styles.quote}>{insight.title}</blockquote>
+          </section>
+        )}
+      </div>
+    </div>
   )
 }
 
-export function Tasks({ title, id, rows, onSave, empty }) {
+const LEVEL_VAR = { ok: 'var(--ok)', watch: 'var(--warn)', high: 'var(--bad)' }
+
+export function Tasks({ title, id, rows, onSave, empty, byArea = false }) {
+  const [pick, setPick] = useState(null)
   // Отметнатото стои два дни зачеркнато — да се види, че е минало — после изчезва.
   const recent = Date.now() - 2 * 864e5
   const sorted = rows
     .filter((r) => !r.done || new Date(r.done_at || r.updated_at).getTime() > recent)
     .sort((a, b) => (a.done - b.done) || (a.sort - b.sort))
   const open = rows.filter((r) => !r.done).length
-  // по проект (area); проектът с най-много отворени е отгоре и единствен отворен
-  const byArea = new Map()
+  // по проект (area); проектът с най-много отворени е отгоре и избран
+  const byName = new Map()
   for (const t of sorted) {
     const k = t.area || 'Друго'
-    byArea.set(k, [...(byArea.get(k) || []), t])
+    byName.set(k, [...(byName.get(k) || []), t])
   }
-  const groups = [...byArea].sort((a, b) => b[1].filter((t) => !t.done).length - a[1].filter((t) => !t.done).length)
+  const groups = [...byName].sort((a, b) => b[1].filter((t) => !t.done).length - a[1].filter((t) => !t.done).length)
+  const chosen = byArea ? (groups.find(([n]) => n === pick) || groups[0]) : null
+  const shown = byArea ? (chosen?.[1] ?? []) : sorted
+
   return (
-    <section className={styles.section} aria-labelledby={id}>
-      <div className={styles.sectionHead}>
-        <h2 id={id} className={styles.h2}>{title}</h2>
-        <span className={styles.count}>{open}</span>
+    <section className={styles.tile} aria-labelledby={id}>
+      <div className={styles.tileHead}>
+        <h2 id={id} className={styles.tileH}>{title}</h2>
+        <span className={styles.tileHint}>{open} отворени</span>
       </div>
-      {sorted.length > 5 && <div className={`${styles.card} ${styles.barCard}`}><BarList rows={groups.map(([name, g]) => ({ name, value: g.filter((t) => !t.done).length }))} /></div>}
-      {sorted.length ? groups.map(([name, g], gi) => (
-        <details key={name} className={groups.length > 1 ? styles.group : styles.single} open={gi === 0 || groups.length === 1}>
-          <summary hidden={groups.length === 1}><span>{name}</span><span className={styles.count}>{g.filter((t) => !t.done).length}</span></summary>
-        <ul className={`${styles.card} ${styles.list}`}>
-          {g.map((t) => (
+      {byArea && groups.length > 1 && (
+        <div className={styles.areas} role="tablist" aria-label="Проект">
+          {groups.map(([name, g]) => {
+            const left = g.filter((t) => !t.done)
+            return (
+              <button key={name} type="button" role="tab" aria-selected={chosen?.[0] === name}
+                className={styles.area} onClick={() => setPick(name)}>
+                <b>{name}<em>{left.length}</em></b>
+                <span>{left.length ? left[0].title : 'готово'}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+      {shown.length ? (
+        <ul className={styles.rows}>
+          {shown.map((t) => (
             <li key={t.id} className={`${styles.task} ${t.done ? styles.taskDone : ''}`}>
               <input
                 type="checkbox"
@@ -154,13 +190,12 @@ export function Tasks({ title, id, rows, onSave, empty }) {
               <label htmlFor={`tk-${t.id}`}>
                 <span>{t.title}</span>
                 {t.why && !t.done && <span className={styles.taskWhy}>{t.why}</span>}
-
+                {!byArea && t.area && !t.done && <span className={styles.tag}>{t.area}</span>}
               </label>
             </li>
           ))}
         </ul>
-        </details>
-      )) : <p className={`${styles.card} ${styles.empty}`}>{empty}</p>}
+      ) : <p className={styles.empty}>{empty}</p>}
     </section>
   )
 }
@@ -186,28 +221,35 @@ function Jobs() {
   if (!jobs.length) return null
   const hm = (iso) => new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
   return (
-    <section className={styles.section} aria-labelledby="jobsH">
-      <h2 id="jobsH" className={styles.eyebrow}>Върви на компютъра</h2>
+    <section className={styles.tile} aria-labelledby="jobsH">
+      <div className={styles.tileHead}>
+        <h2 id="jobsH" className={styles.tileH}>Върви на компютъра</h2>
+        <span className={styles.tileHint}>на живо</span>
+      </div>
       {jobs.map((j) => {
         const silent = j.state === 'running' && Date.now() - new Date(j.updated_at) > 3 * 60e3
         const pct = j.total ? Math.round((j.done / j.total) * 100) : 0
         const lv = j.state === 'done' ? 'ok' : silent || j.state === 'failed' ? 'bad' : 'watch'
         return (
-          <div key={j.id} className={`${styles.card} ${styles.job}`}>
+          <div key={j.id} className={styles.job}>
+            <Ring value={pct / 100} label={pct} unit="%" size={64} color={JOB_VAR[lv]} title={`${j.title}: ${pct} %`} />
+            <div className={styles.jobText}>
             <div className={styles.jobTop}>
               <strong>{j.title}</strong>
               <span>{j.done} от {j.total}</span>
             </div>
-            <div className={styles.jobBar} data-lv={lv}><span style={{ width: `${pct}%` }} /></div>
             <p className={styles.muted}>
               {j.state === 'done' ? `Готово в ${hm(j.updated_at)}`
                 : j.state === 'failed' ? 'Спря с грешка'
                   : silent ? `Компютърът не се е обадил от ${hm(j.updated_at)}`
                     : [j.current && `сега: ${j.current}`, j.eta && `към ${hm(j.eta)}`].filter(Boolean).join(' · ')}
             </p>
+            </div>
           </div>
         )
       })}
     </section>
   )
 }
+
+const JOB_VAR = { ok: 'var(--ok)', watch: 'var(--warn)', bad: 'var(--bad)' }

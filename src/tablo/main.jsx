@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../plain.css'
+import './tablo.css'
 import TabloApp from './TabloApp/TabloApp.jsx'
 
 /* Отделна страница на същия адрес като приложението — същата сесия, същият

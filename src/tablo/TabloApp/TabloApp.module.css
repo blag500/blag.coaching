@@ -1,10 +1,12 @@
-/* Таблото, по PikSpec: светла земя, бели карти с тънък ръб, черен текст.
- * Токените са в src/plain.css. Телефонът е първият размер. */
+/* Таблото по образеца на Home Assistant (31.10): тъмна земя, плочки със
+ * заоблени ъгли, малки главни заглавия на плочките, числата големи. Една
+ * колона на телефона, две от 720px, три от 1100px. Токените са в
+ * src/plain.css, а тъмните им стойности — в src/tablo/tablo.css. */
 
 .page {
-  max-width: 640px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(var(--bar-h) + env(safe-area-inset-bottom) + 32px);
+  padding: calc(env(safe-area-inset-top) + 16px) 16px calc(var(--bar-h) + env(safe-area-inset-bottom) + 32px);
 }
 
 .center {
@@ -27,38 +29,100 @@
   white-space: nowrap;
 }
 
-/* ── Горе ─────────────────────────────────────────────────────────────── */
+/* ── Горе: поздрав, броевете, часовник ───────────────────────────────── */
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 12px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 16px;
 }
 
-.eyebrow {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-
-.title {
-  margin: 2px 0 0;
-  font-size: 30px;
+.greet {
+  margin: 0;
+  font-size: 24px;
   line-height: 1.15;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-.synced {
-  font-size: 12px;
+.where {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 13px;
   color: var(--ink-2);
-  text-align: right;
-  padding-bottom: 5px;
+}
+
+.where span::first-letter { text-transform: uppercase; }
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--select);
+}
+
+.title::after { content: ' ·'; color: var(--ink-3); }
+
+.clock {
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pills {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pills::-webkit-scrollbar { display: none; }
+
+.pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.pill:hover { background: var(--hover); }
+.pill[data-quiet] { color: var(--ink-2); font-weight: 500; cursor: default; }
+.pill[data-quiet]:hover { background: var(--card); }
+
+.pill i {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--ok);
+}
+
+.pill[data-lv='watch'] { background: var(--warn-bg); border-color: transparent; color: var(--warn); }
+.pill[data-lv='watch'] i { background: var(--warn); }
+
+@media (min-width: 720px) {
+  .header { grid-template-columns: auto 1fr auto; margin-bottom: 20px; }
+  .pills { grid-column: auto; grid-row: 1; grid-column-start: 2; justify-content: flex-end; margin: 0; padding: 0; }
+  .greet { font-size: 26px; }
+  .clock { font-size: 40px; }
 }
 
 .note {
@@ -70,36 +134,75 @@
   font-size: 14px;
 }
 
-/* ── Карти и раздели ──────────────────────────────────────────────────── */
+/* ── Колоните ─────────────────────────────────────────────────────────── */
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
 }
 
-.section { margin-top: 28px; }
-.section:first-child { margin-top: 0; }
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
 
-.sectionHead,
+@media (min-width: 720px) {
+  .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* три колони в две: третата застава под първата, през цялата ширина */
+  .cols > .col:nth-child(3) { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1100px) {
+  .cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cols > .col:nth-child(3) { grid-column: auto; }
+  .cols12 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  .colWide { grid-column: span 2; }
+}
+
+.cols2 { margin-top: 12px; }
+
+@media (min-width: 1100px) {
+  .cols2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Плочката ─────────────────────────────────────────────────────────── */
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--card-hi), var(--card));
+}
+
+.tileHead,
 .fold > summary {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 0 2px;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.h2 {
+.tileH {
   margin: 0;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
 }
 
-.count {
-  font-size: 13px;
+.tileHint {
+  font-size: 12px;
+  color: var(--ink-3);
   font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
 }
 
 .muted {
@@ -110,7 +213,6 @@
 
 .empty {
   margin: 0;
-  padding: 14px 16px;
   font-size: 14px;
   color: var(--ink-2);
 }
@@ -121,60 +223,55 @@
   overflow-wrap: anywhere;
 }
 
-/* Сгънатото: заглавието е самият бутон, със стрелка отдясно. */
-.fold > summary,
-.group > summary {
+.fold > summary {
   cursor: pointer;
   list-style: none;
 }
 
-.fold > summary::-webkit-details-marker,
-.group > summary::-webkit-details-marker { display: none; }
+.fold > summary::-webkit-details-marker { display: none; }
 
-.fold > summary::after,
-.group > summary::after {
+.fold > summary::after {
   content: '';
   width: 12px;
   height: 12px;
-  margin-left: auto;
   align-self: center;
   background: var(--chevron) center / contain no-repeat;
   transform: rotate(-90deg);
   transition: transform var(--dur) var(--ease);
 }
 
-.fold[open] > summary::after,
-.group[open] > summary::after { transform: none; }
+.fold > summary .tileHint { margin-left: auto; }
+.fold[open] > summary::after { transform: none; }
 
-/* ── Бутони ───────────────────────────────────────────────────────────── */
+/* ── Бутони и избор ───────────────────────────────────────────────────── */
 
 .primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 42px;
+  padding: 0 20px;
   border: 0;
-  border-radius: var(--r-md);
-  background: var(--ink);
+  border-radius: var(--r-pill);
+  background: var(--select);
   color: var(--on-ink);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  transition: opacity var(--dur) var(--ease);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 
-.primary:active { opacity: 0.8; }
+.primary:active { opacity: 0.85; transform: scale(0.97); }
 
 .select {
   appearance: none;
   -webkit-appearance: none;
   min-height: 32px;
-  padding: 0 28px 0 10px;
+  padding: 0 28px 0 12px;
   border: 1px solid var(--line-2);
-  border-radius: var(--r-md);
-  background: var(--card) var(--chevron) right 9px center / 10px no-repeat;
+  border-radius: var(--r-pill);
+  background: var(--sunken) var(--chevron) right 10px center / 10px no-repeat;
   font-size: 13px;
   color: var(--ink);
   cursor: pointer;
@@ -183,7 +280,7 @@
 .chips {
   display: flex;
   gap: 6px;
-  margin: 0 -16px 20px;
+  margin: 0 -16px;
   padding: 0 16px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -193,9 +290,9 @@
 
 .chip {
   flex: none;
-  min-height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--line-2);
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
   border-radius: var(--r-pill);
   background: var(--card);
   font-size: 13px;
@@ -205,61 +302,106 @@
 }
 
 .chip[aria-selected='true'] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--on-ink);
+  background: var(--select-bg);
+  border-color: transparent;
+  color: var(--select);
 }
+
+/* Превключвателят (Now · Today · Month в образеца). */
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--sunken);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.seg::-webkit-scrollbar { display: none; }
+
+.seg button {
+  flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.seg button span { font-weight: 500; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.seg button[aria-selected='true'] { background: var(--select); color: var(--on-ink); }
+
+/* В „Работа" превключвателят стои сам над плочките, не през цялата ширина. */
+.segTop { width: fit-content; max-width: 100%; margin-bottom: 12px; }
 
 /* ── Стъпката ─────────────────────────────────────────────────────────── */
 
 .step {
-  display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding: 16px;
+  gap: 10px;
+  border-color: rgba(165, 148, 255, 0.35);
+  background:
+    radial-gradient(120% 90% at 0% 0%, var(--select-bg), transparent 60%),
+    linear-gradient(180deg, var(--card-hi), var(--card));
 }
 
 .stepText {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.35;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
-.step .primary { margin-top: 6px; }
+.step .primary { margin-top: 4px; }
 
 .linkCard {
-  display: flex;
-  width: 100%;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin-top: 28px;
-  padding: 14px 16px;
+  width: 100%;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-align: left;
+  color: var(--ink);
   cursor: pointer;
 }
 
-/* ── Списъци ──────────────────────────────────────────────────────────── */
+.linkCard:hover { background: var(--hover); }
 
-.list {
+/* ── Редове в плочка (като стаите в „Home health") ────────────────────── */
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.list > li + li { border-top: 1px solid var(--line); }
+.rows > li {
+  border-radius: var(--r-md);
+  background: var(--sunken);
+}
 
 .row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 10px 12px;
   font-size: 14px;
 }
 
@@ -284,18 +426,71 @@
 
 .tag {
   display: inline-block;
-  padding: 1px 7px;
-  border-radius: var(--r-sm);
-  background: var(--sunken);
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  background: var(--hover);
   font-size: 12px;
   color: var(--ink-2);
 }
 
-/* Задача с отметка: цялият ред е мишената. */
+/* Проектите в „Чака теб" — като бутоните в „Quick actions". */
+.areas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--sunken);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.area b {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.area em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+.area span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.area[aria-selected='true'] {
+  border-color: rgba(242, 180, 90, 0.5);
+  background: var(--warn-bg);
+}
+
+.area[aria-selected='true'] em { color: var(--warn); }
+
+/* Задача с отметка: целият ред е мишената. */
 .task {
   display: flex;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 12px;
 }
 
 .task input {
@@ -306,15 +501,15 @@
   height: 22px;
   margin: 0;
   border: 1.5px solid var(--line-2);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   background: var(--card);
   cursor: pointer;
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
 .task input:checked {
-  background: var(--ink) var(--check) center / 18px no-repeat;
-  border-color: var(--ink);
+  background: var(--ok) var(--check) center / 18px no-repeat;
+  border-color: var(--ok);
 }
 
 .task label {
@@ -328,13 +523,18 @@
   cursor: pointer;
 }
 
+/* обяснението под задачата — до два реда; цялото е в базата */
 .taskWhy {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: 13px;
   color: var(--ink-2);
 }
 
 .taskDone label > span:first-child {
-  color: var(--ink-2);
+  color: var(--ink-3);
   text-decoration: line-through;
 }
 
@@ -343,11 +543,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 16px;
+  padding: 12px;
 }
 
 .itemMeta {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   font-size: 12px;
@@ -386,14 +587,28 @@
 
 /* ── Числата ──────────────────────────────────────────────────────────── */
 
-/* Решетка с косъм между клетките — мотивът на PikSpec, вместо отделни карти. */
+/* Пръстенът и думата до него („Home health"). */
+.health {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.health strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Плочки с число — „Работа" и „Магазин". */
 .stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 1100px) {
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 .stat {
@@ -402,48 +617,77 @@
   gap: 2px;
   min-width: 0;
   padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--card-hi), var(--card));
 }
 
-.stat:nth-child(2n) { border-left: 1px solid var(--line); }
-.stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
+/* Ред с число в плочката „Бизнесът": име и число горе, кривата, после промяната. */
+.statRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 12px;
+  padding: 10px 12px;
+}
+
+.statRow > :nth-child(3), .statRow > :nth-child(4) { grid-column: 1 / -1; }
 
 .statLabel {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--ink-2);
 }
 
+.dotGap { display: inline-block; width: 8px; flex: none; }
+
 .statValue {
   font-variant-numeric: tabular-nums;
-  font-size: 28px;
-  line-height: 1.2;
-  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
+
+.statRow .statValue { font-size: 22px; }
 
 .statSub {
   font-size: 12px;
   color: var(--ink-2);
 }
 
-.stats + .list { margin-top: 8px; }
+/* промяната под числото: наред / внимание, но с думи — не само с цвят */
+.statDelta { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.statDelta[data-dir='good'] { color: var(--ok); }
+.statDelta[data-dir='bad'] { color: var(--bad); }
 
 .quote {
   margin: 0;
   padding: 2px 0 2px 14px;
-  border-left: 2px solid var(--line-2);
+  border-left: 2px solid var(--select);
   font-size: 16px;
   line-height: 1.45;
 }
 
 /* ── План ─────────────────────────────────────────────────────────────── */
 
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .day {
   display: flex;
   gap: 12px;
-  padding: 11px 16px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--sunken);
   font-size: 14px;
 }
 
@@ -459,7 +703,12 @@
 .dayHead b { color: var(--ink); font-weight: 600; }
 .dayHead span { font-size: 12px; }
 
-.today { background: var(--select-bg); }
+.today {
+  background: var(--select-bg);
+  box-shadow: inset 0 0 0 1px rgba(165, 148, 255, 0.4);
+}
+
+.today .dayHead b { color: var(--select); }
 
 .dayItems {
   margin: 0;
@@ -468,23 +717,22 @@
   min-width: 0;
 }
 
-.free { color: var(--ink-2); }
+.free { color: var(--ink-3); }
 
 .add {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
 .add input,
 .add select {
-  min-height: 40px;
+  min-height: 42px;
   min-width: 0;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid var(--line-2);
-  border-radius: var(--r-md);
-  background: var(--card);
+  border-radius: var(--r-pill);
+  background: var(--sunken);
 }
 
 .add input { grid-column: 1 / -1; }
@@ -493,45 +741,7 @@
   appearance: none;
   -webkit-appearance: none;
   padding-right: 28px;
-  background: var(--card) var(--chevron) right 10px center / 10px no-repeat;
-}
-
-.groups {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.group {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-}
-
-.group > summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 0 16px;
-}
-
-.group[open] > summary { border-bottom: 1px solid var(--line); }
-
-.groupH {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.groupH i {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--r-pill);
+  background: var(--sunken) var(--chevron) right 12px center / 10px no-repeat;
 }
 
 /* ── Работа ───────────────────────────────────────────────────────────── */
@@ -540,7 +750,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px 16px;
 }
 
 .shares { gap: 14px; }
@@ -549,7 +758,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink-2);
 }
 
@@ -565,7 +774,35 @@
   border-radius: 2px;
 }
 
-/* ── Долната лента ────────────────────────────────────────────────────── */
+/* ── „Върви на компютъра" ─────────────────────────────────────────────── */
+
+.job {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.job + .job { padding-top: 12px; border-top: 1px solid var(--line); }
+.jobText { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.jobTop { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+.jobTop span { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* ── Магазинът: цена · доставна · марж в един ред, цифрите подравнени ── */
+
+.marginRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 6px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.marginRow span { display: flex; flex-direction: column; white-space: nowrap; }
+.marginRow small { font-size: 11px; color: var(--ink-2); }
+.marginRow b { font-weight: 700; }
+
+/* ── Долната лента: през цялата ширина на телефона, плаващо хапче от 720px ── */
 
 .bar {
   position: fixed;
@@ -576,8 +813,10 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
-  background: var(--card);
+  background: rgba(21, 23, 29, 0.92);
   border-top: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 .barBtn {
@@ -607,56 +846,17 @@
 .barBtn[aria-current='page'] { color: var(--ink); font-weight: 600; }
 .barBtn[aria-current='page'] .barIcon { background: var(--select-bg); color: var(--select); }
 
-/* Магазинът: цена · доставна · марж в един ред, цифрите подравнени. */
-.marginRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 18px;
-  margin-top: 6px;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
+@media (min-width: 720px) {
+  .bar {
+    left: 50%;
+    right: auto;
+    bottom: calc(env(safe-area-inset-bottom) + 16px);
+    transform: translateX(-50%);
+    grid-template-columns: repeat(5, 88px);
+    padding: 6px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-pill);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+  .barBtn { min-height: 48px; border-radius: var(--r-pill); }
 }
-
-.marginRow span { display: flex; flex-direction: column; white-space: nowrap; }
-.marginRow small { font-size: 11px; color: var(--ink-2); }
-.marginRow b { font-weight: 700; }
-
-/* ── „Върви на компютъра“ (Now.jsx, Jobs) ── */
-.job { padding: 14px 16px; display: grid; gap: 8px; }
-.job + .job { margin-top: 8px; }
-.jobTop { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
-.jobTop span { color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.jobBar { height: 6px; border-radius: var(--r-pill); background: var(--sunken); overflow: hidden; }
-.jobBar span { display: block; height: 100%; border-radius: inherit; background: var(--warn); transition: width var(--dur) var(--ease); }
-.jobBar[data-lv='ok'] span { background: var(--ok); }
-.jobBar[data-lv='bad'] span { background: var(--bad); }
-
-/* ── обзорът отгоре: три броя, всеки води до своето (Now.jsx) ── */
-.overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
-.overview a, .overview button {
-  display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; text-align: left;
-  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
-  color: var(--ink); text-decoration: none; font: inherit; cursor: pointer;
-}
-.overview strong { font-size: 26px; line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
-.overview span { font-size: 13px; color: var(--ink-2); }
-.overview a:hover, .overview button:hover { background: var(--hover); }
-
-/* промяната под числото: наред / внимание, но с думи — не само с цвят */
-.statDelta { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.statDelta[data-dir='good'] { color: var(--ok); }
-.statDelta[data-dir='bad'] { color: var(--bad); }
-
-/* ── групите в „Чака теб“: проект → сгънат списък ── */
-.barCard { padding: 10px; margin-bottom: 10px; }
-.group + .group { margin-top: 8px; }
-.group > summary {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 10px 4px; font-size: 15px; font-weight: 600; cursor: pointer; list-style: none;
-}
-.group > summary::-webkit-details-marker { display: none; }
-.group > summary::after { content: ''; width: 8px; height: 8px; border: solid var(--ink-2); border-width: 0 2px 2px 0; transform: rotate(45deg); margin-left: auto; transition: transform var(--dur) var(--ease); }
-.group[open] > summary::after { transform: rotate(-135deg); }
-.group > summary .count { margin-left: 4px; }
-/* обяснението под задачата — до два реда; цялото е в базата */
-.taskWhy { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

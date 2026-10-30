@@ -4,6 +4,8 @@ import { DayBars, ShareBar, StackBars } from '../Charts/Charts.jsx'
 import styles from './TabloApp.module.css'
 
 /* Разделът „Работа": работата с Claude — тежест, промени, токени, сесии.
+ * Плочки в две колони: вляво графиките по дни, вдясно откъде идва тежестта
+ * и сесиите.
  * Всичко, което беше на първия екран и не казваше на човека какво да прави,
  * е тук. */
 
@@ -36,10 +38,10 @@ export default function Work({ daily, sessions }) {
 
   return (
     <>
-      <div className={styles.chips} role="tablist" aria-label="Период">
+      <div className={`${styles.seg} ${styles.segTop}`} role="tablist" aria-label="Период">
         {RANGES.map((r) => (
           <button key={r.key} role="tab" aria-selected={n === r.key} type="button"
-            className={styles.chip} onClick={() => setN(r.key)}>{r.label}</button>
+            onClick={() => setN(r.key)}>{r.label}</button>
         ))}
       </div>
 
@@ -50,17 +52,19 @@ export default function Work({ daily, sessions }) {
         <Stat label="Комити" value={commits} sub="приложение и трезор" />
       </div>
 
-      <section className={styles.section} aria-labelledby="wH">
-        <div className={styles.sectionHead}><h2 id="wH" className={styles.h2}>Тежест по дни</h2></div>
-        <div className={`${styles.card} ${styles.chartCard}`}>
+      <div className={`${styles.cols} ${styles.cols2}`}>
+      <div className={styles.col}>
+      <section className={styles.tile} aria-labelledby="wH">
+        <div className={styles.tileHead}><h2 id="wH" className={styles.tileH}>Тежест по дни</h2></div>
+        <div className={styles.chartCard}>
           <DayBars values={work} labels={labels} normal={normal} fmt={compact} title="Тежест по дни" />
           <p className={styles.muted}>Пунктирът е средният ден с работа: {compact(normal)}. Червено — над два пъти повече.</p>
         </div>
       </section>
 
-      <section className={styles.section} aria-labelledby="cH">
-        <div className={styles.sectionHead}><h2 id="cH" className={styles.h2}>Промени по дни</h2></div>
-        <div className={`${styles.card} ${styles.chartCard}`}>
+      <section className={styles.tile} aria-labelledby="cH">
+        <div className={styles.tileHead}><h2 id="cH" className={styles.tileH}>Промени по дни</h2></div>
+        <div className={styles.chartCard}>
           <StackBars labels={labels} title="Промени по дни"
             series={[
               { key: 'app', label: 'Приложение', color: 'var(--series-1)', values: series(idx, 'git.app', days) },
@@ -71,12 +75,14 @@ export default function Work({ daily, sessions }) {
         </div>
       </section>
 
-      <section className={styles.section} aria-labelledby="mH">
-        <div className={styles.sectionHead}>
-          <h2 id="mH" className={styles.h2}>Откъде идва тежестта</h2>
-          <span className={styles.count}>{compact(total)}</span>
+      </div>
+      <div className={styles.col}>
+      <section className={styles.tile} aria-labelledby="mH">
+        <div className={styles.tileHead}>
+          <h2 id="mH" className={styles.tileH}>Откъде идва тежестта</h2>
+          <span className={styles.tileHint}>{compact(total)}</span>
         </div>
-        <div className={`${styles.card} ${styles.chartCard} ${styles.shares}`}>
+        <div className={`${styles.chartCard} ${styles.shares}`}>
           {parts.map((p) => (
             <ShareBar key={p.key} label={p.label} color={p.color}
               value={percent(total ? p.v / total : 0)} share={total ? p.v / total : 0} />
@@ -85,13 +91,13 @@ export default function Work({ daily, sessions }) {
         </div>
       </section>
 
-      <section className={styles.section} aria-labelledby="sH">
-        <div className={styles.sectionHead}>
-          <h2 id="sH" className={styles.h2}>Сесиите</h2>
-          <span className={styles.count}>{rows.length}</span>
+      <section className={styles.tile} aria-labelledby="sH">
+        <div className={styles.tileHead}>
+          <h2 id="sH" className={styles.tileH}>Сесиите</h2>
+          <span className={styles.tileHint}>{rows.length}</span>
         </div>
         {rows.length ? (
-          <ul className={`${styles.card} ${styles.list}`}>
+          <ul className={styles.rows}>
             {rows.map((s) => (
               <li key={s.id} className={styles.row}>
                 <span className={styles.rowMain}>
@@ -102,8 +108,10 @@ export default function Work({ daily, sessions }) {
               </li>
             ))}
           </ul>
-        ) : <p className={`${styles.card} ${styles.empty}`}>Още няма записани сесии. Пусни <code>node scripts/tablo-sync.mjs</code> на компютъра.</p>}
+        ) : <p className={styles.empty}>Още няма записани сесии. Пусни <code>node scripts/tablo-sync.mjs</code> на компютъра.</p>}
       </section>
+      </div>
+      </div>
     </>
   )
 }

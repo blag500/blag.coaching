@@ -17,7 +17,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.bar { fill: var(--series-1); }
+.bar { fill: var(--series-2); }
 .barHot { fill: var(--bad); }
 
 .normal {
@@ -82,9 +82,32 @@
 
 /* ── Spark ── */
 .spark { display: block; width: 100%; height: 32px; margin-top: 6px; overflow: visible; }
-.sparkArea { fill: var(--ink); opacity: 0.06; }
-.sparkLine { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.sparkDot { fill: var(--ink); stroke: var(--card); stroke-width: 2; }
+.sparkArea { fill: var(--select); opacity: 0.12; }
+.sparkLine { fill: none; stroke: var(--select); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.sparkDot { fill: var(--select); stroke: var(--card); stroke-width: 2; }
+
+/* ── Ring ── светещият пръстен от образеца: пътека, дъга, число в средата */
+.ring { display: block; flex: none; overflow: visible; }
+.ringTrack { fill: none; stroke: var(--sunken); stroke-width: 7; }
+.ringFill {
+  fill: none; stroke-width: 7; stroke-linecap: round;
+  filter: drop-shadow(0 0 4px currentColor);
+  transition: stroke-dasharray 600ms var(--ease);
+}
+.ringText { fill: var(--ink); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.ringUnit { fill: var(--ink-2); font-size: 13px; font-weight: 500; }
+
+/* ── Meter ── име · лента · число · процент */
+.meter { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.meter li {
+  display: grid; grid-template-columns: minmax(84px, 1.1fr) 2fr auto 3.2em;
+  align-items: center; gap: 10px; font-size: 14px;
+}
+.meterName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meterTrack { height: 8px; border-radius: var(--r-pill); background: var(--sunken); overflow: hidden; }
+.meterTrack span { display: block; height: 100%; border-radius: inherit; }
+.meterValue { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.meterPct { color: var(--ink-2); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
 
 /* ── BarList ── */
 .barList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
