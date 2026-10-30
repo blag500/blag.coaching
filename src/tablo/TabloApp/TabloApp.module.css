@@ -620,3 +620,13 @@
 .marginRow span { display: flex; flex-direction: column; white-space: nowrap; }
 .marginRow small { font-size: 11px; color: var(--ink-2); }
 .marginRow b { font-weight: 700; }
+
+/* ── „Върви на компютъра“ (Now.jsx, Jobs) ── */
+.job { padding: 14px 16px; display: grid; gap: 8px; }
+.job + .job { margin-top: 8px; }
+.jobTop { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+.jobTop span { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.jobBar { height: 6px; border-radius: var(--r-pill); background: var(--sunken); overflow: hidden; }
+.jobBar span { display: block; height: 100%; border-radius: inherit; background: var(--warn); transition: width var(--dur) var(--ease); }
+.jobBar[data-lv='ok'] span { background: var(--ok); }
+.jobBar[data-lv='bad'] span { background: var(--bad); }

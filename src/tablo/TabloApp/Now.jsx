@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { supabase } from '../../lib/supabase'
 import { fromPairs, lastDays, level, LEVELS, sum } from '../calc'
 import { Dot } from '../Charts/Charts.jsx'
 import styles from './TabloApp.module.css'
@@ -32,6 +33,7 @@ export default function Now({ items, business, onSave, onGo }) {
 
   return (
     <>
+      <Jobs />
       {focus && (
         <section className={`${styles.card} ${styles.step}`} aria-labelledby="stepH">
           <span id="stepH" className={styles.eyebrow}>Следващата стъпка</span>
@@ -128,6 +130,53 @@ export function Tasks({ title, id, rows, onSave, empty }) {
           ))}
         </ul>
       ) : <p className={`${styles.card} ${styles.empty}`}>{empty}</p>}
+    </section>
+  )
+}
+
+/* „Върви на компютъра“: дългите задачи (scripts/job-report.mjs → tablo_jobs).
+ * Чете сама на 30 s, без да презарежда таблото. Завършилите стоят 6 часа.
+ * Ако компютърът не се е обадил над 3 минути, го казва — лента, която стои,
+ * лъже повече от липсата ѝ. */
+function Jobs() {
+  const [jobs, setJobs] = useState([])
+  const [, tick] = useState(0)
+  useEffect(() => {
+    let live = true
+    const read = async () => {
+      const since = new Date(Date.now() - 6 * 3600e3).toISOString()
+      const { data } = await supabase.from('tablo_jobs').select('*').gte('updated_at', since).order('started_at', { ascending: false })
+      if (live) { setJobs(data ?? []); tick((n) => n + 1) }
+    }
+    read()
+    const t = setInterval(read, 30000)
+    return () => { live = false; clearInterval(t) }
+  }, [])
+  if (!jobs.length) return null
+  const hm = (iso) => new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
+  return (
+    <section className={styles.section} aria-labelledby="jobsH">
+      <h2 id="jobsH" className={styles.eyebrow}>Върви на компютъра</h2>
+      {jobs.map((j) => {
+        const silent = j.state === 'running' && Date.now() - new Date(j.updated_at) > 3 * 60e3
+        const pct = j.total ? Math.round((j.done / j.total) * 100) : 0
+        const lv = j.state === 'done' ? 'ok' : silent || j.state === 'failed' ? 'bad' : 'watch'
+        return (
+          <div key={j.id} className={`${styles.card} ${styles.job}`}>
+            <div className={styles.jobTop}>
+              <strong>{j.title}</strong>
+              <span>{j.done} от {j.total}</span>
+            </div>
+            <div className={styles.jobBar} data-lv={lv}><span style={{ width: `${pct}%` }} /></div>
+            <p className={styles.muted}>
+              {j.state === 'done' ? `Готово в ${hm(j.updated_at)}`
+                : j.state === 'failed' ? 'Спря с грешка'
+                  : silent ? `Компютърът не се е обадил от ${hm(j.updated_at)}`
+                    : [j.current && `сега: ${j.current}`, j.eta && `към ${hm(j.eta)}`].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+        )
+      })}
     </section>
   )
 }
