@@ -290,6 +290,7 @@ async function checkDips(admin: any, positions: any[]) {
 async function mailDips(ticker: string, price: number, dips: Dip[]) {
   const key = Deno.env.get('RESEND_API_KEY')
   if (!key) return false
+  ticker = ticker.replace(/[a-z]?_[A-Z]+$/, '')   // VUSAl_EQ → VUSA (вътрешното име в Trading 212)
   const top = dips.reduce((a, b) => (b.amount_eur > a.amount_eur ? b : a))
   const what = (s: Dip) => s.kind === 'step'
     ? `${bg(s.drop_pct, 1)} % от 30-дневния връх (${bg(s.ref_price)} на ${day(s.ref_at)})`
