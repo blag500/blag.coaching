@@ -218,6 +218,95 @@ async function syncHistory(
   return added
 }
 
+/* ── Сигнали за микропокупка (146) ─────────────────────────────────────────
+   Добавка към редовната вноска, не замяна. Нищо не се купува: ключът е само
+   за четене, писмото е напомняне. */
+
+const DIP_TICKER = /^VUSA/
+const STEP_PCT = 2                    // ниво на всеки −2 % от 30-дневния връх
+const STEP_AMOUNTS = [5, 10, 15]      // −2 %, −4 %, −6 % и надолу
+const DAY_PCT = 1.5                   // спад за 24 часа
+const DAY_AMOUNT = 5
+const DIP_EMAIL = Deno.env.get('INVEST_OWNER_EMAIL')?.trim() || 'nikolay.blagyov@gmail.com'
+
+const r1 = (x: number) => Math.round(x * 10) / 10
+const bg = (x: number, d = 2) => x.toLocaleString('bg-BG', { minimumFractionDigits: d, maximumFractionDigits: d })
+const day = (iso: string) => new Date(iso).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Sofia' })
+
+type Dip = { kind: 'step' | 'day'; level: number; ref_price: number; ref_at: string; drop_pct: number; amount_eur: number }
+
+// deno-lint-ignore no-explicit-any
+async function checkDips(admin: any, positions: any[]) {
+  const pos = positions.find((p) => p.ticker && DIP_TICKER.test(p.ticker))
+  if (!pos?.price) return null
+  const ticker: string = pos.ticker, price: number = pos.price
+
+  // Сегашната снимка вече е записана, така че е в редицата.
+  const { data: snaps, error } = await admin.from('invest_snapshots')
+    .select('taken_at, positions')
+    .gte('taken_at', new Date(Date.now() - 30 * 864e5).toISOString())
+    .not('positions', 'is', null)
+    .order('taken_at')
+  if (error) throw new Error(`dips: ${error.message}`)
+  // deno-lint-ignore no-explicit-any
+  const series = (snaps ?? []).map((s: any) => ({ at: s.taken_at as string, price: n((s.positions ?? []).find((p: any) => p.ticker === ticker)?.price) }))
+    .filter((x: { price: number }) => x.price > 0)
+  if (!series.length) return null
+
+  // Върхът — последното му срещане, за да почне наново след нов връх.
+  const peak = series.reduce((a: { price: number }, b: { price: number }) => (b.price >= a.price ? b : a))
+  const drop = (price / peak.price - 1) * 100
+  const level = Math.floor(-drop / STEP_PCT + 1e-9)
+  const dips: Dip[] = []
+
+  if (level >= 1) {
+    const { data: last } = await admin.from('invest_dip_signals').select('level')
+      .eq('ticker', ticker).eq('kind', 'step').eq('ref_at', peak.at)
+      .order('level', { ascending: false }).limit(1)
+    if ((last?.[0]?.level ?? 0) < level) {
+      dips.push({ kind: 'step', level, ref_price: peak.price, ref_at: peak.at, drop_pct: r1(drop), amount_eur: STEP_AMOUNTS[Math.min(level, STEP_AMOUNTS.length) - 1] })
+    }
+  }
+
+  const before = [...series].reverse().find((x: { at: string }) => Date.parse(x.at) <= Date.now() - 24 * 3600e3)
+  if (before) {
+    const d = (price / before.price - 1) * 100
+    if (d <= -DAY_PCT) {
+      const { data: recent } = await admin.from('invest_dip_signals').select('id')
+        .eq('ticker', ticker).eq('kind', 'day')
+        .gte('at', new Date(Date.now() - 20 * 3600e3).toISOString()).limit(1)
+      if (!recent?.length) dips.push({ kind: 'day', level: 0, ref_price: before.price, ref_at: before.at, drop_pct: r1(d), amount_eur: DAY_AMOUNT })
+    }
+  }
+
+  const emailed = dips.length ? await mailDips(ticker, price, dips) : false
+  for (const s of dips) {
+    const { error: e } = await admin.from('invest_dip_signals').insert({ ticker, price, ...s, emailed })
+    if (e) throw new Error(`invest_dip_signals: ${e.message}`)
+  }
+  return { ticker, price, peak: peak.price, drop: r1(drop), sent: dips.map((s) => s.kind === 'step' ? `step ${s.level}` : 'day'), emailed }
+}
+
+async function mailDips(ticker: string, price: number, dips: Dip[]) {
+  const key = Deno.env.get('RESEND_API_KEY')
+  if (!key) return false
+  const top = dips.reduce((a, b) => (b.amount_eur > a.amount_eur ? b : a))
+  const what = (s: Dip) => s.kind === 'step'
+    ? `${bg(s.drop_pct, 1)} % от 30-дневния връх (${bg(s.ref_price)} на ${day(s.ref_at)})`
+    : `${bg(s.drop_pct, 1)} % за денонощие (от ${bg(s.ref_price)})`
+  const subject = `${ticker} ${bg(top.drop_pct, 1)} % ${top.kind === 'step' ? 'от върха' : 'за денонощие'} — микропокупка ${top.amount_eur} €?`
+  const html = `<p><b>${ticker}: ${bg(price)}</b></p>`
+    + dips.map((s) => `<p>${what(s)} → предложена покупка <b>${s.amount_eur} €</b>.</p>`).join('')
+    + `<p style="color:#666">Добавка към редовната вноска. Нищо не е купено автоматично.</p>`
+    + `<p><a href="https://blag-coaching.com/invest/">Таблото</a></p>`
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: 'Инвестиции <noreply@blag-coaching.com>', to: [DIP_EMAIL], subject, html }),
+  }).catch((e) => { console.error('dips mail', e); return null })
+  return !!res?.ok
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS })
 
@@ -252,6 +341,11 @@ Deno.serve(async (req) => {
     const { error } = await admin.from('invest_snapshots').insert(snapshot)
     if (error) throw new Error(`invest_snapshots: ${error.message}`)
 
+    /* Сигналите за спад (146) — и те не бива да спират снимката. */
+    let dips: unknown = null
+    try { dips = await checkDips(admin, snapshot.positions) }
+    catch (e) { dips = String((e as Error).message ?? e) }
+
     /* Историята не бива да спира снимката: ако лимитът е изчерпан, снимката
        вече е записана и следващият час ще продължи оттам. */
     const history: Record<string, number | string> = {}
@@ -266,6 +360,7 @@ Deno.serve(async (req) => {
       ok: true,
       total_value: snapshot.total_value,
       positions: snapshot.positions.length,
+      dips,
       history,
     })
   } catch (e) {
