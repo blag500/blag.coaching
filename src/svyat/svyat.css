@@ -112,6 +112,42 @@ body.clean .copy, body.clean .card, body.clean .hint, body.clean .menu, body.cle
 .loader .count { font-family: var(--display); font-weight: 700; letter-spacing: 0.2em; font-variant-numeric: tabular-nums; color: var(--ink-2); }
 @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.08); } 30% { transform: scale(1); } }
 
+/* ── изборът на проект (Picker.jsx) ── */
+button.logo { background: none; border: 0; color: var(--ink); cursor: pointer; padding: 6px 0; }
+.picker { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; justify-content: center; gap: clamp(18px, 3vh, 32px);
+  padding: 84px 0 max(20px, env(safe-area-inset-bottom)); background: rgba(7, 9, 10, 0.72); backdrop-filter: blur(18px);
+  animation: pickIn 0.6s var(--ease); }
+@keyframes pickIn { from { opacity: 0; } to { opacity: 1; } }
+.pickHead, .pickFoot { padding: 0 clamp(16px, 6vw, 96px); }
+.pickHead .h2 { margin: 0; }
+.pickRow { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px clamp(16px, 6vw, 96px);
+  scroll-padding-inline: clamp(16px, 6vw, 96px); scrollbar-width: none; overscroll-behavior-x: contain; }
+.pickRow::-webkit-scrollbar { display: none; }
+.pickCard { flex: 0 0 clamp(260px, 26vw, 340px); scroll-snap-align: start; display: flex; flex-direction: column; text-align: left;
+  padding: 0; overflow: hidden; background: var(--card); border: 1px solid var(--card-line); border-radius: var(--r-lg);
+  color: var(--ink); text-decoration: none; cursor: pointer; transition: transform 0.35s var(--ease), border-color 0.35s var(--ease); }
+.pickCard:hover, .pickCard:focus-visible { transform: translateY(-6px); border-color: var(--lime); }
+.pickCard:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+.pickImg { aspect-ratio: 4 / 3; background: #0e100d center / cover no-repeat; display: grid; place-items: center; filter: saturate(0.9); }
+.pickImg img { width: 42%; filter: drop-shadow(0 0 16px rgba(212, 240, 74, 0.7)); }
+.pickText { position: relative; padding: 18px 20px 20px; display: grid; gap: 6px; }
+.pickText .kicker { margin: 0; font-size: 11px; }
+.pickNo { position: absolute; right: 18px; top: 16px; font-family: var(--display); font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.pickTitle { font-family: var(--display); font-weight: 800; font-size: 26px; margin: 0; }
+.pickLead { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.pickCta { margin-top: 8px; font-weight: 700; color: var(--lime); }
+.pickFoot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.pickCount { font-family: var(--display); letter-spacing: 0.14em; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.pickNav { display: flex; gap: 8px; }
+.pickNav .sound:disabled { opacity: 0.35; cursor: default; }
+.pickAll { margin-left: auto; background: none; border-width: 0 0 1px; cursor: pointer; }
+@media (max-aspect-ratio: 4/5) {
+  .picker { justify-content: flex-end; }
+  .pickCard { flex-basis: 78vw; }
+  .pickImg { aspect-ratio: 16 / 10; }
+}
+@media (max-height: 640px) { .pickImg { aspect-ratio: 16 / 7; } }
+
 /* ── предложение за лекия изглед ── */
 .toast { position: fixed; left: 16px; bottom: 16px; z-index: 30; max-width: 360px; font-size: 14px; line-height: 1.45; }
 .toast .ctas { margin-top: 12px; }
@@ -123,5 +159,6 @@ body.clean .copy, body.clean .card, body.clean .hint, body.clean .menu, body.cle
 
 @media (prefers-reduced-motion: reduce) {
   .loader .neonMark { animation: none; }
-  .btn, .loader { transition: none; }
+  .btn, .loader, .pickCard { transition: none; }
+  .picker { animation: none; }
 }

@@ -11,6 +11,8 @@ export const setScrollEl = (e) => { el = e }
 export const setStart = (id) => { start = id }
 /** Спирката от адреса при отваряне — веднъж. */
 export const takeStart = () => { const s = start; start = ''; return s }
+/** Има ли спирка в адреса — тогава изборът на проект не излиза. */
+export const hasStart = () => STOPS.includes(start)
 
 /** Смяна на #адреса без презареждане: браузърът вече е скочил до котвата в
  *  слоя с текста — връщаме слоя и движим скрола (камерата) до спирката. */

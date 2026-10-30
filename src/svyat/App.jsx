@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import Sections from './Sections.jsx'
-import { jumpTo, takeStart } from './nav'
+import Picker from './Picker.jsx'
+import { hasStart, jumpTo, takeStart } from './nav'
 import { soundOff, soundOn } from './sound'
 
 /* Светът „Благ“ (Р20). Два изгледа с един и същ текст:
@@ -23,6 +24,7 @@ export default function App() {
   const [clean, setClean] = useState(false)
   const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
   const [progress, setProgress] = useState(0)
+  const [pick, setPick] = useState(() => !hasStart())
 
   useEffect(() => { document.body.classList.toggle('lite', lite) }, [lite])
   // Окото: текстът и менюто изчезват, сцената остава и скролът си работи.
@@ -32,13 +34,13 @@ export default function App() {
     if (id) setTimeout(() => jumpTo(id, 'auto'), 0)
   }, [lite])
 
-  const go = (id) => jumpTo(id)
+  const go = (id) => { setPick(false); jumpTo(id) }
   const toggleSound = () => { if (sound) soundOff(); else soundOn(); setSound(!sound) }
 
   return (
     <>
       <header className="bar">
-        <a className="logo" href="/svyat/">BLAG</a>
+        <button type="button" className="logo" onClick={() => setPick(true)} aria-label="Избор на проект">BLAG</button>
         <nav className="menu" aria-label="Светът">
           <button type="button" onClick={() => go('zala')}>Залата</button>
           <button type="button" onClick={() => go('magazin')}>Магазинът</button>
@@ -90,6 +92,8 @@ export default function App() {
           )}
         </>
       )}
+      {/* В 3D излиза, щом сцената е готова — не върху зареждането. BLAG го връща. */}
+      {pick && (lite || ready) && <Picker onPick={go} onClose={() => setPick(false)} />}
     </>
   )
 }
