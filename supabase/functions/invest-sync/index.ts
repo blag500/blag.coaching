@@ -230,7 +230,7 @@ const DAY_AMOUNT = 5
 const DIP_EMAIL = Deno.env.get('INVEST_OWNER_EMAIL')?.trim() || 'nikolay.blagyov@gmail.com'
 
 const r1 = (x: number) => Math.round(x * 10) / 10
-const bg = (x: number, d = 2) => x.toLocaleString('bg-BG', { minimumFractionDigits: d, maximumFractionDigits: d })
+const bg = (x: number, d = 2) => x.toLocaleString('bg-BG', { minimumFractionDigits: d, maximumFractionDigits: d }).replace('-', '−')
 const day = (iso: string) => new Date(iso).toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', timeZone: 'Europe/Sofia' })
 
 type Dip = { kind: 'step' | 'day'; level: number; ref_price: number; ref_at: string; drop_pct: number; amount_eur: number }
@@ -279,7 +279,21 @@ async function checkDips(admin: any, positions: any[]) {
     }
   }
 
-  const emailed = dips.length ? await mailDips(ticker, price, dips) : false
+  let emailed = false
+  if (dips.length) {
+    const low = series.reduce((a: { price: number }, b: { price: number }) => (b.price <= a.price ? b : a))
+    const nextLevel = Math.max(level, 0) + 1
+    // Покупките на VUSA за 30 дни — дали сигналите реално се следват.
+    const { data: orders } = await admin.from('invest_orders').select('net_value')
+      .eq('ticker', ticker).eq('side', 'BUY')
+      .gte('at', new Date(Date.now() - 30 * 864e5).toISOString())
+    emailed = await mailDips({
+      ticker, price, at: new Date().toISOString(), cur: ({ EUR: '€', GBP: '£', USD: '$' } as Record<string, string>)[pos.currency] ?? (pos.currency ?? ''),
+      peak, low, before: before ?? null, dips, pos,
+      next: { pct: -nextLevel * STEP_PCT, price: peak.price * (1 - nextLevel * STEP_PCT / 100), amount: STEP_AMOUNTS[Math.min(nextLevel, STEP_AMOUNTS.length) - 1] },
+      buys: { n: orders?.length ?? 0, sum: (orders ?? []).reduce((s: number, o: { net_value: number }) => s + Math.abs(n(o.net_value)), 0) },
+    })
+  }
   for (const s of dips) {
     const { error: e } = await admin.from('invest_dip_signals').insert({ ticker, price, ...s, emailed })
     if (e) throw new Error(`invest_dip_signals: ${e.message}`)
@@ -287,19 +301,50 @@ async function checkDips(admin: any, positions: any[]) {
   return { ticker, price, peak: peak.price, drop: r1(drop), sent: dips.map((s) => s.kind === 'step' ? `step ${s.level}` : 'day'), emailed }
 }
 
-async function mailDips(ticker: string, price: number, dips: Dip[]) {
+type Point = { price: number; at: string }
+export type DipMail = {
+  ticker: string; price: number; at: string; cur: string
+  peak: Point; low: Point; before: Point | null; dips: Dip[]
+  pos: { qty: number; avg: number; value: number; pnl: number }
+  next: { pct: number; price: number; amount: number }
+  buys: { n: number; sum: number }
+}
+
+const pct = (a: number, b: number) => `${a >= b ? '+' : ''}${bg((a / b - 1) * 100, 1)} %`
+const when = (iso: string) => new Date(iso).toLocaleString('bg-BG', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Sofia' })
+
+/* Писмото — чиста функция, за да се гледа с истински числа без да се праща. */
+export function dipMail(m: DipMail) {
+  const t = m.ticker.replace(/[a-z]?_[A-Z]+$/, '')   // VUSAl_EQ → VUSA (вътрешното име в Trading 212)
+  const c = m.cur
+  const top = m.dips.reduce((a, b) => (b.amount_eur > a.amount_eur ? b : a))
+  const subject = `${t} ${bg(top.drop_pct, 1)} % ${top.kind === 'step' ? 'от върха' : 'за денонощие'} — микропокупка ${top.amount_eur} €?`
+  const row = (k: string, v: string, note: string, strong = false) =>
+    `<tr><td style="padding:6px 12px 6px 0;color:#555">${k}</td><td style="padding:6px 12px 6px 0;text-align:right;${strong ? 'font-weight:700;font-size:18px' : ''}">${v}</td><td style="padding:6px 0;color:#555">${note}</td></tr>`
+  const why = (s: Dip) => s.kind === 'step'
+    ? `цената е ${bg(Math.abs(s.drop_pct), 1)} % под върха за 30 дни`
+    : `цената е ${bg(Math.abs(s.drop_pct), 1)} % под тази отпреди 24 часа`
+  const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#12140F;max-width:520px">`
+    + `<p style="font-size:17px;margin:0 0 12px"><b>${t}</b></p>`
+    + `<table style="border-collapse:collapse">`
+    + row('Сега', `${bg(m.price)} ${c}`, when(m.at), true)
+    + row('Връх за 30 дни', `${bg(m.peak.price)} ${c}`, `${day(m.peak.at)} · сега ${pct(m.price, m.peak.price)}`)
+    + row('Дъно за 30 дни', `${bg(m.low.price)} ${c}`, `${day(m.low.at)} · сега ${pct(m.price, m.low.price)}`)
+    + (m.before ? row('Преди 24 часа', `${bg(m.before.price)} ${c}`, `сега ${pct(m.price, m.before.price)}`) : '')
+    + `</table>`
+    + m.dips.map((s) => `<p style="margin:16px 0 0">Предложение: <b>купи за ${s.amount_eur} €</b>, защото ${why(s)}.</p>`).join('')
+    + `<p style="margin:8px 0 0">Следващ сигнал: под <b>${bg(m.next.price)} ${c}</b> (${bg(m.next.pct, 0)} % от върха) → ${m.next.amount} €.</p>`
+    + (m.pos.qty ? `<p style="margin:16px 0 0;color:#555">Позицията ти: ${bg(m.pos.qty, 4)} дяла по средно ${bg(m.pos.avg)} ${c} · стойност ${bg(m.pos.value)} € · печалба ${m.pos.pnl >= 0 ? '+' : ''}${bg(m.pos.pnl)} € (с курса на валутата)</p>` : '')
+    + `<p style="margin:4px 0 0;color:#555">Покупки на ${t} за 30 дни: ${m.buys.n ? `${m.buys.n} за ${bg(m.buys.sum)} €` : 'няма'}</p>`
+    + `<p style="margin:16px 0 0;color:#888;font-size:13px">Добавка към редовната вноска, не замяна. Нищо не е купено автоматично. <a href="https://blag-coaching.com/invest/" style="color:#888">Таблото</a></p>`
+    + `</div>`
+  return { subject, html }
+}
+
+async function mailDips(m: DipMail) {
   const key = Deno.env.get('RESEND_API_KEY')
   if (!key) return false
-  ticker = ticker.replace(/[a-z]?_[A-Z]+$/, '')   // VUSAl_EQ → VUSA (вътрешното име в Trading 212)
-  const top = dips.reduce((a, b) => (b.amount_eur > a.amount_eur ? b : a))
-  const what = (s: Dip) => s.kind === 'step'
-    ? `${bg(s.drop_pct, 1)} % от 30-дневния връх (${bg(s.ref_price)} на ${day(s.ref_at)})`
-    : `${bg(s.drop_pct, 1)} % за денонощие (от ${bg(s.ref_price)})`
-  const subject = `${ticker} ${bg(top.drop_pct, 1)} % ${top.kind === 'step' ? 'от върха' : 'за денонощие'} — микропокупка ${top.amount_eur} €?`
-  const html = `<p><b>${ticker}: ${bg(price)}</b></p>`
-    + dips.map((s) => `<p>${what(s)} → предложена покупка <b>${s.amount_eur} €</b>.</p>`).join('')
-    + `<p style="color:#666">Добавка към редовната вноска. Нищо не е купено автоматично.</p>`
-    + `<p><a href="https://blag-coaching.com/invest/">Таблото</a></p>`
+  const { subject, html } = dipMail(m)
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
