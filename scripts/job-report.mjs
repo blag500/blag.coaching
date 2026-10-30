@@ -28,7 +28,33 @@ const readText = (f) => {
   return b[0] === 0xff && b[1] === 0xfe ? b.toString('utf16le').slice(1) : b.toString('utf8')
 }
 
+/* Режим „стъпки“: в папката има steps.json —
+ *   { "since": "<ISO>", "steps": [{ "name": "…", "done": "<файл>", "frames": "<папка>", "of": 121 }] }
+ * Стъпката е готова, когато файлът `done` е по-нов от `since`; докато върви,
+ * процентът е броят кадри в `frames` от `of`. Без steps.json — опашка на Wan2GP. */
+function stepsStatus(spec) {
+  const since = Date.parse(spec.since)
+  const fresh = (f) => existsSync(f) && statSync(f).mtimeMs > since
+  const done = spec.steps.filter((s) => fresh(s.done)).length
+  const cur = spec.steps[done]
+  let pct = 0
+  if (cur?.frames && existsSync(cur.frames)) {
+    const n = readdirSync(cur.frames).filter((f) => statSync(join(cur.frames, f)).mtimeMs > since).length
+    pct = Math.min(99, (n / (cur.of || 121)) * 100)
+  }
+  const span = (Date.now() - since) / 1000
+  const per = done || pct ? span / (done + pct / 100) : null
+  const allDone = done === spec.steps.length
+  return {
+    total: spec.steps.length, done, allDone, started: new Date(since),
+    current: cur ? `${cur.name} · ${Math.round(pct)} %` : null,
+    eta: per && !allDone ? new Date(Date.now() + per * (spec.steps.length - done - pct / 100) * 1000) : null,
+  }
+}
+
 function status() {
+  const sf = join(dir, 'steps.json')
+  if (existsSync(sf)) return stepsStatus(JSON.parse(readText(sf)))
   const names = readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort()
   const pf = join(dir, 'progress.txt')
   const lines = existsSync(pf) ? readText(pf).split(/\r?\n/).map((l) => l.trim()).filter(Boolean) : []

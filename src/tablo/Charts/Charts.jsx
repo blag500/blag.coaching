@@ -113,3 +113,39 @@ export function ShareBar({ label, value, share, color }) {
 export function Dot({ level: lv }) {
   return <i className={styles.dot} style={{ background: LEVEL_COLOR[lv] }} aria-hidden="true" />
 }
+
+/* Мини-крива за плочка с число (по Tremor SparkChart): 28 точки, линия 2px,
+   бледа площ отдолу, точка на последния ден. Без оси — числото е над нея,
+   а промяната спрямо миналата седмица е под нея, с думи. */
+export function Spark({ values, label }) {
+  const W = 120, H = 32, n = values.length
+  if (n < 2) return null
+  const max = Math.max(...values, 1)
+  const pts = values.map((v, i) => [(i / (n - 1)) * W, H - 3 - (v / max) * (H - 6)])
+  const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')
+  const [lx, ly] = pts[n - 1]
+  return (
+    <svg className={styles.spark} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={label}>
+      <path d={`${line}L${W},${H}L0,${H}Z`} className={styles.sparkArea} />
+      <path d={line} className={styles.sparkLine} vectorEffect="non-scaling-stroke" />
+      <circle cx={lx} cy={ly} r="2.5" className={styles.sparkDot} />
+    </svg>
+  )
+}
+
+/* Колко от какво (по Tremor BarList): име, лента, брой. Лентата е в мастило,
+   не в цвят — цветът в таблото е запазен за наред/следи/внимание. */
+export function BarList({ rows }) {
+  const max = Math.max(...rows.map((r) => r.value), 1)
+  return (
+    <ul className={styles.barList}>
+      {rows.map((r) => (
+        <li key={r.name}>
+          <span className={styles.barListFill} style={{ width: `${(r.value / max) * 100}%` }} />
+          <span className={styles.barListName}>{r.name}</span>
+          <span className={styles.barListValue}>{r.value}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}

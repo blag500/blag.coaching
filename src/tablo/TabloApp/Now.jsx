@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { fromPairs, lastDays, level, LEVELS, sum } from '../calc'
-import { Dot } from '../Charts/Charts.jsx'
+import { BarList, Dot, Spark } from '../Charts/Charts.jsx'
 import styles from './TabloApp.module.css'
 
 /* Разделът „Сега" отговаря на един въпрос: какво правя сега. Отгоре
@@ -24,15 +24,33 @@ export default function Now({ items, business, onSave, onGo }) {
   const ordersWeek = sum(orders.slice(-7))
   const errorsWeek = sum(errors.slice(-7))
 
+  const newClients = fromPairs(business?.new_clients, days28)
+  // промяната: последните 7 дни срещу предишните 7 — с думи, не само със стрелка
+  const delta = (arr, { lowerIsBetter = false, avg = false } = {}) => {
+    const k = avg ? 7 : 1
+    const r = (v) => Math.round((v / k) * 10) / 10
+    const now = r(sum(arr.slice(-7))), before = r(sum(arr.slice(-14, -7)))
+    const bg = String(before).replace('.', ',')
+    if (now === before) return { text: `като миналата седмица`, dir: 'flat' }
+    const up = now > before
+    return { text: `${up ? '▲' : '▼'} миналата седмица: ${bg}`, dir: up === !lowerIsBetter ? 'good' : 'bad' }
+  }
   const stats = [
-    { key: 'clients', label: 'Акаунти', value: business?.clients ?? '—', sub: `${sum(fromPairs(business?.new_clients, days28))} нови за 28 дни` },
-    { key: 'loggers', label: 'Логват', value: String(loggersWeek).replace('.', ','), sub: 'души на ден, 7 дни', lv: level(loggersWeek, 3, 1, { low: true }) },
-    { key: 'orders', label: 'Поръчки', value: ordersWeek, sub: `за 7 дни · ${business?.orders_total ?? 0} досега`, lv: level(ordersWeek, 3, 1, { low: true }) },
-    { key: 'errors', label: 'Грешки', value: errorsWeek, sub: 'от телефоните, 7 дни', lv: level(errorsWeek, 5, 20) },
+    { key: 'clients', label: 'Акаунти', value: business?.clients ?? '—', sub: `${sum(newClients)} нови за 28 дни`, series: newClients, delta: delta(newClients) },
+    { key: 'loggers', label: 'Логват', value: String(loggersWeek).replace('.', ','), sub: 'души на ден, 7 дни', lv: level(loggersWeek, 3, 1, { low: true }), series: loggers, delta: delta(loggers, { avg: true }) },
+    { key: 'orders', label: 'Поръчки', value: ordersWeek, sub: `за 7 дни · ${business?.orders_total ?? 0} досега`, lv: level(ordersWeek, 3, 1, { low: true }), series: orders, delta: delta(orders) },
+    { key: 'errors', label: 'Грешки', value: errorsWeek, sub: 'от телефоните, 7 дни', lv: level(errorsWeek, 5, 20), series: errors, delta: delta(errors, { lowerIsBetter: true }) },
   ]
+  const openYou = you.filter((t) => !t.done).length
+  const openDecide = decide.filter((t) => !t.done).length
 
   return (
     <>
+      <nav className={styles.overview} aria-label="Накратко">
+        <a href="#youH"><strong>{openYou}</strong><span>чака теб</span></a>
+        <a href="#decH"><strong>{openDecide}</strong><span>за решаване</span></a>
+        <button type="button" onClick={() => onGo('audit')}><strong>{proposals}</strong><span>от одита</span></button>
+      </nav>
       <Jobs />
       {focus && (
         <section className={`${styles.card} ${styles.step}`} aria-labelledby="stepH">
@@ -72,7 +90,9 @@ export default function Now({ items, business, onSave, onGo }) {
                 {s.lv && <span className={styles.srOnly}> · {LEVELS[s.lv].label}</span>}
               </span>
               <span className={styles.statValue}>{s.value}</span>
+              <Spark values={s.series} label={`${s.label} за 28 дни`} />
               <span className={styles.statSub}>{s.sub}</span>
+              <span className={styles.statDelta} data-dir={s.delta.dir}>{s.delta.text}</span>
             </div>
           ))}
         </div>
@@ -105,15 +125,25 @@ export function Tasks({ title, id, rows, onSave, empty }) {
     .filter((r) => !r.done || new Date(r.done_at || r.updated_at).getTime() > recent)
     .sort((a, b) => (a.done - b.done) || (a.sort - b.sort))
   const open = rows.filter((r) => !r.done).length
+  // по проект (area); проектът с най-много отворени е отгоре и единствен отворен
+  const byArea = new Map()
+  for (const t of sorted) {
+    const k = t.area || 'Друго'
+    byArea.set(k, [...(byArea.get(k) || []), t])
+  }
+  const groups = [...byArea].sort((a, b) => b[1].filter((t) => !t.done).length - a[1].filter((t) => !t.done).length)
   return (
     <section className={styles.section} aria-labelledby={id}>
       <div className={styles.sectionHead}>
         <h2 id={id} className={styles.h2}>{title}</h2>
         <span className={styles.count}>{open}</span>
       </div>
-      {sorted.length ? (
+      {sorted.length > 5 && <div className={`${styles.card} ${styles.barCard}`}><BarList rows={groups.map(([name, g]) => ({ name, value: g.filter((t) => !t.done).length }))} /></div>}
+      {sorted.length ? groups.map(([name, g], gi) => (
+        <details key={name} className={groups.length > 1 ? styles.group : styles.single} open={gi === 0 || groups.length === 1}>
+          <summary hidden={groups.length === 1}><span>{name}</span><span className={styles.count}>{g.filter((t) => !t.done).length}</span></summary>
         <ul className={`${styles.card} ${styles.list}`}>
-          {sorted.map((t) => (
+          {g.map((t) => (
             <li key={t.id} className={`${styles.task} ${t.done ? styles.taskDone : ''}`}>
               <input
                 type="checkbox"
@@ -124,12 +154,13 @@ export function Tasks({ title, id, rows, onSave, empty }) {
               <label htmlFor={`tk-${t.id}`}>
                 <span>{t.title}</span>
                 {t.why && !t.done && <span className={styles.taskWhy}>{t.why}</span>}
-                {t.area && <span className={styles.tag}>{t.area}</span>}
+
               </label>
             </li>
           ))}
         </ul>
-      ) : <p className={`${styles.card} ${styles.empty}`}>{empty}</p>}
+        </details>
+      )) : <p className={`${styles.card} ${styles.empty}`}>{empty}</p>}
     </section>
   )
 }

@@ -630,3 +630,33 @@
 .jobBar span { display: block; height: 100%; border-radius: inherit; background: var(--warn); transition: width var(--dur) var(--ease); }
 .jobBar[data-lv='ok'] span { background: var(--ok); }
 .jobBar[data-lv='bad'] span { background: var(--bad); }
+
+/* ── обзорът отгоре: три броя, всеки води до своето (Now.jsx) ── */
+.overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
+.overview a, .overview button {
+  display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; text-align: left;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+  color: var(--ink); text-decoration: none; font: inherit; cursor: pointer;
+}
+.overview strong { font-size: 26px; line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.overview span { font-size: 13px; color: var(--ink-2); }
+.overview a:hover, .overview button:hover { background: var(--hover); }
+
+/* промяната под числото: наред / внимание, но с думи — не само с цвят */
+.statDelta { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.statDelta[data-dir='good'] { color: var(--ok); }
+.statDelta[data-dir='bad'] { color: var(--bad); }
+
+/* ── групите в „Чака теб“: проект → сгънат списък ── */
+.barCard { padding: 10px; margin-bottom: 10px; }
+.group + .group { margin-top: 8px; }
+.group > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 4px; font-size: 15px; font-weight: 600; cursor: pointer; list-style: none;
+}
+.group > summary::-webkit-details-marker { display: none; }
+.group > summary::after { content: ''; width: 8px; height: 8px; border: solid var(--ink-2); border-width: 0 2px 2px 0; transform: rotate(45deg); margin-left: auto; transition: transform var(--dur) var(--ease); }
+.group[open] > summary::after { transform: rotate(-135deg); }
+.group > summary .count { margin-left: 4px; }
+/* обяснението под задачата — до два реда; цялото е в базата */
+.taskWhy { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
