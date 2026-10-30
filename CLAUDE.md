@@ -140,6 +140,10 @@ three.js r128 от `public/cheatcode/vendor/` — ползват я CoKitchen ж
 localStorage); сметките са в `src/invest/projection.js`. Чете само собственикът от
 `invest_owner` — не по роля. Ключът е в тайните на функциите (`T212_API_KEY`,
 `T212_API_SECRET`), само за четене. Миграции `123_invest.sql`, `124_invest_orders.sql`.
+Сигнали за микропокупка (146, `invest_dip_signals`): след всяка снимка `invest-sync`
+гледа VUSA — всеки −2 % от 30-дневния връх (5 / 10 / 15 €) и −1,5 % за 24 часа (5 €)
+пращат имейл през Resend; всяко ниво веднъж за даден връх. Нищо не се купува —
+добавка към редовната вноска, не замяна.
 
 **Табло** (`/tablo/`, `tablo/index.html` → `src/tablo/`): личното табло на
 собственика — трети вход на Vite, без service worker, извън кеша на приложението.
