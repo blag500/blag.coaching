@@ -200,8 +200,9 @@ export function Tasks({ title, id, rows, onSave, empty, byArea = false }) {
   )
 }
 
-/* „Върви на компютъра“: дългите задачи (scripts/job-report.mjs → tablo_jobs).
- * Чете сама на 30 s, без да презарежда таблото. Завършилите стоят 6 часа.
+/* „Върви на компютъра“: дългите задачи (scripts/job-report.mjs, disk-sizes.mjs
+ * → tablo_jobs). Чете сама на 30 s, без да презарежда таблото. Всяка стои,
+ * докато не я махнеш (hidden_at, миграция 148), но не повече от 3 дни.
  * Ако компютърът не се е обадил над 3 минути, го казва — лента, която стои,
  * лъже повече от липсата ѝ. */
 function Jobs() {
@@ -210,14 +211,19 @@ function Jobs() {
   useEffect(() => {
     let live = true
     const read = async () => {
-      const since = new Date(Date.now() - 6 * 3600e3).toISOString()
-      const { data } = await supabase.from('tablo_jobs').select('*').gte('updated_at', since).order('started_at', { ascending: false })
+      const since = new Date(Date.now() - 3 * 864e5).toISOString()
+      const { data } = await supabase.from('tablo_jobs').select('*').gte('updated_at', since).is('hidden_at', null)
+        .order('started_at', { ascending: false })
       if (live) { setJobs(data ?? []); tick((n) => n + 1) }
     }
     read()
     const t = setInterval(read, 30000)
     return () => { live = false; clearInterval(t) }
   }, [])
+  async function hide(id) {
+    setJobs((all) => all.filter((j) => j.id !== id))
+    await supabase.from('tablo_jobs').update({ hidden_at: new Date().toISOString() }).eq('id', id)
+  }
   if (!jobs.length) return null
   const hm = (iso) => new Date(iso).toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })
   return (
@@ -238,8 +244,9 @@ function Jobs() {
               <strong>{j.title}</strong>
               <span>{j.done} от {j.total}</span>
             </div>
+            <button type="button" className={styles.jobHide} aria-label={`Махни „${j.title}“`} onClick={() => hide(j.id)}>Махни</button>
             <p className={styles.muted}>
-              {j.state === 'done' ? `Готово в ${hm(j.updated_at)}`
+              {j.state === 'done' ? [`Готово в ${hm(j.updated_at)}`, j.current].filter(Boolean).join(' · ')
                 : j.state === 'failed' ? 'Спря с грешка'
                   : silent ? `Компютърът не се е обадил от ${hm(j.updated_at)}`
                     : [j.current && `сега: ${j.current}`, j.eta && `към ${hm(j.eta)}`].filter(Boolean).join(' · ')}

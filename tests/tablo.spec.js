@@ -34,6 +34,7 @@ function seed() {
       calls: 120, tool_calls: 140, tok_input: 300, tok_cache_read: 9_000_000, tok_cache_write: 400_000, tok_output: 60_000,
     }],
     tablo_sync: [{ source: 'computer', synced_at: now, note: '1 сесия' }],
+    tablo_jobs: [{ id: 'j1', title: 'Размерите на диска', state: 'done', done: 3, total: 3, current: 'общо 12 GB', started_at: now, updated_at: now, hidden_at: null }],
     tablo_items: [
       { id: 'focus', kind: 'focus', title: 'Прати гласов текст', why: 'За гласа.', done: false, sort: 0, updated_at: now },
       { id: 'insight', kind: 'insight', title: 'Кухнята е тясното място.', done: false, sort: 0, updated_at: now },
@@ -76,6 +77,11 @@ test('„Сега" показва стъпката, чакащото и бизн
   await expect(page.getByText(/предложение от одита/)).toBeVisible()
   // Сесиите и токените са в „Работа", не тук.
   await expect(page.getByText('Таблото и одитът')).toHaveCount(0)
+
+  // Готовата задача стои с резултата си, докато не я махнеш.
+  await expect(page.getByText(/общо 12 GB/)).toBeVisible()
+  await page.getByRole('button', { name: 'Махни „Размерите на диска“' }).click()
+  await expect(page.getByText('Размерите на диска')).toHaveCount(0)
 
   const box = page.getByRole('checkbox', { name: /Отпечатай картата/ })
   await box.check()

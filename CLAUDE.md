@@ -158,7 +158,11 @@ localStorage); сметките са в `src/invest/projection.js`. Чете с�
 Данни: `tablo_items` (всичко, което се пише и отмята — `kind` го различава),
 `tablo_daily` и `tablo_sessions` (пише ги `scripts/tablo-sync.mjs` от компютъра
 през `supabase db query --linked`; задача „Blag Tablo Sync" на всеки час),
-`tablo_business()` (броеве по дни за поръчки, логващи, грешки, бота). Чете само
+`tablo_business()` (броеве по дни за поръчки, логващи, грешки, бота),
+`tablo_jobs` — „Върви на компютъра“: дългите задачи с пръстен и „Махни“
+(`hidden_at`, 148). Пишат я `scripts/job-report.mjs` (видео) и
+`scripts/disk-sizes.mjs <id> "<заглавие>" <папка>` (колко тежи всяка папка).
+Пусни дълга задача през тях, за да се вижда от телефона. Чете само
 `tablo_owner`. Claude допълва таблото след сесия през SQL — стъпката е една.
 Миграция `134_tablo.sql`; решението — Р15.
 

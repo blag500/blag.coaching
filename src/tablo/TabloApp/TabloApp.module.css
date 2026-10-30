@@ -787,6 +787,23 @@
 .jobTop { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
 .jobTop span { color: var(--ink-2); font-variant-numeric: tabular-nums; }
 
+/* „Махни": под текста, малко — не се натиска случайно, но се намира. */
+.jobHide {
+  order: 3;
+  justify-self: start;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.jobHide:hover { background: var(--hover); color: var(--ink); }
+
 /* ── Магазинът: цена · доставна · марж в един ред, цифрите подравнени ── */
 
 .marginRow {
