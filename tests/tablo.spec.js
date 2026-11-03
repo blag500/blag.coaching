@@ -80,6 +80,11 @@ test('„Сега" показва стъпката, чакащото и бизн
 
   // Готовата задача стои с резултата си, докато не я махнеш.
   await expect(page.getByText(/общо 12 GB/)).toBeVisible()
+  // „Опресни" чете наново, без да чака 30 s
+  await page.getByRole('button', { name: 'Опресни задачите' }).click()
+  await expect(page.getByRole('button', { name: 'Опресни задачите' })).toBeEnabled()
+  await expect(page.getByText(/общо 12 GB/)).toBeVisible()
+  await page.locator('section[aria-labelledby="jobsH"]').screenshot({ path: `shots/tablo-jobs-${info.project.name}.png` })
   await page.getByRole('button', { name: 'Махни „Размерите на диска“' }).click()
   await expect(page.getByText('Размерите на диска')).toHaveCount(0)
 

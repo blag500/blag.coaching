@@ -804,6 +804,24 @@
 
 .jobHide:hover { background: var(--hover); color: var(--ink); }
 
+/* „Опресни" в главата: часът на последното четене до него. */
+.jobsHead { display: flex; align-items: center; gap: 10px; }
+
+.jobRefresh {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.jobRefresh:hover { background: var(--hover); }
+.jobRefresh:disabled { color: var(--ink-2); cursor: default; }
+
 /* ── Магазинът: цена · доставна · марж в един ред, цифрите подравнени ── */
 
 .marginRow {

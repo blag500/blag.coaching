@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { fromPairs, lastDays, level, LEVELS, sum } from '../calc'
 import { Dot, Ring, Spark } from '../Charts/Charts.jsx'
@@ -207,19 +207,26 @@ export function Tasks({ title, id, rows, onSave, empty, byArea = false }) {
  * лъже повече от липсата ѝ. */
 function Jobs() {
   const [jobs, setJobs] = useState([])
-  const [, tick] = useState(0)
+  const [readAt, setReadAt] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const live = useRef(true)
+  const read = useCallback(async () => {
+    const since = new Date(Date.now() - 3 * 864e5).toISOString()
+    const { data } = await supabase.from('tablo_jobs').select('*').gte('updated_at', since).is('hidden_at', null)
+      .order('started_at', { ascending: false })
+    if (live.current) { setJobs(data ?? []); setReadAt(new Date()) }
+  }, [])
   useEffect(() => {
-    let live = true
-    const read = async () => {
-      const since = new Date(Date.now() - 3 * 864e5).toISOString()
-      const { data } = await supabase.from('tablo_jobs').select('*').gte('updated_at', since).is('hidden_at', null)
-        .order('started_at', { ascending: false })
-      if (live) { setJobs(data ?? []); tick((n) => n + 1) }
-    }
+    live.current = true
     read()
     const t = setInterval(read, 30000)
-    return () => { live = false; clearInterval(t) }
-  }, [])
+    return () => { live.current = false; clearInterval(t) }
+  }, [read])
+  // „Опресни“: да не чакаш 30 s, когато гледаш задача, която върви
+  async function refresh() {
+    setBusy(true)
+    try { await read() } finally { if (live.current) setBusy(false) }
+  }
   async function hide(id) {
     setJobs((all) => all.filter((j) => j.id !== id))
     await supabase.from('tablo_jobs').update({ hidden_at: new Date().toISOString() }).eq('id', id)
@@ -230,7 +237,11 @@ function Jobs() {
     <section className={styles.tile} aria-labelledby="jobsH">
       <div className={styles.tileHead}>
         <h2 id="jobsH" className={styles.tileH}>Върви на компютъра</h2>
-        <span className={styles.tileHint}>на живо</span>
+        <span className={styles.jobsHead}>
+          {readAt && <span className={styles.tileHint}>{hm(readAt)}</span>}
+          <button type="button" className={styles.jobRefresh} onClick={refresh} disabled={busy}
+            aria-label="Опресни задачите">{busy ? 'Чета…' : 'Опресни'}</button>
+        </span>
       </div>
       {jobs.map((j) => {
         const silent = j.state === 'running' && Date.now() - new Date(j.updated_at) > 3 * 60e3
