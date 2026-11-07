@@ -54,9 +54,10 @@ const todayISO = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europ
 function useModel(data, opts) {
   return useMemo(() => {
     if (!data) return null
-    const card = data.card.map(([d, t, mer, amt, cat, one]) => ({ d, t, mer, amt, cat, one: !!one }))
+    // one: 1 = еднократно, 2 = абонамент, който е във фиксираните — и двете не влизат в „на ден“.
+    const card = data.card.map(([d, t, mer, amt, cat, one]) => ({ d, t, mer, amt, cat, one: one === 1, fix: one === 2 }))
     const days = diff(data.period[0], data.period[1]) + 1
-    const regular = card.filter((r) => !r.one)
+    const regular = card.filter((r) => !r.one && !r.fix)
     const dailyRate = regular.reduce((a, r) => a + r.amt, 0) / days
     const perCat = Object.fromEntries(SPEND.map((c) => [c, regular.filter((r) => r.cat === c).reduce((a, r) => a + r.amt, 0) / days]))
     const cash = data.cash.t212 + data.cash.pot + data.cash.bank
@@ -335,7 +336,7 @@ function Flow({ m }) {
     { k: 'Кредит', v: m.fixed.filter((f) => f.group === 'debt').reduce((a, f) => a + f.amt, 0), c: 'var(--cat-debt)', g: 'Фиксирани' },
     { k: 'VUSA и закръгляния', v: m.fixed.filter((f) => f.group === 'invest').reduce((a, f) => a + f.amt, 0), c: 'var(--cat-invest)', g: 'Фиксирани' },
     { k: 'Бръснар', v: m.fixed.filter((f) => f.group === 'care').reduce((a, f) => a + f.amt, 0), c: 'var(--cat-care)', g: 'Фиксирани' },
-    { k: 'Сметки, паркинг, фирма', v: m.fixed.filter((f) => ['bills', 'moto', 'biz'].includes(f.group)).reduce((a, f) => a + f.amt, 0), c: 'var(--cat-bills)', g: 'Фиксирани' },
+    { k: 'Сметки, абонаменти, паркинг', v: m.fixed.filter((f) => ['bills', 'subs', 'moto', 'biz'].includes(f.group)).reduce((a, f) => a + f.amt, 0), c: 'var(--cat-bills)', g: 'Фиксирани' },
     ...flowDaily(m),
   ].sort((a, b) => (a.g === b.g ? b.v - a.v : a.g === 'Фиксирани' ? -1 : 1))
   if (m.monthFree > 0) nodes.push({ k: 'Свободни', v: m.monthFree, c: 'var(--cat-free)', g: 'Остават' })
