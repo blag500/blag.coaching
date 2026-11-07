@@ -6,6 +6,7 @@ import Plan from './Plan.jsx'
 import Work from './Work.jsx'
 import Audit from './Audit.jsx'
 import Shop from './Shop.jsx'
+import Money from './Money.jsx'
 import styles from './TabloApp.module.css'
 
 /* Личното табло (/tablo/).
@@ -16,6 +17,7 @@ import styles from './TabloApp.module.css'
  *   Сега   — какво правя сега: стъпката, чакащото теб, решенията, бизнесът.
  *   План   — седмицата и идеите.
  *   Одит   — отвореното и предложенията; поправеното е сгънато.
+ *   Пари   — приходи, разходи и графикът напред (tablo_money, 149).
  *   Магазин — маржът на всеки продукт и промоциите (цените на едро са само тук).
  *   Работа — работата с Claude: токени, промени, сесии. За Claude, не за човека.
  *
@@ -28,6 +30,7 @@ const TABS = [
   { id: 'now', label: 'Сега', icon: <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /> },
   { id: 'plan', label: 'План', icon: <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /> },
   { id: 'audit', label: 'Одит', icon: <path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" /> },
+  { id: 'money', label: 'Пари', icon: <path d="M3 7h18v10H3zM7 12h.01M17 12h.01M12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" /> },
   { id: 'shop', label: 'Магазин', icon: <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2M10 20h.01M17 20h.01" /> },
   { id: 'work', label: 'Работа', icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /> },
 ]
@@ -192,6 +195,7 @@ export default function TabloApp() {
         {tab === 'now' && <Now items={items} daily={daily} business={business} onSave={saveItem} onGo={go} />}
         {tab === 'plan' && <Plan items={items} onSave={saveItem} onAdd={addItem} />}
         {tab === 'audit' && <Audit items={items} onSave={saveItem} />}
+        {tab === 'money' && <Money />}
         {tab === 'shop' && <Shop {...shop} />}
         {tab === 'work' && <Work daily={daily} sessions={sessions} />}
       </main>

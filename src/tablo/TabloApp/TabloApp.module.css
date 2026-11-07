@@ -846,7 +846,7 @@
   bottom: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
   background: rgba(21, 23, 29, 0.92);
   border-top: 1px solid var(--line);
@@ -887,7 +887,7 @@
     right: auto;
     bottom: calc(env(safe-area-inset-bottom) + 16px);
     transform: translateX(-50%);
-    grid-template-columns: repeat(5, 88px);
+    grid-template-columns: repeat(6, 88px);
     padding: 6px;
     border: 1px solid var(--line-2);
     border-radius: var(--r-pill);
