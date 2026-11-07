@@ -226,7 +226,7 @@ function WhatIf({ data, m, buy, setBuy, daily, setDaily, salary, setSalary }) {
       </div>
       <div className={s.verdict} data-lv={m.free < 0 ? 'bad' : m.free < 150 ? 'warn' : 'ok'}>
         {m.free >= 0
-          ? <>След това остават <b>{eur(m.free)}</b> свободни, а от декември по <b>{eur(m.monthFree)}</b> на месец.</>
+          ? <>След това остават <b>{eur(m.free)}</b> свободни до февруари. От декември всяка заплата ще ти оставя по <b>{eur(m.monthFree)}</b>: {eur(m.salary)} минус сметките ({eur(m.fixedSum)}) и {eur(m.daily)} на ден за всичко останало ({eur(m.everyday)}).</>
           : <>Не стига: на {dm(m.low.d)} ще си с <b>{eur(-m.free)}</b> под резерва. Изчакай заплатата или намали на ден.</>}
       </div>
     </Tile>
