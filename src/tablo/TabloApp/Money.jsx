@@ -810,7 +810,7 @@ export default function Money() {
       <Fixed m={m} />
       <Bank data={data} m={m} />
       <Ledger m={m} />
-      <p className={s.source}>Към {dm(data.asOf)} · карта от {dm(data.period[0])} до {dm(data.period[1])} (извлечение от Paynetics), Булбанк, Trading 212. Напред е сметка, не обещание.</p>
+      <p className={s.source}>Към {dm(data.asOf)} · карта от {dm(data.period[0])} до {dm(data.period[1])} (извлечение от Paynetics{data.cardEnd && data.cardEnd < data.period[1] ? ` до ${dm(data.cardEnd)}, после от Trading 212 без имената` : ''}), Булбанк. Обновява се всеки час. Напред е сметка, не обещание.</p>
     </div>
   )
 }
