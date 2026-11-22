@@ -304,7 +304,7 @@ export default function InvestDashboard() {
       <main className={styles.page}>
         <div className={styles.center}>
           <p>Таблото е зад входа на Blag.</p>
-          <a className={styles.button} href="/">Влез в приложението</a>
+          <a className={styles.button} href="/?next=/invest/">Влез в приложението</a>
         </div>
       </main>
     )

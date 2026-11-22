@@ -6,6 +6,7 @@ import { captureSource } from './utils/source'
 import { setupPwaAutoUpdate } from './lib/pwaUpdate'
 import { startOutbox } from './lib/outbox'
 import { installErrorReporting } from './lib/reportError'
+import { setupReturnTo } from './lib/returnTo'
 
 /* Преди всичко останало: кука, сложена след счупването, не лови счупването. */
 installErrorReporting()
@@ -16,6 +17,8 @@ startOutbox()
 // Read before anything renders: it strips the parameter from the address, and
 // a render that got there first could leave the stripped URL in history twice.
 captureSource()
+// След входа — обратно към бележките/таблото, ако оттам са пратили човека.
+setupReturnTo()
 setupPwaAutoUpdate()
 
 createRoot(document.getElementById('root')).render(

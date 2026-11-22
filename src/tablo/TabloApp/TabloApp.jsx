@@ -143,7 +143,7 @@ export default function TabloApp() {
       <main className={styles.page}>
         <div className={styles.center}>
           <p>Таблото е зад входа на Blag.</p>
-          <a className={styles.primary} href="/">Влез в приложението</a>
+          <a className={styles.primary} href="/?next=/tablo/">Влез</a>
         </div>
       </main>
     )

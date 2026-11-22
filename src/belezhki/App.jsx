@@ -33,7 +33,7 @@ export default function App() {
       <main className={styles.page}>
         <div className={styles.center}>
           {state === 'loading' && <p>Зарежда…</p>}
-          {state === 'signedOut' && (<><p>Бележките са зад входа на Blag.</p><a className={styles.primary} href="/">Влез в приложението</a></>)}
+          {state === 'signedOut' && (<><p>Бележките са зад входа на Blag.</p><a className={styles.primary} href="/?next=/belezhki/">Влез</a></>)}
           {state === 'denied' && <p>Нямаш достъп.</p>}
           {state === 'error' && <p>Грешка: {note}</p>}
         </div>
