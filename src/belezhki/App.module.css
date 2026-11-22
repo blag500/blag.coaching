@@ -1,7 +1,11 @@
+:global(html), :global(body) { background: var(--ground); }
+
+/* над елементчетата на фона (Floaters): самата страница е прозрачна */
 .page {
+  position: relative;
+  z-index: 1;
   min-height: 100dvh;
   padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 40px);
-  background: var(--ground);
   color: var(--ink);
   font-family: var(--font);
 }

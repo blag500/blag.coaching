@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import Notes from './Notes.jsx'
+import Floaters from './Floaters.jsx'
 import styles from './App.module.css'
 
 function greeting(d) {
@@ -42,6 +43,8 @@ export default function App() {
   }
 
   return (
+    <>
+    <Floaters />
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
@@ -54,5 +57,6 @@ export default function App() {
       </header>
       <Notes />
     </main>
+    </>
   )
 }
