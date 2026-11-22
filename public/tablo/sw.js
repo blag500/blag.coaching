@@ -11,8 +11,8 @@ self.addEventListener('push', (e) => {
   e.waitUntil(self.registration.showNotification(d.title || 'Табло', {
     body: d.body || '',
     tag: d.tag || 'tablo',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/tablo/icon-192.png',
+    badge: '/tablo/icon-192.png',
     data: { url: d.url || '/tablo/#notes' },
   }))
 })
