@@ -41,3 +41,17 @@
   font-weight: 700;
   text-decoration: none;
 }
+.side { display: flex; align-items: center; gap: 10px; }
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.refresh:active { transform: rotate(-90deg); transition: transform var(--dur) var(--ease); }

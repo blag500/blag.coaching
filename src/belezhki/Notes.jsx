@@ -106,9 +106,10 @@ export default function Notes() {
     const onVis = () => { if (document.visibilityState === 'visible') { load(); tick((x) => x + 1) } }
     const onHash = () => setOpenId((location.hash.match(/^#notes\/(.+)$/) || [])[1] || null)
     const t = setInterval(() => tick((x) => x + 1), 30000)
+    const r = setInterval(() => { if (document.visibilityState === 'visible' && !/^#notes\/./.test(location.hash)) load() }, 60000)
     document.addEventListener('visibilitychange', onVis)
     window.addEventListener('hashchange', onHash)
-    return () => { clearInterval(t); document.removeEventListener('visibilitychange', onVis); window.removeEventListener('hashchange', onHash) }
+    return () => { clearInterval(t); clearInterval(r); document.removeEventListener('visibilitychange', onVis); window.removeEventListener('hashchange', onHash) }
   }, [load])
 
   const open = (id) => { setOpenId(id); history.replaceState(null, '', id ? `#notes/${id}` : location.pathname) }
