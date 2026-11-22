@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import webpush from 'npm:web-push'
+// Версията е заключена: без нея средата на Supabase (11.2026) не стартира функцията (BOOT_ERROR).
+import webpush from 'npm:web-push@3.6.7'
 
 /* tablo-remind — праща напомнянията от бележките в таблото (150).
  *
@@ -10,12 +11,16 @@ import webpush from 'npm:web-push'
  * се трият. Ключът VAPID е същият като на приложението. */
 
 const VAPID_PUBLIC_KEY = 'BCPm_aC-y7XxsFPGmfD3HitOSaQu8o7q7iWhKsB3iKMcNpBPFeX72JLD3v-P2EYeiWZFeLmmslC1fBS4PvDWbSc'
-webpush.setVapidDetails('mailto:nikolay.blagyov@gmail.com', VAPID_PUBLIC_KEY, Deno.env.get('VAPID_PRIVATE_KEY')!)
+let vapidErr = ''
+try {
+  webpush.setVapidDetails('mailto:nikolay.blagyov@gmail.com', VAPID_PUBLIC_KEY, Deno.env.get('VAPID_PRIVATE_KEY')!)
+} catch (e) { vapidErr = String(e) }
 
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { 'Content-Type': 'application/json' } })
 
 Deno.serve(async (req) => {
+  if (vapidErr) return json({ error: `vapid: ${vapidErr}` }, 500)
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
   const { data: sec } = await admin.from('app_secrets').select('value').eq('name', 'reminder').maybeSingle()
