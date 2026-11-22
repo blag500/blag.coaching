@@ -13,6 +13,10 @@
       "destination": "/tablo/index.html"
     },
     {
+      "source": "/belezhki/",
+      "destination": "/belezhki/index.html"
+    },
+    {
       "source": "/shop/",
       "destination": "/shop/index.html"
     },
@@ -47,6 +51,11 @@
     {
       "source": "/tablo",
       "destination": "/tablo/",
+      "permanent": false
+    },
+    {
+      "source": "/belezhki",
+      "destination": "/belezhki/",
       "permanent": false
     },
     {

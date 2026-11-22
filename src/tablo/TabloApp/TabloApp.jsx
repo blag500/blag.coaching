@@ -7,7 +7,6 @@ import Work from './Work.jsx'
 import Audit from './Audit.jsx'
 import Shop from './Shop.jsx'
 import Money from './Money.jsx'
-import Notes from './Notes.jsx'
 import styles from './TabloApp.module.css'
 
 /* Личното табло (/tablo/).
@@ -16,7 +15,6 @@ import styles from './TabloApp.module.css'
  * тук; вижда го само собственикът от tablo_owner. Пет раздела, всеки с
  * една работа:
  *   Сега   — какво правя сега: стъпката, чакащото теб, решенията, бизнесът.
- *   Бележки — записваш бързо, отмяташ, напомня на телефона (150, Notes.jsx).
  *   План   — седмицата и идеите.
  *   Одит   — отвореното и предложенията; поправеното е сгънато.
  *   Пари   — приходи, разходи и графикът напред (tablo_money, 149).
@@ -31,7 +29,6 @@ import styles from './TabloApp.module.css'
 
 const TABS = [
   { id: 'now', label: 'Сега', icon: <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /> },
-  { id: 'notes', label: 'Бележки', icon: <path d="M5 4h10l4 4v12H5zM15 4v4h4M9 12h6M9 16h4" /> },
   { id: 'plan', label: 'План', icon: <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /> },
   { id: 'audit', label: 'Одит', icon: <path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" /> },
   { id: 'money', label: 'Пари', icon: <path d="M3 7h18v10H3zM7 12h.01M17 12h.01M12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" /> },
@@ -45,7 +42,7 @@ function greeting(d) {
 }
 
 function tabFromHash() {
-  const h = window.location.hash.replace('#', '').split('/')[0]
+  const h = window.location.hash.replace('#', '')
   return TABS.some((t) => t.id === h) ? h : 'now'
 }
 
@@ -197,7 +194,6 @@ export default function TabloApp() {
         {note && <p className={styles.note} role="status">{note}</p>}
 
         {tab === 'now' && <Now items={items} daily={daily} business={business} onSave={saveItem} onGo={go} />}
-        {tab === 'notes' && <Notes />}
         {tab === 'plan' && <Plan items={items} onSave={saveItem} onAdd={addItem} />}
         {tab === 'audit' && <Audit items={items} onSave={saveItem} />}
         {tab === 'money' && <Money />}

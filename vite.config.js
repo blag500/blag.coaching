@@ -16,7 +16,7 @@ export default defineConfig({
     host: true,
   },
   /* Пет страници: приложението, таблото за инвестициите (/invest/),
-     личното табло (/tablo/), онлайн магазинът (/shop/) и светът (/svyat/). Другите три ползват
+     личното табло (/tablo/), бележките (/belezhki/), онлайн магазинът (/shop/) и светът (/svyat/). Другите три ползват
      същия Supabase клиент и същите променливи, но не и обвивката. */
   build: {
     rollupOptions: {
@@ -24,6 +24,7 @@ export default defineConfig({
         main: 'index.html',
         invest: 'invest/index.html',
         tablo: 'tablo/index.html',
+        belezhki: 'belezhki/index.html',
         shop: 'shop/index.html',
         svyat: 'svyat/index.html',
       },
@@ -121,7 +122,7 @@ export default defineConfig({
         /* Пробната страница на Чийт Код не е част от приложението: снимките ѝ
            са мегабайти, а предварителният кеш ги дава на всеки клиент при
            следващото обновяване. */
-        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'shop/**', 'assets/shop-*', 'svyat/**', 'assets/svyat-*', 'assets/Scene-*'],
+        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'belezhki/**', 'assets/belezhki-*', 'shop/**', 'assets/shop-*', 'svyat/**', 'assets/svyat-*', 'assets/Scene-*'],
         /* Предварителният кеш е за обвивката, не за снимките.
            Дотук влизаше всичко — рецепти, ястия, фонове, логото за имейлите —
            около 7 MB, които всеки клиент теглеше при инсталиране и наново
@@ -143,15 +144,15 @@ export default defineConfig({
         }],
       },
     }),
-    /* VitePWA слага манифеста на приложението във всяка страница. Таблото има
-       свой (/tablo/manifest.webmanifest — отделна иконка с известия за
-       бележките), и два манифеста в една страница оставят iOS да избира. */
+    /* VitePWA слага манифеста на приложението във всяка страница. Бележките
+       имат свой (/belezhki/manifest.webmanifest — отделна иконка с известия),
+       и два манифеста в една страница оставят iOS да избира. */
     {
-      name: 'tablo-own-manifest',
+      name: 'own-manifest',
       enforce: 'post',
       transformIndexHtml: {
         order: 'post',
-        handler: (html) => (html.includes('/tablo/manifest.webmanifest')
+        handler: (html) => (html.includes('/belezhki/manifest.webmanifest')
           ? html.replace(/\s*<link rel="manifest" href="\/manifest\.webmanifest"[^>]*>/, '')
           : html),
       },

@@ -1,25 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { supabase } from '../../lib/supabase'
-import { parseWhen, quick, whenLabel } from '../when'
+import { supabase } from '../lib/supabase'
+import { parseWhen, quick, whenLabel } from './when'
 import styles from './Notes.module.css'
 
-/* Бележки (150): записваш бързо, отмяташ, телефонът напомня.
+/* Бележки (150, /belezhki/): личният план — отделно от таблото, което е за
+ * работата. Записваш бързо, отмяташ, телефонът напомня.
  *
  * Полето горе приема изречение — ако в него има време („утре в 9 …“), то става
  * напомняне само. Първият ред е заглавието, останалите — текстът. Картата се
  * отваря в лист отдолу: текст, отметки, час, област, закачане. Връзките в
- * текста са живи. Известията идват от tablo-remind през /tablo/sw.js и
+ * текста са живи. Известията идват от tablo-remind през /belezhki/sw.js и
  * отварят #notes/<id>. Пише и Claude (by_claude), когато кажеш „запиши ми“. */
 
+// Личните области — работата си е в таблото.
 export const AREAS = [
-  { id: 'blag', label: 'Blag', color: '#A594FF' },
-  { id: 'shop', label: 'Магазин', color: '#4CC38A' },
-  { id: 'cheat', label: 'Чийт Код', color: '#F29A4A' },
-  { id: 'content', label: 'Съдържание', color: '#E58BD0' },
+  { id: 'si', label: 'Си', color: '#FF7A70' },
   { id: 'body', label: 'Тяло', color: '#5AB8FF' },
+  { id: 'home', label: 'Дом', color: '#4CC38A' },
+  { id: 'moto', label: 'Мотор', color: '#F29A4A' },
   { id: 'money', label: 'Пари', color: '#F2B45A' },
-  { id: 'life', label: 'Лично', color: '#FF7A70' },
+  { id: 'study', label: 'Учене', color: '#A594FF' },
+  { id: 'life', label: 'Друго', color: '#8A90A0' },
 ]
 const areaOf = (id) => AREAS.find((a) => a.id === id)
 const QUICK = [
@@ -40,7 +42,7 @@ const standalone = () => window.matchMedia?.('(display-mode: standalone)').match
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
 
 async function subscribe() {
-  const reg = await navigator.serviceWorker.register('/tablo/sw.js', { scope: '/tablo/' })
+  const reg = await navigator.serviceWorker.register('/belezhki/sw.js', { scope: '/belezhki/' })
   await navigator.serviceWorker.ready
   let sub = await reg.pushManager.getSubscription()
   if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(VAPID) })
@@ -109,7 +111,7 @@ export default function Notes() {
     return () => { clearInterval(t); document.removeEventListener('visibilitychange', onVis); window.removeEventListener('hashchange', onHash) }
   }, [load])
 
-  const open = (id) => { setOpenId(id); history.replaceState(null, '', id ? `#notes/${id}` : '#notes') }
+  const open = (id) => { setOpenId(id); history.replaceState(null, '', id ? `#notes/${id}` : location.pathname) }
 
   const save = useCallback(async (id, patch) => {
     const stamp = new Date().toISOString()
@@ -260,11 +262,11 @@ function Capture({ onAdd }) {
 
 function PushHint({ push }) {
   if (push.perm === 'granted' && !push.err) return null
-  if (push.perm === 'denied') return <p className={styles.hint}>Известията са спрени за таблото — пусни ги от Настройки → Табло.</p>
+  if (push.perm === 'denied') return <p className={styles.hint}>Известията са спрени — пусни ги от Настройки → Бележки.</p>
   if (isIOS() && !standalone()) {
     return (
       <p className={styles.hint}>
-        За напомняния на телефона: в Safari натисни <b>Сподели</b> → <b>Към началния екран</b>, отвори таблото оттам и натисни „Включи известията“.
+        За напомняния на телефона: в Safari натисни <b>Сподели</b> → <b>Към началния екран</b>, отвори бележките оттам и натисни „Включи известията“.
       </p>
     )
   }

@@ -1,0 +1,16 @@
+{
+  "name": "Бележки",
+  "short_name": "Бележки",
+  "description": "Личният план: бележки, отметки, напомняния.",
+  "id": "/belezhki/",
+  "start_url": "/belezhki/",
+  "scope": "/belezhki/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0B0C10",
+  "background_color": "#0B0C10",
+  "icons": [
+    { "src": "/belezhki/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/belezhki/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -7,7 +7,7 @@ import webpush from 'npm:web-push@3.6.7'
  * Вика го разписанието в базата (fire_tablo_remind, всяка минута, само когато
  * има дошло време) със заглавка x-bot-secret. Взима бележките с минал час,
  * които не са пратени и не са отметнати, праща известие до абонаментите на
- * таблото (tablo_push) и ги отбелязва като пратени. Мъртвите абонаменти (404/410)
+ * таблото (tablo_push, страницата /belezhki/) и ги отбелязва като пратени. Мъртвите абонаменти (404/410)
  * се трият. Ключът VAPID е същият като на приложението. */
 
 const VAPID_PUBLIC_KEY = 'BCPm_aC-y7XxsFPGmfD3HitOSaQu8o7q7iWhKsB3iKMcNpBPFeX72JLD3v-P2EYeiWZFeLmmslC1fBS4PvDWbSc'
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     const open = Array.isArray(n.checklist) ? n.checklist.filter((c: { done?: boolean }) => !c.done).length : 0
     const firstLine = String(n.body || '').split('\n').find((l) => l.trim()) ?? ''
     const body = firstLine ? firstLine.slice(0, 160) : open ? `${open} неотметнати` : 'Напомняне'
-    const payload = JSON.stringify({ title: String(n.title).slice(0, 100), body, tag: `note-${n.id}`, url: `/tablo/#notes/${n.id}` })
+    const payload = JSON.stringify({ title: String(n.title).slice(0, 100), body, tag: `note-${n.id}`, url: `/belezhki/#notes/${n.id}` })
     const results = await Promise.allSettled((subs ?? []).map((s) => webpush.sendNotification(s.subscription, payload)))
     results.forEach((r, i) => {
       if (r.status === 'fulfilled') sent++
