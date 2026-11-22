@@ -46,3 +46,8 @@ verify_jwt = false
 # с тайната от app_secrets в заглавката x-bot-secret.
 [functions.cheatcode-mail]
 verify_jwt = false
+
+# tablo-remind праща напомнянията от бележките в таблото (150). Вика го
+# разписанието всяка минута (fire_tablo_remind) с x-bot-secret, без JWT.
+[functions.tablo-remind]
+verify_jwt = false

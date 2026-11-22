@@ -105,7 +105,7 @@
 }
 
 .pill:hover { background: var(--hover); }
-.pill[data-quiet] { color: var(--ink-2); font-weight: 500; cursor: default; }
+.pill[data-quiet] { color: var(--ink-2); font-weight: 500; }
 .pill[data-quiet]:hover { background: var(--card); }
 
 .pill i {

@@ -143,5 +143,18 @@ export default defineConfig({
         }],
       },
     }),
+    /* VitePWA слага манифеста на приложението във всяка страница. Таблото има
+       свой (/tablo/manifest.webmanifest — отделна иконка с известия за
+       бележките), и два манифеста в една страница оставят iOS да избира. */
+    {
+      name: 'tablo-own-manifest',
+      enforce: 'post',
+      transformIndexHtml: {
+        order: 'post',
+        handler: (html) => (html.includes('/tablo/manifest.webmanifest')
+          ? html.replace(/\s*<link rel="manifest" href="\/manifest\.webmanifest"[^>]*>/, '')
+          : html),
+      },
+    },
   ],
 })
