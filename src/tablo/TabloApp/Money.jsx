@@ -155,7 +155,7 @@ function Hero({ data, m }) {
   return (
     <div className={s.hero}>
       <div className={`${s.heroMain} ${styles.tile}`}>
-        <span className={s.kicker}>Свободни за монитор, дрехи, техника</span>
+        <span className={s.kicker}>Свободни след всичко планирано</span>
         <strong className={s.big} style={{ '--lv': lv }}><Count value={m.free} /></strong>
         <span className={s.heroSub}>
           Най-ниската точка до февруари е {eur(m.low.bal)} на {dm(m.low.d)}. Резервът от {eur(data.reserve)} стои настрана.
@@ -198,7 +198,7 @@ function Hero({ data, m }) {
 /* ── „Ако…“: плъзгачите ───────────────────────────────────────────────── */
 
 function WhatIf({ data, m, buy, setBuy, daily, setDaily, salary, setSalary }) {
-  const presets = [...data.outlet.map(([n, v]) => [n, v]), ['Монитор 250 €', 250], ['Монитор 400 €', 400]]
+  const presets = data.outlet.map(([n, v]) => [n, v])
   return (
     <Tile id="ifH" title="Ако…" hint="местиш и всичко отдолу се смята наново" wide className={s.whatif}>
       <div className={s.sliders}>
