@@ -1460,6 +1460,14 @@ export default {
   'landing.nav.lessons':  'LESSONS',
   'landing.nav.faq':      'FAQ',
   'landing.nav.top':      'TOP',
+  'landing.nav.story':    'STORY',
+
+  // Story
+  'story.f1':     'In the gym, when nobody is there',
+  'story.f2':     'My own prep, food by macros, to the gram',
+  'story.f3':     'Varna, 2026 — third and fifth place',
+  'story.f3sub':  'Natural bodybuilder, self-prepared',
+  'story.bridge': 'If you want to take the same road, we can do it together.',
   'landing.pageNavAria':  'Page navigation',
   'landing.heroCta':      'TRAIN WITH ME',
   'landing.lessonsHead':  'will teach you to:',

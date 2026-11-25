@@ -1461,6 +1461,14 @@ export default {
   'landing.nav.lessons':  'УРОЦИ',
   'landing.nav.faq':      'ВЪПРОСИ',
   'landing.nav.top':      'НАЧАЛО',
+  'landing.nav.story':    'ИСТОРИЯ',
+
+  // Story — надписи под кадрите
+  'story.f1':     'В залата, когато няма никой',
+  'story.f2':     'Подготовката е моя, храненето — по макроси, на грам',
+  'story.f3':     'Варна, 2026 — трето и пето място',
+  'story.f3sub':  'Натурален културист, сам подготвен',
+  'story.bridge': 'Ако искаш да минеш по същия път, можем заедно.',
   'landing.pageNavAria':  'Навигация по страницата',
   'landing.heroCta':      'ТРЕНИРАЙ С МЕН',
   'landing.lessonsHead':  'ще те научи как да:',

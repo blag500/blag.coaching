@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import LangToggle from '../LangToggle/LangToggle'
 import Lessons from './Lessons'
+import Story from './Story'
 import DotNav from './DotNav'
 import FrameSheet from './FrameSheet'
 import InstallDemo from './InstallDemo'
@@ -23,6 +24,7 @@ const FAQ_KEYS = [
 
 const SECTION_IDS = [
   { id: 'top',     labelKey: 'landing.nav.top'     },
+  { id: 'story',   labelKey: 'landing.nav.story'   },
   { id: 'lessons', labelKey: 'landing.nav.lessons' },
   { id: 'faq',     labelKey: 'landing.nav.faq'     },
 ]
@@ -33,8 +35,6 @@ export default function LandingPage({ onContinue, onLogin }) {
   const [installOpen, setInstallOpen] = useState(false)
 
   const sections = SECTION_IDS.map(s => ({ id: s.id, label: t(s.labelKey) }))
-  const offerLine = t('landing.offer')
-  const ticker = Array.from({ length: 4 }, () => offerLine).join('   ·   ') + '   ·   '
 
   const go = id => e => {
     e.preventDefault()
@@ -118,6 +118,9 @@ export default function LandingPage({ onContinue, onLogin }) {
 
         <span className={styles.scrollHint} aria-hidden="true" />
       </section>
+
+      {/* ── The story: pictures first, one line under each ──────────────── */}
+      <Story />
 
       {/* ── What he teaches ────────────────────────────────────────────── */}
       <section className={`${styles.section} ${styles.lessonsSection}`} id="lessons">
@@ -209,12 +212,6 @@ export default function LandingPage({ onContinue, onLogin }) {
         </FrameSheet>
       )}
 
-      <div className={styles.ticker} role="note">
-        <div className={styles.tickerTrack}>
-          <span className={styles.tickerRun}>{ticker}</span>
-          <span className={styles.tickerRun} aria-hidden="true">{ticker}</span>
-        </div>
-      </div>
     </div>
   )
 }
