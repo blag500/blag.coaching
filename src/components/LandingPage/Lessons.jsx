@@ -5,7 +5,7 @@ import AppShowcase from './AppShowcase'
 import FrameSheet from './FrameSheet'
 import styles from './Lessons.module.css'
 
-const LESSON_KEYS = [
+export const LESSON_KEYS = [
   { id: 'train',   wordKey: 'lessons.train',    film: '/lessons/5765.mp4', webm: '/lessons/5765.webm' },
   { id: 'pose',    wordKey: 'lessons.pose',     film: '/hero.mp4',         webm: '/hero.webm' },
   { id: 'app',     wordKey: 'lessons.progress', app: true },
@@ -13,7 +13,7 @@ const LESSON_KEYS = [
   { id: 'recover', wordKey: 'lessons.recover' },
 ]
 
-function Sheet({ lesson, word, closeLabel, onClose }) {
+export function Sheet({ lesson, word, closeLabel, onClose }) {
   const videoRef = useRef(null)
 
   useEffect(() => {
