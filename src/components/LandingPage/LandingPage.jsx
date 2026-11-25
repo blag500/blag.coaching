@@ -1,34 +1,18 @@
 import { useState } from 'react'
 import { useSettings } from '../../contexts/SettingsContext'
 import LangToggle from '../LangToggle/LangToggle'
-import { Sheet, LESSON_KEYS } from './Lessons'
+import Lessons from './Lessons'
+import DotNav from './DotNav'
 import FrameSheet from './FrameSheet'
 import InstallDemo from './InstallDemo'
-import AppShowcase from './AppShowcase'
-import styles from './Landing.module.css'
+import styles from './LandingPage.module.css'
 
 /**
- * The top of the funnel, drawn after dsgnbyhl.com (25.11): a quiet dark page,
- * a grotesque set large and plain, one accent line in italic gold, hairlines
- * instead of boxes, and the two asks as a filled pill and a plain link.
- *
- * Order: the stage in Varna (the picture says who this is before any
- * sentence does) → the road there → what he teaches → the free app → the
- * questions → write to him. Two offers, never mixed: write to him, or take
- * the app for free.
- *
- * The old landing's styles stay in LandingPage.module.css — CoachOffer
- * still borrows them.
+ * The top of the funnel. Someone arrives from a video knowing a name and
+ * nothing else, so the page answers, in order: what is this, what does it do,
+ * how does it work, who is behind it, what does it cost, and what about the
+ * thing I'm worried about. Then it asks once.
  */
-
-const DM = 'https://ig.me/m/niki.blggg'
-const IG = 'https://www.instagram.com/niki.blggg/'
-const TT = 'https://www.tiktok.com/@blag.coaching'
-
-const PATH = [
-  { src: '/hero-poster.jpg', pos: '50% 40%', capKey: 'story.f1' },
-  { src: '/coach-bg.jpg',    pos: '50% 35%', capKey: 'story.f2' },
-]
 
 const FAQ_KEYS = [
   { qKey: 'landing.faq.q1', aKey: 'landing.faq.a1' },
@@ -37,209 +21,183 @@ const FAQ_KEYS = [
   { qKey: 'landing.faq.q4', demo: true },
 ]
 
-const NAV = [
-  { id: 'path',    key: 'lp.nav.path' },
-  { id: 'lessons', key: 'lp.nav.lessons' },
-  { id: 'app',     key: 'lp.nav.app' },
-  { id: 'faq',     key: 'lp.nav.faq' },
+const SECTION_IDS = [
+  { id: 'top',     labelKey: 'landing.nav.top'     },
+  { id: 'lessons', labelKey: 'landing.nav.lessons' },
+  { id: 'faq',     labelKey: 'landing.nav.faq'     },
 ]
-
-const Arrow = () => (
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 12h14M13 6l6 6-6 6" />
-  </svg>
-)
-
-const Out = () => (
-  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-       strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M7 17 17 7M8 7h9v9" />
-  </svg>
-)
 
 export default function LandingPage({ onContinue, onLogin }) {
   const { t } = useSettings()
   const [openQ, setOpenQ] = useState(null)
-  const [lesson, setLesson] = useState(null)
   const [installOpen, setInstallOpen] = useState(false)
 
+  const sections = SECTION_IDS.map(s => ({ id: s.id, label: t(s.labelKey) }))
+  const offerLine = t('landing.offer')
+  const ticker = Array.from({ length: 4 }, () => offerLine).join('   ·   ') + '   ·   '
+
   const go = id => e => {
-    e?.preventDefault()
+    e.preventDefault()
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
     <div className={styles.page}>
 
-      {/* ── Bar ─────────────────────────────────────────────────────────── */}
+      <DotNav sections={sections} />
+
+      {/* ── Bar ────────────────────────────────────────────────────────── */}
       <header className={styles.bar}>
-        <a className={styles.logo} href="#top" onClick={go('top')}>
-          <span className={styles.logoBox} aria-hidden="true" />
-          BLAG COACHING
-        </a>
-        <nav className={styles.nav}>
-          {NAV.map(n => (
-            <a key={n.id} href={`#${n.id}`} onClick={go(n.id)}>{t(n.key)}</a>
-          ))}
+        <nav className={styles.barNav}>
+          <a href="#lessons" onClick={go('lessons')}>{t('landing.nav.lessons')}</a>
+          <a href="#faq"     onClick={go('faq')}>{t('landing.nav.faq')}</a>
         </nav>
         <LangToggle variant="inline" />
       </header>
 
-      {/* ── The stage ───────────────────────────────────────────────────── */}
+      {/* Езиков превключвател за телефони — bar-ът е скрит под 860px, така
+          че посетителят от мобилно устройство иначе няма как да го намери
+          преди да види логин формата. */}
+      <div className={styles.mobileLang}>
+        <LangToggle variant="pill" />
+      </div>
+
+      {/* ── Hero ───────────────────────────────────────────────────────── */}
       <section className={styles.hero} id="top">
-        <figure className={styles.heroPhoto}>
-          <img src="/story/varna.webp" alt={t('landing.stageAlt')} fetchpriority="high" />
-          <figcaption>{t('story.f3')}</figcaption>
-        </figure>
-
-        <div className={styles.heroText}>
-          <h1 className={styles.display}>
-            Blag Coaching
-            <em className={styles.accentLine}>&amp; Blag app</em>
-          </h1>
-          <p className={styles.lead}>{t('lp.lead')}</p>
-          <div className={styles.actions}>
-            <a className={styles.pill} href={DM} target="_blank" rel="noopener noreferrer">
-              {t('lp.write')}
-              <span className={styles.pillDot}><Arrow /></span>
-            </a>
-            <a className={styles.textLink} href="#app" onClick={go('app')}>
-              {t('lp.appFree')} <Arrow />
-            </a>
-          </div>
-          <p className={styles.meta}>
-            <a href={IG} target="_blank" rel="noopener noreferrer">Instagram <Out /></a>
-            <span aria-hidden="true">·</span>
-            <a href={TT} target="_blank" rel="noopener noreferrer">TikTok <Out /></a>
-          </p>
-        </div>
-      </section>
-
-      {/* ── The road ────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="path">
-        <div className={styles.split}>
-          <h2 className={styles.h2}>{t('lp.pathHead')}</h2>
-          <div className={styles.stat}>
-            <span className={styles.statBig}>{t('lp.statBig')}</span>
-            <span className={styles.statCap}>{t('lp.statCap')}</span>
-          </div>
-        </div>
-        <div className={styles.cards}>
-          {PATH.map((f, i) => (
-            <figure key={f.src} className={styles.card}>
-              <img src={f.src} alt="" loading="lazy" decoding="async" style={{ objectPosition: f.pos }} />
-              <figcaption>
-                <span className={styles.num}>{String(i + 1).padStart(2, '0')}</span>
-                {t(f.capKey)}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        <p className={styles.bridge}>{t('story.bridge')}</p>
-      </section>
-
-      {/* ── Lessons ─────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="lessons">
-        <div className={styles.split}>
-          <h2 className={styles.h2}>{t('lp.lessonsHead')}</h2>
-          <p className={styles.side}>{t('lp.lessonsSide')}</p>
-        </div>
-        <ol className={styles.rows}>
-          {LESSON_KEYS.map((l, i) => (
-            <li key={l.id}>
-              <button
-                type="button"
-                className={styles.row}
-                onClick={() => l.app ? go('app')() : setLesson(l)}
-              >
-                <span className={styles.num}>{String(i + 1).padStart(2, '0')}</span>
-                <span className={styles.rowWord}>
-                  {t(l.wordKey)}
-                  {l.app && <em className={styles.rowAccent}>{t('lp.withApp')}</em>}
-                </span>
-                <span className={styles.rowGo}><Arrow /></span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        <a className={styles.outline} href={DM} target="_blank" rel="noopener noreferrer">
-          {t('lp.lessonsCta')} <Arrow />
-        </a>
-      </section>
-
-      {/* ── The app ─────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="app">
-        <div className={styles.panel}>
-          <div className={styles.panelText}>
-            <p className={styles.kicker}>{t('lessons.appEyebrow')}</p>
-            <h2 className={styles.h2}>
+        <div className={styles.sheet}>
+          <img
+            className={styles.poster}
+            src="/poster.webp"
+            alt=""
+            fetchpriority="high"
+          />
+          <div className={styles.ink}>
+            <h1 className={styles.inkName}>
+              Blag Coaching
+              <span className={styles.inkAmp}>&amp;</span>
               Blag app
-              <em className={styles.accentLine}>{t('lp.appAccent')}</em>
-            </h2>
-            <p className={styles.lead}>{t('lessons.appLead1')} {t('lessons.appLead2')}</p>
-            <div className={styles.actions}>
-              <button type="button" className={styles.outline} onClick={() => onContinue?.()}>
-                {t('lp.register')} <Arrow />
-              </button>
-              <button type="button" className={styles.quiet} onClick={() => setInstallOpen(true)}>
-                {t('lp.install')}
-              </button>
-            </div>
+            </h1>
           </div>
-          <div className={styles.panelShow}><AppShowcase /></div>
+        </div>
+        <span className={styles.posterShade} aria-hidden="true" />
+
+        <a className={styles.heroCta} href="#lessons" onClick={go('lessons')}>
+          {t('landing.heroCta')}
+        </a>
+
+        <div className={styles.socials}>
+          <a
+            className={styles.social}
+            href="https://www.instagram.com/niki.blggg/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+          >
+            <svg className={styles.socialIcon} viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="5.5"
+                fill="none" stroke="currentColor" strokeWidth="1.7" />
+              <circle cx="12" cy="12" r="4.2"
+                fill="none" stroke="currentColor" strokeWidth="1.7" />
+              <circle cx="17.4" cy="6.6" r="1.25" fill="currentColor" />
+            </svg>
+            <span>Instagram</span>
+          </a>
+          <a
+            className={styles.social}
+            href="https://www.tiktok.com/@blag.coaching"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok"
+          >
+            <svg className={styles.socialIcon} viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M16.5 3.2c.3 2.02 1.53 3.6 3.5 3.9v2.42c-1.2.08-2.35-.23-3.44-.86v5.66c0 2.9-2.13 5.18-4.98 5.18-2.6 0-4.66-1.9-4.66-4.42 0-2.7 2.28-4.66 5.02-4.24v2.5c-.3-.1-.63-.15-.98-.12-1.1.1-1.9.94-1.86 2.02.04 1.06.9 1.86 1.98 1.82 1.1-.04 1.86-.9 1.86-2.06V3.2h2.56Z" />
+            </svg>
+            <span>TikTok</span>
+          </a>
+        </div>
+
+        <span className={styles.scrollHint} aria-hidden="true" />
+      </section>
+
+      {/* ── What he teaches ────────────────────────────────────────────── */}
+      <section className={`${styles.section} ${styles.lessonsSection}`} id="lessons">
+        <div className={styles.lessonsBg} aria-hidden="true" />
+        <div className={styles.lessonsWash} aria-hidden="true" />
+        <span className={styles.markLink}>
+          <span className={styles.markText}>THE BLAG COACH</span>
+        </span>
+        <h2 className={styles.h2}>{t('landing.lessonsHead')}</h2>
+        <Lessons />
+
+        <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/niki.blggg"
+           target="_blank" rel="noopener noreferrer">
+          {t('landing.lessonsCta')}
+        </a>
+
+        {/* Пътят без коуч, изнесен като реални бутони — досегашният тих ред
+            се четеше като бележка под линия и посетителите не забелязваха, че
+            приложението може да се вземе без пакет. Двата бутона наследяват
+            heroCta стъклото, но с по-мек акцент, за да не се бият с основния
+            CTA над тях. */}
+        <div className={styles.altActions}>
+          <button
+            className={`${styles.heroCta} ${styles.altCta}`}
+            onClick={() => setInstallOpen(true)}
+            type="button"
+          >
+            {t('landing.installCta')}
+          </button>
+          <a
+            className={`${styles.heroCta} ${styles.altCta}`}
+            href="#faq"
+            onClick={go('faq')}
+          >
+            {t('landing.faqCta')}
+          </a>
         </div>
       </section>
 
-      {/* ── FAQ ─────────────────────────────────────────────────────────── */}
-      <section className={styles.section} id="faq">
-        <h2 className={`${styles.h2} ${styles.faqHead}`}>{t('lp.faqHead')}</h2>
-        <div className={styles.rows}>
+      {/* ── FAQ ────────────────────────────────────────────────────────── */}
+      <section className={`${styles.section} ${styles.close}`} id="faq">
+        <h2 className={styles.h2}>{t('landing.faqTitle')}</h2>
+
+        <div className={styles.faq}>
           {FAQ_KEYS.map((item, i) => (
             <div key={item.qKey} className={styles.faqItem}>
               <button
-                type="button"
-                className={styles.row}
+                className={styles.faqQ}
                 onClick={() => item.demo ? setInstallOpen(true) : setOpenQ(openQ === i ? null : i)}
                 aria-expanded={item.demo ? undefined : openQ === i}
+                type="button"
               >
-                <span className={styles.faqQ}>{t(item.qKey)}</span>
-                <span className={`${styles.plus} ${openQ === i ? styles.plusOpen : ''}`} aria-hidden="true">
-                  {item.demo ? <Arrow /> : null}
-                </span>
+                <span>{t(item.qKey)}</span>
+                {item.demo
+                  ? <span className={styles.faqPlay} aria-hidden="true">▶</span>
+                  : <span className={`${styles.faqMark} ${openQ === i ? styles.faqMarkOpen : ''}`} aria-hidden="true" />}
               </button>
               {!item.demo && openQ === i && <p className={styles.faqA}>{t(item.aKey)}</p>}
             </div>
           ))}
         </div>
-      </section>
 
-      {/* ── Write to me ─────────────────────────────────────────────────── */}
-      <footer className={styles.talk}>
-        <div>
-          <h2 className={styles.display}>{t('lp.talkHead')}</h2>
-          <p className={styles.lead}>{t('lp.talkLead')}</p>
-        </div>
-        <div className={styles.talkSide}>
-          <span className={styles.kickerMuted}>{t('lp.talkSmall')}</span>
-          <a className={styles.handle} href={DM} target="_blank" rel="noopener noreferrer">
-            @niki.blggg <Out />
-          </a>
-          <p className={styles.meta}>
-            <a href={IG} target="_blank" rel="noopener noreferrer">Instagram <Out /></a>
-            <a href={TT} target="_blank" rel="noopener noreferrer">TikTok <Out /></a>
-            <button type="button" onClick={() => onContinue?.()}>{t('lp.register')} <Arrow /></button>
-          </p>
-          <button type="button" className={styles.login} onClick={onLogin}>
-            {t('lp.login')} <Arrow />
+        {/* Пътят за създаване на акаунт, изнесен в дъното на FAQ секцията.
+            Първо за нови (по-топъл CTA), после квайет линкът за връщащи се
+            потребители — това следва естествения обем на трафика. */}
+        <div className={styles.faqCtaRow}>
+          <p className={styles.faqCtaLead}>{t('landing.registerLead')}</p>
+          <button
+            className={`${styles.heroCta} ${styles.altCta} ${styles.registerCta}`}
+            onClick={() => onContinue?.()}
+            type="button"
+          >
+            {t('landing.registerCta')}
           </button>
         </div>
-      </footer>
 
-      {lesson && (
-        <Sheet lesson={lesson} word={t(lesson.wordKey)} closeLabel={t('landing.close')}
-               onClose={() => setLesson(null)} />
-      )}
+        <button className={styles.loginLink} onClick={onLogin} type="button">
+          {t('landing.loginLead')} <span className={styles.loginLinkUnder}>{t('landing.loginLink')}</span>
+        </button>
+      </section>
 
       {installOpen && (
         <FrameSheet
@@ -250,6 +208,13 @@ export default function LandingPage({ onContinue, onLogin }) {
           <InstallDemo />
         </FrameSheet>
       )}
+
+      <div className={styles.ticker} role="note">
+        <div className={styles.tickerTrack}>
+          <span className={styles.tickerRun}>{ticker}</span>
+          <span className={styles.tickerRun} aria-hidden="true">{ticker}</span>
+        </div>
+      </div>
     </div>
   )
 }
