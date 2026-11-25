@@ -1461,6 +1461,10 @@ export default {
   'landing.nav.lessons':  'УРОЦИ',
   'landing.nav.faq':      'ВЪПРОСИ',
   'landing.nav.top':      'НАЧАЛО',
+  'landing.nav.app':      'ПРИЛОЖЕНИЕТО',
+  'landing.writeCta':     'ПИШИ МИ',
+  'landing.appCta':       'ПРИЛОЖЕНИЕТО Е БЕЗПЛАТНО',
+  'landing.stageAlt':     'На сцената във Варна, 2026',
   'landing.nav.story':    'ИСТОРИЯ',
 
   // Story — надписи под кадрите

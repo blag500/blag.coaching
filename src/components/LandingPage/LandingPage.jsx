@@ -6,14 +6,18 @@ import Story from './Story'
 import DotNav from './DotNav'
 import FrameSheet from './FrameSheet'
 import InstallDemo from './InstallDemo'
+import AppShowcase from './AppShowcase'
 import styles from './LandingPage.module.css'
 
 /**
  * The top of the funnel. Someone arrives from a video knowing a name and
- * nothing else, so the page answers, in order: what is this, what does it do,
- * how does it work, who is behind it, what does it cost, and what about the
- * thing I'm worried about. Then it asks once.
+ * nothing else. The page opens on the stage in Varna (25.11) — the picture
+ * says who this is before any sentence does — and then goes, in order: the
+ * road there, what he can teach you, the free app, and the questions.
+ * Two offers, never mixed: write to him, or take the app for free.
  */
+
+const DM = 'https://ig.me/m/niki.blggg'
 
 const FAQ_KEYS = [
   { qKey: 'landing.faq.q1', aKey: 'landing.faq.a1' },
@@ -26,6 +30,7 @@ const SECTION_IDS = [
   { id: 'top',     labelKey: 'landing.nav.top'     },
   { id: 'story',   labelKey: 'landing.nav.story'   },
   { id: 'lessons', labelKey: 'landing.nav.lessons' },
+  { id: 'app',     labelKey: 'landing.nav.app'     },
   { id: 'faq',     labelKey: 'landing.nav.faq'     },
 ]
 
@@ -50,6 +55,7 @@ export default function LandingPage({ onContinue, onLogin }) {
       <header className={styles.bar}>
         <nav className={styles.barNav}>
           <a href="#lessons" onClick={go('lessons')}>{t('landing.nav.lessons')}</a>
+          <a href="#app"     onClick={go('app')}>{t('landing.nav.app')}</a>
           <a href="#faq"     onClick={go('faq')}>{t('landing.nav.faq')}</a>
         </nav>
         <LangToggle variant="inline" />
@@ -62,28 +68,31 @@ export default function LandingPage({ onContinue, onLogin }) {
         <LangToggle variant="pill" />
       </div>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className={styles.hero} id="top">
-        <div className={styles.sheet}>
-          <img
-            className={styles.poster}
-            src="/poster.webp"
-            alt=""
-            fetchpriority="high"
-          />
-          <div className={styles.ink}>
-            <h1 className={styles.inkName}>
-              Blag Coaching
-              <span className={styles.inkAmp}>&amp;</span>
-              Blag app
-            </h1>
-          </div>
-        </div>
-        <span className={styles.posterShade} aria-hidden="true" />
+      {/* ── The stage: the cover is the photograph from Varna ──────────── */}
+      <section className={styles.stage} id="top">
+        <img
+          className={styles.stageImg}
+          src="/story/varna.webp"
+          alt={t('landing.stageAlt')}
+          fetchpriority="high"
+        />
+        <div className={styles.stageText}>
+          <p className={styles.stageEyebrow}>{t('story.f3')}</p>
+          <h1 className={styles.stageName}>
+            <span>Blag Coaching</span>
+            <span className={styles.stageAmp}>&amp;</span>
+            <span>Blag app</span>
+          </h1>
+          <p className={styles.stageLine}>{t('story.f3sub')}</p>
 
-        <a className={styles.heroCta} href="#lessons" onClick={go('lessons')}>
-          {t('landing.heroCta')}
-        </a>
+          <div className={styles.stageActions}>
+            <a className={styles.heroCta} href={DM} target="_blank" rel="noopener noreferrer">
+              {t('landing.writeCta')}
+            </a>
+            <a className={`${styles.heroCta} ${styles.altCta}`} href="#app" onClick={go('app')}>
+              {t('landing.appCta')}
+            </a>
+          </div>
 
         <div className={styles.socials}>
           <a
@@ -115,6 +124,7 @@ export default function LandingPage({ onContinue, onLogin }) {
             <span>TikTok</span>
           </a>
         </div>
+        </div>
 
         <span className={styles.scrollHint} aria-hidden="true" />
       </section>
@@ -132,31 +142,28 @@ export default function LandingPage({ onContinue, onLogin }) {
         <h2 className={styles.h2}>{t('landing.lessonsHead')}</h2>
         <Lessons />
 
-        <a className={`${styles.heroCta} ${styles.lessonsCta}`} href="https://ig.me/m/niki.blggg"
+        <a className={`${styles.heroCta} ${styles.lessonsCta}`} href={DM}
            target="_blank" rel="noopener noreferrer">
           {t('landing.lessonsCta')}
         </a>
 
-        {/* Пътят без коуч, изнесен като реални бутони — досегашният тих ред
-            се четеше като бележка под линия и посетителите не забелязваха, че
-            приложението може да се вземе без пакет. Двата бутона наследяват
-            heroCta стъклото, но с по-мек акцент, за да не се бият с основния
-            CTA над тях. */}
-        <div className={styles.altActions}>
-          <button
-            className={`${styles.heroCta} ${styles.altCta}`}
-            onClick={() => setInstallOpen(true)}
-            type="button"
-          >
+      </section>
+
+      {/* ── The app, on its own: the offer that costs nothing ───────────── */}
+      <section className={`${styles.section} ${styles.appSection}`} id="app">
+        <div className={styles.ruled} aria-hidden="true" />
+        <div className={styles.appGlow} aria-hidden="true" />
+        <p className={styles.appEyebrow}>{t('lessons.appEyebrow')}</p>
+        <h2 className={styles.h2}>Blag app</h2>
+        <p className={styles.appLead}>{t('lessons.appLead1')}<br />{t('lessons.appLead2')}</p>
+        <div className={styles.appShow}><AppShowcase /></div>
+        <div className={styles.stageActions}>
+          <button className={styles.heroCta} onClick={() => onContinue?.()} type="button">
+            {t('landing.registerCta')}
+          </button>
+          <button className={`${styles.heroCta} ${styles.altCta}`} onClick={() => setInstallOpen(true)} type="button">
             {t('landing.installCta')}
           </button>
-          <a
-            className={`${styles.heroCta} ${styles.altCta}`}
-            href="#faq"
-            onClick={go('faq')}
-          >
-            {t('landing.faqCta')}
-          </a>
         </div>
       </section>
 

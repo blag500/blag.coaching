@@ -1460,6 +1460,10 @@ export default {
   'landing.nav.lessons':  'LESSONS',
   'landing.nav.faq':      'FAQ',
   'landing.nav.top':      'TOP',
+  'landing.nav.app':      'THE APP',
+  'landing.writeCta':     'MESSAGE ME',
+  'landing.appCta':       'THE APP IS FREE',
+  'landing.stageAlt':     'On stage in Varna, 2026',
   'landing.nav.story':    'STORY',
 
   // Story
