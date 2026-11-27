@@ -33,6 +33,10 @@
       "destination": "/svyat/index.html"
     },
     {
+      "source": "/vrata/",
+      "destination": "/vrata/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -76,6 +80,11 @@
     {
       "source": "/svyat",
       "destination": "/svyat/",
+      "permanent": false
+    },
+    {
+      "source": "/vrata",
+      "destination": "/vrata/",
       "permanent": false
     }
   ],

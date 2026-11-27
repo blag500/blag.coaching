@@ -213,6 +213,16 @@ METRO с макросите на 100 г (`per100`) и грамаж (`net_g`); г
 списък (`node scripts/shop-econt-offices.mjs` → `public/shop/econt-offices.json`).
 Решението — Р16.
 
+**Вратата** (`/vrata/`, `vrata/index.html` → `src/vrata/`): входът на магазина
+„Здраве и Сила“ — седми вход на Vite, без service worker, без supabase-js (три POST-а
+към `zs-access`). Телефон → SMS код веднъж → таен ключ в браузъра → „Отвори“ (Р21).
+Таблици `zs_customers`, `zs_otp`, `zs_devices`, `zs_entries` (151) — пише само
+функцията, чете собственикът; кодовете и ключовете са SHA-256. Режимите са тайни
+на функцията: `ZS_SMS` = test (кодът се връща в отговора) | twilio
+(`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`); `ZS_DOOR` = sim | shelly
+(`SHELLY_SERVER`, `SHELLY_AUTH_KEY`, `SHELLY_DEVICE_ID` — непроверено с устройство).
+Предпазители: 3 кода/15 мин. на номер, 10/час от място, `ZS_SMS_DAILY_CAP` (100) на ден.
+
 **Светът „Благ“** (`/svyat/`, `svyat/index.html` → `src/svyat/`): 3D витрина —
 пети вход на Vite, без service worker (`globIgnores` пази `assets/Scene-*` и
 `assets/svyat-*` извън кеша на приложението). Собствен вид (`src/svyat/svyat.css`),
