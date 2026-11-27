@@ -6,6 +6,8 @@
 //   me     { token }               → qr_id, ако телефонът още е разпознат
 //   scan   { qr, reader, key }     → четецът при вратата: проверява QR-а, отключва, записва
 //   forget { token }               → гаси ключа на този телефон
+//   pair   { name }                → тестов четец (само в sim): връща reader + key
+//   ping   { reader, key }         → четецът казва „жив съм“, получава името си
 //
 // Личният QR (152): ZS1.<qr_id>.<w>.<mac>, w = 30-секундният прозорец,
 // mac = HMAC-SHA256(sha256(ключа), "<qr_id>.<w>"), първите 12 байта. Телефонът го
@@ -13,7 +15,8 @@
 // Един прозорец отваря веднъж (last_qr_window) — снимка на екрана не стига.
 // Един номер — един активен телефон.
 //
-// Четецът се представя с ZS_READER_KEY. Без него се приема само в sim.
+// Четците са редове в zs_readers (153): id + таен ключ (SHA-256 в базата).
+// Тестовата платформа /chetec/ се сдвоява сама с pair, само докато ZS_DOOR = sim.
 //
 // Двата превключвателя са в тайните на функциите — смяната е без код:
 //   ZS_SMS  = test (по подразбиране) | twilio
@@ -34,7 +37,6 @@ const DOOR = env('ZS_DOOR', 'sim')
 const DAILY_CAP = Number(env('ZS_SMS_DAILY_CAP', '100')) || 100
 const TERMS_VERSION = '2026-11-27-test'
 const TEST = SMS === 'test'
-const READER_KEY = env('ZS_READER_KEY')
 const WINDOW_MS = 30_000
 
 const ORIGINS = ['https://blag-coaching.com', 'https://www.blag-coaching.com', 'https://blag-coaching.vercel.app']
@@ -192,9 +194,41 @@ async function me(body: Record<string, unknown>): Promise<Out> {
   return { status: 200, ok: true, qr_id: cust.qr_id }
 }
 
+async function authReader(body: Record<string, unknown>) {
+  const id = String(body.reader ?? ''), key = String(body.key ?? '')
+  if (!id || key.length < 20) return null
+  const { data } = await db.from('zs_readers').select('id, name, direction, test, revoked_at')
+    .eq('id', id).eq('key_hash', await sha(key)).maybeSingle()
+  if (!data || data.revoked_at) return null
+  // Тестов четец не отваря истинска врата.
+  if (data.test && DOOR !== 'sim') return null
+  await db.from('zs_readers').update({ last_seen_at: new Date().toISOString() }).eq('id', id)
+  return data
+}
+
+async function pair(body: Record<string, unknown>): Promise<Out> {
+  if (DOOR !== 'sim') return { status: 403, error: 'Сдвояване от страницата има само в тестов режим.' }
+  const { count } = await db.from('zs_readers').select('id', { count: 'exact', head: true })
+    .eq('test', true).gt('created_at', new Date(Date.now() - 3600e3).toISOString())
+  if ((count ?? 0) >= 20) return { status: 429, error: 'Много нови четци за час. Опитай по-късно.' }
+  const id = 'test-' + [...crypto.getRandomValues(new Uint8Array(3))].map((x) => x.toString(16).padStart(2, '0')).join('')
+  const name = String(body.name ?? '').trim().slice(0, 40) || 'Тестов четец'
+  const key = randomToken()
+  const { error } = await db.from('zs_readers').insert({ id, name, key_hash: await sha(key), test: true })
+  if (error) return { status: 500, error: 'Не се записа. Опитай пак.' }
+  return { status: 200, ok: true, reader: id, key, name }
+}
+
+async function ping(body: Record<string, unknown>): Promise<Out> {
+  const r = await authReader(body)
+  if (!r) return { status: 401, error: 'Четецът не е разпознат.' }
+  return { status: 200, ok: true, reader: r.id, name: r.name, direction: r.direction }
+}
+
 async function scan(body: Record<string, unknown>): Promise<Out> {
-  const reader = String(body.reader ?? 'sim').slice(0, 40)
-  if (READER_KEY ? body.key !== READER_KEY : DOOR !== 'sim') return { status: 401, error: 'Четецът не е разпознат.' }
+  const r = await authReader(body)
+  if (!r) return { status: 401, error: 'Четецът не е разпознат.' }
+  const reader = r.id
 
   const m = /^ZS1\.([0-9A-F]{10})\.(\d{1,12})\.([A-Za-z0-9_-]{16})$/.exec(String(body.qr ?? '').trim())
   if (!m) return { status: 400, error: 'Това не е QR за вратата.' }
@@ -217,7 +251,7 @@ async function scan(body: Record<string, unknown>): Promise<Out> {
   if (cust.blocked) { await log(cust.id, dev.id, false, 'blocked'); return { status: 403, error: 'Достъпът за този номер е спрян.' } }
   // Един прозорец — едно отваряне. Четецът чете по няколко пъти в секунда: същият
   // прозорец втори път е „вече отворено“, не ново влизане и не грешка.
-  if (dev.last_qr_window != null && w <= Number(dev.last_qr_window)) return { status: 200, ok: true, door: DOOR, repeat: true }
+  if (dev.last_qr_window != null && w <= Number(dev.last_qr_window)) return { status: 200, ok: true, door: DOOR, repeat: true, qr: qrId }
 
   const fail = await openDoor()
   await log(cust.id, dev.id, !fail, fail)
@@ -226,7 +260,7 @@ async function scan(body: Record<string, unknown>): Promise<Out> {
     console.error('zs-access door', fail)
     return { status: 502, error: 'Вратата не отговаря. Опитай пак.' }
   }
-  return { status: 200, ok: true, door: DOOR }
+  return { status: 200, ok: true, door: DOOR, qr: qrId }
 }
 
 async function forget(body: Record<string, unknown>): Promise<Out> {
@@ -251,6 +285,8 @@ Deno.serve(async (req) => {
       case 'verify': out = await verify(body, ua); break
       case 'me': out = await me(body); break
       case 'scan': out = await scan(body); break
+      case 'pair': out = await pair(body); break
+      case 'ping': out = await ping(body); break
       case 'forget': out = await forget(body); break
       default: out = { status: 400, error: 'action' }
     }

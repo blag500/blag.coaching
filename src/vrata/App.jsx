@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { payload, qrPath, windowNow, WINDOW_MS } from './qr.js'
-import Reader from './Reader.jsx'
 
 const URL_ = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zs-access`
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -25,12 +24,6 @@ const get = (k) => { try { return localStorage.getItem(k) } catch { return null 
 const put = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k) } catch { /* */ } }
 const read = () => get(TOKEN)
 const save = (t, q) => { put(TOKEN, t); put(QRID, t ? q : null) }
-
-const useHash = () => {
-  const [h, setH] = useState(() => location.hash)
-  useEffect(() => { const f = () => setH(location.hash); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f) }, [])
-  return h
-}
 
 /** Личният QR — сменя се с всеки 30-секунден прозорец; лентата отдолу показва колко остава. */
 function MyQr({ token, qrId }) {
@@ -64,7 +57,6 @@ function MyQr({ token, qrId }) {
 }
 
 export default function App() {
-  const hash = useHash()
   const [token, setToken] = useState(read)
   const [qrId, setQrId] = useState(() => get(QRID))
   const [mode, setMode] = useState(null)
@@ -122,9 +114,7 @@ export default function App() {
         <p className="v-sub">Здраве и Сила · Брадистилов 10 · денонощно</p>
       </header>
 
-      {hash === '#chetec' && <Reader call={call} />}
-
-      {hash !== '#chetec' && step === 'phone' && (
+      {step === 'phone' && (
         <form className="v-card" onSubmit={(e) => { e.preventDefault(); sendCode() }}>
           <label className="v-label" htmlFor="ph">Телефон</label>
           <input
@@ -140,7 +130,7 @@ export default function App() {
         </form>
       )}
 
-      {hash !== '#chetec' && step === 'code' && (
+      {step === 'code' && (
         <form className="v-card" onSubmit={(e) => { e.preventDefault(); checkCode() }}>
           <label className="v-label" htmlFor="cd">Кодът от SMS-а</label>
           {testCode && <p className="v-testcode">Тестов код: <b>{testCode}</b></p>}
@@ -155,13 +145,13 @@ export default function App() {
         </form>
       )}
 
-      {hash !== '#chetec' && step === 'ready' && (
+      {step === 'ready' && (
         <section className="v-card v-ready">
           {qrId ? <MyQr token={token} qrId={qrId} /> : <div className="v-qr"><div className="v-qr-empty" /></div>}
           <p className="v-note">Покажи го на четеца до вратата. Сменя се на 30 секунди, затова снимка на екрана не отваря.</p>
           {qrId && <p className="v-qrid">Номер {qrId}</p>}
           <button className="v-link" onClick={forget} disabled={busy}>Забрави този телефон</button>
-          {testing && <a className="v-link" href="#chetec">Тестов четец (на втори телефон)</a>}
+          {testing && <a className="v-link" href="/chetec/">Тестов четец (на втори телефон или лаптоп)</a>}
         </section>
       )}
 

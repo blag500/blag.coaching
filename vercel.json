@@ -37,6 +37,10 @@
       "destination": "/vrata/index.html"
     },
     {
+      "source": "/chetec/",
+      "destination": "/chetec/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -85,6 +89,11 @@
     {
       "source": "/vrata",
       "destination": "/vrata/",
+      "permanent": false
+    },
+    {
+      "source": "/chetec",
+      "destination": "/chetec/",
       "permanent": false
     }
   ],

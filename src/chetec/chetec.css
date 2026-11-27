@@ -1,0 +1,90 @@
+/* Четецът — върху простата система (src/plain.css). Чете се от метър:
+   голямо „Заключено / Отключено / Отказ“, цвят само за смисъл. На таблет
+   легнал — камерата вляво, вратата и записът вдясно. */
+
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font); }
+
+.c-page {
+  max-width: 1100px; margin: 0 auto; box-sizing: border-box; min-height: 100dvh;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+}
+.c-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.c-pair { max-width: 420px; margin: 8vh auto 0; }
+.c-pair h1, .c-head h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+.c-note { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.45; }
+.c-label { margin: 0; font-size: 14px; font-weight: 600; }
+.c-input {
+  font: inherit; font-size: 16px; padding: 10px 12px; border-radius: var(--r-md); min-width: 0;
+  border: 1px solid var(--line-2); background: var(--ground); color: var(--ink);
+}
+.c-input:focus { outline: 2px solid var(--select); outline-offset: 1px; }
+.c-btn {
+  font: inherit; font-size: 16px; font-weight: 600; padding: 12px 16px; border: 0;
+  border-radius: var(--r-md); background: var(--ink); color: var(--on-ink); cursor: pointer;
+}
+.c-btn:disabled { opacity: 0.4; }
+.c-ghost {
+  font: inherit; font-size: 14px; padding: 8px 12px; border-radius: var(--r-md); cursor: pointer;
+  border: 1px solid var(--line-2); background: var(--card); color: var(--ink); white-space: nowrap;
+}
+.c-link {
+  font: inherit; font-size: 14px; background: none; border: 0; color: var(--ink-2);
+  text-decoration: underline; cursor: pointer; align-self: flex-start; padding: 6px 0;
+}
+.c-err { margin: 0; padding: 10px 12px; border-radius: var(--r-md); background: var(--bad-bg); color: var(--bad); font-size: 14px; }
+
+.c-term { display: grid; gap: 12px; grid-template-columns: 1fr; }
+.c-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.c-sub { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+.c-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); margin-right: 6px; vertical-align: 1px; }
+.c-dot.is-on { background: var(--ok); }
+.c-dot.is-off { background: var(--bad); }
+
+.c-cam {
+  position: relative; border-radius: var(--r-lg); overflow: hidden; background: #000;
+  aspect-ratio: 4 / 3; outline: 5px solid transparent; outline-offset: -5px;
+  transition: outline-color var(--dur) var(--ease);
+}
+.c-cam video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.c-cam video.is-mirror { transform: scaleX(-1); }
+.c-cam.is-open { outline-color: var(--ok); }
+.c-cam.is-bad { outline-color: var(--bad); }
+.c-frame {
+  position: absolute; inset: 18% 28%; border: 2px solid rgba(255, 255, 255, 0.7); border-radius: var(--r-md);
+  pointer-events: none;
+}
+
+.c-door {
+  border-radius: var(--r-lg); padding: 18px 16px; display: flex; flex-direction: column; gap: 8px;
+  background: var(--sunken); transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.c-lock { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.c-door-text { margin: 0; font-size: 15px; line-height: 1.4; }
+.c-door.is-open { background: var(--ok); color: #fff; }
+.c-door.is-bad { background: var(--bad); color: #fff; }
+.c-bar { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.3); overflow: hidden; }
+.c-bar span { display: block; height: 100%; background: #fff; transform-origin: left; transition: transform 100ms linear; }
+
+.c-log ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; max-height: 300px; overflow: auto; }
+.c-log li {
+  display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: baseline;
+  padding: 7px 0; border-top: 1px solid var(--line); font-size: 14px;
+}
+.c-log li:first-child { border-top: 0; }
+.c-log time, .c-qr { font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
+.c-log li.is-ok span:last-child { color: var(--ok); font-weight: 600; }
+.c-log li.is-bad span:last-child { color: var(--bad); }
+.c-manual summary { cursor: pointer; font-size: 14px; color: var(--ink-2); }
+.c-manual form { display: flex; gap: 8px; margin-top: 8px; }
+.c-manual .c-input { flex: 1; font-family: var(--mono); font-size: 13px; }
+
+@media (min-width: 820px) {
+  .c-term { grid-template-columns: 1.4fr 1fr; grid-template-areas: 'head head' 'cam door' 'cam log'; grid-template-rows: auto auto 1fr; align-items: start; }
+  .c-head { grid-area: head; }
+  .c-cam { grid-area: cam; }
+  .c-door { grid-area: door; }
+  .c-log { grid-area: log; }
+}

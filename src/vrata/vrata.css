@@ -55,14 +55,6 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 .v-qr-bar span { display: block; height: 100%; background: var(--ink); transform-origin: left; transition: transform 250ms linear; }
 .v-qrid { margin: 0; font-family: var(--mono); font-size: 13px; color: var(--ink-2); letter-spacing: 0.08em; }
 
-.v-cam { border-radius: var(--r-lg); overflow: hidden; background: #000; aspect-ratio: 3 / 4; outline: 4px solid transparent; transition: outline-color var(--dur) var(--ease); }
-.v-cam video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.v-cam.is-ok { outline-color: var(--ok); }
-.v-cam.is-bad { outline-color: var(--bad); }
-.v-status { margin: 0; font-size: 17px; font-weight: 600; text-align: center; }
-.v-status.is-ok { color: var(--ok); }
-.v-status.is-bad { color: var(--bad); }
-
 .v-err {
   margin: 0; padding: 10px 12px; border-radius: var(--r-md);
   background: var(--bad-bg); color: var(--bad); font-size: 14px;
