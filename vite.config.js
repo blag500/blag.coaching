@@ -29,6 +29,7 @@ export default defineConfig({
         svyat: 'svyat/index.html',
         vrata: 'vrata/index.html',
         chetec: 'chetec/index.html',
+        biblioteka: 'biblioteka/index.html',
       },
     },
   },
@@ -124,7 +125,7 @@ export default defineConfig({
         /* Пробната страница на Чийт Код не е част от приложението: снимките ѝ
            са мегабайти, а предварителният кеш ги дава на всеки клиент при
            следващото обновяване. */
-        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'belezhki/**', 'assets/belezhki-*', 'shop/**', 'assets/shop-*', 'svyat/**', 'assets/svyat-*', 'vrata/**', 'assets/vrata-*', 'chetec/**', 'assets/chetec-*', 'assets/Scene-*'],
+        globIgnores: ['posing-lib/**', '**/arms.png', '**/arms.jpeg', 'cheatcode/**', 'cokitchen/**', 'invest/**', 'assets/invest-*', 'tablo/**', 'assets/tablo-*', 'belezhki/**', 'assets/belezhki-*', 'shop/**', 'assets/shop-*', 'svyat/**', 'assets/svyat-*', 'vrata/**', 'assets/vrata-*', 'chetec/**', 'assets/chetec-*', 'biblioteka/**', 'assets/biblioteka-*', 'assets/Scene-*'],
         /* Предварителният кеш е за обвивката, не за снимките.
            Дотук влизаше всичко — рецепти, ястия, фонове, логото за имейлите —
            около 7 MB, които всеки клиент теглеше при инсталиране и наново

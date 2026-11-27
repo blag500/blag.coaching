@@ -41,6 +41,10 @@
       "destination": "/chetec/index.html"
     },
     {
+      "source": "/biblioteka/",
+      "destination": "/biblioteka/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -94,6 +98,11 @@
     {
       "source": "/chetec",
       "destination": "/chetec/",
+      "permanent": false
+    },
+    {
+      "source": "/biblioteka",
+      "destination": "/biblioteka/",
       "permanent": false
     }
   ],

@@ -231,6 +231,13 @@ METRO с макросите на 100 г (`per100`) и грамаж (`net_g`); г
 (`SHELLY_SERVER`, `SHELLY_AUTH_KEY`, `SHELLY_DEVICE_ID` — непроверено с устройство).
 Предпазители: 3 кода/15 мин. на номер, 10/час от място, `ZS_SMS_DAILY_CAP` (100) на ден.
 
+**Библиотека** (`/biblioteka/`, `biblioteka/index.html` → `src/biblioteka/`): всички
+страници на сайта на едно място — девети вход на Vite, простата система, без service
+worker. Всяка карта: отвори, нов таб, QR (за отваряне на друго устройство), проверка дали
+отговаря; при вратата — режимът на `zs-access` (само `status`). Списъкът е в
+`src/biblioteka/pages.js`: **нова страница се дописва там**, иначе я няма в библиотеката.
+Без лични линкове (банка, СИС) — repo-то е публично.
+
 **Светът „Благ“** (`/svyat/`, `svyat/index.html` → `src/svyat/`): 3D витрина —
 пети вход на Vite, без service worker (`globIgnores` пази `assets/Scene-*` и
 `assets/svyat-*` извън кеша на приложението). Собствен вид (`src/svyat/svyat.css`),
