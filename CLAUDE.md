@@ -214,9 +214,13 @@ METRO с макросите на 100 г (`per100`) и грамаж (`net_g`); г
 Решението — Р16.
 
 **Вратата** (`/vrata/`, `vrata/index.html` → `src/vrata/`): входът на магазина
-„Здраве и Сила“ — седми вход на Vite, без service worker, без supabase-js (три POST-а
-към `zs-access`). Телефон → SMS код веднъж → таен ключ в браузъра → „Отвори“ (Р21).
-Таблици `zs_customers`, `zs_otp`, `zs_devices`, `zs_entries` (151) — пише само
+„Здраве и Сила“ — седми вход на Vite, без service worker, без supabase-js (POST-ове
+към `zs-access`). Телефон → SMS код веднъж → таен ключ в браузъра → личният QR (Р21, 152):
+всеки номер има `qr_id` от базата, QR-ът е `ZS1.<qr_id>.<30-сек. прозорец>.<HMAC>` и се
+сменя на 30 с (`src/vrata/qr.js` = `qrMac()` във функцията); четецът при вратата праща
+`scan` с `ZS_READER_KEY` (без ключ — само в sim). Един прозорец отваря веднъж, един номер —
+един активен телефон. `/vrata/#chetec` е тестовият четец (камерата, `jsqr`).
+Таблици `zs_customers`, `zs_otp`, `zs_devices`, `zs_entries` (151, 152) — пише само
 функцията, чете собственикът; кодовете и ключовете са SHA-256. Режимите са тайни
 на функцията: `ZS_SMS` = test (кодът се връща в отговора) | twilio
 (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`); `ZS_DOOR` = sim | shelly

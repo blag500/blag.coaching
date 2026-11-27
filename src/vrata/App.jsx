@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { payload, qrPath, windowNow, WINDOW_MS } from './qr.js'
+import Reader from './Reader.jsx'
 
 const URL_ = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/zs-access`
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -18,11 +20,53 @@ async function call(action, body = {}) {
   }
 }
 
-const read = () => { try { return localStorage.getItem(TOKEN) } catch { return null } }
-const save = (t) => { try { t ? localStorage.setItem(TOKEN, t) : localStorage.removeItem(TOKEN) } catch { /* */ } }
+const QRID = 'zs_qr_id'
+const get = (k) => { try { return localStorage.getItem(k) } catch { return null } }
+const put = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k) } catch { /* */ } }
+const read = () => get(TOKEN)
+const save = (t, q) => { put(TOKEN, t); put(QRID, t ? q : null) }
+
+const useHash = () => {
+  const [h, setH] = useState(() => location.hash)
+  useEffect(() => { const f = () => setH(location.hash); addEventListener('hashchange', f); return () => removeEventListener('hashchange', f) }, [])
+  return h
+}
+
+/** Личният QR — сменя се с всеки 30-секунден прозорец; лентата отдолу показва колко остава. */
+function MyQr({ token, qrId }) {
+  const [qr, setQr] = useState(null)
+  const [left, setLeft] = useState(1)
+  useEffect(() => {
+    let w = -1, alive = true
+    const tick = async () => {
+      const now = windowNow()
+      setLeft(1 - (Date.now() % WINDOW_MS) / WINDOW_MS)
+      if (now === w) return
+      w = now
+      const text = await payload(token, qrId, now)
+      if (alive) setQr(qrPath(text))
+    }
+    tick()
+    const id = setInterval(tick, 250)
+    return () => { alive = false; clearInterval(id) }
+  }, [token, qrId])
+  return (
+    <div className="v-qr">
+      {qr ? (
+        <svg viewBox={`0 0 ${qr.size} ${qr.size}`} role="img" aria-label="QR за вратата" shapeRendering="crispEdges">
+          <rect width={qr.size} height={qr.size} fill="#fff" />
+          <path d={qr.d} fill="#000" />
+        </svg>
+      ) : <div className="v-qr-empty" />}
+      <div className="v-qr-bar"><span style={{ transform: `scaleX(${left})` }} /></div>
+    </div>
+  )
+}
 
 export default function App() {
+  const hash = useHash()
   const [token, setToken] = useState(read)
+  const [qrId, setQrId] = useState(() => get(QRID))
   const [mode, setMode] = useState(null)
   const [step, setStep] = useState(token ? 'ready' : 'phone')
   const [phone, setPhone] = useState('')
@@ -31,11 +75,16 @@ export default function App() {
   const [testCode, setTestCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
-  const [opened, setOpened] = useState(false)
-  const timer = useRef(0)
 
   useEffect(() => { call('status').then((d) => d.mode && setMode(d.mode)) }, [])
-  useEffect(() => () => clearTimeout(timer.current), [])
+  // Още ли е разпознат този телефон? (нова регистрация от друг телефон го гаси)
+  useEffect(() => {
+    if (!token) return
+    call('me', { token }).then((d) => {
+      if (d.qr_id) { setQrId(d.qr_id); put(QRID, d.qr_id) }
+      else if (d.error && /не е разпознат|спрян/.test(d.error)) { save(null); setToken(null); setStep('phone'); setErr(d.error) }
+    })
+  }, [token])
 
   const run = async (fn) => { setBusy(true); setErr(''); try { await fn() } finally { setBusy(false) } }
 
@@ -49,23 +98,12 @@ export default function App() {
   const checkCode = () => run(async () => {
     const d = await call('verify', { phone, code })
     if (d.error) return setErr(d.error)
-    save(d.token); setToken(d.token); setStep('ready')
-  })
-
-  const openDoor = () => run(async () => {
-    const d = await call('open', { token })
-    if (d.error) {
-      if (/не е разпознат/.test(d.error)) { save(null); setToken(null); setStep('phone') }
-      return setErr(d.error)
-    }
-    setOpened(true)
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => setOpened(false), 5000)
+    save(d.token, d.qr_id); setToken(d.token); setQrId(d.qr_id); setStep('ready')
   })
 
   const forget = () => run(async () => {
     await call('forget', { token })
-    save(null); setToken(null); setStep('phone'); setPhone(''); setTerms(false)
+    save(null); setToken(null); setQrId(null); setStep('phone'); setPhone(''); setTerms(false)
   })
 
   const testing = mode && (mode.sms === 'test' || mode.door === 'sim')
@@ -84,14 +122,16 @@ export default function App() {
         <p className="v-sub">Здраве и Сила · Брадистилов 10 · денонощно</p>
       </header>
 
-      {step === 'phone' && (
+      {hash === '#chetec' && <Reader call={call} />}
+
+      {hash !== '#chetec' && step === 'phone' && (
         <form className="v-card" onSubmit={(e) => { e.preventDefault(); sendCode() }}>
           <label className="v-label" htmlFor="ph">Телефон</label>
           <input
             id="ph" className="v-input" type="tel" inputMode="tel" autoComplete="tel"
             placeholder="0888 123 456" value={phone} onChange={(e) => setPhone(e.target.value)} required
           />
-          <p className="v-note">Пращаме код веднъж. После този телефон отваря с един бутон.</p>
+          <p className="v-note">Пращаме код веднъж. После този телефон показва твоя QR за вратата.</p>
           <label className="v-check">
             <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
             <span>Приемам правилата на магазина и записа от камерите при влизане.</span>
@@ -100,7 +140,7 @@ export default function App() {
         </form>
       )}
 
-      {step === 'code' && (
+      {hash !== '#chetec' && step === 'code' && (
         <form className="v-card" onSubmit={(e) => { e.preventDefault(); checkCode() }}>
           <label className="v-label" htmlFor="cd">Кодът от SMS-а</label>
           {testCode && <p className="v-testcode">Тестов код: <b>{testCode}</b></p>}
@@ -115,15 +155,13 @@ export default function App() {
         </form>
       )}
 
-      {step === 'ready' && (
+      {hash !== '#chetec' && step === 'ready' && (
         <section className="v-card v-ready">
-          <button className={`v-open${opened ? ' is-open' : ''}`} onClick={openDoor} disabled={busy}>
-            {opened ? 'Отворено — влез' : busy ? 'Отварям…' : 'Отвори'}
-          </button>
-          <p className="v-note">
-            {opened ? 'Бравата е отключена за 3 секунди.' : 'Застани до вратата и натисни. Отвътре вратата се отваря винаги.'}
-          </p>
+          {qrId ? <MyQr token={token} qrId={qrId} /> : <div className="v-qr"><div className="v-qr-empty" /></div>}
+          <p className="v-note">Покажи го на четеца до вратата. Сменя се на 30 секунди, затова снимка на екрана не отваря.</p>
+          {qrId && <p className="v-qrid">Номер {qrId}</p>}
           <button className="v-link" onClick={forget} disabled={busy}>Забрави този телефон</button>
+          {testing && <a className="v-link" href="#chetec">Тестов четец (на втори телефон)</a>}
         </section>
       )}
 

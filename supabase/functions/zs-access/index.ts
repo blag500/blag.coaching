@@ -1,9 +1,19 @@
 // zs-access — входът на магазина „Здраве и Сила“ (/vrata/, миграция 151).
 //
-// Три действия:
-//   start  { phone, terms }   → праща 6-цифрен код (SMS само при регистрация)
-//   verify { phone, code }    → връща таен ключ за този телефон (пази се в браузъра)
-//   open   { token }          → отключва бравата и записва влизането
+// Действията:
+//   start  { phone, terms }        → праща 6-цифрен код (SMS само при регистрация)
+//   verify { phone, code }         → таен ключ за телефона + личният QR номер (qr_id)
+//   me     { token }               → qr_id, ако телефонът още е разпознат
+//   scan   { qr, reader, key }     → четецът при вратата: проверява QR-а, отключва, записва
+//   forget { token }               → гаси ключа на този телефон
+//
+// Личният QR (152): ZS1.<qr_id>.<w>.<mac>, w = 30-секундният прозорец,
+// mac = HMAC-SHA256(sha256(ключа), "<qr_id>.<w>"), първите 12 байта. Телефонът го
+// смята сам и го сменя на 30 с; базата пази само sha256(ключа), с който проверява.
+// Един прозорец отваря веднъж (last_qr_window) — снимка на екрана не стига.
+// Един номер — един активен телефон.
+//
+// Четецът се представя с ZS_READER_KEY. Без него се приема само в sim.
 //
 // Двата превключвателя са в тайните на функциите — смяната е без код:
 //   ZS_SMS  = test (по подразбиране) | twilio
@@ -24,6 +34,8 @@ const DOOR = env('ZS_DOOR', 'sim')
 const DAILY_CAP = Number(env('ZS_SMS_DAILY_CAP', '100')) || 100
 const TERMS_VERSION = '2026-11-27-test'
 const TEST = SMS === 'test'
+const READER_KEY = env('ZS_READER_KEY')
+const WINDOW_MS = 30_000
 
 const ORIGINS = ['https://blag-coaching.com', 'https://www.blag-coaching.com', 'https://blag-coaching.vercel.app']
 const isLocal = (o: string) => /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?$/.test(o)
@@ -37,10 +49,19 @@ async function sha(s: string) {
   const b = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))
   return [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
 }
+const b64url = (b: Uint8Array) =>
+  btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+/** Подписът на QR-а за даден прозорец — същата сметка като в src/vrata/qr.js. */
+export async function qrMac(tokenHash: string, qrId: string, w: number) {
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(tokenHash), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(`${qrId}.${w}`)))
+  return b64url(sig.slice(0, 12))
+}
+
 const randomCode = () => String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, '0')
 const randomToken = () => {
-  const b = crypto.getRandomValues(new Uint8Array(32))
-  return btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  return b64url(crypto.getRandomValues(new Uint8Array(32)))
 }
 
 /** 0888 123 456 · +359 888 123 456 · 00359… → +359888123456; иначе null. */
@@ -142,42 +163,68 @@ async function verify(body: Record<string, unknown>, ua: string): Promise<Out> {
 
   const { data: cust, error: ce } = await db.from('zs_customers')
     .upsert({ phone, terms_version: TERMS_VERSION, terms_at: new Date().toISOString(), test: otp.test }, { onConflict: 'phone' })
-    .select('id, blocked').single()
+    .select('id, blocked, qr_id').single()
   if (ce || !cust) return { status: 500, error: 'Не се записа. Опитай пак.' }
   if (cust.blocked) return { status: 403, error: 'Достъпът за този номер е спрян.' }
+
+  // Един номер — един телефон: новата регистрация гаси старите ключове.
+  await db.from('zs_devices').update({ revoked_at: new Date().toISOString() })
+    .eq('customer_id', cust.id).is('revoked_at', null)
 
   const token = randomToken()
   const { error: de } = await db.from('zs_devices').insert({
     customer_id: cust.id, token_hash: await sha(token), user_agent: ua.slice(0, 300),
   })
   if (de) return { status: 500, error: 'Не се записа. Опитай пак.' }
-  return { status: 200, ok: true, token }
+  return { status: 200, ok: true, token, qr_id: cust.qr_id }
 }
 
-async function open(body: Record<string, unknown>): Promise<Out> {
+async function me(body: Record<string, unknown>): Promise<Out> {
   const token = String(body.token ?? '')
-  if (token.length < 20) return { status: 401, error: 'Телефонът не е разпознат. Влез с номер.' }
+  const gone = { status: 401, error: 'Телефонът не е разпознат. Влез с номер.' }
+  if (token.length < 20) return gone
   const { data: dev } = await db.from('zs_devices')
-    .select('id, revoked_at, customer:zs_customers(id, blocked)').eq('token_hash', await sha(token)).maybeSingle()
+    .select('revoked_at, customer:zs_customers(qr_id, blocked)').eq('token_hash', await sha(token)).maybeSingle()
   // deno-lint-ignore no-explicit-any
   const cust = (dev as any)?.customer
-  if (!dev || dev.revoked_at || !cust) return { status: 401, error: 'Телефонът не е разпознат. Влез с номер.' }
-  if (cust.blocked) {
-    await db.from('zs_entries').insert({ customer_id: cust.id, device_id: dev.id, ok: false, door: DOOR, reason: 'blocked' })
-    return { status: 403, error: 'Достъпът за този номер е спрян.' }
-  }
+  if (!dev || dev.revoked_at || !cust) return gone
+  if (cust.blocked) return { status: 403, error: 'Достъпът за този номер е спрян.' }
+  return { status: 200, ok: true, qr_id: cust.qr_id }
+}
 
-  // Едно отваряне на 5 секунди от един телефон — двойното докосване не е две влизания.
-  const { data: last } = await db.from('zs_entries').select('created_at').eq('device_id', dev.id).eq('ok', true)
-    .order('created_at', { ascending: false }).limit(1).maybeSingle()
-  if (last && Date.now() - new Date(last.created_at).getTime() < 5000) return { status: 200, ok: true, door: DOOR, repeat: true }
+async function scan(body: Record<string, unknown>): Promise<Out> {
+  const reader = String(body.reader ?? 'sim').slice(0, 40)
+  if (READER_KEY ? body.key !== READER_KEY : DOOR !== 'sim') return { status: 401, error: 'Четецът не е разпознат.' }
+
+  const m = /^ZS1\.([0-9A-F]{10})\.(\d{1,12})\.([A-Za-z0-9_-]{16})$/.exec(String(body.qr ?? '').trim())
+  if (!m) return { status: 400, error: 'Това не е QR за вратата.' }
+  const [, qrId, wRaw, mac] = m
+  const w = Number(wRaw)
+  const now = Math.floor(Date.now() / WINDOW_MS)
+  const log = (customer_id: string | null, device_id: string | null, ok: boolean, reason: string | null) =>
+    db.from('zs_entries').insert({ customer_id, device_id, ok, door: DOOR, reason, method: 'qr', reader })
+
+  const { data: cust } = await db.from('zs_customers').select('id, blocked').eq('qr_id', qrId).maybeSingle()
+  if (!cust) { await log(null, null, false, 'unknown_qr'); return { status: 403, error: 'Непознат QR.' } }
+  if (Math.abs(w - now) > 1) { await log(cust.id, null, false, 'expired'); return { status: 403, error: 'QR-ът е стар. Отвори страницата пак.' } }
+
+  const { data: dev } = await db.from('zs_devices').select('id, token_hash, last_qr_window')
+    .eq('customer_id', cust.id).is('revoked_at', null).order('created_at', { ascending: false }).limit(1).maybeSingle()
+  if (!dev || (await qrMac(dev.token_hash, qrId, w)) !== mac) {
+    await log(cust.id, dev?.id ?? null, false, 'bad_sig')
+    return { status: 403, error: 'QR-ът не е от регистрирания телефон.' }
+  }
+  if (cust.blocked) { await log(cust.id, dev.id, false, 'blocked'); return { status: 403, error: 'Достъпът за този номер е спрян.' } }
+  // Един прозорец — едно отваряне. Четецът чете по няколко пъти в секунда: същият
+  // прозорец втори път е „вече отворено“, не ново влизане и не грешка.
+  if (dev.last_qr_window != null && w <= Number(dev.last_qr_window)) return { status: 200, ok: true, door: DOOR, repeat: true }
 
   const fail = await openDoor()
-  await db.from('zs_entries').insert({ customer_id: cust.id, device_id: dev.id, ok: !fail, door: DOOR, reason: fail })
-  await db.from('zs_devices').update({ last_used_at: new Date().toISOString() }).eq('id', dev.id)
+  await log(cust.id, dev.id, !fail, fail)
+  await db.from('zs_devices').update({ last_qr_window: w, last_used_at: new Date().toISOString() }).eq('id', dev.id)
   if (fail) {
     console.error('zs-access door', fail)
-    return { status: 502, error: 'Вратата не отговаря. Опитай пак или се обади на телефона на вратата.' }
+    return { status: 502, error: 'Вратата не отговаря. Опитай пак.' }
   }
   return { status: 200, ok: true, door: DOOR }
 }
@@ -202,7 +249,8 @@ Deno.serve(async (req) => {
       case 'status': out = { status: 200, ok: true, sms: SMS, door: DOOR }; break
       case 'start': out = await start(body, ipHash); break
       case 'verify': out = await verify(body, ua); break
-      case 'open': out = await open(body); break
+      case 'me': out = await me(body); break
+      case 'scan': out = await scan(body); break
       case 'forget': out = await forget(body); break
       default: out = { status: 400, error: 'action' }
     }

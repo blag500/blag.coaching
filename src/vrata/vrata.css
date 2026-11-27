@@ -45,14 +45,23 @@ body { margin: 0; background: var(--ground); color: var(--ink); font-family: var
 }
 
 .v-ready { align-items: stretch; text-align: center; padding: 28px 16px; }
-.v-open {
-  font: inherit; font-size: 26px; font-weight: 700; height: 168px; border: 0;
-  border-radius: var(--r-lg); background: var(--ink); color: var(--on-ink); cursor: pointer;
-  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+.v-qr { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+/* Бяло поле винаги, и в тъмното: четецът чете тъмно върху светло. */
+.v-qr svg, .v-qr-empty {
+  width: min(100%, 300px); aspect-ratio: 1; border-radius: var(--r-md); background: #fff; display: block;
 }
-.v-open:active { transform: scale(0.98); }
-.v-open:disabled { opacity: 0.6; }
-.v-open.is-open { background: var(--ok); }
+.v-qr-empty { background: var(--sunken); }
+.v-qr-bar { width: min(100%, 300px); height: 4px; border-radius: 2px; background: var(--sunken); overflow: hidden; }
+.v-qr-bar span { display: block; height: 100%; background: var(--ink); transform-origin: left; transition: transform 250ms linear; }
+.v-qrid { margin: 0; font-family: var(--mono); font-size: 13px; color: var(--ink-2); letter-spacing: 0.08em; }
+
+.v-cam { border-radius: var(--r-lg); overflow: hidden; background: #000; aspect-ratio: 3 / 4; outline: 4px solid transparent; transition: outline-color var(--dur) var(--ease); }
+.v-cam video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v-cam.is-ok { outline-color: var(--ok); }
+.v-cam.is-bad { outline-color: var(--bad); }
+.v-status { margin: 0; font-size: 17px; font-weight: 600; text-align: center; }
+.v-status.is-ok { color: var(--ok); }
+.v-status.is-bad { color: var(--bad); }
 
 .v-err {
   margin: 0; padding: 10px 12px; border-radius: var(--r-md);
