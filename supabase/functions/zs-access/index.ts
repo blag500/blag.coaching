@@ -88,7 +88,12 @@ async function sendSms(phone: string, text: string): Promise<string | null> {
       headers: { Authorization: 'Basic ' + btoa(`${sid}:${tok}`), 'Content-Type': 'application/x-www-form-urlencoded' },
       body: form,
     })
-    if (!r.ok) return `twilio ${r.status}: ${(await r.text()).slice(0, 300)}`
+    if (!r.ok) {
+      const t = await r.text()
+      let code = ''
+      try { code = String(JSON.parse(t).code ?? '') } catch { /* не е JSON */ }
+      return `twilio ${r.status} #${code || '?'}: ${t.slice(0, 300)}`
+    }
     return null
   }
   return null // test: нищо не се праща
@@ -141,7 +146,11 @@ async function start(body: Record<string, unknown>, ipHash: string): Promise<Out
   const fail = await sendSms(phone, `Кодът ти за вратата: ${code}. Важи 10 минути.`)
   if (fail) {
     console.error('zs-access sms', fail)
-    return { status: 502, error: 'SMS-ът не тръгна. Опитай пак след минута.' }
+    // Само номерът на грешката (напр. Twilio 21608) — помага при проба, нищо тайно.
+    const code = /#(\d+)/.exec(fail)?.[1]
+    // detail: текстът на Twilio без номерата — страницата не го показва, четем го при проба.
+    const detail = fail.replace(/\+?\d{7,}/g, '…').slice(0, 300)
+    return { status: 502, error: `SMS-ът не тръгна${code ? ` (код ${code})` : ''}. Опитай пак след минута.`, detail }
   }
   return { status: 200, ok: true, phone, ...(TEST ? { test_code: code } : {}) }
 }
